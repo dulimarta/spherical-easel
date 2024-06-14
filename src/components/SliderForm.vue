@@ -3,7 +3,7 @@
     <div id="dataEntry">
       <v-text-field
         id="_test_input_min"
-        v-bind:label="$t('objectTree.min')"
+        v-bind:label="$t('min')"
         class="field _test_input"
         variant="outlined"
         density="compact"
@@ -12,7 +12,7 @@
       </v-text-field>
       <v-text-field
         id="_test_input_step"
-        v-bind:label="$t('objectTree.step')"
+        v-bind:label="$t('step')"
         class="field _test_input"
         variant="outlined"
         density="compact"
@@ -20,7 +20,7 @@
         :error="sliderStep > sliderMax - sliderMin"></v-text-field>
       <v-text-field
         id="_test_input_max"
-        v-bind:label="$t('objectTree.max')"
+        v-bind:label="$t('max')"
         class="field _test_input"
         variant="outlined"
         density="compact"
@@ -44,7 +44,7 @@
         color="primary"
         :disabled="!isValid"
         @click="addSlider"
-        >{{ $t("objectTree.create") }}</v-btn
+        >{{ $t("create") }}</v-btn
       >
     </div>
   </v-form>
@@ -109,3 +109,12 @@ import { AddSliderMeasurementCommand } from "@/commands/AddSliderMeasurementComm
     adjustSlidertep();
   })
 </script>
+<i18n lang="json" locale="en">
+  {
+    "min": "Min",
+    "max": "Max",
+    "step": "Step",
+    "create": "Create",
+    "$$$": "xxx"
+  }
+</i18n>

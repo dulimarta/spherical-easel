@@ -34,7 +34,7 @@
           <v-icon size="small">mdi-content-copy</v-icon>
         </div>
       </template>
-      <span>{{ $t(`objectTree.copyToClipboard`) }}</span>
+      <span>{{ t("copyToClipboard") }}</span>
     </v-tooltip>
     <v-tooltip location="end">
       <template v-slot:activator="{ props }">
@@ -46,7 +46,7 @@
           <v-icon size="small">mdi-autorenew</v-icon>
         </div>
       </template>
-      <span>{{ $t(`objectTree.cycleValueDisplayMode`) }}</span>
+      <span>{{ t("cycleValueDisplayMode") }}</span>
     </v-tooltip>
     <v-tooltip location="end">
       <template v-slot:activator="{ props }">
@@ -60,7 +60,7 @@
           :key="visibilityUpdateKey"
           :style="{ color: node.showing ? 'gray' : 'black' }" />
       </template>
-      <span>{{ $t(`objectTree.toggleDisplay`) }}</span>
+      <span>{{ $t("toggleDisplay") }}</span>
     </v-tooltip>
     <v-tooltip location="end">
       <template v-slot:activator="{ props }">
@@ -76,7 +76,7 @@
           :style="{ color: isLabelHidden() ? 'inherit' : 'gray' }"
           :key="labelVisibilityUpdateKey"></v-icon>
       </template>
-      <span>{{ $t(`objectTree.toggleLabelDisplay`) }}</span>
+      <span>{{ $t("toggleLabelDisplay") }}</span>
     </v-tooltip>
     <v-tooltip location="end">
       <template v-slot:activator="{ props }">
@@ -84,7 +84,7 @@
           <v-icon size="small" icon="mdi-delete" />
         </div>
       </template>
-      <span>{{ $t(`objectTree.deleteNode`) }}</span>
+      <span>{{ t("deleteNode") }}</span>
     </v-tooltip>
           <!--v-icon v-else-if="isParametric" medium>
             $parametric
@@ -482,7 +482,7 @@ function copyToClipboard(): void {
   if (props.node instanceof SEExpression) {
     navigator.clipboard.writeText(String(props.node.value)).then(() =>
       EventBus.fire("show-alert", {
-        key: "objectTree.copiedMeasurementSuccessfullyToClipboard",
+        key: t("copiedMeasurementSuccessfullyToClipboard"),
         type: "success"
       })
     );
@@ -761,3 +761,14 @@ const shakeTransformationDisplay = computed((): string => {
   // background-color: green;
 }
 </style>
+<i18n lang="json" locale="en">
+{
+  "copyToClipboard": "Copy the value of the measurement to the clipboard.",
+  "copiedMeasurementSuccessfullyToClipboard": "Successfully copied the measurement value to the clipboard!",
+  "cycleValueDisplayMode": "Click to cycle to the next value display mode including multiples of pi and degrees.",
+  "deleteNode": "Delete the selected object.",
+  "toggleLabelDisplay": "Toggle the display of the corresponding label.",
+  "toggleDisplay": "Toggle the display of the corresponding object.",
+  "sdfdf": "sdfsdf"
+}
+</i18n>

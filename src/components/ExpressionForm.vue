@@ -13,7 +13,7 @@
                variant="outlined"
                 clearable
                 rows="3"
-                v-bind:label="$t('objectTree.calculationExpression')"
+                v-bind:label="t('calculationExpression')"
                 placeholder="cos(pi/2)*M1"
                 class="ma-0"
                 v-model="calcExpression"
@@ -28,7 +28,7 @@
             density="compact"
            variant="outlined"
             readonly
-            v-bind:label="$t('objectTree.result')"
+            v-bind:label="t('result')"
             placeholder="0"
             v-model="calcResult">
           </v-text-field>
@@ -130,3 +130,9 @@ function addExpression(): void {
   });
 }
 </script>
+<i18n lang="json" locale="en">
+  {
+    "calculationExpression": "Calculation Expression",
+    "result": "Result"
+  }
+</i18n>

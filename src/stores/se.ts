@@ -46,17 +46,6 @@ import { Matrix4, Vector3 } from "three";
 import Two from "two.js";
 import { computed } from "vue";
 
-// const sePoints: Map<number, SEPoint> = new Map();
-// const seLines: Map<number, SELine> = new Map();
-// const seSegments: Map<number, SESegment> = new Map();
-// const seCircles: Map<number, SECircle> = new Map();
-// const seLabels: Map<number, SELabel> = new Map();
-// const seExpressions: Map<number, SEExpression> = new Map();
-// const seAngleMarkers: Map<number, SEAngleMarker> = new Map();
-// const seEllipses: Map<number, SEEllipse> = new Map();
-// const seParametrics: Map<number, SEParametric> = new Map();
-// const sePolygons: Map<number, SEPolygon> = new Map();
-// const seTransformations: Map<number, SETransformation> = new Map();
 const sePencils: Array<SEPencil> = [];
 const oldSelectedSENodules: Map<number, SENodule> = new Map();
 const tmpMatrix = new Matrix4();
@@ -357,6 +346,9 @@ const seParametricMap: Map<number,SEParametric> = new Map()
 const sePointMap: Map<number, SEPoint> = new Map();
 const sePolygonMap: Map<number,SEPolygon> = new Map()
 const seSegmentMap: Map<number, SESegment> = new Map();
+const seExpressionMap: Map<number, SEExpression> = new Map()
+const seTransformationMap: Map<number, SETransformation> = new Map();
+
 /* END Non-Reactive variables */
 
 export const useSEStore = defineStore("se", () => {
@@ -404,10 +396,13 @@ export const useSEStore = defineStore("se", () => {
   const seLabelIds: Ref<Array<number>> = ref([])
   const seLabels = computed((): SELabel[] => seLabelIds.value.map(id => seLabelMap.get(id)!))
 
-  const seExpressions: Ref<Array<SEExpression>> = ref([]);
+  const seExpressionIds: Ref<Array<number>> = ref([]);
+  const seExpressions = computed((): SEExpression[] => seExpressionIds.value.map(id => seExpressionMap.get(id)!) )
+
   const seAngleMarkerIds: Ref<Array<number>> = ref([]);
   const seAngleMarkers = computed((): SEAngleMarker[] => seAngleMarkerIds.value.map (id => seAngleMarkerMap.get(id)!))
-  const seTransformations: Ref<Array<SETransformation>> = ref([]);
+  const seTransformationIds: Ref<Array<number>> = ref([]);
+  const seTransformations = computed((): SETransformation[] => seTransformationIds.value.map(id => seTransformationMap.get(id)!))
   const selectedSENodules: Ref<Array<SENodule>> = ref([]);
   const oldSelectedSENoduleIds: Ref<Array<number>> = ref([]);
   // const styleSavedFromPanel: Ref<StyleCategory> = ref(StyleCategory.Label)
@@ -437,6 +432,7 @@ export const useSEStore = defineStore("se", () => {
     seEllipseMap.clear();
     seLabelIds.value.splice(0)
     seLabelMap.clear();
+    selectedSENodules.value.splice(0);
     seLineIds.value.splice(0);
     seLineMap.clear();
     seNodules.value.splice(0);
@@ -449,12 +445,13 @@ export const useSEStore = defineStore("se", () => {
     sePolygonMap.clear()
     seSegmentMap.clear();
     seSegments.value.splice(0);
-    seTransformations.value.splice(0);
-    selectedSENodules.value.splice(0);
+    seTransformationIds.value.splice(0);
+    seTransformationMap.clear()
     oldSelectedSENodules.clear();
     oldSelectedSENoduleIds.value.splice(0);
     // intersections.splice(0);
-    seExpressions.value.splice(0);
+    seExpressionIds.value.splice(0);
+    seExpressionMap.clear()
     // initialStyleStates.splice(0);
     // defaultStyleStates.splice(0);
     hasUnsavedNodules.value = false;
@@ -639,19 +636,21 @@ export const useSEStore = defineStore("se", () => {
     }
   }
   function addTransformation(transformation: SETransformation): void {
-    seTransformations.value.push(transformation);
+    seTransformationIds.value.push(transformation.id);
+    seTransformationMap.set(transformation.id, transformation)
     seNodules.value.push(transformation);
     hasUnsavedNodules.value = true;
     updateDisabledTools("transformation");
   }
   function removeTransformation(transformationId: number): void {
-    const transformationPos = seTransformations.value.findIndex(
-      t => t.id === transformationId
+    const transformationPos = seTransformationIds.value.findIndex(
+      t => t === transformationId
     );
     if (transformationPos >= 0) {
       /* victim line is found */
       const pos = seNodules.value.findIndex(x => x.id === transformationId);
-      seTransformations.value.splice(transformationPos, 1); // Remove the transformation from the list
+      seTransformationIds.value.splice(transformationPos, 1); // Remove the transformation from the list
+      seTransformationMap.delete(transformationId)
       seNodules.value.splice(pos, 1);
       hasUnsavedNodules.value = true;
       updateDisabledTools("transformation");
@@ -730,7 +729,8 @@ export const useSEStore = defineStore("se", () => {
     if (aLabel) aLabel.accept(labelMoverVisitor);
   }
   function addAngleMarkerAndExpression(angleMarker: SEAngleMarker): void {
-    seExpressions.value.push(angleMarker);
+    seExpressionIds.value.push(angleMarker.id);
+    seExpressionMap.set(angleMarker.id, angleMarker)
     seAngleMarkerIds.value.push(angleMarker.id);
     seAngleMarkerMap.set(angleMarker.id, angleMarker);
     seNodules.value.push(angleMarker);
@@ -747,7 +747,7 @@ export const useSEStore = defineStore("se", () => {
         z => z === angleMarkerId
       );
       const pos2 = seNodules.value.findIndex(x => x.id === angleMarkerId);
-      const pos3 = seExpressions.value.findIndex(z => z.id === angleMarkerId);
+      const pos3 = seExpressionIds.value.findIndex(z => z === angleMarkerId);
       // when removing expressions that have effects on the labels, we must set those label display arrays to empty
       if (victim.label) {
         victim.label.ref.value = [];
@@ -755,7 +755,8 @@ export const useSEStore = defineStore("se", () => {
       // victimCircle.removeSelfSafely();
       seAngleMarkerIds.value.splice(angleMarkerPos, 1); // Remove the angleMarker from the list
       seNodules.value.splice(pos2, 1);
-      seExpressions.value.splice(pos3, 1);
+      seExpressionIds.value.splice(pos3, 1);
+      seExpressionMap.delete(angleMarkerId)
       seAngleMarkerMap.delete(angleMarkerId)
       hasUnsavedNodules.value = true;
       updateDisabledTools("angleMarker");
@@ -799,7 +800,8 @@ export const useSEStore = defineStore("se", () => {
   }
   function addPolygonAndExpression(polygon: SEPolygon): void {
     // console.debug(`add polygon with id ${polygon.id}`);
-    seExpressions.value.push(polygon);
+    seExpressionIds.value.push(polygon.id);
+    seExpressionMap.set(polygon.id, polygon)
     sePolygonIds.value.push(polygon.id);
     sePolygonMap.set(polygon.id, polygon)
     seNodules.value.push(polygon);
@@ -814,7 +816,7 @@ export const useSEStore = defineStore("se", () => {
       const polygonPos = sePolygonIds.value.findIndex(z => z === polygonId);
       // console.debug(`Polygon found`);
       const pos2 = seNodules.value.findIndex(x => x.id === polygonId);
-      const pos3 = seExpressions.value.findIndex(exp => exp.id === polygonId);
+      const pos3 = seExpressionIds.value.findIndex(exp => exp === polygonId);
       /* victim polygon is found */
       // when removing expressions that have effects on the labels, we must set those label display arrays to empty
       if (victimPolygon.label) {
@@ -823,23 +825,26 @@ export const useSEStore = defineStore("se", () => {
       victimPolygon.ref.removeFromLayers();
       sePolygonIds.value.splice(polygonPos, 1); // Remove the polygon from the list
       seNodules.value.splice(pos2, 1);
-      seExpressions.value.splice(pos3, 1);
+      seExpressionIds.value.splice(pos3, 1);
+      seExpressionMap.delete(polygonId)
       sePolygonMap.delete(polygonId)
       hasUnsavedNodules.value = true;
       updateDisabledTools("polygon");
     }
   }
   function addExpression(measurement: SEExpression): void {
-    seExpressions.value.push(measurement);
+    seExpressionIds.value.push(measurement.id);
+    seExpressionMap.set(measurement.id, measurement)
     seNodules.value.push(measurement);
     hasUnsavedNodules.value = true;
     updateDisabledTools("expression");
   }
   function removeExpression(measId: number): void {
-    const pos = seExpressions.value.findIndex(exp => exp.id === measId);
+    const pos = seExpressionIds.value.findIndex(exp => exp === measId);
     if (pos >= 0) {
       const pos2 = seNodules.value.findIndex(x => x.id === measId);
-      seExpressions.value.splice(pos, 1);
+      seExpressionIds.value.splice(pos, 1);
+      seExpressionMap.delete(measId)
       seNodules.value.splice(pos2, 1);
       hasUnsavedNodules.value = true;
       updateDisabledTools("expression");
@@ -1058,7 +1063,7 @@ export const useSEStore = defineStore("se", () => {
       }
       case "transformation": {
         // "applyTransformation", // need a transformation
-        if (seTransformations.value.length > 0) {
+        if (seTransformationMap.size > 0) {
           removeElements(["applyTransformation"], disabledTools.value);
         } else {
           addElements(["applyTransformation"], disabledTools.value);
@@ -1071,12 +1076,12 @@ export const useSEStore = defineStore("se", () => {
       case "ellipse":
       case "parametric":
       case "expression": {
-        const numCircles = seCircles.value.length;
-        const numSegments = seSegmentIds.value.length;
-        const numLines = seLineIds.value.length;
-        const numEllipses = seEllipses.value.length;
-        const numParametrics = seParametrics.value.length;
-        const numExpressions = seExpressions.value.length;
+        const numCircles = seCircleMap.size
+        const numSegments = seSegmentMap.size
+        const numLines = seLineMap.size
+        const numEllipses = seEllipseMap.size
+        const numParametrics = seParametricMap.size
+        const numExpressions = seExpressionMap.size
 
         // "inversion", // need a circle
         if (numCircles > 0) {
@@ -3900,7 +3905,6 @@ export const useSEStore = defineStore("se", () => {
     seExpressions,
     selectedSENodules,
     seNodules,
-    seTransformations,
     svgCanvas,
     temporaryNodules,
     zoomMagnificationFactor,
@@ -3916,6 +3920,7 @@ export const useSEStore = defineStore("se", () => {
     sePoints,
     sePolygons,
     seSegments,
+    seTransformations,
     twojsLayers,
 
     /* functions */

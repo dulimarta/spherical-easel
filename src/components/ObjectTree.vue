@@ -7,7 +7,7 @@
         <v-expansion-panel style="border-radius: 8px;">
           <v-expansion-panel-title color="accent">
             <h3 class="body-1 font-weight-bold button-group-heading">
-            {{ $t("objectTree.expression") }}
+            {{ t("expression") }}
             </h3>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
@@ -19,7 +19,7 @@
         <v-expansion-panel style="border-radius: 8px;">
           <v-expansion-panel-title color="accent">
             <h3 class="body-1 font-weight-bold button-group-heading">
-            {{ $t("objectTree.parametricCurves") }}
+            {{ t("parametricCurves") }}
           </h3>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
@@ -31,7 +31,7 @@
         <v-expansion-panel style="border-radius: 8px;padding-right: 8px;">
           <v-expansion-panel-title color="accent">
             <h3 class="body-1 font-weight-bold button-group-heading">
-            {{ $t("objectTree.slider") }}
+            {{ t("slider") }}
           </h3>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
@@ -63,8 +63,8 @@
             }).length > 0
           ">
           <SENoduleList
-            i18LabelKey="objects.points"
-            :children="sePoints as any"></SENoduleList>
+            :label="t('points', sePoints.length)"
+            :children="sePoints"></SENoduleList>
         </v-sheet>
         <v-sheet
           rounded
@@ -73,8 +73,8 @@
           class="my-3"
           v-show="seLines.length > 0">
           <SENoduleList
-            i18LabelKey="objects.lines"
-            :children="seLines as any"></SENoduleList>
+            :label="t('lines', seLines.length)"
+            :children="seLines"></SENoduleList>
         </v-sheet>
         <v-sheet
           rounded
@@ -83,8 +83,8 @@
           class="my-3"
           v-show="seSegments.length > 0">
           <SENoduleList
-            i18LabelKey="objects.segments"
-            :children="seSegments as any"></SENoduleList>
+            :label="t('segments', seSegments.length)"
+            :children="seSegments"></SENoduleList>
         </v-sheet>
         <v-sheet
           rounded
@@ -93,8 +93,8 @@
           class="my-3"
           v-show="seCircles.length > 0">
           <SENoduleList
-            i18LabelKey="objects.circles"
-            :children="seCircles as any"></SENoduleList>
+            :label="t('circles', seCircles.length)"
+            :children="seCircles"></SENoduleList>
         </v-sheet>
         <v-sheet
           rounded
@@ -103,8 +103,8 @@
           class="my-3"
           v-show="seEllipses.length > 0">
           <SENoduleList
-            i18LabelKey="objects.ellipses"
-            :children="seEllipses as any"></SENoduleList>
+            :label="t('ellipses', seEllipses.length)"
+            :children="seEllipses"></SENoduleList>
         </v-sheet>
         <v-sheet
           rounded
@@ -113,8 +113,8 @@
           class="my-3"
           v-show="seParametrics.length > 0">
           <SENoduleList
-            i18LabelKey="objects.parametrics"
-            :children="seParametrics as any"></SENoduleList>
+            :label="t('parametrics', seParametrics.length)"
+            :children="seParametrics"></SENoduleList>
         </v-sheet>
         <v-sheet
           rounded
@@ -123,8 +123,8 @@
           class="my-3"
           v-show="seTransformations.length > 0">
           <SENoduleList
-            i18LabelKey="objects.transformations"
-            :children="seTransformations as any"></SENoduleList>
+            :label="t('transformations', seTransformations.length)"
+            :children="seTransformations"></SENoduleList>
         </v-sheet>
         <v-sheet
           rounded
@@ -133,8 +133,8 @@
           class="my-3"
           v-show="showExpressionSheet">
           <SENoduleList
-            i18LabelKey="objects.measurements"
-            :children="seExpressions as any"></SENoduleList>
+            :label="t('measurements', seExpressions.length)"
+            :children="seExpressions"></SENoduleList>
         </v-sheet>
         <!--v-sheet rounded
           color="accent"
@@ -147,7 +147,7 @@
         </v-sheet-->
 
         <span class="text-body-2 ma-2" v-show="zeroObjects">
-          {{ $t("objectTree.noObjectsInDatabase") }}
+          {{ t("noObjectsInDatabase") }}
         </span>
       </div>
     </div>
@@ -164,8 +164,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import { storeToRefs } from "pinia";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { SENodule } from "@/models/SENodule";
-
+import { useI18n } from "vue-i18n";
 const seStore = useSEStore();
 const {
   sePoints,
@@ -179,7 +178,7 @@ const {
   actionMode,
   seTransformations
 } = storeToRefs(seStore);
-
+const {t} = useI18n()
 let displayExpressionSheetAgain = true;
 const pointsKey = ref(0);
 
@@ -252,19 +251,19 @@ const showExpressionSheet = computed((): boolean => {
     switch (actionMode.value) {
       case "measuredCircle":
         EventBus.fire("show-alert", {
-          key: "objectTree.createMeasurementForMeasuredCircle",
+          key: t("createMeasurementForMeasuredCircle"),
           type: "info"
         });
         break;
       case "translation":
         EventBus.fire("show-alert", {
-          key: "objectTree.createMeasurementForTranslation",
+          key: t("createMeasurementForTranslation"),
           type: "info"
         });
         break;
       case "rotation":
         EventBus.fire("show-alert", {
-          key: "objectTree.createMeasurementForRotation",
+          key: t("createMeasurementForRotation"),
           type: "info"
         });
         break;
@@ -296,3 +295,23 @@ const showExpressionSheet = computed((): boolean => {
   flex-grow: 1;
 }
 </style>
+<i18n lang="json" locale="en">
+{
+  "calculations": "Calculations | Calculation | Calculations | calculations",
+  "circles": "Circles | Circle| Circles | circles",
+  "createMeasurementForMeasuredCircle": "Create a measurement to use as the radius of a measured circle.",
+    "createMeasurementForTranslation": "Create a measurement to use as the translation distance.",
+    "createMeasurementForRotation": "Create a measurement to use as the angle of rotation.",
+  "ellipses": "Ellipses | Ellipse | Ellipses | ellipses",
+  "expression": "Expression",
+  "lines": "Lines | Line | Lines | lines",
+  "measurements": "Measurements | Measurement | Measurements | measurements",
+  "noObjectsInDatabase": "No objects in database",
+  "parametricCurves": "Parametric Curves",
+  "parametrics": "Parametrics | Parametric | Parametrics | parametrics",
+  "points": "Points | Point | Points | points",
+  "segments": "Line Segments | Line Segment | Line segments | line segments",
+  "slider": "Slider",
+  "transformations": "Transformations | Transformation | Transformations | transformations"
+}
+</i18n>

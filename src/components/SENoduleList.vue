@@ -1,10 +1,9 @@
 <template>
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
     <div id="header" class="accent">
-      <span v-if="children.length === 1" class="text-subtitle-1">
-        {{ $t(i18LabelKey, 1) }}
+      <span class="text-subtitle-1">
+        {{ label }}
       </span>
-      <span v-else class="text-subtitle-1">{{ $t(i18LabelKey, 0) }}</span>
       <v-btn
         size="small"
         v-show="hasExistingChildren"
@@ -43,15 +42,17 @@ import EventBus from "@/eventHandlers/EventBus";
 import { useSEStore } from "@/stores/se";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { storeToRefs } from "pinia";
-
+import { SEExpression } from "@/models/SEExpression";
+import { SETransformation } from "@/models/SETransformation";
+import { useI18n } from "vue-i18n";
 const props = defineProps<{
   children: SENodule[];
-  i18LabelKey: string;
+  label: string;
 }>(); /** When defined, label takes over the node name */
 
 const seStore = useSEStore();
 const { actionMode } = storeToRefs(seStore);
-
+const {t} = useI18n()
 const expanded = ref(false);
 
 onBeforeMount((): void => {
@@ -108,27 +109,29 @@ const existingChildren = computed((): SENodule[] => {
 // });
 //When the user activates the measured circle tool
 // the object tool tab is open and the existing measurements sheet is expanded and the others are closed
+const childrenAreMeasurement = computed(() => props.children.every(c => c instanceof SEExpression))
+const childrenAreTransformation = computed(() => props.children.every(c => c instanceof SETransformation))
 function expandMeasurementSheet(): void {
   // console.log("here1");
-  if (props.i18LabelKey === "objects.measurements") {
+  if (childrenAreMeasurement) {
     if (hasExistingChildren) {
       expanded.value = true;
       switch (actionMode.value) {
         case "measuredCircle":
           EventBus.fire("show-alert", {
-            key: "objectTree.selectAMeasurementForMeasuredCircle",
+            key: t("selectAMeasurementForMeasuredCircle"),
             type: "info"
           });
           break;
         case "translation":
           EventBus.fire("show-alert", {
-            key: "objectTree.selectAMeasurementForTranslation",
+            key: t("selectAMeasurementForTranslation"),
             type: "info"
           });
           break;
         case "rotation":
           EventBus.fire("show-alert", {
-            key: "objectTree.selectAMeasurementForRotation",
+            key: t("selectAMeasurementForRotation"),
             type: "info"
           });
           break;
@@ -143,13 +146,13 @@ function expandMeasurementSheet(): void {
 // When the user activates the apply transformation tool, the transformation sheet is expanded and the others are closed
 function expandTransformationSheet(): void {
   // console.log("here1");
-  if (props.i18LabelKey === "objects.transformations") {
+  if (childrenAreTransformation) {
     if (hasExistingChildren) {
       expanded.value = true;
       switch (actionMode.value) {
         case "applyTransformation":
           EventBus.fire("show-alert", {
-            key: "objectTree.selectATransformation",
+            key:t("selectATransformation"),
             type: "info"
           });
           break;
@@ -201,3 +204,12 @@ onBeforeUnmount((): void => {
   transform: translateX(-100%);
 }
 </style>
+<i18n lang="json" locale="en">
+  {
+    "selectAMeasurementForTranslation": "After selecting an axis (line or line segment) of translation, select a measurement to use as the distance of translation.",
+    "selectAMeasurementForRotation": "After selecting a rotation point, select a measurement to use as the angle of rotation.",
+    "selectATransformation": "Select a transformation to apply.",
+    "selectAMeasurementForMeasuredCircle": "After selecting a center point, select a measurement to use as the radius of a measured circle.",
+    "sdfdf": "sdfsdf"
+  }
+</i18n>
