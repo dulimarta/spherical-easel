@@ -301,4 +301,10 @@ export class SELabel extends SENodule implements Visitable {
         boundingBox.bottom - canvasHeight / 2
     );
   }
+
+  //The following function fixes the issue https://github.com/dulimarta/spherical-easel/issues/76
+  public isFreeToMove(): boolean {
+    return true;
+  }
+
 }

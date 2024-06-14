@@ -96,6 +96,7 @@ export const useStylingStore = defineStore("style", () => {
 
   // The user is required to opt in to override conflicting properties
   const forceAgreement = ref(false);
+  const measurableSelections = ref(false)
 
   /** styleOptions is a copy visible to Vue components */
   const styleOptions = ref<StyleOptions>({});
@@ -169,6 +170,7 @@ export const useStylingStore = defineStore("style", () => {
         }
       });
 
+      let measurableCount = 0
       // Among the selected object, check if we have new selection
       selectionArr.forEach(n => {
         const itsPlot = n.ref;
@@ -213,9 +215,13 @@ export const useStylingStore = defineStore("style", () => {
               itsLabel.ref.defaultStyleState(StyleCategory.Label)
             );
           }
+          if (itsLabel.ref.value.length > 0)
+            measurableCount++
         }
       });
 
+      // The selections are measurable only if ALL of them are measurable
+      measurableSelections.value = measurableCount === selectionArr.length
       editedLabels.value.clear();
       console.debug("Initial style map size = ", initialStyleMap.size);
       console.debug("Default style map size = ", defaultStyleMap.size);
@@ -550,7 +556,8 @@ export const useStylingStore = defineStore("style", () => {
     restoreInitialStyles,
     editedLabels,
     isCommonProperty,
-    hasSomeProperties
+    hasSomeProperties,
+    measurableSelections
     // changeStyle,
     // allLabelsShowing,styleOptions: activeStyleOptions
   };

@@ -147,9 +147,13 @@
                 }}
               </template>
             </v-slider>
-            <v-btn :style="{
-              alignSelf: 'flex-end'
-            }" icon="mdi-check" size="small" @click="toggle"></v-btn>
+            <v-btn
+              :style="{
+                alignSelf: 'flex-end'
+              }"
+              icon="mdi-check"
+              size="small"
+              @click="toggle"></v-btn>
           </v-sheet>
         </v-item>
       </v-item-group>
@@ -173,7 +177,11 @@
 
 <style scoped>
 .vertical-nav-drawer {
-  border: solid 1px grey 0.5;
+  /* white background is required to override "transparent".
+     Otherwise, when the display is zoomed in the boundary circle
+     will see thru the style drawer */
+  background: white;
+  border: solid 1px lightgray;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 
   border-radius: 0.5em;
@@ -211,22 +219,18 @@ import FrontBackStyle from "./FrontBackStyle.vue";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import { useStylingStore } from "@/stores/styling";
-import { CommandGroup } from "@/commands/CommandGroup";
-import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { watch } from "vue";
-import { Command } from "@/commands/Command";
 import Nodule from "@/plottables/Nodule";
-import { SELabel } from "@/models/internal";
 const minified = ref(true);
 const { t } = useI18n();
 const seStore = useSEStore();
 const styleStore = useStylingStore();
-const { selectedSENodules, hasObjects, seNodules, seLabels } =
+const { hasObjects, seNodules, seLabels } =
   storeToRefs(seStore);
-const { selectedPlottables, selectedLabels, styleOptions, editedLabels } =
+const { selectedPlottables, selectedLabels, editedLabels } =
   storeToRefs(styleStore);
 const styleSelection = ref<number | undefined>(undefined);
-const { hasStyle, hasDisagreement } = styleStore;
+// const { hasStyle, hasDisagreement } = styleStore;
 
 const backStyleContrast = ref(Nodule.getBackStyleContrast());
 const backStyleContrastSelectorThumbStrings = [

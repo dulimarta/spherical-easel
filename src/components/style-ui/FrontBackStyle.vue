@@ -281,8 +281,7 @@
 import {
   computed,
   ref,
-  onMounted,
-  onBeforeUnmount,
+  onBeforeMount,
   useAttrs,
   Ref,
   watch
@@ -299,7 +298,6 @@ import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { useStylingStore } from "@/stores/styling";
-import { onBeforeMount } from "vue";
 import PopOverTabs from "./PopOverTabs.vue";
 
 type ComponentProps = {
@@ -330,8 +328,8 @@ const flipDashPattern= ref(false);
 // });
 
 watch(() => styleOptions.value, opt => {
-  if (Object.hasOwn(opt, 'dashArray')) {
-    const arr = opt.dashArray!
+  if (Array.isArray(opt.dashArray)) {
+    const arr = opt.dashArray
     if (arr.length < 2) useDashPattern.value = false
     else {
       if (arr[0] !== 0 && arr[1] !== 0) {
@@ -351,7 +349,7 @@ watch(() => styleOptions.value, opt => {
   } else {
     flipDashPattern.value = false
   }
-})
+}, {deep: true})
 
 watch(
   () => useDashPattern.value,

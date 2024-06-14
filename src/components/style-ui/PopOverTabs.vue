@@ -19,7 +19,7 @@
         <slot name="tabs"></slot>
         <!-- we assume this value will not be used-->
         <v-spacer/>
-        <v-tab :value="LAST_TAB_MARKER">
+        <v-tab :value="LAST_TAB_MARKER" @click="menu = false">
           {{ name }}
           <v-icon>mdi-chevron-double-right</v-icon>
         </v-tab>

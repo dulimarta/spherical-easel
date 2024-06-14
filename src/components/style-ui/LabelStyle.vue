@@ -15,7 +15,8 @@
       <v-tab><v-icon>mdi-palette</v-icon></v-tab>
     </template>
     <template #pages>
-      <v-window-item> <!-- First Tab-->
+      <v-window-item>
+        <!-- First Tab-->
         <v-text-field
           v-model="styleOptions.labelDisplayText"
           :disabled="
@@ -41,7 +42,9 @@
           ]"></v-text-field>
         <v-text-field
           :disabled="
-            selectedLabels.size < 1 || hasDisagreement('labelDisplayCaption') || !hasCaption(styleOptions)
+            selectedLabels.size < 1 ||
+            hasDisagreement('labelDisplayCaption') ||
+            !hasCaption(styleOptions)
           "
           v-model.lazy="styleOptions.labelDisplayCaption"
           v-bind:label="t('labelCaption')"
@@ -177,7 +180,8 @@
             'labelTextStyle'
           ]" />
       </v-window-item>
-      <v-window-item> <!-- Third Tab-->
+      <v-window-item>
+        <!-- Third Tab-->
         <PropertyColorPicker
           :title="t('labelFrontFillColor')"
           :numSelected="selectedLabels.size"
@@ -198,7 +202,11 @@
           style-name="labelBackFillColor"
           v-model="styleOptions.labelBackFillColor"></PropertyColorPicker>
         <DisagreementOverride
-          :style-properties="['labelFrontFillColor', 'labelBackFillColor', 'labelDynamicBackStyle']" />
+          :style-properties="[
+            'labelFrontFillColor',
+            'labelBackFillColor',
+            'labelDynamicBackStyle'
+          ]" />
       </v-window-item>
     </template>
     <template #bottom>
@@ -211,9 +219,19 @@
           gap: '8px'
         }">
         <v-tooltip activator="#restore-btn" :text="t('undoStyles')"></v-tooltip>
-        <v-tooltip activator="#default-btn" :text="t('defaultStyles')"></v-tooltip>
-        <v-btn id="restore-btn" @click="emits('undo-styles')" icon="mdi-undo" size="small"></v-btn>
-        <v-btn id="default-btn" @click="emits('apply-default-styles')" icon="mdi-backup-restore" size="small"></v-btn>
+        <v-tooltip
+          activator="#default-btn"
+          :text="t('defaultStyles')"></v-tooltip>
+        <v-btn
+          id="restore-btn"
+          @click="emits('undo-styles')"
+          icon="mdi-undo"
+          size="small"></v-btn>
+        <v-btn
+          id="default-btn"
+          @click="emits('apply-default-styles')"
+          icon="mdi-backup-restore"
+          size="small"></v-btn>
       </div>
     </template>
   </PopOverTabs>
@@ -226,7 +244,6 @@
     :yes-action="overrideDynamicBackStyleDisagreement">
     {{ t("message.multipleObjectDifferingStyles") }}
   </!--Dialog-->
-
 </template>
 <script setup lang="ts">
 import {
@@ -293,20 +310,20 @@ type LabelStyleProps = {
 };
 const emits = defineEmits([
   // 'apply-styles',
-  'undo-styles',
-  'apply-default-styles'
-])
+  "undo-styles",
+  "apply-default-styles"
+]);
 const props = defineProps<LabelStyleProps>();
 let groupSelection = defineModel<number>({});
 const seStore = useSEStore();
 const styleStore = useStylingStore();
-const { selectedLabels, styleOptions, forceAgreement } =
+const { selectedLabels, styleOptions, measurableSelections } =
   storeToRefs(styleStore);
 const { hasDisagreement, editedLabels } = styleStore;
 const { t } = useI18n();
 
 // You are not allow to style labels  directly  so remove them from the selection and warn the user
-const { seLabels } = storeToRefs(seStore);
+const { seLabels, selectedSENodules } = storeToRefs(seStore);
 // const backStyleDisagreementDialog: Ref<DialogAction | null> = ref(null);
 const labelDisplayText = ref(null);
 const labelDisplayCaption = ref(null);
@@ -342,71 +359,36 @@ const maxLabelDisplayCaptionLength =
   SETTINGS.label.maxLabelDisplayCaptionLength;
 const labelDisplayCaptionErrorMessageKey = "";
 const labelDisplayCaptionTestResults = [true, true];
-const labelVisibiltyState = new Map<string, boolean>();
+const labelVisibilityState = new Map<string, boolean>();
 
 //step is Pi/8 from -pi to pi is 17 steps
 const textRotationSelectorThumbStrings: Array<string> = [];
 const filteredLabelDisplayModeItems: Ref<Array<LabelDisplayModeItem>> = ref([]);
 
 watch(
-  () => selectedLabels.value,
-  (afterArr, beforeArr) => {
-    if (popupVisible === false) return;
-    console.debug(`Before ${beforeArr.size}, After ${afterArr.size}`)
-//     beforeArr
-//       .filter(n => n.getLabel() !== null)
-//       .forEach(n => {
-//         const theLabel = n.getLabel();
-//         const prevLabelState = labelVisibiltyState.get(n.name);
-//         if (typeof prevLabelState === "undefined") {
-//           labelVisibiltyState.set(n.name, theLabel!.showing);
-//         } else {
-//           theLabel!.showing = prevLabelState;
-//         }
-//       });
+  () => measurableSelections.value,
+  (measurable, oldMeasurable) => {
+    console.debug(`Measurable changes from ${oldMeasurable} to ${measurable}`);
+    filteredLabelDisplayModeItems.value = labelDisplayModeItems.filter(
+      x => !x.optionRequiresMeasurementValueToExist || measurable
+    );
+    console.debug(
+      "Label Display Option",
+      filteredLabelDisplayModeItems.value.length
+    );
 
-//     afterArr
-//       .filter(n => n.getLabel() != null)
-//       .forEach(n => {
-//         const withLabel = n as unknown as Labelable;
-//         const prevLabelState = labelVisibiltyState.get(n.name);
-//         if (typeof prevLabelState === "undefined") {
-//           labelVisibiltyState.set(n.name, withLabel.label!.showing);
-//         }
-//         withLabel.label!.showing = true;
-//       });
-  },
-  {
-    deep: true
+    // Check if the current labelDisplaMode value exists in the filtered entries
+    // If not, reset it to the first item in the filtered entry
+    if (
+      !filteredLabelDisplayModeItems.value.some(
+        x => x.value === styleOptions.value.labelDisplayMode
+      )
+    ) {
+      styleOptions.value.labelDisplayMode =
+        filteredLabelDisplayModeItems.value[0].value;
+    }
   }
 );
-
-watch(
-  () => styleOptions.value,
-  (opt: LabelStyleOptions) => {
-    /* When caption text is not null, exclude display option with "Value" in it? */
-    if (opt.labelDisplayCaption) {
-      filteredLabelDisplayModeItems.value = labelDisplayModeItems.filter(
-        z => !z.optionRequiresMeasurementValueToExist
-      );
-    } else {
-      filteredLabelDisplayModeItems.value = labelDisplayModeItems.slice(0);
-    }
-  },
-  { deep: true }
-);
-// watch(
-//   () => labelTextScalePercentage.value,
-//   (textScale: number) => {
-//     styleOptions.value.labelTextScalePercent = textScale;
-//   }
-// );
-// watch(
-//   () => labelTextRotationAmount.value,
-//   (textRotation: number) => {
-//     styleOptions.value.labelTextRotation = textRotation;
-//   }
-// );
 
 onBeforeMount((): void => {
   for (
@@ -427,18 +409,12 @@ onBeforeMount((): void => {
 });
 
 onMounted((): void => {
-  filteredLabelDisplayModeItems.value = labelDisplayModeItems.slice(0);
+  // The following filter is easier to interpret if we negate the filter condition
+  // i.e. exclude if the option requires measurement AND the selections are NOT measurable
+  filteredLabelDisplayModeItems.value = labelDisplayModeItems.filter(
+    x => !x.optionRequiresMeasurementValueToExist || measurableSelections.value
+  );
 });
-
-// function countEnabledProperties(propList: Array<string>) {
-//   let count = 0;
-//   // console.debug("Style options", styleOptions)
-//   propList.forEach(propName => {
-//     console.debug(`Is ${propName} present?`);
-//     if ((styleOptions.value as any)[propName]) count++;
-//   });
-//   return count;
-// }
 
 function resetAndRestoreConflictItems(): void {
   // resetAllItemsFromConflict();
@@ -453,17 +429,16 @@ function checkLabelsVisibility() {
 
   selectedLabels.value.forEach(labName => {
     const lab = seLabels.value.find(z => {
-      return z.ref.name === labName
-    })?.ref
+      return z.ref.name === labName;
+    })?.ref;
     if (lab) {
-
-    if (!labelVisibiltyState.has(labName)) {
-      labelVisibiltyState.set(labName, lab.showing);
+      if (!labelVisibilityState.has(labName)) {
+        labelVisibilityState.set(labName, lab.showing);
+      }
+      if (!lab.showing) {
+        lab.showing = true;
+      }
     }
-    if (!lab.showing) {
-      lab.showing = true;
-    }
-}
   });
 }
 // TODO: this function needs more work
@@ -868,6 +843,5 @@ const conflictItems: ConflictItems = {
   },
   "defaultStyles": "Kembali ke Gaya Awal",
   "undoStyles": "Batalkan Ubahan Gaya"
-
 }
 </i18n>
