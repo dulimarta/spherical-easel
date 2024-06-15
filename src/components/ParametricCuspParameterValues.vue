@@ -8,13 +8,13 @@
           v-model="tValueExpression"
           v-bind="props"
           density="compact"
-          :label="$t(i18nLabelKey)"
+          :label="label"
           :error-messages="parsingError"
           @keydown="onKeyPressed"
           variant="outlined"
           clearable></v-text-field>
       </template>
-      {{ $t(i18nToolTip) }}
+      {{ tooltip }}
     </v-tooltip>
   </div>
 </template>
@@ -25,9 +25,9 @@ import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
 
 const props = defineProps<{
-  i18nToolTip: string;
+  tooltip: string;
 
-  i18nLabelKey: string;
+  label: string;
 
   name: string;
 }>();

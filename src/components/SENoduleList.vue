@@ -63,7 +63,6 @@ onBeforeMount((): void => {
 const toSlider = (n: SENodule): SESlider => n as SESlider;
 
 const hasExistingChildren = computed((): boolean => {
-  console.debug(" length", existingChildren.value.length);
   existingChildren.value.forEach(node => console.debug(node.name));
   return existingChildren.value.length > 0;
 });

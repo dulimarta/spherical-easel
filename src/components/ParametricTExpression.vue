@@ -13,7 +13,7 @@
                     v-model="tValueExpression"
                     v-bind="props"
                     density="compact"
-                    :label="$t(i18nLabelKey)"
+                    :label="label"
                     :placeholder="placeholder"
                     :error-messages="parsingError"
                     @keydown="onKeyPressed"
@@ -22,7 +22,7 @@
                     :hint="currentValueString"
                     persistent-hint></v-text-field>
                 </template>
-                {{ $t(i18nToolTip) }}
+                {{ tooltip }}
               </v-tooltip>
             </v-col>
           </v-row>
@@ -33,7 +33,6 @@
 </template>
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
-import { SEExpression } from "@/models/SEExpression";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
@@ -46,12 +45,9 @@ const { seExpressions } = storeToRefs(seStore);
 const {t} = useI18n()
 
 const props = defineProps<{
-  i18nToolTip: string;
-
-  i18nLabelKey: string;
-
+  tooltip: string;
+  label: string;
   placeholder: string;
-
   name: string;
 }>();
 
@@ -108,7 +104,7 @@ function onKeyPressed(): void {
           ? parser.evaluateWithVars(tValueExpression.value, varMap)
           : 0;
       currentValueString.value =
-        t(`objectTree.currentTValue`) +
+        t(`currentTValue`) +
         tValueResult.toFixed(SETTINGS.decimalPrecision);
 
       EventBus.fire("parametric-data-update", {

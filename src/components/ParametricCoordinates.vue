@@ -2,7 +2,7 @@
   <div>
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
     <div id="header" class="accent">
-      <span class="text-subtitle-1">{{ $t(i18LabelKey) }}</span>
+      <span class="text-subtitle-1">{{ label }}</span>
       <v-btn size="small" @click="expanded = !expanded">
         <v-icon v-if="!expanded">mdi-chevron-right</v-icon>
         <v-icon v-else>mdi-chevron-down</v-icon>
@@ -15,8 +15,8 @@
           <!-- content goes here -->
           <ParametricCoordinate
             :placeholder="coordinate.placeholder"
-            :i18nKey="coordinate.i18n_key"
-            :i18nToolTip="coordinate.i18nToolTip"
+            :label="coordinate.label"
+            :tooltip="coordinate.tooltip"
             :name="coordinate.name">
           </ParametricCoordinate>
         </template>
@@ -37,8 +37,7 @@ import ParametricCoordinate from "@/components/ParametricCoordinate.vue";
 
 const props = defineProps<{
   coordinateData: any[];
-
-  i18LabelKey: string;
+  label: string;
 }>();
 
 const expanded = ref(false);

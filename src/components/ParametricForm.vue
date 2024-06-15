@@ -19,7 +19,7 @@
             <v-col cols="12">
               <v-sheet rounded color="accent" :elevation="4" class="my-3">
                 <ParametricCoordinates
-                  i18LabelKey="objectTree.parametricCoordinates"
+                  :label="t('parametricCoordinates')"
                   :coordinateData="
                     parametricFormulaData
                   "></ParametricCoordinates>
@@ -30,7 +30,7 @@
             <v-col cols="12">
               <v-sheet rounded color="accent" :elevation="4" class="my-3">
                 <ParametricTracingExpressions
-                  i18LabelKey="objectTree.tExpressionData"
+                  :label="t('tExpressionData')"
                   :tExpressionData="
                     tExpressionData
                   "></ParametricTracingExpressions>
@@ -43,8 +43,8 @@
               <template v-for="(tVal, idk) in tNumberData" :key="idk">
                 <ParametricTNumber
                   :placeholder="tVal.placeholder"
-                  :i18nLabelKey="tVal.i18nLabelkey"
-                  :i18nToolTip="tVal.i18nToolTip"
+                  :label="tVal.label"
+                  :tooltip="tVal.tooltip"
                   :name="tVal.name"></ParametricTNumber>
               </template>
             </v-col>
@@ -53,8 +53,8 @@
             <v-col cols="12">
               <template>
                 <ParametricCuspParameterValues
-                  :i18nLabelKey="cusp.i18nLabelKey"
-                  :i18nToolTip="cusp.i18nToolTip"
+                  :label="cusp.label"
+                  :tooltip="cusp.tooltip"
                   :name="cusp.name"></ParametricCuspParameterValues>
               </template>
             </v-col>
@@ -110,7 +110,8 @@ import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPoint
 import { SEPoint } from "@/models/SEPoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 interface ParametricDataType {
   tMinNumber?: number;
   tMaxNumber?: number;
@@ -139,14 +140,14 @@ const tempVector1 = new Vector3();
 
 const tExpressionData = [
   {
-    i18nLabelkey: "objectTree.tMinExpression",
-    i18nToolTip: "objectTree.tMinExpressionTip",
+    label: t("tMinExpression"),
+    tooltip: t("tMinExpressionTip"),
     placeholder: "0",
     name: "tMinExpression"
   },
   {
-    i18nLabelkey: "objectTree.tMaxExpression",
-    i18nToolTip: "objectTree.tMaxExpressionTip",
+    label: t("tMaxExpression"),
+    tooltip: t("tMaxExpressionTip"),
     placeholder: "2*M1",
     name: "tMaxExpression"
   }
@@ -154,14 +155,14 @@ const tExpressionData = [
 
 const tNumberData = [
   {
-    i18nLabelkey: "objectTree.tMinNumber",
-    i18nToolTip: "objectTree.tMinNumberTip",
+    label: t("tMinNumber"),
+    tooltip: t("tMinNumberTip"),
     placeholder: "0",
     name: "tMinNumber"
   },
   {
-    i18nLabelkey: "objectTree.tMaxNumber",
-    i18nToolTip: "objectTree.tMaxNumberTip",
+    label: t("tMaxNumber"),
+    tooltip: t("tMaxNumberTip"),
     placeholder: "2*pi",
     name: "tMaxNumber"
   }
@@ -169,28 +170,28 @@ const tNumberData = [
 
 const parametricFormulaData = [
   {
-    i18n_key: "objectTree.xParametricCoordinate",
-    i18nToolTip: "objectTree.xCoordExpressionTip",
+    label: t("xParametricCoordinate"),
+    tooltip: t("xCoordExpressionTip"),
     placeholder: "sin(M1)*cos(t)",
     name: "xCoord"
   },
   {
-    i18n_key: "objectTree.yParametricCoordinate",
-    i18nToolTip: "objectTree.yCoordExpressionTip",
+    label: t("yParametricCoordinate"),
+    tooltip: t("yCoordExpressionTip"),
     placeholder: "sin(M1)*sin(t)",
     name: "yCoord"
   },
   {
-    i18n_key: "objectTree.zParametricCoordinate",
-    i18nToolTip: "objectTree.zCoordExpressionTip",
+    label: t("zParametricCoordinate"),
+    tooltip: t("zCoordExpressionTip"),
     placeholder: "cos(M1)",
     name: "zCoord"
   }
 ];
 
 const cusp = {
-  i18nLabelKey: "objectTree.cuspParameterValues",
-  i18nToolTip: "objectTree.cuspParameterValuesTip",
+  label: t("cuspParameterValues"),
+  tooltip: t("cuspParameterValuesTip"),
   name: "cuspParameterValues"
 };
 
@@ -480,7 +481,7 @@ function addParametricCurve(): void {
   });
   if (duplicateCurve) {
     EventBus.fire("show-alert", {
-      key: "objectTree.duplicateParametricCurve",
+      key: t("duplicateParametricCurve"),
       type: "error"
     });
     return;
@@ -489,7 +490,7 @@ function addParametricCurve(): void {
   // If  tMaxNumber is less than tMinNumber -- error!
   if (tNumbers.min >= tNumbers.max) {
     EventBus.fire("show-alert", {
-      key: "objectTree.tMinNotLessThantMax",
+      key: t("tMinNotLessThantMax"),
       type: "error"
     });
     return;
@@ -502,7 +503,7 @@ function addParametricCurve(): void {
     )
   ) {
     EventBus.fire("show-alert", {
-      key: "objectTree.cuspValuesOutOfBounds",
+      key: t("cuspValuesOutOfBounds"),
       type: "error"
     });
     return;
@@ -513,7 +514,7 @@ function addParametricCurve(): void {
     (tExpressions.min.length !== 0 && tExpressions.max.length === 0)
   ) {
     EventBus.fire("show-alert", {
-      key: "objectTree.exactlyOneEmptyTExpression",
+      key: t("exactlyOneEmptyTExpression"),
       type: "error"
     });
     return;
@@ -530,7 +531,7 @@ function addParametricCurve(): void {
   }
 
   // set up the map for the parser to evaluate the expressions
-  seExpressions.value.forEach((m) => {
+  seExpressions.value.forEach(m => {
     const measurementName = m.name;
     varMap.set(measurementName, m.value);
   });
@@ -539,8 +540,7 @@ function addParametricCurve(): void {
   const notUnitAtThisTValue = parametricCurveIsUnitCheck(tValues);
   if (notUnitAtThisTValue !== null) {
     EventBus.fire("show-alert", {
-      key: "objectTree.notAUnitParametricCurve",
-      keyOptions: { tVal: notUnitAtThisTValue },
+      key: t("notAUnitParametricCurve", { tVal: notUnitAtThisTValue }),
       type: "error"
     });
     return;
@@ -584,8 +584,7 @@ function addParametricCurve(): void {
     );
   } catch (err) {
     EventBus.fire("show-alert", {
-      key: "objectTree.unableToComputeTheDerivativeOf",
-      keyOptions: { error: err },
+      key: t("unableToComputeTheDerivativeOf", { error: err }),
       type: "error"
     });
     return;
@@ -859,3 +858,33 @@ function parametricCurveIsUnitCheck(tValues: number[]): null | number {
   return null;
 }
 </script>
+<i18n lang="json" locale="en">
+{
+  "currentTValue": "Current Value: ",
+  "cuspParameterValues": "Cusp t values (if any)",
+  "cuspParameterValuesTip": "The comma separated list of the t (each must be a number) values of the parameter (if any) where the parametric curve has cusps. If the curve is closed and their is a cusp point at the point of closure, include both the minimum and maximum parameter value.",
+  "cuspValuesOutOfBounds": "At least one of the cusp parameter values is not between the minimum and maximum parameter values. Check the cusp parameter values.",
+  "duplicateParametricCurve": "Duplicate parametric curves are not allowed.",
+  "exactlyOneEmptyTExpression": "Maximum and Minimum Parameter Tracing Expression must either both be empty or both be defined.",
+  "notAUnitParametricCurve": "Parametric curves must on the unit sphere; this curve was not unit at a t value of {tVal}. Check the coordinates of the parametric formulas.",
+  "parametricCoordinates": "Parametric Formulas",
+  "tExpressionData": "Optional Tracing Expressions",
+  "tMaxExpression": "Maximum Parameter Tracing Expression",
+  "tMaxExpressionTip": "An optional expression (that MUST depend on measurements tokens) that gives the ending t value when tracing the parametric curve. This value is always evaluated to be less than or equal to the maximum parameter value.",
+  "tMaxNumber": "Maximum parameter(t) Value",
+  "tMaxNumberTip": "A required absolute minimum t (must be a number) value for tracing the parametric curve that is the upper bound for the optional tMax Tracing Expression.",
+  "tMinExpression": "Minimum Parameter Tracing Expression",
+  "tMinExpressionTip": "An optional expression (that MUST depend on measurements tokens) that gives the starting t value when tracing the parametric curve. This value is always evaluated to be greater than or equal to the minimum parameter value.",
+  "tMinNotLessThantMax": "The minimum t value must be less than the maximum t value for at least one set of measurements. Change at least one t value expressions.",
+  "tMinNumber": "Minimum parameter(t) Value",
+  "tMinNumberTip": "A required absolute minimum t (must be a number) value for tracing the parametric curve that is the lower bound for the optional tMin Tracing Expression.",
+  "unableToComputeTheDerivativeOf": "We were unable to compute the derivative of one of the coordinate expressions. Error: {error}",
+  "xCoordExpressionTip": "An expression (possibly depending on measurement tokens) for the x coordinate for the parametric curve.",
+  "xParametricCoordinate": "X(t) formula",
+  "yCoordExpressionTip": "An expression (possibly depending on measurement tokens) for the y coordinate for the parametric curve.",
+  "yParametricCoordinate": "Y(t) formula",
+  "zCoordExpressionTip": "An expression (possibly depending on measurement tokens) for the z coordinate for the parametric curve.",
+  "zParametricCoordinate": "Z(t) formula",
+  "xx": "xxx"
+}
+</i18n>

@@ -134,7 +134,7 @@ function doTransformationEffect(): void {
         EventBus.fire("expand-measurement-sheet", {});
       } else {
         EventBus.fire("show-alert", {
-          key: "objectTree.createMeasurementForMeasuredCircle",
+          key: t("createMeasurementForMeasuredCircle"),
           type: "info"
         });
       }
@@ -146,7 +146,7 @@ function doTransformationEffect(): void {
         EventBus.fire("expand-measurement-sheet", {});
       } else {
         EventBus.fire("show-alert", {
-          key: "objectTree.createMeasurementForTranslation",
+          key: t("createMeasurementForTranslation",),
           type: "info"
         });
       }
@@ -159,7 +159,7 @@ function doTransformationEffect(): void {
         EventBus.fire("expand-measurement-sheet", {});
       } else {
         EventBus.fire("show-alert", {
-          key: "objectTree.createMeasurementForRotation",
+          key: t("createMeasurementForRotation"),
           type: "info"
         });
       }
@@ -274,6 +274,9 @@ const developerButtonList: ToolButtonType[] = [
   "TransformationTools": "Transformational Tools",
   "MeasurementTools": "Measurement Tools",
   "MeasuredObjectTools": "Measured Objects Tools",
+  "createMeasurementForMeasuredCircle": "Create a measurement to use as the radius of a measured circle.",
+  "createMeasurementForTranslation": "Create a measurement to use as the translation distance.",
+  "createMeasurementForRotation": "Create a measurement to use as the angle of rotation.",
   "DeveloperOnlyTools": "Developer Only Tools"
 }
 </i18n>

@@ -10,7 +10,7 @@
                 max-width="400px">
                 <template v-slot:activator="{ props }">
                   <v-textarea
-                    v-bind:label="$t(i18nKey)"
+                    v-bind:label="label"
                     v-bind="props"
                     auto-growdensity="compact"
                     variant="outlined"
@@ -24,7 +24,7 @@
                     @click:clear="reset">
                   </v-textarea>
                 </template>
-                {{ $t(i18nToolTip) }}
+                {{ tooltip }}
               </v-tooltip>
             </v-col>
           </v-row>
@@ -48,8 +48,8 @@ const seStore = useSEStore();
 const { seExpressions } = storeToRefs(seStore);
 const {t} = useI18n()
 const props = defineProps<{
-  i18nToolTip: string;
-  i18nKey: string;
+  tooltip: string;
+  label: string;
   placeholder: string;
   name: string;
 }>();

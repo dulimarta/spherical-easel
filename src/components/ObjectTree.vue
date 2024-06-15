@@ -2,46 +2,43 @@
   <div>
     <!-- this top level div is required, otherwise the style applied to id="topContainer" does not work -->
     <div id="topContainer">
-      <v-expansion-panels style="gap: 10px;padding-right: 8px;">
-      <v-expansion-panels>
-        <v-expansion-panel style="border-radius: 8px;">
-          <v-expansion-panel-title color="accent">
-            <h3 class="body-1 font-weight-bold button-group-heading">
-            {{ t("expression") }}
-            </h3>
-          </v-expansion-panel-title>
-          <v-expansion-panel-text>
-            <ExpressionForm></ExpressionForm>
-          </v-expansion-panel-text>
-        </v-expansion-panel>
-      </v-expansion-panels>
-      <v-expansion-panels>
-        <v-expansion-panel style="border-radius: 8px;">
-          <v-expansion-panel-title color="accent">
-            <h3 class="body-1 font-weight-bold button-group-heading">
-            {{ t("parametricCurves") }}
-          </h3>
-          </v-expansion-panel-title>
-          <v-expansion-panel-text>
-            <ParametricForm></ParametricForm>
-          </v-expansion-panel-text>
-        </v-expansion-panel>
-      </v-expansion-panels>
-      <v-expansion-panels>
-        <v-expansion-panel style="border-radius: 8px;padding-right: 8px;">
-          <v-expansion-panel-title color="accent">
-            <h3 class="body-1 font-weight-bold button-group-heading">
-            {{ t("slider") }}
-          </h3>
-          </v-expansion-panel-title>
-          <v-expansion-panel-text>
-            <SliderForm></SliderForm>
-          </v-expansion-panel-text>
-        </v-expansion-panel>
-      </v-expansion-panels>
-
-
-
+      <v-expansion-panels style="gap: 10px; padding-right: 8px">
+        <v-expansion-panels>
+          <v-expansion-panel style="border-radius: 8px">
+            <v-expansion-panel-title color="accent">
+              <h3 class="body-1 font-weight-bold button-group-heading">
+                {{ t("expression") }}
+              </h3>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <ExpressionForm></ExpressionForm>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
+        <v-expansion-panels>
+          <v-expansion-panel style="border-radius: 8px">
+            <v-expansion-panel-title color="accent">
+              <h3 class="body-1 font-weight-bold button-group-heading">
+                {{ t("parametricCurves") }}
+              </h3>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <ParametricForm></ParametricForm>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
+        <v-expansion-panels>
+          <v-expansion-panel style="border-radius: 8px; padding-right: 8px">
+            <v-expansion-panel-title color="accent">
+              <h3 class="body-1 font-weight-bold button-group-heading">
+                {{ t("slider") }}
+              </h3>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
+              <SliderForm></SliderForm>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
       </v-expansion-panels>
       <div class="ma-2 pa-1" id="objectTreeContainer">
         <v-sheet
@@ -141,7 +138,7 @@
           :elevation="4"
           class="my-3"
           v-show="calculations.length > 0">
-          <SENoduleList i18LabelKey="Calculations"
+          <SENoduleList label="Calculations"
             :children="calculations"
             @object-select="onExpressionSelect"></SENoduleList>
         </v-sheet-->
@@ -178,7 +175,7 @@ const {
   actionMode,
   seTransformations
 } = storeToRefs(seStore);
-const {t} = useI18n()
+const { t } = useI18n();
 let displayExpressionSheetAgain = true;
 const pointsKey = ref(0);
 
@@ -300,8 +297,8 @@ const showExpressionSheet = computed((): boolean => {
   "calculations": "Calculations | Calculation | Calculations | calculations",
   "circles": "Circles | Circle| Circles | circles",
   "createMeasurementForMeasuredCircle": "Create a measurement to use as the radius of a measured circle.",
-    "createMeasurementForTranslation": "Create a measurement to use as the translation distance.",
-    "createMeasurementForRotation": "Create a measurement to use as the angle of rotation.",
+  "createMeasurementForTranslation": "Create a measurement to use as the translation distance.",
+  "createMeasurementForRotation": "Create a measurement to use as the angle of rotation.",
   "ellipses": "Ellipses | Ellipse | Ellipses | ellipses",
   "expression": "Expression",
   "lines": "Lines | Line | Lines | lines",

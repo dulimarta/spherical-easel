@@ -8,14 +8,14 @@
           v-model="tValueExpression"
           v-bind="props"
           density="compact"
-          :label="$t(i18nLabelKey)"
+          :label="label"
           :placeholder="placeholder"
           :error-messages="parsingError"
           @keydown="onKeyPressed"
           variant="outlined"
           clearable></v-text-field>
       </template>
-      {{ $t(i18nToolTip) }}
+      {{ tooltip }}
     </v-tooltip>
   </div>
 </template>
@@ -24,11 +24,10 @@
 import { onMounted, ref } from "vue";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
-import SETTINGS from "@/global-settings";
 
 const props = defineProps<{
-  i18nToolTip: string;
-  i18nLabelKey: string;
+  tooltip: string;
+  label: string;
   placeholder: string;
   name: string;
 }>();

@@ -2,7 +2,7 @@
   <div>
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
     <div id="header" class="accent">
-      <span class="text-subtitle-1">{{ $t(i18LabelKey) }}</span>
+      <span class="text-subtitle-1">{{ label }}</span>
       <v-btn size="small" @click="expanded = !expanded">
         <v-icon v-if="!expanded">mdi-chevron-right</v-icon>
         <v-icon v-else>mdi-chevron-down</v-icon>
@@ -15,8 +15,8 @@
           <!-- content goes here -->
           <ParametricTExpression
             :placeholder="tVal.placeholder"
-            :i18nLabelKey="tVal.i18nLabelkey"
-            :i18nToolTip="tVal.i18nToolTip"
+            :label="tVal.label"
+            :tooltip="tVal.tooltip"
             :name="tVal.name">
           </ParametricTExpression>
         </template>
@@ -27,17 +27,11 @@
 
 <script lang="ts" setup>
 import Vue, { ref } from "vue";
-import { SENodule } from "../models/SENodule";
-import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
-import SENoduleItem from "@/components/SENoduleItem.vue";
-import SESliderItem from "@/components/SESliderItem.vue";
-import { SESlider } from "@/models/SESlider";
-import EventBus from "@/eventHandlers/EventBus";
 import ParametricTExpression from "@/components/ParametricTExpression.vue";
 
 const props = defineProps<{
   tExpressionData: any[];
-  i18LabelKey: string;
+  label: string;
 }>();
 
 const expanded = ref(false);
