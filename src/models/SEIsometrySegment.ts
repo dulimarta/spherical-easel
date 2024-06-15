@@ -1,13 +1,13 @@
 import { Vector3 } from "three";
 import {
   SEPoint,
-  SESegment,
   SETransformation,
   SETranslation,
   SERotation,
   SEReflection,
   SEPointReflection
 } from "./internal";
+import { SESegment } from "./SESegment";
 import { ObjectState, SEIsometry } from "@/types";
 import i18n from "@/i18n";
 // import { SESegment } from "./SESegment";

@@ -1,4 +1,5 @@
-import { SEPoint, SECircle, SELine, SEInversion } from "./internal";
+import { SEPoint } from "./SEPoint"
+import { SECircle, SELine, SEInversion } from "./internal";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { Vector3 } from "three";

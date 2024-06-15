@@ -1,5 +1,6 @@
 import { SENodule } from "./SENodule";
-import { SEPoint, SESegment } from "./internal";
+import { SEPoint } from "./SEPoint"
+import { SESegment } from "./SESegment";
 import { Matrix4, Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import i18n from "@/i18n";

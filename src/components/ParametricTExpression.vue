@@ -74,7 +74,7 @@ function addVarToExpr(param: any): void {
   console.debug(
     "Variable selected",
     param,
-    "Todo:  only add this varaible to the text area/ field that is in focus."
+    "Todo:  only add this variable to the text area/ field that is in focus."
   );
   // this.calcExpression += param;
   onKeyPressed();

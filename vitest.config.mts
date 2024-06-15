@@ -1,18 +1,18 @@
 /// <reference types="vitest" />
 
 import { defineConfig, mergeConfig } from "vitest/config";
-import viteConfig from "./vite.config";
+import viteConfig from "./vite.config.mts";
 import path from "path";
-import { castToVueI18n } from "vue-i18n";
+// import { castToVueI18n } from "vue-i18n";
 export default mergeConfig(
   viteConfig,
   defineConfig({
     root: "./src",
     test: {
       globals: true,
-      setupFiles: ["./vitest-setup.ts"],
+      setupFiles: ["./vitest-setup.mts"],
       environment: "jsdom",
-      include: ["**/expression-parser.spec.ts"],
+      include: ["**/parametric-coord.spec.ts"],
       server: {
         deps: {
           inline: ["vuetify", "vue-i18n"]

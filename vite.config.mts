@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import { resolve } from "path";
 import vue from "@vitejs/plugin-vue";
+import { fileURLToPath, URL } from "node:url";
 // import vueI18n from "@intlify/unplugin-vue-i18n";
 
 // import {createVuePlugin as vue} from "vite-plugin-vue2"
@@ -10,12 +11,9 @@ import vue from "@vitejs/plugin-vue";
 import VueI18nPlugin from "@intlify/unplugin-vue-i18n/vite";
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 export default defineConfig({
-  // define: {
-  //   'process.env': process.env
-  // },
   resolve: {
     alias: {
-      "@": resolve(__dirname, "./src")
+      "@": fileURLToPath(new URL("./src", import.meta.url))
       // vue: "@vue/compat"
     },
     extensions: [".mjs", ".js", ".ts", ".jsx", ".tsx", ".json", ".vue"]

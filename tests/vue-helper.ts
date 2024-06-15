@@ -1,4 +1,5 @@
 import { mount, shallowMount, VueWrapper } from "@vue/test-utils";
+import {createTestingPinia} from "@pinia/testing"
 // import { createI18n } from "vue-i18n";
 // import router from "@/router";
 // import VueRouter from "vue-router";
@@ -18,29 +19,35 @@ const vuetify = createVuetify({ components, directives });
 //   return { store, localVue };
 // };
 
-export const createWrapper = (
+global.ResizeObserver = require("resize-observer-polyfill");
+
+export function createWrapper(
   component: any,
-  { mountOptions = {}, mockOptions = {}, globalOptions = {} } = {},
+  { componentProps = {}, mockOptions = {}, globalOptions = {} } = {},
   isShallow = false
-): VueWrapper => {
+) {
   const configOption = {
-    i18n,
-    // store,
-    // router,
+    //   i18n,
+    //   // store,
+    //   // router,
     global: {
-      plugins: [vuetify, i18n],
-      mocks: {
-        t: vi.fn()
-      },
-      ...globalOptions,
-      ...mockOptions
+      plugins: [vuetify, i18n, createTestingPinia()]
+      //     mocks: {
+      //       t: vi.fn()
+      //     },
+      //     ...globalOptions,
+      //     ...mockOptions
     },
-    // attachToDocument: true,
-    ...mountOptions
+    //   // attachToDocument: true,
+    props: {
+      ...componentProps
+    }
   };
-  console.debug("Shallow mount?", isShallow);
-  console.debug("Config option ", configOption);
-  return isShallow
+  // console.debug("Shallow mount?", isShallow);
+  // console.debug("Config option ", configOption);
+  const z = isShallow
     ? shallowMount(component, configOption)
     : mount(component, configOption);
-};
+  // console.debug("Result of mounting", z);
+  return z;
+}

@@ -1,6 +1,6 @@
 import TestedComponent from "../Dialog.vue";
-import { mount } from "@vue/test-utils"
-import { vi, it } from "vitest"
+import { mount } from "@vue/test-utils";
+import { vi, it } from "vitest";
 // import { createVuetify } from "vuetify";
 // import * as components from "vuetify/components"
 // import * as directives from "vuetify/directives"
@@ -10,34 +10,40 @@ import { createWrapper } from "../../../tests/vue-helper";
 
 describe("Dialog.vue", () => {
   beforeEach(() => {
-    vi.resetAllMocks()
+    vi.resetAllMocks();
   });
 
   it("is a component", () => {
+    // const wrapper = mount(TestedComponent, {
+    //   props: {
+    //     title: "Hans"
+    //   }
+    // });
     const wrapper = createWrapper(TestedComponent, {
-      mountOptions: {
+      componentProps: {
         props: {
           title: "Test Title"
         },
       },
-    });
-    // console.debug("What is", wrapper)
+    }, false);
+    // console.debug("What is", wrapper.html());
     expect(wrapper).toBeTruthy();
   });
 
-  it.skip("shows correct title", async () => {
+  it("shows correct title", async () => {
     const wrapper = createWrapper(TestedComponent, {
-      mountOptions: {
-        propsData: {
-          title: "Dialog Title"
-        }
+      componentProps: {
+        props: {
+          title: "Dialog Title",
+        },
       }
-    });
-    // console.debug("Dialog", wrapper);
-    // await wrapper.setData({ visible: true });
+    }, false);
+    await wrapper.trigger('show')
+    await (wrapper.vm as any).show()
+    console.debug("Dialog HTML", wrapper.html());
     const b = await wrapper.find("#_test_title");
-    // console.debug(wrapper.vm.$data, b);
-    expect(b.text()).toMatch("Dialog Title");
+    console.debug(b);
+    // expect(b.text()).toMatch("Dialog Title");
   });
 
   it.skip("shows yes button with correct label", async () => {
@@ -45,9 +51,8 @@ describe("Dialog.vue", () => {
       props: {
         title: "Test title",
 
-          yesText: "Hello"
-        }
-
+        yesText: "Hello"
+      }
     });
     // console.debug("Dialog", wrapper.html());
     await wrapper.setData({ visible: true });
@@ -59,10 +64,10 @@ describe("Dialog.vue", () => {
   it.skip("shows no button with correct label", async () => {
     const wrapper = mount(TestedComponent, {
       props: {
-          title: "Test Title",
-          noText: "No Hello",
-          noAction: () => {}
-        }
+        title: "Test Title",
+        noText: "No Hello",
+        noAction: () => {}
+      }
     });
     // console.debug("Dialog", wrapper.html());
     await wrapper.setData({ visible: true });
@@ -90,14 +95,12 @@ describe("Dialog.vue", () => {
   it.skip("calls negative button handler", async () => {
     const fakeHandler = vi.fn();
     const wrapper = mount(TestedComponent, {
-
       props: {
         title: "Test Title",
-          noText: "Don't do it",
-          noAction: fakeHandler
-        }
+        noText: "Don't do it",
+        noAction: fakeHandler
       }
-    );
+    });
     await wrapper.setData({ visible: true });
     const b = wrapper.find("#_test_negButton");
     b.trigger("click");

@@ -1,7 +1,7 @@
 import { Vector3 } from "three";
+import { SELine } from "./SELine";
 import {
   SEPoint,
-  SELine,
   SETranslation,
   SERotation,
   SEReflection,

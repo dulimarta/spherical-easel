@@ -26,7 +26,8 @@ const sampleData = () => {
       preview: "data:image/png," + k,
       sphereRotationMatrix: new Matrix4(),
       version: "1",
-      tools: [] /* FIXME */
+      tools: [] /* FIXME */,
+      starCount: 0
     });
   }
   return arr;

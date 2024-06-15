@@ -1,11 +1,11 @@
 import {
-  SEPoint,
   SESegment,
   SELine,
   SECircle,
   SEEllipse,
   SENodule
 } from "./internal";
+import {SEPoint} from "./SEPoint"
 import { IntersectionReturnType, ObjectState, SEOneDimensional } from "@/types";
 import { intersectTwoObjects } from "@/utils/intersections";
 import i18n from "@/i18n";

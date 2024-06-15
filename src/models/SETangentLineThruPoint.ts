@@ -1,11 +1,11 @@
 import {
   SEPoint,
-  SELine,
   SECircle,
   SEEllipse,
   SEParametric,
   SENodule
 } from "./internal";
+import { SELine } from "./SELine";
 import { SEOneDimensionalNotStraight, ObjectState } from "@/types";
 // import { SELine } from "./SELine";
 import { Vector3 } from "three";

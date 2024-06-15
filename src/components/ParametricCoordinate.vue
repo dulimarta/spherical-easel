@@ -9,7 +9,7 @@
                 bottom
                 max-width="400px">
                 <template v-slot:activator="{ props }">
-                  <v-textarea
+                  <v-textarea id="__test_textarea"
                     v-bind:label="label"
                     v-bind="props"
                     auto-growdensity="compact"

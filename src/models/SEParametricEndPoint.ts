@@ -1,4 +1,5 @@
-import { SEPoint, SEParametric } from "./internal";
+import { SEPoint } from "./SEPoint"
+import { SEParametric } from "./SEParametric";
 import { Vector3 } from "three";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
