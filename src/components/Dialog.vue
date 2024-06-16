@@ -61,12 +61,9 @@ const noLabel = computed((): string => {
 
 function show(): void {
   visible.value = true;
-  // console.debug(`Dialog ${this.title} is active`);
-  // EventBus.fire("dialog-box-is-active", { active: true });
 }
 function hide(): void {
   visible.value = false;
-  // EventBus.fire("dialog-box-is-active", { active: false });
 }
 
 function hideLast(): void {

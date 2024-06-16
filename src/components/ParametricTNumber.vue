@@ -13,7 +13,7 @@
           :error-messages="parsingError"
           @keydown="onKeyPressed"
           variant="outlined"
-          clearable></v-text-field>
+          clearable @click:clear="reset"></v-text-field>
       </template>
       {{ tooltip }}
     </v-tooltip>
@@ -24,16 +24,17 @@
 import { onMounted, ref } from "vue";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
-
+import { useI18n } from "vue-i18n";
+const {t} = useI18n()
 const props = defineProps<{
   tooltip: string;
   label: string;
   placeholder: string;
-  name: string;
 }>();
 
 let parser = new ExpressionParser();
-const tValueExpression = ref("");
+// const tValueExpression = ref("");
+let tValueExpression = defineModel<string>({required: true})
 let tValueResult = 0;
 const parsingError = ref("");
 let timerInstance: number | null = null;
@@ -41,7 +42,7 @@ const varMap = new Map<string, number>();
 
 onMounted((): void => {
   EventBus.listen("measurement-selected", addVarToExpr);
-  EventBus.listen("parametric-clear-data", reset);
+  // EventBus.listen("parametric-clear-data", reset);
 });
 
 function reset(): void {
@@ -70,20 +71,14 @@ function onKeyPressed(): void {
           ? parser.evaluate(tValueExpression.value)
           : 0;
 
-      EventBus.fire("parametric-data-update", {
-        [props.name]: tValueResult
-      });
-
       EventBus.fire("test-t-value", { val: tValueResult });
 
       // console.debug("Calculation result is", calcResult);
     } catch (err: any) {
       // no code
+      const syntaxErr = err as SyntaxError
       console.debug("Got an error", err);
-      parsingError.value = err.message;
-      EventBus.fire("parametric-data-update", {
-        [props.name]: NaN
-      });
+      parsingError.value = t(syntaxErr.message, syntaxErr.cause as any)
       EventBus.fire("test-t-value", { val: 0 });
     }
   }, 1000);

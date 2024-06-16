@@ -19,6 +19,7 @@
             <v-col cols="12">
               <v-sheet rounded color="accent" :elevation="4" class="my-3">
                 <ParametricCoordinates
+                  v-model="xyzFormulaInput"
                   :label="t('parametricCoordinates')"
                   :coordinateData="
                     parametricFormulaData
@@ -30,6 +31,7 @@
             <v-col cols="12">
               <v-sheet rounded color="accent" :elevation="4" class="my-3">
                 <ParametricTracingExpressions
+                  v-model="tracingExpressionsInput"
                   :label="t('tExpressionData')"
                   :tExpressionData="
                     tExpressionData
@@ -42,21 +44,19 @@
             <v-col cols="12">
               <template v-for="(tVal, idk) in tNumberData" :key="idk">
                 <ParametricTNumber
+                  v-model.number="tNumbersInput[idk]"
                   :placeholder="tVal.placeholder"
                   :label="tVal.label"
-                  :tooltip="tVal.tooltip"
-                  :name="tVal.name"></ParametricTNumber>
+                  :tooltip="tVal.tooltip"></ParametricTNumber>
               </template>
             </v-col>
           </v-row>
           <v-row>
             <v-col cols="12">
-              <template>
-                <ParametricCuspParameterValues
-                  :label="cusp.label"
-                  :tooltip="cusp.tooltip"
-                  :name="cusp.name"></ParametricCuspParameterValues>
-              </template>
+              <ParametricCuspParameterValues
+                v-model="cuspInput"
+                :label="cusp.label"
+                :tooltip="cusp.tooltip"></ParametricCuspParameterValues>
             </v-col>
           </v-row>
         </v-container>
@@ -79,7 +79,14 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, onBeforeMount, onBeforeUnmount, onMounted } from "vue";
+import {
+  computed,
+  onBeforeMount,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch
+} from "vue";
 import {
   CoordExpression,
   MinMaxExpression,
@@ -112,16 +119,16 @@ import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
-interface ParametricDataType {
-  tMinNumber?: number;
-  tMaxNumber?: number;
-  tMinExpression?: string;
-  tMaxExpression?: string;
-  xCoord?: string;
-  yCoord?: string;
-  zCoord?: string;
-  cuspParameterValues?: number[];
-}
+// interface ParametricDataType {
+//   tMinNumber?: number;
+//   tMaxNumber?: number;
+//   tMinExpression?: string;
+//   tMaxExpression?: string;
+//   xCoord?: string;
+//   yCoord?: string;
+//   zCoord?: string;
+//   cuspParameterValues?: number[];
+// }
 
 const seStore = useSEStore();
 const { seExpressions, seParametrics } = storeToRefs(seStore);
@@ -132,7 +139,10 @@ let coordinateExpressions: CoordExpression = { x: "", y: "", z: "" };
 let tExpressions: MinMaxExpression = { min: "", max: "" };
 let tNumbers: MinMaxNumber = { min: NaN, max: NaN };
 let c1DiscontinuityParameterValues: number[] = [];
-
+const xyzFormulaInput = ref(["", "", ""]);
+const tNumbersInput = ref(["", ""]);
+const tracingExpressionsInput = ref(["", ""]);
+const cuspInput = ref("");
 let parser = new ExpressionParser();
 const varMap = new Map<string, number>();
 const tempVector = new Vector3();
@@ -143,13 +153,13 @@ const tExpressionData = [
     label: t("tMinExpression"),
     tooltip: t("tMinExpressionTip"),
     placeholder: "0",
-    name: "tMinExpression"
+    // name: t("tMinExpression")
   },
   {
     label: t("tMaxExpression"),
     tooltip: t("tMaxExpressionTip"),
     placeholder: "2*M1",
-    name: "tMaxExpression"
+    // name: t("tMaxExpression")
   }
 ];
 
@@ -158,13 +168,13 @@ const tNumberData = [
     label: t("tMinNumber"),
     tooltip: t("tMinNumberTip"),
     placeholder: "0",
-    name: "tMinNumber"
+    // name: "tMinNumber"
   },
   {
     label: t("tMaxNumber"),
     tooltip: t("tMaxNumberTip"),
     placeholder: "2*pi",
-    name: "tMaxNumber"
+    // name: "tMaxNumber"
   }
 ];
 
@@ -173,34 +183,50 @@ const parametricFormulaData = [
     label: t("xParametricCoordinate"),
     tooltip: t("xCoordExpressionTip"),
     placeholder: "sin(M1)*cos(t)",
-    name: "xCoord"
+    // name: "xCoord"
   },
   {
     label: t("yParametricCoordinate"),
     tooltip: t("yCoordExpressionTip"),
     placeholder: "sin(M1)*sin(t)",
-    name: "yCoord"
+    // name: "yCoord"
   },
   {
     label: t("zParametricCoordinate"),
     tooltip: t("zCoordExpressionTip"),
     placeholder: "cos(M1)",
-    name: "zCoord"
+    // name: "zCoord"
   }
 ];
 
 const cusp = {
   label: t("cuspParameterValues"),
   tooltip: t("cuspParameterValuesTip"),
-  name: "cuspParameterValues"
+  // name: "cuspParameterValues"
 };
 
 onBeforeMount((): void => {
   window.addEventListener("keydown", keyHandler);
 });
-onMounted((): void => {
-  EventBus.listen("parametric-data-update", processParameticData);
-});
+
+watch(
+  [
+    () => xyzFormulaInput.value,
+    () => tNumbersInput.value,
+    () => tracingExpressionsInput.value,
+    () => cuspInput.value
+  ],
+  ([formulaArray, tValArr, tracingArr, cuspValues]) => {
+    coordinateExpressions.x = formulaArray[0];
+    coordinateExpressions.y = formulaArray[1];
+    coordinateExpressions.z = formulaArray[2];
+    tNumbers.min = Number(tValArr[0]);
+    tNumbers.max = Number(tValArr[1]);
+    tExpressions.min = tracingArr[0];
+    tExpressions.max = tracingArr[1];
+    c1DiscontinuityParameterValues.push(...cuspValues.split(",").map(Number));
+  }
+);
 
 const inProductionMode = computed((): boolean => {
   return import.meta.env.MODE === "production";
@@ -427,35 +453,6 @@ function setTrochoidExpressions(): void {
 onBeforeUnmount((): void => {
   window.removeEventListener("keydown", keyHandler);
 });
-
-function processParameticData(obj: ParametricDataType): void {
-  if (obj.tMinNumber !== undefined) {
-    tNumbers.min = obj.tMinNumber;
-  }
-  if (obj.tMaxNumber !== undefined) {
-    tNumbers.max = obj.tMaxNumber;
-  }
-  if (obj.tMinExpression !== undefined) {
-    tExpressions.min = obj.tMinExpression;
-  }
-  if (obj.tMaxExpression !== undefined) {
-    tExpressions.max = obj.tMaxExpression;
-  }
-  if (obj.xCoord !== undefined) {
-    coordinateExpressions.x = obj.xCoord;
-  }
-  if (obj.yCoord !== undefined) {
-    coordinateExpressions.y = obj.yCoord;
-  }
-  if (obj.zCoord !== undefined) {
-    coordinateExpressions.z = obj.zCoord;
-  }
-  if (obj.cuspParameterValues !== undefined) {
-    // c1DiscontinuityParameterValues.splice(0);
-    c1DiscontinuityParameterValues.push(...obj.cuspParameterValues);
-    console.log("cusp", c1DiscontinuityParameterValues);
-  }
-}
 
 const disableAddParametricButton = computed((): boolean => {
   return (

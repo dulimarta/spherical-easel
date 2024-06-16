@@ -15,31 +15,34 @@
           <!-- content goes here -->
           <ParametricCoordinate
             :placeholder="coordinate.placeholder"
+            v-model="formula[idk]"
             :label="coordinate.label"
             :tooltip="coordinate.tooltip"
-            :name="coordinate.name">
-          </ParametricCoordinate>
+            :name="coordinate.name"></ParametricCoordinate>
         </template>
       </div>
     </transition>
   </div>
 </template>
 
+<script lang="ts">
+</script>
 <script lang="ts" setup>
-import { ref } from "vue";
-// import { SENodule } from "../models/SENodule";
-// import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
-// import SENoduleItem from "@/components/SENoduleItem.vue";
-// import SESliderItem from "@/components/SESliderItem.vue";
-// import { SESlider } from "@/models/SESlider";
-// import EventBus from "@/eventHandlers/EventBus";
+import { ref, Ref } from "vue";
 import ParametricCoordinate from "@/components/ParametricCoordinate.vue";
 
 const props = defineProps<{
   coordinateData: any[];
   label: string;
 }>();
+// const formula: Ref<Array<string>> = ref(
+//   Array.from({ length: props.coordinateData.length }, () => "SE")
+// );
 
+let formula = defineModel<Array<string>>({
+  required: true, default:
+    Array.from({length: 3}, () => "")
+})
 const expanded = ref(false);
 
 // get hasExistingChildren(): boolean {

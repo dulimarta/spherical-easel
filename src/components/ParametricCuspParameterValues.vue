@@ -1,46 +1,40 @@
 <template>
-  <div>
-    <v-tooltip
-      bottom
-      max-width="400px">
-      <template v-slot:activator="{ props }">
-        <v-text-field
-          v-model="tValueExpression"
-          v-bind="props"
-          density="compact"
-          :label="label"
-          :error-messages="parsingError"
-          @keydown="onKeyPressed"
-          variant="outlined"
-          clearable></v-text-field>
-      </template>
-      {{ tooltip }}
-    </v-tooltip>
-  </div>
+  <v-tooltip bottom max-width="400px">
+    <template v-slot:activator="{ props }">
+      <v-text-field
+        v-model="tValueExpression"
+        v-bind="props"
+        density="compact"
+        :label="label"
+        :error-messages="parsingError"
+        @keydown="onKeyPressed"
+        variant="outlined"
+        clearable
+        @click:clear="reset"></v-text-field>
+    </template>
+    {{ tooltip }}
+  </v-tooltip>
 </template>
 <script lang="ts" setup>
 import Vue, { onMounted, ref } from "vue";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
-import SETTINGS from "@/global-settings";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 const props = defineProps<{
   tooltip: string;
-
   label: string;
-
-  name: string;
 }>();
 
 let parser = new ExpressionParser();
-const tValueExpression = ref("");
+let tValueExpression = defineModel<string>({ required: true });
 let tValueResults: number[] = [];
 const parsingError = ref("");
 let timerInstance: ReturnType<typeof setTimeout> | null = null;
 
 onMounted((): void => {
   EventBus.listen("measurement-selected", addVarToExpr.bind(this));
-  EventBus.listen("parametric-clear-data", reset);
 });
 
 function reset(): void {
@@ -71,13 +65,11 @@ function onKeyPressed(): void {
           tValueResults[ind] = parser.evaluate(str);
         });
       }
-      EventBus.fire("parametric-data-update", {
-        name: tValueResults
-      });
     } catch (err: any) {
       // no code
-      console.debug("Got an error", err);
-      parsingError.value = err.message;
+      const syntaxErr = err as SyntaxError;
+      // console.debug("Got an error", err);
+      parsingError.value = t(syntaxErr.message, syntaxErr.cause as any);
     }
   }, 1000);
 }

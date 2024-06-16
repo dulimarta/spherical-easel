@@ -14,11 +14,11 @@
         <template v-for="(tVal, idk) in tExpressionData" :key="idk + 2">
           <!-- content goes here -->
           <ParametricTExpression
+            v-model="tExpressions[idk]"
             :placeholder="tVal.placeholder"
             :label="tVal.label"
             :tooltip="tVal.tooltip"
-            :name="tVal.name">
-          </ParametricTExpression>
+            :name="tVal.name"></ParametricTExpression>
         </template>
       </div>
     </transition>
@@ -29,6 +29,7 @@
 import Vue, { ref } from "vue";
 import ParametricTExpression from "@/components/ParametricTExpression.vue";
 
+let tExpressions = defineModel<Array<string>>({ required: true });
 const props = defineProps<{
   tExpressionData: any[];
   label: string;
