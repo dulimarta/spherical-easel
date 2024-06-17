@@ -36,7 +36,6 @@ import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from "vue";
 import { SENodule } from "../models/SENodule";
 import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
 import SENoduleItem from "@/components/SENoduleItem.vue";
-import SESliderItem from "@/components/SESliderItem.vue";
 import { SESlider } from "@/models/SESlider";
 import EventBus from "@/eventHandlers/EventBus";
 import { useSEStore } from "@/stores/se";
