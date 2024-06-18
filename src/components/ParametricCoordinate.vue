@@ -74,7 +74,6 @@ function addVarToExpr(param: any): void {
 }
 
 function onKeyPressed(): void {
-  console.debug("Key press", seExpressions);
   parsingError.value = "";
   if (timerInstance) clearTimeout(timerInstance);
   timerInstance = setTimeout(() => {

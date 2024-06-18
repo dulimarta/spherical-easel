@@ -9,6 +9,7 @@ import { useSEStore } from "../../stores/se";
 import { setActivePinia, createPinia } from "pinia";
 import { SECalculation } from "../../models/SECalculation";
 import { createTestingPinia } from "@pinia/testing";
+import { SEExpression } from "../../models/SEExpression";
 const vuetify = createVuetify({ components, directives });
 global.ResizeObserver = require("resize-observer-polyfill");
 
@@ -88,20 +89,22 @@ describe("ParametricCoord.vue with input", () => {
 describe("ParametricCoord.vue with store access", () => {
   let testPinia
   beforeEach(() => {
-    const c1 = new SECalculation("");
-    testPinia = createTestingPinia({
+    testPinia = createTestingPinia({stubActions: false,
       initialState: {
-        se: {
-          seExpressions: [c1]
-        }
+        // se: {
+        //   seExpressionIds: [c1.id],
+        //   seExpressionMap: aMap
+        // }
       }
     });
     setActivePinia(testPinia);
     vi.useFakeTimers()
   });
-  it("refers to SEExpressions", async () => {
-    // const testPinia =
-    // store.addExpression(c1)
+
+  it("inspects variables in the Pinia store", async () => {
+    const s = useSEStore(testPinia)
+    await s.addExpression(new SECalculation("")) // This creates a new expression M1
+
     const wrapper = mount(TestedComponent, {
       global: {
         plugins: [vuetify, testPinia]
@@ -113,10 +116,6 @@ describe("ParametricCoord.vue with store access", () => {
         modelValue: "50 * M1 + 1.12"
       }
     });
-    // console.debug("Testing pinia", testPinia)
-    // const store = useSEStore(testPinia);
-    // await store.addExpression(c1)
-    // console.debug("Exprs", store.seExpressions);
     const textArea = wrapper.find("#__test_textarea");
     await textArea.trigger("keydown.enter");
     // Wait for the setTimeout to work
