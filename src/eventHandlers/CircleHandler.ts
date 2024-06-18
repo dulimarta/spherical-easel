@@ -15,8 +15,8 @@ import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDi
 import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
-import Two from "two.js";
-//import { Group } from "two.js/src/group";
+// import Two from "two.js";
+import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
@@ -72,7 +72,7 @@ export default class CircleHandler extends Highlighter {
     null;
   protected snapTemporaryPointMarkerToPoint: SEPoint | null = null;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     this.centerVector = new Vector3();
     this.temporaryCircle = new Circle();

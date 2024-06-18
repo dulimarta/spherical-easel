@@ -1,18 +1,20 @@
-import Two from "two.js";
+
 import Highlighter from "./Highlighter";
 import { SESegment } from "@/models/SESegment";
 import EventBus from "@/eventHandlers/EventBus";
 import { SELine } from "@/models/SELine";
 import { SEReflection } from "@/models/SEReflection";
 import { AddReflectionCommand } from "@/commands/AddReflectionCommand";
-// import { Group } from "two.js/src/group";
+import Two from "two.js";
+import { Group } from "two.js/src/group";
+
 export default class ReflectionTransformationHandler extends Highlighter {
   /**
    * Segment to measure
    */
   private targetLineOrSegment: SESegment | SELine | null = null;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
   }
 

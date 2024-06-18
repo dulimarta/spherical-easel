@@ -9,10 +9,10 @@ import {
   DEFAULT_POINT_FRONT_STYLE,
   DEFAULT_POINT_BACK_STYLE
 } from "@/types/Styles";
-import Two from "two.js";
-// import { Vector } from "two.js/src/vector";
-// import { Circle } from "two.js/src/shapes/circle";
-// import { Group } from "two.js/src/group";
+//import Two from "two.js";
+import { Vector } from "two.js/src/vector";
+import { Circle } from "two.js/src/shapes/circle";
+import { Group } from "two.js/src/group";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -28,7 +28,7 @@ export default class Point extends Nodule {
    * The sign of the z coordinate indicates if the Point is on the back of the sphere
    */
   public _locationVector = new Vector3(1, 0, 0);
-  public defaultScreenVectorLocation = new Two.Vector(1, 0);
+  public defaultScreenVectorLocation = new Vector(1, 0);
 
   /**
    * The TwoJS objects that are used to display the point.
@@ -36,10 +36,11 @@ export default class Point extends Nodule {
    * The companion glowing objects are also declared, they are always larger than there
    * drawn counterparts so that a glowing edge shows.
    */
-  protected frontPoint: Two.Circle;
-  protected backPoint: Two.Circle;
-  protected glowingFrontPoint: Two.Circle;
-  protected glowingBackPoint: Two.Circle;
+
+  protected frontPoint: Circle;
+  protected backPoint: Circle;
+  protected glowingFrontPoint: Circle;
+  protected glowingBackPoint: Circle;
 
   /**
    * The styling variables for the drawn point. The user can modify these.
@@ -70,16 +71,15 @@ export default class Point extends Nodule {
 
   constructor(noduleName: string = "None") {
     super(noduleName);
-
     //Create the front/back/glowing/drawn TwoJS objects of the default size
-    this.frontPoint = new Two.Circle(0, 0, SETTINGS.point.drawn.radius.front);
-    this.backPoint = new Two.Circle(0, 0, SETTINGS.point.drawn.radius.back);
-    this.glowingFrontPoint = new Two.Circle(
+    this.frontPoint = new Circle(0, 0, SETTINGS.point.drawn.radius.front);
+    this.backPoint = new Circle(0, 0, SETTINGS.point.drawn.radius.back);
+    this.glowingFrontPoint = new Circle(
       0,
       0,
       SETTINGS.point.drawn.radius.front + SETTINGS.point.glowing.annularWidth
     );
-    this.glowingBackPoint = new Two.Circle(
+    this.glowingBackPoint = new Circle(
       0,
       0,
       SETTINGS.point.drawn.radius.back + SETTINGS.point.glowing.annularWidth
@@ -206,7 +206,7 @@ export default class Point extends Nodule {
     }
   }
 
-  addToLayers(layers: Two.Group[]): void {
+  addToLayers(layers: Group[]): void {
     this.frontPoint.addTo(layers[LAYER.foregroundPoints]);
     this.glowingFrontPoint.addTo(layers[LAYER.foregroundPointsGlowing]);
     this.backPoint.addTo(layers[LAYER.backgroundPoints]);

@@ -10,8 +10,8 @@ import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import EventBus from "./EventBus";
 import { SEOneOrTwoDimensional } from "@/types";
-import Two from "two.js";
-// import { Group } from "two.js/src/group";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
@@ -30,7 +30,7 @@ export default class PointHandler extends Highlighter {
   /* temporary vector to help with computation */
   private tmpVector = new Vector3();
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     // Create and style the temporary points marking the object being created
     this.startMarker = new Point();

@@ -23,8 +23,8 @@ import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceM
 import { SERotation } from "@/models/SERotation";
 import { AddRotationCommand } from "@/commands/AddRotationCommand";
 import { Vector3 } from "three";
-import Two from "two.js";
-// import { Group } from "two.js/src/group";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
@@ -66,7 +66,7 @@ export default class RotationTransformationHandler extends Highlighter {
   private tmpVector = new Vector3();
   private tmpVector1 = new Vector3();
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
 
     // Create and style the temporary points marking the start/end of an object being created

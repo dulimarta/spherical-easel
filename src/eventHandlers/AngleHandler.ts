@@ -16,8 +16,8 @@ import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDi
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AngleMode } from "@/types";
 import { AddAngleMarkerCommand } from "@/commands/AddAngleMarkerAndExpressionCommand";
-import Two from "two.js";
-//import { Group } from "two.js/src/group";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
@@ -117,7 +117,7 @@ export default class AngleHandler extends Highlighter {
    */
   private makingAnAngleMarker = false;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     // console.log("AngleHandler ctor");
 

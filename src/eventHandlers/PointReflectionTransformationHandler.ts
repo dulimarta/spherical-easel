@@ -13,8 +13,8 @@ import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDi
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import SETTINGS from "@/global-settings";
-import Two from "two.js";
-// import { Group } from "two.js/src/group";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
@@ -47,7 +47,7 @@ export default class PointReflectionTransformationHandler extends Highlighter {
   private tmpVector = new Vector3();
   private tmpVector1 = new Vector3();
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
 
     // Create and style the temporary points marking the start/end of an object being created

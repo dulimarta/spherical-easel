@@ -4,7 +4,8 @@ import SETTINGS from "@/global-settings";
 import { StyleOptions, StyleCategory } from "@/types/Styles";
 import { hslaColorType, plottableProperties } from "@/types";
 import { Vector3 } from "three";
-import Two from "two.js";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 import Color from "color";
 
 export enum DisplayStyle {
@@ -58,12 +59,12 @@ export default abstract class Nodule implements Stylable, Resizeable {
    * Add various TwoJS (SVG) elements of this nodule to appropriate layers
    * @param {Group[]} layers
    */
-  abstract addToLayers(layers: Two.Group[]): void;
+  abstract addToLayers(layers: Group[]): void;
 
   /**
    * This operation reverses the action performed by addToLayers()
    */
-  abstract removeFromLayers(layers?: Two.Group[]): void;
+  abstract removeFromLayers(layers?: Group[]): void;
 
   /**This operation constraint the visual properties (linewidth, circle size, etc) when the view is zoomed in/out */
   abstract adjustSize(): void;

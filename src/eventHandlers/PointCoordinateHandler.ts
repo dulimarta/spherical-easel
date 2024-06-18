@@ -1,4 +1,4 @@
-import Two from "two.js";
+
 import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
@@ -15,14 +15,15 @@ import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleCategory } from "@/types/Styles";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-// import { Group } from "two.js/src/group";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 export default class PointCoordinateHandler extends Highlighter {
   /**
    * Point to inspect its coordinate
    */
   private targetPoint: SEPoint | null = null;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
   }
 

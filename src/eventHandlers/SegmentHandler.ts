@@ -15,8 +15,8 @@ import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
-import Two from "two.js";
-// import { Group } from "two.js/src/group";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
@@ -98,7 +98,7 @@ export default class SegmentHandler extends Highlighter {
    * Make a segment handler
    * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
    */
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     this.temporarySegment = new Segment();
     SegmentHandler.store.addTemporaryNodule(this.temporarySegment);

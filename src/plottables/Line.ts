@@ -1,4 +1,4 @@
-import { Vector3, Matrix4 } from "three";
+import { Vector3 } from "three";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
@@ -7,13 +7,16 @@ import {
   DEFAULT_LINE_FRONT_STYLE,
   DEFAULT_LINE_BACK_STYLE
 } from "@/types/Styles";
-import Two from "two.js";
-// import { Path } from "two.js/src/path";
-// import { Anchor } from "two.js/src/anchor";
-// import { Group } from "two.js/src/group";
+//import Two from "two.js";
+//import { Path } from "two.js/src/path";
+import { Arc } from "two.js/extras/js/arc"
+import { Vector } from "two.js/src/vector";
+import { Group } from "two.js/src/group";
 
 // The number of vectors used to render the front half (and the same number in the back half)
 const SUBDIVS = SETTINGS.line.numPoints;
+// The radius of the sphere on the screen
+const radius = SETTINGS.boundaryCircle.radius;
 
 /**
  * A line
@@ -33,25 +36,17 @@ export default class Line extends Nodule {
    * calculations in this class are only for the purpose of rendering the line.
    */
 
-  /**
-   * A line has half on the front and half on the back.There are glowing counterparts for each part.
-   */
-  protected frontHalf: Two.Path;
-  protected backHalf: Two.Path;
-  protected glowingFrontHalf: Two.Path;
-  protected glowingBackHalf: Two.Path;
-
-  // /**
-  //  * What are these for?
-  //  */
-  // private backArcLen = 0;
-  // private frontArcLen = 0;
+  /** The normal vector determines the rotation and minor axis length of the displayed ellipse */
+  private _rotation: number;
+  private _halfMinorAxis: number;
 
   /**
-   * A list of Vector3s that trace the the equator of the sphere
+   * A line has half on the front and half on the back. There are glowing counterparts for each part.
    */
-
-  private points: Vector3[];
+  protected frontHalf: Arc;
+  protected backHalf: Arc;
+  protected glowingFrontHalf: Arc;
+  protected glowingBackHalf: Arc;
 
   /**
    * The styling variables for the drawn segment. The user can modify these.
@@ -80,37 +75,14 @@ export default class Line extends Nodule {
     Line.currentGlowingLineStrokeWidthBack *= factor;
   }
 
-  /** Temporary ThreeJS objects for computing */
-  private tmpVector = new Vector3();
-  private desiredXAxis = new Vector3();
-  private desiredYAxis = new Vector3();
-  private transformMatrix = new Matrix4();
   constructor(noduleName: string = "None") {
     super(noduleName);
-
-    const radius = SETTINGS.boundaryCircle.radius;
-    const vertices: Two.Vector[] = [];
-    const glowingVertices: Two.Vector[] = [];
-
-    // Generate 2D coordinates of a half circle
-    for (let k = 0; k < SUBDIVS; k++) {
-      const angle = (k * Math.PI) / SUBDIVS;
-      const px = radius * Math.cos(angle);
-      const py = radius * Math.sin(angle);
-      vertices.push(new Two.Vector(px, py));
-      glowingVertices.push(new Two.Vector(px, py));
-    }
-
-    this.frontHalf = new Two.Path(
-      vertices,
-      /* closed */ false,
-      /* curve */ false
-    );
-
-    // Create the back half, glowing front half, glowing back half circle by cloning the front half
-    this.backHalf = this.frontHalf.clone();
-    this.glowingBackHalf = this.frontHalf.clone();
+    this.frontHalf = new Arc(0,0,radius,radius,0,Math.PI,SUBDIVS);
     this.glowingFrontHalf = this.frontHalf.clone();
+    // Create the back half, glowing front half, glowing back half circle by cloning the front half
+    this.backHalf =  new Arc(0,0,radius,radius,Math.PI,2*Math.PI,SUBDIVS);
+    this.glowingBackHalf = this.backHalf.clone();
+
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontHalf.id), {
@@ -141,20 +113,27 @@ export default class Line extends Nodule {
     // Be sure to clone() the incoming start and end points
     // Otherwise update by other Line will affect this one!
     this._normalVector = new Vector3();
-    // this.normalDirection.crossVectors(this.start, this.end);
-    // The back half will be dynamically added to the group
+    //Let \[Beta]  be the angle between the north pole NP= <0,0,1> and the unit normal vector (with z coordinate positive), then cos(\[Beta]) is half the minor axis.
+    //Note:
+    //  0 <= \[Beta] <= \[Pi]/2.
+    //  _normalVector.z = NP._normalVector = |NP||_normalVector|cos(\[Beta])= cos(\[Beta])
+    this._halfMinorAxis = this._normalVector.z
 
-    // Generate 3D coordinates of the entire line in a standard position -- the equator of the Default Sphere
-    this.points = [];
-    for (let k = 0; k < 2 * SUBDIVS; k++) {
-      const angle = (2 * k * Math.PI) / (2 * SUBDIVS);
-      const px = radius * Math.cos(angle);
-      const py = radius * Math.sin(angle);
-      this.points.push(new Vector3(px, py, 0));
-    }
+    //Let \[Theta] be the angle between the vector <0,1> and <n_x,n_y>, then \[Theta] is the angle of rotation. I think that \[Theta] = ATan2(n_x,n_y) (measured clockwise)
+    this._rotation = 0; //Initially the normal vector is <0,0,1> so the rotation is 0 in general the rotation angle is
 
     this.styleOptions.set(StyleCategory.Front, DEFAULT_LINE_FRONT_STYLE);
     this.styleOptions.set(StyleCategory.Back, DEFAULT_LINE_BACK_STYLE);
+  }
+
+  /**
+   * This is the only vector that needs to be set in order to render the line.  This also updates the display
+   */
+  set normalVector(dir: Vector3) {
+    this._normalVector.copy(dir).normalize();
+    this._halfMinorAxis = this._normalVector.z
+    this._rotation = Math.atan2(this._normalVector.x,this._normalVector.y) // not a typo because we are measuring off of the positive y axis in the screen plane
+    this.updateDisplay();
   }
 
   frontGlowingDisplay(): void {
@@ -188,94 +167,95 @@ export default class Line extends Nodule {
   }
 
   /**
-   * Update the display of line by Reorient the unit circle in 3D and then project the points to 2D
-   * Reorient the unit circle in 3D and then project the points to 2D
+   * Update the display of line
    * This method updates the TwoJS objects (frontHalf, backHalf, ...) for display
-   * This is only accurate if the normal vector are correct so only
+   * This is only accurate if the normal vector is correct so only
    * call this method once that vector is updated.
    */
   public updateDisplay(): void {
-    //Form the X Axis perpendicular to the normalDirection, this is where the plotting will start.
-    this.desiredXAxis
-      .set(-this._normalVector.y, this._normalVector.x, 0)
-      .normalize();
+    this.frontHalf.rotation= this._rotation
+    this.glowingFrontHalf.rotation = this._rotation
+    this.backHalf.rotation = this._rotation
+    this.glowingBackHalf.rotation = this._rotation
 
-    // Form the Y axis perpendicular to the normal vector and the XAxis
-    this.desiredYAxis.crossVectors(this._normalVector, this.desiredXAxis)
-      .normalize;
-    // Form the transformation matrix that will map the vectors along the equation of the Default Sphere to
-    // to the current position of the line.
-    this.transformMatrix.makeBasis(
-      this.desiredXAxis,
-      this.desiredYAxis,
-      this._normalVector
-    );
+    this.frontHalf.height = radius*this._halfMinorAxis
+    this.glowingFrontHalf.height = radius*this._halfMinorAxis
+    this.backHalf.height = radius*this._halfMinorAxis
+    this.glowingBackHalf.height = radius*this._halfMinorAxis
 
-    // Variables to keep track of when the z coordinate of the transformed object changes sign
-    let firstPos = -1;
-    let posIndex = 0;
-    let firstNeg = -1;
-    let negIndex = 0;
-    let lastSign = 0;
+    // //Form the X Axis perpendicular to the normalDirection, this is where the plotting will start.
+    // this.desiredXAxis
+    //   .set(-this._normalVector.y, this._normalVector.x, 0)
+    //   .normalize();
 
-    this.points.forEach((v, pos) => {
-      // v is a vector location on the equator of the Default Sphere
-      this.tmpVector.copy(v);
-      // Transform that vector to one on the current segment
-      this.tmpVector.applyMatrix4(this.transformMatrix);
-      const thisSign = Math.sign(this.tmpVector.z);
-      if (lastSign !== thisSign) {
-        // We have a zero crossing
-        if (thisSign > 0) firstPos = pos;
-        if (thisSign < 0) firstNeg = pos;
-      }
-      lastSign = thisSign;
-      if (this.tmpVector.z > 0) {
-        if (posIndex === this.frontHalf.vertices.length) {
-          let extra: Two.Anchor | undefined;
-          extra = this.backHalf.vertices.pop();
-          if (extra) this.frontHalf.vertices.push(extra);
-          extra = this.glowingBackHalf.vertices.pop();
-          if (extra) this.glowingFrontHalf.vertices.push(extra);
-        }
-        this.frontHalf.vertices[posIndex].x = this.tmpVector.x;
-        this.frontHalf.vertices[posIndex].y = this.tmpVector.y;
-        this.glowingFrontHalf.vertices[posIndex].x = this.tmpVector.x;
-        this.glowingFrontHalf.vertices[posIndex].y = this.tmpVector.y;
-        posIndex++;
-      } else {
-        if (negIndex === this.backHalf.vertices.length) {
-          let extra: Two.Anchor | undefined;
-          extra = this.frontHalf.vertices.pop();
-          if (extra) this.backHalf.vertices.push(extra);
-          extra = this.glowingFrontHalf.vertices.pop();
-          if (extra) this.glowingBackHalf.vertices.push(extra);
-        }
-        this.backHalf.vertices[negIndex].x = this.tmpVector.x;
-        this.backHalf.vertices[negIndex].y = this.tmpVector.y;
-        this.glowingBackHalf.vertices[negIndex].x = this.tmpVector.x;
-        this.glowingBackHalf.vertices[negIndex].y = this.tmpVector.y;
-        negIndex++;
-      }
-    });
-    if (0 < firstPos && firstPos < SUBDIVS) {
-      // Gap in backhalf
-      this.backHalf.vertices.rotate(firstPos);
-      this.glowingBackHalf.vertices.rotate(firstPos);
-    }
-    if (0 < firstNeg && firstNeg < SUBDIVS) {
-      // Gap in fronthalf
-      this.frontHalf.vertices.rotate(firstNeg);
-      this.glowingFrontHalf.vertices.rotate(firstNeg);
-    }
-  }
+    // // Form the Y axis perpendicular to the normal vector and the XAxis
+    // this.desiredYAxis.crossVectors(this._normalVector, this.desiredXAxis)
+    //   .normalize;
+    // // Form the transformation matrix that will map the vectors along the equation of the Default Sphere to
+    // // to the current position of the line.
+    // this.transformMatrix.makeBasis(
+    //   this.desiredXAxis,
+    //   this.desiredYAxis,
+    //   this._normalVector
+    // );
 
-  /**
-   * This is the only vector that needs to be set in order to render the line.  This also updates the display
-   */
-  set normalVector(dir: Vector3) {
-    this._normalVector.copy(dir).normalize();
-    this.updateDisplay();
+    // // Variables to keep track of when the z coordinate of the transformed object changes sign
+    // let firstPos = -1;
+    // let posIndex = 0;
+    // let firstNeg = -1;
+    // let negIndex = 0;
+    // let lastSign = 0;
+
+    // this.points.forEach((v, pos) => {
+    //   // v is a vector location on the equator of the Default Sphere
+    //   this.tmpVector.copy(v);
+    //   // Transform that vector to one on the current segment
+    //   this.tmpVector.applyMatrix4(this.transformMatrix);
+    //   const thisSign = Math.sign(this.tmpVector.z);
+    //   if (lastSign !== thisSign) {
+    //     // We have a zero crossing
+    //     if (thisSign > 0) firstPos = pos;
+    //     if (thisSign < 0) firstNeg = pos;
+    //   }
+    //   lastSign = thisSign;
+    //   if (this.tmpVector.z > 0) {
+    //     if (posIndex === this.frontHalf.vertices.length) {
+    //       let extra: Two.Anchor | undefined;
+    //       extra = this.backHalf.vertices.pop();
+    //       if (extra) this.frontHalf.vertices.push(extra);
+    //       extra = this.glowingBackHalf.vertices.pop();
+    //       if (extra) this.glowingFrontHalf.vertices.push(extra);
+    //     }
+    //     this.frontHalf.vertices[posIndex].x = this.tmpVector.x;
+    //     this.frontHalf.vertices[posIndex].y = this.tmpVector.y;
+    //     this.glowingFrontHalf.vertices[posIndex].x = this.tmpVector.x;
+    //     this.glowingFrontHalf.vertices[posIndex].y = this.tmpVector.y;
+    //     posIndex++;
+    //   } else {
+    //     if (negIndex === this.backHalf.vertices.length) {
+    //       let extra: Two.Anchor | undefined;
+    //       extra = this.frontHalf.vertices.pop();
+    //       if (extra) this.backHalf.vertices.push(extra);
+    //       extra = this.glowingFrontHalf.vertices.pop();
+    //       if (extra) this.glowingBackHalf.vertices.push(extra);
+    //     }
+    //     this.backHalf.vertices[negIndex].x = this.tmpVector.x;
+    //     this.backHalf.vertices[negIndex].y = this.tmpVector.y;
+    //     this.glowingBackHalf.vertices[negIndex].x = this.tmpVector.x;
+    //     this.glowingBackHalf.vertices[negIndex].y = this.tmpVector.y;
+    //     negIndex++;
+    //   }
+    // });
+    // if (0 < firstPos && firstPos < SUBDIVS) {
+    //   // Gap in backhalf
+    //   this.backHalf.vertices.rotate(firstPos);
+    //   this.glowingBackHalf.vertices.rotate(firstPos);
+    // }
+    // if (0 < firstNeg && firstNeg < SUBDIVS) {
+    //   // Gap in fronthalf
+    //   this.frontHalf.vertices.rotate(firstNeg);
+    //   this.glowingFrontHalf.vertices.rotate(firstNeg);
+    // }
   }
 
   setVisible(flag: boolean): void {
@@ -306,27 +286,12 @@ export default class Line extends Nodule {
   // The builtin clone() does not seem to work correctly
   clone(): this {
     const dup = new Line(this.name);
-    dup._normalVector.copy(this._normalVector);
-    dup.frontHalf.rotation = this.frontHalf.rotation;
-    dup.backHalf.rotation = this.backHalf.rotation;
-    // dup.frontArcLen = this.frontArcLen;
-    // dup.backArcLen = this.backArcLen;
-    dup.frontHalf.vertices.forEach((v: Two.Anchor, pos: number) => {
-      v.copy(this.frontHalf.vertices[pos]);
-    });
-    dup.backHalf.vertices.forEach((v: Two.Anchor, pos: number) => {
-      v.copy(this.backHalf.vertices[pos]);
-    });
-    dup.glowingFrontHalf.vertices.forEach((v: Two.Anchor, pos: number) => {
-      v.copy(this.glowingFrontHalf.vertices[pos]);
-    });
-    dup.glowingBackHalf.vertices.forEach((v: Two.Anchor, pos: number) => {
-      v.copy(this.glowingBackHalf.vertices[pos]);
-    });
+    dup.normalVector=this._normalVector;
+    // set the rotation and halfMinorAxis and calles updateDisplay() for dup
     return dup as this;
   }
 
-  addToLayers(layers: Two.Group[]): void {
+  addToLayers(layers: Group[]): void {
     this.frontHalf.addTo(layers[LAYER.foreground]);
     this.glowingFrontHalf.addTo(layers[LAYER.foregroundGlowing]);
     this.backHalf.addTo(layers[LAYER.background]);

@@ -5,8 +5,8 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import EventBus from "./EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import { intersectTwoObjects } from "@/utils/intersections";
-import Two from "two.js";
-//import { Group } from "two.js/src/group";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 import { rank_of_type } from "@/utils/helpingfunctions";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
@@ -29,7 +29,7 @@ export default class IntersectionPointHandler extends Highlighter {
    */
   // private intersectionPointParentNames = "";
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
   }
 

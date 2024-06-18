@@ -19,8 +19,8 @@ import { SECircle } from "@/models/SECircle";
 import { AddThreePointCircleCenterCommand } from "@/commands/AddThreePointCircleCenterCommand";
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
-import Two from "two.js";
-// import { Group } from "two.js/src/group";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
@@ -79,7 +79,7 @@ export default class ThreePointCircleHandler extends Highlighter {
     null;
   protected snapTemporaryPointMarkerToPoint: SEPoint | null = null;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     this.point1Vector = new Vector3();
     this.point2Vector = new Vector3();

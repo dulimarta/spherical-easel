@@ -1,4 +1,3 @@
-import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
 import { SESegment } from "@/models/SESegment";
@@ -18,6 +17,8 @@ import { AddLengthMeasurementCommand } from "@/commands/AddLengthMeasurementComm
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleCategory } from "@/types/Styles";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import { Group } from "two.js/src/group";
+//import Two from "two.js";
 
 export default class PolygonHandler extends Highlighter {
   /**
@@ -62,7 +63,7 @@ export default class PolygonHandler extends Highlighter {
   /** Has the temporary angleMarker been added to the scene?*/
   private temporaryAngleMarkersAdded: boolean[] = [];
 
-  constructor(layers: Two.Group[], selectOnlyTriangles?: boolean) {
+  constructor(layers: Group[], selectOnlyTriangles?: boolean) {
     super(layers);
     this.triangleSelectionMode = selectOnlyTriangles ?? false;
 

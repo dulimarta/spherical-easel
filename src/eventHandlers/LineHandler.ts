@@ -15,8 +15,8 @@ import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDi
 import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
-import Two from "two.js";
-//import { Group } from "two.js/src/group";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
@@ -80,7 +80,7 @@ export default class LineHandler extends Highlighter {
    * Make a line handler
    * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
    */
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     // Create and style the temporary line
     this.temporaryLine = new Line();

@@ -9,10 +9,11 @@ import {
   DEFAULT_PARAMETRIC_FRONT_STYLE,
   DEFAULT_PARAMETRIC_BACK_STYLE
 } from "@/types/Styles";
-import Two from "two.js";
-// import { Path } from "two.js/src/path";
-// import { Anchor } from "two.js/src/anchor";
-// import { Group } from "two.js/src/group";
+//import Two from "two.js";
+import { Path } from "two.js/src/path";
+import { Anchor } from "two.js/src/anchor";
+import { Group } from "two.js/src/group";
+import { Circle } from "two.js/src/shapes/circle";
 
 // const desiredXAxis = new Vector3();
 // const desiredYAxis = new Vector3();
@@ -62,19 +63,19 @@ export default class Parametric extends Nodule {
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.
    */
-  private frontParts: Two.Path[] = [];
-  private backParts: Two.Path[] = [];
-  private glowingFrontParts: Two.Path[] = [];
-  private glowingBackParts: Two.Path[] = [];
+  private frontParts: Path[] = [];
+  private backParts: Path[] = [];
+  private glowingFrontParts: Path[] = [];
+  private glowingBackParts: Path[] = [];
 
-  private pool: Two.Anchor[] = []; //The pool of vertices
-  private glowingPool: Two.Anchor[] = []; //The pool of vertices
+  private pool: Anchor[] = []; //The pool of vertices
+  private glowingPool: Anchor[] = []; //The pool of vertices
 
   // These two variables are used for debugging only for showing
   // a small circle on each sample point along the curve
   // To show these circles, modify
-  private markers: Two.Group = new Two.Group();
-  private markerPool: Two.Circle[] = [];
+  private markers: Group = new Group();
+  private markerPool: Circle[] = [];
   /**
    * The styling variables for the drawn curve. The user can modify these.
    */
@@ -95,10 +96,10 @@ export default class Parametric extends Nodule {
   static currentGlowingParametricStrokeWidthBack =
     SETTINGS.parametric.drawn.strokeWidth.back +
     SETTINGS.parametric.glowing.edgeWidth;
-  foregroundLayer: Two.Group | null = null;
-  backgroundLayer: Two.Group | null = null;
-  glowingFgLayer: Two.Group | null = null;
-  glowingBgLayer: Two.Group | null = null;
+  foregroundLayer: Group | null = null;
+  backgroundLayer: Group | null = null;
+  glowingFgLayer: Group | null = null;
+  glowingBgLayer: Group | null = null;
 
   /**
    * Update all the current stroke widths
@@ -172,20 +173,20 @@ export default class Parametric extends Nodule {
       //   this.numAnchors
       // );
       // This is a new build
-      const frontVertices: Two.Vector[] = [];
+      const frontVertices: Anchor[] = [];
       for (let k = 0; k < numAnchors; k++) {
-        // Create Vectors for the paths that will be cloned later
-        frontVertices.push(new Two.Vector(0, 0));
+        // Create Anchors for the paths that will be cloned later
+        frontVertices.push(new Anchor(0, 0));
         // TODO: Remove the marker circles
-        this.markerPool.push(new Two.Circle(0, 0, 2));
+        this.markerPool.push(new Circle(0, 0, 2));
       }
       this.frontParts.push(
-        new Two.Path(frontVertices, /*closed*/ false, /*curve*/ false)
+        new Path(frontVertices, /*closed*/ false, /*curve*/ false)
       );
-      this.glowingFrontParts.push(this.frontParts[0].clone());
+      this.glowingFrontParts.push(new Path(frontVertices, /*closed*/ false, /*curve*/ false));
       // Don't use .clone() for back parts we intentionally want to keep them empty
-      this.backParts.push(new Two.Path([], false, false));
-      this.glowingBackParts.push(new Two.Path([], false, false));
+      this.backParts.push(new Path([], false, false));
+      this.glowingBackParts.push(new Path([], false, false));
       // #region updatePlottableMap
       Nodule.idPlottableDescriptionMap.set(String(this.frontParts[0].id), {
         type: "parametric",
@@ -219,16 +220,16 @@ export default class Parametric extends Nodule {
       );
       // This is a rebuild, check if the number of anchors has changed
       const frontVertexCount = this.frontParts
-        .map((p: Two.Path) => p.vertices.length)
+        .map((p: Path) => p.vertices.length)
         .reduce((total: number, currLen: number) => total + currLen);
       const backVertexCount = this.backParts
-        .map((p: Two.Path) => p.vertices.length)
+        .map((p: Path) => p.vertices.length)
         .reduce((total: number, currLen: number) => total + currLen);
       const delta = numAnchors - (frontVertexCount + backVertexCount);
       if (delta > 0) {
         // console.debug("*** Adding", delta, "more anchor points!!!");
         // We have to add more anchor points
-        let anchor: Two.Anchor;
+        let anchor: Anchor;
         // Clone from an existing Anchor (either from frontPart or backPart)
         if (this.frontParts[0].vertices.length > 0)
           anchor = this.frontParts[0].vertices[0].clone();
@@ -288,20 +289,20 @@ export default class Parametric extends Nodule {
     // const tMax = this._tNumbers.max;
 
     /* Move all vertices back to pool */
-    this.frontParts.forEach((path: Two.Path) => {
+    this.frontParts.forEach((path: Path) => {
       this.pool.push(...path.vertices.splice(0));
     });
-    this.backParts.forEach((path: Two.Path) => {
+    this.backParts.forEach((path: Path) => {
       this.pool.push(...path.vertices.splice(0));
     });
-    this.glowingFrontParts.forEach((path: Two.Path) => {
+    this.glowingFrontParts.forEach((path: Path) => {
       this.glowingPool.push(...path.vertices.splice(0));
     });
-    this.glowingBackParts.forEach((path: Two.Path) => {
+    this.glowingBackParts.forEach((path: Path) => {
       this.glowingPool.push(...path.vertices.splice(0));
     });
-    this.markers.children.forEach((m: Two.Object) => {
-      this.markerPool.push(m as Two.Circle);
+    this.markers.children.forEach((m: Object) => {
+      this.markerPool.push(m as Circle);
     });
     this.markerPool.forEach(c => {
       c.remove();
@@ -342,13 +343,13 @@ export default class Parametric extends Nodule {
             // console.info(
             //   "Parametric update: Needs more back parts than were allocated initially"
             // );
-            const newPath = new Two.Path([], false, false);
+            const newPath = new Path([], false, false);
             this.backParts.push(newPath);
             newPath.noFill();
             newPath.visible = true;
             if (this.backgroundLayer) newPath.addTo(this.backgroundLayer);
 
-            const newGlowPath = new Two.Path([], false, false);
+            const newGlowPath = new Path([], false, false);
             this.glowingBackParts.push(newGlowPath);
             newGlowPath.noFill();
             newGlowPath.visible = false;
@@ -402,13 +403,13 @@ export default class Parametric extends Nodule {
             // console.info(
             //   "Parametric Update: Needs more front parts than were allocated initially"
             // );
-            const newPath = new Two.Path([], false, false);
+            const newPath = new Path([], false, false);
             this.frontParts.push(newPath);
             newPath.noFill();
             newPath.visible = true;
             if (this.foregroundLayer) newPath.addTo(this.foregroundLayer);
 
-            const newGlowPath = new Two.Path([], false, false);
+            const newGlowPath = new Path([], false, false);
             this.glowingFrontParts.push(newGlowPath);
             newGlowPath.noFill();
             newGlowPath.visible = true;
@@ -476,8 +477,8 @@ export default class Parametric extends Nodule {
   // }
   get numberOfParts(): number {
     return (
-      this.frontParts.filter((p: Two.Path) => p.vertices.length > 0).length +
-      this.backParts.filter((p: Two.Path) => p.vertices.length > 0).length
+      this.frontParts.filter((p: Path) => p.vertices.length > 0).length +
+      this.backParts.filter((p: Path) => p.vertices.length > 0).length
     );
   }
 
@@ -578,7 +579,7 @@ export default class Parametric extends Nodule {
    * Adds the front/back/glowing/not parts to the correct layers
    * @param layers
    */
-  public addToLayers(layers: Two.Group[]): void {
+  public addToLayers(layers: Group[]): void {
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
 
@@ -599,7 +600,7 @@ export default class Parametric extends Nodule {
     );
   }
 
-  public removeFromLayers(/*layers: Two.Group[]*/): void {
+  public removeFromLayers(/*layers: Group[]*/): void {
     this.frontParts.forEach(part => part.remove());
     // TODO: Uncomment the following line when sample point markers are enabled
     // this.markers.remove();
