@@ -1,5 +1,5 @@
 import { mount, shallowMount, VueWrapper } from "@vue/test-utils";
-import {createTestingPinia} from "@pinia/testing"
+import { createTestingPinia } from "@pinia/testing";
 // import { createI18n } from "vue-i18n";
 // import router from "@/router";
 // import VueRouter from "vue-router";

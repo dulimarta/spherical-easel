@@ -827,8 +827,6 @@ function addParametricCurve(): void {
   tExpressions = { min: "", max: "" };
   tNumbers = { min: NaN, max: NaN };
   c1DiscontinuityParameterValues = [];
-  // clear the entries in the components
-  EventBus.fire("parametric-clear-data", {});
 }
 
 function parametricCurveIsUnitCheck(tValues: number[]): null | number {

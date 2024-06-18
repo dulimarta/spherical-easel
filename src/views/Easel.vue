@@ -168,9 +168,7 @@ import Label from "@/plottables/Label";
 import Segment from "@/plottables/Segment";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
-import {
-  SphericalConstruction
-} from "@/types";
+import { SphericalConstruction } from "@/types";
 import AngleMarker from "@/plottables/AngleMarker";
 
 import { run } from "@/commands/CommandInterpreter";
@@ -610,7 +608,7 @@ onBeforeRouteLeave(
   height: 100%;
 }
 </style>
-<i18n locale="en">
+<i18n locale="en" lang="json">
 {
   "clearConstructionMessage": "The current construction will be cleared",
   "unsavedConstructionsMessage": "You have unsaved constructions. Keep or discard?",

@@ -56,7 +56,6 @@ const varMap = new Map<string, number>();
 onMounted((): void => {
   EventBus.listen("measurement-selected", addVarToExpr.bind(this));
   EventBus.listen("test-t-value", setTestTValue);
-  // EventBus.listen("parametric-clear-data", reset);
 });
 function setTestTValue(obj: TestTValueType): void {
   testTValue = obj.val;
@@ -75,7 +74,7 @@ function addVarToExpr(param: any): void {
 }
 
 function onKeyPressed(): void {
-  // console.debug("Key press");
+  console.debug("Key press", seExpressions);
   parsingError.value = "";
   if (timerInstance) clearTimeout(timerInstance);
   timerInstance = setTimeout(() => {

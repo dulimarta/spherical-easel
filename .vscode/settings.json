@@ -114,5 +114,11 @@
   "i18n-ally.enabledFrameworks": ["vue-sfc", "vue"],
   "i18n-ally.extract.keygenStyle": "camelCase",
   "i18n-ally.keystyle": "nested",
-  "i18n-ally.editor.preferEditor": true
+  "i18n-ally.editor.preferEditor": true,
+  "eslint.validate": ["vue", "typescript", "javascript"],
+  "editor.quickSuggestions": {
+    "other": "on",
+    "comments": "off",
+    "strings": "off"
+  }
 }

@@ -288,7 +288,7 @@ function cancelDeleteMessages() {
   box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 }
 </style>
-<i18n locale="en">
+<i18n locale="en" lang="json">
 {
   "all": "All",
   "deleteMsg": "Delete {msgType} messages",
@@ -305,7 +305,7 @@ function cancelDeleteMessages() {
   "warning": "Warning"
 }
 </i18n>
-<i18n locale="id">
+<i18n locale="id" lang="json">
 {
   "all": "Semua Pesan",
   "deleteMsg": "Hapus Pesan Jenis {msgType}",

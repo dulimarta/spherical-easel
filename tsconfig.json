@@ -14,11 +14,15 @@
     "sourceMap": true,
     "baseUrl": ".",
     "outDir": "ts-out",
-    "types": [/*"vuetify", "vitest/globals","google.maps", "vite/cli"*/],
+    "types": [
+      "vite/client"
+      /* "vitest/globals", "node", "vuetify", "google.maps" */
+    ],
     "typeRoots": [
       "./node_modules/@types",
       "./node_modules/vuetify/types",
-      "@/types"
+      "@/types",
+      "./node_modules"
     ],
     "paths": {
       "@/*": ["./src/*"]
@@ -33,10 +37,10 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "src/**/*.ext",
+    "src/**/*.ext"
     // "tests/*.d.ts",
   ],
-  "verbose": true,
+  "verbose": true
   // "globals": {
   //   "ts-jest": {
   //     "diagnostics": false

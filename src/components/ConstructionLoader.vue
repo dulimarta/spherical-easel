@@ -176,7 +176,7 @@ watch(idle, (isIdle: boolean) => {
   }
 });
 </script>
-<i18n locale="en">
+<i18n locale="en" lang="json">
 {
   "constructionDeleted": "Construction {docId} was successfully removed",
   "privateConstructions": "Owned Constructions",

@@ -42,7 +42,6 @@ const varMap = new Map<string, number>();
 
 onMounted((): void => {
   EventBus.listen("measurement-selected", addVarToExpr);
-  // EventBus.listen("parametric-clear-data", reset);
 });
 
 function reset(): void {

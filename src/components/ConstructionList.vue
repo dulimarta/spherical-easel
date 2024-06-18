@@ -515,7 +515,7 @@ function doShareConstruction() {
   color: #ffc107;
 }
 </style>
-<i18n locale="en">
+<i18n locale="en" lang="json">
 {
   "deleteWarning": "Your construction {docId} is about to be deleted",
   "deleteAttemptNoUid": "Attempt to delete a construction when owner in unknown",

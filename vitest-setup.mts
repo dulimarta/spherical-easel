@@ -3,5 +3,5 @@ import { config } from "@vue/test-utils"
 
 if (!globalThis.defined) {
   config.global.plugins = [bahasa]
-  globalThis.defined = true
+  // globalThis.defined = true
 }

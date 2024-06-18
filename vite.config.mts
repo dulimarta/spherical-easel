@@ -1,8 +1,8 @@
+/// <reference types="vitest" />
 import { defineConfig } from "vite";
 import { resolve } from "path";
-import vue from "@vitejs/plugin-vue";
+import Vue from "@vitejs/plugin-vue";
 import { fileURLToPath, URL } from "node:url";
-// import vueI18n from "@intlify/unplugin-vue-i18n";
 
 // import {createVuePlugin as vue} from "vite-plugin-vue2"
 // import { VuetifyResolver } from "unplugin-vue-components/resolvers"
@@ -14,24 +14,21 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url))
-      // vue: "@vue/compat"
     },
     extensions: [".mjs", ".js", ".ts", ".jsx", ".tsx", ".json", ".vue"]
   },
-  optimizeDeps: {
-    exclude: ['fsevents']
-  },
+  // optimizeDeps: {
+  //   exclude: ['fsevents']
+  // },
   plugins: [
-    vue({
+    Vue({
+      isProduction: false,
       template: {
         transformAssetUrls,
         compilerOptions: {
-          isCustomElement: (tag) => {
-            return tag.startsWith('V')
-          },
-          compatConfig: {
-            MODE: 3
-          },
+          // isCustomElement: (tag) => {
+          //   return tag.startsWith('V')
+          // },
         }
       }
     }),

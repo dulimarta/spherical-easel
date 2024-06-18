@@ -156,7 +156,7 @@ watch(
   }
 );
 </script>
-<i18n locale="en">
+<i18n locale="en" lang="json">
 {
   "point": "Point",
   "earthMode": "Earth Mode",
@@ -164,7 +164,7 @@ watch(
   "draw": "Draw Segment"
 }
 </i18n>
-<i18n locale="id">
+<i18n locale="id" lang="json">
   {
     "point": "Titik",
     "earthMode": "Peta Bumi",

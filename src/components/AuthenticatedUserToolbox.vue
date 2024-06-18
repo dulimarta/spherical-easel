@@ -173,12 +173,8 @@ const {
   constructionDocId,
   firebaseUid
 } = storeToRefs(acctStore);
-const {
-  hasObjects,
-  svgCanvas,
-  canvasHeight,
-  canvasWidth,
-} = storeToRefs(seStore);
+const { hasObjects, svgCanvas, canvasHeight, canvasWidth } =
+  storeToRefs(seStore);
 const { t } = useI18n();
 
 const { privateConstructions, currentConstructionPreview } =
@@ -302,7 +298,7 @@ onMounted(() => {
 
 async function doLoginOrLogout() {
   if (firebaseUid.value) {
-    await acctStore.signOff()
+    await acctStore.signOff();
     // userEmail.value = undefined;
     userProfilePictureURL.value = undefined;
     userDisplayedName.value = undefined;
@@ -340,7 +336,6 @@ async function doSave(): Promise<void> {
     });
 }
 
-
 function doExport() {
   if (svgRoot === undefined) {
     // By the time doSave() is called svgCanvas must have been set
@@ -368,7 +363,7 @@ function doExport() {
   }
 }
 </script>
-<i18n locale="en">
+<i18n locale="en" lang="json">
 {
   "savePrivateConstructionDialogTitle": "Save Private Construction",
   "savePublicConstructionDialogTitle": "Save Public Construction",
