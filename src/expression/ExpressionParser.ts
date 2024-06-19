@@ -60,7 +60,7 @@ class Lexer {
   private curr?: Lexicon;
   private t: any;
   constructor(input: string) {
-    this.t = i18n.global
+    this.t = i18n.global;
     // JS strings are an iterable object
     // The iterator provides two important properties:
     // .done which is set to true when we reach the end of iteration
@@ -224,7 +224,7 @@ export class ExpressionParser {
    *
    * @param input a string of arithmetic expression
    */
-  static parse(input: string): SyntaxTree {
+  static parse(input: string, allowVariables: boolean = true): SyntaxTree {
     const lexer = new Lexer(input); // Lexical analyzer
     const tokenizer = lexer.tokenize();
     let token = tokenizer.next();
@@ -263,9 +263,13 @@ export class ExpressionParser {
         };
       } else if (token.value.kind === TokenType.MEASUREMENT) {
         // TODO: look up the actual value of measurement
-        const out = token.value;
-        token = tokenizer.next();
-        return { node: out };
+        if (allowVariables) {
+          const out = token.value;
+          token = tokenizer.next();
+          return { node: out };
+        } else {
+          throw SyntaxError("exprParser.variablesNotAllowed", { cause: { varName: token.value.text } })
+        }
       } else if (token.value.kind === TokenType.NUMBER) {
         const out = token.value;
         token = tokenizer.next();
@@ -980,5 +984,6 @@ export class ExpressionParser {
     ExpressionParser.evaluate(ExpressionParser.parse(input), varMap);
 
   evaluate = (input: string): number =>
-    ExpressionParser.evaluate(ExpressionParser.parse(input), this.EMPTY_MAP);
+    // Do not allow variables in expressions
+    ExpressionParser.evaluate(ExpressionParser.parse(input, false), this.EMPTY_MAP);
 }

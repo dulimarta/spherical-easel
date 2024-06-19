@@ -354,6 +354,7 @@
     "unknownFunction": "Unknown mathematical function {text}.",
     "unhandledTokenType": "Unhandled token type {text} {text2}",
     "undefinedVariable": "Undefined variable {text}",
+    "variablesNotAllowed": "Variable {varName} is prohibited",
     "divideByZero": "Attempted to divide by zero."
   },
   "objectTree": {
