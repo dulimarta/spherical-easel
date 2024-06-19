@@ -20,6 +20,7 @@
               <v-sheet rounded color="accent" :elevation="4" class="my-3">
                 <ParametricCoordinates
                   v-model="xyzFormulaInput"
+                  :use-t-value="testTValue"
                   :label="t('parametricCoordinates')"
                   :coordinateData="
                     parametricFormulaData
@@ -43,11 +44,13 @@
           <v-row>
             <v-col cols="12">
               <template v-for="(tVal, idk) in tNumberData" :key="idk">
-                <ParametricTNumber
-                  v-model.number="tNumbersInput[idk]"
+                <!-- Use const-expr property for "No variables" -->
+                <ParametricTExpression
+                v-model="tNumbersInput[idk]"
                   :placeholder="tVal.placeholder"
                   :label="tVal.label"
-                  :tooltip="tVal.tooltip"></ParametricTNumber>
+                  const-expr
+                  :tooltip="tVal.tooltip"></ParametricTExpression>
               </template>
             </v-col>
           </v-row>
@@ -97,7 +100,7 @@ import { SEExpression } from "@/models/SEExpression";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import ParametricCoordinates from "@/components/ParametricCoordinates.vue";
 import ParametricTracingExpressions from "@/components/ParametricTracingExpressions.vue";
-import ParametricTNumber from "@/components/ParametricTNumber.vue";
+import ParametricTExpression from "@/components/ParametricTExpression.vue";
 import ParametricCuspParameterValues from "@/components/ParametricCuspParameterValues.vue";
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
@@ -139,6 +142,7 @@ let coordinateExpressions: CoordExpression = { x: "", y: "", z: "" };
 let tExpressions: MinMaxExpression = { min: "", max: "" };
 let tNumbers: MinMaxNumber = { min: NaN, max: NaN };
 let c1DiscontinuityParameterValues: number[] = [];
+const testTValue = ref(0)
 const xyzFormulaInput = ref(["", "", ""]);
 const tNumbersInput = ref(["", ""]);
 const tracingExpressionsInput = ref(["", ""]);
@@ -483,6 +487,9 @@ function addParametricCurve(): void {
     });
     return;
   }
+  xyzFormulaInput.value[0] = coordinateExpressions.x
+  xyzFormulaInput.value[1] = coordinateExpressions.y
+  xyzFormulaInput.value[2] = coordinateExpressions.z
   const newlyCreatedSEPoints: SEPoint[] = [];
   // If  tMaxNumber is less than tMinNumber -- error!
   if (tNumbers.min >= tNumbers.max) {
@@ -492,6 +499,8 @@ function addParametricCurve(): void {
     });
     return;
   }
+  tNumbersInput.value[0] = tNumbers.min.toString()
+  tNumbersInput.value[1] = tNumbers.max.toString()
   // the cusp parameter values must all be between tMinNumber and tMaxNumber
   if (
     c1DiscontinuityParameterValues.length > 0 &&
@@ -505,6 +514,7 @@ function addParametricCurve(): void {
     });
     return;
   }
+  cuspInput.value = c1DiscontinuityParameterValues.join(",")
   // tExpressions must either both be empty or both not empty
   if (
     (tExpressions.min.length === 0 && tExpressions.max.length !== 0) ||
@@ -517,6 +527,8 @@ function addParametricCurve(): void {
     return;
   }
 
+  tracingExpressionsInput.value[0] = tExpressions.min
+  tracingExpressionsInput.value[1] = tExpressions.max
   // Create a list of t values to test the expressions at
   const tValues: number[] = [];
   for (let i = 0; i < SETTINGS.parameterization.numberOfTestTValues + 1; i++) {

@@ -27,7 +27,7 @@ export class SECalculation extends SEExpression {
       // Find the SENodule parents of this calculation
       // SEStore.expressions.forEach(n => console.log(n.name));
       const pos = SENodule.store.seExpressions.findIndex(
-        z => z.name === `${v[0]}`
+        z => z.name === v[0]
       );
       // add it to the calculationParents if it is not already added
       if (pos > -1) {
@@ -43,7 +43,7 @@ export class SECalculation extends SEExpression {
 
       // if (pos > -1) this._calculationParents.push(SEStore.expressions[pos]);
     }
-
+    this.recalculate() /* force the first calculation, so value is evaluated */
     // DO not register parents here. That is done the in the command
 
     // This might not be necessary because all expressions have the name "M####" and should be caught by the above

@@ -10,15 +10,15 @@
     </div>
 
     <transition name="slide-right">
-      <div v-show="expanded">
+      <div v-show="expanded" id="__test_coordinates">
         <template v-for="(coordinate, idk) in coordinateData" :key="idk">
           <!-- content goes here -->
-          <ParametricCoordinate
+          <ParametricCoordinate class="__test_coord_input"
             :placeholder="coordinate.placeholder"
             v-model="formula[idk]"
+            :use-t-value="useTValue"
             :label="coordinate.label"
-            :tooltip="coordinate.tooltip"
-            :name="coordinate.name"></ParametricCoordinate>
+            :tooltip="coordinate.tooltip"></ParametricCoordinate>
         </template>
       </div>
     </transition>
@@ -28,23 +28,28 @@
 <script lang="ts">
 </script>
 <script lang="ts" setup>
-import { ref, Ref } from "vue";
+import { ref, Ref, onBeforeUpdate } from "vue";
 import ParametricCoordinate from "@/components/ParametricCoordinate.vue";
 
 const props = defineProps<{
   coordinateData: any[];
   label: string;
+  useTValue: number
 }>();
-// const formula: Ref<Array<string>> = ref(
+
+// const formula: Ref<Array<string>> = ref([])
 //   Array.from({ length: props.coordinateData.length }, () => "SE")
 // );
 
 let formula = defineModel<Array<string>>({
-  required: true, default:
-    Array.from({length: 3}, () => "")
+  required: true
 })
 const expanded = ref(false);
 
+onBeforeUpdate(() => {
+  formula.value = Array.from({ length: props.coordinateData.length }, () => "")
+
+})
 // get hasExistingChildren(): boolean {
 //   return this.existingChildren.length > 0;
 // }

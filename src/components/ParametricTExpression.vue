@@ -3,18 +3,19 @@
     <v-tooltip bottom max-width="400px">
       <template v-slot:activator="{ props }">
         <v-text-field
+          id="__test_textfield"
           v-model="tValueExpression"
           v-bind="props"
-          density="compact"
           :label="label"
           :placeholder="placeholder"
           :error-messages="parsingError"
-          @keydown="onKeyPressed"
+          :hint="currentValueString"
+          persistent-hint
+          density="compact"
           variant="outlined"
           clearable
-          @click:clear="reset"
-          :hint="currentValueString"
-          persistent-hint></v-text-field>
+          @keydown="onKeyPressed"
+          @click:clear="reset"></v-text-field>
       </template>
       {{ tooltip }}
     </v-tooltip>
@@ -25,7 +26,6 @@ import { onMounted, ref } from "vue";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
-// import i18n from "@/i18n";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { useI18n } from "vue-i18n";
@@ -33,11 +33,16 @@ const seStore = useSEStore();
 const { seExpressions } = storeToRefs(seStore);
 const { t } = useI18n();
 
-const props = defineProps<{
-  tooltip: string;
-  label: string;
-  placeholder: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    tooltip: string;
+    label: string;
+    placeholder: string;
+    // expression should contain only constansts, no variables allowed
+    constExpr?: boolean;
+  }>(),
+  { constExpr: false }
+);
 
 let parser = new ExpressionParser();
 let tValueExpression = defineModel<string>({ required: true, default: "8" });
@@ -73,11 +78,22 @@ function onKeyPressed(): void {
   if (timerInstance) clearTimeout(timerInstance);
   timerInstance = setTimeout(() => {
     try {
-      seExpressions.value.forEach(m => {
-        const measurementName = m.name;
-        // console.debug("Measurement", m, measurementName);
-        varMap.set(measurementName, m.value);
-      });
+      if (props.constExpr) {
+        tValueResult =
+          tValueExpression.value.length > 0
+            ? parser.evaluate(tValueExpression.value)
+            : 0;
+      } else {
+        seExpressions.value.forEach(m => {
+          const measurementName = m.name;
+          // console.debug("Measurement", m, measurementName);
+          varMap.set(measurementName, m.value);
+        });
+        tValueResult =
+          tValueExpression.value.length > 0
+            ? parser.evaluateWithVars(tValueExpression.value, varMap)
+            : 0;
+      }
       // console.debug(
       //   "Calc ",
       //   this.calcExpression,
@@ -86,10 +102,6 @@ function onKeyPressed(): void {
       //   "var map",
       //   this.varMap
       // );
-      tValueResult =
-        tValueExpression.value.length > 0
-          ? parser.evaluateWithVars(tValueExpression.value, varMap)
-          : 0;
       currentValueString.value =
         t(`currentTValue`) + tValueResult.toFixed(SETTINGS.decimalPrecision);
 

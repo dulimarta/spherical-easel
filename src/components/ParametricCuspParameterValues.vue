@@ -2,6 +2,7 @@
   <v-tooltip bottom max-width="400px">
     <template v-slot:activator="{ props }">
       <v-text-field
+        id="__test_textfield"
         v-model="tValueExpression"
         v-bind="props"
         density="compact"
@@ -16,7 +17,7 @@
   </v-tooltip>
 </template>
 <script lang="ts" setup>
-import Vue, { onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import { useI18n } from "vue-i18n";
@@ -46,7 +47,7 @@ function addVarToExpr(param: any): void {
   console.debug(
     "Variable selected",
     param,
-    "Todo:  only add this varaible to the text area/ field that is in focus."
+    "Todo:  only add this variable to the text area/ field that is in focus."
   );
   // calcExpression += param;
   onKeyPressed();
@@ -61,8 +62,8 @@ function onKeyPressed(): void {
       if (tValueExpression.value.length > 0) {
         tValueResults.splice(0);
         const tValueList = tValueExpression.value.split(",");
-        tValueList.forEach((str, ind) => {
-          tValueResults[ind] = parser.evaluate(str);
+        tValueList.forEach(str => {
+          tValueResults.push(parser.evaluate(str));
         });
       }
     } catch (err: any) {

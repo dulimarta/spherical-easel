@@ -23,15 +23,16 @@ global.ResizeObserver = require("resize-observer-polyfill");
 
 export function createWrapper(
   component: any,
-  { componentProps = {}, mockOptions = {}, globalOptions = {} } = {},
+  { componentProps = {} } = {},
   isShallow = false
 ) {
+  const testPinia = createTestingPinia({stubActions: false})
   const configOption = {
     //   i18n,
     //   // store,
     //   // router,
     global: {
-      plugins: [vuetify, i18n, createTestingPinia()]
+      plugins: [vuetify, i18n, testPinia]
       //     mocks: {
       //       t: vi.fn()
       //     },
@@ -49,5 +50,5 @@ export function createWrapper(
     ? shallowMount(component, configOption)
     : mount(component, configOption);
   // console.debug("Result of mounting", z);
-  return z;
+  return { wrapper: z, testPinia };
 }

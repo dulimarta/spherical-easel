@@ -12,12 +12,13 @@ export default mergeConfig(
       globals: true,
       setupFiles: ["./vitest-setup.mts"],
       environment: "jsdom",
-      include: ["**/parametric-coord.spec.ts"],
+      include: ["**/parametric-cusp-values.spec.ts"],
       server: {
         deps: {
           inline: ["vuetify", "vue-i18n"]
         }
-      }
+      },
+      watch: true
     },
     resolve: {
       alias: {

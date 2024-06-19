@@ -2,29 +2,23 @@ import TestedComponent from "../ParametricCoordinate.vue";
 import { createWrapper } from "../../../tests/vue-helper";
 import { it, vi } from "vitest";
 import { VueWrapper, mount } from "@vue/test-utils";
-import { createVuetify } from "vuetify";
-import * as components from "vuetify/components";
-import * as directives from "vuetify/directives";
 import { useSEStore } from "../../stores/se";
-import { setActivePinia, createPinia } from "pinia";
 import { SECalculation } from "../../models/SECalculation";
-import { createTestingPinia } from "@pinia/testing";
-import { SEExpression } from "../../models/SEExpression";
-const vuetify = createVuetify({ components, directives });
 global.ResizeObserver = require("resize-observer-polyfill");
 
 describe("ParametricCoord.vue basics", () => {
   let wrapper: VueWrapper;
   beforeEach(() => {
-    // setActivePinia(createPinia());
-    wrapper = createWrapper(TestedComponent, {
+    const out = createWrapper(TestedComponent, {
       componentProps: {
         tooltip: "bbbbb",
         label: "cccc",
         placeholder: "ddddd",
-        modelValue: ""
+        modelValue: "",
+        useTValue: 0
       }
     });
+    wrapper = out.wrapper
   });
 
   it("is a component", () => {
@@ -43,18 +37,38 @@ describe("ParametricCoord.vue basics", () => {
 });
 
 describe("ParametricCoord.vue with input", () => {
-  let wrapper: VueWrapper;
+  // let wrapper: VueWrapper;
   beforeEach(() => {
     // setActivePinia(createPinia());
     vi.useFakeTimers();
   });
   it("shows no error", async () => {
-    const wrapper = createWrapper(TestedComponent, {
+    const { wrapper } = createWrapper(TestedComponent, {
       componentProps: {
         tooltip: "",
         label: "",
         placeholder: "",
-        modelValue: "50 * 2"
+        modelValue: "50 * 2",
+        useTValue: 0
+      }
+    });
+    const textArea = wrapper.find("#__test_textarea");
+    await textArea.trigger("keydown.enter");
+    // Wait for the setTimeout to work
+    await vi.advanceTimersByTimeAsync(3000);
+
+    // console.debug("Text After input", wrapper.text())
+    expect(wrapper.text().length).toBe(0);
+  });
+
+  it("shows no error on formula with T value", async () => {
+    const { wrapper } = createWrapper(TestedComponent, {
+      componentProps: {
+        tooltip: "",
+        label: "",
+        placeholder: "",
+        modelValue: "3.0 * t",
+        useTValue: .7
       }
     });
     const textArea = wrapper.find("#__test_textarea");
@@ -67,12 +81,13 @@ describe("ParametricCoord.vue with input", () => {
   });
 
   it("shows error", async () => {
-    const wrapper = createWrapper(TestedComponent, {
+    const { wrapper } = createWrapper(TestedComponent, {
       componentProps: {
         tooltip: "bbbbb",
         label: "cccc",
         placeholder: "ddddd",
-        modelValue: "50 * 2 BADTOKEN"
+        modelValue: "50 * 2 BADTOKEN",
+        useTValue: 0
       }
     });
     const textArea = wrapper.find("#__test_textarea");
@@ -81,47 +96,68 @@ describe("ParametricCoord.vue with input", () => {
     await textArea.trigger("keydown.enter");
     await vi.advanceTimersByTimeAsync(3000);
 
-    console.debug("Text After input", wrapper.text())
+    // console.debug("Text After input", wrapper.text())
     expect(wrapper.text()).toContain("BADTOKEN");
   });
 });
 
 describe("ParametricCoord.vue with store access", () => {
-  let testPinia
+  // let testPinia
   beforeEach(() => {
-    testPinia = createTestingPinia({stubActions: false,
-      initialState: {
+    // testPinia = createTestingPinia({stubActions: false,
+      // initialState: {
         // se: {
         //   seExpressionIds: [c1.id],
         //   seExpressionMap: aMap
         // }
-      }
-    });
-    setActivePinia(testPinia);
+      // }
+    // });
+    // setActivePinia(testPinia);
     vi.useFakeTimers()
   });
 
   it("inspects variables in the Pinia store", async () => {
-    const s = useSEStore(testPinia)
-    await s.addExpression(new SECalculation("")) // This creates a new expression M1
 
-    const wrapper = mount(TestedComponent, {
-      global: {
-        plugins: [vuetify, testPinia]
-      },
-      props: {
+    const { wrapper, testPinia } = createWrapper(TestedComponent, {
+      componentProps: {
         tooltip: "",
         label: "",
         placeholder: "",
-        modelValue: "50 * M1 + 1.12"
+        modelValue: "50 * M1 + 0.4",
+        useTValue: 0.4
       }
     });
+    const s = useSEStore(testPinia)
+    await s.addExpression(new SECalculation("0.1")) // This creates a new expression M1
     const textArea = wrapper.find("#__test_textarea");
     await textArea.trigger("keydown.enter");
     // Wait for the setTimeout to work
     await vi.advanceTimersByTimeAsync(3000);
 
-    console.debug("Text After input", wrapper.text());
+    // console.debug("Text After input", wrapper.text());
     expect(wrapper.text().length).toBe(0);
   });
+
+  it("shows syntax error when expressions include undefined variables", async () => {
+
+    const { wrapper, testPinia } = createWrapper(TestedComponent, {
+      componentProps: {
+        tooltip: "",
+        label: "",
+        placeholder: "",
+        modelValue: "50 * M3",
+        useTValue: 0
+      }
+    });
+    const s = useSEStore(testPinia)
+    await s.addExpression(new SECalculation("0.25")) // This creates a new expression M1
+    const textArea = wrapper.find("#__test_textarea");
+    await textArea.trigger("keydown.enter");
+    // Wait for the setTimeout to work
+    await vi.advanceTimersByTimeAsync(3000);
+
+    // console.debug("Text After input", wrapper.text());
+    expect(wrapper.text()).toContain("M3")
+  });
+
 });

@@ -4,16 +4,16 @@
       <template v-slot:activator="{ props }">
         <v-textarea
           id="__test_textarea"
-          v-bind:label="label"
+          v-model="coordinateExpression"
           v-bind="props"
+          :label="label"
+          :placeholder="placeholder"
+          :error-messages="parsingError"
           auto-growdensity="compact"
           variant="outlined"
-          clearable
           rows="2"
-          :placeholder="placeholder"
           class="ma-0"
-          v-model="coordinateExpression"
-          :error-messages="parsingError"
+          clearable
           @keydown="onKeyPressed"
           @click:clear="reset"></v-textarea>
       </template>
@@ -38,6 +38,7 @@ const props = defineProps<{
   tooltip: string;
   label: string;
   placeholder: string;
+  useTValue:number
 }>();
 
 //v-bind:label="$t(i18nKey,{coord:$tc(i18nKeyOption1,i18nKeyOption2)})"
@@ -47,7 +48,7 @@ let parser = new ExpressionParser();
 let coordinateExpression = defineModel({ type: String, required: true });
 let coordinateResult = 0;
 
-let testTValue = 0;
+// let testTValue = 0;
 
 const parsingError = ref("");
 let timerInstance: ReturnType<typeof setTimeout> | null = null;
@@ -55,11 +56,11 @@ const varMap = new Map<string, number>();
 
 onMounted((): void => {
   EventBus.listen("measurement-selected", addVarToExpr.bind(this));
-  EventBus.listen("test-t-value", setTestTValue);
+  // EventBus.listen("test-t-value", setTestTValue);
 });
-function setTestTValue(obj: TestTValueType): void {
-  testTValue = obj.val;
-}
+// function setTestTValue(obj: TestTValueType): void {
+//   testTValue = obj.val;
+// }
 function reset(): void {
   coordinateExpression.value = "";
   parsingError.value = "";
@@ -80,16 +81,17 @@ function onKeyPressed(): void {
     try {
       seExpressions.value.forEach(m => {
         const measurementName = m.name;
-        // console.debug("Measurement", m, measurementName);
+        // console.debug("Measurement", m, m.value);
         varMap.set(measurementName, m.value);
       });
       // get the tMin value if there is one so that t can be assigned a value otherwise pick t=0 to substitute into the expression
-      varMap.set("t", testTValue);
+      varMap.set("t", props.useTValue);
+
       coordinateResult =
         coordinateExpression.value.length > 0
           ? parser.evaluateWithVars(coordinateExpression.value, varMap)
           : 0;
-      // console.debug("Calculation result is", calcResult);
+      // console.debug(`"Calculation result evaluated at ${props.useTValue} = ${coordinateResult}`);
     } catch (err: any) {
       // no code
       // console.debug("Got an error", err);
