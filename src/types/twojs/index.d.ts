@@ -1,4 +1,4 @@
-declare module "two.js/extras/js/arc" {
+declare module "two.js/extras/jsm/arc" {
     /**
      * @name Two.Arc
      * @class

@@ -9,8 +9,11 @@ import {
 } from "@/types/Styles";
 //import Two from "two.js";
 //import { Path } from "two.js/src/path";
-import { Arc } from "two.js/extras/js/arc"
-import { Vector } from "two.js/src/vector";
+//import { Arc } from "two.js/extras/js/arc"
+//import "two.js/extras/js/arc"
+import Two from "two.js"
+import {Arc} from "two.js/extras/jsm/arc"
+//import { Vector } from "two.js/src/vector";
 import { Group } from "two.js/src/group";
 
 // The number of vectors used to render the front half (and the same number in the back half)
@@ -77,11 +80,11 @@ export default class Line extends Nodule {
 
   constructor(noduleName: string = "None") {
     super(noduleName);
-    this.frontHalf = new Arc(0,0,radius,radius,0,Math.PI,SUBDIVS);
-    this.glowingFrontHalf = this.frontHalf.clone();
+    this.frontHalf = new Arc(0,0,2*radius,2*radius,Math.PI,2*Math.PI,SUBDIVS);
+    this.glowingFrontHalf = new Arc(0,0,2*radius,2*radius,Math.PI,2*Math.PI,SUBDIVS);
     // Create the back half, glowing front half, glowing back half circle by cloning the front half
-    this.backHalf =  new Arc(0,0,radius,radius,Math.PI,2*Math.PI,SUBDIVS);
-    this.glowingBackHalf = this.backHalf.clone();
+    this.backHalf =  new Arc(0,0,2*radius,2*radius,0,Math.PI,SUBDIVS);
+    this.glowingBackHalf = new Arc(0,0,2*radius,2*radius,0,Math.PI,SUBDIVS);
 
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
@@ -119,8 +122,9 @@ export default class Line extends Nodule {
     //  _normalVector.z = NP._normalVector = |NP||_normalVector|cos(\[Beta])= cos(\[Beta])
     this._halfMinorAxis = this._normalVector.z
 
-    //Let \[Theta] be the angle between the vector <0,1> and <n_x,n_y>, then \[Theta] is the angle of rotation. I think that \[Theta] = ATan2(n_x,n_y) (measured clockwise)
+
     this._rotation = 0; //Initially the normal vector is <0,0,1> so the rotation is 0 in general the rotation angle is
+     //Let \[Theta] be the angle between the vector <0,1> and <n_x,n_y>, then \[Theta] is the angle of rotation. I think that \[Theta] = ATan2(n_x,n_y) (measured clockwise)
 
     this.styleOptions.set(StyleCategory.Front, DEFAULT_LINE_FRONT_STYLE);
     this.styleOptions.set(StyleCategory.Back, DEFAULT_LINE_BACK_STYLE);
@@ -132,7 +136,7 @@ export default class Line extends Nodule {
   set normalVector(dir: Vector3) {
     this._normalVector.copy(dir).normalize();
     this._halfMinorAxis = this._normalVector.z
-    this._rotation = Math.atan2(this._normalVector.x,this._normalVector.y) // not a typo because we are measuring off of the positive y axis in the screen plane
+    this._rotation = -Math.atan2(this._normalVector.x,this._normalVector.y) // not a typo because we are measuring off of the positive y axis in the screen plane
     this.updateDisplay();
   }
 
@@ -178,84 +182,10 @@ export default class Line extends Nodule {
     this.backHalf.rotation = this._rotation
     this.glowingBackHalf.rotation = this._rotation
 
-    this.frontHalf.height = radius*this._halfMinorAxis
-    this.glowingFrontHalf.height = radius*this._halfMinorAxis
-    this.backHalf.height = radius*this._halfMinorAxis
-    this.glowingBackHalf.height = radius*this._halfMinorAxis
-
-    // //Form the X Axis perpendicular to the normalDirection, this is where the plotting will start.
-    // this.desiredXAxis
-    //   .set(-this._normalVector.y, this._normalVector.x, 0)
-    //   .normalize();
-
-    // // Form the Y axis perpendicular to the normal vector and the XAxis
-    // this.desiredYAxis.crossVectors(this._normalVector, this.desiredXAxis)
-    //   .normalize;
-    // // Form the transformation matrix that will map the vectors along the equation of the Default Sphere to
-    // // to the current position of the line.
-    // this.transformMatrix.makeBasis(
-    //   this.desiredXAxis,
-    //   this.desiredYAxis,
-    //   this._normalVector
-    // );
-
-    // // Variables to keep track of when the z coordinate of the transformed object changes sign
-    // let firstPos = -1;
-    // let posIndex = 0;
-    // let firstNeg = -1;
-    // let negIndex = 0;
-    // let lastSign = 0;
-
-    // this.points.forEach((v, pos) => {
-    //   // v is a vector location on the equator of the Default Sphere
-    //   this.tmpVector.copy(v);
-    //   // Transform that vector to one on the current segment
-    //   this.tmpVector.applyMatrix4(this.transformMatrix);
-    //   const thisSign = Math.sign(this.tmpVector.z);
-    //   if (lastSign !== thisSign) {
-    //     // We have a zero crossing
-    //     if (thisSign > 0) firstPos = pos;
-    //     if (thisSign < 0) firstNeg = pos;
-    //   }
-    //   lastSign = thisSign;
-    //   if (this.tmpVector.z > 0) {
-    //     if (posIndex === this.frontHalf.vertices.length) {
-    //       let extra: Two.Anchor | undefined;
-    //       extra = this.backHalf.vertices.pop();
-    //       if (extra) this.frontHalf.vertices.push(extra);
-    //       extra = this.glowingBackHalf.vertices.pop();
-    //       if (extra) this.glowingFrontHalf.vertices.push(extra);
-    //     }
-    //     this.frontHalf.vertices[posIndex].x = this.tmpVector.x;
-    //     this.frontHalf.vertices[posIndex].y = this.tmpVector.y;
-    //     this.glowingFrontHalf.vertices[posIndex].x = this.tmpVector.x;
-    //     this.glowingFrontHalf.vertices[posIndex].y = this.tmpVector.y;
-    //     posIndex++;
-    //   } else {
-    //     if (negIndex === this.backHalf.vertices.length) {
-    //       let extra: Two.Anchor | undefined;
-    //       extra = this.frontHalf.vertices.pop();
-    //       if (extra) this.backHalf.vertices.push(extra);
-    //       extra = this.glowingFrontHalf.vertices.pop();
-    //       if (extra) this.glowingBackHalf.vertices.push(extra);
-    //     }
-    //     this.backHalf.vertices[negIndex].x = this.tmpVector.x;
-    //     this.backHalf.vertices[negIndex].y = this.tmpVector.y;
-    //     this.glowingBackHalf.vertices[negIndex].x = this.tmpVector.x;
-    //     this.glowingBackHalf.vertices[negIndex].y = this.tmpVector.y;
-    //     negIndex++;
-    //   }
-    // });
-    // if (0 < firstPos && firstPos < SUBDIVS) {
-    //   // Gap in backhalf
-    //   this.backHalf.vertices.rotate(firstPos);
-    //   this.glowingBackHalf.vertices.rotate(firstPos);
-    // }
-    // if (0 < firstNeg && firstNeg < SUBDIVS) {
-    //   // Gap in fronthalf
-    //   this.frontHalf.vertices.rotate(firstNeg);
-    //   this.glowingFrontHalf.vertices.rotate(firstNeg);
-    // }
+    this.frontHalf.height = 2*radius*this._halfMinorAxis
+    this.glowingFrontHalf.height = 2*radius*this._halfMinorAxis
+    this.backHalf.height = 2*radius*this._halfMinorAxis
+    this.glowingBackHalf.height = 2*radius*this._halfMinorAxis
   }
 
   setVisible(flag: boolean): void {
@@ -287,7 +217,7 @@ export default class Line extends Nodule {
   clone(): this {
     const dup = new Line(this.name);
     dup.normalVector=this._normalVector;
-    // set the rotation and halfMinorAxis and calles updateDisplay() for dup
+    // setting the normal vector sets the rotation and halfMinorAxis and calls updateDisplay() for dup
     return dup as this;
   }
 

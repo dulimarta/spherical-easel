@@ -398,9 +398,6 @@ export default class LineHandler extends Highlighter {
 
         // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
         this.temporaryLine.normalVector = this.normalVector;
-
-        //update the display
-        this.temporaryLine.updateDisplay();
       }
     }
     else if (this.isTemporaryStartMarkerAdded) {
