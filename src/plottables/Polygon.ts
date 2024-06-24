@@ -68,11 +68,7 @@ export default class Polygon extends Nodule {
   /**
    * The stops and gradient for front/back fill
    */
-  private frontGradientColorCenter = new Stop(
-    0,
-    SETTINGS.fill.frontWhite,
-    1
-  );
+  private frontGradientColorCenter = new Stop(0, SETTINGS.fill.frontWhite, 1);
   private frontGradientColor = new Stop(
     2 * SETTINGS.boundaryCircle.radius,
     SETTINGS.polygon.drawn.fillColor.front,
@@ -106,7 +102,11 @@ export default class Polygon extends Nodule {
   private tmpVector1 = new Vector3();
   private tmpMatrix = new Matrix4();
 
-  constructor(noduleName: string, segmentList: SESegment[], segmentFlippedList: boolean[]) {
+  constructor(
+    noduleName: string,
+    segmentList: SESegment[],
+    segmentFlippedList: boolean[]
+  ) {
     super(noduleName);
     this.seEdgeSegments.push(...segmentList);
     // this.edgeSegments.push(...segmentList.map(seg => seg.ref));
@@ -198,149 +198,152 @@ export default class Polygon extends Nodule {
     // console.log("pool size", this.pool.length);
     // Bring all the locations of the vertices in the correct order in one array
     const locationArray: location[] = [];
-    this.seEdgeSegments.map(z => z.ref).
-      forEach((seg, index) => {
-      // console.log("seg flipped", index, this.segmentIsFlipped[index]);
-      // console.log("first vertex on front", seg.firstVertexIsOnFront);
-      // console.log("last vertex on front", seg.lastVertexIsOnFront);
-      // console.log("front extra length", seg.frontPartExtra.vertices.length);
-      // console.log("back extra length", seg.backPartExtra.vertices.length);
-      // console.log("front length", seg.frontPart.vertices.length);
-      // console.log("back length", seg.backPart.vertices.length);
-      if (this.segmentIsFlipped[index]) {
-        // work from the end to the start in each part of the segment
-        if (seg.lastVertexIsOnFront) {
-          // the last vertex was on the front
-          if (seg.frontPartExtra.vertices.length == 0) {
-            for (let i = seg.frontPart.vertices.length - 1; i > -1; i--) {
-              locationArray.push({
-                x: seg.frontPart.vertices[i].x,
-                y: seg.frontPart.vertices[i].y,
-                front: true
-              });
-            }
-            for (let i = seg.backPart.vertices.length - 1; i > -1; i--) {
-              locationArray.push({
-                x: seg.backPart.vertices[i].x,
-                y: seg.backPart.vertices[i].y,
-                front: false
-              });
+    this.seEdgeSegments
+      .map(z => z.ref)
+      .forEach((seg, index) => {
+        // console.log("seg flipped", index, this.segmentIsFlipped[index]);
+        // console.log("first vertex on front", seg.firstVertexIsOnFront);
+        // console.log("last vertex on front", seg.lastVertexIsOnFront);
+        // console.log("front extra length", seg.frontPartExtra.vertices.length);
+        // console.log("back extra length", seg.backPartExtra.vertices.length);
+        // console.log("front length", seg.frontPart.vertices.length);
+        // console.log("back length", seg.backPart.vertices.length);
+        if (this.segmentIsFlipped[index]) {
+          // work from the end to the start in each part of the segment
+          if (seg.lastVertexIsOnFront) {
+            // the last vertex was on the front
+            if (!seg.frontExtraInUse) {
+              //if (seg.frontExtra.vertices.length == 0) {
+              for (let i = seg.frontPart.vertices.length - 1; i > -1; i--) {
+                locationArray.push({
+                  x: seg.frontPart.vertices[i].x,
+                  y: seg.frontPart.vertices[i].y,
+                  front: true
+                });
+              }
+              for (let i = seg.backPart.vertices.length - 1; i > -1; i--) {
+                locationArray.push({
+                  x: seg.backPart.vertices[i].x,
+                  y: seg.backPart.vertices[i].y,
+                  front: false
+                });
+              }
+            } else {
+              for (let i = seg.frontExtra.vertices.length - 1; i > -1; i--) {
+                locationArray.push({
+                  x: seg.frontExtra.vertices[i].x,
+                  y: seg.frontExtra.vertices[i].y,
+                  front: true
+                });
+              }
+              for (let i = seg.backPart.vertices.length - 1; i > -1; i--) {
+                locationArray.push({
+                  x: seg.backPart.vertices[i].x,
+                  y: seg.backPart.vertices[i].y,
+                  front: false
+                });
+              }
+              for (let i = seg.frontPart.vertices.length - 1; i > -1; i--) {
+                locationArray.push({
+                  x: seg.frontPart.vertices[i].x,
+                  y: seg.frontPart.vertices[i].y,
+                  front: true
+                });
+              }
             }
           } else {
-            for (let i = seg.frontPartExtra.vertices.length - 1; i > -1; i--) {
-              locationArray.push({
-                x: seg.frontPartExtra.vertices[i].x,
-                y: seg.frontPartExtra.vertices[i].y,
-                front: true
-              });
-            }
-            for (let i = seg.backPart.vertices.length - 1; i > -1; i--) {
-              locationArray.push({
-                x: seg.backPart.vertices[i].x,
-                y: seg.backPart.vertices[i].y,
-                front: false
-              });
-            }
-            for (let i = seg.frontPart.vertices.length - 1; i > -1; i--) {
-              locationArray.push({
-                x: seg.frontPart.vertices[i].x,
-                y: seg.frontPart.vertices[i].y,
-                front: true
-              });
+            // the last vertex was not on the front (on the back)
+            if (!seg.backExtraInUse) {
+              //if (seg.backExtra.vertices.length === 0) {
+              for (let i = seg.backPart.vertices.length - 1; i > -1; i--) {
+                locationArray.push({
+                  x: seg.backPart.vertices[i].x,
+                  y: seg.backPart.vertices[i].y,
+                  front: false
+                });
+              }
+              for (let i = seg.frontPart.vertices.length - 1; i > -1; i--) {
+                locationArray.push({
+                  x: seg.frontPart.vertices[i].x,
+                  y: seg.frontPart.vertices[i].y,
+                  front: true
+                });
+              }
+            } else {
+              for (let i = seg.backExtra.vertices.length - 1; i > -1; i--) {
+                locationArray.push({
+                  x: seg.backExtra.vertices[i].x,
+                  y: seg.backExtra.vertices[i].y,
+                  front: false
+                });
+              }
+              for (let i = seg.frontPart.vertices.length - 1; i > -1; i--) {
+                locationArray.push({
+                  x: seg.frontPart.vertices[i].x,
+                  y: seg.frontPart.vertices[i].y,
+                  front: true
+                });
+              }
+              for (let i = seg.backPart.vertices.length - 1; i > -1; i--) {
+                locationArray.push({
+                  x: seg.backPart.vertices[i].x,
+                  y: seg.backPart.vertices[i].y,
+                  front: false
+                });
+              }
             }
           }
         } else {
-          // the last vertex was not on the front (on the back)
-          if (seg.backPartExtra.vertices.length === 0) {
-            for (let i = seg.backPart.vertices.length - 1; i > -1; i--) {
+          // work from start to end in each part of the segment
+          if (seg.firstVertexIsOnFront) {
+            // the first vertex was on the front
+            for (let i = 0; i < seg.frontPart.vertices.length; i++) {
+              locationArray.push({
+                x: seg.frontPart.vertices[i].x,
+                y: seg.frontPart.vertices[i].y,
+                front: true
+              });
+            }
+            for (let i = 0; i < seg.backPart.vertices.length; i++) {
               locationArray.push({
                 x: seg.backPart.vertices[i].x,
                 y: seg.backPart.vertices[i].y,
                 front: false
               });
             }
-            for (let i = seg.frontPart.vertices.length - 1; i > -1; i--) {
+            for (let i = 0; i < seg.frontExtra.vertices.length; i++) {
               locationArray.push({
-                x: seg.frontPart.vertices[i].x,
-                y: seg.frontPart.vertices[i].y,
+                x: seg.frontExtra.vertices[i].x,
+                y: seg.frontExtra.vertices[i].y,
                 front: true
               });
             }
           } else {
-            for (let i = seg.backPartExtra.vertices.length - 1; i > -1; i--) {
+            // the first vertex was not on the front (on the back)
+            for (let i = 0; i < seg.backPart.vertices.length; i++) {
               locationArray.push({
-                x: seg.backPartExtra.vertices[i].x,
-                y: seg.backPartExtra.vertices[i].y,
+                x: seg.backPart.vertices[i].x,
+                y: seg.backPart.vertices[i].y,
                 front: false
               });
             }
-            for (let i = seg.frontPart.vertices.length - 1; i > -1; i--) {
+            for (let i = 0; i < seg.frontPart.vertices.length; i++) {
               locationArray.push({
                 x: seg.frontPart.vertices[i].x,
                 y: seg.frontPart.vertices[i].y,
                 front: true
               });
             }
-            for (let i = seg.backPart.vertices.length - 1; i > -1; i--) {
+            for (let i = 0; i < seg.backExtra.vertices.length; i++) {
               locationArray.push({
-                x: seg.backPart.vertices[i].x,
-                y: seg.backPart.vertices[i].y,
+                x: seg.backExtra.vertices[i].x,
+                y: seg.backExtra.vertices[i].y,
                 front: false
               });
             }
           }
         }
-      } else {
-        // work from start to end in each part of the segment
-        if (seg.firstVertexIsOnFront) {
-          // the first vertex was on the front
-          for (let i = 0; i < seg.frontPart.vertices.length; i++) {
-            locationArray.push({
-              x: seg.frontPart.vertices[i].x,
-              y: seg.frontPart.vertices[i].y,
-              front: true
-            });
-          }
-          for (let i = 0; i < seg.backPart.vertices.length; i++) {
-            locationArray.push({
-              x: seg.backPart.vertices[i].x,
-              y: seg.backPart.vertices[i].y,
-              front: false
-            });
-          }
-          for (let i = 0; i < seg.frontPartExtra.vertices.length; i++) {
-            locationArray.push({
-              x: seg.frontPartExtra.vertices[i].x,
-              y: seg.frontPartExtra.vertices[i].y,
-              front: true
-            });
-          }
-        } else {
-          // the first vertex was not on the front (on the back)
-          for (let i = 0; i < seg.backPart.vertices.length; i++) {
-            locationArray.push({
-              x: seg.backPart.vertices[i].x,
-              y: seg.backPart.vertices[i].y,
-              front: false
-            });
-          }
-          for (let i = 0; i < seg.frontPart.vertices.length; i++) {
-            locationArray.push({
-              x: seg.frontPart.vertices[i].x,
-              y: seg.frontPart.vertices[i].y,
-              front: true
-            });
-          }
-          for (let i = 0; i < seg.backPartExtra.vertices.length; i++) {
-            locationArray.push({
-              x: seg.backPartExtra.vertices[i].x,
-              y: seg.backPartExtra.vertices[i].y,
-              front: false
-            });
-          }
-        }
-      }
-    });
+      });
     // console.log("number in location Array", locationArray.length);
     const allEdgesOnFront = locationArray.every(loc => loc.front === true);
     const allEdgesOnBack = locationArray.every(loc => loc.front === false);
@@ -904,49 +907,59 @@ export default class Polygon extends Nodule {
     this._area = newArea;
   }
   // set SEPolygon(sePolygon: SEPolygon) {
-    // this._sePolgon = sePolygon;
+  // this._sePolgon = sePolygon;
   // }
 
-  frontGlowingDisplay(): void {
-    this.frontFills.forEach(part => (part.visible = true));
-    this.seEdgeSegments.forEach(seg => {
-      if (!seg.selected) {
-        seg.ref.frontGlowingDisplay();
-      }
-    });
-  }
+  // frontGlowingDisplay(): void {
+  //   this.frontFills.forEach(part => (part.visible = true));
+  //   this.seEdgeSegments.forEach(seg => {
+  //     if (!seg.selected) {
+  //       seg.ref.frontGlowingDisplay();
+  //     }
+  //   });
+  // }
 
-  backGlowingDisplay(): void {
-    this.backFills.forEach(part => (part.visible = true));
-    this.seEdgeSegments.forEach(seg => {
-      if (!seg.selected) {
-        seg.ref.backGlowingDisplay();
-      }
-    });
-  }
+  // backGlowingDisplay(): void {
+  //   this.backFills.forEach(part => (part.visible = true));
+  //   this.seEdgeSegments.forEach(seg => {
+  //     if (!seg.selected) {
+  //       seg.ref.backGlowingDisplay();
+  //     }
+  //   });
+  // }
   glowingDisplay(): void {
-    this.frontGlowingDisplay();
-    this.backGlowingDisplay();
-  }
-  frontNormalDisplay(): void {
     this.frontFills.forEach(part => (part.visible = true));
-    this.seEdgeSegments.forEach(seg => {
-      if (!seg.selected) {
-        seg.ref.frontNormalDisplay();
-      }
-    });
-  }
-  backNormalDisplay(): void {
     this.backFills.forEach(part => (part.visible = true));
     this.seEdgeSegments.forEach(seg => {
       if (!seg.selected) {
-        seg.ref.backNormalDisplay();
+        seg.ref.glowingDisplay();
       }
     });
   }
+  // frontNormalDisplay(): void {
+  //   this.frontFills.forEach(part => (part.visible = true));
+  //   this.seEdgeSegments.forEach(seg => {
+  //     if (!seg.selected) {
+  //       seg.ref.frontNormalDisplay();
+  //     }
+  //   });
+  // }
+  // backNormalDisplay(): void {
+  //   this.backFills.forEach(part => (part.visible = true));
+  //   this.seEdgeSegments.forEach(seg => {
+  //     if (!seg.selected) {
+  //       seg.ref.backNormalDisplay();
+  //     }
+  //   });
+  // }
   normalDisplay(): void {
-    this.frontNormalDisplay();
-    this.backNormalDisplay();
+    this.frontFills.forEach(part => (part.visible = true));
+    this.backFills.forEach(part => (part.visible = true));
+    this.seEdgeSegments.forEach(seg => {
+      if (!seg.selected) {
+        seg.ref.normalDisplay();
+      }
+    });
   }
 
   setVisible(flag: boolean): void {
@@ -960,7 +973,9 @@ export default class Polygon extends Nodule {
 
   setSelectedColoring(flag: boolean): void {
     //set the new colors into the variables of each segment
-    this.seEdgeSegments.map(z => z.ref).forEach(seg => seg.setSelectedColoring(flag));
+    this.seEdgeSegments
+      .map(z => z.ref)
+      .forEach(seg => seg.setSelectedColoring(flag));
   }
 
   /**

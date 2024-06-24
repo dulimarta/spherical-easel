@@ -433,8 +433,8 @@ export class SESegment
       }
 
       ////////////////////////////////////////////////////////////////////////////////////////
-      this.ref.startVector = this._startSEPoint.locationVector;
       this.ref.arcLength = this._arcLength;
+      this.ref.startVector = this._startSEPoint.locationVector;
       this.ref.normalVector = this._normalVector;
       // update the display of the segment now that the start, normal vectors and arcLength are set, but only if showing
       this.ref.updateDisplay();
@@ -445,6 +445,7 @@ export class SESegment
       this.ref.setVisible(false);
     }
   }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]

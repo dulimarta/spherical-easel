@@ -9,11 +9,14 @@ import {
   DEFAULT_SEGMENT_FRONT_STYLE,
   DEFAULT_SEGMENT_BACK_STYLE
 } from "@/types/Styles";
+import { Arc } from "two.js/extras/jsm/arc";
 import { Anchor } from "two.js/src/anchor";
 import { Group } from "two.js/src/group";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
+// The radius of the sphere on the screen
+const radius = SETTINGS.boundaryCircle.radius;
 /**
  * A line segment
  *
@@ -38,12 +41,9 @@ export default class Segment extends Nodule {
    *  gives the direction in which the segment is drawn
    */
 
-  /** Two values that help in polygon when tracing a collection of segments */
+  /** Values that help in polygon when tracing a collection of segments */
   private _firstVertexIsOnFront = false;
   private _lastVertexIsOnFront = false;
-
-  /** A temporary matrix maps a segment in standard position to the current position so we can determine which points are on the back and which are on the front*/
-  private transformMatrix = new Matrix4();
 
   /**
    * A line segment of length longer than \pi has two pieces on one face of the sphere (say the front)
@@ -51,14 +51,41 @@ export default class Segment extends Nodule {
    * can have two front parts or two back parts. The frontExtra and backExtra are variables to represent those
    * extra parts. There are glowing counterparts for each part.
    */
-  protected _frontPart: Path;
-  protected _frontExtra: Path;
-  protected _backPart: Path;
-  protected _backExtra: Path;
-  protected glowingFrontPart: Path;
-  protected glowingFrontExtra: Path;
-  protected glowingBackPart: Path;
-  protected glowingBackExtra: Path;
+  protected _frontPart: Arc;
+  protected _frontExtra: Arc;
+  protected _backPart: Arc;
+  protected _backExtra: Arc;
+  protected _glowingFrontPart: Arc;
+  protected _glowingFrontExtra: Arc;
+  protected _glowingBackPart: Arc;
+  protected _glowingBackExtra: Arc;
+
+  /** The normal vector determines the rotation and minor axis length of the displayed ellipse */
+  private _rotation: number;
+  private _halfMinorAxis: number;
+
+  // Each part of the segment has a starting parameter and an ending parameter
+  protected _frontPartStartAngle: number = 0;
+  protected _frontPartEndAngle: number = 0;
+  protected _backPartStartAngle: number = 0;
+  protected _backPartEndAngle: number = 0;
+  protected _frontExtraStartAngle: number = 0;
+  protected _frontExtraEndAngle: number = 0;
+  protected _backExtraStartAngle: number = 0;
+  protected _backExtraEndAngle: number = 0;
+  // Glowing counterparts are the same as their non-glowing ones, so don't keep a second set of these variables.
+
+  // Booleans that help Polygon determine if those parts of the segment are in use
+  protected _frontPartInUse: boolean = false;
+  protected _frontExtraInUse: boolean = false;
+  protected _backPartInUse: boolean = false;
+  protected _backExtraInUse: boolean = false;
+
+  //Vector to help set the parameters of the segment
+  private toVector = new Vector3(); // The segment starts at _startVector and goes toward toVector, toVector is always 90 degrees from the _startVector
+  private endVector = new Vector3(); // Stores the end vector of the segment
+  private midVector = new Vector3(); // Stores the mid point of the segment
+  private tempVector = new Vector3(); // Temp vector for figuring out end/mid Vectors
 
   /**
    * The styling variables for the drawn segment. The user can modify these.
@@ -91,13 +118,6 @@ export default class Segment extends Nodule {
     Segment.currentGlowingSegmentStrokeWidthBack *= factor;
   }
 
-  // Temporary ThreeJS objects for computing
-  private tmpMatrix = new Matrix4();
-  private tmpVector1 = new Vector3();
-  private tmpVector2 = new Vector3();
-  private desiredXAxis = new Vector3();
-  private desiredYAxis = new Vector3();
-
   /**
    * Create a plottable segment from three pieces of information: startVector, normalVector, arcLength
    * NOTE: normal x start gives the direction in which the segment is drawn
@@ -106,60 +126,14 @@ export default class Segment extends Nodule {
     // Initialize the Group
     super(noduleName);
 
-    // Create the vertices for the segment
-    const vertices: Anchor[] = [];
-    for (let k = 0; k < SUBDIVS; k++) {
-      vertices.push(new Anchor(0, 0));
-    }
-    this._frontPart = new Path(
-      vertices,
-      /* closed */ false,
-      /* curve */ false
-    );
-    // Create the other parts cloning the front part
-    this.glowingFrontPart = new Path(
-      vertices,
-      /* closed */ false,
-      /* curve */ false
-    );
-    this._frontExtra = new Path(
-      vertices,
-      /* closed */ false,
-      /* curve */ false
-    );
-    this.glowingFrontExtra = new Path(
-      vertices,
-      /* closed */ false,
-      /* curve */ false
-    );
-    this._backPart = new Path(
-      vertices,
-      /* closed */ false,
-      /* curve */ false
-    );
-    this.glowingBackPart = new Path(
-      vertices,
-      /* closed */ false,
-      /* curve */ false
-    );
-    this._backExtra = new Path(
-      vertices,
-      /* closed */ false,
-      /* curve */ false
-    );
-    this.glowingBackExtra = new Path(
-      vertices,
-      /* closed */ false,
-      /* curve */ false
-    );
-    // Clear the vertices from the extra parts because they will be added later as they are exchanged from other parts
-
-    // The clear() extension function works only on JS Array, but
-    // not on JS Collection class. Use splice() instead.
-    this._frontExtra.vertices.splice(0);
-    this.glowingFrontExtra.vertices.splice(0);
-    this._backExtra.vertices.splice(0);
-    this.glowingBackExtra.vertices.splice(0);
+    this._frontPart = new Arc(0,0,2*radius,2*radius,Math.PI,2*Math.PI,SUBDIVS);
+    this._glowingFrontPart = new Arc(0,0,2*radius,2*radius,Math.PI,2*Math.PI,SUBDIVS);
+    this._backPart = new Arc(0,0,2*radius,2*radius,0,Math.PI,SUBDIVS);
+    this._glowingBackPart = new Arc(0,0,2*radius,2*radius,0,Math.PI,SUBDIVS);
+    this._frontExtra = new Arc(0,0,2*radius,2*radius,Math.PI,2*Math.PI,SUBDIVS);
+    this._glowingFrontExtra = new Arc(0,0,2*radius,2*radius,Math.PI,2*Math.PI,SUBDIVS);
+    this._backExtra = new Arc(0,0,2*radius,2*radius,0,Math.PI,SUBDIVS);
+    this._glowingBackExtra = new Arc(0,0,2*radius,2*radius,0,Math.PI,SUBDIVS);
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this._frontPart.id), {
@@ -189,200 +163,277 @@ export default class Segment extends Nodule {
 
     // Set the style that never changes -- Fill
     this._frontPart.noFill();
-    this.glowingFrontPart.noFill();
+    this._glowingFrontPart.noFill();
     this._backPart.noFill();
-    this.glowingBackPart.noFill();
+    this._glowingBackPart.noFill();
     this._frontExtra.noFill();
-    this.glowingFrontExtra.noFill();
+    this._glowingFrontExtra.noFill();
     this._backExtra.noFill();
-    this.glowingBackExtra.noFill();
+    this._glowingBackExtra.noFill();
 
     // The segment is not initially glowing but leave the regular parts visible for the temporary objects
     this._frontPart.visible = true;
-    this.glowingFrontPart.visible = false;
+    this._glowingFrontPart.visible = false;
     this._backPart.visible = true;
-    this.glowingBackPart.visible = false;
+    this._glowingBackPart.visible = false;
     this._frontExtra.visible = true;
-    this.glowingFrontExtra.visible = false;
+    this._glowingFrontExtra.visible = false;
     this._backExtra.visible = true;
-    this.glowingBackExtra.visible = false;
+    this._glowingBackExtra.visible = false;
+
+    // set the normal vector
+    this._normalVector = new Vector3();
+    //Let \[Beta]  be the angle between the north pole NP= <0,0,1> and the unit normal vector (with z coordinate positive), then cos(\[Beta]) is half the minor axis.
+    //Note:
+    //  0 <= \[Beta] <= \[Pi]/2.
+    //  _normalVector.z = NP._normalVector = |NP||_normalVector|cos(\[Beta])= cos(\[Beta])
+    this._halfMinorAxis = this._normalVector.z;
+
+    this._rotation = 0; //Initially the normal vector is <0,0,1> so the rotation is 0 in general the rotation angle is
+    //Let \[Theta] be the angle between the vector <0,1> and <n_x,n_y>, then \[Theta] is the angle of rotation. Note that \[Theta] = -ATan2(n_x,n_y) (measured counterclockwise)
 
     this.styleOptions.set(StyleCategory.Front, DEFAULT_SEGMENT_FRONT_STYLE);
     this.styleOptions.set(StyleCategory.Back, DEFAULT_SEGMENT_BACK_STYLE);
   }
 
-  frontGlowingDisplay(): void {
-    this._frontPart.visible = true;
-    this.glowingFrontPart.visible = true;
-    this._frontExtra.visible = true;
-    this.glowingFrontExtra.visible = true;
-  }
-
-  backGlowingDisplay(): void {
-    this._backPart.visible = true;
-    this.glowingBackPart.visible = true;
-    this._backExtra.visible = true;
-    this.glowingBackExtra.visible = true;
-  }
-
-  backNormalDisplay(): void {
-    this._backPart.visible = true;
-    this.glowingBackPart.visible = false;
-    this._backExtra.visible = true;
-    this.glowingBackExtra.visible = false;
-  }
-
-  frontNormalDisplay(): void {
-    this._frontPart.visible = true;
-    this.glowingFrontPart.visible = false;
-    this._frontExtra.visible = true;
-    this.glowingFrontExtra.visible = false;
-  }
-
-  normalDisplay(): void {
-    this.frontNormalDisplay();
-    this.backNormalDisplay();
-  }
-
-  glowingDisplay(): void {
-    this.frontGlowingDisplay();
-    this.backGlowingDisplay();
-  }
-
   /**
-   * Reorient the unit circle in 3D and then project the points to 2D
-   * This method updates the TwoJS objects (frontPart, frontExtra, ...) for display
-   * This is only accurate if the normal, start, arcLength are correct so only
-   * call this method once those vectors are updated.
+   * This is only accurate if the normalVector, startVector, arcLength are correct so only
+   * call this method once those variables are updated.
    */
   public updateDisplay(): void {
-    // Use the start of segment as the X-axis so the start vector
-    // is at zero degrees
-    this.desiredXAxis.copy(this._startVector).normalize();
-    // Form the Y axis perpendicular to the normal vector and the XAxis
-    this.desiredYAxis
-      .crossVectors(this._normalVector, this.desiredXAxis)
+    this._halfMinorAxis = this._normalVector.z;
+    this._rotation = -Math.atan2(this._normalVector.x, this._normalVector.y); // not a typo because we are measuring off of the positive y axis in the screen plane counterclockwise (the negative sign)
+
+    //Now set the start and end parameters/angles for each of the pieces of the segment
+    // Start by setting the mid- and end-Vectors
+    //NOTE: (normalVector x startVector)*(this._arcLength > Math.PI ? -1 : 1)
+    // gives the direction in which the segment is drawn
+    // This vector is 90 degree away from _startVector in the direction of the segment
+    this.toVector
+      .copy(this._normalVector)
+      .cross(this._startVector)
       .multiplyScalar(this._arcLength > Math.PI ? -1 : 1)
       .normalize();
 
-    // Create the rotation matrix that maps the tilted circle to the unit
-    // circle on the XY-plane
-    this.transformMatrix.makeBasis(
-      this.desiredXAxis,
-      this.desiredYAxis,
-      this._normalVector
+    // midVector = cos(arcLength/2)*startVector+sin(arcLength/2)*toVector
+    this.midVector
+      .copy(this._startVector)
+      .multiplyScalar(Math.cos(this._arcLength / 2));
+    this.tempVector
+      .copy(this.toVector)
+      .multiplyScalar(Math.sin(this._arcLength / 2));
+    this.midVector.add(this.tempVector).normalize();
+
+    // endVector = cos(arcLength)*startVector+sin(arcLength)*toVector
+    this.endVector
+      .copy(this._startVector)
+      .multiplyScalar(Math.cos(this._arcLength));
+    this.tempVector
+      .copy(this.toVector)
+      .multiplyScalar(Math.sin(this._arcLength));
+    this.endVector.add(this.tempVector).normalize();
+
+    // Set the last/first vertex is on front
+    this._firstVertexIsOnFront = Math.sign(this._startVector.z) == 1;
+    this._lastVertexIsOnFront = Math.sign(this.endVector.z) == 1;
+
+    // Now compute the angle/parameter of the locations of the start, mid, and end vectors
+    // Start by rotating them -this._rotation
+    // [Cos(theta)  -Sin(theta)] [vx]
+    // [Sin(theta) cos(theta)] [vy]
+    const unRotatedStartVecX =
+      Math.cos(-this._rotation) * this._startVector.x -
+      Math.sin(-this._rotation) * this._startVector.y;
+    const unRotatedStartVecY =
+      Math.sin(-this._rotation) * this._startVector.x +
+      Math.cos(-this._rotation) * this._startVector.y;
+
+    const unRotatedEndVecX =
+      Math.cos(-this._rotation) * this.endVector.x -
+      Math.sin(-this._rotation) * this.endVector.y;
+    const unRotatedEndVecY =
+      Math.sin(-this._rotation) * this.endVector.x +
+      Math.cos(-this._rotation) * this.endVector.y;
+
+      console.log("un rot start x,y", unRotatedStartVecX, unRotatedStartVecY )
+      console.log("angle NC", Math.atan2(
+        unRotatedStartVecY,
+        unRotatedStartVecX
+      ))
+
+    // Now that (unRotatedStartVecX,unRotatedStartVecY) is a point on the rotated ellipse
+    //  with halfMinorAxis and 1 (half the MajorAxis) then the parameter value is
+    const startParameter = Math.atan2(
+      unRotatedStartVecY / Math.abs(this._halfMinorAxis),
+      unRotatedStartVecX
     );
+    const endParameter = Math.atan2(
+      unRotatedEndVecY / Math.abs(this._halfMinorAxis),
+      unRotatedEndVecX
+    );
+    // Because if E(t) = (a*cos(t),b*sin(t)) 0 <= t <= 2Pi is an ellipse and (c,d) is on E(t)
+    // for some t0 then t0= atan2(d/b,c/a), but we have to adjust for how two.js draws arcs
 
-    // Variables to keep track of when the z coordinate of the transformed vector changes sign
-    const toPos = []; // Remember the indices of neg-to-pos crossing
-    const toNeg = []; // Remember the indices of pos-to-neg crossing
-    let posIndex = 0;
-    let negIndex = 0;
-    let lastSign = 0;
+    // make sure that start<mid<end parameter
+    console.log("start p", startParameter,(2*Math.PI-startParameter));
+    console.log("end p", endParameter,(2*Math.PI-endParameter));
+    console.log("arc l", this._arcLength);
+    console.log("rot", this._rotation)
 
-    // Bring all the anchor points to a common pool
-    // Each half (and extra) path will pull anchor points from
-    // this pool as needed
-    const pool: Anchor[] = [];
-    pool.push(...this._frontPart.vertices.splice(0));
-    pool.push(...this._frontExtra.vertices.splice(0));
-    pool.push(...this._backPart.vertices.splice(0));
-    pool.push(...this._backExtra.vertices.splice(0));
-    const glowingPool: Anchor[] = [];
-    glowingPool.push(...this.glowingFrontPart.vertices.splice(0));
-    glowingPool.push(...this.glowingFrontExtra.vertices.splice(0));
-    glowingPool.push(...this.glowingBackPart.vertices.splice(0));
-    glowingPool.push(...this.glowingBackExtra.vertices.splice(0));
+    // front part/extra parameter must be between pi and 2 pi
+    // back part/extra parameter must be between 0 and pi
 
-    // We begin with the "main" paths as the current active paths
-    // As we find additional zero-crossing, we then switch to the
-    // "extra" paths
-    let activeFront = this._frontPart.vertices;
-    let activeBack = this._backPart.vertices;
-    let glowingActiveFront = this.glowingFrontPart.vertices;
-    let glowingActiveBack = this.glowingBackPart.vertices;
-    for (let pos = 0; pos < 2 * SUBDIVS; pos++) {
-      // Generate a vector point on the equator of the Default Sphere
-      const angle = (pos / (2 * SUBDIVS - 1)) * Math.abs(this._arcLength);
-      this.tmpVector1
-        .set(Math.cos(angle), Math.sin(angle), 0)
-        .multiplyScalar(SETTINGS.boundaryCircle.radius);
-      // Transform that vector/point to one on the current segment
-      this.tmpVector1.applyMatrix4(this.transformMatrix);
-      const thisSign = Math.sign(this.tmpVector1.z);
+    // Now figure out the front/back part/extra angle values and set the front/back part/extra in use booleans
 
-      if (pos === 0) {
-        this._firstVertexIsOnFront = thisSign === 1;
-      }
-      if (pos === 2 * SUBDIVS - 1) {
-        this._lastVertexIsOnFront = thisSign === 1;
-      }
+    if (
+      this._firstVertexIsOnFront &&
+      this._arcLength <= Math.PI &&
+      this._lastVertexIsOnFront
+    ) {
+      // the segment starts and ends on the front
+      this._frontPartInUse = true;
+      this._backPartInUse = false;
+      this._frontExtraInUse = false;
+      this._backExtraInUse = false;
 
-      // CHeck for zero-crossing
-      if (lastSign !== thisSign) {
-        // We have a zero crossing
-        if (thisSign > 0) {
-          // If we already had a positive crossing
-          // The next chunk is a split front part
-          if (toPos.length > 0) {
-            activeFront = this._frontExtra.vertices;
-            glowingActiveFront = this.glowingFrontExtra.vertices;
-            posIndex = 0;
-          }
-          toPos.push(pos);
-        }
-        // If we already had a negative crossing
-        // The next chunk is a split back part
-        if (thisSign < 0) {
-          if (toNeg.length > 0) {
-            activeBack = this._backExtra.vertices;
-            glowingActiveBack = this.glowingBackExtra.vertices;
-            negIndex = 0;
-          }
-          toNeg.push(pos);
-        }
-      }
-      lastSign = thisSign;
-      if (this.tmpVector1.z > 0) {
-        if (posIndex === activeFront.length) {
-          // transfer one cell from the common pool
-          const v1 = pool.pop();
-          if (v1) activeFront.push(v1);
-          const v2 = glowingPool.pop();
-          if (v2) glowingActiveFront.push(v2);
-        }
-        activeFront[posIndex].x = this.tmpVector1.x;
-        activeFront[posIndex].y = this.tmpVector1.y;
-        glowingActiveFront[posIndex].x = this.tmpVector1.x;
-        glowingActiveFront[posIndex].y = this.tmpVector1.y;
-        posIndex++;
-      } else {
-        if (negIndex === activeBack.length) {
-          // transfer one cell from the common pool
-          const v1 = pool.pop();
-          if (v1) activeBack.push(v1);
-          const v2 = glowingPool.pop();
-          if (v2) glowingActiveBack.push(v2);
-        }
-        activeBack[negIndex].x = this.tmpVector1.x;
-        activeBack[negIndex].y = this.tmpVector1.y;
-        glowingActiveBack[negIndex].x = this.tmpVector1.x;
-        glowingActiveBack[negIndex].y = this.tmpVector1.y;
-        negIndex++;
-      }
+      this._frontPartStartAngle = startParameter < 0 ? startParameter : 2*Math.PI-startParameter
+      this._frontPartEndAngle = endParameter < 0 ? endParameter : 2*Math.PI-endParameter
+      this._backPartStartAngle = 0;
+      this._backPartEndAngle = 0;
+      this._frontExtraStartAngle = 0;
+      this._frontExtraEndAngle = 0;
+      this._backExtraStartAngle = 0;
+      this._backExtraEndAngle = 0;
+    } else if (
+      !this._firstVertexIsOnFront &&
+      this._arcLength <= Math.PI &&
+      !this._lastVertexIsOnFront
+    ) {
+      // the segment starts and ends on the back
+      this._frontPartInUse = false;
+      this._backPartInUse = true;
+      this._frontExtraInUse = false;
+      this._backExtraInUse = false;
+
+      this._frontPartStartAngle = 0;
+      this._frontPartEndAngle = 0;
+      this._backPartStartAngle = startParameter > 0 ? startParameter : 2*Math.PI-startParameter
+      this._backPartEndAngle = endParameter > 0 ? endParameter : 2*Math.PI-endParameter
+      this._frontExtraStartAngle = 0;
+      this._frontExtraEndAngle = 0;
+      this._backExtraStartAngle = 0;
+      this._backExtraEndAngle = 0;
+    } else if (this._firstVertexIsOnFront && !this._lastVertexIsOnFront) {
+      // the segment starts on front and ends on the back
+      this._frontPartInUse = true;
+      this._backPartInUse = true;
+      this._frontExtraInUse = false;
+      this._backExtraInUse = false;
+
+      this._frontPartStartAngle = startParameter < 0 ? startParameter : 2*Math.PI;
+      this._frontPartEndAngle = startParameter < 0 ? 0 : 2*Math.PI-startParameter;
+      this._backPartStartAngle =  endParameter > 0 ? endParameter : 0;
+      this._backPartEndAngle = endParameter > 0 ? 0 : -endParameter
+      this._frontExtraStartAngle = 0;
+      this._frontExtraEndAngle = 0;
+      this._backExtraStartAngle = 0;
+      this._backExtraEndAngle = 0;
+    } else if (!this._firstVertexIsOnFront && this._lastVertexIsOnFront) {
+      // the segment starts on back and ends on the front
+      this._frontPartInUse = true;
+      this._backPartInUse = true;
+      this._frontExtraInUse = false;
+      this._backExtraInUse = false;
+
+      this._frontPartStartAngle = endParameter > 0 ? 2*Math.PI-endParameter : -Math.PI;
+      this._frontPartEndAngle = endParameter > 0 ? Math.PI :endParameter;
+      this._backPartStartAngle = startParameter < 0 ? Math.PI : startParameter;
+      this._backPartEndAngle = startParameter < 0 ? -startParameter : Math.PI;
+      this._frontExtraStartAngle = 0;
+      this._frontExtraEndAngle = 0;
+      this._backExtraStartAngle = 0;
+      this._backExtraEndAngle = 0;
+    } else if (
+      this._firstVertexIsOnFront &&
+      this._arcLength > Math.PI &&
+      this._lastVertexIsOnFront
+    ) {
+      // the segment wraps from front to back to front
+      this._frontPartInUse = true;
+      this._backPartInUse = true; // length pi
+      this._frontExtraInUse = true;
+      this._backExtraInUse = false;
+
+      this._frontPartStartAngle = startParameter < 0 ? -Math.PI : 2*Math.PI-startParameter
+      this._frontPartEndAngle = startParameter < 0 ? startParameter : Math.PI;
+      this._backPartStartAngle = startParameter < 0 ? 0 :Math.PI ;
+      this._backPartEndAngle = startParameter < 0 ? Math.PI:0 ;
+
+      this._frontExtraStartAngle = endParameter < 0 ? 0: -endParameter ;
+      this._frontExtraEndAngle = endParameter < 0 ? endParameter : 0;
+      this._backExtraStartAngle = 0;
+      this._backExtraEndAngle = 0;
+    } else if (
+      !this._firstVertexIsOnFront &&
+      this._arcLength > Math.PI &&
+      !this._lastVertexIsOnFront
+    ) {
+      // the segment wraps from back to front to back
+      this._frontPartInUse = true; //length pi
+      this._backPartInUse = true;
+      this._frontExtraInUse = false;
+      this._backExtraInUse = true;
+
+      this._frontPartStartAngle = startParameter < 0 ? 2*Math.PI:Math.PI ;
+      this._frontPartEndAngle =  startParameter < 0 ? Math.PI:2*Math.PI;
+
+      this._backPartStartAngle = startParameter < 0 ? 0: startParameter ;
+      this._backPartEndAngle = startParameter < 0 ? -startParameter : 0;
+
+      this._frontExtraStartAngle = 0;
+      this._frontExtraEndAngle = 0;
+
+      this._backExtraStartAngle = endParameter < 0 ? Math.PI : endParameter
+      this._backExtraEndAngle = endParameter < 0 ? -endParameter : Math.PI;
     }
-    // console.debug(
-    //   `Front part visible? ${this._frontPart.visible} vertices ${this._frontPart.vertices.length}, linewidth ${this._frontPart.linewidth}`
-    // );
-    // console.debug(
-    //   `Back part visible? ${this._backPart.visible} vertices ${this._backPart.vertices.length}, linewidth ${this._backPart.linewidth}`
-    // );
-    // console.debug(
-    //   `Front extra part visible? ${this._frontExtra.visible} extra vertices ${this._frontExtra.vertices.length}, linewidth ${this._frontExtra.linewidth}`
-    // );
-    // console.debug(
-    //   `Back extra part visible? ${this._backExtra.visible} extra vertices ${this._backExtra.vertices.length}, linewidth ${this._backExtra.linewidth}`
-    // );
+
+    //Now copy all this information into the glowing/not front/back part/extra
+    this._frontPart.startAngle = this._frontPartStartAngle;
+    this._glowingFrontPart.startAngle = this._frontPartStartAngle;
+    this._backPart.startAngle = this._backPartStartAngle;
+    this._glowingBackPart.startAngle = this._backPartStartAngle;
+    this._frontExtra.startAngle = this._frontExtraStartAngle;
+    this._glowingFrontExtra.startAngle = this._frontExtraStartAngle;
+    this._backExtra.startAngle = this._backExtraStartAngle;
+    this._glowingBackExtra.startAngle = this._backExtraStartAngle;
+
+    this._frontPart.endAngle = this._frontPartEndAngle;
+    this._glowingFrontPart.endAngle = this._frontPartEndAngle;
+    this._backPart.endAngle = this._backPartEndAngle;
+    this._glowingBackPart.endAngle = this._backPartEndAngle;
+    this._frontExtra.endAngle = this._frontExtraEndAngle;
+    this._glowingFrontExtra.endAngle = this._frontExtraEndAngle;
+    this._backExtra.endAngle = this._backExtraEndAngle;
+    this._glowingBackExtra.endAngle = this._backExtraEndAngle;
+
+    this._frontPart.rotation = this._rotation;
+    this._glowingFrontPart.rotation = this._rotation;
+    this._backPart.rotation = this._rotation;
+    this._glowingBackPart.rotation = this._rotation;
+    this._frontExtra.rotation = this._rotation;
+    this._glowingFrontExtra.rotation = this._rotation;
+    this._backExtra.rotation = this._rotation;
+    this._glowingBackExtra.rotation = this._rotation;
+
+    // scale to display on the screen and set the heights (widths are all 2*radius)
+    this._frontPart.height = 2 * radius * this._halfMinorAxis;
+    this._glowingFrontPart.height = 2 * radius * this._halfMinorAxis;
+    this._backPart.height = 2 * radius * this._halfMinorAxis;
+    this._glowingBackPart.height = 2 * radius * this._halfMinorAxis;
+    this._frontExtra.height = 2 * radius * this._halfMinorAxis;
+    this._glowingFrontExtra.height = 2 * radius * this._halfMinorAxis;
+    this._backExtra.height = 2 * radius * this._halfMinorAxis;
+    this._glowingBackExtra.height = 2 * radius * this._halfMinorAxis;
   }
 
   /**
@@ -392,6 +443,7 @@ export default class Segment extends Nodule {
    *  gives the direction in which the segment is drawn
    */
   set arcLength(len: number) {
+    console.log("Set arc length")
     this._arcLength = len;
   }
   /**
@@ -401,6 +453,9 @@ export default class Segment extends Nodule {
    *  gives the direction in which the segment is drawn
    */
   set startVector(idealUnitStartVector: Vector3) {
+    if (this._startVector.angleTo(idealUnitStartVector)<0.001){
+      console.log("no change in start vector")
+    } else {console.log("CHANGE IN START VECTOR")}
     this._startVector.copy(idealUnitStartVector).normalize();
   }
 
@@ -411,19 +466,32 @@ export default class Segment extends Nodule {
    *  gives the direction in which the segment is drawn
    */
   set normalVector(idealUnitNormalVector: Vector3) {
+    console.log("Set normal vector")
     this._normalVector.copy(idealUnitNormalVector).normalize();
   }
 
-  get frontPart(): Path {
+  get frontPartInUse(): boolean {
+    return this._frontPartInUse;
+  }
+  get frontPart(): Arc {
     return this._frontPart;
   }
-  get backPart(): Path {
+  get backPartInUse(): boolean {
+    return this._backPartInUse;
+  }
+  get backPart(): Arc {
     return this._backPart;
   }
-  get frontPartExtra(): Path {
+  get frontExtraInUse(): boolean {
+    return this._frontExtraInUse;
+  }
+  get frontExtra(): Arc {
     return this._frontExtra;
   }
-  get backPartExtra(): Path {
+  get backExtraInUse(): boolean {
+    return this._backExtraInUse;
+  }
+  get backExtra(): Arc {
     return this._backExtra;
   }
   get firstVertexIsOnFront(): boolean {
@@ -433,19 +501,113 @@ export default class Segment extends Nodule {
     return this._lastVertexIsOnFront;
   }
 
-  setVisible(flag: boolean): void {
-    if (!flag) {
-      this._frontPart.visible = false;
-      this.glowingFrontPart.visible = false;
-      this._frontExtra.visible = false;
-      this.glowingFrontExtra.visible = false;
-      this._backPart.visible = false;
-      this.glowingBackPart.visible = false;
-      this._backExtra.visible = false;
-      this.glowingBackExtra.visible = false;
-    } else {
-      this.normalDisplay();
+  // frontGlowingDisplay(): void {
+  //   this._frontPart.visible = true;
+  //   this._glowingFrontPart.visible = true;
+  //   this._frontExtra.visible = true;
+  //   this._glowingFrontExtra.visible = true;
+  // }
+
+  // backGlowingDisplay(): void {
+  //   this._backPart.visible = true;
+  //   this._glowingBackPart.visible = true;
+  //   this._backExtra.visible = true;
+  //   this._glowingBackExtra.visible = true;
+  // }
+
+  // backNormalDisplay(): void {
+  //   this._backPart.visible = true;
+  //   this._glowingBackPart.visible = false;
+  //   this._backExtra.visible = true;
+  //   this._glowingBackExtra.visible = false;
+  // }
+
+  // frontNormalDisplay(): void {
+  //   this._frontPart.visible = true;
+  //   this._glowingFrontPart.visible = false;
+  //   this._frontExtra.visible = true;
+  //   this._glowingFrontExtra.visible = false;
+  // }
+
+  normalDisplay(): void {
+    if (this._frontPartInUse) {
+      this._frontPart.visible = true;
+      this._glowingFrontPart.visible = false;
     }
+    if (this._frontExtraInUse) {
+      this._frontExtra.visible = true;
+      this._glowingFrontExtra.visible = false;
+    }
+    if (this._backPartInUse) {
+      this._backPart.visible = true;
+      this._glowingBackPart.visible = false;
+    }
+    if (this._backExtraInUse) {
+      this._backExtra.visible = true;
+      this._glowingBackExtra.visible = false;
+    }
+    //frontNormalDisplay()
+    //backNormalDisplay()
+  }
+
+  glowingDisplay(): void {
+    if (this._frontPartInUse) {
+      this._frontPart.visible = true;
+      this._glowingFrontPart.visible = true;
+    }
+    if (this._frontExtraInUse) {
+      this._frontExtra.visible = true;
+      this._glowingFrontExtra.visible = true;
+    }
+    if (this._backPartInUse) {
+      this._backPart.visible = true;
+      this._glowingBackPart.visible = true;
+    }
+    if (this._backExtraInUse) {
+      this._backExtra.visible = true;
+      this._glowingBackExtra.visible = true;
+    }
+    //frontGlowingDisplay()
+    //backGlowingDisplay()
+  }
+
+  setVisible(flag: boolean): void {
+    //First turn off all parts
+    this._frontPart.visible = false;
+    this._glowingFrontPart.visible = false;
+    this._frontExtra.visible = false;
+    this._glowingFrontExtra.visible = false;
+    this._backPart.visible = false;
+    this._glowingBackPart.visible = false;
+    this._backExtra.visible = false;
+    this._glowingBackExtra.visible = false;
+    // Then if making visible true, turn on the appropriate parts
+    if (flag) {
+      if (this._frontPartInUse) {
+        this._frontPart.visible = true;
+      }
+      if (this._frontExtraInUse) {
+        this._frontExtra.visible = true;
+      }
+      if (this._backPartInUse) {
+        this._backPart.visible = true;
+      }
+      if (this._backExtraInUse) {
+        this._backExtra.visible = true;
+      }
+    }
+    // if (!flag) {
+    //   this._frontPart.visible = false;
+    //   this._glowingFrontPart.visible = false;
+    //   this._frontExtra.visible = false;
+    //   this._glowingFrontExtra.visible = false;
+    //   this._backPart.visible = false;
+    //   this._glowingBackPart.visible = false;
+    //   this._backExtra.visible = false;
+    //   this._glowingBackExtra.visible = false;
+    // } else {
+    //   this.normalDisplay();
+    // }
   }
 
   setSelectedColoring(flag: boolean): void {
@@ -472,60 +634,9 @@ export default class Segment extends Nodule {
     dup._arcLength = this._arcLength;
     dup._startVector.copy(this._startVector);
     dup._normalVector.copy(this._normalVector);
-    //Copy the vertices of front/back/part
-    const pool: Anchor[] = [];
-    pool.push(...dup._frontPart.vertices.splice(0)); //concatenates the pool array and the front vertices array and empties the frontPart array
-    pool.push(...dup._backPart.vertices.splice(0)); //concatenates the pool array and the back vertices array and empties the backPart array
-
-    // The length of the Pool array is 2*SUBDIVISIONS = this.frontPart.length + this.frontExtra.length + this.backPart.length + this.backExtra.length because dup.frontPart and dup.backPart initially contains all the vertices and frontExtra and backExtra are empty.
-    this._frontPart.vertices.forEach((v: Anchor, pos: number) => {
-      // Add a vertex in the frontPart (while taking one away from the pool)
-      const v1 = pool.pop();
-      if (v1) dup._frontPart.vertices.push(v1); // Exclamation point means that the linter assumes that the popped object is non-null
-      // Copy the this.frontPart vertex v into the newly added vertex in frontPart
-      dup._frontPart.vertices[pos].copy(v); //
-    });
-    // Repeat for the frontExtra/backPart/backExtra
-    this._frontExtra.vertices.forEach((v: Anchor, pos: number) => {
-      const v1 = pool.pop();
-      if (v1) dup._frontExtra.vertices.push(v1);
-      dup._frontExtra.vertices[pos].copy(v);
-    });
-    this._backPart.vertices.forEach((v: Anchor, pos: number) => {
-      const v1 = pool.pop();
-      if (v1) dup._backPart.vertices.push(v1);
-      dup._backPart.vertices[pos].copy(v);
-    });
-    this._backExtra.vertices.forEach((v: Anchor, pos: number) => {
-      const v1 = pool.pop();
-      if (v1) dup._backExtra.vertices.push(v1);
-      dup._backExtra.vertices[pos].copy(v);
-    });
-
-    // Repeat for all glowing parts/extras
-    const glowingPool: Anchor[] = [];
-    glowingPool.push(...dup.glowingFrontPart.vertices.splice(0));
-    glowingPool.push(...dup.glowingBackPart.vertices.splice(0));
-    this.glowingFrontPart.vertices.forEach((v: Anchor, pos: number) => {
-      const v1 = glowingPool.pop();
-      if (v1) dup.glowingFrontPart.vertices.push(v1);
-      dup.glowingFrontPart.vertices[pos].copy(v);
-    });
-    this.glowingFrontExtra.vertices.forEach((v: Anchor, pos: number) => {
-      const v1 = glowingPool.pop();
-      if (v1) dup.glowingFrontExtra.vertices.push(v1);
-      dup.glowingFrontExtra.vertices[pos].copy(v);
-    });
-    this.glowingBackPart.vertices.forEach((v: Anchor, pos: number) => {
-      const v1 = glowingPool.pop();
-      if (v1) dup.glowingBackPart.vertices.push(v1);
-      dup.glowingBackPart.vertices[pos].copy(v);
-    });
-    this.glowingBackExtra.vertices.forEach((v: Anchor, pos: number) => {
-      const v1 = glowingPool.pop();
-      if (v1) dup.glowingBackExtra.vertices.push(v1);
-      dup.glowingBackExtra.vertices[pos].copy(v);
-    });
+    //Once arcLength, start Vector and normal Vector are set
+    // call updateDisplay to set the rotation, half minor axis, and lots of other variables
+    dup.updateDisplay();
     return dup as this;
   }
 
@@ -534,10 +645,10 @@ export default class Segment extends Nodule {
     this._frontExtra.addTo(layers[LAYER.foreground]);
     this._backPart.addTo(layers[LAYER.background]);
     this._backExtra.addTo(layers[LAYER.background]);
-    this.glowingFrontPart.addTo(layers[LAYER.foregroundGlowing]);
-    this.glowingFrontExtra.addTo(layers[LAYER.foregroundGlowing]);
-    this.glowingBackPart.addTo(layers[LAYER.backgroundGlowing]);
-    this.glowingBackExtra.addTo(layers[LAYER.backgroundGlowing]);
+    this._glowingFrontPart.addTo(layers[LAYER.foregroundGlowing]);
+    this._glowingFrontExtra.addTo(layers[LAYER.foregroundGlowing]);
+    this._glowingBackPart.addTo(layers[LAYER.backgroundGlowing]);
+    this._glowingBackExtra.addTo(layers[LAYER.backgroundGlowing]);
   }
 
   removeFromLayers(): void {
@@ -545,10 +656,10 @@ export default class Segment extends Nodule {
     this._frontExtra.remove();
     this._backPart.remove();
     this._backExtra.remove();
-    this.glowingFrontPart.remove();
-    this.glowingFrontExtra.remove();
-    this.glowingBackPart.remove();
-    this.glowingBackExtra.remove();
+    this._glowingFrontPart.remove();
+    this._glowingFrontExtra.remove();
+    this._glowingBackPart.remove();
+    this._glowingBackExtra.remove();
   }
 
   /**
@@ -582,11 +693,11 @@ export default class Segment extends Nodule {
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
           : backStrokeWidthPercent)) /
       100;
-    this.glowingFrontPart.linewidth =
+    this._glowingFrontPart.linewidth =
       (Segment.currentGlowingSegmentStrokeWidthFront *
         frontStrokeWidthPercent) /
       100;
-    this.glowingBackPart.linewidth =
+    this._glowingBackPart.linewidth =
       (Segment.currentGlowingSegmentStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
@@ -601,11 +712,11 @@ export default class Segment extends Nodule {
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
           : backStrokeWidthPercent)) /
       100;
-    this.glowingFrontExtra.linewidth =
+    this._glowingFrontExtra.linewidth =
       (Segment.currentGlowingSegmentStrokeWidthFront *
         frontStrokeWidthPercent) /
       100;
-    this.glowingBackExtra.linewidth =
+    this._glowingBackExtra.linewidth =
       (Segment.currentGlowingSegmentStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
@@ -693,10 +804,10 @@ export default class Segment extends Nodule {
         }
 
         // The temporary display is never highlighted
-        this.glowingFrontPart.visible = false;
-        this.glowingBackPart.visible = false;
-        this.glowingFrontExtra.visible = false;
-        this.glowingBackExtra.visible = false;
+        this._glowingFrontPart.visible = false;
+        this._glowingBackPart.visible = false;
+        this._glowingFrontExtra.visible = false;
+        this._glowingBackExtra.visible = false;
         break;
       }
 
@@ -839,7 +950,7 @@ export default class Segment extends Nodule {
         // UPDATE the glowing width so it is always bigger than the drawn width
         // Glowing Front
         // no fillColor
-        this.glowingFrontPart.stroke = this.glowingStrokeColorFront;
+        this._glowingFrontPart.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
@@ -848,20 +959,20 @@ export default class Segment extends Nodule {
           frontStyle?.reverseDashArray !== undefined &&
           frontStyle.dashArray.length > 0
         ) {
-          this.glowingFrontPart.dashes.clear();
-          this.glowingFrontPart.dashes.push(...frontStyle.dashArray);
+          this._glowingFrontPart.dashes.clear();
+          this._glowingFrontPart.dashes.push(...frontStyle.dashArray);
           if (frontStyle.reverseDashArray) {
-            this.glowingFrontPart.dashes.reverse();
+            this._glowingFrontPart.dashes.reverse();
           }
         } else {
           // the array length is zero and no dash array should be set
-          this.glowingFrontPart.dashes.clear();
-          this.glowingFrontPart.dashes.push(0);
+          this._glowingFrontPart.dashes.clear();
+          this._glowingFrontPart.dashes.push(0);
         }
 
         // Glowing Front Extra
         // no fillColor
-        this.glowingFrontExtra.stroke = this.glowingStrokeColorFront;
+        this._glowingFrontExtra.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
@@ -870,20 +981,20 @@ export default class Segment extends Nodule {
           frontStyle?.reverseDashArray !== undefined &&
           frontStyle.dashArray.length > 0
         ) {
-          this.glowingFrontExtra.dashes.clear();
-          this.glowingFrontExtra.dashes.push(...frontStyle.dashArray);
+          this._glowingFrontExtra.dashes.clear();
+          this._glowingFrontExtra.dashes.push(...frontStyle.dashArray);
           if (frontStyle.reverseDashArray) {
-            this.glowingFrontExtra.dashes.reverse();
+            this._glowingFrontExtra.dashes.reverse();
           }
         } else {
           // the array length is zero and no dash array should be set
-          this.glowingFrontExtra.dashes.clear();
-          this.glowingFrontExtra.dashes.push(0);
+          this._glowingFrontExtra.dashes.clear();
+          this._glowingFrontExtra.dashes.push(0);
         }
 
         // Glowing Back
         // no fillColor
-        this.glowingBackPart.stroke = this.glowingStrokeColorBack;
+        this._glowingBackPart.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the back dash properties to the glowing object
@@ -892,20 +1003,20 @@ export default class Segment extends Nodule {
           backStyle?.reverseDashArray !== undefined &&
           backStyle.dashArray.length > 0
         ) {
-          this.glowingBackPart.dashes.clear();
-          this.glowingBackPart.dashes.push(...backStyle.dashArray);
+          this._glowingBackPart.dashes.clear();
+          this._glowingBackPart.dashes.push(...backStyle.dashArray);
           if (backStyle.reverseDashArray) {
-            this.glowingBackPart.dashes.reverse();
+            this._glowingBackPart.dashes.reverse();
           }
         } else {
           // the array length is zero and no dash array should be set
-          this.glowingBackPart.dashes.clear();
-          this.glowingBackPart.dashes.push(0);
+          this._glowingBackPart.dashes.clear();
+          this._glowingBackPart.dashes.push(0);
         }
 
         // Glowing Back Extra
         // no fillColor
-        this.glowingBackExtra.stroke = this.glowingStrokeColorBack;
+        this._glowingBackExtra.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the back dash properties to the glowing object
@@ -914,15 +1025,15 @@ export default class Segment extends Nodule {
           backStyle?.reverseDashArray !== undefined &&
           backStyle.dashArray.length > 0
         ) {
-          this.glowingBackExtra.dashes.clear();
-          this.glowingBackExtra.dashes.push(...backStyle.dashArray);
+          this._glowingBackExtra.dashes.clear();
+          this._glowingBackExtra.dashes.push(...backStyle.dashArray);
           if (backStyle.reverseDashArray) {
-            this.glowingBackExtra.dashes.reverse();
+            this._glowingBackExtra.dashes.reverse();
           }
         } else {
           // the array length is zero and no dash array should be set
-          this.glowingBackExtra.dashes.clear();
-          this.glowingBackExtra.dashes.push(0);
+          this._glowingBackExtra.dashes.clear();
+          this._glowingBackExtra.dashes.push(0);
         }
 
         break;

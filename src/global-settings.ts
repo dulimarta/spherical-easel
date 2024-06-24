@@ -327,7 +327,7 @@ export const SETTINGS = {
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     minimumLength: 0.045, // Don't create lines distance between the two defining point with arc length between them smaller than this (must be larger than point.hitIdealDistance because if not it is possible to create a line segment of length zero )
-    numPoints: 25, // The number of vertices used to render the line. These are spread over the front and back parts. MAKE THIS EVEN!
+    numPoints: 25, // The twice this number of vertices is used to render the line. This is the number in each of the front and back.
     closeEnoughToPi: 0.005, //If the angle from start to end point of this line is within this value of pi, consider it length pi, so that it is not defined by its start/end points and can be moved
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the line.
     //dynamicBackStyle is a flag that means the fill color, and stroke of the lines drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
