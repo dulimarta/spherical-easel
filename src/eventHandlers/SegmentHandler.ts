@@ -415,6 +415,7 @@ export default class SegmentHandler extends Highlighter {
         this.temporarySegment.arcLength = this.arcLength;
         this.temporarySegment.normalVector = this.normalVector;
         this.temporarySegment.updateDisplay();
+        this.temporarySegment.setVisible(true); //turns off the display of unused two.js portions of the temporary segment (in the non-temporary segments, setVisible is repeatedly called)
       }
     }
     else if (this.isTemporaryStartMarkerAdded) {
@@ -585,6 +586,7 @@ export default class SegmentHandler extends Highlighter {
       this.temporarySegment.arcLength = this.arcLength;
       this.temporarySegment.normalVector = this.normalVector;
       this.temporarySegment.updateDisplay();
+      this.temporarySegment.setVisible(true); //turns off the display of unused two.js portions of the temporary segment (in the non-temporary segments, setVisible is repeatedly called)
 
       if (
         (this.endSEPoint instanceof SEIntersectionPoint &&
@@ -745,6 +747,7 @@ export default class SegmentHandler extends Highlighter {
       this.temporarySegment.arcLength = this.arcLength;
       this.temporarySegment.normalVector = this.normalVector;
       this.temporarySegment.updateDisplay();
+      this.temporarySegment.setVisible(true); //turns off the display of unused two.js portions of the temporary segment (in the non-temporary segments, setVisible is repeatedly called)
 
       // make sure that this segment hasn't been added before
       if (

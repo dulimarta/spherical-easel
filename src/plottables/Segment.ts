@@ -51,40 +51,45 @@ export default class Segment extends Nodule {
    * can have two front parts or two back parts. The frontExtra and backExtra are variables to represent those
    * extra parts. There are glowing counterparts for each part.
    */
-  protected _frontPart: Arc;
-  protected _frontExtra: Arc;
-  protected _backPart: Arc;
-  protected _backExtra: Arc;
-  protected _glowingFrontPart: Arc;
-  protected _glowingFrontExtra: Arc;
-  protected _glowingBackPart: Arc;
-  protected _glowingBackExtra: Arc;
+  private _frontPart: Arc;
+  private _frontExtra: Arc;
+  private _backPart: Arc;
+  private _backExtra: Arc;
+  private _glowingFrontPart: Arc;
+  private _glowingFrontExtra: Arc;
+  private _glowingBackPart: Arc;
+  private _glowingBackExtra: Arc;
 
   /** The normal vector determines the rotation and minor axis length of the displayed ellipse */
   private _rotation: number;
   private _halfMinorAxis: number;
 
-  // Each part of the segment has a starting parameter and an ending parameter
-  protected _frontPartStartAngle: number = 0;
-  protected _frontPartEndAngle: number = 0;
-  protected _backPartStartAngle: number = 0;
-  protected _backPartEndAngle: number = 0;
-  protected _frontExtraStartAngle: number = 0;
-  protected _frontExtraEndAngle: number = 0;
-  protected _backExtraStartAngle: number = 0;
-  protected _backExtraEndAngle: number = 0;
+  //Export to SVG we need to know the ending point of the segment and the intermediate point(s) where the segment crosses sides of the sphere.
+  private _endVector = new Vector3();
+  // The intermediate points (if used) are (cos(_rotation),(_rotation)) or/and (-cos(_rotation),-sin(_rotation))
+  // Ww also need to know which arc to use, which is determined by the sign of the start and end parameters
+  private _startParameter = 0;
+  private _endParameter = 0;
+
+  // Each part of the segment has a starting parameter and an ending parameter (set to zero when not in use)
+  private _frontPartStartAngle: number = 0;
+  private _frontPartEndAngle: number = 0;
+  private _backPartStartAngle: number = 0;
+  private _backPartEndAngle: number = 0;
+  private _frontExtraStartAngle: number = 0;
+  private _frontExtraEndAngle: number = 0;
+  private _backExtraStartAngle: number = 0;
+  private _backExtraEndAngle: number = 0;
   // Glowing counterparts are the same as their non-glowing ones, so don't keep a second set of these variables.
 
   // Booleans that help Polygon determine if those parts of the segment are in use
-  protected _frontPartInUse: boolean = false;
-  protected _frontExtraInUse: boolean = false;
-  protected _backPartInUse: boolean = false;
-  protected _backExtraInUse: boolean = false;
+  private _frontPartInUse: boolean = false;
+  private _frontExtraInUse: boolean = false;
+  private _backPartInUse: boolean = false;
+  private _backExtraInUse: boolean = false;
 
   //Vector to help set the parameters of the segment
   private toVector = new Vector3(); // The segment starts at _startVector and goes toward toVector, toVector is always 90 degrees from the _startVector
-  private endVector = new Vector3(); // Stores the end vector of the segment
-  private midVector = new Vector3(); // Stores the mid point of the segment
   private tempVector = new Vector3(); // Temp vector for figuring out end/mid Vectors
 
   /**
@@ -126,14 +131,70 @@ export default class Segment extends Nodule {
     // Initialize the Group
     super(noduleName);
 
-    this._frontPart = new Arc(0,0,2*radius,2*radius,Math.PI,2*Math.PI,SUBDIVS);
-    this._glowingFrontPart = new Arc(0,0,2*radius,2*radius,Math.PI,2*Math.PI,SUBDIVS);
-    this._backPart = new Arc(0,0,2*radius,2*radius,0,Math.PI,SUBDIVS);
-    this._glowingBackPart = new Arc(0,0,2*radius,2*radius,0,Math.PI,SUBDIVS);
-    this._frontExtra = new Arc(0,0,2*radius,2*radius,Math.PI,2*Math.PI,SUBDIVS);
-    this._glowingFrontExtra = new Arc(0,0,2*radius,2*radius,Math.PI,2*Math.PI,SUBDIVS);
-    this._backExtra = new Arc(0,0,2*radius,2*radius,0,Math.PI,SUBDIVS);
-    this._glowingBackExtra = new Arc(0,0,2*radius,2*radius,0,Math.PI,SUBDIVS);
+    this._frontPart = new Arc(
+      0,
+      0,
+      2 * radius,
+      2 * radius,
+      Math.PI,
+      2 * Math.PI,
+      SUBDIVS
+    );
+    this._glowingFrontPart = new Arc(
+      0,
+      0,
+      2 * radius,
+      2 * radius,
+      Math.PI,
+      2 * Math.PI,
+      SUBDIVS
+    );
+    this._backPart = new Arc(0, 0, 2 * radius, 2 * radius, 0, Math.PI, SUBDIVS);
+    this._glowingBackPart = new Arc(
+      0,
+      0,
+      2 * radius,
+      2 * radius,
+      0,
+      Math.PI,
+      SUBDIVS
+    );
+    this._frontExtra = new Arc(
+      0,
+      0,
+      2 * radius,
+      2 * radius,
+      Math.PI,
+      2 * Math.PI,
+      SUBDIVS
+    );
+    this._glowingFrontExtra = new Arc(
+      0,
+      0,
+      2 * radius,
+      2 * radius,
+      Math.PI,
+      2 * Math.PI,
+      SUBDIVS
+    );
+    this._backExtra = new Arc(
+      0,
+      0,
+      2 * radius,
+      2 * radius,
+      0,
+      Math.PI,
+      SUBDIVS
+    );
+    this._glowingBackExtra = new Arc(
+      0,
+      0,
+      2 * radius,
+      2 * radius,
+      0,
+      Math.PI,
+      SUBDIVS
+    );
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this._frontPart.id), {
@@ -208,34 +269,25 @@ export default class Segment extends Nodule {
     // Start by setting the mid- and end-Vectors
     //NOTE: (normalVector x startVector)*(this._arcLength > Math.PI ? -1 : 1)
     // gives the direction in which the segment is drawn
-    // This vector is 90 degree away from _startVector in the direction of the segment
+    // This toVector is 90 degree away from _startVector in the direction of the segment
     this.toVector
       .copy(this._normalVector)
       .cross(this._startVector)
       .multiplyScalar(this._arcLength > Math.PI ? -1 : 1)
       .normalize();
 
-    // midVector = cos(arcLength/2)*startVector+sin(arcLength/2)*toVector
-    this.midVector
-      .copy(this._startVector)
-      .multiplyScalar(Math.cos(this._arcLength / 2));
-    this.tempVector
-      .copy(this.toVector)
-      .multiplyScalar(Math.sin(this._arcLength / 2));
-    this.midVector.add(this.tempVector).normalize();
-
     // endVector = cos(arcLength)*startVector+sin(arcLength)*toVector
-    this.endVector
+    this._endVector
       .copy(this._startVector)
       .multiplyScalar(Math.cos(this._arcLength));
     this.tempVector
       .copy(this.toVector)
       .multiplyScalar(Math.sin(this._arcLength));
-    this.endVector.add(this.tempVector).normalize();
+    this._endVector.add(this.tempVector).normalize();
 
     // Set the last/first vertex is on front
     this._firstVertexIsOnFront = Math.sign(this._startVector.z) == 1;
-    this._lastVertexIsOnFront = Math.sign(this.endVector.z) == 1;
+    this._lastVertexIsOnFront = Math.sign(this._endVector.z) == 1;
 
     // Now compute the angle/parameter of the locations of the start, mid, and end vectors
     // Start by rotating them -this._rotation
@@ -249,25 +301,25 @@ export default class Segment extends Nodule {
       Math.cos(-this._rotation) * this._startVector.y;
 
     const unRotatedEndVecX =
-      Math.cos(-this._rotation) * this.endVector.x -
-      Math.sin(-this._rotation) * this.endVector.y;
+      Math.cos(-this._rotation) * this._endVector.x -
+      Math.sin(-this._rotation) * this._endVector.y;
     const unRotatedEndVecY =
-      Math.sin(-this._rotation) * this.endVector.x +
-      Math.cos(-this._rotation) * this.endVector.y;
+      Math.sin(-this._rotation) * this._endVector.x +
+      Math.cos(-this._rotation) * this._endVector.y;
 
-      console.log("un rot start x,y", unRotatedStartVecX, unRotatedStartVecY )
-      console.log("angle NC", Math.atan2(
-        unRotatedStartVecY,
-        unRotatedStartVecX
-      ))
+    // console.log("un rot start x,y", unRotatedStartVecX, unRotatedStartVecY )
+    // console.log("angle NC", Math.atan2(
+    //   unRotatedStartVecY,
+    //   unRotatedStartVecX
+    // ))
 
     // Now that (unRotatedStartVecX,unRotatedStartVecY) is a point on the rotated ellipse
     //  with halfMinorAxis and 1 (half the MajorAxis) then the parameter value is
-    const startParameter = Math.atan2(
+    this._startParameter = Math.atan2(
       unRotatedStartVecY / Math.abs(this._halfMinorAxis),
       unRotatedStartVecX
     );
-    const endParameter = Math.atan2(
+    this._endParameter = Math.atan2(
       unRotatedEndVecY / Math.abs(this._halfMinorAxis),
       unRotatedEndVecX
     );
@@ -275,15 +327,26 @@ export default class Segment extends Nodule {
     // for some t0 then t0= atan2(d/b,c/a), but we have to adjust for how two.js draws arcs
 
     // make sure that start<mid<end parameter
-    console.log("start p", startParameter,(2*Math.PI-startParameter));
-    console.log("end p", endParameter,(2*Math.PI-endParameter));
-    console.log("arc l", this._arcLength);
-    console.log("rot", this._rotation)
-
-    // front part/extra parameter must be between pi and 2 pi
-    // back part/extra parameter must be between 0 and pi
+    // console.log("start p", this._startParameter,2*Math.PI+this._startParameter,2*Math.PI-this._startParameter);
+    // console.log("end p", this._endParameter,2*Math.PI+this._endParameter,2*Math.PI-this._endParameter);
+    // console.log("arc l", this._arcLength);
+    // console.log("rot", this._rotation)
 
     // Now figure out the front/back part/extra angle values and set the front/back part/extra in use booleans
+
+    //reset all the arc parameters, this means that unused parts have their start and end angles set to zero so they are not displayed (without setting the visibility to false)
+    this._frontPartStartAngle = 0;
+    this._frontPartEndAngle = 0;
+    this._backPartStartAngle = 0;
+    this._backPartEndAngle = 0;
+    this._frontExtraStartAngle = 0;
+    this._frontExtraEndAngle = 0;
+    this._backExtraStartAngle = 0;
+    this._backExtraEndAngle = 0;
+    this._frontPartInUse = false;
+    this._backPartInUse = false;
+    this._frontExtraInUse = false;
+    this._backExtraInUse = false;
 
     if (
       this._firstVertexIsOnFront &&
@@ -292,67 +355,94 @@ export default class Segment extends Nodule {
     ) {
       // the segment starts and ends on the front
       this._frontPartInUse = true;
-      this._backPartInUse = false;
-      this._frontExtraInUse = false;
-      this._backExtraInUse = false;
 
-      this._frontPartStartAngle = startParameter < 0 ? startParameter : 2*Math.PI-startParameter
-      this._frontPartEndAngle = endParameter < 0 ? endParameter : 2*Math.PI-endParameter
-      this._backPartStartAngle = 0;
-      this._backPartEndAngle = 0;
-      this._frontExtraStartAngle = 0;
-      this._frontExtraEndAngle = 0;
-      this._backExtraStartAngle = 0;
-      this._backExtraEndAngle = 0;
+      this._frontPartStartAngle =
+        this._startParameter < 0
+          ? 2 * Math.PI + this._startParameter
+          : 2 * Math.PI - this._startParameter;
+      this._frontPartEndAngle =
+        this._endParameter < 0
+          ? 2 * Math.PI + this._endParameter
+          : 2 * Math.PI - this._endParameter;
     } else if (
       !this._firstVertexIsOnFront &&
       this._arcLength <= Math.PI &&
       !this._lastVertexIsOnFront
     ) {
       // the segment starts and ends on the back
-      this._frontPartInUse = false;
       this._backPartInUse = true;
-      this._frontExtraInUse = false;
-      this._backExtraInUse = false;
 
-      this._frontPartStartAngle = 0;
-      this._frontPartEndAngle = 0;
-      this._backPartStartAngle = startParameter > 0 ? startParameter : 2*Math.PI-startParameter
-      this._backPartEndAngle = endParameter > 0 ? endParameter : 2*Math.PI-endParameter
-      this._frontExtraStartAngle = 0;
-      this._frontExtraEndAngle = 0;
-      this._backExtraStartAngle = 0;
-      this._backExtraEndAngle = 0;
-    } else if (this._firstVertexIsOnFront && !this._lastVertexIsOnFront) {
-      // the segment starts on front and ends on the back
+      this._backPartStartAngle =
+        this._startParameter > 0 ? this._startParameter : -this._startParameter;
+      this._backPartEndAngle =
+        this._endParameter > 0 ? this._endParameter : -this._endParameter;
+    } else if (
+      this._firstVertexIsOnFront &&
+      this._arcLength <= Math.PI &&
+      !this._lastVertexIsOnFront
+    ) {
+      // the segment starts on front and ends on the back length less than pi
       this._frontPartInUse = true;
       this._backPartInUse = true;
-      this._frontExtraInUse = false;
-      this._backExtraInUse = false;
 
-      this._frontPartStartAngle = startParameter < 0 ? startParameter : 2*Math.PI;
-      this._frontPartEndAngle = startParameter < 0 ? 0 : 2*Math.PI-startParameter;
-      this._backPartStartAngle =  endParameter > 0 ? endParameter : 0;
-      this._backPartEndAngle = endParameter > 0 ? 0 : -endParameter
-      this._frontExtraStartAngle = 0;
-      this._frontExtraEndAngle = 0;
-      this._backExtraStartAngle = 0;
-      this._backExtraEndAngle = 0;
-    } else if (!this._firstVertexIsOnFront && this._lastVertexIsOnFront) {
-      // the segment starts on back and ends on the front
+      this._frontPartStartAngle =
+        this._startParameter < 0
+          ? 2 * Math.PI + this._startParameter
+          : 2 * Math.PI - this._startParameter;
+      this._frontPartEndAngle = 2 * Math.PI;
+      this._backPartStartAngle = 0;
+      this._backPartEndAngle =
+        this._endParameter > 0 ? this._endParameter : -this._endParameter;
+    } else if (
+      this._firstVertexIsOnFront &&
+      this._arcLength > Math.PI &&
+      !this._lastVertexIsOnFront
+    ) {
+      // the segment starts on front and ends on the back length more than pi
       this._frontPartInUse = true;
       this._backPartInUse = true;
-      this._frontExtraInUse = false;
-      this._backExtraInUse = false;
 
-      this._frontPartStartAngle = endParameter > 0 ? 2*Math.PI-endParameter : -Math.PI;
-      this._frontPartEndAngle = endParameter > 0 ? Math.PI :endParameter;
-      this._backPartStartAngle = startParameter < 0 ? Math.PI : startParameter;
-      this._backPartEndAngle = startParameter < 0 ? -startParameter : Math.PI;
-      this._frontExtraStartAngle = 0;
-      this._frontExtraEndAngle = 0;
-      this._backExtraStartAngle = 0;
-      this._backExtraEndAngle = 0;
+      this._frontPartStartAngle =
+        this._startParameter < 0
+          ? 2 * Math.PI + this._startParameter
+          : 2 * Math.PI - this._startParameter;
+      this._frontPartEndAngle = this._startParameter < 0 ? Math.PI : Math.PI;
+      this._backPartStartAngle = this._endParameter > 0 ? Math.PI : Math.PI;
+      this._backPartEndAngle =
+        this._endParameter > 0 ? this._endParameter : -this._endParameter;
+    } else if (
+      !this._firstVertexIsOnFront &&
+      this._arcLength <= Math.PI &&
+      this._lastVertexIsOnFront
+    ) {
+      // the segment starts on back and ends on the front length less than pi
+      this._frontPartInUse = true;
+      this._backPartInUse = true;
+
+      this._frontPartStartAngle = Math.PI;
+      this._frontPartEndAngle =
+        this._endParameter > 0
+          ? 2 * Math.PI - this._endParameter
+          : 2 * Math.PI + this._endParameter;
+      this._backPartStartAngle =
+        this._startParameter < 0 ? -this._startParameter : this._startParameter;
+      this._backPartEndAngle = Math.PI;
+    } else if (
+      !this._firstVertexIsOnFront &&
+      this._arcLength > Math.PI &&
+      this._lastVertexIsOnFront
+    ) {
+      // the segment starts on back and ends on the front length more than pi
+      this._frontPartInUse = true;
+      this._backPartInUse = true;
+
+      this._frontPartStartAngle =
+        this._endParameter > 0 ? 2 * Math.PI - this._endParameter : 0;
+      this._frontPartEndAngle =
+        this._endParameter > 0 ? 2 * Math.PI : this._endParameter;
+      this._backPartStartAngle =
+        this._startParameter < 0 ? -this._startParameter : this._startParameter;
+      this._backPartEndAngle = this._startParameter < 0 ? 0 : 0;
     } else if (
       this._firstVertexIsOnFront &&
       this._arcLength > Math.PI &&
@@ -362,17 +452,21 @@ export default class Segment extends Nodule {
       this._frontPartInUse = true;
       this._backPartInUse = true; // length pi
       this._frontExtraInUse = true;
-      this._backExtraInUse = false;
 
-      this._frontPartStartAngle = startParameter < 0 ? -Math.PI : 2*Math.PI-startParameter
-      this._frontPartEndAngle = startParameter < 0 ? startParameter : Math.PI;
-      this._backPartStartAngle = startParameter < 0 ? 0 :Math.PI ;
-      this._backPartEndAngle = startParameter < 0 ? Math.PI:0 ;
+      this._frontPartStartAngle =
+        this._startParameter < 0
+          ? 2 * Math.PI + this._startParameter
+          : 2 * Math.PI - this._startParameter;
+      this._frontPartEndAngle = Math.PI;
 
-      this._frontExtraStartAngle = endParameter < 0 ? 0: -endParameter ;
-      this._frontExtraEndAngle = endParameter < 0 ? endParameter : 0;
-      this._backExtraStartAngle = 0;
-      this._backExtraEndAngle = 0;
+      this._backPartStartAngle = this._startParameter > 0 ? Math.PI : Math.PI; // this is a work around until two.js update bug is fixed
+      this._backPartEndAngle = this._startParameter > 0 ? 0 : 0; // this is a work around until two.js update bug is fixed
+
+      this._frontExtraStartAngle = 2 * Math.PI;
+      this._frontExtraEndAngle =
+        this._endParameter < 0
+          ? 2 * Math.PI + this._endParameter
+          : 2 * Math.PI - this._endParameter;
     } else if (
       !this._firstVertexIsOnFront &&
       this._arcLength > Math.PI &&
@@ -381,20 +475,18 @@ export default class Segment extends Nodule {
       // the segment wraps from back to front to back
       this._frontPartInUse = true; //length pi
       this._backPartInUse = true;
-      this._frontExtraInUse = false;
       this._backExtraInUse = true;
 
-      this._frontPartStartAngle = startParameter < 0 ? 2*Math.PI:Math.PI ;
-      this._frontPartEndAngle =  startParameter < 0 ? Math.PI:2*Math.PI;
+      this._frontPartStartAngle = 2 * Math.PI; // this is a work around until two.js update bug is fixed
+      this._frontPartEndAngle = Math.PI; // this is a work around until two.js update bug is fixed
 
-      this._backPartStartAngle = startParameter < 0 ? 0: startParameter ;
-      this._backPartEndAngle = startParameter < 0 ? -startParameter : 0;
+      this._backPartStartAngle =
+        this._startParameter < 0 ? -this._startParameter : this._startParameter;
+      this._backPartEndAngle = 0;
 
-      this._frontExtraStartAngle = 0;
-      this._frontExtraEndAngle = 0;
-
-      this._backExtraStartAngle = endParameter < 0 ? Math.PI : endParameter
-      this._backExtraEndAngle = endParameter < 0 ? -endParameter : Math.PI;
+      this._backExtraStartAngle = Math.PI;
+      this._backExtraEndAngle =
+        this._endParameter < 0 ? -this._endParameter : this._endParameter;
     }
 
     //Now copy all this information into the glowing/not front/back part/extra
@@ -434,6 +526,16 @@ export default class Segment extends Nodule {
     this._glowingFrontExtra.height = 2 * radius * this._halfMinorAxis;
     this._backExtra.height = 2 * radius * this._halfMinorAxis;
     this._glowingBackExtra.height = 2 * radius * this._halfMinorAxis;
+
+    //for checking to see if the segment is drawn from start to end
+    // this._frontPart.ending = 0.75
+    // this._frontExtra.ending = 0.75
+    // this._backPart.ending = 0.75
+    // this._backExtra.ending = 0.75
+    // this._glowingFrontPart.ending = 0.75
+    // this._glowingFrontExtra.ending = 0.75
+    // this._glowingBackPart.ending = 0.75
+    // this._glowingBackExtra.ending = 0.75
   }
 
   /**
@@ -443,7 +545,6 @@ export default class Segment extends Nodule {
    *  gives the direction in which the segment is drawn
    */
   set arcLength(len: number) {
-    console.log("Set arc length")
     this._arcLength = len;
   }
   /**
@@ -453,9 +554,6 @@ export default class Segment extends Nodule {
    *  gives the direction in which the segment is drawn
    */
   set startVector(idealUnitStartVector: Vector3) {
-    if (this._startVector.angleTo(idealUnitStartVector)<0.001){
-      console.log("no change in start vector")
-    } else {console.log("CHANGE IN START VECTOR")}
     this._startVector.copy(idealUnitStartVector).normalize();
   }
 
@@ -466,7 +564,6 @@ export default class Segment extends Nodule {
    *  gives the direction in which the segment is drawn
    */
   set normalVector(idealUnitNormalVector: Vector3) {
-    console.log("Set normal vector")
     this._normalVector.copy(idealUnitNormalVector).normalize();
   }
 
@@ -500,36 +597,21 @@ export default class Segment extends Nodule {
   get lastVertexIsOnFront(): boolean {
     return this._lastVertexIsOnFront;
   }
-
-  // frontGlowingDisplay(): void {
-  //   this._frontPart.visible = true;
-  //   this._glowingFrontPart.visible = true;
-  //   this._frontExtra.visible = true;
-  //   this._glowingFrontExtra.visible = true;
-  // }
-
-  // backGlowingDisplay(): void {
-  //   this._backPart.visible = true;
-  //   this._glowingBackPart.visible = true;
-  //   this._backExtra.visible = true;
-  //   this._glowingBackExtra.visible = true;
-  // }
-
-  // backNormalDisplay(): void {
-  //   this._backPart.visible = true;
-  //   this._glowingBackPart.visible = false;
-  //   this._backExtra.visible = true;
-  //   this._glowingBackExtra.visible = false;
-  // }
-
-  // frontNormalDisplay(): void {
-  //   this._frontPart.visible = true;
-  //   this._glowingFrontPart.visible = false;
-  //   this._frontExtra.visible = true;
-  //   this._glowingFrontExtra.visible = false;
-  // }
+  get startVector(): Vector3 {
+    return this._startVector;
+  }
+  get endVector(): Vector3 {
+    return this._endVector;
+  }
+  get startParameter(): number {
+    return this._startParameter;
+  }
+  get endParameter(): number {
+    return this._endParameter;
+  }
 
   normalDisplay(): void {
+    console.log("set normal display segment");
     if (this._frontPartInUse) {
       this._frontPart.visible = true;
       this._glowingFrontPart.visible = false;
@@ -572,6 +654,7 @@ export default class Segment extends Nodule {
   }
 
   setVisible(flag: boolean): void {
+    console.log("set visible segment");
     //First turn off all parts
     this._frontPart.visible = false;
     this._glowingFrontPart.visible = false;
