@@ -1,58 +1,55 @@
 <template>
-  <div class="flex-row">
-    <span class="text-subtitle-2" :style="{ color: conflict ? 'red' : '' }">
-      {{ title }}
-      <v-icon
-        :color="conflict ? '' : internalColor"
-        size="small">
-        mdi-circle
-      </v-icon>
-      <span v-if="numSelected > 1" class="text-subtitle-2 ml-2" style="color: red">
-        {{ t("labelStyleOptionsMultiple") }}
+  <div class="ma-1 px-1 pb-2"
+    :style="{
+      borderRadius: '4px',
+      border: '1px solid gray',
+    }">
+    <div class="flex-row">
+      <span class="text-subtitle-2" :style="{ color: conflict ? 'red' : '' }">
+        {{ title }}
+        <v-icon :color="conflict || pickedColor === 'none' ? 'transparent' : internalColor" size="small">
+          mdi-circle
+        </v-icon>
+        <span
+          v-if="numSelected > 1"
+          class="text-subtitle-2 ml-2"
+          style="color: red">
+          {{ t("labelStyleOptionsMultiple") }}
+        </span>
       </span>
-    </span>
-    <v-switch
-      id="check-btn"
-      :disabled="numSelected == 0 || (conflict && numSelected > 1)"
-      v-model="noColorData"
-      :label="noDataUILabel"
-      color="secondary"
-      hide-details
-      density="compact"></v-switch>
-    <v-tooltip location="bottom" activator="#check-btn">
-      {{ isOnLabelPanel ? t("noFillLabelTip") : t("noFillTip") }}
-    </v-tooltip>
+      <v-switch
+        id="check-btn"
+        :disabled="numSelected == 0 || (conflict && numSelected > 1)"
+        v-model="noColorData"
+        :label="noDataUILabel"
+        color="secondary"
+        hide-details
+        density="compact"></v-switch>
+      <v-tooltip location="bottom" activator="#check-btn">
+        {{ isOnLabelPanel ? t("noFillLabelTip") : t("noFillTip") }}
+      </v-tooltip>
+    </div>
+    <div class="flex-row" v-if="!noColorData">
+      <!-- The color picker -->
+      <v-color-picker
+        hide-sliders
+        hide-canvas
+        show-swatches
+        :hide-inputs="!showColorInputs"
+        :swatches-max-height="96"
+        :swatches="colorSwatches"
+        v-model="internalColor"
+        mode="hexa"
+        id="colorPicker"></v-color-picker>
+      <HintButton
+        style="align-self: flex-start"
+        type="colorInput"
+        @click="toggleColorInputs"
+        :tooltip="t('showInput')">
+        <template #icon>mdi-palette</template>
+      </HintButton>
+    </div>
   </div>
-  <div class="flex-row">
-    <!-- The color picker -->
-    <v-color-picker :disabled="noColorData"
-    hide-sliders
-    hide-canvas
-      show-swatches
-      :hide-inputs="!showColorInputs"
-      :swatches-max-height="96"
-      :swatches="colorSwatches"
-      v-model="internalColor"
-      mode="hexa"
-      id="colorPicker"></v-color-picker>
-    <HintButton
-      style="align-self: flex-start"
-      type="colorInput"
-      @click="toggleColorInputs"
-      :disabled="noColorData"
-      :tooltip="t('showInput')">
-      <template #icon>mdi-palette</template>
-    </HintButton>
-  </div>
-
-  <!-- Show no fill checkbox, color code inputs, Undo and Reset to Defaults buttons -->
-  <v-container class="pa-0 ma-0">
-    <v-row justify="end" no-gutters align="center">
-      <v-col cols="auto"></v-col>
-      <v-spacer />
-      <v-col cols="auto" class="ma-0 pl-0 pr-0 pt-2 pb-2"></v-col>
-    </v-row>
-  </v-container>
 </template>
 
 <script setup lang="ts">
@@ -72,11 +69,13 @@ type ComponentProps = {
 const props = defineProps<ComponentProps>();
 // Internal representation is an object with multiple color representations
 let pickedColor = defineModel({ type: String });
-const internalColor = ref(pickedColor.value !== "none" ? Color(pickedColor.value).hexa() : undefined)
+const internalColor = ref(
+  pickedColor.value !== "none" ? Color(pickedColor.value).hexa() : undefined
+);
 
 // The v-color-picker swatch can't be disabled. When "No Fill" is enabled, clicking
 // on the color swatch will update the internal color.
-let savedInternalColor = internalColor.value
+let savedInternalColor = internalColor.value;
 
 const noColorData: Ref<boolean> = ref(pickedColor.value === "none"); // no data means noFill or noStroke
 
@@ -85,7 +84,11 @@ const isOnLabelPanel = ref(false);
 // For TwoJS
 // private colorString: string | undefined = "hsla(0, 0%,0%,0)";
 const showColorInputs = ref(false);
-const colorSwatches = ref(props.conflict ? SETTINGS.style.greyedOutSwatches : SETTINGS.style.swatches);
+
+// Initialize to color swatches to gray when there is a conflict OR picked color is none
+const colorSwatches = ref(
+  props.conflict || pickedColor.value == "none" ? SETTINGS.style.greyedOutSwatches : SETTINGS.style.swatches
+);
 const noDataUILabel = ref(t("noFill"));
 
 // Vue component life cycle hook
@@ -98,36 +101,48 @@ onMounted((): void => {
   isOnLabelPanel.value = props.title.search(re2) !== -1;
 });
 
-watch(() => props.conflict, conflict => {
-  colorSwatches.value = conflict ? SETTINGS.style.greyedOutSwatches : SETTINGS.style.swatches
-})
-
-watch(() => pickedColor.value, externalColor => {
-  if (externalColor !== 'none') {
-    noColorData.value = false
-    internalColor.value = externalColor
+watch(
+  () => props.conflict,
+  conflict => {
+    colorSwatches.value = conflict
+      ? SETTINGS.style.greyedOutSwatches
+      : SETTINGS.style.swatches;
   }
-}, { deep: true })
+);
 
-watch(() => internalColor.value, (newColor, oldColor) => {
-  if (noColorData.value === false) {
-    pickedColor.value = Color(newColor).hexa()
+watch(
+  () => pickedColor.value,
+  externalColor => {
+    if (externalColor !== "none") {
+      noColorData.value = false;
+      internalColor.value = externalColor;
+    }
+  },
+  { deep: true }
+);
+
+watch(
+  () => internalColor.value,
+  (newColor, oldColor) => {
+    if (noColorData.value === false) {
+      pickedColor.value = Color(newColor).hexa();
+    }
   }
-})
+);
 
 watch(
   () => noColorData.value,
   (noColor): void => {
     if (noColor) {
       // Keep a copy of the internal color so it can be restored later
-      showColorInputs.value = false
-      savedInternalColor = internalColor.value
+      showColorInputs.value = false;
+      savedInternalColor = internalColor.value;
       colorSwatches.value = SETTINGS.style.greyedOutSwatches;
-      pickedColor.value = 'none'
+      pickedColor.value = "none";
     } else {
-      internalColor.value = savedInternalColor
+      internalColor.value = savedInternalColor;
       colorSwatches.value = SETTINGS.style.swatches;
-      pickedColor.value = internalColor.value
+      pickedColor.value = internalColor.value;
     }
   }
 );
@@ -135,7 +150,6 @@ watch(
 function toggleColorInputs(): void {
   showColorInputs.value = !showColorInputs.value;
 }
-
 </script>
 
 <style lang="scss" scoped>
