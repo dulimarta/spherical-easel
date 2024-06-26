@@ -196,7 +196,7 @@ export default class Label extends Nodule {
   }
 
   set valueDisplayMode(vdm: ValueDisplayMode) {
-    console.log("set vdm in label");
+    // console.log("set vdm in label");
     this._valueDisplayMode = vdm;
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }

@@ -158,7 +158,7 @@ export class SEAngleMarker
     return this._valueDisplayMode;
   }
   set valueDisplayMode(vdm: ValueDisplayMode) {
-    console.debug(`set the vdm in SEAngleMarker`);
+    // console.debug(`set the vdm in SEAngleMarker`);
     this._valueDisplayMode = vdm;
     // move the vdm to the plottable label
     if (this.label) {

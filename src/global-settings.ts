@@ -173,7 +173,7 @@ export const SETTINGS = {
     radius: 250 /* default radius */,
     numPoints: 50,
     color: "hsla(0, 0%, 0%, 1)",
-    lineWidth: 3
+    lineWidth: 0
   },
   // #endregion boundarycircle
   point: {
@@ -262,7 +262,7 @@ export const SETTINGS = {
     initialValueDisplayMode: ValueDisplayMode.MultipleOfPi, // Set the initial display of the values for the measurement of the angle
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
     minimumArcLength: 0.045, // Don't create segments with a length less than this (must be larger than point.hitIdealDistance because if not it is possible to create a line segment of length zero )
-    numPoints: 60, // The number of vertices used to render the segment. These are spread over the front and back parts. MAKE THIS EVEN!
+    numPoints: 10, // The number of vertices used to render one part of the segment. All parts (glowing/not front/back part/extra) get this number of verrtices
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the segment.
     closeEnoughToPi: 0.005, //If the arcLength of a segment is within this distance of pi, consider it length pi, so that it is not defined by its endpoints and can be moved
     //dynamicBackStyle is a flag that means the fill color, and stroke of the segments drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
@@ -327,7 +327,7 @@ export const SETTINGS = {
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     minimumLength: 0.045, // Don't create lines distance between the two defining point with arc length between them smaller than this (must be larger than point.hitIdealDistance because if not it is possible to create a line segment of length zero )
-    numPoints: 25, // The twice this number of vertices is used to render the line. This is the number in each of the front and back.
+    numPoints: 20, // The twice this number of vertices is used to render the line. This is the number in each of the front and back.
     closeEnoughToPi: 0.005, //If the angle from start to end point of this line is within this value of pi, consider it length pi, so that it is not defined by its start/end points and can be moved
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the line.
     //dynamicBackStyle is a flag that means the fill color, and stroke of the lines drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts

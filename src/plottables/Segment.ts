@@ -527,7 +527,7 @@ export default class Segment extends Nodule {
     this._backExtra.height = 2 * radius * this._halfMinorAxis;
     this._glowingBackExtra.height = 2 * radius * this._halfMinorAxis;
 
-    //for checking to see if the segment is drawn from start to end
+    //for checking to see if the segment is drawn from start to end VERY important for polygon to work correctly
     // this._frontPart.ending = 0.75
     // this._frontExtra.ending = 0.75
     // this._backPart.ending = 0.75
@@ -611,7 +611,6 @@ export default class Segment extends Nodule {
   }
 
   normalDisplay(): void {
-    console.log("set normal display segment");
     if (this._frontPartInUse) {
       this._frontPart.visible = true;
       this._glowingFrontPart.visible = false;
@@ -654,7 +653,6 @@ export default class Segment extends Nodule {
   }
 
   setVisible(flag: boolean): void {
-    console.log("set visible segment");
     //First turn off all parts
     this._frontPart.visible = false;
     this._glowingFrontPart.visible = false;

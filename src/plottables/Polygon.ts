@@ -17,13 +17,11 @@ import { Anchor } from "two.js/src/anchor";
 import { Stop } from "two.js/src/effects/stop";
 import { RadialGradient } from "two.js/src/effects/radial-gradient";
 import { Group } from "two.js/src/group";
+import { Vector } from "two.js/src/vector";
 
 const BOUNDARYSUBDIVISIONS = SETTINGS.polygon.numPoints; // The number of points used to draw parts of the boundary circle when the polygon crosses it.
 
 export default class Polygon extends Nodule {
-  /** The model object of this plottable. Included so that we can use isHitAt to determine if a point is inside or outside of P */
-  // private _sePolgon: SEPolygon | null = null;
-
   /**
    * The Segments that are the boundary of this polygon are stored in edgeSegments
    * These are listed so that tracing out the segment boundary in order
@@ -43,15 +41,6 @@ export default class Polygon extends Nodule {
   // private edgeSegments: Segment[] = [];
   private segmentIsFlipped: boolean[] = [];
   private seEdgeSegments: SESegment[] = [];
-  /**
-   * An array with the same length as _edgeSegments containing the +1/-1 multiplier on the normal of SESegments, so
-   * that a point pt is inside the polygon if and only if
-   *
-   *  pt dot ( interiorDirectionMultipliers[i] * SEEdgeSegments.normal) > 0
-   *
-   * for all i
-   */
-  private interiorDirectionMultipliers: number[] = [];
 
   /**
    * The area of the polygon. This must be updated before the updateDisplay can be called
@@ -60,10 +49,10 @@ export default class Polygon extends Nodule {
   /**
    * The TwoJS objects to display the front/back fill parts.
    */
-  private frontFills: Path[] = [];
-  private backFills: Path[] = [];
+  private frontFills: Path[] = []; // filled in the constructor
+  private backFills: Path[] = []; // filled in the constructor
 
-  private pool: Anchor[] = []; //The pool of vertices
+  private pool: Anchor[] = []; //The pool of vertices, initially empty
 
   /**
    * The stops and gradient for front/back fill
@@ -99,8 +88,6 @@ export default class Polygon extends Nodule {
    * For temporary calculation with ThreeJS objects
    */
   private tmpVector = new Vector3();
-  private tmpVector1 = new Vector3();
-  private tmpMatrix = new Matrix4();
 
   constructor(
     noduleName: string,
@@ -109,21 +96,22 @@ export default class Polygon extends Nodule {
   ) {
     super(noduleName);
     this.seEdgeSegments.push(...segmentList);
-    // this.edgeSegments.push(...segmentList.map(seg => seg.ref));
     this.segmentIsFlipped.push(...segmentFlippedList);
 
-    // There are this.edgeSegment.length number of straight lines in the polygon so the polygon can
-    // intersect the boundary circle at most this.edgeSegment.length-1 times.
-    // This means that there are at most ceiling(this.edgeSegment.length-1)/2) of each front and back fill parts
+    // There are this.edgeSegment.length number of straight lines in the polygon
+    // at most two of these edges can intersect the boundary circle twice
+    // so the polygon can
+    // intersect the boundary circle at most this.edgeSegment.length-1 times + 2.
+    // This means that there are at most ceiling(this.edgeSegment.length+1)/2) of each front and back fill parts
 
-    // To render the polygon we use the number of vertices in each segment plus 2*BOUNDARYSUBDIVISIONS plus 2 (the extra 2 are to close up the annular region when the polygon is a hole on the front or back)
+    // To render the polygon we use 2 times the number of vertices in each segment (because each segment can have at most three parts front/back/extra and each of those have SETTINGS.segment.numPoints in them) plus 2*BOUNDARYSUBDIVISIONS plus 2 (the extra 2 are to close up the annular region when the polygon is a hole on the front or back)
 
     // Each segment (all parts) is rendered with 2*SETTINGS.segment.numPoints
     const verticesFill: Anchor[] = [];
     for (
       let k = 0;
       k <
-      SETTINGS.segment.numPoints * this.seEdgeSegments.length +
+      2 * SETTINGS.segment.numPoints * this.seEdgeSegments.length +
         BOUNDARYSUBDIVISIONS +
         1;
       k++
@@ -133,16 +121,18 @@ export default class Polygon extends Nodule {
     this.frontFills[0] = new Path(
       verticesFill,
       /* closed */ true,
-      /* curve */ false
+      /* curve */ false,
+     // /*manual*/ true
     );
 
-    // now create, record ids, and set noStroke (and strip of their anchors so that the number of anchors is correct) the other parts that may be needed
+    // now create, record ids, and set noStroke (and stripped of their anchors so that the number of anchors is correct) the other parts that may be needed
     for (let i = 0; i < this.seEdgeSegments.length; i++) {
       // When some segments are longer than pi, you need more faces than (#edges -1)/2, a witch hat triangle with the pointy tip on the opposite sides of the to endpoints of the longer than pi side
       this.backFills[i] = new Path(
         verticesFill,
         /* closed */ true,
-        /* curve */ false
+        /* curve */ false,
+       // /*manual*/ true
       );
 
       if (i > 0) {
@@ -150,7 +140,8 @@ export default class Polygon extends Nodule {
         this.frontFills[i] = new Path(
           verticesFill,
           /* closed */ true,
-          /* curve */ false
+          /* curve */ false,
+          ///*manual*/ true
         );
         this.frontFills[i].vertices.splice(0);
         this.backFills[i].vertices.splice(0);
@@ -201,152 +192,137 @@ export default class Polygon extends Nodule {
     this.seEdgeSegments
       .map(z => z.ref)
       .forEach((seg, index) => {
-        // console.log("seg flipped", index, this.segmentIsFlipped[index]);
-        // console.log("first vertex on front", seg.firstVertexIsOnFront);
-        // console.log("last vertex on front", seg.lastVertexIsOnFront);
-        // console.log("front extra length", seg.frontPartExtra.vertices.length);
-        // console.log("back extra length", seg.backPartExtra.vertices.length);
-        // console.log("front length", seg.frontPart.vertices.length);
-        // console.log("back length", seg.backPart.vertices.length);
-        if (this.segmentIsFlipped[index]) {
-          // work from the end to the start in each part of the segment
-          if (seg.lastVertexIsOnFront) {
-            // the last vertex was on the front
-            if (!seg.frontExtraInUse) {
-              //if (seg.frontExtra.vertices.length == 0) {
-              for (let i = seg.frontPart.vertices.length - 1; i > -1; i--) {
-                locationArray.push({
-                  x: seg.frontPart.vertices[i].x,
-                  y: seg.frontPart.vertices[i].y,
-                  front: true
-                });
-              }
-              for (let i = seg.backPart.vertices.length - 1; i > -1; i--) {
-                locationArray.push({
-                  x: seg.backPart.vertices[i].x,
-                  y: seg.backPart.vertices[i].y,
-                  front: false
-                });
-              }
-            } else {
-              for (let i = seg.frontExtra.vertices.length - 1; i > -1; i--) {
-                locationArray.push({
-                  x: seg.frontExtra.vertices[i].x,
-                  y: seg.frontExtra.vertices[i].y,
-                  front: true
-                });
-              }
-              for (let i = seg.backPart.vertices.length - 1; i > -1; i--) {
-                locationArray.push({
-                  x: seg.backPart.vertices[i].x,
-                  y: seg.backPart.vertices[i].y,
-                  front: false
-                });
-              }
-              for (let i = seg.frontPart.vertices.length - 1; i > -1; i--) {
-                locationArray.push({
-                  x: seg.frontPart.vertices[i].x,
-                  y: seg.frontPart.vertices[i].y,
-                  front: true
-                });
-              }
-            }
-          } else {
-            // the last vertex was not on the front (on the back)
-            if (!seg.backExtraInUse) {
-              //if (seg.backExtra.vertices.length === 0) {
-              for (let i = seg.backPart.vertices.length - 1; i > -1; i--) {
-                locationArray.push({
-                  x: seg.backPart.vertices[i].x,
-                  y: seg.backPart.vertices[i].y,
-                  front: false
-                });
-              }
-              for (let i = seg.frontPart.vertices.length - 1; i > -1; i--) {
-                locationArray.push({
-                  x: seg.frontPart.vertices[i].x,
-                  y: seg.frontPart.vertices[i].y,
-                  front: true
-                });
-              }
-            } else {
-              for (let i = seg.backExtra.vertices.length - 1; i > -1; i--) {
-                locationArray.push({
-                  x: seg.backExtra.vertices[i].x,
-                  y: seg.backExtra.vertices[i].y,
-                  front: false
-                });
-              }
-              for (let i = seg.frontPart.vertices.length - 1; i > -1; i--) {
-                locationArray.push({
-                  x: seg.frontPart.vertices[i].x,
-                  y: seg.frontPart.vertices[i].y,
-                  front: true
-                });
-              }
-              for (let i = seg.backPart.vertices.length - 1; i > -1; i--) {
-                locationArray.push({
-                  x: seg.backPart.vertices[i].x,
-                  y: seg.backPart.vertices[i].y,
-                  front: false
-                });
-              }
+        console.log("########################");
+        console.log("seg flipped", index, this.segmentIsFlipped[index]);
+        console.log("first vertex on front", seg.firstVertexIsOnFront);
+        console.log("last vertex on front", seg.lastVertexIsOnFront);
+        console.log("front length", seg.frontPartInUse);
+        console.log("back length", seg.backPartInUse);
+        console.log("front extra length", seg.frontExtraInUse);
+        console.log("back extra length", seg.backExtraInUse);
+        // get the local transformation matrix of the segment (should be the same for all parts front/back part/extra)
+        var localMatrix = seg.frontPart.matrix; //local matrix works for just the position, rotation, and scale of that object in its local frame
+        // Add the vertices in the segment in the orientation of the segment and flip it later if necessary
+        let numVerticesAdded = 0;
+        if (seg.firstVertexIsOnFront) {
+          // This seg starts with frontPart, then backPart, then frontExtra (the last two might not be in use)
+          if (seg.frontPartInUse) {
+            for (let i = 0; i < seg.frontPart.vertices.length; i++) {
+              var coords = localMatrix.multiply(
+                seg.frontPart.vertices[i].x,
+                seg.frontPart.vertices[i].y,
+                1
+              );
+              locationArray.push({
+                x: coords[0],
+                y: coords[1],
+                front: true
+              });
+              numVerticesAdded++;
             }
           }
-        } else {
-          // work from start to end in each part of the segment
-          if (seg.firstVertexIsOnFront) {
-            // the first vertex was on the front
-            for (let i = 0; i < seg.frontPart.vertices.length; i++) {
-              locationArray.push({
-                x: seg.frontPart.vertices[i].x,
-                y: seg.frontPart.vertices[i].y,
-                front: true
-              });
-            }
+          if (seg.backPartInUse) {
             for (let i = 0; i < seg.backPart.vertices.length; i++) {
+              var coords = localMatrix.multiply(
+                seg.backPart.vertices[i].x,
+                seg.backPart.vertices[i].y,
+                1
+              );
               locationArray.push({
-                x: seg.backPart.vertices[i].x,
-                y: seg.backPart.vertices[i].y,
+                x: coords[0],
+                y: coords[1],
                 front: false
               });
+              numVerticesAdded++;
             }
+          }
+          if (seg.frontExtraInUse) {
             for (let i = 0; i < seg.frontExtra.vertices.length; i++) {
+              var coords = localMatrix.multiply(
+                seg.frontExtra.vertices[i].x,
+                seg.frontExtra.vertices[i].y,
+                1
+              );
               locationArray.push({
-                x: seg.frontExtra.vertices[i].x,
-                y: seg.frontExtra.vertices[i].y,
+                x: coords[0],
+                y: coords[1],
                 front: true
               });
+              numVerticesAdded++;
             }
-          } else {
-            // the first vertex was not on the front (on the back)
+          }
+
+          if (this.segmentIsFlipped[index]) {
+            // reverse the last numVerticesAdded in the locationArray
+            const tempArray = locationArray.splice(
+              locationArray.length - numVerticesAdded,
+              numVerticesAdded
+            );
+            locationArray.push(...tempArray.reverse());
+          }
+        } else {
+          // This seg starts with backPart, then frontPart, then backExtra (the last two might not be in use)
+          if (seg.backPartInUse) {
             for (let i = 0; i < seg.backPart.vertices.length; i++) {
+              var coords = localMatrix.multiply(
+                seg.backPart.vertices[i].x,
+                seg.backPart.vertices[i].y,
+                1
+              );
               locationArray.push({
-                x: seg.backPart.vertices[i].x,
-                y: seg.backPart.vertices[i].y,
+                x: coords[0],
+                y: coords[1],
                 front: false
               });
+              numVerticesAdded++;
             }
+          }
+          if (seg.frontPartInUse) {
             for (let i = 0; i < seg.frontPart.vertices.length; i++) {
+              var coords = localMatrix.multiply(
+                seg.frontPart.vertices[i].x,
+                seg.frontPart.vertices[i].y,
+                1
+              );
               locationArray.push({
-                x: seg.frontPart.vertices[i].x,
-                y: seg.frontPart.vertices[i].y,
+                x: coords[0],
+                y: coords[1],
                 front: true
               });
+              numVerticesAdded++;
             }
+          }
+          if (seg.backExtraInUse) {
             for (let i = 0; i < seg.backExtra.vertices.length; i++) {
+              var coords = localMatrix.multiply(
+                seg.backExtra.vertices[i].x,
+                seg.backExtra.vertices[i].y,
+                1
+              );
               locationArray.push({
-                x: seg.backExtra.vertices[i].x,
-                y: seg.backExtra.vertices[i].y,
+                x: coords[0],
+                y: coords[1],
                 front: false
               });
+              numVerticesAdded++;
             }
+          }
+
+          if (this.segmentIsFlipped[index]) {
+            // reverse the last numVerticesAdded in the locationArray
+            const tempArray = locationArray.splice(
+              locationArray.length - numVerticesAdded,
+              numVerticesAdded
+            );
+            locationArray.push(...tempArray.reverse());
           }
         }
       });
+
     // console.log("number in location Array", locationArray.length);
     const allEdgesOnFront = locationArray.every(loc => loc.front === true);
     const allEdgesOnBack = locationArray.every(loc => loc.front === false);
+
     // The polygon interior is split between front and back
     if (!allEdgesOnFront && !allEdgesOnBack) {
       // Count and record the indices of intersections with the boundary circle
@@ -382,20 +358,20 @@ export default class Polygon extends Nodule {
         )
       );
 
-      // console.log(
-      //   "num of front to back",
-      //   frontToBackIntersectionIndices.length
-      // );
-      // frontToBackIntersectionAngles.forEach(ang => console.log(ang));
-      // console.log(
-      //   "num of back to front",
-      //   backToFrontIntersectionIndices.length
-      // );
-      // backToFrontIntersectionAngles.forEach(ang => console.log(ang));
-      // console.log(
-      //   "angle diff",
-      //   -frontToBackIntersectionAngles[0] + backToFrontIntersectionAngles[0]
-      // );
+      console.log(
+        "num of front to back",
+        frontToBackIntersectionIndices.length
+      );
+      frontToBackIntersectionAngles.forEach(ang => console.log(ang));
+      console.log(
+        "num of back to front",
+        backToFrontIntersectionIndices.length
+      );
+      backToFrontIntersectionAngles.forEach(ang => console.log(ang));
+      console.log(
+        "angle diff",
+        -frontToBackIntersectionAngles[0] + backToFrontIntersectionAngles[0]
+      );
 
       // Keep track of the front fill index
       let currentFrontFillIndex = -1;
@@ -405,6 +381,7 @@ export default class Polygon extends Nodule {
         backToFrontIntersectionIndices.some(visnum => visnum.visited === false)
       ) {
         currentFrontFillIndex += 1;
+        console.log("################## Front fill new")
         if (currentFrontFillIndex === this.frontFills.length) {
           throw new Error(
             "Polygon: Not enough front fill parts allocated in the constructor"
@@ -426,6 +403,19 @@ export default class Polygon extends Nodule {
 
           // have we completed tracing an edge of the face?
           while (locationArray[i].front === true) {
+            //if (currentFrontFillIndex == 0) {
+              console.log("####");
+              console.log(
+                i,
+                "size",
+                locationArray[i].x ** 2 + locationArray[i].y ** 2
+              );
+              console.log(
+                "ang",
+                Math.atan2(locationArray[i].y, locationArray[i].x)
+              );
+              console.log("front?", locationArray[i].front);
+            //}
             const vertex = this.pool.pop();
             if (vertex !== undefined) {
               vertex.x = locationArray[i].x;
@@ -444,10 +434,10 @@ export default class Polygon extends Nodule {
             locationArray[previousIndex].y,
             locationArray[previousIndex].x
           );
-          // now trace the boundary circle to find the nearest front to back index search CCW from startAngle among the angles to find the index to continue with
-          let nextSmallestAngle = startAngle - 2 * Math.PI; // this will be the value of the angle that is smaller than start angle and bigger than all others. It needs to start smaller than all angles, so subtract 2 pi
+          // now trace the boundary circle to find the nearest back to front index search CCW from startAngle among the angles to find the index to continue with
+          let nextSmallestAngle = startAngle - 2 * Math.PI; // *after* looping this will be the value of the angle that is smaller than start angle and bigger than all others on the back to front intersection angles. It needs to start smaller than all angles, so subtract 2 pi
           let nextSmallestAngleIndex = -1; // the index of the nextSmallestAngle.
-          let biggestAngle = -2 * Math.PI; // this need to start smaller than all angles
+          let biggestAngle = -2 * Math.PI; // this is needed to start smaller than all angles
           let biggestAngleIndex = -1;
           backToFrontIntersectionAngles.forEach((ang, ind) => {
             if (startAngle > ang && ang > nextSmallestAngle) {
@@ -477,7 +467,7 @@ export default class Polygon extends Nodule {
             locationArray[nextIndex].x
           );
           // Compute the angular width of the section of the boundary polygon to add to the front/back fill
-          // This can be positive if traced counterclockwise or negative if traced clockwise( add 2 Pi to make positive)
+          // This can be positive if traced counterclockwise or negative if traced clockwise (add 2 Pi to make positive)
           let angularWidth = startAngle - endAngle;
           if (angularWidth < 0) {
             angularWidth += 2 * Math.PI;
@@ -513,6 +503,9 @@ export default class Polygon extends Nodule {
             angularWidth
           );
           boundaryPoints.forEach(pt => {
+           //if (currentFrontFillIndex == 0) {
+              console.log("#### Fill Face: ",currentFrontFillIndex,"\nang", Math.atan2(pt[1], pt[0]));
+            //}
             const vertex = this.pool.pop();
             if (vertex !== undefined) {
               vertex.x = pt[0];
@@ -771,7 +764,6 @@ export default class Polygon extends Nodule {
     }
     // // The polygon interior covers the entire back half of the sphere and is a 'hole' on the front
     else if (allEdgesOnFront && this._area > 2 * Math.PI) {
-      // console.log("here area", this._area / Math.PI);
       // location[0] is a point *not* on the boundary circle, we project to the boundary circle so that when
       // tracing the boundary we start close to this point
       const size = Math.sqrt(
@@ -811,7 +803,7 @@ export default class Polygon extends Nodule {
         }
       });
       // console.log("1 pool size", this.pool.length);
-      // In this case the frontFillVertices must trace out first the boundary circle and then the polygon
+      // In this case the frontFillVertices must trace out the boundary circle first and then the polygon
       boundary.reverse().forEach(v => {
         const vertex = this.pool.pop();
         if (vertex !== undefined) {
@@ -953,7 +945,18 @@ export default class Polygon extends Nodule {
   //   });
   // }
   normalDisplay(): void {
-    this.frontFills.forEach(part => (part.visible = true));
+    this.frontFills.forEach((part,ind) => {
+      part.visible = true
+      //if (ind ==0){
+      //   console.log("###########################")
+      //   console.log("fill 0 vert dump")
+      //   part.vertices.forEach(vert => {
+      //     console.log( 'size', vert.x**2+vert.y**2)
+      //     console.log("Angle", Math.atan2(vert.y,vert.x))
+      //     }
+      //   )
+      // }
+    });
     this.backFills.forEach(part => (part.visible = true));
     this.seEdgeSegments.forEach(seg => {
       if (!seg.selected) {
@@ -963,6 +966,7 @@ export default class Polygon extends Nodule {
   }
 
   setVisible(flag: boolean): void {
+    console.log("setvisible polygon",flag)
     if (!flag) {
       this.frontFills.forEach(part => (part.visible = false));
       this.backFills.forEach(part => (part.visible = false));
