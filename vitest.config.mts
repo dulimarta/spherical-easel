@@ -13,9 +13,9 @@ export default mergeConfig(
       setupFiles: ["./vitest-setup.mts"],
       environment: "jsdom",
       include: [
-        //"**/parametric-cusp-values.spec.ts", 
-        //"**/parametric-coord.spec.ts", 
-        "**/parametric-texpression.spec.ts"
+        //"**/parametric-cusp-values.spec.ts",
+        //"**/parametric-coord.spec.ts",
+        "**/parametric-*.spec.ts"
       ],
       server: {
         deps: {
