@@ -1,25 +1,23 @@
 <template>
-  <v-sheet border="md" radius="xl" class="pa-2">
-    <v-tooltip bottom max-width="400px">
-      <template v-slot:activator="{ props }">
-        <v-textarea
-          id="__test_textarea"
-          v-model="coordinateExpression"
-          v-bind="props"
-          :label="label"
-          :placeholder="placeholder"
-          :error-messages="parsingError"
-          auto-growdensity="compact"
-          variant="outlined"
-          rows="2"
-          class="ma-0"
-          clearable
-          @keydown="onKeyPressed"
-          @click:clear="reset"></v-textarea>
-      </template>
-      {{ tooltip }}
-    </v-tooltip>
-  </v-sheet>
+  <v-tooltip bottom max-width="400px">
+    <template v-slot:activator="{ props }">
+      <v-textarea
+        id="__test_textarea"
+        v-model="coordinateExpression"
+        v-bind="props"
+        :label="label"
+        :placeholder="placeholder"
+        :error-messages="parsingError"
+        auto-growdensity="compact"
+        variant="outlined"
+        rows="2"
+        class="ma-0"
+        clearable
+        @keydown="onKeyPressed"
+        @click:clear="reset"></v-textarea>
+    </template>
+    {{ tooltip }}
+  </v-tooltip>
 </template>
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
@@ -38,7 +36,7 @@ const props = defineProps<{
   tooltip: string;
   label: string;
   placeholder: string;
-  useTValue:number
+  useTValue: number;
 }>();
 
 //v-bind:label="$t(i18nKey,{coord:$tc(i18nKeyOption1,i18nKeyOption2)})"

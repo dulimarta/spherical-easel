@@ -2,8 +2,6 @@ import TestedComponent from "../ParametricCuspParameterValues.vue";
 import { createWrapper } from "../../../tests/vue-helper";
 import { it, vi } from "vitest";
 import { VueWrapper } from "@vue/test-utils";
-import { useSEStore } from "../../stores/se";
-import { SECalculation } from "../../models/SECalculation";
 global.ResizeObserver = require("resize-observer-polyfill");
 
 describe("ParametricCuspParameterValues.vue basics", () => {
@@ -20,8 +18,6 @@ describe("ParametricCuspParameterValues.vue basics", () => {
   });
 
   it("is a component", () => {
-    // console.debug("Before createWrapper()");
-    // console.debug("After mount");
     expect(wrapper).toBeTruthy();
   });
 
@@ -34,9 +30,7 @@ describe("ParametricCuspParameterValues.vue basics", () => {
 });
 
 describe("ParametricCuspParameterValues.vue with input", () => {
-  // let wrapper: VueWrapper;
   beforeEach(() => {
-    // setActivePinia(createPinia());
     vi.useFakeTimers();
   });
   it("shows no error when input is a single constant expression", async () => {

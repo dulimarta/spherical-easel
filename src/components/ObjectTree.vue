@@ -2,43 +2,54 @@
   <div>
     <!-- this top level div is required, otherwise the style applied to id="topContainer" does not work -->
     <div id="topContainer">
-      <v-expansion-panels style="gap: 10px; padding-right: 8px">
-        <v-expansion-panels>
-          <v-expansion-panel style="border-radius: 8px">
-            <v-expansion-panel-title color="accent">
-              <h3 class="body-1 font-weight-bold button-group-heading">
-                {{ t("expression") }}
-              </h3>
-            </v-expansion-panel-title>
-            <v-expansion-panel-text>
-              <ExpressionForm></ExpressionForm>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
-        </v-expansion-panels>
-        <v-expansion-panels>
-          <v-expansion-panel style="border-radius: 8px">
-            <v-expansion-panel-title color="accent">
-              <h3 class="body-1 font-weight-bold button-group-heading">
-                {{ t("parametricCurves") }}
-              </h3>
-            </v-expansion-panel-title>
-            <v-expansion-panel-text>
-              <ParametricForm></ParametricForm>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
-        </v-expansion-panels>
-        <v-expansion-panels>
-          <v-expansion-panel style="border-radius: 8px; padding-right: 8px">
-            <v-expansion-panel-title color="accent">
-              <h3 class="body-1 font-weight-bold button-group-heading">
-                {{ t("slider") }}
-              </h3>
-            </v-expansion-panel-title>
-            <v-expansion-panel-text>
-              <SliderForm></SliderForm>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
-        </v-expansion-panels>
+      <v-expansion-panels
+        v-model="panels"
+        multiple
+        :style="{ gap: '8px', paddingRight: '8px', zIndex: 10 }">
+        <v-expansion-panel>
+          <v-expansion-panel-title color="accent">
+            <h3 class="body-1 font-weight-bold button-group-heading">
+              {{ t("expression") }}
+            </h3>
+          </v-expansion-panel-title>
+          <v-expansion-panel-text>
+            <ExpressionForm></ExpressionForm>
+          </v-expansion-panel-text>
+        </v-expansion-panel>
+        <v-expansion-panel>
+          <v-expansion-panel-title color="accent">
+            <h3 class="body-1 font-weight-bold button-group-heading">
+              {{ t("parametricCurves") }}
+            </h3>
+          </v-expansion-panel-title>
+          <v-expansion-panel-text id="me">
+            <!--v-overlay attach="#me"
+              v-model="parametricVisible"
+              @click:outside="
+                () => {
+                  const p = panels.findIndex(n => n == 1);
+                  if (p >= 0) {
+                    panels.splice(p);
+                  }
+                }
+              "
+              opacity="0.9"
+              scrim="white"
+              width="600"-->
+            <ParametricForm/>
+            <!--v-overlay-->
+          </v-expansion-panel-text>
+        </v-expansion-panel>
+        <v-expansion-panel>
+          <v-expansion-panel-title color="accent">
+            <h3 class="body-1 font-weight-bold button-group-heading">
+              {{ t("slider") }}
+            </h3>
+          </v-expansion-panel-title>
+          <v-expansion-panel-text>
+            <SliderForm></SliderForm>
+          </v-expansion-panel-text>
+        </v-expansion-panel>
       </v-expansion-panels>
       <div class="ma-2 pa-1" id="objectTreeContainer">
         <v-sheet
@@ -151,7 +162,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, onBeforeMount, onBeforeUnmount, ref } from "vue";
+import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from "vue";
 import SENoduleList from "@/components/SENoduleList.vue";
 import ExpressionForm from "@/components/ExpressionForm.vue";
 import ParametricForm from "@/components/ParametricForm.vue";
@@ -178,7 +189,8 @@ const {
 const { t } = useI18n();
 let displayExpressionSheetAgain = true;
 const pointsKey = ref(0);
-
+const parametricVisible = ref(true);
+const panels: Ref<Array<number>> = ref([]);
 // const userCreatedPoints = computed(() => {
 //   return sePoints.value.filter(
 //     pt =>
@@ -219,6 +231,13 @@ const zeroObjects = computed((): boolean => {
 onBeforeMount((): void => {
   EventBus.listen("update-points-user-created", updateKey);
 });
+watch(
+  () => panels.value,
+  arr => {
+    parametricVisible.value = arr.some(n => n === 1);
+    // alwaysVisible.value = true
+  }
+);
 // If we don't do use this event bus system then we get the following issue:
 // 1. Draw two line segments that appear to intersect. (This creates points p1, p2, p3, p4 and segments ls1, ls2)
 // 2. Turn on the point tool
@@ -285,6 +304,7 @@ const showExpressionSheet = computed((): boolean => {
   flex-direction: column;
   justify-content: flex-start;
   height: 100%;
+  z-index: 1;
 }
 
 #objectTreeContainer {

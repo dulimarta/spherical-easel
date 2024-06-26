@@ -1,5 +1,4 @@
 <template>
-  <v-sheet border="md" rounded="lg" class="px-2 py-3 my-2">
     <v-tooltip bottom max-width="400px">
       <template v-slot:activator="{ props }">
         <v-text-field
@@ -19,7 +18,6 @@
       </template>
       {{ tooltip }}
     </v-tooltip>
-  </v-sheet>
 </template>
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
@@ -45,7 +43,7 @@ const props = withDefaults(
 );
 
 let parser = new ExpressionParser();
-let tValueExpression = defineModel<string>({ required: true, default: "8" });
+let tValueExpression = defineModel<string>({ required: true, default: "0" });
 let tValueResult = 0;
 const currentValueString = ref("");
 const parsingError = ref("");

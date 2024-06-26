@@ -1,82 +1,85 @@
 <template>
   <div>
-    <v-card raised variant="outlined">
+    <v-card variant="outlined">
       <v-card-text>
-        <v-container>
-          <v-row v-if="!inProductionMode">
-            Keyboard shortcuts:
-            <ul>
-              <li>Ctrl-Alt-C: Circle</li>
-              <li>Ctrl-Alt-S: Spiral</li>
-              <li>Ctrl-Alt-T: Trochoid</li>
-              <li>Ctrl-Alt-Y: Cycloid with cusp points</li>
-              <li>Ctrl-Alt-E: Ellipse (M1 & M2)</li>
-              <li>Ctrl-Alt-L: Loxodrome (M1)</li>
-              <li>Ctrl-Alt-R: Cardioid (M1)</li>
-            </ul>
-          </v-row>
-          <v-row>
-            <v-col cols="12">
-              <v-sheet rounded color="accent" :elevation="4" class="my-3">
-                <ParametricCoordinates
-                  v-model="xyzFormulaInput"
+        <div v-if="!inProductionMode" class="ml-2 mb-2 pa-2 bg-white">
+          <p>Keyboard shortcuts:</p>
+          <ul>
+            <li>Ctrl-Alt-C: Circle</li>
+            <li>Ctrl-Alt-S: Spiral</li>
+            <li>Ctrl-Alt-T: Trochoid</li>
+            <li>Ctrl-Alt-Y: Cycloid with cusp points</li>
+            <li>Ctrl-Alt-E: Ellipse (M1 & M2)</li>
+            <li>Ctrl-Alt-L: Loxodrome (M1)</li>
+            <li>Ctrl-Alt-R: Cardioid (M1)</li>
+          </ul>
+        </div>
+        <v-expansion-panels multiple v-model="panels">
+          <v-expansion-panel :title="t('parametricCoordinates')">
+            <v-expansion-panel-text class="bg-white">
+              <template
+                v-for="(coordinate, idk) in parametricFormulaData"
+                :key="idk">
+                <!-- content goes here -->
+                <ParametricCoordinate
+                  class="__test_coord_input"
+                  :placeholder="coordinate.placeholder"
+                  v-model="xyzFormulaInput[idk]"
                   :use-t-value="testTValue"
-                  :label="t('parametricCoordinates')"
-                  :coordinateData="
-                    parametricFormulaData
-                  "></ParametricCoordinates>
-              </v-sheet>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="12">
-              <v-sheet rounded color="accent" :elevation="4" class="my-3">
-                <ParametricTracingExpressions
-                  v-model="tracingExpressionsInput"
-                  :label="t('tExpressionData')"
-                  :tExpressionData="
-                    tExpressionData
-                  "></ParametricTracingExpressions>
-              </v-sheet>
-            </v-col>
-          </v-row>
-
-          <v-row>
-            <v-col cols="12">
+                  :label="coordinate.label"
+                  :tooltip="coordinate.tooltip"></ParametricCoordinate>
+              </template>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+          <v-expansion-panel :title="t('tRange')">
+            <v-expansion-panel-text class="bg-white">
+              <span>{{ t("constExpr") }}</span>
               <template v-for="(tVal, idk) in tNumberData" :key="idk">
                 <!-- Use const-expr property for "No variables" -->
                 <ParametricTExpression
-                v-model="tNumbersInput[idk]"
+                  v-model="tNumbersInput[idk]"
                   :placeholder="tVal.placeholder"
                   :label="tVal.label"
                   const-expr
                   :tooltip="tVal.tooltip"></ParametricTExpression>
               </template>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="12">
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+          <v-expansion-panel :title="t('cuspValue')">
+            <v-expansion-panel-text class="bg-white">
               <ParametricCuspParameterValues
                 v-model="cuspInput"
                 :label="cusp.label"
                 :tooltip="cusp.tooltip"></ParametricCuspParameterValues>
-            </v-col>
-          </v-row>
-        </v-container>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+          <v-expansion-panel :title="t('tExpressionData')">
+            <v-expansion-panel-text class="bg-white">
+              <template v-for="(tVal, idk) in tExpressionData" :key="idk + 2">
+                <!-- content goes here, __test_t_expr class is used for testing -->
+                <ParametricTExpression
+                  class="__text_t_expr"
+                  v-model="tracingExpressionsInput[idk]"
+                  :placeholder="tVal.placeholder"
+                  :label="tVal.label"
+                  :tooltip="tVal.tooltip"></ParametricTExpression>
+              </template>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
       </v-card-text>
-      <v-card-actions>
+      <v-card-actions class="bg-white">
         <v-spacer></v-spacer>
         <!--- Disable the FAB when either any expression coordinate  or tMin/tMax text is empty or
           there is a syntax error on any coordinates or tMin/tMax -->
-        <v-btn
+        <v-fab
+          icon="mdi-plus"
           size="small"
-          fab
-          right
-          color="accent"
+          offset
+          absolute
+          color="black"
           :disabled="disableAddParametricButton"
-          @click="addParametricCurve">
-          <v-icon>mdi-plus</v-icon>
-        </v-btn>
+          @click="addParametricCurve"></v-fab>
       </v-card-actions>
     </v-card>
   </div>
@@ -98,8 +101,7 @@ import {
 } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { ExpressionParser } from "@/expression/ExpressionParser";
-import ParametricCoordinates from "@/components/ParametricCoordinates.vue";
-import ParametricTracingExpressions from "@/components/ParametricTracingExpressions.vue";
+import ParametricCoordinate from "@/components/ParametricCoordinate.vue";
 import ParametricTExpression from "@/components/ParametricTExpression.vue";
 import ParametricCuspParameterValues from "@/components/ParametricCuspParameterValues.vue";
 import EventBus from "@/eventHandlers/EventBus";
@@ -121,6 +123,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { useI18n } from "vue-i18n";
+import { RefSymbol } from "@vue/reactivity";
 const { t } = useI18n();
 // interface ParametricDataType {
 //   tMinNumber?: number;
@@ -142,7 +145,7 @@ let coordinateExpressions: CoordExpression = { x: "", y: "", z: "" };
 let tExpressions: MinMaxExpression = { min: "", max: "" };
 let tNumbers: MinMaxNumber = { min: NaN, max: NaN };
 let c1DiscontinuityParameterValues: number[] = [];
-const testTValue = ref(0)
+const testTValue = ref(0);
 const xyzFormulaInput = ref(["", "", ""]);
 const tNumbersInput = ref(["", ""]);
 const tracingExpressionsInput = ref(["", ""]);
@@ -151,18 +154,18 @@ let parser = new ExpressionParser();
 const varMap = new Map<string, number>();
 const tempVector = new Vector3();
 const tempVector1 = new Vector3();
-
+const panels = ref([]);
 const tExpressionData = [
   {
     label: t("tMinExpression"),
     tooltip: t("tMinExpressionTip"),
-    placeholder: "0",
+    placeholder: "0"
     // name: t("tMinExpression")
   },
   {
     label: t("tMaxExpression"),
     tooltip: t("tMaxExpressionTip"),
-    placeholder: "2*M1",
+    placeholder: "2*M1"
     // name: t("tMaxExpression")
   }
 ];
@@ -171,13 +174,13 @@ const tNumberData = [
   {
     label: t("tMinNumber"),
     tooltip: t("tMinNumberTip"),
-    placeholder: "0",
+    placeholder: "0"
     // name: "tMinNumber"
   },
   {
     label: t("tMaxNumber"),
     tooltip: t("tMaxNumberTip"),
-    placeholder: "2*pi",
+    placeholder: "2*pi"
     // name: "tMaxNumber"
   }
 ];
@@ -186,26 +189,26 @@ const parametricFormulaData = [
   {
     label: t("xParametricCoordinate"),
     tooltip: t("xCoordExpressionTip"),
-    placeholder: "sin(M1)*cos(t)",
+    placeholder: "sin(M1)*cos(t)"
     // name: "xCoord"
   },
   {
     label: t("yParametricCoordinate"),
     tooltip: t("yCoordExpressionTip"),
-    placeholder: "sin(M1)*sin(t)",
+    placeholder: "sin(M1)*sin(t)"
     // name: "yCoord"
   },
   {
     label: t("zParametricCoordinate"),
     tooltip: t("zCoordExpressionTip"),
-    placeholder: "cos(M1)",
+    placeholder: "cos(M1)"
     // name: "zCoord"
   }
 ];
 
 const cusp = {
   label: t("cuspParameterValues"),
-  tooltip: t("cuspParameterValuesTip"),
+  tooltip: t("cuspParameterValuesTip")
   // name: "cuspParameterValues"
 };
 
@@ -458,15 +461,8 @@ onBeforeUnmount((): void => {
   window.removeEventListener("keydown", keyHandler);
 });
 
-const disableAddParametricButton = computed((): boolean => {
-  return (
-    isNaN(tNumbers.min) ||
-    isNaN(tNumbers.max) ||
-    coordinateExpressions.x === "" ||
-    coordinateExpressions.y === "" ||
-    coordinateExpressions.z === ""
-  );
-});
+const disableAddParametricButton = ref(true);
+
 function addParametricCurve(): void {
   // Do not allow adding the same parametric twice
   let duplicateCurve = false;
@@ -487,9 +483,9 @@ function addParametricCurve(): void {
     });
     return;
   }
-  xyzFormulaInput.value[0] = coordinateExpressions.x
-  xyzFormulaInput.value[1] = coordinateExpressions.y
-  xyzFormulaInput.value[2] = coordinateExpressions.z
+  xyzFormulaInput.value[0] = coordinateExpressions.x;
+  xyzFormulaInput.value[1] = coordinateExpressions.y;
+  xyzFormulaInput.value[2] = coordinateExpressions.z;
   const newlyCreatedSEPoints: SEPoint[] = [];
   // If  tMaxNumber is less than tMinNumber -- error!
   if (tNumbers.min >= tNumbers.max) {
@@ -499,8 +495,12 @@ function addParametricCurve(): void {
     });
     return;
   }
-  tNumbersInput.value[0] = tNumbers.min.toString()
-  tNumbersInput.value[1] = tNumbers.max.toString()
+  tNumbersInput.value[0] = tNumbers.min.toString();
+  tNumbersInput.value[1] = tNumbers.max.toString();
+  const noT = tNumbersInput.value.every(t => t.trim().length === 0)
+  const noFormula =    xyzFormulaInput.value.every(f => f.trim().length === 0);
+  disableAddParametricButton.value = noT && noFormula
+
   // the cusp parameter values must all be between tMinNumber and tMaxNumber
   if (
     c1DiscontinuityParameterValues.length > 0 &&
@@ -514,7 +514,7 @@ function addParametricCurve(): void {
     });
     return;
   }
-  cuspInput.value = c1DiscontinuityParameterValues.join(",")
+  cuspInput.value = c1DiscontinuityParameterValues.join(",");
   // tExpressions must either both be empty or both not empty
   if (
     (tExpressions.min.length === 0 && tExpressions.max.length !== 0) ||
@@ -527,8 +527,8 @@ function addParametricCurve(): void {
     return;
   }
 
-  tracingExpressionsInput.value[0] = tExpressions.min
-  tracingExpressionsInput.value[1] = tExpressions.max
+  tracingExpressionsInput.value[0] = tExpressions.min;
+  tracingExpressionsInput.value[1] = tExpressions.max;
   // Create a list of t values to test the expressions at
   const tValues: number[] = [];
   for (let i = 0; i < SETTINGS.parameterization.numberOfTestTValues + 1; i++) {
@@ -867,7 +867,9 @@ function parametricCurveIsUnitCheck(tValues: number[]): null | number {
 </script>
 <i18n lang="json" locale="en">
 {
+  "constExpr": "Use constant only expressions",
   "currentTValue": "Current Value: ",
+  "cuspValue": "Parametric Cusps",
   "cuspParameterValues": "Cusp t values (if any)",
   "cuspParameterValuesTip": "The comma separated list of the t (each must be a number) values of the parameter (if any) where the parametric curve has cusps. If the curve is closed and their is a cusp point at the point of closure, include both the minimum and maximum parameter value.",
   "cuspValuesOutOfBounds": "At least one of the cusp parameter values is not between the minimum and maximum parameter values. Check the cusp parameter values.",
@@ -876,15 +878,16 @@ function parametricCurveIsUnitCheck(tValues: number[]): null | number {
   "notAUnitParametricCurve": "Parametric curves must on the unit sphere; this curve was not unit at a t value of {tVal}. Check the coordinates of the parametric formulas.",
   "parametricCoordinates": "Parametric Formulas",
   "tExpressionData": "Optional Tracing Expressions",
-  "tMaxExpression": "Maximum Parameter Tracing Expression",
+  "tMaxExpression": "Max Parameter Tracing Expression",
   "tMaxExpressionTip": "An optional expression (that MUST depend on measurements tokens) that gives the ending t value when tracing the parametric curve. This value is always evaluated to be less than or equal to the maximum parameter value.",
   "tMaxNumber": "Maximum parameter(t) Value",
   "tMaxNumberTip": "A required absolute minimum t (must be a number) value for tracing the parametric curve that is the upper bound for the optional tMax Tracing Expression.",
-  "tMinExpression": "Minimum Parameter Tracing Expression",
+  "tMinExpression": "Min Parameter Tracing Expression",
   "tMinExpressionTip": "An optional expression (that MUST depend on measurements tokens) that gives the starting t value when tracing the parametric curve. This value is always evaluated to be greater than or equal to the minimum parameter value.",
   "tMinNotLessThantMax": "The minimum t value must be less than the maximum t value for at least one set of measurements. Change at least one t value expressions.",
   "tMinNumber": "Minimum parameter(t) Value",
   "tMinNumberTip": "A required absolute minimum t (must be a number) value for tracing the parametric curve that is the lower bound for the optional tMin Tracing Expression.",
+  "tRange": "Range of T values",
   "unableToComputeTheDerivativeOf": "We were unable to compute the derivative of one of the coordinate expressions. Error: {error}",
   "xCoordExpressionTip": "An expression (possibly depending on measurement tokens) for the x coordinate for the parametric curve.",
   "xParametricCoordinate": "X(t) formula",
