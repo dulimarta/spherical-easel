@@ -99,53 +99,106 @@ export default class Polygon extends Nodule {
     this.segmentIsFlipped.push(...segmentFlippedList);
 
     // There are this.edgeSegment.length number of straight lines in the polygon
-    // at most two of these edges can intersect the boundary circle twice
-    // so the polygon can
-    // intersect the boundary circle at most this.edgeSegment.length-1 times + 2.
-    // This means that there are at most ceiling(this.edgeSegment.length+1)/2) of each front and back fill parts
+    //
+    // At most two of these edges can intersect the boundary circle twice while
+    // not intersecting each other
+    // Proof: Suppose there are three non-intersecting segments that each intersects the
+    // boundary circle twice. If a
+    // segment crosses twice, its endpoints are on the same side of the sphere *and* the
+    // opposite side to the endpoints is divided into two disconnected regions --
+    // quarter spheres -- by the part of the segment of length pi on that side.
+    // Therefore if two
+    // different non-intersecting segments that intersect the boundary twice
+    // have their endpoints on the same side, the two intersection points of the lines that
+    // contain the segments are on opposite sides of the sphere. The intersection point
+    // on the opposite side of the endpoints *must* be contained in the
+    // the segment (because the length on that side is pi). Therefore the two segments
+    // intersect. This means that the endpoints of two of the segments must be
+    // on opposite sides of the sphere. The third's endpoints must be on one
+    // side or the other, which means the third must intersect one of the first
+    // two. Contradiction.
+    //
+    // The segments in each polygon edge consist of two (or three for at most two of them)
+    // parts (front/back/extra). Each front/back/extra part consists of
+    // SETTINGS.segment.numPoints. So the non-boundary parts of the fills have
+    //
+    // (this.edgeSegment.length-2)*2*SETTINGS.segment.numPoints +2*3*SETTINGS.segment.numPoints
+    //
+    // vertices. Assuming that all edges intersect the boundary, the edges intersect
+    // the boundary circle at most
+    //
+    // this.edgeSegment.length +2
+    //
+    // times. If the region between each intersection point is assumed to be
+    // an edge of fill, there are
+    //
+    // ceiling(this.edgeSegment.length+2)/2)
+    //
+    // regions on one side (because as we trace the boundary circle intersection
+    // with the polygon, we alternate inside and outside of the polygon).
+    //
+    // This means that there are at most ceiling(this.edgeSegment.length+2)/2) of
+    // EITHER front and back fill parts
+    //
+    // To render the parts of the fills that are on the boundary circle we
+    // break the total number, BOUNDARYSUBDIVISIONS, into numbers that are proportional
+    // to the angular width. Note: this is for only one side, double for both sides
+    //
+    // Summary:
+    //  In total there are
+    //
+    // (this.edgeSegment.length-2)*2*SETTINGS.segment.numPoints
+    //      +2*3*SETTINGS.segment.numPoints
+    //      + 2*BOUNDARYSUBDIVISIONS
+    //
+    //  vertices and
+    //
+    // ceiling(this.edgeSegment.length+2)/2)
+    //
+    // front and back fill parts
 
-    // To render the polygon we use 2 times the number of vertices in each segment (because each segment can have at most three parts front/back/extra and each of those have SETTINGS.segment.numPoints in them) plus 2*BOUNDARYSUBDIVISIONS plus 2 (the extra 2 are to close up the annular region when the polygon is a hole on the front or back)
-
-    // Each segment (all parts) is rendered with 2*SETTINGS.segment.numPoints
-    const verticesFill: Anchor[] = [];
+    const frontVerticesFill: Anchor[] = [];
     for (
       let k = 0;
       k <
-      2 * SETTINGS.segment.numPoints * this.seEdgeSegments.length +
-        BOUNDARYSUBDIVISIONS +
-        1;
+      (this.seEdgeSegments.length - 2) * 2 * SETTINGS.segment.numPoints +
+        2 * 3 * SETTINGS.segment.numPoints +
+        2*BOUNDARYSUBDIVISIONS;
       k++
     ) {
-      verticesFill.push(new Anchor(0, 0));
+      frontVerticesFill.push(new Anchor(0, 0));
     }
     this.frontFills[0] = new Path(
-      verticesFill,
+      frontVerticesFill,
       /* closed */ true,
-      /* curve */ false,
-     // /*manual*/ true
+      /* curve */ false
+      // /*manual*/ true
+    );
+
+    this.backFills[0] = new Path(
+      [] /* The empty array of anchors doesn't matter because all anchors are put into a pool*/,
+      /* closed */ true,
+      /* curve */ false
+      // /*manual*/ true
     );
 
     // now create, record ids, and set noStroke (and stripped of their anchors so that the number of anchors is correct) the other parts that may be needed
-    for (let i = 0; i < this.seEdgeSegments.length; i++) {
-      // When some segments are longer than pi, you need more faces than (#edges -1)/2, a witch hat triangle with the pointy tip on the opposite sides of the to endpoints of the longer than pi side
-      this.backFills[i] = new Path(
-        verticesFill,
-        /* closed */ true,
-        /* curve */ false,
-       // /*manual*/ true
-      );
-
+    for (let i = 0; i < Math.ceil((this.seEdgeSegments.length + 2) / 2); i++) {
       if (i > 0) {
-        // clear the vectors from all the parts so that the total number (between front and back) of vectors is 2*SUBDIVISIONS
         this.frontFills[i] = new Path(
-          verticesFill,
+          [],
           /* closed */ true,
-          /* curve */ false,
+          /* curve */ false
           ///*manual*/ true
         );
-        this.frontFills[i].vertices.splice(0);
-        this.backFills[i].vertices.splice(0);
+        this.backFills[i] = new Path(
+          [],
+          /* closed */ true,
+          /* curve */ false
+          ///*manual*/ true
+        );
       }
+      // i=0 fills were created before this loop
       Nodule.idPlottableDescriptionMap.set(String(this.frontFills[i].id), {
         type: "polygon",
         side: "front",
@@ -192,14 +245,14 @@ export default class Polygon extends Nodule {
     this.seEdgeSegments
       .map(z => z.ref)
       .forEach((seg, index) => {
-        console.log("########################");
-        console.log("seg flipped", index, this.segmentIsFlipped[index]);
-        console.log("first vertex on front", seg.firstVertexIsOnFront);
-        console.log("last vertex on front", seg.lastVertexIsOnFront);
-        console.log("front length", seg.frontPartInUse);
-        console.log("back length", seg.backPartInUse);
-        console.log("front extra length", seg.frontExtraInUse);
-        console.log("back extra length", seg.backExtraInUse);
+        // console.log("########################");
+        // console.log("seg flipped", index, this.segmentIsFlipped[index]);
+        // console.log("first vertex on front", seg.firstVertexIsOnFront);
+        // console.log("last vertex on front", seg.lastVertexIsOnFront);
+        // console.log("front length", seg.frontPartInUse);
+        // console.log("back length", seg.backPartInUse);
+        // console.log("front extra length", seg.frontExtraInUse);
+        // console.log("back extra length", seg.backExtraInUse);
         // get the local transformation matrix of the segment (should be the same for all parts front/back part/extra)
         var localMatrix = seg.frontPart.matrix; //local matrix works for just the position, rotation, and scale of that object in its local frame
         // Add the vertices in the segment in the orientation of the segment and flip it later if necessary
@@ -213,6 +266,7 @@ export default class Polygon extends Nodule {
                 seg.frontPart.vertices[i].y,
                 1
               );
+              //console.log("coords", coords, "FP")
               locationArray.push({
                 x: coords[0],
                 y: coords[1],
@@ -228,6 +282,7 @@ export default class Polygon extends Nodule {
                 seg.backPart.vertices[i].y,
                 1
               );
+              //console.log("coords", coords, "BP")
               locationArray.push({
                 x: coords[0],
                 y: coords[1],
@@ -243,6 +298,7 @@ export default class Polygon extends Nodule {
                 seg.frontExtra.vertices[i].y,
                 1
               );
+              //console.log("coords", coords, "FE")
               locationArray.push({
                 x: coords[0],
                 y: coords[1],
@@ -322,13 +378,14 @@ export default class Polygon extends Nodule {
     // console.log("number in location Array", locationArray.length);
     const allEdgesOnFront = locationArray.every(loc => loc.front === true);
     const allEdgesOnBack = locationArray.every(loc => loc.front === false);
-
+    // console.log("#############DUM############")
+    // locationArray.forEach((loc,ind) => {console.log("@vec ", ind, "\n", loc.x, "\n", loc.y, "\n", loc.front)})
     // The polygon interior is split between front and back
     if (!allEdgesOnFront && !allEdgesOnBack) {
       // Count and record the indices of intersections with the boundary circle
       const frontToBackIntersectionIndices: visitedIndex[] = []; // i is on this list if location[i-1] is on front and location[i] is on back
       const backToFrontIntersectionIndices: visitedIndex[] = []; // i is on this list if location[i-1] is on back and location[i] is on front
-      const n = locationArray.length;
+      let n = locationArray.length;
       locationArray.forEach((loc, ind) => {
         const previousIndex = (((ind - 1) % n) + n) % n;
         if (loc.front && !locationArray[previousIndex].front) {
@@ -358,20 +415,20 @@ export default class Polygon extends Nodule {
         )
       );
 
-      console.log(
-        "num of front to back",
-        frontToBackIntersectionIndices.length
-      );
-      frontToBackIntersectionAngles.forEach(ang => console.log(ang));
-      console.log(
-        "num of back to front",
-        backToFrontIntersectionIndices.length
-      );
-      backToFrontIntersectionAngles.forEach(ang => console.log(ang));
-      console.log(
-        "angle diff",
-        -frontToBackIntersectionAngles[0] + backToFrontIntersectionAngles[0]
-      );
+      // console.log(
+      //   "num of front to back",
+      //   frontToBackIntersectionIndices.length
+      // );
+      // frontToBackIntersectionAngles.forEach(ang => console.log(ang));
+      // console.log(
+      //   "num of back to front",
+      //   backToFrontIntersectionIndices.length
+      // );
+      // backToFrontIntersectionAngles.forEach(ang => console.log(ang));
+      // console.log(
+      //   "angle diff",
+      //   -frontToBackIntersectionAngles[0] + backToFrontIntersectionAngles[0]
+      // );
 
       // Keep track of the front fill index
       let currentFrontFillIndex = -1;
@@ -381,7 +438,7 @@ export default class Polygon extends Nodule {
         backToFrontIntersectionIndices.some(visnum => visnum.visited === false)
       ) {
         currentFrontFillIndex += 1;
-        console.log("################## Front fill new")
+        // console.log("################## Front fill new");
         if (currentFrontFillIndex === this.frontFills.length) {
           throw new Error(
             "Polygon: Not enough front fill parts allocated in the constructor"
@@ -404,17 +461,15 @@ export default class Polygon extends Nodule {
           // have we completed tracing an edge of the face?
           while (locationArray[i].front === true) {
             //if (currentFrontFillIndex == 0) {
-              console.log("####");
-              console.log(
-                i,
-                "size",
-                locationArray[i].x ** 2 + locationArray[i].y ** 2
-              );
-              console.log(
-                "ang",
-                Math.atan2(locationArray[i].y, locationArray[i].x)
-              );
-              console.log("front?", locationArray[i].front);
+            // console.log(
+            //   "#### Fill Face: E",
+            //   currentFrontFillIndex,
+            //   i,
+            //   "size",
+            //   locationArray[i].x ** 2 + locationArray[i].y ** 2,
+            //   "\nang",
+            //   Math.atan2(locationArray[i].y, locationArray[i].x)
+            // );
             //}
             const vertex = this.pool.pop();
             if (vertex !== undefined) {
@@ -498,14 +553,11 @@ export default class Polygon extends Nodule {
           // add the boundary vertices from start to end in the direction of toVector
           const boundaryPoints = this.boundaryCircleCoordinates(
             fromVector,
-            Math.floor(BOUNDARYSUBDIVISIONS / this.seEdgeSegments.length),
+            Math.floor(angularWidth*BOUNDARYSUBDIVISIONS / (2*Math.PI)),
             toVector,
             angularWidth
           );
           boundaryPoints.forEach(pt => {
-           //if (currentFrontFillIndex == 0) {
-              console.log("#### Fill Face: ",currentFrontFillIndex,"\nang", Math.atan2(pt[1], pt[0]));
-            //}
             const vertex = this.pool.pop();
             if (vertex !== undefined) {
               vertex.x = pt[0];
@@ -521,6 +573,22 @@ export default class Polygon extends Nodule {
           backToFrontIndex = nextSmallestAngleIndex;
         }
       }
+
+      // var count = 0
+      // console.log("##########DUMP#################");
+      // this.frontFills.forEach((part, ind) => {
+      //   part.vertices.forEach((vert: any,ind:number) => {
+      //     console.log("@", count+ind, "\n", vert.x, "\n", vert.y, "\n", "true")
+      //   });
+      //   count += part.vertices.length
+      //   // }
+      // });
+      // this.backFills.forEach(part => {
+      //   part.vertices.forEach((vert: any,ind:number) => {
+      //     console.log("@",ind+ count," \n", vert.x, "\n", vert.y, "\n", "false")
+      //   });
+      //   count += part.vertices.length
+      // });
 
       // Keep track of the back fill index
       let currentBackFillIndex = -1;
@@ -563,6 +631,7 @@ export default class Polygon extends Nodule {
             }
             i = (((i + 1) % n) + n) % n;
           }
+
           // compute the angle at which the edge we were tracing left the back face (at this point location[i].front = true, i.e. location[i] is on the front)
           const previousIndex = (((i - 1) % n) + n) % n;
           const startAngle = Math.atan2(
@@ -634,7 +703,7 @@ export default class Polygon extends Nodule {
           // add the boundary vertices from start to end in the direction of toVector
           const boundaryPoints = this.boundaryCircleCoordinates(
             fromVector,
-            Math.floor(BOUNDARYSUBDIVISIONS / this.seEdgeSegments.length),
+            Math.floor(angularWidth*BOUNDARYSUBDIVISIONS / (2*Math.PI)),
             toVector,
             angularWidth
           );
@@ -654,6 +723,21 @@ export default class Polygon extends Nodule {
           frontToBackIndex = nextBiggestAngleIndex;
         }
       }
+      // var count = 0
+      // console.log("##########DUMP#################");
+      // this.frontFills.forEach((part, ind) => {
+      //   part.vertices.forEach((vert: any,ind:number) => {
+      //     console.log("@", count+ind, "\n", vert.x, "\n", vert.y, "\n", "true")
+      //   });
+      //   count += part.vertices.length
+      //   // }
+      // });
+      // this.backFills.forEach(part => {
+      //   part.vertices.forEach((vert: any,ind:number) => {
+      //     console.log("@",ind+ count," \n", vert.x, "\n", vert.y, "\n", "false")
+      //   });
+      //   count += part.vertices.length
+      // });
     }
     // The polygon interior is only on the front of the sphere
     else if (allEdgesOnFront && this._area < 2 * Math.PI) {
@@ -687,7 +771,7 @@ export default class Polygon extends Nodule {
     }
     // The polygon interior covers the entire front half of the sphere and is a 'hole' on the back
     else if (allEdgesOnBack && this._area > 2 * Math.PI) {
-      // location[0] is a point *not* on the boundary circle, we project to the boundary circle so that when
+      // location[0] is a point *not* necessarily on the boundary circle, we project to the boundary circle so that when
       // tracing the boundary we start close to this point
       const size = Math.sqrt(
         locationArray[0].x * locationArray[0].x +
@@ -750,7 +834,7 @@ export default class Polygon extends Nodule {
           this.backFills[0].vertices.push(vertex);
         } else {
           throw new Error(
-            "Ploygon: Not enough vertices from the fills in the pool!"
+            "Polygon: Not enough vertices from the fills in the pool!"
           );
         }
       });
@@ -784,11 +868,6 @@ export default class Polygon extends Nodule {
         [-startPoint[1], startPoint[0]],
         2 * Math.PI
       );
-      // console.log(
-      //   "0 boundary point size, pool size",
-      //   boundary.length,
-      //   this.pool.length
-      // );
       // In this case set the backFillVertices to the entire boundary circle which are boundary,
       boundary.forEach(v => {
         const vertex = this.pool.pop();
@@ -802,7 +881,6 @@ export default class Polygon extends Nodule {
           );
         }
       });
-      // console.log("1 pool size", this.pool.length);
       // In this case the frontFillVertices must trace out the boundary circle first and then the polygon
       boundary.reverse().forEach(v => {
         const vertex = this.pool.pop();
@@ -816,7 +894,6 @@ export default class Polygon extends Nodule {
           );
         }
       });
-      // console.log("2 pool size", this.pool.length);
       // Make sure that the next entry in the backFill is the first to closed up the annular region
       const vert1 = this.pool.pop();
       if (vert1 !== undefined) {
@@ -828,7 +905,6 @@ export default class Polygon extends Nodule {
           "Ploygon: Not enough vertices from the fills in the pool!"
         );
       }
-      // console.log("3 pool size", this.pool.length);
       // now add the location vertices
       locationArray.forEach(v => {
         const vertex = this.pool.pop();
@@ -842,7 +918,6 @@ export default class Polygon extends Nodule {
           );
         }
       });
-      // console.log("4 pool size", this.pool.length);
       // Make sure that the next entry in the frontFill is the first to closed up the annular region
       const vert2 = this.pool.pop();
       if (vert2 !== undefined) {
@@ -850,8 +925,22 @@ export default class Polygon extends Nodule {
         vert2.y = this.frontFills[0].vertices.slice(-1)[0].y;
         this.frontFills[0].vertices.push(vert2);
       }
-      // console.log("5 pool size", this.pool.length);
     }
+    // var count = 0
+    // console.log("##########DUMP#################");
+    // this.frontFills.forEach((part, ind) => {
+    //   part.vertices.forEach((vert: any,ind:number) => {
+    //     console.log("@", count+ind, "\n", vert.x, "\n", vert.y, "\n", "true")
+    //   });
+    //   count += part.vertices.length
+    //   // }
+    // });
+    // this.backFills.forEach(part => {
+    //   part.vertices.forEach((vert: any,ind:number) => {
+    //     console.log("@",ind+ count," \n", vert.x, "\n", vert.y, "\n", "false")
+    //   });
+    //   count += part.vertices.length
+    // });
   }
 
   /**
@@ -920,8 +1009,20 @@ export default class Polygon extends Nodule {
   //   });
   // }
   glowingDisplay(): void {
-    this.frontFills.forEach(part => (part.visible = true));
-    this.backFills.forEach(part => (part.visible = true));
+    this.frontFills.forEach(part => {
+      if (part.vertices.length !== 0) {
+        part.visible = true;
+      } else {
+        part.visible = false;
+      }
+    });
+    this.backFills.forEach(part => {
+      if (part.vertices.length !== 0) {
+        part.visible = true;
+      } else {
+        part.visible = false;
+      }
+    });
     this.seEdgeSegments.forEach(seg => {
       if (!seg.selected) {
         seg.ref.glowingDisplay();
@@ -945,19 +1046,20 @@ export default class Polygon extends Nodule {
   //   });
   // }
   normalDisplay(): void {
-    this.frontFills.forEach((part,ind) => {
-      part.visible = true
-      //if (ind ==0){
-      //   console.log("###########################")
-      //   console.log("fill 0 vert dump")
-      //   part.vertices.forEach(vert => {
-      //     console.log( 'size', vert.x**2+vert.y**2)
-      //     console.log("Angle", Math.atan2(vert.y,vert.x))
-      //     }
-      //   )
-      // }
+    this.frontFills.forEach((part, ind) => {
+      if (part.vertices.length !== 0) {
+        part.visible = true;
+      } else {
+        part.visible = false;
+      }
     });
-    this.backFills.forEach(part => (part.visible = true));
+    this.backFills.forEach(part => {
+      if (part.vertices.length !== 0) {
+        part.visible = true;
+      } else {
+        part.visible = false;
+      }
+    });
     this.seEdgeSegments.forEach(seg => {
       if (!seg.selected) {
         seg.ref.normalDisplay();
@@ -966,7 +1068,6 @@ export default class Polygon extends Nodule {
   }
 
   setVisible(flag: boolean): void {
-    console.log("setvisible polygon",flag)
     if (!flag) {
       this.frontFills.forEach(part => (part.visible = false));
       this.backFills.forEach(part => (part.visible = false));

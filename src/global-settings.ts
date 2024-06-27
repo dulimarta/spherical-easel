@@ -1,7 +1,7 @@
 import { ValueDisplayMode, LabelDisplayMode } from "./types";
 import colors from 'vuetify/util/colors'
 export const SETTINGS = {
-  nearlyAntipodalIdeal: 0.005, // Two unit vectors, U and V, are nearly antipodal or nearly parallel (the) if crossVectors(U,V).isZero(nearlyAntipodalIdeal) is true
+  nearlyAntipodalIdeal: 0.01, // Two unit vectors, U and V, are nearly antipodal or nearly parallel (the) if crossVectors(U,V).isZero(nearlyAntipodalIdeal) is true. June 2024 - when this was 0.005 it was hard to draw a segment of length bigger than pi using the update method in SESegment
   tolerance: 0.00000000001, // Any number less that this tolerance is considered zero
   intersectionTolerance: 0.00000001, // If, when checking the difference between the current intersection location, and the location between two potentially new principle parents intersection the difference is less than this, they are the same
   hideObjectHidesLabel: true, // hiding an object hide the label of that object automatically if this is true
@@ -171,9 +171,8 @@ export const SETTINGS = {
   // #region boundarycircle
   boundaryCircle: {
     radius: 250 /* default radius */,
-    numPoints: 50,
     color: "hsla(0, 0%, 0%, 1)",
-    lineWidth: 0
+    lineWidth: 3
   },
   // #endregion boundarycircle
   point: {
@@ -262,7 +261,7 @@ export const SETTINGS = {
     initialValueDisplayMode: ValueDisplayMode.MultipleOfPi, // Set the initial display of the values for the measurement of the angle
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
     minimumArcLength: 0.045, // Don't create segments with a length less than this (must be larger than point.hitIdealDistance because if not it is possible to create a line segment of length zero )
-    numPoints: 10, // The number of vertices used to render one part of the segment. All parts (glowing/not front/back part/extra) get this number of verrtices
+    numPoints: 15, // The number of vertices used to render one part of the segment. All parts (glowing/not front/back part/extra) get this number of verrtices
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the segment.
     closeEnoughToPi: 0.005, //If the arcLength of a segment is within this distance of pi, consider it length pi, so that it is not defined by its endpoints and can be moved
     //dynamicBackStyle is a flag that means the fill color, and stroke of the segments drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
@@ -327,7 +326,7 @@ export const SETTINGS = {
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     minimumLength: 0.045, // Don't create lines distance between the two defining point with arc length between them smaller than this (must be larger than point.hitIdealDistance because if not it is possible to create a line segment of length zero )
-    numPoints: 20, // The twice this number of vertices is used to render the line. This is the number in each of the front and back.
+    numPoints: 15, // The twice this number of vertices is used to render the line. This is the number in each of the front and back.
     closeEnoughToPi: 0.005, //If the angle from start to end point of this line is within this value of pi, consider it length pi, so that it is not defined by its start/end points and can be moved
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the line.
     //dynamicBackStyle is a flag that means the fill color, and stroke of the lines drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
@@ -609,7 +608,7 @@ export const SETTINGS = {
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the polygon
     minimumVertexToEdgeThickness: 0.004, // the polygon doesn't exist if distance from any vertex to any non-adjacent edge is less than this.
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
-    numPoints: 60, // The number of extra vertices used to draw the parts of the fill of the polygon that are on the boundary circle. MAKE THIS EVEN!
+    numPoints: 60, // Number vertices used to draw the parts of the fill of the polygon that are on the boundary circle. Half are for front and half for back.
     measuringChangesLabelModeTo: LabelDisplayMode.NameAndValue,
     numberOfTemporaryAngleMarkers: 15, // this is the maximum number of angle markers that will be displayed as the user creates a polygon, the user can create a polygon with more sides that then, but the temporary angle markers will not be display after this number
     //dynamicBackStyle is a flag that means the fill the polygon drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts

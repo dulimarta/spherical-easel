@@ -20,6 +20,7 @@ import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import Settings from "@/views/Settings.vue";
 
 export default class SegmentHandler extends Highlighter {
   /**
@@ -234,6 +235,7 @@ export default class SegmentHandler extends Highlighter {
     // The user can create points  on ellipse, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
+
     if (this.hitSEPoints.length > 0) {
       this.hitSEPoints[0].glowing = true;
       if (!this.startLocationSelected) {
@@ -417,8 +419,7 @@ export default class SegmentHandler extends Highlighter {
         this.temporarySegment.updateDisplay();
         this.temporarySegment.setVisible(true); //turns off the display of unused two.js portions of the temporary segment (in the non-temporary segments, setVisible is repeatedly called)
       }
-    }
-    else if (this.isTemporaryStartMarkerAdded) {
+    } else if (this.isTemporaryStartMarkerAdded) {
       // Remove the temporary objects from the display.
       this.temporarySegment.removeFromLayers();
       this.temporaryStartMarker.removeFromLayers();
@@ -810,7 +811,9 @@ export default class SegmentHandler extends Highlighter {
       );
       newSESegment.shallowUpdate();
       // Create Plottable Label
-      const newSELabel = newSESegment.attachLabelWithOffset(new Vector3(0, SETTINGS.segment.initialLabelOffset, 0))
+      const newSELabel = newSESegment.attachLabelWithOffset(
+        new Vector3(0, SETTINGS.segment.initialLabelOffset, 0)
+      );
 
       segmentGroup.addCommand(
         new AddSegmentCommand(
@@ -834,12 +837,12 @@ export default class SegmentHandler extends Highlighter {
           } else {
             // Create the plottable label
             const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
-                new Vector3(
-                  2 * SETTINGS.segment.initialLabelOffset,
-                  SETTINGS.segment.initialLabelOffset,
-                  0
-                )
+              new Vector3(
+                2 * SETTINGS.segment.initialLabelOffset,
+                SETTINGS.segment.initialLabelOffset,
+                0
               )
+            );
 
             segmentGroup.addCommand(
               new AddIntersectionPointCommand(
@@ -899,36 +902,38 @@ export default class SegmentHandler extends Highlighter {
     // Set the arc length of the segment temporarily to the angle between start and end vectors (always less than Pi)
     this.arcLength = this.startVector.angleTo(endVector);
 
-    // Check to see if the longThanPi variable needs updating.
-    if (this.startVector.angleTo(endVector) > 2) {
-      // The startVector and endVector might be antipodal proceed with caution,
-      // // Set tmpVector to the antipode of the start Vector
-      // this.tmpVector.copy(this.startVector).multiplyScalar(-1);
-      // if (
-      //   this.tmpVector.angleTo(endVector) * SETTINGS.boundaryCircle.radius <
-      //   SETTINGS.nearlyAntipodalPixel
-      // ) {
-      if (
-        this.tmpVector
-          .crossVectors(this.startVector, endVector)
-          .isZero(SETTINGS.nearlyAntipodalIdeal)
-      ) {
-        // The points are antipodal on the screen
-        this.nearlyAntipodal = true;
-      } else {
-        if (this.nearlyAntipodal) {
-          this.longerThanPi = !this.longerThanPi;
-        }
-        this.nearlyAntipodal = false;
-      }
-    }
     // The user can override this algorithm and make the segment longer than PI
     if (ctrlPressed) {
       this.longerThanPi = true;
     } else {
-      // Without this else statement once the user presses ctrl, then can't get back to less than pi length
+      // If the user sets the longer than pi variable with the crtl press
+      // then the only way to get the segment back to length less than pi
+      // is to drag on endpoint through the antipode of the other.
+      //  I DON'T LIKE THIS BEHAVIOR It should be if they release the
+      // longerThanPi reverts to what it was before pressing the  crtl key
+
       // this way when the user releases the length is less than pi.
-      this.longerThanPi = false;
+      // Check to see if the longThanPi variable needs updating.
+      if (this.arcLength > 2) {
+        // The startVector and endVector might be antipodal proceed with caution,
+        if (
+          this.tmpVector
+            .crossVectors(this.startVector, endVector)
+            .isZero(
+              SETTINGS.nearlyAntipodalIdeal * SETTINGS.boundaryCircle.radius
+            )
+          // multiply by the boundary circle radius because start/end vector are
+          // *screen* vectors and the tolerance to be zero must be larger for them
+        ) {
+          // The points are antipodal on the screen
+          this.nearlyAntipodal = true;
+        } else {
+          if (this.nearlyAntipodal) {
+            this.longerThanPi = !this.longerThanPi;
+          }
+          this.nearlyAntipodal = false;
+        }
+      }
     }
     // Update the arcLength based on longThanPi
     if (this.longerThanPi) {

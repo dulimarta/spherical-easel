@@ -459,8 +459,8 @@ export default class Segment extends Nodule {
           : 2 * Math.PI - this._startParameter;
       this._frontPartEndAngle = Math.PI;
 
-      this._backPartStartAngle = this._startParameter > 0 ? Math.PI : Math.PI; // this is a work around until two.js update bug is fixed
-      this._backPartEndAngle = this._startParameter > 0 ? 0 : 0; // this is a work around until two.js update bug is fixed
+      this._backPartStartAngle = Math.PI;
+      this._backPartEndAngle = 0;
 
       this._frontExtraStartAngle = 2 * Math.PI;
       this._frontExtraEndAngle =
@@ -477,8 +477,8 @@ export default class Segment extends Nodule {
       this._backPartInUse = true;
       this._backExtraInUse = true;
 
-      this._frontPartStartAngle = 2 * Math.PI; // this is a work around until two.js update bug is fixed
-      this._frontPartEndAngle = Math.PI; // this is a work around until two.js update bug is fixed
+      this._frontPartStartAngle = 2 * Math.PI;
+      this._frontPartEndAngle = Math.PI;
 
       this._backPartStartAngle =
         this._startParameter < 0 ? -this._startParameter : this._startParameter;

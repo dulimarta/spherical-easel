@@ -34,6 +34,7 @@ Vector3.prototype.from = function (str: string | undefined): void {
 Vector3.prototype.isZero = function (tolerance?: number): boolean {
   const useTolerance = tolerance || SETTINGS.tolerance;
   return (
+    //this.x*this.x + this.y*this.y + this.y*this.y  < useTolerance*useTolerance
     Math.abs(this.x) <= useTolerance &&
     Math.abs(this.y) <= useTolerance &&
     Math.abs(this.z) <= useTolerance

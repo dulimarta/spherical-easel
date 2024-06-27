@@ -208,17 +208,6 @@ export default class Line extends Nodule {
     this._backHalf.rotation = this._rotation;
     this._glowingBackHalf.rotation = this._rotation;
 
-    // If we don't do this then the height doesn't update correctly
-    // This is a work around for a bug in Two.js that I reported here: https://github.com/jonobr1/two.js/issues/728
-    this._frontHalf.startAngle += 0.000000000000001;
-    this._backHalf.startAngle += 0.000000000000001;
-    this._frontHalf.startAngle -= 0.000000000000001;
-    this._backHalf.startAngle -= 0.000000000000001;
-    this._glowingFrontHalf.startAngle += 0.000000000000001;
-    this._glowingBackHalf.startAngle += 0.000000000000001;
-    this._glowingFrontHalf.startAngle -= 0.000000000000001;
-    this._glowingBackHalf.startAngle -= 0.000000000000001;
-
     this._frontHalf.height = 2 * radius * this._halfMinorAxis;
     this._glowingFrontHalf.height = 2 * radius * this._halfMinorAxis;
     this._backHalf.height = 2 * radius * this._halfMinorAxis;

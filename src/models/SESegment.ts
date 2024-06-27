@@ -92,7 +92,9 @@ export class SESegment
     super();
     SENodule.SEGMENT_COUNT++;
     this.name = `Ls${SENodule.SEGMENT_COUNT}`;
-    this.ref = createNonFreeSegment ? new NonFreeSegment(this.name) : new Segment(this.name);
+    this.ref = createNonFreeSegment
+      ? new NonFreeSegment(this.name)
+      : new Segment(this.name);
     this.ref._startVector.copy(segmentStartSEPoint.locationVector);
     this.ref._normalVector.copy(segmentNormalVector);
     this.ref.arcLength = segmentArcLength;
@@ -102,7 +104,6 @@ export class SESegment
     this._normalVector.copy(segmentNormalVector);
     this._arcLength = segmentArcLength;
     this._endSEPoint = segmentEndSEPoint;
-
   }
 
   customStyles(): Set<string> {
@@ -392,11 +393,7 @@ export class SESegment
 
       // Check to see if the longThanPi variable needs updating.
       // First see if start and end vectors are even close to antipodal (which is when longerThanPi and nearly antipodal might need updating)
-      if (
-        this._startSEPoint.locationVector.angleTo(
-          this._endSEPoint.locationVector
-        ) > 2
-      ) {
+      if (this._arcLength > 2) {
         // // The startVector and endVector might be antipodal proceed with caution,
 
         // // Set tmpVector to the antipode of the start Vector
@@ -684,7 +681,7 @@ export class SESegment
   }
 
   public getLabel(): SELabel | null {
-    return (this as Labelable).label!
+    return (this as Labelable).label!;
   }
 
   public isMeasurable(): boolean {
