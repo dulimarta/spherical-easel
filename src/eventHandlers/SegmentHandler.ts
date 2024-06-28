@@ -34,6 +34,7 @@ export default class SegmentHandler extends Highlighter {
   private startSEPoint: SEPoint | null = null;
   private endSEPoint: SEPoint | null = null;
   private startSEPointOneDimensionalParent: SEOneOrTwoDimensional | null = null;
+
   /**
    * The arcLength of the segment
    */
@@ -95,6 +96,13 @@ export default class SegmentHandler extends Highlighter {
   private tmpVector1 = new Vector3();
   private tmpVector2 = new Vector3();
   private tmpVector3 = new Vector3();
+
+  /**
+   * If turnOffLongerThanPi is true, then next call to setArcLengthAndNormalVector, this.longerThanPi is set to false and turnOffLongerThanPi is set to false
+   * turnOffLongerThanPi is set to true the first time the ctrl key is pushed and the mouse is moved.
+   */
+  private turnOffLongerThanPi = false;
+
   /**
    * Make a segment handler
    * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
@@ -905,14 +913,9 @@ export default class SegmentHandler extends Highlighter {
     // The user can override this algorithm and make the segment longer than PI
     if (ctrlPressed) {
       this.longerThanPi = true;
+      this.turnOffLongerThanPi = true;
     } else {
-      // If the user sets the longer than pi variable with the crtl press
-      // then the only way to get the segment back to length less than pi
-      // is to drag on endpoint through the antipode of the other.
-      //  I DON'T LIKE THIS BEHAVIOR It should be if they release the
-      // longerThanPi reverts to what it was before pressing the  crtl key
-
-      // this way when the user releases the length is less than pi.
+       // this way when the user releases the length is less than pi.
       // Check to see if the longThanPi variable needs updating.
       if (this.arcLength > 2) {
         // The startVector and endVector might be antipodal proceed with caution,
@@ -934,7 +937,12 @@ export default class SegmentHandler extends Highlighter {
           this.nearlyAntipodal = false;
         }
       }
+      if (this.turnOffLongerThanPi) {
+        this.longerThanPi = false;
+        this.turnOffLongerThanPi = false;
+      }
     }
+
     // Update the arcLength based on longThanPi
     if (this.longerThanPi) {
       this.arcLength = 2 * Math.PI - this.arcLength;
