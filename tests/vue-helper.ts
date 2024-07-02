@@ -23,7 +23,7 @@ global.ResizeObserver = require("resize-observer-polyfill");
 
 export function createWrapper(
   component: any,
-  { componentProps = {} } = {},
+  { componentProps = {} /*, componentData = {}*/ } = {},
   isShallow = false
 ) {
   const testPinia = createTestingPinia({stubActions: false})
@@ -42,13 +42,12 @@ export function createWrapper(
     //   // attachToDocument: true,
     props: {
       ...componentProps
-    }
+    },
+    // data() {
+    //   return componentData
+    // }
   };
-  // console.debug("Shallow mount?", isShallow);
-  // console.debug("Config option ", configOption);
-  const z = isShallow
-    ? shallowMount(component, configOption)
-    : mount(component, configOption);
+  const z = mount(component, { ...configOption, shallow: isShallow });
   // console.debug("Result of mounting", z);
   return { wrapper: z, testPinia };
 }

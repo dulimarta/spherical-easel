@@ -14,8 +14,10 @@
             <li>Ctrl-Alt-R: Cardioid (M1)</li>
           </ul>
         </div>
+        Open panels {{ panels }}
         <v-expansion-panels multiple v-model="panels">
-          <v-expansion-panel :title="t('parametricCoordinates')">
+          <v-expansion-panel data-testid="xyz_formula"
+          :title="t('parametricCoordinates')">
             <v-expansion-panel-text class="bg-white">
               <template
                 v-for="(coordinate, idk) in parametricFormulaData"
@@ -47,6 +49,7 @@
           </v-expansion-panel>
           <v-expansion-panel :title="t('cuspValue')">
             <v-expansion-panel-text class="bg-white">
+              <span v-text="t('commaSeparated')"></span>
               <ParametricCuspParameterValues
                 v-model="cuspInput"
                 :label="cusp.label"
@@ -867,6 +870,7 @@ function parametricCurveIsUnitCheck(tValues: number[]): null | number {
 </script>
 <i18n lang="json" locale="en">
 {
+"commaSeparated": "Expressions delimited by commas",
   "constExpr": "Use constant only expressions",
   "currentTValue": "Current Value: ",
   "cuspValue": "Parametric Cusps",

@@ -6,9 +6,9 @@ import "@/scss/settings.scss";
 import { mdi } from "vuetify/iconsets/mdi";
 import { customIcons } from "./iconAliases";
 import colors from "vuetify/util/colors";
-
+import {md3 as blueprint} from "vuetify/blueprints"
 const SECustomTheme: ThemeDefinition = {
-  dark: false,
+  // dark: true,
   colors: {
     background: colors.red.base,
     'on-background': colors.red.lighten4,
@@ -32,6 +32,7 @@ const SECustomTheme: ThemeDefinition = {
 /* This allows us to set the global style variables to adjust the look and feel of the
 app from one central place. */
 export default createVuetify({
+  // blueprint,
   icons: {
     // defaultSet: "se_custom",
     defaultSet: "mdi", // builtin sets: faSvg, fa, fa4, mdi, mdi, mdiSvg

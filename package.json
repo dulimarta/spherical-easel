@@ -42,7 +42,7 @@
     "vue-i18n": "^9.13.1",
     "vue-router": "~4.0.0",
     "vue-web-cam": "^1.9.0",
-    "vuetify": "^3.6.8"
+    "vuetify": "^3.6.10"
   },
   "devDependencies": {
     "@maginapp/vuepress-plugin-katex": "~1.0.11",

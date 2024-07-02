@@ -1,4 +1,4 @@
-import { SEPoint } from "./internal";
+import { SEPoint } from "./SEPoint";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 const { t } = i18n.global;

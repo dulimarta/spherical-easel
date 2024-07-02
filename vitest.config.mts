@@ -15,7 +15,7 @@ export default mergeConfig(
       include: [
         //"**/parametric-cusp-values.spec.ts",
         //"**/parametric-coord.spec.ts",
-        "**/parametric-*.spec.ts"
+        "**/expression-form.spec.ts"
       ],
       server: {
         deps: {

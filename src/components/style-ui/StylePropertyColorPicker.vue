@@ -1,13 +1,20 @@
 <template>
-  <div class="ma-1 px-1 pb-2"
+  <div
+    class="ma-1 px-1 pb-2"
     :style="{
       borderRadius: '4px',
       border: '1px solid gray',
+      /* use min width if you want to retain the width when the color picker disappears */
+      minWidth: '400px'
     }">
     <div class="flex-row">
       <span class="text-subtitle-2" :style="{ color: conflict ? 'red' : '' }">
         {{ title }}
-        <v-icon :color="conflict || pickedColor === 'none' ? 'transparent' : internalColor" size="small">
+        <v-icon
+          :color="
+            conflict || pickedColor === 'none' ? 'transparent' : internalColor
+          "
+          size="small">
           mdi-circle
         </v-icon>
         <span
@@ -29,26 +36,28 @@
         {{ isOnLabelPanel ? t("noFillLabelTip") : t("noFillTip") }}
       </v-tooltip>
     </div>
-    <div class="flex-row" v-if="!noColorData">
-      <!-- The color picker -->
-      <v-color-picker
-        hide-sliders
-        hide-canvas
-        show-swatches
-        :hide-inputs="!showColorInputs"
-        :swatches-max-height="96"
-        :swatches="colorSwatches"
-        v-model="internalColor"
-        mode="hexa"
-        id="colorPicker"></v-color-picker>
-      <HintButton
-        style="align-self: flex-start"
-        type="colorInput"
-        @click="toggleColorInputs"
-        :tooltip="t('showInput')">
-        <template #icon>mdi-palette</template>
-      </HintButton>
-    </div>
+    <v-slide-y-transition>
+      <div class="flex-row" v-if="!noColorData">
+        <!-- The color picker -->
+        <v-color-picker
+          hide-sliders
+          hide-canvas
+          show-swatches
+          :hide-inputs="!showColorInputs"
+          :swatches-max-height="96"
+          :swatches="colorSwatches"
+          v-model="internalColor"
+          mode="hexa"
+          id="colorPicker"></v-color-picker>
+        <HintButton
+          style="align-self: flex-start"
+          type="colorInput"
+          @click="toggleColorInputs"
+          :tooltip="t('showInput')">
+          <template #icon>mdi-palette</template>
+        </HintButton>
+      </div>
+    </v-slide-y-transition>
   </div>
 </template>
 
@@ -87,7 +96,9 @@ const showColorInputs = ref(false);
 
 // Initialize to color swatches to gray when there is a conflict OR picked color is none
 const colorSwatches = ref(
-  props.conflict || pickedColor.value == "none" ? SETTINGS.style.greyedOutSwatches : SETTINGS.style.swatches
+  props.conflict || pickedColor.value == "none"
+    ? SETTINGS.style.greyedOutSwatches
+    : SETTINGS.style.swatches
 );
 const noDataUILabel = ref(t("noFill"));
 

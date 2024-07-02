@@ -88,7 +88,6 @@ function addVarToExpr(param: any): void {
 }
 
 function onKeyPressed(): void {
-  // console.debug("Key press");
   parsingError.value = "";
   if (timerInstance) clearTimeout(timerInstance);
   timerInstance = setTimeout(() => {
@@ -102,7 +101,6 @@ function onKeyPressed(): void {
         calcExpression.value.length > 0
           ? parser.evaluateWithVars(calcExpression.value, varMap)
           : 0;
-      // console.debug("Calculation result is", calcResult.value);
     } catch (err: any) {
       // console.debug("Got an error", err);
       const syntaxErr = err as SyntaxError

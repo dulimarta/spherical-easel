@@ -7,12 +7,12 @@
         multiple
         :style="{ gap: '8px', paddingRight: '8px', zIndex: 10 }">
         <v-expansion-panel>
-          <v-expansion-panel-title color="accent">
+          <v-expansion-panel-title>
             <h3 class="body-1 font-weight-bold button-group-heading">
               {{ t("expression") }}
             </h3>
           </v-expansion-panel-title>
-          <v-expansion-panel-text>
+          <v-expansion-panel-text class="bg-white">
             <ExpressionForm></ExpressionForm>
           </v-expansion-panel-text>
         </v-expansion-panel>
@@ -22,7 +22,7 @@
               {{ t("parametricCurves") }}
             </h3>
           </v-expansion-panel-title>
-          <v-expansion-panel-text id="me">
+          <v-expansion-panel-text id="me" class="bg-white">
             <!--v-overlay attach="#me"
               v-model="parametricVisible"
               @click:outside="
@@ -46,7 +46,7 @@
               {{ t("slider") }}
             </h3>
           </v-expansion-panel-title>
-          <v-expansion-panel-text>
+          <v-expansion-panel-text class="bg-white">
             <SliderForm></SliderForm>
           </v-expansion-panel-text>
         </v-expansion-panel>
