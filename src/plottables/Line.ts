@@ -7,13 +7,7 @@ import {
   DEFAULT_LINE_FRONT_STYLE,
   DEFAULT_LINE_BACK_STYLE
 } from "@/types/Styles";
-//import Two from "two.js";
-//import { Path } from "two.js/src/path";
-//import { Arc } from "two.js/extras/js/arc"
-//import "two.js/extras/js/arc"
-//import Two from "two.js"
 import { Arc } from "two.js/extras/jsm/arc";
-//import { Vector } from "two.js/src/vector";
 import { Group } from "two.js/src/group";
 
 // The number of vectors used to render the front half (and the same number in the back half)

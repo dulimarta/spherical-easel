@@ -10,7 +10,6 @@ import {
   DEFAULT_SEGMENT_BACK_STYLE
 } from "@/types/Styles";
 import { Arc } from "two.js/extras/jsm/arc";
-import { Anchor } from "two.js/src/anchor";
 import { Group } from "two.js/src/group";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
@@ -66,7 +65,8 @@ export default class Segment extends Nodule {
 
   //Export to SVG we need to know the ending point of the segment and the intermediate point(s) where the segment crosses sides of the sphere.
   private _endVector = new Vector3();
-  // The intermediate points (if used) are (cos(_rotation),(_rotation)) or/and (-cos(_rotation),-sin(_rotation))
+  // The line that contains this segment projects to an ellipse in the view plane, these two parameters
+  // correspond to the startVector and the endVector
   // Ww also need to know which arc to use, which is determined by the sign of the start and end parameters
   private _startParameter = 0;
   private _endParameter = 0;

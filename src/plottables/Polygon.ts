@@ -551,7 +551,7 @@ export default class Polygon extends Nodule {
           const toVector = [fromVector[1], -fromVector[0]];
 
           // add the boundary vertices from start to end in the direction of toVector
-          const boundaryPoints = this.boundaryCircleCoordinates(
+          const boundaryPoints = Nodule.boundaryCircleCoordinates(
             fromVector,
             Math.floor(angularWidth*BOUNDARYSUBDIVISIONS / (2*Math.PI)),
             toVector,
@@ -701,7 +701,7 @@ export default class Polygon extends Nodule {
           const toVector = [-fromVector[1], fromVector[0]];
 
           // add the boundary vertices from start to end in the direction of toVector
-          const boundaryPoints = this.boundaryCircleCoordinates(
+          const boundaryPoints = Nodule.boundaryCircleCoordinates(
             fromVector,
             Math.floor(angularWidth*BOUNDARYSUBDIVISIONS / (2*Math.PI)),
             toVector,
@@ -785,7 +785,7 @@ export default class Polygon extends Nodule {
           (locationArray[0].y * SETTINGS.boundaryCircle.radius)) /
           size
       ];
-      const boundary = this.boundaryCircleCoordinates(
+      const boundary = Nodule.boundaryCircleCoordinates(
         startPoint,
         BOUNDARYSUBDIVISIONS,
         [-startPoint[1], startPoint[0]],
@@ -862,7 +862,7 @@ export default class Polygon extends Nodule {
           (locationArray[0].y * SETTINGS.boundaryCircle.radius)) /
           size
       ];
-      const boundary = this.boundaryCircleCoordinates(
+      const boundary = Nodule.boundaryCircleCoordinates(
         startPoint,
         BOUNDARYSUBDIVISIONS,
         [-startPoint[1], startPoint[0]],
@@ -941,44 +941,6 @@ export default class Polygon extends Nodule {
     //   });
     //   count += part.vertices.length
     // });
-  }
-
-  /**
-   * startPt is a point on the the boundary of the display circle,
-   * this method returns an ordered list of numPoints points from startPoint for and
-   * angular length of angularLength in the direction of yAxis.
-   * This returns an array of point on the boundary circle so that the angle subtended at the origin between
-   * any two consecutive ones is equal and equal to the angle between the first returned to startPt. The last one is
-   * a equal measure less than angularLength
-   *
-   * yAxis is perpendicular to startPt
-   */
-  boundaryCircleCoordinates(
-    startPt: number[],
-    numPoints: number,
-    yAxis: number[],
-    angularLength: number
-  ): number[][] {
-    const xAxisVector = new Vector3(startPt[0], startPt[1], 0).normalize();
-    const yAxisVector = new Vector3(yAxis[0], yAxis[1], 0).normalize();
-    const returnArray = [];
-
-    for (let i = 0; i < numPoints; i++) {
-      this.tmpVector.set(0, 0, 0);
-      this.tmpVector.addScaledVector(
-        xAxisVector,
-        Math.cos((i + 1) * (angularLength / (numPoints + 1)))
-      );
-      this.tmpVector.addScaledVector(
-        yAxisVector,
-        Math.sin((i + 1) * (angularLength / (numPoints + 1)))
-      );
-      // now scale to the radius of the boundary circle
-      this.tmpVector.normalize().multiplyScalar(SETTINGS.boundaryCircle.radius);
-
-      returnArray.push([this.tmpVector.x, this.tmpVector.y]);
-    }
-    return returnArray;
   }
 
   /**
