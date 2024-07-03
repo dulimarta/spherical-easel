@@ -808,7 +808,7 @@ export default class SegmentHandler extends Highlighter {
       ) {
         return false;
       }
-      // Clone the temporary segment and mark it removed from the scene,
+      // Make a new segment from the temporary one and mark it removed from the scene,
       this.isTemporarySegmentAdded = false;
 
       const newSESegment = new SESegment(

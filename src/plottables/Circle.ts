@@ -62,11 +62,12 @@ export default class Circle extends Nodule {
   /**
    * The normal vector and circle radius determines the rotation, distance to center and major/minor axis length of the projected ellipse
    */
-  private _rotation: number = 0; //equal -Math.atan2(this._normalVector.x, this._normalVector.y);
+  private _rotation: number = 0; //equal -Math.atan2(this._normalVector.x, this._normalVector.y); This is the amount to rotate the ellipse about its center
+
   private _halfMinorAxis: number = 0; //equal to (Sin[_beta + r] - Sin[_beta - r])/2
   private _halfMajorAxis: number = 0; // equal to Sqrt[2 - Cos[r]^2]/Sqrt[Cot[r]^2 + 2]
   private _beta: number = 0; // equal to arccos(this._centerVector.z), the angle between the north pole <0,0,1> and the center vector
-  private _center = new Two.Vector(0, 0); // equal to  < (Sin[_beta + r] + Sin[_beta - r])/2, 0 >, the amount the ellipse must be translated before rotation.
+  private _center = new Two.Vector(0, 0); // equal to  (radius* < (Sin[_beta + r] + Sin[_beta - r])/2, 0 >,  and then rotated by Math.atan2(this._centerlVector.y, this._centerlVector.x)).
 
   // when the circle intersects the boundary only part of each front/back of the projected ellipse is displayed
   private _projectedEllipseStartAngle = 0;
@@ -154,11 +155,12 @@ export default class Circle extends Nodule {
   );
 
   // SUBDIVISIONS number of equally spaced coordinates on the boundary circle
-  static boundaryVertices: [number[]];
+  static boundaryVertices: [number[]] = [[]];
   // Be sure that this array is populated only once
   static setBoundaryVerticesHasBeenCalled = false;
   static setBoundaryVertices(): void {
     if (!Circle.setBoundaryVerticesHasBeenCalled) {
+      Circle.boundaryVertices.splice(0);
       for (let k = 0; k < SUBDIVISIONS; k++) {
         const angle1 = (k / SUBDIVISIONS) * 2 * Math.PI;
         Circle.boundaryVertices.push([
@@ -195,62 +197,16 @@ export default class Circle extends Nodule {
     Circle.currentGlowingCircleStrokeWidthBack *= factor;
   }
 
-
   constructor(noduleName: string = "None") {
     super(noduleName);
     // Set the boundary vertices (only populates Circle.boundaryVertices once)
     Circle.setBoundaryVertices();
 
     // Create the glowing/back/fill parts.
-    this._frontPart = new Arc(
-      0,
-      0,
-      2 * radius,
-      2 * radius,
-      Math.PI,
-      2 * Math.PI,
-      SUBDIVISIONS
-    );
-
-    this._frontPart = new Arc(
-      0,
-      0,
-      2 * radius,
-      2 * radius,
-      Math.PI,
-      2 * Math.PI,
-      SUBDIVISIONS
-    );
-
-    this._glowingFrontPart = new Arc(
-      0,
-      0,
-      2 * radius,
-      2 * radius,
-      Math.PI,
-      2 * Math.PI,
-      SUBDIVISIONS
-    );
-
-    this._backPart = new Arc(
-      0,
-      0,
-      2 * radius,
-      2 * radius,
-      Math.PI,
-      2 * Math.PI,
-      SUBDIVISIONS
-    );
-
-    this._glowingBackPart = new Arc(
-      0,
-      0,
-      2 * radius,
-      2 * radius,
-      Math.PI,
-      2 * Math.PI,
-      SUBDIVISIONS
-    );
+    this._frontPart = new Arc(0, 0, 0, 0, 0, 0, SUBDIVISIONS);
+    this._glowingFrontPart = new Arc(0, 0, 0, 0, 0, 0, SUBDIVISIONS);
+    this._backPart = new Arc(0, 0, 0, 0, 0, 0, SUBDIVISIONS);
+    this._glowingBackPart = new Arc(0, 0, 0, 0, 0, 0, SUBDIVISIONS);
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this._frontPart.id), {
@@ -287,16 +243,11 @@ export default class Circle extends Nodule {
     // two for the extra anchors to close up the annular region)
     // The back/front requires SUBDIVISIONS anchors
 
-    const verticesFill: Anchor[] = [];
     for (let k = 0; k < 3 * SUBDIVISIONS + 2; k++) {
       this.fillStorageAnchors.push(new Anchor(0, 0));
     }
-    this._frontFill = new Path(
-      [], //it doesn't matter that no anchors are assigned to the frontFill because they will assigned from the fillStorageAnchors
-      /* closed */ true,
-      /* curve */ false
-    );
-    // create the back part
+    //it doesn't matter that no anchors are assigned to the front/backFill because they will assigned from the fillStorageAnchors
+    this._frontFill = new Path([], /* closed */ true, /* curve */ false);
     this._backFill = new Path([], /* closed */ true, /* curve */ false);
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
@@ -348,28 +299,41 @@ export default class Circle extends Nodule {
       Math.sqrt(2 - Math.cos(this._circleRadius) ** 2) /
       Math.sqrt(Circle.ctg(this._circleRadius) ** 2 + 2);
     this._center.x =
-      (Math.sin(this._beta + this._circleRadius) +
-        Math.sin(this._beta - this._circleRadius)) /
-      2; // y component is always zero
+      (SETTINGS.boundaryCircle.radius *
+        (Math.sin(this._beta + this._circleRadius) +
+          Math.sin(this._beta - this._circleRadius))) /
+      2;
+    this._center.y = 0; // y component is always zero
+
+    // Now rotate the center vector
+    this._center.rotate(Math.atan2(this._centerVector.y, this._centerVector.x)); //DO NOT Rotate the center vectore at the same time you set it equal to this._frontPart.position, this causes unexpected results
 
     //Copy the updated information into the glowing/not front/back parts
-    this._frontPart.height = 2 * this._halfMinorAxis;
-    this._frontPart.width = 2 * this._halfMajorAxis;
-    this._frontPart.position = this._center; // Is this needed? Does this happen before the rotation is applied?
-    this._frontFill.rotation = this._rotation; // Does this rotate about the origin?
+    this._frontPart.height =
+      2 * this._halfMinorAxis * SETTINGS.boundaryCircle.radius;
+    this._frontPart.width =
+      2 * this._halfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._frontPart.rotation = this._rotation;
+    this._frontPart.position = this._center;
 
-    this._backPart.height = 2 * this._halfMinorAxis;
-    this._backPart.width = 2 * this._halfMajorAxis;
+    this._backPart.height =
+      2 * this._halfMinorAxis * SETTINGS.boundaryCircle.radius;
+    this._backPart.width =
+      2 * this._halfMajorAxis * SETTINGS.boundaryCircle.radius;
     this._backPart.position = this._center;
-    this._backFill.rotation = this._rotation;
+    this._backPart.rotation = this._rotation;
 
-    this._glowingFrontPart.height = 2 * this._halfMinorAxis;
-    this._glowingFrontPart.width = 2 * this._halfMajorAxis;
+    this._glowingFrontPart.height =
+      2 * this._halfMinorAxis * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontPart.width =
+      2 * this._halfMajorAxis * SETTINGS.boundaryCircle.radius;
     this._glowingFrontPart.position = this._center;
     this._glowingFrontPart.rotation = this._rotation;
 
-    this._glowingBackPart.height = 2 * this._halfMinorAxis;
-    this._glowingBackPart.width = 2 * this._halfMajorAxis;
+    this._glowingBackPart.height =
+      2 * this._halfMinorAxis * SETTINGS.boundaryCircle.radius;
+    this._glowingBackPart.width =
+      2 * this._halfMajorAxis * SETTINGS.boundaryCircle.radius;
     this._glowingBackPart.position = this._center;
     this._glowingBackPart.rotation = this._rotation;
 
@@ -380,20 +344,13 @@ export default class Circle extends Nodule {
     // Now reset the parameters used to control the display of the ellipse
     this._projectedEllipseStartAngle = 0;
     this._projectedEllipseEndAngle = 2 * Math.PI;
-    this._frontPartInUse = false;
-    this._backPartInUse = false;
-
-    //  // Bring all the anchor points to a common pool
-    //  // Each front/back fill path will pull anchor points from
-    //  // this pool as needed
-    //
 
     if (
       -Math.PI / 2 < my_diff &&
       my_diff < Math.PI / 2 &&
       !(Math.PI / 2 < my_sum && my_sum < (3 * Math.PI) / 2)
     ) {
-      // the circle edge is entirely on the front
+      console.log("the circle edge is entirely on the front");
 
       // Set the front/back part/fill use
       this._frontPartInUse = true;
@@ -406,6 +363,10 @@ export default class Circle extends Nodule {
       this._frontPart.startAngle = this._projectedEllipseStartAngle;
       this._frontPart.endAngle = this._projectedEllipseEndAngle;
       this._frontPart.closed = true; //Is this necessary?
+
+      this._glowingFrontPart.startAngle = this._projectedEllipseStartAngle;
+      this._glowingFrontPart.endAngle = this._projectedEllipseEndAngle;
+      this._glowingFrontPart.closed = true; //Is this necessary?
 
       // Begin to set the frontFill that is common to both cases
       // Bring all the front anchor points to a common pool
@@ -520,7 +481,7 @@ export default class Circle extends Nodule {
       Math.PI / 2 < my_sum &&
       my_sum < (3 * Math.PI) / 2
     ) {
-      // the circle is entirely on the back
+      console.log("the circle edge is entirely on the back");
 
       // Set the front/back part/fill use
       this._frontPartInUse = false;
@@ -648,7 +609,7 @@ export default class Circle extends Nodule {
       Math.PI / 2 < my_sum &&
       my_sum < (3 * Math.PI) / 2
     ) {
-      // the circle edge intersects the boundary circle
+      console.log("the circle edge intersects the boundary circle");
       this._frontPartInUse = true;
       this._backPartInUse = true;
       this._frontFillIsEntireFront = false;
@@ -757,7 +718,6 @@ export default class Circle extends Nodule {
           );
         }
       });
-
     }
 
     // let posIndexFill = 0;
@@ -1175,6 +1135,7 @@ export default class Circle extends Nodule {
   }
 
   setVisible(flag: boolean): void {
+
     if (!flag) {
       this._frontPart.visible = false;
       this._backPart.visible = false;
@@ -1198,43 +1159,6 @@ export default class Circle extends Nodule {
     }
     // apply the new color variables to the object
     this.stylize(DisplayStyle.ApplyCurrentVariables);
-  }
-  /**
-   * This method is used to copy the temporary circle created with the Circle Tool  into a
-   * permanent one in the scene .
-   */
-  clone(): this {
-    // Use the constructor for this class to create a template to copy over the
-    // values from the current (the `this`) Circle object
-    const dup = new Circle(this.name);
-    dup._centerVector.copy(this._centerVector);
-    dup._circleRadius = this._circleRadius;
-    dup.updateDisplay(); // This sets all the necessary parameters in dup
-
-    //Clone the front/back fill
-    // #frontFill + #backFill + #storage = constant at all times
-    // const poolFill = [];
-    // poolFill.push(...dup._frontFill.vertices.splice(0));
-    // poolFill.push(...dup._backFill.vertices.splice(0));
-    // poolFill.push(...dup.fillStorageAnchors.splice(0));
-
-    // while (dup._frontFill.vertices.length < this._frontFill.vertices.length) {
-    //   dup._frontFill.vertices.push(poolFill.pop()!);
-    // }
-    // while (dup._backFill.vertices.length < this._backFill.vertices.length) {
-    //   dup._backFill.vertices.push(poolFill.pop()!);
-    // }
-    // dup.fillStorageAnchors.push(...poolFill.splice(0));
-
-    // dup._frontFill.vertices.forEach((v: Anchor, pos: number) => {
-    //   v.copy(this._frontFill.vertices[pos]);
-    // });
-
-    // dup._backFill.vertices.forEach((v: Anchor, pos: number) => {
-    //   v.copy(this._backFill.vertices[pos]);
-    // });
-
-    return dup as this;
   }
 
   /**

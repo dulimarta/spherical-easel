@@ -704,23 +704,6 @@ export default class Segment extends Nodule {
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
 
-  /**
-   * Clone the segment - We have to define our own clone() function
-   * The builtin clone() does not seem to work correctly
-   */
-  clone(): this {
-    // Create a new segment and copy all this's properties into it
-    const dup = new Segment(this.name);
-    //Copy name and start/end/mid/normal vectors
-    dup._arcLength = this._arcLength;
-    dup._startVector.copy(this._startVector);
-    dup._normalVector.copy(this._normalVector);
-    //Once arcLength, start Vector and normal Vector are set
-    // call updateDisplay to set the rotation, half minor axis, and lots of other variables
-    dup.updateDisplay();
-    return dup as this;
-  }
-
   addToLayers(layers: Group[]): void {
     this._frontPart.addTo(layers[LAYER.foreground]);
     this._frontExtra.addTo(layers[LAYER.foreground]);

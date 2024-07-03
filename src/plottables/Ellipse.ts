@@ -220,7 +220,7 @@ export default class Ellipse extends Nodule {
     // The non-front|back Vertices are ones on the boundary circle.
     const frontVertices: Anchor[] = [];
     for (let k = 0; k < SUBDIVISIONS; k++) {
-      // Create Anchors for the paths that will be cloned later
+      // Create Anchors for the paths that will be duplicated later
       frontVertices.push(new Anchor(0, 0));
     }
     this.frontPart = new Path(
@@ -229,7 +229,7 @@ export default class Ellipse extends Nodule {
       /*curve*/ false
     );
 
-    // Clone the glowing/back/fill parts.
+    // Create the glowing/back/fill parts.
     this.glowingFrontPart = new Path(
       frontVertices,
       /*closed*/ false,
@@ -895,93 +895,6 @@ export default class Ellipse extends Nodule {
     }
     // apply the new color variables to the object
     this.stylize(DisplayStyle.ApplyCurrentVariables);
-  }
-  /**
-   * This method is used to copy the temporary ellipse created with the Ellipse Tool (in the midground) into a
-   * permanent one in the scene (in the foreground).
-   */
-  clone(): this {
-    // Use the constructor for this class to create a template to copy over the
-    // values from the current (the `this`) Circle object
-    const dup = new Ellipse(this.name);
-    dup._focus1Vector.copy(this._focus1Vector);
-    dup._focus2Vector.copy(this._focus2Vector);
-    dup._a = this._a;
-    dup._b = this._b;
-
-    // Duplicate the non-glowing parts
-    dup.frontPart.closed = this.frontPart.closed;
-    // dup.frontPart["_closed"] = this.frontPart["_closed"];
-    dup.frontPart.rotation = this.frontPart.rotation;
-    dup.frontPart.translation.copy(this.frontPart.translation);
-    dup.backPart.closed = this.backPart.closed;
-    // dup.backPart["_closed"] = this.backPart["_closed"];
-    dup.backPart.rotation = this.backPart.rotation;
-    dup.backPart.translation.copy(this.backPart.translation);
-
-    // Duplicate the glowing parts
-    dup.glowingFrontPart.closed = this.glowingFrontPart.closed;
-    // dup.glowingFrontPart["_closed"] = this.glowingFrontPart["_closed"];
-    dup.glowingFrontPart.rotation = this.glowingFrontPart.rotation;
-    dup.glowingFrontPart.translation.copy(this.glowingFrontPart.translation);
-    dup.glowingBackPart.closed = this.glowingBackPart.closed;
-    //dup.glowingBackPart["_closed"] = this.glowingBackPart["_closed"];
-    dup.glowingBackPart.rotation = this.glowingBackPart.rotation;
-    dup.glowingBackPart.translation.copy(this.glowingBackPart.translation);
-
-    // The clone (i.e. dup) initially has equal number of vertices for the front and back part
-    //  so adjust to match `this`. If one of the this.front or this.back has more vertices then
-    //  the corresponding dup part, then remove the excess vertices from the one with more and
-    //  move them to the other
-    while (dup.frontPart.vertices.length > this.frontPart.vertices.length) {
-      // Transfer from frontPart to backPart
-      dup.backPart.vertices.push(dup.frontPart.vertices.pop()!);
-      dup.glowingBackPart.vertices.push(dup.glowingFrontPart.vertices.pop()!);
-    }
-    while (dup.backPart.vertices.length > this.backPart.vertices.length) {
-      // Transfer from backPart to frontPart
-      dup.frontPart.vertices.push(dup.backPart.vertices.pop()!);
-      dup.glowingFrontPart.vertices.push(dup.glowingBackPart.vertices.pop()!);
-    }
-    // After the above two while statement execute this. glowing/not front/back and dup. glowing/not front/back are the same length
-    // Now we can copy the vertices from the this.front/back to the dup.front/back
-    dup.frontPart.vertices.forEach((v: Anchor, pos: number) => {
-      v.copy(this.frontPart.vertices[pos]);
-    });
-    dup.backPart.vertices.forEach((v: Anchor, pos: number) => {
-      v.copy(this.backPart.vertices[pos]);
-    });
-    dup.glowingFrontPart.vertices.forEach((v: Anchor, pos: number) => {
-      v.copy(this.glowingFrontPart.vertices[pos]);
-    });
-    dup.glowingBackPart.vertices.forEach((v: Anchor, pos: number) => {
-      v.copy(this.glowingBackPart.vertices[pos]);
-    });
-
-    //Clone the front/back fill
-    // #frontFill + #backFill + #storage = constant at all times
-    const poolFill = [];
-    poolFill.push(...dup.frontFill.vertices.splice(0));
-    poolFill.push(...dup.backFill.vertices.splice(0));
-    poolFill.push(...dup.fillStorageAnchors.splice(0));
-
-    while (dup.frontFill.vertices.length < this.frontFill.vertices.length) {
-      dup.frontFill.vertices.push(poolFill.pop()!);
-    }
-    while (dup.backFill.vertices.length < this.backFill.vertices.length) {
-      dup.backFill.vertices.push(poolFill.pop()!);
-    }
-    dup.fillStorageAnchors.push(...poolFill.splice(0));
-
-    dup.frontFill.vertices.forEach((v: Anchor, pos: number) => {
-      v.copy(this.frontFill.vertices[pos]);
-    });
-
-    dup.backFill.vertices.forEach((v: Anchor, pos: number) => {
-      v.copy(this.backFill.vertices[pos]);
-    });
-
-    return dup as this;
   }
 
   /**

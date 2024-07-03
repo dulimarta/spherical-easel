@@ -221,16 +221,7 @@ export default class Line extends Nodule {
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
 
-  // It looks like we have to define our own clone() function
-  // The builtin clone() does not seem to work correctly
-  clone(): this {
-    const dup = new Line(this.name);
-    dup.normalVector = this._normalVector;
-    // setting the normal vector sets the rotation and halfMinorAxis and calls updateDisplay() for dup
-    return dup as this;
-  }
-
-  addToLayers(layers: Group[]): void {
+   addToLayers(layers: Group[]): void {
     this._frontHalf.addTo(layers[LAYER.foreground]);
     this._glowingFrontHalf.addTo(layers[LAYER.foregroundGlowing]);
     this._backHalf.addTo(layers[LAYER.background]);

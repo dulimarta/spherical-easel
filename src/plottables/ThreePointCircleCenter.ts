@@ -145,19 +145,6 @@ export default class ThreePointCircleCenter extends NonFreePoint {
     );
   }
 
-  /**
-   * This method is used to copy the temporary three point circle center created with the ThreePointCircle Tool into a
-   * permanent one in the scene .
-   */
-  clone(): this {
-    const dup = new ThreePointCircleCenter();
-    dup.vector1 = this._vector1;
-    dup.vector2 = this._vector2;
-    dup.vector3 = this._vector3;
-    dup._locationVector.copy(this._locationVector);
-    return dup as this;
-  }
-
   set vector1(v: Vector3) {
     this._vector1.copy(v).normalize();
   }
