@@ -674,6 +674,7 @@ export default class CircleHandler extends Highlighter {
         this.circleSEPoint,
         false
       );
+
       // Create the plottable and model label
       const newSELabel = new SELabel("circle", newSECircle);
       // Set the initial label location

@@ -67,17 +67,12 @@ export default class Circle extends Nodule {
   private _halfMinorAxis: number = 0; //equal to (Sin[_beta + r] - Sin[_beta - r])/2
   private _halfMajorAxis: number = 0; // equal to Sqrt[2 - Cos[r]^2]/Sqrt[Cot[r]^2 + 2]
   private _beta: number = 0; // equal to arccos(this._centerVector.z), the angle between the north pole <0,0,1> and the center vector
-  private _center = new Two.Vector(0, 0); // equal to  (radius* < (Sin[_beta + r] + Sin[_beta - r])/2, 0 >,  and then rotated by Math.atan2(this._centerlVector.y, this._centerlVector.x)).
+  private _center = new Two.Vector(0, 0); // equal to  (radius* < (Sin[_beta + r] + Sin[_beta - r])/2, 0 >,  and then rotated by Math.atan2(this._centerVector.y, this._centerVector.x)).
 
-  // when the circle intersects the boundary only part of each front/back of the projected ellipse is displayed
-  private _projectedEllipseStartAngle = 0;
-  private _projectedEllipseEndAngle = 0;
-
-  // The starting parameter and an ending parameter are the parameter values where the circle crosses the boundaryCircle
+  // The boundaryParameter (and -boundaryParameter are the parameter values where the circle crosses the boundaryCircle
   // set to zero when circle doesn't cross the boundaryCircle
   // The circle crosses the boundary if and only if Pi/2 < r + \[Beta] < 3 Pi/2 and Pi/2 < \[Beta] - r < Pi/2
   private _boundaryParameter1: number = 0; // equal to ArcCos[Cot[r] Cot[_beta]]
-  private _boundaryParameter2: number = 0; // equal to -ArcCos[Cot[r] Cot[_beta]]
 
   // Booleans to determine if the front/back fill/not are in use, useful in the display
   // the front/back Part/Fill are all independent for example, when the circle is a hole on the front, the backPart is NOT in use but the backFill IS in use.
@@ -306,7 +301,7 @@ export default class Circle extends Nodule {
     this._center.y = 0; // y component is always zero
 
     // Now rotate the center vector
-    this._center.rotate(Math.atan2(this._centerVector.y, this._centerVector.x)); //DO NOT Rotate the center vectore at the same time you set it equal to this._frontPart.position, this causes unexpected results
+    this._center.rotate(Math.atan2(this._centerVector.y, this._centerVector.x)); //DO NOT Rotate the center vector at the same time you set it equal to this._frontPart.position, this causes unexpected results
 
     //Copy the updated information into the glowing/not front/back parts
     this._frontPart.height =
@@ -341,9 +336,8 @@ export default class Circle extends Nodule {
     const my_diff = this._beta - this._circleRadius; // my_diff is the angular distance from the north pole to the closest point on the circle
     const my_sum = this._beta + this._circleRadius; // my_sum is the angular distance from the north pole to the furthest point on the circle
 
-    // Now reset the parameters used to control the display of the ellipse
-    this._projectedEllipseStartAngle = 0;
-    this._projectedEllipseEndAngle = 2 * Math.PI;
+    // get the local transformation matrix of the circle (should be the same for all parts glowing/not front/back)
+    const localMatrix = this._frontPart.matrix; //local matrix works for just the position, rotation, and scale of that object in its local frame
 
     if (
       -Math.PI / 2 < my_diff &&
@@ -360,12 +354,12 @@ export default class Circle extends Nodule {
       this._frontFillIsEntireFront = false;
       // this._backFillIsEntireBack could be either true or false
 
-      this._frontPart.startAngle = this._projectedEllipseStartAngle;
-      this._frontPart.endAngle = this._projectedEllipseEndAngle;
+      this._frontPart.startAngle = 0;
+      this._frontPart.endAngle = 2 * Math.PI;
       this._frontPart.closed = true; //Is this necessary?
 
-      this._glowingFrontPart.startAngle = this._projectedEllipseStartAngle;
-      this._glowingFrontPart.endAngle = this._projectedEllipseEndAngle;
+      this._glowingFrontPart.startAngle = 0;
+      this._glowingFrontPart.endAngle = 2 * Math.PI;
       this._glowingFrontPart.closed = true; //Is this necessary?
 
       // Begin to set the frontFill that is common to both cases
@@ -374,15 +368,15 @@ export default class Circle extends Nodule {
       //this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
 
       // In this case the frontFillVertices are the same as the frontVertices
-      // get the local transformation matrix of the circle (should be the same for all parts glowing/not front/back)
-      const localMatrix = this._frontPart.matrix; //local matrix works for just the position, rotation, and scale of that object in its local frame
-      this._frontPart.vertices.forEach((v: Anchor) => {
+      this._frontPart.vertices.findLast((v: Anchor) => {
         var coords = localMatrix.multiply(v.x, v.y, 1);
+        //console.log("coords", coords[0], v.x);
         const vertex = this.fillStorageAnchors.pop();
         if (vertex !== undefined) {
           vertex.x = coords[0];
           vertex.y = coords[1];
           this._frontFill.vertices.push(vertex);
+          //console.log("ang", Math.atan2(coords[1],coords[2]),coords[0]**2+coords[1]**2)
         } else {
           throw new Error(
             "Circle: not enough anchors in the pool to trace the circle on the front."
@@ -393,15 +387,18 @@ export default class Circle extends Nodule {
       if (this.centerVector.z > 0) {
         // The interior of the circle is contained on the front
         // Nothing needs to be added to the frontFill
+        //console.log("center z >0, length of front fill", this._frontFill.vertices.length)
         // backFill
         this._backFillInUse = false;
         this._backFillIsEntireBack = false;
         this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
       } else {
-        // the circle is a hole on the front, the back is entirely covered
+        console.log(
+          "the circle is a hole on the front, the back is entirely covered"
+        );
         this._backFillInUse = true;
 
-        // Set the frontFill
+        // Finish setting the frontFill
         // We need 3*SUBDIVISION +2 anchors for the annular region on the front. Currently there are SUBDIVISION in the front fill
         // Add an anchor to close the inner region
         const vert = this.fillStorageAnchors.pop();
@@ -419,43 +416,49 @@ export default class Circle extends Nodule {
         // now the frontFillVertices must trace out the boundary vertices
         // To help with the rendering, start tracing the boundary circle directly across from the last vertex on the circle (which
         // is the same as the one at index zero
-        const frontStartTraceIndex = Math.floor(
-          Math.atan2(
-            this._frontPart.vertices[0].y,
-            this._frontPart.vertices[0].x
-          ).modTwoPi() /
+        let coords = localMatrix.multiply(
+          this._frontPart.vertices[0].x,
+          this._frontPart.vertices[0].y,
+          1
+        );
+        let frontStartTraceIndex = Math.ceil(
+          Math.atan2(coords[1], coords[0]).modTwoPi() /
             ((2 * Math.PI) / SUBDIVISIONS)
         );
+        // The use of math.ceil means that frontStartTraceIndew could be equal to SUBDIVISIONS, so reduce mod SUBDIVISIONS
+        frontStartTraceIndex =
+          ((frontStartTraceIndex % SUBDIVISIONS) + SUBDIVISIONS) % SUBDIVISIONS;
 
-        Circle.boundaryVertices
-          .reverse()
-          .rotate(frontStartTraceIndex)
-          .forEach(v => {
-            const vert = this.fillStorageAnchors.pop();
-            if (vert != undefined) {
-              vert.x = v[0];
-              vert.y = v[1];
-              this._frontFill.vertices.push(vert);
-            } else {
-              throw new Error(
-                "Circle: not enough anchors in the pool to trace the circle on the front."
-              );
-            }
-          });
-        //un-rotate and reverse the boundary vertices to their initial state
-        Circle.boundaryVertices.rotate(-frontStartTraceIndex).reverse();
+        //Move the boundary vertices array so that the first one is
+        Circle.boundaryVertices.rotate(frontStartTraceIndex);
+
+        Circle.boundaryVertices.findLast(v => {
+          const vert = this.fillStorageAnchors.pop();
+          if (vert != undefined) {
+            vert.x = v[0];
+            vert.y = v[1];
+            this._frontFill.vertices.push(vert);
+          } else {
+            throw new Error(
+              "Circle: not enough anchors in the pool to trace the circle on the front."
+            );
+          }
+        });
 
         // Make sure that the last entry in the frontFill is the first from the boundary vertices to close up the annular region
         const vert1 = this.fillStorageAnchors.pop();
+        const len = Circle.boundaryVertices.length;
         if (vert1 != undefined) {
-          vert1.x = this._frontFill.vertices[SUBDIVISIONS + 1].x;
-          vert1.y = this._frontFill.vertices[SUBDIVISIONS + 1].y;
-          this._frontFill.vertices.push(vert);
+          vert1.x = Circle.boundaryVertices[len - 1][0];
+          vert1.y = Circle.boundaryVertices[len - 1][1];
+          this._frontFill.vertices.push(vert1);
         } else {
           throw new Error(
             "Circle: not enough anchors in the pool to trace the circle on the front."
           );
         }
+        //un-rotate the boundary vertices to their initial state
+        Circle.boundaryVertices.rotate(-frontStartTraceIndex);
 
         // Set the backFill
         // In this case set the backFillVertices to the entire boundary circle of the sphere (unless it is already the entire back already)
@@ -491,9 +494,13 @@ export default class Circle extends Nodule {
       // this._frontFillIsEntireFront could be true or false;
       this._backFillIsEntireBack = false;
 
-      this._backPart.startAngle = this._projectedEllipseStartAngle;
-      this._backPart.endAngle = this._projectedEllipseEndAngle;
+      this._backPart.startAngle = 0;
+      this._backPart.endAngle = 2 * Math.PI;
       this._backPart.closed = true; //Is this necessary?
+
+      this._glowingBackPart.startAngle = 0;
+      this._glowingBackPart.endAngle = 2 * Math.PI;
+      this._glowingBackPart.closed = true; //Is this necessary?
 
       // Begin to set the back Fill that is common to both cases
       // Bring all the front anchor points to a common pool
@@ -503,7 +510,8 @@ export default class Circle extends Nodule {
       // In this case the backFillVertices are the same as the backVertices
       // get the local transformation matrix of the circle (should be the same for all parts glowing/not front/back)
       const localMatrix = this._backPart.matrix; //local matrix works for just the position, rotation, and scale of that object in its local frame
-      this._backPart.vertices.forEach((v: Anchor) => {
+      this._backPart.vertices.forEach((v: Anchor, ind: number) => {
+        //if (ind < 20) {
         var coords = localMatrix.multiply(v.x, v.y, 1);
         const vertex = this.fillStorageAnchors.pop();
         if (vertex !== undefined) {
@@ -515,6 +523,7 @@ export default class Circle extends Nodule {
             "Circle: not enough anchors in the pool to trace the circle on the back."
           );
         }
+        //}
       });
 
       if (this.centerVector.z < 0) {
@@ -546,43 +555,52 @@ export default class Circle extends Nodule {
         // now the backFillVertices must trace out the boundary vertices
         // To help with the rendering, start tracing the boundary circle directly across from the last vertex on the circle (which
         // is the same as the one at index zero
-        const backStartTraceIndex = Math.floor(
-          Math.atan2(
-            this._backPart.vertices[0].y,
-            this._backPart.vertices[0].x
-          ).modTwoPi() /
+        let coords = localMatrix.multiply(
+          this._backPart.vertices[0].x,
+          this._backPart.vertices[0].y,
+          1
+        );
+
+        let backStartTraceIndex = Math.ceil(
+          Math.atan2(coords[1], coords[0]).modTwoPi() /
             ((2 * Math.PI) / SUBDIVISIONS)
         );
 
-        Circle.boundaryVertices
-          .reverse()
-          .rotate(backStartTraceIndex)
-          .forEach(v => {
-            const vert = this.fillStorageAnchors.pop();
-            if (vert != undefined) {
-              vert.x = v[0];
-              vert.y = v[1];
-              this._backFill.vertices.push(vert);
-            } else {
-              throw new Error(
-                "Circle: not enough anchors in the pool to trace the circle on the back."
-              );
-            }
-          });
-        //un-rotate and reverse the boundary vertices to their initial state
-        Circle.boundaryVertices.rotate(-backStartTraceIndex).reverse();
+        // The use of math.ceil means that frontStartTraceIndex could be equal to SUBDIVISIONS, so reduce mod SUBDIVISIONS
+        backStartTraceIndex =
+          ((backStartTraceIndex % SUBDIVISIONS) + SUBDIVISIONS) % SUBDIVISIONS;
+
+        //Move the boundary vertices array so that the first one is
+        Circle.boundaryVertices.rotate(backStartTraceIndex);
+
+        Circle.boundaryVertices.findLast((v, ind) => {
+          const vert = this.fillStorageAnchors.pop();
+          if (vert != undefined) {
+            vert.x = v[0];
+            vert.y = v[1];
+            this._backFill.vertices.push(vert);
+          } else {
+            throw new Error(
+              "Circle: not enough anchors in the pool to trace the circle on the back."
+            );
+          }
+        });
 
         // Make sure that the last entry in the backFill is the first from the boundary vertices to close up the annular region
         const vert1 = this.fillStorageAnchors.pop();
+        const len3 = Circle.boundaryVertices.length;
         if (vert1 != undefined) {
-          vert1.x = this._backFill.vertices[SUBDIVISIONS + 1].x;
-          vert1.y = this._backFill.vertices[SUBDIVISIONS + 1].y;
-          this._backFill.vertices.push(vert);
+          vert1.x = Circle.boundaryVertices[len3 - 1][0];
+          vert1.y = Circle.boundaryVertices[len3 - 1][1];
+          this._backFill.vertices.push(vert1);
         } else {
           throw new Error(
             "Circle: not enough anchors in the pool to trace the circle on the back."
           );
         }
+
+        //un-rotate and reverse the boundary vertices to their initial state
+        Circle.boundaryVertices.rotate(-backStartTraceIndex);
 
         // Set the frontFill
         // In this case set the frontFillVertices to the entire boundary circle of the sphere (unless it is already the entire front already)
@@ -612,64 +630,66 @@ export default class Circle extends Nodule {
       console.log("the circle edge intersects the boundary circle");
       this._frontPartInUse = true;
       this._backPartInUse = true;
+      this._frontFillInUse = true;
+      this._backFillInUse = true;
       this._frontFillIsEntireFront = false;
       this._backFillIsEntireBack = false;
+
+      // None of the parts are closed.
+      this._frontPart.closed = false;
+      this._backPart.closed = false;
+      this._glowingFrontPart.closed = false;
+      this._glowingBackPart.closed = false;
 
       this._boundaryParameter1 = Math.acos(
         Circle.ctg(this._circleRadius) * Circle.ctg(this._beta)
       );
-      this._boundaryParameter2 = -Math.acos(
-        Circle.ctg(this._circleRadius) * Circle.ctg(this._beta)
-      );
 
-      // set the display of the edge
-      this._frontPart.startAngle = this._boundaryParameter1;
-      this._frontPart.endAngle = this._boundaryParameter2;
-      this._backPart.startAngle = this._boundaryParameter2;
-      this._backPart.endAngle = this._boundaryParameter1;
+      // console.log("BP1", this._boundaryParameter1);
+      // console.log("BP2", -this._boundaryParameter1);
+      // set the display of the edge (drawn counterclockwise)
+      // add/subtract ?*Pi/2 because two.js draws ellipse arcs differently than Mathematica
+      this._frontPart.startAngle =
+        (-3 * Math.PI) / 2 + this._boundaryParameter1;
+      this._frontPart.endAngle = Math.PI / 2 - this._boundaryParameter1;
+      this._backPart.startAngle = Math.PI / 2 - this._boundaryParameter1;
+      this._backPart.endAngle = Math.PI / 2 + this._boundaryParameter1;
 
       const startPoint = this.pointOnProjectedEllipse(this._boundaryParameter1);
+      // console.log(
+      //   "SP",
+      //   SETTINGS.boundaryCircle.radius * startPoint[0],
+      //   SETTINGS.boundaryCircle.radius * startPoint[1]
+      // );
       //find the angular width of the part of the boundary circle to be copied
       // Compute the angle from the positive x axis to the last frontPartVertex
       //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
-      const startAngle = Math.atan2(startPoint[0], startPoint[1]);
+      const startAngle = Math.atan2(startPoint[1], startPoint[0]);
+      // console.log("SA", startAngle);
 
-      const endPoint = this.pointOnProjectedEllipse(this._boundaryParameter2);
+      const endPoint = this.pointOnProjectedEllipse(-this._boundaryParameter1);
+      // console.log(
+      //   "EP",
+      //   SETTINGS.boundaryCircle.radius * endPoint[0],
+      //   SETTINGS.boundaryCircle.radius * endPoint[1]
+      // );
       // Compute the angle from the positive x axis to the first frontPartVertex
       //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
-      const endAngle = Math.atan2(endPoint[0], endPoint[1]);
-
+      const endAngle = Math.atan2(endPoint[1], endPoint[0]);
+      // console.log("EA", endAngle);
       // Compute the angular width of the section of the boundary circle to add to the front/back fill
       // This can be positive if traced counterclockwise or negative if traced clockwise( add 2 Pi to make positive)
       let angularWidth = endAngle - startAngle;
       if (angularWidth < 0) {
         angularWidth += 2 * Math.PI;
       }
-
-      // Which way to go around the boundary circle isn't clear from this information alone. Use the radius to determine the angularWidth and the direction
-      let toVector = [];
-      if (this._circleRadius < Math.PI / 2) {
-        //go the short way around the boundary i.e. angular width should be less than Pi
-        if (angularWidth > Math.PI) {
-          angularWidth = 2 * Math.PI - angularWidth;
-        }
-        // set the direction
-        toVector[0] = -startPoint[1];
-        toVector[1] = startPoint[0];
-      } else {
-        //go the long way around
-        if (angularWidth < Math.PI) {
-          angularWidth = 2 * Math.PI - angularWidth;
-        }
-        toVector[0] = startPoint[1];
-        toVector[1] = -startPoint[0];
-      }
+      // console.log("AW", angularWidth);
 
       // Start by creating the boundary points
-      let boundaryPoints = Circle.boundaryCircleCoordinates(
+      const boundaryPoints = Nodule.boundaryCircleCoordinates(
         startPoint,
         SUBDIVISIONS,
-        toVector,
+        [-startPoint[1], startPoint[0]], // Always go counterclockwise ,
         angularWidth
       );
 
@@ -694,10 +714,11 @@ export default class Circle extends Nodule {
 
       // Now add the points from the front edge to the front fill
       this._frontPart.vertices.forEach((v: Anchor) => {
+        const coords = localMatrix.multiply(v.x, v.y, 1);
         const vertex = this.fillStorageAnchors.pop();
         if (vertex !== undefined) {
-          vertex.x = v.x;
-          vertex.y = v.y;
+          vertex.x = coords[0];
+          vertex.y = coords[1];
           this._frontFill.vertices.push(vertex);
         } else {
           throw new Error(
@@ -706,11 +727,12 @@ export default class Circle extends Nodule {
         }
       });
       // Now add the points from the back edges to the back fill
-      this._backPart.vertices.forEach((v: Anchor) => {
+      this._backPart.vertices.findLast((v: Anchor) => {
+        const coords = localMatrix.multiply(v.x, v.y, 1);
         const vertex = this.fillStorageAnchors.pop();
         if (vertex !== undefined) {
-          vertex.x = v.x;
-          vertex.y = v.y;
+          vertex.x = coords[0];
+          vertex.y = coords[1];
           this._backFill.vertices.push(vertex);
         } else {
           throw new Error(
@@ -719,288 +741,6 @@ export default class Circle extends Nodule {
         }
       });
     }
-
-    // let posIndexFill = 0;
-    // let negIndexFill = 0;
-    // let boundaryPoints: number[][] = [];
-    // // The circle interior is only on the front of the sphere
-    // if (backLen === 0 && this._circleRadius < Math.PI / 2) {
-    //   // In this case the frontFillVertices are the same as the frontVertices
-    //   this._frontPart.vertices.forEach((v: Anchor) => {
-    //     if (posIndexFill === this._frontFill.vertices.length) {
-    //       //add a vector from the pool
-    //       this._frontFill.vertices.push(pool.pop()!);
-    //     }
-    //     this._frontFill.vertices[posIndexFill].x = v.x;
-    //     this._frontFill.vertices[posIndexFill].y = v.y;
-    //     posIndexFill++;
-    //   });
-    //   // put remaining vertices in the storage
-    //   this.fillStorageAnchors.push(...pool.splice(0));
-    // } // The circle interior is split between front and back
-    // else if (backLen !== 0 && frontLen !== 0) {
-    //   //find the angular width of the part of the boundary circle to be copied
-    //   // Compute the angle from the positive x axis to the last frontPartVertex
-    //   //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
-    //   const startAngle = Math.atan2(
-    //     this._frontPart.vertices[frontLen - 1].y,
-    //     this._frontPart.vertices[frontLen - 1].x
-    //   );
-
-    //   // Compute the angle from the positive x axis to the first frontPartVertex
-    //   //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
-    //   const endAngle = Math.atan2(
-    //     this._frontPart.vertices[0].y,
-    //     this._frontPart.vertices[0].x
-    //   );
-
-    //   // Compute the angular width of the section of the boundary circle to add to the front/back fill
-    //   // This can be positive if traced counterclockwise or negative if traced clockwise( add 2 Pi to make positive)
-    //   let angularWidth = endAngle - startAngle;
-    //   if (angularWidth < 0) {
-    //     angularWidth += 2 * Math.PI;
-    //   }
-    //   //console.log(angularWidth);
-    //   // When tracing the boundary circle we start from fromVector = this.frontPart.vertices[frontLen - 1]
-    //   const fromVector = [
-    //     this._frontPart.vertices[frontLen - 1].x,
-    //     this._frontPart.vertices[frontLen - 1].y
-    //   ];
-    //   // then
-    //   // trace in the direction of a toVector that is perpendicular to this.frontPart.vertices[frontLen - 1]
-    //   // and points in the same direction as this.frontPart.vertices[0]
-    //   let toVector = [-fromVector[1], fromVector[0]];
-
-    //   // If the toVector doesn't point in the same direction as the first vector in frontPart then reverse the toVector
-    //   if (
-    //     toVector[0] * this._frontPart.vertices[0].x +
-    //       toVector[1] * this._frontPart.vertices[0].y <
-    //     0
-    //   ) {
-    //     toVector = [-toVector[0], -toVector[1]];
-    //   }
-
-    //   // If the arcRadius is bigger than Pi/2 then reverse the toVector
-    //   if (this._circleRadius > Math.PI / 2) {
-    //     toVector = [-toVector[0], -toVector[1]];
-    //   }
-    //   // Create the boundary points
-    //   boundaryPoints = this.boundaryCircleCoordinates(
-    //     fromVector,
-    //     SUBDIVISIONS + 1,
-    //     toVector,
-    //     angularWidth
-    //   );
-
-    //   // Build the frontFill- first add the frontPart.vertices
-    //   this._frontPart.vertices.forEach((node: Anchor) => {
-    //     if (posIndexFill === this._frontFill.vertices.length) {
-    //       //add a vector from the pool
-    //       this._frontFill.vertices.push(pool.pop()!);
-    //     }
-    //     this._frontFill.vertices[posIndexFill].x = node.x;
-    //     this._frontFill.vertices[posIndexFill].y = node.y;
-    //     posIndexFill++;
-    //   });
-    //   // add the boundary points
-    //   boundaryPoints.forEach(node => {
-    //     if (posIndexFill === this._frontFill.vertices.length) {
-    //       //add a vector from the pool
-    //       this._frontFill.vertices.push(pool.pop()!);
-    //     }
-    //     this._frontFill.vertices[posIndexFill].x = node[0];
-    //     this._frontFill.vertices[posIndexFill].y = node[1];
-    //     posIndexFill++;
-    //   });
-    //   // console.log("posIndex", posIndexFill, " of ", 4 * SUBDIVISIONS + 2);
-    //   // console.log("pool size", pool.length);
-    //   // Build the backFill- first add the backPart.vertices
-    //   this._backPart.vertices.forEach((node: Anchor) => {
-    //     if (negIndexFill === this._backFill.vertices.length) {
-    //       //add a vector from the pool
-    //       this._backFill.vertices.push(pool.pop()!);
-    //     }
-    //     this._backFill.vertices[negIndexFill].x = node.x;
-    //     this._backFill.vertices[negIndexFill].y = node.y;
-    //     negIndexFill++;
-    //   });
-    //   // console.log("negIndex", negIndexFill, " of ", 4 * SUBDIVISIONS + 2);
-    //   // console.log("pool size", pool.length);
-    //   // add the boundary points (but in reverse!)
-    //   boundaryPoints.reverse().forEach(node => {
-    //     if (negIndexFill === this._backFill.vertices.length) {
-    //       //add a vector from the pool
-    //       this._backFill.vertices.push(pool.pop()!);
-    //     }
-    //     this._backFill.vertices[negIndexFill].x = node[0];
-    //     this._backFill.vertices[negIndexFill].y = node[1];
-    //     negIndexFill++;
-    //   });
-
-    //   // put remaining vertices in the storage (there shouldn't be any in this case)
-    //   this.fillStorageAnchors.push(...pool.splice(0));
-    // }
-    // // The circle interior is only on the back of the sphere
-    // else if (frontLen === 0 && this._circleRadius < Math.PI / 2) {
-    //   //
-    //   // In this case the backFillVertices are the same as the backVertices
-    //   this._backPart.vertices.forEach((v: Anchor, index: number) => {
-    //     if (negIndexFill === this._backFill.vertices.length) {
-    //       //add a vector from the pool
-    //       this._backFill.vertices.push(pool.pop()!);
-    //     }
-    //     this._backFill.vertices[negIndexFill].x = v.x;
-    //     this._backFill.vertices[negIndexFill].y = v.y;
-    //     negIndexFill++;
-    //   });
-    //   // put remaining vertices in the storage
-    //   this.fillStorageAnchors.push(...pool.splice(0));
-    // }
-    // // The circle interior covers the entire front half of the sphere and is a 'hole' on the back
-    // else if (frontLen === 0 && this._circleRadius > Math.PI / 2) {
-    //   // In this case set the frontFillVertices to the entire boundary circle which are the originalVertices, but only add half of them
-    //   // so that only SUBDIVISION number of vectors are used. (We need 3*SUBDIVISION +2 for the annular region on the back)
-    //   this.originalVertices.reverse().forEach((v, ind) => {
-    //     if (ind % 2 === 0) {
-    //       if (posIndexFill === this._frontFill.vertices.length) {
-    //         //add a vector from the pool
-    //         this._frontFill.vertices.push(pool.pop()!);
-    //       }
-    //       this._frontFill.vertices[posIndexFill].x = v.x;
-    //       this._frontFill.vertices[posIndexFill].y = v.y;
-    //       posIndexFill++;
-    //     }
-    //   });
-
-    //   // In this case the backFillVertices must trace out first the boundary circle (originalVertices) and then
-    //   //  the circle, to trace an annular region.  To help with the rendering, start tracing
-    //   //  the boundary circle directly across from the vertex on the circle at index zero
-    //   const backStartTraceIndex = Math.floor(
-    //     Math.atan2(
-    //       this._backPart.vertices[0].y,
-    //       this._backPart.vertices[0].x
-    //     ).modTwoPi() /
-    //       (Math.PI / SUBDIVISIONS)
-    //   );
-
-    //   this.originalVertices
-    //     .reverse()
-    //     .rotate(backStartTraceIndex)
-    //     .forEach((v, ind) => {
-    //       // Again add every other one so that only SUBDIVISION vectors are used in the first part of backFill
-    //       if (ind % 2 === 0) {
-    //         if (negIndexFill === this._backFill.vertices.length) {
-    //           //add a vector from the pool
-    //           this._backFill.vertices.push(pool.pop()!);
-    //         }
-    //         this._backFill.vertices[negIndexFill].x = v.x;
-    //         this._backFill.vertices[negIndexFill].y = v.y;
-    //         negIndexFill++;
-    //       }
-    //     });
-
-    //   //return the original vertices to there initial state (notice that they were reversed twice)
-    //   this.originalVertices.rotate(-backStartTraceIndex);
-
-    //   // Make sure that the next entry in the backFill is the first to closed up the annular region
-    //   const vert1 = pool.pop()!;
-    //   vert1.x = this._backFill.vertices[0].x;
-    //   vert1.y = this._backFill.vertices[0].y;
-    //   this._backFill.vertices.push(vert1);
-    //   negIndexFill++;
-
-    //   // now add the backPart vertices
-    //   this._backPart.vertices.forEach((v: Anchor, index: number) => {
-    //     if (negIndexFill === this._backFill.vertices.length) {
-    //       //add a vector from the pool
-    //       this._backFill.vertices.push(pool.pop()!);
-    //     }
-    //     this._backFill.vertices[negIndexFill].x = v.x;
-    //     this._backFill.vertices[negIndexFill].y = v.y;
-    //     negIndexFill++;
-    //   });
-
-    //   // Make sure that the next entry in the backFill is the first to closed up the annular region
-    //   const vert2 = pool.pop()!;
-    //   vert2.x = this._backFill.vertices.slice(-1)[0].x;
-    //   vert2.y = this._backFill.vertices.slice(-1)[0].y;
-    //   this._backFill.vertices.push(vert2);
-
-    //   // put remaining vertices in the storage (There shouldn't be any in this case)
-    //   this.fillStorageAnchors.push(...pool.splice(0));
-    // }
-    // // The circle interior covers the entire back half of the sphere and is a 'hole' on the front
-    // else if (backLen === 0 && this._circleRadius > Math.PI / 2) {
-    //   // In this case set the backFillVertices to the entire boundary circle of the sphere which are the originalVertices, but only add half of them
-    //   // so that only SUBDIVISION number of vectors are used. (We need 3*SUBDIVISION +2 for the annular region on the front)
-    //   this.originalVertices.reverse().forEach((v, ind) => {
-    //     if (ind % 2 === 0) {
-    //       if (negIndexFill === this._backFill.vertices.length) {
-    //         //add a vector from the pool
-    //         this._backFill.vertices.push(pool.pop()!);
-    //       }
-    //       this._backFill.vertices[negIndexFill].x = v.x;
-    //       this._backFill.vertices[negIndexFill].y = v.y;
-    //       negIndexFill++;
-    //     }
-    //   });
-
-    //   // In this case the frontFillVertices must trace out first the boundary circle (originalVertices) and then
-    //   //  the circle, to trace an annular region.  To help with the rendering, start tracing
-    //   //  the boundary circle directly across from the vertex on the circle at index zero
-    //   const frontStartTraceIndex = Math.floor(
-    //     Math.atan2(
-    //       this._frontPart.vertices[0].y,
-    //       this._frontPart.vertices[0].x
-    //     ).modTwoPi() /
-    //       (Math.PI / SUBDIVISIONS)
-    //   );
-
-    //   this.originalVertices
-    //     .reverse()
-    //     .rotate(frontStartTraceIndex)
-    //     .forEach((v, ind) => {
-    //       // Again add every other one so that only SUBDIVISION vectors are used in the first part of frontFill
-    //       if (ind % 2 === 0) {
-    //         if (posIndexFill === this._frontFill.vertices.length) {
-    //           //add a vector from the pool
-    //           this._frontFill.vertices.push(pool.pop()!);
-    //         }
-    //         this._frontFill.vertices[posIndexFill].x = v.x;
-    //         this._frontFill.vertices[posIndexFill].y = v.y;
-    //         posIndexFill++;
-    //       }
-    //     });
-    //   //return/rotate the original vertices to there initial state (notice that they were reversed twice)
-    //   this.originalVertices.rotate(-frontStartTraceIndex);
-
-    //   // Make sure that the next entry in the frontFill is the first to closed up the annular region
-    //   const vert1 = pool.pop()!;
-    //   vert1.x = this._frontFill.vertices[0].x;
-    //   vert1.y = this._frontFill.vertices[0].y;
-    //   this._frontFill.vertices.push(vert1);
-    //   posIndexFill++;
-
-    //   // now add the frontPart vertices
-    //   this._frontPart.vertices.forEach((v: Anchor, index: number) => {
-    //     if (posIndexFill === this._frontFill.vertices.length) {
-    //       //add a vector from the pool
-    //       this._frontFill.vertices.push(pool.pop()!);
-    //     }
-    //     this._frontFill.vertices[posIndexFill].x = v.x;
-    //     this._frontFill.vertices[posIndexFill].y = v.y;
-    //     posIndexFill++;
-    //   });
-
-    //   // Make sure that the next entry in the frontFill is the first to closed up the annular region
-    //   const vert2 = pool.pop()!;
-    //   vert2.x = this._frontPart.vertices[0].x;
-    //   vert2.y = this._frontPart.vertices[0].y;
-    //   this._frontFill.vertices.push(vert2);
-
-    //   // put remaining vertices in the storage (There shouldn't be any in this case)
-    //   this.fillStorageAnchors.push(...pool.splice(0));
-    // }
   }
 
   /**
@@ -1030,6 +770,13 @@ export default class Circle extends Nodule {
    */
   pointOnProjectedEllipse(t: number): Array<number> {
     return [
+      (Math.sqrt(2 - Math.cos(this._circleRadius) ** 2) *
+        Math.cos(this._rotation) *
+        Math.sin(t)) /
+        Math.sqrt(2 + Circle.ctg(this._circleRadius) ** 2) -
+        (Math.cos(t) * Math.cos(this._beta) * Math.sin(this._circleRadius) +
+          Math.cos(this._circleRadius) * Math.sin(this._beta)) *
+          Math.sin(this._rotation),
       Math.cos(t) *
         Math.cos(this._beta) *
         Math.cos(this._rotation) *
@@ -1040,31 +787,11 @@ export default class Circle extends Nodule {
         (Math.sqrt(2 - Math.cos(this._circleRadius) ** 2) *
           Math.sin(t) *
           Math.sin(this._rotation)) /
-          Math.sqrt(2 + Circle.ctg(this._circleRadius) ** 2),
-
-      (Math.sqrt(2 - Math.cos(this._circleRadius) ** 2) *
-        Math.cos(this._rotation) *
-        Math.sin(t)) /
-        Math.sqrt(2 + Circle.ctg(this._circleRadius) ** 2) -
-        (Math.cos(t) * Math.cos(this._beta) * Math.sin(this._circleRadius) +
-          Math.cos(this._circleRadius) * Math.sin(this._beta)) *
-          Math.sin(this._rotation)
+          Math.sqrt(2 + Circle.ctg(this._circleRadius) ** 2)
     ];
   }
-  // frontGlowingDisplay(): void {
-  //   this._frontPart.visible = true;
-  //   this._glowingFrontPart.visible = true;
-  //   this._frontFill.visible = true;
-  // }
-  // backGlowingDisplay(): void {
-  //   this._backPart.visible = true;
-  //   this._glowingBackPart.visible = true;
-  //   this._backFill.visible = true;
-  // }
 
   glowingDisplay(): void {
-    // this.frontGlowingDisplay();
-    // this.backGlowingDisplay();
     if (this._frontPartInUse) {
       this._frontPart.visible = true;
       this._glowingFrontPart.visible = true;
@@ -1093,20 +820,8 @@ export default class Circle extends Nodule {
       this._backFill.visible = false;
     }
   }
-  // frontNormalDisplay(): void {
-  //   this._frontPart.visible = true;
-  //   this._glowingFrontPart.visible = false;
-  //   this._frontFill.visible = true;
-  // }
-  // backNormalDisplay(): void {
-  //   this._backPart.visible = true;
-  //   this._glowingBackPart.visible = false;
-  //   this._backFill.visible = true;
-  //}
 
   normalDisplay(): void {
-    // this.frontNormalDisplay();
-    // this.backNormalDisplay();
     this._glowingFrontPart.visible = false;
     if (this._frontPartInUse) {
       this._frontPart.visible = true;
@@ -1135,7 +850,6 @@ export default class Circle extends Nodule {
   }
 
   setVisible(flag: boolean): void {
-
     if (!flag) {
       this._frontPart.visible = false;
       this._backPart.visible = false;

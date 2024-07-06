@@ -392,14 +392,14 @@ export const SETTINGS = {
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the circle
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     minimumRadius: 0.045, // Don't create circles with a radius smaller than this or bigger than Pi-this (must be bigger than point.hitIdealDistance to prevent almost zero radius circles at intersection points) Also this is the minimum distance between the initial points in a threePointCircle
-    numPoints: 30, // This is the number of vertices that are used to draw each front/back arc of the circle, twice this number are used in the front/back fill of the circle (each part contains this many vertices)
+    numPoints: 40, // This is the number of vertices that are used to draw each front/back arc of the circle, twice this number are used in the front/back fill of the circle (each part contains this many vertices)
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the circle.
     //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the circles drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
     //The properties of the circle when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)"
+        front: "hsla(360, 100%, 50%, 0.2)",//"hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)"
         frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
         back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
         backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }

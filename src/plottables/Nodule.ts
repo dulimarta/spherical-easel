@@ -99,6 +99,8 @@ export default abstract class Nodule implements Stylable, Resizeable {
    * a equal measure less than angularLength
    *
    * yAxis is perpendicular to startPt
+   *
+   * Used in both Circle.ts and Polygon.ts
    */
   static boundaryCircleCoordinates(
     startPt: number[],
