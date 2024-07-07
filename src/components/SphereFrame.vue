@@ -113,6 +113,7 @@ import { ToolButtonType } from "@/types";
 import Two from "two.js";
 import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
+
 type ComponentProps = {
   availableHeight: number;
   availableWidth: number;
@@ -306,6 +307,7 @@ onBeforeMount((): void => {
   EventBus.listen("set-expression-for-tool", setExpressionForTool);
   EventBus.listen("set-transformation-for-tool", setTransformationForTool);
   EventBus.listen("delete-node", deleteNode);
+  EventBus.listen("update-two-instance",updateTwoJsInstance) //IS THERE A BETTER WAY?
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   // EventBus.listen(
   //   "set-point-visibility-and-label",
@@ -765,6 +767,12 @@ function deleteNode(e: {
     },
     type: "success"
   });
+}
+
+//IS THERE A BETTER WAY?
+function updateTwoJsInstance():void {
+  twoInstance.update()
+  console.log("Here")
 }
 
 // dialogBoxIsActive(e: { active: boolean }): void {

@@ -332,6 +332,7 @@ export default class CircleHandler extends Highlighter {
         this.temporaryCircle.circleRadius = this.arcRadius;
         //update the display
         this.temporaryCircle.updateDisplay();
+        this.temporaryCircle.setVisible(true); //If we don't setVisible the front or back part display is never updated (updateDisplay only set (front|back)PartInUse and not the display of the actual two.js object
       }
     } else {
       // Remove the temporary objects from the display but don't reset for a new circle
@@ -496,6 +497,7 @@ export default class CircleHandler extends Highlighter {
       this.temporaryCircle.circleRadius = this.arcRadius;
       //update the display
       this.temporaryCircle.updateDisplay();
+      this.temporaryCircle.setVisible(true); //If we don't setVisible the front or back part display is never updated (updateDisplay only set (front|back)PartInUse and not the display of the actual two.js object
       if (
         (this.circleSEPoint instanceof SEIntersectionPoint &&
           !this.circleSEPoint.isUserCreated) ||
@@ -649,6 +651,7 @@ export default class CircleHandler extends Highlighter {
       this.temporaryCircle.circleRadius = this.arcRadius;
       //update the display
       this.temporaryCircle.updateDisplay();
+      this.temporaryCircle.setVisible(true); //If we don't setVisible the front or back part display is never updated (updateDisplay only set (front|back)PartInUse and not the display of the actual two.js object
 
       // check to make sure that this circle doesn't already exist
       if (
@@ -748,6 +751,9 @@ export default class CircleHandler extends Highlighter {
         });
 
       circleCommandGroup.execute();
+
+      EventBus.fire("update-two-instance", {}); //IS THERE A BETTER WAY?
+      newSECircle.ref.updateDisplay(); // The newly created circle will not be displayed properly unless the twoInstance is updated first
     }
     return true;
   }
