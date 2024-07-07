@@ -231,19 +231,24 @@ export default class Circle extends Nodule {
     this._glowingBackPart.visible = false;
     this._glowingFrontPart.visible = false;
 
-    // Now organize the fills
-    // In total there are a maximum of 3*SUBDIVISIONS + 2 anchors in use
+    // In total there are a maximum of 3*SUBDIVISIONS + 2 anchors in use on _fillFill and _backFill
+    // when the circle is a hole on the front/back
     // This happens when the circle is a hole on the front or back.
     // The front/back requires 2*SUBDIVISIONS + 2 anchors (one SUBDIVISIONS to trace the circle, one SUBDIVISIONS to trace the boundary,
-    // two for the extra anchors to close up the annular region)
+    // two for the extra anchors to close up the annular region on the circle and another on the boundary)
     // The back/front requires SUBDIVISIONS anchors
+    //
+    // When the circle intersects the boundary circle there are 4*SUBDIVISIONS anchors in use on the _frontFill and _backFill
+    //  There are SUBDIVISIONS on the arc of the circle and on the boundary so 2*SUBDIVISIONS for each _frontFill and _backFill
 
-    for (let k = 0; k < 3 * SUBDIVISIONS + 2; k++) {
+    for (let k = 0; k <  4*SUBDIVISIONS; k++) {
       this.fillStorageAnchors.push(new Anchor(0, 0));
     }
+
     //it doesn't matter that no anchors are assigned to the front/backFill because they will assigned from the fillStorageAnchors
     this._frontFill = new Path([], /* closed */ true, /* curve */ false);
     this._backFill = new Path([], /* closed */ true, /* curve */ false);
+    console.log("FSA Constructor", this.fillStorageAnchors.length, this._backFill.vertices.length,this._frontFill.vertices.length)
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this._frontFill.id), {
@@ -365,7 +370,11 @@ export default class Circle extends Nodule {
       // Begin to set the frontFill that is common to both cases
       // Bring all the front anchor points to a common pool
       this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
-      //this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
+      if (!this._backFillIsEntireBack){
+        this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
+      }
+      console.log("FSA 1", this.fillStorageAnchors.length)
+
 
       // In this case the frontFillVertices are the same as the frontVertices
       this._frontPart.vertices.findLast((v: Anchor) => {
@@ -392,6 +401,7 @@ export default class Circle extends Nodule {
         this._backFillInUse = false;
         this._backFillIsEntireBack = false;
         this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
+        console.log("FSA 2", this.fillStorageAnchors.length)
       } else {
         console.log(
           "the circle is a hole on the front, the back is entirely covered"
@@ -399,7 +409,7 @@ export default class Circle extends Nodule {
         this._backFillInUse = true;
 
         // Finish setting the frontFill
-        // We need 3*SUBDIVISION +2 anchors for the annular region on the front. Currently there are SUBDIVISION in the front fill
+        // We need 2*SUBDIVISION +2 anchors for the annular region on the front. Currently there are SUBDIVISION in the front fill
         // Add an anchor to close the inner region
         const vert = this.fillStorageAnchors.pop();
         if (vert != undefined) {
@@ -412,10 +422,11 @@ export default class Circle extends Nodule {
           );
         }
         // Now there are SUBDIVISION + 1 in the front fill
+        // console.log("inside fill vert: #, dx, dy", this._frontFill.vertices.length, this._frontFill.vertices[0].x-this._frontFill.vertices[SUBDIVISIONS ].x, this._frontFill.vertices[0].y-this._frontFill.vertices[SUBDIVISIONS ].y  )
 
         // now the frontFillVertices must trace out the boundary vertices
         // To help with the rendering, start tracing the boundary circle directly across from the last vertex on the circle (which
-        // is the same as the one at index zero
+        // is the same as the one at index zero)
         let coords = localMatrix.multiply(
           this._frontPart.vertices[0].x,
           this._frontPart.vertices[0].y,
@@ -425,7 +436,7 @@ export default class Circle extends Nodule {
           Math.atan2(coords[1], coords[0]).modTwoPi() /
             ((2 * Math.PI) / SUBDIVISIONS)
         );
-        // The use of math.ceil means that frontStartTraceIndew could be equal to SUBDIVISIONS, so reduce mod SUBDIVISIONS
+        // The use of math.ceil means that frontStartTraceIndex could be equal to SUBDIVISIONS, so reduce mod SUBDIVISIONS
         frontStartTraceIndex =
           ((frontStartTraceIndex % SUBDIVISIONS) + SUBDIVISIONS) % SUBDIVISIONS;
 
@@ -460,10 +471,13 @@ export default class Circle extends Nodule {
         //un-rotate the boundary vertices to their initial state
         Circle.boundaryVertices.rotate(-frontStartTraceIndex);
 
+        // console.log("boundary fill vert: #, dx, dy", this._frontFill.vertices.length, this._frontFill.vertices[SUBDIVISIONS+1].x-this._frontFill.vertices[2*SUBDIVISIONS+1 ].x, this._frontFill.vertices[SUBDIVISIONS+1].y-this._frontFill.vertices[2*SUBDIVISIONS+1 ].y  )
+
         // Set the backFill
         // In this case set the backFillVertices to the entire boundary circle of the sphere (unless it is already the entire back already)
         if (!this._backFillIsEntireBack) {
           this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
+          console.log("FSA 3", this.fillStorageAnchors.length)
           Circle.boundaryVertices.forEach(v => {
             const vertex = this.fillStorageAnchors.pop();
             if (vertex !== undefined) {
@@ -505,7 +519,10 @@ export default class Circle extends Nodule {
       // Begin to set the back Fill that is common to both cases
       // Bring all the front anchor points to a common pool
       this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
-      //this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
+      if (!this._frontFillIsEntireFront){
+        this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
+      }
+      console.log("FSA 4", this.fillStorageAnchors.length)
 
       // In this case the backFillVertices are the same as the backVertices
       // get the local transformation matrix of the circle (should be the same for all parts glowing/not front/back)
@@ -533,6 +550,7 @@ export default class Circle extends Nodule {
         this._frontFillInUse = false;
         this._frontFillIsEntireFront = false;
         this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
+        console.log("FSA 5", this.fillStorageAnchors.length)
       } else {
         // the circle is a hole on the back, the front is entirely covered
         this._frontFillInUse = true;
@@ -606,6 +624,7 @@ export default class Circle extends Nodule {
         // In this case set the frontFillVertices to the entire boundary circle of the sphere (unless it is already the entire front already)
         if (!this._frontFillIsEntireFront) {
           this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
+          console.log("FSA 6", this.fillStorageAnchors.length)
           Circle.boundaryVertices.forEach(v => {
             const vertex = this.fillStorageAnchors.pop();
             if (vertex !== undefined) {
@@ -696,20 +715,31 @@ export default class Circle extends Nodule {
       // clear the old front and back fill into the storage
       this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
       this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
+      console.log("FSA 7", this.fillStorageAnchors.length)
 
       // now add boundary points to the front and back fill
       boundaryPoints.forEach(v => {
-        const vertex = this.fillStorageAnchors.pop();
-        if (vertex !== undefined) {
-          vertex.x = v[0];
-          vertex.y = v[1];
+        const vertex1 = this.fillStorageAnchors.pop();
+        if (vertex1 !== undefined) {
+          vertex1.x = v[0];
+          vertex1.y = v[1];
         } else {
           throw new Error(
             "Circle: not enough anchors in the pool to trace the circle on the front."
           );
         }
-        this._frontFill.vertices.push(vertex);
-        this._backFill.vertices.push(vertex);
+        this._frontFill.vertices.push(vertex1);
+
+        const vertex2 = this.fillStorageAnchors.pop();
+        if (vertex2 !== undefined) {
+          vertex2.x = v[0];
+          vertex2.y = v[1];
+        } else {
+          throw new Error(
+            "Circle: not enough anchors in the pool to trace the circle on the back."
+          );
+        }
+        this._backFill.vertices.push(vertex2);
       });
 
       // Now add the points from the front edge to the front fill
@@ -736,11 +766,13 @@ export default class Circle extends Nodule {
           this._backFill.vertices.push(vertex);
         } else {
           throw new Error(
-            "Circle: not enough anchors in the pool to trace the circle on the front."
+            "Circle: not enough anchors in the pool to trace the circle on the back."
           );
         }
       });
     }
+    console.log("FSA End", this.fillStorageAnchors.length)
+    this.fillStorageAnchors.forEach((v:Anchor) => v.clear())
   }
 
   /**

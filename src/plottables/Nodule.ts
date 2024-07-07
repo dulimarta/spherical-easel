@@ -98,7 +98,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
    * any two consecutive ones is equal and equal to the angle between the first returned to startPt. The last one is
    * a equal measure less than angularLength
    *
-   * yAxis is perpendicular to startPt
+   * yAxis must be perpendicular to startPt
    *
    * Used in both Circle.ts and Polygon.ts
    */
