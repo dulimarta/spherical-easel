@@ -772,7 +772,6 @@ function deleteNode(e: {
 //IS THERE A BETTER WAY?
 function updateTwoJsInstance():void {
   twoInstance.update()
-  console.log("Here")
 }
 
 // dialogBoxIsActive(e: { active: boolean }): void {

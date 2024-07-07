@@ -368,6 +368,7 @@ export default class Circle extends Nodule {
       // Begin to set the frontFill that is common to both cases
       // Bring all the front anchor points to a common pool
       this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
+      // don't dump the anchors of the back fill into the common pool if there is a chance that the backFill is the entire back and might not need to be updated.
       if (!this._backFillIsEntireBack) {
         this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
       }
@@ -429,7 +430,7 @@ export default class Circle extends Nodule {
         frontStartTraceIndex =
           ((frontStartTraceIndex % SUBDIVISIONS) + SUBDIVISIONS) % SUBDIVISIONS;
 
-        //Move the boundary vertices array so that the first one is
+         //Move the boundary vertices array so that the first index one is geometrically close to the start and end of the vertices tracing the circular "hole"
         Circle.boundaryVertices.rotate(frontStartTraceIndex);
 
         Circle.boundaryVertices.findLast(v => {
@@ -462,8 +463,8 @@ export default class Circle extends Nodule {
 
         // Set the backFill
         this._backFillInUse = true;
-        // In this case set the backFillVertices to the entire boundary circle of the sphere (unless it is already the entire back already)
-        if (!this._backFillIsEntireBack) {
+        // In this case set the backFillVertices to the entire boundary circle of the sphere (unless it is already the entire back so that it doesn't need to be updated)
+         if (!this._backFillIsEntireBack) {
           this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
           Circle.boundaryVertices.forEach(v => {
             const vertex = this.fillStorageAnchors.pop();
@@ -504,6 +505,7 @@ export default class Circle extends Nodule {
       // Begin to set the back Fill that is common to both cases
       // Bring all the front anchor points to a common pool
       this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
+      // don't dump the anchors of the front fill into the common pool if there is a chance that the frontFill is the entire front and might not need to be updated.
       if (!this._frontFillIsEntireFront) {
         this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
       }
@@ -540,7 +542,7 @@ export default class Circle extends Nodule {
         // console.log(
         //   "the circle is a hole on the back, the front is entirely covered"
         // );
-        this._frontFillInUse = true;
+
 
         // Set the backFill
         // We need 3*SUBDIVISION +2 anchors for the annular region on the back. Currently there are SUBDIVISION in the back fill
@@ -575,10 +577,10 @@ export default class Circle extends Nodule {
         backStartTraceIndex =
           ((backStartTraceIndex % SUBDIVISIONS) + SUBDIVISIONS) % SUBDIVISIONS;
 
-        //Move the boundary vertices array so that the first one is
+        //Move the boundary vertices array so that the first index one is geometrically close to the start and end of the vertices tracing the circular "hole"
         Circle.boundaryVertices.rotate(backStartTraceIndex);
 
-        Circle.boundaryVertices.findLast((v, ind) => {
+        Circle.boundaryVertices.findLast((v) => {
           const vert = this.fillStorageAnchors.pop();
           if (vert != undefined) {
             vert.x = v[0];
@@ -608,7 +610,8 @@ export default class Circle extends Nodule {
         Circle.boundaryVertices.rotate(-backStartTraceIndex);
 
         // Set the frontFill
-        // In this case set the frontFillVertices to the entire boundary circle of the sphere (unless it is already the entire front already)
+        this._frontFillInUse = true;
+        // In this case set the frontFillVertices to the entire boundary circle of the sphere (unless it is already the entire front so that it doesn't need to be updated)
         if (!this._frontFillIsEntireFront) {
           this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
           Circle.boundaryVertices.forEach(v => {
@@ -632,7 +635,7 @@ export default class Circle extends Nodule {
       Math.PI / 2 < my_sum &&
       my_sum < (3 * Math.PI) / 2
     ) {
-      console.log("the circle edge intersects the boundary circle");
+      //console.log("the circle edge intersects the boundary circle");
       this._frontPartInUse = true;
       this._backPartInUse = true;
       this._frontFillInUse = true;
@@ -796,7 +799,6 @@ export default class Circle extends Nodule {
   }
 
   glowingDisplay(): void {
-    console.log("GD Start", this._frontPart.visible, this._backPart.visible, this._glowingFrontPart.visible,  this._glowingBackPart.visible)
     if (this._frontPartInUse) {
       this._frontPart.visible = true;
       this._glowingFrontPart.visible = true;
@@ -824,8 +826,6 @@ export default class Circle extends Nodule {
     } else {
       this._backFill.visible = false;
     }
-    console.log("GD End", this._frontPart.visible, this._backPart.visible, this._glowingFrontPart.visible,  this._glowingBackPart.visible)
-    EventBus.fire("update-two-instance",{})
   }
 
   normalDisplay(): void {
