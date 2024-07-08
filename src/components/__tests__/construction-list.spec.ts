@@ -1,15 +1,10 @@
 import ConstructionList from "../ConstructionList.vue";
 import { SphericalConstruction } from "../../types";
 import { Matrix4 } from "three";
-import { mount, shallowMount } from "@vue/test-utils";
-import { createTestingPinia } from "@pinia/testing";
 import { vi } from "vitest";
 import axios from "axios";
-// import { createWrapper } from "../../../tests/vue-helper";
-import { setActivePinia, createPinia } from "pinia";
-import { set } from "@vueuse/core";
+import { createWrapper } from "../../../tests/vue-helper";
 // import store from "@/";
-
 vi.mock("axios"); // Do this once
 
 const sampleData = () => {
@@ -35,11 +30,6 @@ const sampleData = () => {
 
 // store.state.se.svgCanvas = document.createElement("div");
 
-const w = shallowMount(ConstructionList, {
-  global: {
-    plugins: [createTestingPinia()]
-  }
-});
 // const createComponent = (extraOption: any) =>
 //   createWrapper(
 //     ConstructionList,
@@ -53,64 +43,108 @@ const w = shallowMount(ConstructionList, {
 //     },
 //     true // true: shallow mount
 //   );
-
+// import f
+import { mockFirebase } from "firestore-vitest-mock/mocks/firebase";
+import { VueWrapper } from "@vue/test-utils";
+// import {getFirestore} from "firebase/firestore"
 const TEST_DATA = sampleData();
 const NO_DATA: Array<SphericalConstruction> = [];
-describe("Construction List", () => {
+describe("Construction Lis: empty list", () => {
+  let wrapper: VueWrapper
   beforeEach(() => {
+    vi.mock("firebase/firestore", () => ({
+      getFirestore: vi.fn()
+    }))
+    vi.mock("firebase/auth", () => ({
+      getAuth: vi.fn(() => ({
+        onAuthStateChanged: vi.fn()
+      }))
+    }))
+    const out = createWrapper(ConstructionList, {
+      componentProps: {
+        items: [],
+        allowSharing: true,
+      }
+    });
+    wrapper = out.wrapper
+    // mockGoogleCloudFirestore({})
     //   wrapper = createComponent();
-    setActivePinia(createPinia());
-    vi.resetAllMocks();
+    // setActivePinia(createPinia());
+    // vi.fn().mockImplementation(getFirestore)
+  });
+  afterEach(() => {
+    // vi.resetAllMocks();
+
+  })
+
+  it("is an instance", () => {
+    expect(wrapper).toBeTruthy()
+  })
+
+
+  it("shows 'No data' when construction list is empty", () => {
+    expect(wrapper.text()).toContain("No data");
   });
 
-  it.skip("shows 'No data' when construction list is empty", () => {
-    // const wrapper = createComponent({
-    //   propsData: { items: NO_DATA, allowSharing: false }
-    // });
-    // const label = wrapper.find("._test_nodata");
-    // expect(label.text()).toContain("No data");
+});
+
+describe("Construction List: non-empty list", () => {
+  let wrapper: VueWrapper
+  beforeEach(() => {
+    vi.mock("firebase/firestore", () => ({
+      getFirestore: vi.fn()
+    }))
+    vi.mock("firebase/auth", () => ({
+      getAuth: vi.fn(() => ({
+        onAuthStateChanged: vi.fn()
+      }))
+    }))
+    const out = createWrapper(ConstructionList, {
+      componentProps: {
+        items: TEST_DATA,
+        allowSharing: true,
+      }
+    });
+    wrapper = out.wrapper
+  });
+  it("shows the right number of items", () => {
+    const z = wrapper.findAll("._test_constructionItem")
+    expect(z.length).toBe(TEST_DATA.length)
   });
 
-  it.skip("shows the right number of items", () => {
-    // const cList = createComponent({
-    //   propsData: { items: TEST_DATA, allowSharing: false }
-    // }).findAll("._test_constructionItem");
-    // expect(cList.length).toBe(TEST_DATA.length);
-  });
-
-  it.skip("shows a list of constructions with author name", () => {
-    // const cList = createComponent({
-    //   propsData: { items: TEST_DATA, allowSharing: false }
-    // }).findAll("._test_constructionItem");
-    // for (let k = 0; k < cList.length; k++) {
-    //   const el = cList.at(k);
-    //   expect(el?.text()).toContain(TEST_DATA[k].author);
-    // }
+  it("shows a list of constructions with author name", () => {
+    const cList = wrapper.findAll("._test_constructionItem")
+    expect(cList.length).toBe(TEST_DATA.length)
+    for (let k = 0; k < cList.length; k++) {
+      const el = cList.at(k);
+      expect(el?.text()).toContain(TEST_DATA[k].author);
+    }
   });
 
   it("shows a list of constructions with description", () => {
-    // const cList = createComponent({
-    //   propsData: { items: TEST_DATA, allowSharing: false }
-    // }).findAll("._test_constructionItem");
-    // for (let k = 0; k < cList.length; k++) {
-    //   const el = cList.at(k);
-    //   expect(el?.text()).toContain(TEST_DATA[k].description);
-    // }
+    const cList = wrapper.findAll("._test_constructionItem")
+    expect(cList.length).toBe(TEST_DATA.length)
+    for (let k = 0; k < cList.length; k++) {
+      const el = cList.at(k);
+      expect(el?.text()).toContain(TEST_DATA[k].description);
+    }
   });
 
   it.skip("shows overlay on mouse hover", async () => {
+    const cList = wrapper.findAll("._test_constructionItem")
+    expect(cList.length).toBe(TEST_DATA.length)
     // (axios.get as any).mockResolvedValue({ data: "<svg></svg>" });
     // const wrapper = createComponent({
     //   propsData: { items: TEST_DATA, allowSharing: false }
     // });
     // const cList = wrapper.findAll("._test_constructionItem");
     // expect(cList.length).toBeGreaterThan(0);
-    // const el = cList.at(0);
-    // await el?.trigger("mouseover");
+    const el = cList.at(0);
+    await el?.trigger("mouseover");
     // await wrapper.vm.$nextTick();
-    // const content1 = el?.find("._test_constructionOverlay [style*=opacity]");
-    // // content1.element.style.setProperty("opacity", "1.0");
-    // // console.debug("After hover", content1.element, content1.element.style);
+    const content1 = wrapper.find("._test_constructionOverlay");
+    // content1.element.style.setProperty("opacity", "1.0");
+    console.debug("After hover", wrapper.html());
     // await wrapper.vm.$nextTick();
     // const opaqueContent = el?.find("._test_constructionOverlay");
     // console.debug("Opaque?", opaqueContent?.html());
