@@ -659,6 +659,7 @@ export const SETTINGS = {
     maxGapLengthOrDashLength: 2, // the maximum of the sum of the gap and dash and the endpoint (max value) of the dash range slider
     sliderStepSize: 0.1, //
     defaultTickMark: false,
+    defaultTickMarkLength: 0.2, //
     defaultDoubleArc: false,
     defaultRadius: 0.08, // The default radius for angleMarkers
     numCirclePoints: 50, // The number of vertices used to render the circle part of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
@@ -698,6 +699,10 @@ export const SETTINGS = {
         straight: {
           front: 2,
           back: 1
+        },
+        tick: {
+          front: 2,
+          back: 1
         }
       }, // The thickness of the edge of the angleMarker when drawn front/back,
       dashArray: {
@@ -715,7 +720,8 @@ export const SETTINGS = {
         back: "hsla(0, 100%, 75%, 0.75)"
       },
       circular: { edgeWidth: 5 }, // edgeWidth/2 is the width of the region around the angle (on all sides) that shows the glow
-      straight: { edgeWidth: 2 }
+      straight: { edgeWidth: 2 },
+      tick: { edgeWidth: 2 }
       // The dash pattern will always be the same as the drawn version
     },
     //The properties of the angle marker when it is temporarily shown by the angle measuring tool while drawing

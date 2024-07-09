@@ -15,9 +15,6 @@ import { Stop } from "two.js/src/effects/stop";
 import { RadialGradient } from "two.js/src/effects/radial-gradient";
 import { Anchor } from "two.js/src/anchor";
 import { Path } from "two.js/src/path";
-import Two from "two.js";
-import { Vector } from "two.js/src/vector";
-import EventBus from "@/eventHandlers/EventBus";
 
 // The number of vertices used to draw an arc of a projected circle
 const SUBDIVISIONS = SETTINGS.circle.numPoints;
@@ -67,8 +64,8 @@ export default class Circle extends Nodule {
 
   private _halfMinorAxis: number = 0; //equal to (Sin[_beta + r] - Sin[_beta - r])/2
   private _halfMajorAxis: number = 0; // equal to Sqrt[2 - Cos[r]^2]/Sqrt[Cot[r]^2 + 2]
-  private _beta: number = 0; // equal to arccos(this._centerVector.z), the angle between the north pole <0,0,1> and the center vector
-  private _center = new Two.Vector(0, 0); // equal to  (radius* < (Sin[_beta + r] + Sin[_beta - r])/2, 0 >,  and then rotated by Math.atan2(this._centerVector.y, this._centerVector.x)).
+  private _beta: number = 0; // equal to acos(this._centerVector.z), the angle between the north pole <0,0,1> and the center vector
+  private _center = new Anchor(0, 0); // equal to  (boundary circle radius)* < (Sin[_beta + r] + Sin[_beta - r])/2, 0 >,  and then rotated by Math.atan2(this._centerVector.y, this._centerVector.x)).
 
   // The boundaryParameter (and -boundaryParameter are the parameter values where the circle crosses the boundaryCircle
   // set to zero when circle doesn't cross the boundaryCircle
@@ -168,10 +165,6 @@ export default class Circle extends Nodule {
     }
   }
 
-  // The cotangent function
-  static ctg(x: number): number {
-    return 1 / Math.tan(x);
-  }
 
   /** Initialize the current circle width that is adjust by the zoom level and the user widthPercent */
   static currentCircleStrokeWidthFront =
@@ -297,7 +290,7 @@ export default class Circle extends Nodule {
       2;
     this._halfMajorAxis =
       Math.sqrt(2 - Math.cos(this._circleRadius) ** 2) /
-      Math.sqrt(Circle.ctg(this._circleRadius) ** 2 + 2);
+      Math.sqrt(Nodule.ctg(this._circleRadius) ** 2 + 2);
     this._center.x =
       (SETTINGS.boundaryCircle.radius *
         (Math.sin(this._beta + this._circleRadius) +
@@ -375,7 +368,7 @@ export default class Circle extends Nodule {
 
       // In this case the frontFillVertices are the same as the frontPartVertices
       this._frontPart.vertices.findLast((v: Anchor, ind: number) => {
-        var coords = localMatrix.multiply(v.x, v.y, 1);
+        const coords = localMatrix.multiply(v.x, v.y, 1);
         const vertex = this.fillStorageAnchors.pop();
         if (vertex !== undefined) {
           vertex.x = coords[0];
@@ -515,7 +508,7 @@ export default class Circle extends Nodule {
       const localMatrix = this._backPart.matrix; //local matrix works for just the position, rotation, and scale of that object in its local frame
       this._backPart.vertices.forEach((v: Anchor, ind: number) => {
         //if (ind < 20) {
-        var coords = localMatrix.multiply(v.x, v.y, 1);
+        const coords = localMatrix.multiply(v.x, v.y, 1);
         const vertex = this.fillStorageAnchors.pop();
         if (vertex !== undefined) {
           vertex.x = coords[0];
@@ -650,7 +643,7 @@ export default class Circle extends Nodule {
       this._glowingBackPart.closed = false;
 
       this._boundaryParameter = Math.acos(
-        Circle.ctg(this._circleRadius) * Circle.ctg(this._beta)
+        Nodule.ctg(this._circleRadius) * Nodule.ctg(this._beta)
       );
 
       // set the display of the edge (drawn counterclockwise)
@@ -780,7 +773,7 @@ export default class Circle extends Nodule {
       (Math.sqrt(2 - Math.cos(this._circleRadius) ** 2) *
         Math.cos(this._rotation) *
         Math.sin(t)) /
-        Math.sqrt(2 + Circle.ctg(this._circleRadius) ** 2) -
+        Math.sqrt(2 + Nodule.ctg(this._circleRadius) ** 2) -
         (Math.cos(t) * Math.cos(this._beta) * Math.sin(this._circleRadius) +
           Math.cos(this._circleRadius) * Math.sin(this._beta)) *
           Math.sin(this._rotation),
@@ -794,7 +787,7 @@ export default class Circle extends Nodule {
         (Math.sqrt(2 - Math.cos(this._circleRadius) ** 2) *
           Math.sin(t) *
           Math.sin(this._rotation)) /
-          Math.sqrt(2 + Circle.ctg(this._circleRadius) ** 2)
+          Math.sqrt(2 + Nodule.ctg(this._circleRadius) ** 2)
     ];
   }
 

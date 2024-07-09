@@ -100,7 +100,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
    *
    * yAxis must be perpendicular to startPt
    *
-   * Used in both Circle.ts and Polygon.ts
+   * Used in Circle.ts and Polygon.ts
    */
   static boundaryCircleCoordinates(
     startPt: number[],
@@ -111,7 +111,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
     const xAxisVector = new Vector3(startPt[0], startPt[1], 0).normalize();
     const yAxisVector = new Vector3(yAxis[0], yAxis[1], 0).normalize();
     const returnArray = [];
-    const tmpVector = new Vector3()
+    const tmpVector = new Vector3();
 
     for (let i = 0; i < numPoints; i++) {
       tmpVector.set(0, 0, 0);
@@ -129,6 +129,11 @@ export default abstract class Nodule implements Stylable, Resizeable {
       returnArray.push([tmpVector.x, tmpVector.y]);
     }
     return returnArray;
+  }
+
+  // The cotangent function used in Circle and Anglemarker
+  static ctg(x: number): number {
+    return 1 / Math.tan(x);
   }
 
   static setBackStyleContrast(contrast: number): void {
