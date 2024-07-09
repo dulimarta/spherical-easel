@@ -556,11 +556,13 @@ export default class PolygonHandler extends Highlighter {
                 ? seg.endSEPoint.locationVector
                 : seg.startSEPoint.locationVector,
               this.tmpVector2.multiplyScalar(seg.longerThanPi ? -1 : 1),
-              AngleMarker.currentAngleMarkerRadius
+              AngleMarker.currentRadius
             );
             this.temporaryAngleMarkersAdded[ind] = true;
             this.temporaryAngleMarkers[ind].addToLayers(this.layers);
+            //EventBus.fire("update-two-instance", {}); //IS THERE A BETTER WAY? if we don't do this the anglemarker fill is not displayed
             this.temporaryAngleMarkers[ind].updateDisplay();
+            this.temporaryAngleMarkers[ind].normalDisplay(); // if we don't do this the tick mark and all (front/back) angle markers are displayed on top of each other
           }
         });
 
@@ -584,7 +586,7 @@ export default class PolygonHandler extends Highlighter {
         //     ? this.seEdgeSegments[0].endSEPoint.locationVector
         //     : this.seEdgeSegments[0].startSEPoint.locationVector,
         //   this.currentSphereVector,
-        //   AngleMarker.currentAngleMarkerRadius
+        //   AngleMarker.currentRadius
         // );
         // } else {
         this.temporaryAngleMarkers[0].setAngleMarkerFromThreeVectors(
@@ -595,12 +597,14 @@ export default class PolygonHandler extends Highlighter {
           this.tmpVector3.multiplyScalar(
             this.seEdgeSegments[0].longerThanPi ? -1 : 1
           ),
-          AngleMarker.currentAngleMarkerRadius
+          AngleMarker.currentRadius
         );
         // }
 
         this.temporaryAngleMarkers[0].updateDisplay();
+        this.temporaryAngleMarkers[0].normalDisplay(); // if we don't do this the tick mark and all (front/back) angle markers are displayed on top of each other
       }
+      this.temporaryAngleMarkers.forEach((AM:AngleMarker)=> AM.updateDisplay()) // if we don't do this all the existing angle markers either have the wrong fill displayed or no fill at all
     }
   }
 

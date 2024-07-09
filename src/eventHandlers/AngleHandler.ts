@@ -853,6 +853,7 @@ export default class AngleHandler extends Highlighter {
             );
 
             this.temporaryAngleMarker.updateDisplay();
+            this.temporaryAngleMarker.normalDisplay(); // if we don't do this the tick mark and all (front/back) angle markers are displayed on top of each other
             break;
         }
       }

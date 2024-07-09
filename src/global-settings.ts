@@ -658,9 +658,9 @@ export const SETTINGS = {
     turnOffVertexLabelOnCreation: true, // When an angle marker is created with a label at the vertex, that label is turned off if this is set.
     maxGapLengthOrDashLength: 2, // the maximum of the sum of the gap and dash and the endpoint (max value) of the dash range slider
     sliderStepSize: 0.1, //
-    defaultTickMark: false,
-    defaultTickMarkLength: 0.2, //
-    defaultDoubleArc: false,
+    defaultTickMark: false, // controls if the tick mark is displayed by default (if true tick is displayed until the user turns it off)
+    defaultTickMarkLength: 0.03, // 1/2 is display on the inside of the angle marker and 1/2 out (or if double is on 3/4 displayed after the double mark)
+    defaultDoubleArc: false, // controls if the double mark is displayed by default (if true tick is displayed until the user turns it off)
     defaultRadius: 0.08, // The default radius for angleMarkers
     numCirclePoints: 50, // The number of vertices used to render the circle part of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
     numEdgePoints: 26, // The number of vertices used to render each of the start and end vector edge of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
@@ -678,7 +678,7 @@ export const SETTINGS = {
     arrowHeadTipAngleOuter: (28 * Math.PI) / 180, // the angle between the shaft and the tip edge (half the whole tip angle) away from the angle marker
     arrowHeadRearAngleOuter: (70 * Math.PI) / 180, // the angle between the shaft and the rear edge (half the whole tip angle) away from the angle marker
     arrowHeadLength: 0.01, // the length of the arrow head on the unit ideal sphere, Must be less than the default radius of angle marker
-    arrowHeadDisplay: true,
+    arrowHeadDisplay: true, // Controls if the arrow had is drawn by default (until a user turns it off)
     //The properties of the angleMarker when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
@@ -701,8 +701,8 @@ export const SETTINGS = {
           back: 1
         },
         tick: {
-          front: 2,
-          back: 1
+          front: 3,
+          back: 2
         }
       }, // The thickness of the edge of the angleMarker when drawn front/back,
       dashArray: {
