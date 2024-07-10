@@ -134,6 +134,23 @@ export default class Circle extends Nodule {
     [this.frontGradientColorCenter, this.frontGradientColor]
   );
 
+  //////////////////// Temp to explore gradients
+  // private frontGradientColor = new Stop(0.6, "black", 1);
+
+
+  // private frontGradientColorCenter0 = new Stop(0.25, "green", 1);
+  // private frontGradientColorCenter = new Stop(0.5, "red", 1);
+  // private frontGradientColor1 = new Stop(0.6, "blue", 1);
+
+  // private frontGradient = new RadialGradient(
+  //  0.25,
+  //   0.25,
+  //   0.5,
+  //   [this.frontGradientColorCenter0,this.frontGradientColorCenter, this.frontGradientColor1]
+  // );
+
+  ////////////////////
+
   private backGradientColorCenter = new Stop(0, SETTINGS.fill.backGray, 1);
   private backGradientColor = new Stop(
     1 * SETTINGS.boundaryCircle.radius,
@@ -165,7 +182,6 @@ export default class Circle extends Nodule {
     }
   }
 
-
   /** Initialize the current circle width that is adjust by the zoom level and the user widthPercent */
   static currentCircleStrokeWidthFront =
     SETTINGS.circle.drawn.strokeWidth.front;
@@ -190,6 +206,8 @@ export default class Circle extends Nodule {
     super(noduleName);
     // Set the boundary vertices (only populates Circle.boundaryVertices once)
     Circle.setBoundaryVertices();
+
+    this.frontGradient.units = 'userSpaceOnUse'
 
     // Create the glowing/back/fill parts.
     this._frontPart = new Arc(0, 0, 0, 0, 0, 0, SUBDIVISIONS);
@@ -423,7 +441,7 @@ export default class Circle extends Nodule {
         frontStartTraceIndex =
           ((frontStartTraceIndex % SUBDIVISIONS) + SUBDIVISIONS) % SUBDIVISIONS;
 
-         //Move the boundary vertices array so that the first index one is geometrically close to the start and end of the vertices tracing the circular "hole"
+        //Move the boundary vertices array so that the first index one is geometrically close to the start and end of the vertices tracing the circular "hole"
         Circle.boundaryVertices.rotate(frontStartTraceIndex);
 
         Circle.boundaryVertices.findLast(v => {
@@ -457,7 +475,7 @@ export default class Circle extends Nodule {
         // Set the backFill
         this._backFillInUse = true;
         // In this case set the backFillVertices to the entire boundary circle of the sphere (unless it is already the entire back so that it doesn't need to be updated)
-         if (!this._backFillIsEntireBack) {
+        if (!this._backFillIsEntireBack) {
           this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
           Circle.boundaryVertices.forEach(v => {
             const vertex = this.fillStorageAnchors.pop();
@@ -536,7 +554,6 @@ export default class Circle extends Nodule {
         //   "the circle is a hole on the back, the front is entirely covered"
         // );
 
-
         // Set the backFill
         // We need 3*SUBDIVISION +2 anchors for the annular region on the back. Currently there are SUBDIVISION in the back fill
         // Add an anchor to close the inner region
@@ -573,7 +590,7 @@ export default class Circle extends Nodule {
         //Move the boundary vertices array so that the first index one is geometrically close to the start and end of the vertices tracing the circular "hole"
         Circle.boundaryVertices.rotate(backStartTraceIndex);
 
-        Circle.boundaryVertices.findLast((v) => {
+        Circle.boundaryVertices.findLast(v => {
           const vert = this.fillStorageAnchors.pop();
           if (vert != undefined) {
             vert.x = v[0];
@@ -649,7 +666,8 @@ export default class Circle extends Nodule {
       // set the display of the edge (drawn counterclockwise)
       // add/subtract ?*Pi/2 because two.js draws ellipse arcs differently than Mathematica
       this._frontPart.startAngle = (-3 * Math.PI) / 2 + this._boundaryParameter;
-      this._glowingFrontPart.startAngle = (-3 * Math.PI) / 2 + this._boundaryParameter;
+      this._glowingFrontPart.startAngle =
+        (-3 * Math.PI) / 2 + this._boundaryParameter;
       this._frontPart.endAngle = Math.PI / 2 - this._boundaryParameter;
       this._glowingFrontPart.endAngle = Math.PI / 2 - this._boundaryParameter;
       this._backPart.startAngle = Math.PI / 2 - this._boundaryParameter;
@@ -847,7 +865,6 @@ export default class Circle extends Nodule {
     } else {
       this._backFill.visible = false;
     }
-
   }
 
   setVisible(flag: boolean): void {
