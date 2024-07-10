@@ -24,8 +24,8 @@ import { AddPointCommand } from "@/commands/AddPointCommand";
 import EventBus from "./EventBus";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
-import Two from "two.js";
-// import { Group } from "two.js/src/group";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
@@ -86,7 +86,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
    */
   private numberOfTangents = 1;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
 
     // Create and style the temporary lines (initially allocate one)

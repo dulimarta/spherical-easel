@@ -9,12 +9,11 @@ import {
 } from "@/types/Styles";
 import { LabelDisplayMode, LabelParentTypes } from "@/types";
 import { ValueDisplayMode } from "@/types";
-import Two from "two.js";
-
-// import { Vector } from "two.js/src/vector";
-// import { Text } from "two.js/src/text";
-// import { Group } from "two.js/src/group";
-// import { Shape } from "two.js/src/shape";
+//import Two from "two.js";
+import { Vector } from "two.js/src/vector";
+import { Text } from "two.js/src/text";
+import { Group } from "two.js/src/group";
+//import { Shape } from "two.js/src/shape";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -34,22 +33,22 @@ export default class Label extends Nodule {
    * The sign of the z coordinate indicates if the Point is on the back of the sphere
    */
   public _locationVector = new Vector3(1, 0, 0);
-  public defaultScreenVectorLocation = new Two.Vector(1, 0);
+  public defaultScreenVectorLocation = new Vector(1, 0);
 
   /**
    * The TwoJS objects that are used to display the label.
    * One is for the front, the other for the back. Only one is displayed at a time
    */
-  protected frontText = new Two.Text("Test", 1, 0, {
+  protected frontText = new Text("Test", 1, 0, {
     size: SETTINGS.label.fontSize
   });
-  protected backText = new Two.Text("Test", 1, 0, {
+  protected backText = new Text("Test", 1, 0, {
     size: SETTINGS.label.fontSize
   });
-  protected glowingFrontText = new Two.Text("Test", 1, 0, {
+  protected glowingFrontText = new Text("Test", 1, 0, {
     size: SETTINGS.label.fontSize
   });
-  protected glowingBackText = new Two.Text("Test", 1, 0, {
+  protected glowingBackText = new Text("Test", 1, 0, {
     size: SETTINGS.label.fontSize
   });
   private glowingStrokeColorFront = SETTINGS.label.glowingStrokeColor.front;
@@ -197,7 +196,7 @@ export default class Label extends Nodule {
   }
 
   set valueDisplayMode(vdm: ValueDisplayMode) {
-    console.log("set vdm in label");
+    // console.log("set vdm in label");
     this._valueDisplayMode = vdm;
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
@@ -342,7 +341,7 @@ export default class Label extends Nodule {
     }
   }
 
-  addToLayers(layers: Two.Group[]): void {
+  addToLayers(layers: Group[]): void {
     layers[LAYER.foregroundText].add(this.frontText);
     layers[LAYER.foregroundTextGlowing].add(this.glowingFrontText);
     layers[LAYER.backgroundText].add(this.backText);
@@ -353,7 +352,7 @@ export default class Label extends Nodule {
     // this.glowingBackText.addTo(layers[LAYER.backgroundTextGlowing]);
   }
 
-  removeFromLayers(layers: Two.Group[]): void {
+  removeFromLayers(layers: Group[]): void {
     layers[LAYER.foregroundText].remove(this.frontText);
     layers[LAYER.foregroundTextGlowing].remove(this.glowingFrontText);
     layers[LAYER.backgroundText].remove(this.backText);
@@ -631,13 +630,13 @@ export default class Label extends Nodule {
         this.glowingBackText.value = labelText;
         if (labelStyle?.labelTextStyle !== "bold") {
           this.frontText.style =
-            labelStyle?.labelTextStyle ?? SETTINGS.label.style;
+            (labelStyle?.labelTextStyle ?? SETTINGS.label.style) as "normal"|"italic";
           this.backText.style =
-            labelStyle?.labelTextStyle ?? SETTINGS.label.style;
+            (labelStyle?.labelTextStyle ?? SETTINGS.label.style) as "normal"|"italic";
           this.glowingFrontText.style =
-            labelStyle?.labelTextStyle ?? SETTINGS.label.style;
+            (labelStyle?.labelTextStyle ?? SETTINGS.label.style) as "normal"|"italic";
           this.glowingBackText.style =
-            labelStyle?.labelTextStyle ?? SETTINGS.label.style;
+            (labelStyle?.labelTextStyle ?? SETTINGS.label.style) as "normal"|"italic";
           this.frontText.weight = 500;
           this.backText.weight = 500;
           this.glowingFrontText.weight = 500;
@@ -659,13 +658,14 @@ export default class Label extends Nodule {
           labelStyle?.labelTextFamily ?? SETTINGS.label.family;
 
         this.frontText.decoration =
-          labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration;
+          (labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
+;
         this.backText.decoration =
-          labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration;
+          (labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
         this.glowingFrontText.decoration =
-          labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration;
+          (labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
         this.glowingBackText.decoration =
-          labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration;
+          (labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
 
         this.frontText.rotation = labelStyle?.labelTextRotation ?? 0;
         this.backText.rotation = labelStyle?.labelTextRotation ?? 0;

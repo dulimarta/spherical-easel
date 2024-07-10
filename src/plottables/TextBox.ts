@@ -1,18 +1,18 @@
-import Two from "two.js";
-// import { Group } from "two.js/src/group";
-// import { RoundedRectangle } from "two.js/src/shapes/rounded-rectangle";
-// import { Text } from "two.js/src/text";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
+import { RoundedRectangle } from "two.js/src/shapes/rounded-rectangle";
+import { Text } from "two.js/src/text";
 
-export class TextBox extends Two.Group {
-  private box: Two.RoundedRectangle;
-  private _text: Two.Text;
+export class TextBox extends Group {
+  private box: RoundedRectangle;
+  private _text: Text;
   private timer: any;
 
   constructor(msg: string) {
     super();
-    this._text = new Two.Text(msg, 0, 0);
+    this._text = new Text(msg, 0, 0);
     const bbox = this._text.getBoundingClientRect();
-    this.box = new Two.RoundedRectangle(0, 0, bbox.width, bbox.height, 4);
+    this.box = new RoundedRectangle(0, 0, bbox.width, bbox.height, 4);
     this.box.fill = "hsl(20,50%,80%)";
     this.box.opacity = 0.7;
     // this.box.addTo(this);
@@ -36,7 +36,7 @@ export class TextBox extends Two.Group {
    * @param layer the target layer
    * @param delay number of milliseconds to wait
    */
-  public showWithDelay(layer: Two.Group, delay: number): void {
+  public showWithDelay(layer: Group, delay: number): void {
     this.timer = setTimeout(() => {
       this.addTo(layer);
     }, delay);

@@ -58,9 +58,9 @@ export class SEAngleMarker
   private desiredZAxis = new Vector3();
 
   /**
-   * The angle marker is a segment of a circle of radius AngleMarker.currentAngleMarkerRadius and center _vertexVector from _startVector to _endVector
+   * The angle marker is a segment of a circle of radius AngleMarker.currentRadius and center _vertexVector from _startVector to _endVector
    * This is always drawn counterclockwise when seen from outside of the sphere. The angle from vertexVector to start/end Vector should
-   * always be AngleMarker.currentAngleMarkerRadius (note that the AngleMarker can scale this to create angleMarkers of different sizes,
+   * always be AngleMarker.currentRadius (note that the AngleMarker can scale this to create angleMarkers of different sizes,
    * but the SEAngleMarker is always the default radius)
    */
   private _vertexVector = new Vector3(); // Set this vector to the origin so that the I can tell during the update method if this is the first time through the update routine
@@ -158,7 +158,7 @@ export class SEAngleMarker
     return this._valueDisplayMode;
   }
   set valueDisplayMode(vdm: ValueDisplayMode) {
-    console.debug(`set the vdm in SEAngleMarker`);
+    // console.debug(`set the vdm in SEAngleMarker`);
     this._valueDisplayMode = vdm;
     // move the vdm to the plottable label
     if (this.label) {

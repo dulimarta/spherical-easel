@@ -1,4 +1,4 @@
-import { Vector3, Matrix4 } from "three";
+import { Vector3 } from "three";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
@@ -7,13 +7,13 @@ import {
   DEFAULT_LINE_FRONT_STYLE,
   DEFAULT_LINE_BACK_STYLE
 } from "@/types/Styles";
-import Two from "two.js";
-// import { Path } from "two.js/src/path";
-// import { Anchor } from "two.js/src/anchor";
-// import { Group } from "two.js/src/group";
+import { Arc } from "two.js/extras/jsm/arc";
+import { Group } from "two.js/src/group";
 
 // The number of vectors used to render the front half (and the same number in the back half)
 const SUBDIVS = SETTINGS.line.numPoints;
+// The radius of the sphere on the screen
+const radius = SETTINGS.boundaryCircle.radius;
 
 /**
  * A line
@@ -33,25 +33,17 @@ export default class Line extends Nodule {
    * calculations in this class are only for the purpose of rendering the line.
    */
 
-  /**
-   * A line has half on the front and half on the back.There are glowing counterparts for each part.
-   */
-  protected frontHalf: Two.Path;
-  protected backHalf: Two.Path;
-  protected glowingFrontHalf: Two.Path;
-  protected glowingBackHalf: Two.Path;
-
-  // /**
-  //  * What are these for?
-  //  */
-  // private backArcLen = 0;
-  // private frontArcLen = 0;
+  /** The normal vector determines the rotation and minor axis length of the displayed ellipse */
+  private _rotation: number;
+  private _halfMinorAxis: number;
 
   /**
-   * A list of Vector3s that trace the the equator of the sphere
+   * A line has half on the front and half on the back. There are glowing counterparts for each part.
    */
-
-  private points: Vector3[];
+  protected _frontHalf: Arc;
+  protected _backHalf: Arc;
+  protected _glowingFrontHalf: Arc;
+  protected _glowingBackHalf: Arc;
 
   /**
    * The styling variables for the drawn segment. The user can modify these.
@@ -80,46 +72,46 @@ export default class Line extends Nodule {
     Line.currentGlowingLineStrokeWidthBack *= factor;
   }
 
-  /** Temporary ThreeJS objects for computing */
-  private tmpVector = new Vector3();
-  private desiredXAxis = new Vector3();
-  private desiredYAxis = new Vector3();
-  private transformMatrix = new Matrix4();
   constructor(noduleName: string = "None") {
     super(noduleName);
-
-    const radius = SETTINGS.boundaryCircle.radius;
-    const vertices: Two.Vector[] = [];
-    const glowingVertices: Two.Vector[] = [];
-
-    // Generate 2D coordinates of a half circle
-    for (let k = 0; k < SUBDIVS; k++) {
-      const angle = (k * Math.PI) / SUBDIVS;
-      const px = radius * Math.cos(angle);
-      const py = radius * Math.sin(angle);
-      vertices.push(new Two.Vector(px, py));
-      glowingVertices.push(new Two.Vector(px, py));
-    }
-
-    this.frontHalf = new Two.Path(
-      vertices,
-      /* closed */ false,
-      /* curve */ false
+    this._frontHalf = new Arc(
+      0,
+      0,
+      2 * radius,
+      2 * radius,
+      Math.PI,
+      2 * Math.PI,
+      SUBDIVS
+    );
+    this._glowingFrontHalf = new Arc(
+      0,
+      0,
+      2 * radius,
+      2 * radius,
+      Math.PI,
+      2 * Math.PI,
+      SUBDIVS
+    );
+    // Create the back half, glowing front half, glowing back half circle by cloning the front half
+    this._backHalf = new Arc(0, 0, 2 * radius, 2 * radius, 0, Math.PI, SUBDIVS);
+    this._glowingBackHalf = new Arc(
+      0,
+      0,
+      2 * radius,
+      2 * radius,
+      0,
+      Math.PI,
+      SUBDIVS
     );
 
-    // Create the back half, glowing front half, glowing back half circle by cloning the front half
-    this.backHalf = this.frontHalf.clone();
-    this.glowingBackHalf = this.frontHalf.clone();
-    this.glowingFrontHalf = this.frontHalf.clone();
-
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this.frontHalf.id), {
+    Nodule.idPlottableDescriptionMap.set(String(this._frontHalf.id), {
       type: "line",
       side: "front",
       fill: false,
       part: ""
     });
-    Nodule.idPlottableDescriptionMap.set(String(this.backHalf.id), {
+    Nodule.idPlottableDescriptionMap.set(String(this._backHalf.id), {
       type: "line",
       side: "back",
       fill: false,
@@ -127,147 +119,30 @@ export default class Line extends Nodule {
     });
 
     // The line is not initially glowing but is visible for the temporary object
-    this.frontHalf.visible = true;
-    this.backHalf.visible = true;
-    this.glowingFrontHalf.visible = false;
-    this.glowingBackHalf.visible = false;
+    this._frontHalf.visible = true;
+    this._backHalf.visible = true;
+    this._glowingFrontHalf.visible = false;
+    this._glowingBackHalf.visible = false;
 
     // Set the style that never changes -- Fill
-    this.frontHalf.noFill();
-    this.glowingFrontHalf.noFill();
-    this.backHalf.noFill();
-    this.glowingBackHalf.noFill();
+    this._frontHalf.noFill();
+    this._glowingFrontHalf.noFill();
+    this._backHalf.noFill();
+    this._glowingBackHalf.noFill();
 
-    // Be sure to clone() the incoming start and end points
-    // Otherwise update by other Line will affect this one!
+    // set the normal vector
     this._normalVector = new Vector3();
-    // this.normalDirection.crossVectors(this.start, this.end);
-    // The back half will be dynamically added to the group
+    //Let \[Beta]  be the angle between the north pole NP= <0,0,1> and the unit normal vector (with z coordinate positive), then cos(\[Beta]) is half the minor axis.
+    //Note:
+    //  0 <= \[Beta] <= \[Pi]/2.
+    //  _normalVector.z = NP._normalVector = |NP||_normalVector|cos(\[Beta])= cos(\[Beta])
+    this._halfMinorAxis = this._normalVector.z;
 
-    // Generate 3D coordinates of the entire line in a standard position -- the equator of the Default Sphere
-    this.points = [];
-    for (let k = 0; k < 2 * SUBDIVS; k++) {
-      const angle = (2 * k * Math.PI) / (2 * SUBDIVS);
-      const px = radius * Math.cos(angle);
-      const py = radius * Math.sin(angle);
-      this.points.push(new Vector3(px, py, 0));
-    }
+    this._rotation = 0; //Initially the normal vector is <0,0,1> so the rotation is 0 in general the rotation angle is
+    //Let \[Theta] be the angle between the vector <0,1> and <n_x,n_y>, then \[Theta] is the angle of rotation. Note that \[Theta] = -ATan2(n_x,n_y) (measured counterclockwise)
 
     this.styleOptions.set(StyleCategory.Front, DEFAULT_LINE_FRONT_STYLE);
     this.styleOptions.set(StyleCategory.Back, DEFAULT_LINE_BACK_STYLE);
-  }
-
-  frontGlowingDisplay(): void {
-    this.frontHalf.visible = true;
-    this.glowingFrontHalf.visible = true;
-  }
-
-  backGlowingDisplay(): void {
-    this.backHalf.visible = true;
-    this.glowingBackHalf.visible = true;
-  }
-
-  glowingDisplay(): void {
-    this.frontGlowingDisplay();
-    this.backGlowingDisplay();
-  }
-
-  frontNormalDisplay(): void {
-    this.frontHalf.visible = true;
-    this.glowingFrontHalf.visible = false;
-  }
-
-  backNormalDisplay(): void {
-    this.backHalf.visible = true;
-    this.glowingBackHalf.visible = false;
-  }
-
-  normalDisplay(): void {
-    this.frontNormalDisplay();
-    this.backNormalDisplay();
-  }
-
-  /**
-   * Update the display of line by Reorient the unit circle in 3D and then project the points to 2D
-   * Reorient the unit circle in 3D and then project the points to 2D
-   * This method updates the TwoJS objects (frontHalf, backHalf, ...) for display
-   * This is only accurate if the normal vector are correct so only
-   * call this method once that vector is updated.
-   */
-  public updateDisplay(): void {
-    //Form the X Axis perpendicular to the normalDirection, this is where the plotting will start.
-    this.desiredXAxis
-      .set(-this._normalVector.y, this._normalVector.x, 0)
-      .normalize();
-
-    // Form the Y axis perpendicular to the normal vector and the XAxis
-    this.desiredYAxis.crossVectors(this._normalVector, this.desiredXAxis)
-      .normalize;
-    // Form the transformation matrix that will map the vectors along the equation of the Default Sphere to
-    // to the current position of the line.
-    this.transformMatrix.makeBasis(
-      this.desiredXAxis,
-      this.desiredYAxis,
-      this._normalVector
-    );
-
-    // Variables to keep track of when the z coordinate of the transformed object changes sign
-    let firstPos = -1;
-    let posIndex = 0;
-    let firstNeg = -1;
-    let negIndex = 0;
-    let lastSign = 0;
-
-    this.points.forEach((v, pos) => {
-      // v is a vector location on the equator of the Default Sphere
-      this.tmpVector.copy(v);
-      // Transform that vector to one on the current segment
-      this.tmpVector.applyMatrix4(this.transformMatrix);
-      const thisSign = Math.sign(this.tmpVector.z);
-      if (lastSign !== thisSign) {
-        // We have a zero crossing
-        if (thisSign > 0) firstPos = pos;
-        if (thisSign < 0) firstNeg = pos;
-      }
-      lastSign = thisSign;
-      if (this.tmpVector.z > 0) {
-        if (posIndex === this.frontHalf.vertices.length) {
-          let extra: Two.Anchor | undefined;
-          extra = this.backHalf.vertices.pop();
-          if (extra) this.frontHalf.vertices.push(extra);
-          extra = this.glowingBackHalf.vertices.pop();
-          if (extra) this.glowingFrontHalf.vertices.push(extra);
-        }
-        this.frontHalf.vertices[posIndex].x = this.tmpVector.x;
-        this.frontHalf.vertices[posIndex].y = this.tmpVector.y;
-        this.glowingFrontHalf.vertices[posIndex].x = this.tmpVector.x;
-        this.glowingFrontHalf.vertices[posIndex].y = this.tmpVector.y;
-        posIndex++;
-      } else {
-        if (negIndex === this.backHalf.vertices.length) {
-          let extra: Two.Anchor | undefined;
-          extra = this.frontHalf.vertices.pop();
-          if (extra) this.backHalf.vertices.push(extra);
-          extra = this.glowingFrontHalf.vertices.pop();
-          if (extra) this.glowingBackHalf.vertices.push(extra);
-        }
-        this.backHalf.vertices[negIndex].x = this.tmpVector.x;
-        this.backHalf.vertices[negIndex].y = this.tmpVector.y;
-        this.glowingBackHalf.vertices[negIndex].x = this.tmpVector.x;
-        this.glowingBackHalf.vertices[negIndex].y = this.tmpVector.y;
-        negIndex++;
-      }
-    });
-    if (0 < firstPos && firstPos < SUBDIVS) {
-      // Gap in backhalf
-      this.backHalf.vertices.rotate(firstPos);
-      this.glowingBackHalf.vertices.rotate(firstPos);
-    }
-    if (0 < firstNeg && firstNeg < SUBDIVS) {
-      // Gap in fronthalf
-      this.frontHalf.vertices.rotate(firstNeg);
-      this.glowingFrontHalf.vertices.rotate(firstNeg);
-    }
   }
 
   /**
@@ -275,18 +150,62 @@ export default class Line extends Nodule {
    */
   set normalVector(dir: Vector3) {
     this._normalVector.copy(dir).normalize();
+    this._halfMinorAxis = this._normalVector.z;
+    this._rotation = -Math.atan2(this._normalVector.x, this._normalVector.y); // not a typo because we are measuring off of the positive y axis in the screen plane
     this.updateDisplay();
   }
 
+  glowingDisplay(): void {
+    this._frontHalf.visible = true;
+    this._glowingFrontHalf.visible = true;
+    this._backHalf.visible = true;
+    this._glowingBackHalf.visible = true;
+  }
+
+  normalDisplay(): void {
+    this._frontHalf.visible = true;
+    this._glowingFrontHalf.visible = false;
+    this._backHalf.visible = true;
+    this._glowingBackHalf.visible = false;
+  }
+
   setVisible(flag: boolean): void {
-    if (!flag) {
-      this.frontHalf.visible = false;
-      this.glowingFrontHalf.visible = false;
-      this.backHalf.visible = false;
-      this.glowingBackHalf.visible = false;
-    } else {
-      this.normalDisplay();
+    this._frontHalf.visible = false;
+    this._glowingFrontHalf.visible = false;
+    this._backHalf.visible = false;
+    this._glowingBackHalf.visible = false;
+    if (flag) {
+      this._backHalf.visible = true;
+      this._glowingBackHalf.visible = false;
+      this._frontHalf.visible = true;
+      this._glowingFrontHalf.visible = false;
     }
+
+    // if (!flag) {
+    //   this.frontHalf.visible = false;
+    //   this.glowingFrontHalf.visible = false;
+    //   this.backHalf.visible = false;
+    //   this.glowingBackHalf.visible = false;
+    // } else {
+    //   this.normalDisplay();
+    // }
+  }
+  /**
+   * Update the display of line
+   * This method updates the TwoJS objects (frontHalf, backHalf, ...) for display
+   * This is only accurate if the normal vector is correct so only
+   * call this method once that vector is updated.
+   */
+  public updateDisplay(): void {
+    this._frontHalf.rotation = this._rotation;
+    this._glowingFrontHalf.rotation = this._rotation;
+    this._backHalf.rotation = this._rotation;
+    this._glowingBackHalf.rotation = this._rotation;
+
+    this._frontHalf.height = 2 * radius * this._halfMinorAxis;
+    this._glowingFrontHalf.height = 2 * radius * this._halfMinorAxis;
+    this._backHalf.height = 2 * radius * this._halfMinorAxis;
+    this._glowingBackHalf.height = 2 * radius * this._halfMinorAxis;
   }
 
   setSelectedColoring(flag: boolean): void {
@@ -302,42 +221,18 @@ export default class Line extends Nodule {
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
 
-  // It looks like we have to define our own clone() function
-  // The builtin clone() does not seem to work correctly
-  clone(): this {
-    const dup = new Line(this.name);
-    dup._normalVector.copy(this._normalVector);
-    dup.frontHalf.rotation = this.frontHalf.rotation;
-    dup.backHalf.rotation = this.backHalf.rotation;
-    // dup.frontArcLen = this.frontArcLen;
-    // dup.backArcLen = this.backArcLen;
-    dup.frontHalf.vertices.forEach((v: Two.Anchor, pos: number) => {
-      v.copy(this.frontHalf.vertices[pos]);
-    });
-    dup.backHalf.vertices.forEach((v: Two.Anchor, pos: number) => {
-      v.copy(this.backHalf.vertices[pos]);
-    });
-    dup.glowingFrontHalf.vertices.forEach((v: Two.Anchor, pos: number) => {
-      v.copy(this.glowingFrontHalf.vertices[pos]);
-    });
-    dup.glowingBackHalf.vertices.forEach((v: Two.Anchor, pos: number) => {
-      v.copy(this.glowingBackHalf.vertices[pos]);
-    });
-    return dup as this;
-  }
-
-  addToLayers(layers: Two.Group[]): void {
-    this.frontHalf.addTo(layers[LAYER.foreground]);
-    this.glowingFrontHalf.addTo(layers[LAYER.foregroundGlowing]);
-    this.backHalf.addTo(layers[LAYER.background]);
-    this.glowingBackHalf.addTo(layers[LAYER.backgroundGlowing]);
+   addToLayers(layers: Group[]): void {
+    this._frontHalf.addTo(layers[LAYER.foreground]);
+    this._glowingFrontHalf.addTo(layers[LAYER.foregroundGlowing]);
+    this._backHalf.addTo(layers[LAYER.background]);
+    this._glowingBackHalf.addTo(layers[LAYER.backgroundGlowing]);
   }
 
   removeFromLayers(): void {
-    this.frontHalf.remove();
-    this.backHalf.remove();
-    this.glowingFrontHalf.remove();
-    this.glowingBackHalf.remove();
+    this._frontHalf.remove();
+    this._backHalf.remove();
+    this._glowingFrontHalf.remove();
+    this._glowingBackHalf.remove();
   }
 
   /**
@@ -369,18 +264,18 @@ export default class Line extends Nodule {
     const backStyle = this.styleOptions.get(StyleCategory.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
     const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
-    this.frontHalf.linewidth =
+    this._frontHalf.linewidth =
       (Line.currentLineStrokeWidthFront * frontStrokeWidthPercent) / 100;
 
-    this.backHalf.linewidth =
+    this._backHalf.linewidth =
       (Line.currentLineStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
           : backStrokeWidthPercent)) /
       100;
-    this.glowingFrontHalf.linewidth =
+    this._glowingFrontHalf.linewidth =
       (Line.currentGlowingLineStrokeWidthFront * frontStrokeWidthPercent) / 100;
-    this.glowingBackHalf.linewidth =
+    this._glowingBackHalf.linewidth =
       (Line.currentGlowingLineStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
@@ -407,20 +302,20 @@ export default class Line extends Nodule {
         if (
           Nodule.hslaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.front)
         ) {
-          this.frontHalf.noStroke();
+          this._frontHalf.noStroke();
         } else {
-          this.frontHalf.stroke = SETTINGS.line.temp.strokeColor.front;
+          this._frontHalf.stroke = SETTINGS.line.temp.strokeColor.front;
         }
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
-        this.frontHalf.linewidth = Line.currentLineStrokeWidthFront;
+        this._frontHalf.linewidth = Line.currentLineStrokeWidthFront;
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.line.drawn.dashArray.front.length > 0) {
-          this.frontHalf.dashes.clear();
+          this._frontHalf.dashes.clear();
           SETTINGS.line.drawn.dashArray.front.forEach(v => {
-            this.frontHalf.dashes.push(v);
+            this._frontHalf.dashes.push(v);
           });
           if (SETTINGS.line.drawn.dashArray.reverse.front) {
-            this.frontHalf.dashes.reverse();
+            this._frontHalf.dashes.reverse();
           }
         }
 
@@ -429,27 +324,27 @@ export default class Line extends Nodule {
         if (
           Nodule.hslaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.back)
         ) {
-          this.backHalf.noStroke();
+          this._backHalf.noStroke();
         } else {
-          this.backHalf.stroke = SETTINGS.line.temp.strokeColor.back;
+          this._backHalf.stroke = SETTINGS.line.temp.strokeColor.back;
         }
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
-        this.backHalf.linewidth = Line.currentLineStrokeWidthBack;
+        this._backHalf.linewidth = Line.currentLineStrokeWidthBack;
 
         // Copy the back dash properties from the back default drawn dash properties
         if (SETTINGS.line.drawn.dashArray.back.length > 0) {
-          this.backHalf.dashes.clear();
+          this._backHalf.dashes.clear();
           SETTINGS.line.drawn.dashArray.back.forEach(v => {
-            this.backHalf.dashes.push(v);
+            this._backHalf.dashes.push(v);
           });
           if (SETTINGS.line.drawn.dashArray.reverse.back) {
-            this.backHalf.dashes.reverse();
+            this._backHalf.dashes.reverse();
           }
         }
 
         // The temporary display is never highlighted
-        this.glowingFrontHalf.visible = false;
-        this.glowingBackHalf.visible = false;
+        this._glowingFrontHalf.visible = false;
+        this._glowingBackHalf.visible = false;
         break;
       }
 
@@ -460,9 +355,9 @@ export default class Line extends Nodule {
         const frontStyle = this.styleOptions.get(StyleCategory.Front);
         // no fillColor
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
-          this.frontHalf.noStroke();
+          this._frontHalf.noStroke();
         } else {
-          this.frontHalf.stroke = frontStyle?.strokeColor ?? "black";
+          this._frontHalf.stroke = frontStyle?.strokeColor ?? "black";
         }
         // strokeWidthPercent applied by adjustSize()
 
@@ -471,15 +366,15 @@ export default class Line extends Nodule {
           frontStyle?.reverseDashArray !== undefined &&
           frontStyle?.dashArray.length > 0
         ) {
-          this.frontHalf.dashes.clear();
-          this.frontHalf.dashes.push(...frontStyle?.dashArray);
+          this._frontHalf.dashes.clear();
+          this._frontHalf.dashes.push(...frontStyle?.dashArray);
           if (frontStyle.reverseDashArray) {
-            this.frontHalf.dashes.reverse();
+            this._frontHalf.dashes.reverse();
           }
         } else {
           // the array length is zero and no dash array should be set
-          this.frontHalf.dashes.clear();
-          this.frontHalf.dashes.push(0);
+          this._frontHalf.dashes.clear();
+          this._frontHalf.dashes.push(0);
         }
 
         // Back
@@ -491,17 +386,17 @@ export default class Line extends Nodule {
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
-            this.backHalf.noStroke();
+            this._backHalf.noStroke();
           } else {
-            this.backHalf.stroke = Nodule.contrastStrokeColor(
+            this._backHalf.stroke = Nodule.contrastStrokeColor(
               frontStyle?.strokeColor ?? "black"
             );
           }
         } else {
           if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
-            this.backHalf.noStroke();
+            this._backHalf.noStroke();
           } else {
-            this.backHalf.stroke = backStyle?.strokeColor ?? "black";
+            this._backHalf.stroke = backStyle?.strokeColor ?? "black";
           }
         }
         // strokeWidthPercent applied by adjustSize()
@@ -511,20 +406,20 @@ export default class Line extends Nodule {
           backStyle?.reverseDashArray !== undefined &&
           backStyle.dashArray.length > 0
         ) {
-          this.backHalf.dashes.clear();
-          this.backHalf.dashes.push(...backStyle.dashArray);
+          this._backHalf.dashes.clear();
+          this._backHalf.dashes.push(...backStyle.dashArray);
           if (backStyle.reverseDashArray) {
-            this.backHalf.dashes.reverse();
+            this._backHalf.dashes.reverse();
           }
         } else {
           // the array length is zero and no dash array should be set
-          this.backHalf.dashes.clear();
-          this.backHalf.dashes.push(0);
+          this._backHalf.dashes.clear();
+          this._backHalf.dashes.push(0);
         }
 
         // Glowing Front
         // no fillColor
-        this.glowingFrontHalf.stroke = this.glowingStrokeColorFront;
+        this._glowingFrontHalf.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
@@ -533,20 +428,20 @@ export default class Line extends Nodule {
           frontStyle?.reverseDashArray !== undefined &&
           frontStyle?.dashArray.length > 0
         ) {
-          this.glowingFrontHalf.dashes.clear();
-          this.glowingFrontHalf.dashes.push(...frontStyle?.dashArray);
+          this._glowingFrontHalf.dashes.clear();
+          this._glowingFrontHalf.dashes.push(...frontStyle?.dashArray);
           if (frontStyle.reverseDashArray) {
-            this.glowingFrontHalf.dashes.reverse();
+            this._glowingFrontHalf.dashes.reverse();
           }
         } else {
           // the array length is zero and no dash array should be set
-          this.glowingFrontHalf.dashes.clear();
-          this.glowingFrontHalf.dashes.push(0);
+          this._glowingFrontHalf.dashes.clear();
+          this._glowingFrontHalf.dashes.push(0);
         }
 
         // Glowing Back
         // no fillColor
-        this.glowingBackHalf.stroke = this.glowingStrokeColorBack;
+        this._glowingBackHalf.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the back dash properties to the glowing object
@@ -555,15 +450,15 @@ export default class Line extends Nodule {
           backStyle?.reverseDashArray !== undefined &&
           backStyle.dashArray.length > 0
         ) {
-          this.glowingBackHalf.dashes.clear();
-          this.glowingBackHalf.dashes.push(...backStyle.dashArray);
+          this._glowingBackHalf.dashes.clear();
+          this._glowingBackHalf.dashes.push(...backStyle.dashArray);
           if (backStyle.reverseDashArray) {
-            this.glowingBackHalf.dashes.reverse();
+            this._glowingBackHalf.dashes.reverse();
           }
         } else {
           // the array length is zero and no dash array should be set
-          this.glowingBackHalf.dashes.clear();
-          this.glowingBackHalf.dashes.push(0);
+          this._glowingBackHalf.dashes.clear();
+          this._glowingBackHalf.dashes.push(0);
         }
         break;
       }

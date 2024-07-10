@@ -1,7 +1,8 @@
 import EventBus from "@/eventHandlers/EventBus";
 import Highlighter from "./Highlighter";
 import { Vector3 } from "three";
-import Two from "two.js";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
@@ -12,7 +13,6 @@ import { SENSectLine } from "@/models/SENSectLine";
 import { SEPoint } from "@/models/SEPoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddNSectLineCommand } from "@/commands/AddNSectLineCommand";
-// import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 
 export default class NSectAngleHandler extends Highlighter {
@@ -28,7 +28,7 @@ export default class NSectAngleHandler extends Highlighter {
   private tmpVector = new Vector3();
   // private _disableKeyHandler = false;
 
-  constructor(layers: Two.Group[], bisectOnly?: boolean) {
+  constructor(layers: Group[], bisectOnly?: boolean) {
     super(layers);
 
     // Create and style the temporary lines

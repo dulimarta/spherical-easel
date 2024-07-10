@@ -99,7 +99,7 @@ import Nodule from "@/plottables/Nodule";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { useAccountStore } from "@/stores/account";
-import Two from "two.js";
+
 import { SEExpression } from "@/models/SEExpression";
 import RotationTransformationHandler from "@/eventHandlers/RotationTransformationHandler";
 import ReflectionTransformationHandler from "@/eventHandlers/ReflectionTransformationHandler";
@@ -110,6 +110,10 @@ import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandl
 import { SENodule } from "@/models/SENodule";
 import { useI18n } from "vue-i18n";
 import { ToolButtonType } from "@/types";
+import Two from "two.js";
+import { Circle } from "two.js/src/shapes/circle";
+import { Group } from "two.js/src/group";
+
 type ComponentProps = {
   availableHeight: number;
   availableWidth: number;
@@ -157,7 +161,7 @@ let twoInstance!: Two;
 /**
  * The circle that is the end of the projection of the Default Sphere in the Default Screen Plane
  */
-let boundaryCircle!: Two.Circle;
+let boundaryCircle!: Circle;
 /**
  * The Global Pinia Store
  */
@@ -203,7 +207,7 @@ let pointReflectionTool: PointReflectionTransformationHandler | null = null;
 let inversionTool: InversionTransformationHandler | null = null;
 let applyTransformationTool: ApplyTransformationHandler | null = null;
 
-let layers: Array<Two.Group> = [];
+let layers: Array<Group> = [];
 
 onBeforeMount((): void => {
   twoInstance = new Two({
@@ -303,6 +307,7 @@ onBeforeMount((): void => {
   EventBus.listen("set-expression-for-tool", setExpressionForTool);
   EventBus.listen("set-transformation-for-tool", setTransformationForTool);
   EventBus.listen("delete-node", deleteNode);
+  EventBus.listen("update-two-instance",updateTwoJsInstance) //IS THERE A BETTER WAY?
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   // EventBus.listen(
   //   "set-point-visibility-and-label",
@@ -762,6 +767,11 @@ function deleteNode(e: {
     },
     type: "success"
   });
+}
+
+//IS THERE A BETTER WAY?
+function updateTwoJsInstance():void {
+  twoInstance.update()
 }
 
 // dialogBoxIsActive(e: { active: boolean }): void {

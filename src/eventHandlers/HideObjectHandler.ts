@@ -1,4 +1,5 @@
-import Two from "two.js";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 import Highlighter from "./Highlighter";
 import { SENodule } from "@/models/SENodule";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
@@ -7,7 +8,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SELabel } from "@/models/SELabel";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-//import { Group } from "two.js/src/group";
+
 
 export default class HideObjectHandler extends Highlighter {
   /**
@@ -17,7 +18,7 @@ export default class HideObjectHandler extends Highlighter {
   // a map to store (bu SENodule ID) the show or not showing status of the SENodules when the tool is activated.
   private initialShowingMap: Map<number, boolean> = new Map(); //number is the SENodule.id, boolean is the showing value of the SENodule
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
   }
 

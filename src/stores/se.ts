@@ -43,8 +43,10 @@ import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLength
 import { Ref, ref } from "vue";
 import { defineStore } from "pinia";
 import { Matrix4, Vector3 } from "three";
-import Two from "two.js";
+//import Two from "two.js";
+import { Group } from "two.js/src/group"
 import { computed } from "vue";
+import { Vector } from "two.js/src/vector";
 
 const sePencils: Array<SEPencil> = [];
 const oldSelectedSENodules: Map<number, SENodule> = new Map();
@@ -336,7 +338,7 @@ function findClosedSegmentChainLength(segmentArr: Array<SESegment>): number[] {
 
 // WARNING: Making the following variables reactive caused runtime error in SphereFrame.vue
 /* BEGIN Non-Reactive variables */
-let layers: Array<Two.Group> = [];
+let layers: Array<Group> = [];
 const seAngleMarkerMap: Map<number, SEAngleMarker> = new Map();
 const seCircleMap: Map<number, SECircle> = new Map();
 const seEllipseMap: Map<number, SEEllipse> = new Map();
@@ -465,7 +467,7 @@ export const useSEStore = defineStore("se", () => {
     // because the constructors of the tools (handlers) place the temporary Nodules
     // in this array *before* the this.init is called in App.vue mount.
   }
-  function setLayers(grp: Array<Two.Group>): void {
+  function setLayers(grp: Array<Group>): void {
     // layers.splice(0);
     // layers.push(...grp);
     layers = grp;
@@ -1253,7 +1255,7 @@ export const useSEStore = defineStore("se", () => {
   function findNearbySENodules(
     unitIdealVector: Vector3,
     // eslint-disable-next-line no-unused-vars
-    screenPosition: Two.Vector
+    screenPosition: Vector
   ): SENodule[] {
     return seNodules.value.filter((obj: SENodule) => {
       return obj.isHitAt(unitIdealVector, zoomMagnificationFactor.value);

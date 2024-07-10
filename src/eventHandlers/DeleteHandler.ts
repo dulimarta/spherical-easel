@@ -7,8 +7,8 @@ import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEPoint } from "@/models/SEPoint";
 import EventBus from "@/eventHandlers/EventBus";
-import Two from "two.js";
-//import { Group } from "two.js/src/group";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 import { ChangeIntersectionPointPrincipleParent } from "@/commands/ChangeIntersectionPointPrincipleParent";
 import i18n from "@/i18n";
 import { RemoveIntersectionPointOtherParent } from "@/commands/RemoveIntersectionPointOtherParent";
@@ -35,7 +35,7 @@ export default class DeleteHandler extends Highlighter {
   private beforeDeleteStateMap: Map<number, ObjectState> = new Map(); //number is the SENodule.id
   private beforeDeleteSENoduleIDList: number[] = [];
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
   }
 

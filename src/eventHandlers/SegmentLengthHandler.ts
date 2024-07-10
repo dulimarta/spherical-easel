@@ -1,4 +1,5 @@
-import Two from "two.js";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 import Highlighter from "./Highlighter";
 import { SESegment } from "@/models/SESegment";
 import { AddLengthMeasurementCommand } from "@/commands/AddLengthMeasurementCommand";
@@ -11,10 +12,10 @@ import { StyleCategory } from "@/types/Styles";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { LabelDisplayMode, ValueDisplayMode } from "@/types";
 import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
-// import { Group } from "two.js/src/group";
+
 
 export default class SegmentLengthHandler extends Highlighter {
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
   }
 

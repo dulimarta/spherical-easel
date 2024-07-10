@@ -3,7 +3,6 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import EventBus from "@/eventHandlers/EventBus";
 import Highlighter from "./Highlighter";
 import { Vector3 } from "three";
-import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
 import { SEEllipse } from "@/models/SEEllipse";
@@ -16,11 +15,13 @@ import SETTINGS, { LAYER } from "@/global-settings";
 import { SelectionRectangle } from "@/plottables/SelectionRectangle";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SELabel } from "@/models/internal";
-// import { Group } from "two.js/src/group";
-// import { Vector } from "two.js/src/vector";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
+import { Vector } from "two.js/src/vector";
+
 const MESHSIZE = 10;
 const sphereVector = new Vector3();
-const screenVector = new Two.Vector(0, 0);
+const screenVector = new Vector(0, 0);
 
 export default class SelectionHandler extends Highlighter {
   /**
@@ -50,7 +51,7 @@ export default class SelectionHandler extends Highlighter {
   private keyPressSelection: SENodule[] = [];
   // private _disableKeyHandler = false;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     this.selectionRectangle = new SelectionRectangle(
       layers[LAYER.foregroundText]

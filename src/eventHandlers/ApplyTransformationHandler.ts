@@ -28,7 +28,7 @@ import Parametric from "@/plottables/Parametric";
 import Point from "@/plottables/Point";
 import Segment from "@/plottables/Segment";
 import { Vector3, Matrix4 } from "three";
-import Two from "two.js";
+//import Two from "two.js";
 import EventBus from "./EventBus";
 import Highlighter from "./Highlighter";
 import { AddIsometrySegmentCommand } from "@/commands/AddIsometrySegmentCommand";
@@ -52,6 +52,7 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 //import { Group } from "two.js/src/group";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { Group } from "two.js/src/group";
 
 export default class ApplyTransformationHandler extends Highlighter {
   /** The transformation that is being applied */
@@ -88,7 +89,7 @@ export default class ApplyTransformationHandler extends Highlighter {
   private tmpVector2 = new Vector3();
   private tmpMatrix = new Matrix4();
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     // Set the style using the temporary defaults
     this.temporaryPoint1 = new Point();

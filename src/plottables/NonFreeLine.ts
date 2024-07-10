@@ -64,11 +64,11 @@ export default class NonFreeLine extends Line {
     const backStyle = this.styleOptions.get(StyleCategory.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
     const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
-    this.frontHalf.linewidth =
+    this._frontHalf.linewidth =
       ((Line.currentLineStrokeWidthFront * frontStrokeWidthPercent) / 100) *
       (this.nonFreeLineScalePercent / 100);
     //console.debug("  linewidth", this.frontHalf.linewidth);
-    this.backHalf.linewidth =
+    this._backHalf.linewidth =
       ((Line.currentLineStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
@@ -76,12 +76,12 @@ export default class NonFreeLine extends Line {
         100) *
       (this.nonFreeLineScalePercent / 100);
 
-    this.glowingFrontHalf.linewidth =
+    this._glowingFrontHalf.linewidth =
       ((Line.currentGlowingLineStrokeWidthFront * frontStrokeWidthPercent) /
         100) *
       (this.nonFreeLineScalePercent / 100);
 
-    this.glowingBackHalf.linewidth =
+    this._glowingBackHalf.linewidth =
       ((Line.currentGlowingLineStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
