@@ -4,7 +4,8 @@ import SETTINGS from "@/global-settings";
 import { StyleOptions, StyleCategory } from "@/types/Styles";
 import { hslaColorType, plottableProperties } from "@/types";
 import { Vector3 } from "three";
-import Two from "two.js";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 import Color from "color";
 
 export enum DisplayStyle {
@@ -58,12 +59,12 @@ export default abstract class Nodule implements Stylable, Resizeable {
    * Add various TwoJS (SVG) elements of this nodule to appropriate layers
    * @param {Group[]} layers
    */
-  abstract addToLayers(layers: Two.Group[]): void;
+  abstract addToLayers(layers: Group[]): void;
 
   /**
    * This operation reverses the action performed by addToLayers()
    */
-  abstract removeFromLayers(layers?: Two.Group[]): void;
+  abstract removeFromLayers(layers?: Group[]): void;
 
   /**This operation constraint the visual properties (linewidth, circle size, etc) when the view is zoomed in/out */
   abstract adjustSize(): void;
@@ -88,6 +89,52 @@ export default abstract class Nodule implements Stylable, Resizeable {
    * an updated object will be rendered correctly
    */
   abstract updateDisplay(): void;
+
+  /**
+   * startPt is a point on the the boundary of the display circle,
+   * this method returns an ordered list of numPoints points from startPoint for and
+   * angular length of angularLength in the direction of yAxis.
+   * This returns an array of point on the boundary circle so that the angle subtended at the origin between
+   * any two consecutive ones is equal and equal to the angle between the first returned to startPt. The last one is
+   * a equal measure less than angularLength
+   *
+   * yAxis must be perpendicular to startPt
+   *
+   * Used in Circle.ts and Polygon.ts
+   */
+  static boundaryCircleCoordinates(
+    startPt: number[],
+    numPoints: number,
+    yAxis: number[],
+    angularLength: number
+  ): number[][] {
+    const xAxisVector = new Vector3(startPt[0], startPt[1], 0).normalize();
+    const yAxisVector = new Vector3(yAxis[0], yAxis[1], 0).normalize();
+    const returnArray = [];
+    const tmpVector = new Vector3();
+
+    for (let i = 0; i < numPoints; i++) {
+      tmpVector.set(0, 0, 0);
+      tmpVector.addScaledVector(
+        xAxisVector,
+        Math.cos((i + 1) * (angularLength / (numPoints + 1)))
+      );
+      tmpVector.addScaledVector(
+        yAxisVector,
+        Math.sin((i + 1) * (angularLength / (numPoints + 1)))
+      );
+      // now scale to the radius of the boundary circle
+      tmpVector.normalize().multiplyScalar(SETTINGS.boundaryCircle.radius);
+
+      returnArray.push([tmpVector.x, tmpVector.y]);
+    }
+    return returnArray;
+  }
+
+  // The cotangent function used in Circle and Anglemarker
+  static ctg(x: number): number {
+    return 1 / Math.tan(x);
+  }
 
   static setBackStyleContrast(contrast: number): void {
     this.globalBackStyleContrast = contrast;

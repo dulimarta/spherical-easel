@@ -9,12 +9,12 @@ import {
   DEFAULT_ELLIPSE_FRONT_STYLE,
   DEFAULT_ELLIPSE_BACK_STYLE
 } from "@/types/Styles";
-import Two from "two.js";
-// import { Path } from "two.js/src/path";
-// import { Stop } from "two.js/src/effects/stop";
-// import { RadialGradient } from "two.js/src/effects/radial-gradient";
-// import { Anchor } from "two.js/src/anchor";
-// import { Group } from "two.js/src/group";
+//import Two from "two.js";
+import { Path } from "two.js/src/path";
+import { Stop } from "two.js/src/effects/stop";
+import { RadialGradient } from "two.js/src/effects/radial-gradient";
+import { Anchor } from "two.js/src/anchor";
+import { Group } from "two.js/src/group";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -89,21 +89,21 @@ export default class Ellipse extends Nodule {
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.
    */
-  protected frontPart: Two.Path;
-  protected backPart: Two.Path;
-  protected glowingFrontPart: Two.Path;
-  protected glowingBackPart: Two.Path;
+  protected frontPart: Path;
+  protected backPart: Path;
+  protected glowingFrontPart: Path;
+  protected glowingBackPart: Path;
 
   /**
    * The TwoJS objects to display the front/back fill. These are different than the front/back parts
    *  because when the circle is dragged between the front and back, the fill region includes some
    *  of the boundary circle and is therefore different from the front/back parts.
    */
-  protected frontFill: Two.Path;
-  protected backFill: Two.Path;
+  protected frontFill: Path;
+  protected backFill: Path;
 
   /**Create a storage path for unused anchors in the case that the boundary circle doesn't intersect the circle*/
-  private fillStorageAnchors: Two.Anchor[] = [];
+  private fillStorageAnchors: Anchor[] = [];
 
   /**
    * The styling variables for the drawn circle. The user can modify these.
@@ -116,31 +116,31 @@ export default class Ellipse extends Nodule {
   /**
    * The stops and gradient for front/back fill
    */
-  private frontGradientColorCenter = new Two.Stop(
+  private frontGradientColorCenter = new Stop(
     0,
     SETTINGS.fill.frontWhite,
     1
   );
-  private frontGradientColor = new Two.Stop(
+  private frontGradientColor = new Stop(
     2 * SETTINGS.boundaryCircle.radius,
     SETTINGS.ellipse.drawn.fillColor.front,
     1
   );
 
-  private frontGradient = new Two.RadialGradient(
+  private frontGradient = new RadialGradient(
     SETTINGS.fill.lightSource.x,
     SETTINGS.fill.lightSource.y,
     1 * SETTINGS.boundaryCircle.radius,
     [this.frontGradientColorCenter, this.frontGradientColor]
   );
 
-  private backGradientColorCenter = new Two.Stop(0, SETTINGS.fill.backGray, 1);
-  private backGradientColor = new Two.Stop(
+  private backGradientColorCenter = new Stop(0, SETTINGS.fill.backGray, 1);
+  private backGradientColor = new Stop(
     1 * SETTINGS.boundaryCircle.radius,
     SETTINGS.ellipse.drawn.fillColor.front,
     1
   );
-  private backGradient = new Two.RadialGradient(
+  private backGradient = new RadialGradient(
     -SETTINGS.fill.lightSource.x,
     -SETTINGS.fill.lightSource.y,
     2 * SETTINGS.boundaryCircle.radius,
@@ -218,21 +218,33 @@ export default class Ellipse extends Nodule {
     // frontFillVertices, but it is always true that frontVertices.length + number of non-front/back Vertices + backVertics.length in
     // front|back FillVertices = 4*SUBDIVISIONS+2
     // The non-front|back Vertices are ones on the boundary circle.
-    const frontVertices: Two.Vector[] = [];
+    const frontVertices: Anchor[] = [];
     for (let k = 0; k < SUBDIVISIONS; k++) {
-      // Create Vectors for the paths that will be cloned later
-      frontVertices.push(new Two.Vector(0, 0));
+      // Create Anchors for the paths that will be duplicated later
+      frontVertices.push(new Anchor(0, 0));
     }
-    this.frontPart = new Two.Path(
+    this.frontPart = new Path(
       frontVertices,
       /*closed*/ false,
       /*curve*/ false
     );
 
-    // Clone the glowing/back/fill parts.
-    this.glowingFrontPart = this.frontPart.clone();
-    this.backPart = this.frontPart.clone();
-    this.glowingBackPart = this.frontPart.clone();
+    // Create the glowing/back/fill parts.
+    this.glowingFrontPart = new Path(
+      frontVertices,
+      /*closed*/ false,
+      /*curve*/ false
+    );
+    this.backPart = new Path(
+      frontVertices,
+      /*closed*/ false,
+      /*curve*/ false
+    );
+    this.glowingBackPart = new Path(
+      frontVertices,
+      /*closed*/ false,
+      /*curve*/ false
+    );
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontPart.id), {
@@ -267,18 +279,22 @@ export default class Ellipse extends Nodule {
     // bigger than Pi/2 and there is no front/back part and the ellipse is a 'hole')
     // anchors across both fill regions and the anchorStorage (storage is used when the ellipse doesn't cross a boundary).
 
-    const verticesFill: Two.Vector[] = [];
+    const verticesFill: Anchor[] = [];
     for (let k = 0; k < 2 * SUBDIVISIONS + 1; k++) {
-      verticesFill.push(new Two.Vector(0, 0));
+      verticesFill.push(new Anchor(0, 0));
     }
-    this.frontFill = new Two.Path(
+    this.frontFill = new Path(
       verticesFill,
       /* closed */ true,
       /* curve */ false
     );
 
     // create the back part
-    this.backFill = this.frontFill.clone();
+    this.backFill = this.frontFill = new Path(
+      verticesFill,
+      /* closed */ true,
+      /* curve */ false
+    );
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this.frontFill.id), {
@@ -454,7 +470,7 @@ export default class Ellipse extends Nodule {
     // Each front/back fill path will pull anchor points from
     // this pool as needed
     // any remaining are put in storage
-    const pool: Two.Anchor[] = [];
+    const pool: Anchor[] = [];
     pool.push(...this.frontFill.vertices.splice(0));
     pool.push(...this.backFill.vertices.splice(0));
     pool.push(...this.fillStorageAnchors.splice(0));
@@ -466,7 +482,7 @@ export default class Ellipse extends Nodule {
     // The ellipse interior is only on the front of the sphere (recall that  a and b are both either bigger than Pi/2 or both less, no mixing)
     if (backLen === 0 && this._a < Math.PI / 2) {
       // In this case the frontFillVertices are the same as the frontVertices
-      this.frontPart.vertices.forEach((v: Two.Anchor) => {
+      this.frontPart.vertices.forEach((v: Anchor) => {
         if (posIndexFill === this.frontFill.vertices.length) {
           //add a vector from the pool
           this.frontFill.vertices.push(pool.pop()!);
@@ -533,7 +549,7 @@ export default class Ellipse extends Nodule {
       );
 
       // Build the frontFill- first add the frontPart.vertices
-      this.frontPart.vertices.forEach((node: Two.Anchor) => {
+      this.frontPart.vertices.forEach((node: Anchor) => {
         if (posIndexFill === this.frontFill.vertices.length) {
           //add a vector from the pool
           this.frontFill.vertices.push(pool.pop()!);
@@ -555,7 +571,7 @@ export default class Ellipse extends Nodule {
       // console.log("posIndex", posIndexFill, " of ", 4 * SUBDIVISIONS + 2);
       // console.log("pool size", pool.length);
       // Build the backFill- first add the backPart.vertices
-      this.backPart.vertices.forEach((node: Two.Anchor) => {
+      this.backPart.vertices.forEach((node: Anchor) => {
         if (negIndexFill === this.backFill.vertices.length) {
           //add a vector from the pool
           this.backFill.vertices.push(pool.pop()!);
@@ -584,7 +600,7 @@ export default class Ellipse extends Nodule {
     else if (frontLen === 0 && this._a < Math.PI / 2) {
       //
       // In this case the backFillVertices are the same as the backVertices
-      this.backPart.vertices.forEach((v: Two.Anchor) => {
+      this.backPart.vertices.forEach((v: Anchor) => {
         if (negIndexFill === this.backFill.vertices.length) {
           //add a vector from the pool
           this.backFill.vertices.push(pool.pop()!);
@@ -650,7 +666,7 @@ export default class Ellipse extends Nodule {
       negIndexFill++;
 
       // now add the backPart vertices
-      this.backPart.vertices.forEach((v: Two.Anchor, index: number) => {
+      this.backPart.vertices.forEach((v: Anchor, index: number) => {
         if (negIndexFill === this.backFill.vertices.length) {
           //add a vector from the pool
           this.backFill.vertices.push(pool.pop()!);
@@ -722,7 +738,7 @@ export default class Ellipse extends Nodule {
       posIndexFill++;
 
       // now add the frontPart vertices
-      this.frontPart.vertices.forEach((v: Two.Anchor, index: number) => {
+      this.frontPart.vertices.forEach((v: Anchor, index: number) => {
         if (posIndexFill === this.frontFill.vertices.length) {
           //add a vector from the pool
           this.frontFill.vertices.push(pool.pop()!);
@@ -880,99 +896,12 @@ export default class Ellipse extends Nodule {
     // apply the new color variables to the object
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
-  /**
-   * This method is used to copy the temporary ellipse created with the Ellipse Tool (in the midground) into a
-   * permanent one in the scene (in the foreground).
-   */
-  clone(): this {
-    // Use the constructor for this class to create a template to copy over the
-    // values from the current (the `this`) Circle object
-    const dup = new Ellipse(this.name);
-    dup._focus1Vector.copy(this._focus1Vector);
-    dup._focus2Vector.copy(this._focus2Vector);
-    dup._a = this._a;
-    dup._b = this._b;
-
-    // Duplicate the non-glowing parts
-    dup.frontPart.closed = this.frontPart.closed;
-    // dup.frontPart["_closed"] = this.frontPart["_closed"];
-    dup.frontPart.rotation = this.frontPart.rotation;
-    dup.frontPart.translation.copy(this.frontPart.translation);
-    dup.backPart.closed = this.backPart.closed;
-    // dup.backPart["_closed"] = this.backPart["_closed"];
-    dup.backPart.rotation = this.backPart.rotation;
-    dup.backPart.translation.copy(this.backPart.translation);
-
-    // Duplicate the glowing parts
-    dup.glowingFrontPart.closed = this.glowingFrontPart.closed;
-    // dup.glowingFrontPart["_closed"] = this.glowingFrontPart["_closed"];
-    dup.glowingFrontPart.rotation = this.glowingFrontPart.rotation;
-    dup.glowingFrontPart.translation.copy(this.glowingFrontPart.translation);
-    dup.glowingBackPart.closed = this.glowingBackPart.closed;
-    //dup.glowingBackPart["_closed"] = this.glowingBackPart["_closed"];
-    dup.glowingBackPart.rotation = this.glowingBackPart.rotation;
-    dup.glowingBackPart.translation.copy(this.glowingBackPart.translation);
-
-    // The clone (i.e. dup) initially has equal number of vertices for the front and back part
-    //  so adjust to match `this`. If one of the this.front or this.back has more vertices then
-    //  the corresponding dup part, then remove the excess vertices from the one with more and
-    //  move them to the other
-    while (dup.frontPart.vertices.length > this.frontPart.vertices.length) {
-      // Transfer from frontPart to backPart
-      dup.backPart.vertices.push(dup.frontPart.vertices.pop()!);
-      dup.glowingBackPart.vertices.push(dup.glowingFrontPart.vertices.pop()!);
-    }
-    while (dup.backPart.vertices.length > this.backPart.vertices.length) {
-      // Transfer from backPart to frontPart
-      dup.frontPart.vertices.push(dup.backPart.vertices.pop()!);
-      dup.glowingFrontPart.vertices.push(dup.glowingBackPart.vertices.pop()!);
-    }
-    // After the above two while statement execute this. glowing/not front/back and dup. glowing/not front/back are the same length
-    // Now we can copy the vertices from the this.front/back to the dup.front/back
-    dup.frontPart.vertices.forEach((v: Two.Anchor, pos: number) => {
-      v.copy(this.frontPart.vertices[pos]);
-    });
-    dup.backPart.vertices.forEach((v: Two.Anchor, pos: number) => {
-      v.copy(this.backPart.vertices[pos]);
-    });
-    dup.glowingFrontPart.vertices.forEach((v: Two.Anchor, pos: number) => {
-      v.copy(this.glowingFrontPart.vertices[pos]);
-    });
-    dup.glowingBackPart.vertices.forEach((v: Two.Anchor, pos: number) => {
-      v.copy(this.glowingBackPart.vertices[pos]);
-    });
-
-    //Clone the front/back fill
-    // #frontFill + #backFill + #storage = constant at all times
-    const poolFill = [];
-    poolFill.push(...dup.frontFill.vertices.splice(0));
-    poolFill.push(...dup.backFill.vertices.splice(0));
-    poolFill.push(...dup.fillStorageAnchors.splice(0));
-
-    while (dup.frontFill.vertices.length < this.frontFill.vertices.length) {
-      dup.frontFill.vertices.push(poolFill.pop()!);
-    }
-    while (dup.backFill.vertices.length < this.backFill.vertices.length) {
-      dup.backFill.vertices.push(poolFill.pop()!);
-    }
-    dup.fillStorageAnchors.push(...poolFill.splice(0));
-
-    dup.frontFill.vertices.forEach((v: Two.Anchor, pos: number) => {
-      v.copy(this.frontFill.vertices[pos]);
-    });
-
-    dup.backFill.vertices.forEach((v: Two.Anchor, pos: number) => {
-      v.copy(this.backFill.vertices[pos]);
-    });
-
-    return dup as this;
-  }
 
   /**
    * Adds the front/back/glowing/not parts to the correct layers
    * @param layers
    */
-  addToLayers(layers: Two.Group[]): void {
+  addToLayers(layers: Group[]): void {
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
     this.frontFill.addTo(layers[LAYER.foregroundFills]);
@@ -983,7 +912,7 @@ export default class Ellipse extends Nodule {
     this.glowingBackPart.addTo(layers[LAYER.backgroundGlowing]);
   }
 
-  removeFromLayers(/*layers: Two.Group[]*/): void {
+  removeFromLayers(/*layers: Group[]*/): void {
     this.frontPart.remove();
     this.frontFill.remove();
     this.glowingFrontPart.remove();

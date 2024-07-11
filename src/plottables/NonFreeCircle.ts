@@ -64,11 +64,11 @@ export default class NonFreeCircle extends Circle {
     const backStyle = this.styleOptions.get(StyleCategory.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
     const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
-    this.frontPart.linewidth =
+    this._frontPart.linewidth =
       ((Circle.currentCircleStrokeWidthFront * frontStrokeWidthPercent) / 100) *
       (this.nonFreeCircleScalePercent / 100);
 
-    this.backPart.linewidth =
+    this._backPart.linewidth =
       ((Circle.currentCircleStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
@@ -76,12 +76,12 @@ export default class NonFreeCircle extends Circle {
         100) *
       (this.nonFreeCircleScalePercent / 100);
 
-    this.glowingFrontPart.linewidth =
+    this._glowingFrontPart.linewidth =
       ((Circle.currentGlowingCircleStrokeWidthFront * frontStrokeWidthPercent) /
         100) *
       (this.nonFreeCircleScalePercent / 100);
 
-    this.glowingBackPart.linewidth =
+    this._glowingBackPart.linewidth =
       ((Circle.currentGlowingCircleStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)

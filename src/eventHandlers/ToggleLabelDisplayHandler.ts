@@ -1,4 +1,4 @@
-import Two from "two.js";
+
 import Highlighter from "./Highlighter";
 import { SELabel } from "@/models/SELabel";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
@@ -7,7 +7,8 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SENodule } from "@/models/SENodule";
 import { Labelable } from "@/types";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-// import { Group } from "two.js/src/group";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 
 export default class ToggleLabelDisplayHandler extends Highlighter {
   /**
@@ -15,7 +16,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
    */
   private label: SELabel | null = null;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
   }
 

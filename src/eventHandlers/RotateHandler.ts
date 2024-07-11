@@ -1,4 +1,5 @@
-import Two from "two.js";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 import { Matrix4, Vector3 } from "three";
 import EventBus from "./EventBus";
 import { RotateSphereCommand } from "@/commands/RotateSphereCommand";
@@ -11,7 +12,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import i18n from "../i18n";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SECircle } from "@/models/SECircle";
-// import { Group } from "two.js/src/group";
+
 
 const desiredZAxis = new Vector3();
 const deltaT = 1000 / SETTINGS.rotate.momentum.framesPerSecond; // The momentum rotation is refreshed every deltaT milliseconds
@@ -91,7 +92,7 @@ export default class RotateHandler extends Highlighter {
   // private tempVector2 = new Vector3();
   // private _disableKeyHandler = false;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
   }
 

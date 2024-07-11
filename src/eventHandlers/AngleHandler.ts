@@ -16,11 +16,12 @@ import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDi
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AngleMode } from "@/types";
 import { AddAngleMarkerCommand } from "@/commands/AddAngleMarkerAndExpressionCommand";
-import Two from "two.js";
-//import { Group } from "two.js/src/group";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SENodule } from "@/models/internal";
 
 enum HighlightMode {
   NONE,
@@ -117,7 +118,7 @@ export default class AngleHandler extends Highlighter {
    */
   private makingAnAngleMarker = false;
 
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     // console.log("AngleHandler ctor");
 
@@ -848,10 +849,11 @@ export default class AngleHandler extends Highlighter {
               this.temporaryFirstPoint.positionVector,
               this.temporarySecondPoint.positionVector,
               this.currentSphereVector,
-              AngleMarker.currentAngleMarkerRadius
+              AngleMarker.currentRadius
             );
 
             this.temporaryAngleMarker.updateDisplay();
+            this.temporaryAngleMarker.normalDisplay(); // if we don't do this the tick mark and all (front/back) angle markers are displayed on top of each other
             break;
         }
       }
@@ -1129,8 +1131,14 @@ export default class AngleHandler extends Highlighter {
     angleMarkerCommandGroup.execute();
 
     // Update the display of the new angle marker
-    newSEAngleMarker.markKidsOutOfDate();
-    newSEAngleMarker.update();
+    EventBus.fire("update-two-instance", {}); //IS THERE A BETTER WAY?
+    newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
+    // The labels on any newly created points will be incorrect unless we update all the parents.
+    newSEAngleMarker.parents.forEach((par:SENodule)=>{
+      par.markKidsOutOfDate()
+      par.update()
+    })
+
 
     return true;
   }
@@ -1248,8 +1256,9 @@ export default class AngleHandler extends Highlighter {
       this.targetLines[1]
     ).execute();
     // Update the display of the new angle marker
-    newSEAngleMarker.markKidsOutOfDate();
-    newSEAngleMarker.update();
+    EventBus.fire("update-two-instance", {}); //IS THERE A BETTER WAY?
+    newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
+
     return true;
   }
 
@@ -1357,8 +1366,8 @@ export default class AngleHandler extends Highlighter {
     ).execute();
 
     // Update the display of the new angle marker
-    newSEAngleMarker.markKidsOutOfDate();
-    newSEAngleMarker.update();
+    EventBus.fire("update-two-instance", {}); //IS THERE A BETTER WAY?
+    newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
     return true;
   }
 
@@ -1496,8 +1505,8 @@ export default class AngleHandler extends Highlighter {
       this.targetSegments[0]
     ).execute();
     // Update the display of the new angle marker
-    newSEAngleMarker.markKidsOutOfDate();
-    newSEAngleMarker.update();
+    EventBus.fire("update-two-instance", {}); //IS THERE A BETTER WAY?
+    newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
     return true;
   }
 }

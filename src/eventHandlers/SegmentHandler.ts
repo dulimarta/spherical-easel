@@ -16,10 +16,11 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 import Two from "two.js";
-// import { Group } from "two.js/src/group";
+import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import Settings from "@/views/Settings.vue";
 
 export default class SegmentHandler extends Highlighter {
   /**
@@ -33,6 +34,7 @@ export default class SegmentHandler extends Highlighter {
   private startSEPoint: SEPoint | null = null;
   private endSEPoint: SEPoint | null = null;
   private startSEPointOneDimensionalParent: SEOneOrTwoDimensional | null = null;
+
   /**
    * The arcLength of the segment
    */
@@ -94,11 +96,18 @@ export default class SegmentHandler extends Highlighter {
   private tmpVector1 = new Vector3();
   private tmpVector2 = new Vector3();
   private tmpVector3 = new Vector3();
+
+  /**
+   * If turnOffLongerThanPi is true, then next call to setArcLengthAndNormalVector, this.longerThanPi is set to false and turnOffLongerThanPi is set to false
+   * turnOffLongerThanPi is set to true the first time the ctrl key is pushed and the mouse is moved.
+   */
+  private turnOffLongerThanPi = false;
+
   /**
    * Make a segment handler
    * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
    */
-  constructor(layers: Two.Group[]) {
+  constructor(layers: Group[]) {
     super(layers);
     this.temporarySegment = new Segment();
     SegmentHandler.store.addTemporaryNodule(this.temporarySegment);
@@ -234,6 +243,7 @@ export default class SegmentHandler extends Highlighter {
     // The user can create points  on ellipse, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
+
     if (this.hitSEPoints.length > 0) {
       this.hitSEPoints[0].glowing = true;
       if (!this.startLocationSelected) {
@@ -415,9 +425,9 @@ export default class SegmentHandler extends Highlighter {
         this.temporarySegment.arcLength = this.arcLength;
         this.temporarySegment.normalVector = this.normalVector;
         this.temporarySegment.updateDisplay();
+        this.temporarySegment.setVisible(true); //turns off the display of unused two.js portions of the temporary segment (in the non-temporary segments, setVisible is repeatedly called)
       }
-    }
-    else if (this.isTemporaryStartMarkerAdded) {
+    } else if (this.isTemporaryStartMarkerAdded) {
       // Remove the temporary objects from the display.
       this.temporarySegment.removeFromLayers();
       this.temporaryStartMarker.removeFromLayers();
@@ -585,6 +595,7 @@ export default class SegmentHandler extends Highlighter {
       this.temporarySegment.arcLength = this.arcLength;
       this.temporarySegment.normalVector = this.normalVector;
       this.temporarySegment.updateDisplay();
+      this.temporarySegment.setVisible(true); //turns off the display of unused two.js portions of the temporary segment (in the non-temporary segments, setVisible is repeatedly called)
 
       if (
         (this.endSEPoint instanceof SEIntersectionPoint &&
@@ -745,6 +756,7 @@ export default class SegmentHandler extends Highlighter {
       this.temporarySegment.arcLength = this.arcLength;
       this.temporarySegment.normalVector = this.normalVector;
       this.temporarySegment.updateDisplay();
+      this.temporarySegment.setVisible(true); //turns off the display of unused two.js portions of the temporary segment (in the non-temporary segments, setVisible is repeatedly called)
 
       // make sure that this segment hasn't been added before
       if (
@@ -796,7 +808,7 @@ export default class SegmentHandler extends Highlighter {
       ) {
         return false;
       }
-      // Clone the temporary segment and mark it removed from the scene,
+      // Make a new segment from the temporary one and mark it removed from the scene,
       this.isTemporarySegmentAdded = false;
 
       const newSESegment = new SESegment(
@@ -807,7 +819,9 @@ export default class SegmentHandler extends Highlighter {
       );
       newSESegment.shallowUpdate();
       // Create Plottable Label
-      const newSELabel = newSESegment.attachLabelWithOffset(new Vector3(0, SETTINGS.segment.initialLabelOffset, 0))
+      const newSELabel = newSESegment.attachLabelWithOffset(
+        new Vector3(0, SETTINGS.segment.initialLabelOffset, 0)
+      );
 
       segmentGroup.addCommand(
         new AddSegmentCommand(
@@ -831,12 +845,12 @@ export default class SegmentHandler extends Highlighter {
           } else {
             // Create the plottable label
             const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
-                new Vector3(
-                  2 * SETTINGS.segment.initialLabelOffset,
-                  SETTINGS.segment.initialLabelOffset,
-                  0
-                )
+              new Vector3(
+                2 * SETTINGS.segment.initialLabelOffset,
+                SETTINGS.segment.initialLabelOffset,
+                0
               )
+            );
 
             segmentGroup.addCommand(
               new AddIntersectionPointCommand(
@@ -896,37 +910,39 @@ export default class SegmentHandler extends Highlighter {
     // Set the arc length of the segment temporarily to the angle between start and end vectors (always less than Pi)
     this.arcLength = this.startVector.angleTo(endVector);
 
-    // Check to see if the longThanPi variable needs updating.
-    if (this.startVector.angleTo(endVector) > 2) {
-      // The startVector and endVector might be antipodal proceed with caution,
-      // // Set tmpVector to the antipode of the start Vector
-      // this.tmpVector.copy(this.startVector).multiplyScalar(-1);
-      // if (
-      //   this.tmpVector.angleTo(endVector) * SETTINGS.boundaryCircle.radius <
-      //   SETTINGS.nearlyAntipodalPixel
-      // ) {
-      if (
-        this.tmpVector
-          .crossVectors(this.startVector, endVector)
-          .isZero(SETTINGS.nearlyAntipodalIdeal)
-      ) {
-        // The points are antipodal on the screen
-        this.nearlyAntipodal = true;
-      } else {
-        if (this.nearlyAntipodal) {
-          this.longerThanPi = !this.longerThanPi;
-        }
-        this.nearlyAntipodal = false;
-      }
-    }
     // The user can override this algorithm and make the segment longer than PI
     if (ctrlPressed) {
       this.longerThanPi = true;
+      this.turnOffLongerThanPi = true;
     } else {
-      // Without this else statement once the user presses ctrl, then can't get back to less than pi length
-      // this way when the user releases the length is less than pi.
-      this.longerThanPi = false;
+       // this way when the user releases the length is less than pi.
+      // Check to see if the longThanPi variable needs updating.
+      if (this.arcLength > 2) {
+        // The startVector and endVector might be antipodal proceed with caution,
+        if (
+          this.tmpVector
+            .crossVectors(this.startVector, endVector)
+            .isZero(
+              SETTINGS.nearlyAntipodalIdeal * SETTINGS.boundaryCircle.radius
+            )
+          // multiply by the boundary circle radius because start/end vector are
+          // *screen* vectors and the tolerance to be zero must be larger for them
+        ) {
+          // The points are antipodal on the screen
+          this.nearlyAntipodal = true;
+        } else {
+          if (this.nearlyAntipodal) {
+            this.longerThanPi = !this.longerThanPi;
+          }
+          this.nearlyAntipodal = false;
+        }
+      }
+      if (this.turnOffLongerThanPi) {
+        this.longerThanPi = false;
+        this.turnOffLongerThanPi = false;
+      }
     }
+
     // Update the arcLength based on longThanPi
     if (this.longerThanPi) {
       this.arcLength = 2 * Math.PI - this.arcLength;

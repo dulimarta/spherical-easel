@@ -1,7 +1,7 @@
 import { ValueDisplayMode, LabelDisplayMode } from "./types";
 import colors from 'vuetify/util/colors'
 export const SETTINGS = {
-  nearlyAntipodalIdeal: 0.005, // Two unit vectors, U and V, are nearly antipodal or nearly parallel (the) if crossVectors(U,V).isZero(nearlyAntipodalIdeal) is true
+  nearlyAntipodalIdeal: 0.01, // Two unit vectors, U and V, are nearly antipodal or nearly parallel (the) if crossVectors(U,V).isZero(nearlyAntipodalIdeal) is true. June 2024 - when this was 0.005 it was hard to draw a segment of length bigger than pi using the update method in SESegment
   tolerance: 0.00000000001, // Any number less that this tolerance is considered zero
   intersectionTolerance: 0.00000001, // If, when checking the difference between the current intersection location, and the location between two potentially new principle parents intersection the difference is less than this, they are the same
   hideObjectHidesLabel: true, // hiding an object hide the label of that object automatically if this is true
@@ -171,7 +171,6 @@ export const SETTINGS = {
   // #region boundarycircle
   boundaryCircle: {
     radius: 250 /* default radius */,
-    numPoints: 50,
     color: "hsla(0, 0%, 0%, 1)",
     lineWidth: 3
   },
@@ -262,7 +261,7 @@ export const SETTINGS = {
     initialValueDisplayMode: ValueDisplayMode.MultipleOfPi, // Set the initial display of the values for the measurement of the angle
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
     minimumArcLength: 0.045, // Don't create segments with a length less than this (must be larger than point.hitIdealDistance because if not it is possible to create a line segment of length zero )
-    numPoints: 60, // The number of vertices used to render the segment. These are spread over the front and back parts. MAKE THIS EVEN!
+    numPoints: 15, // The number of vertices used to render one part of the segment. All parts (glowing/not front/back part/extra) get this number of verrtices
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the segment.
     closeEnoughToPi: 0.005, //If the arcLength of a segment is within this distance of pi, consider it length pi, so that it is not defined by its endpoints and can be moved
     //dynamicBackStyle is a flag that means the fill color, and stroke of the segments drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
@@ -327,7 +326,7 @@ export const SETTINGS = {
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     minimumLength: 0.045, // Don't create lines distance between the two defining point with arc length between them smaller than this (must be larger than point.hitIdealDistance because if not it is possible to create a line segment of length zero )
-    numPoints: 50, // The number of vertices used to render the line. These are spread over the front and back parts. MAKE THIS EVEN!
+    numPoints: 15, // The twice this number of vertices is used to render the line. This is the number in each of the front and back.
     closeEnoughToPi: 0.005, //If the angle from start to end point of this line is within this value of pi, consider it length pi, so that it is not defined by its start/end points and can be moved
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the line.
     //dynamicBackStyle is a flag that means the fill color, and stroke of the lines drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
@@ -393,7 +392,7 @@ export const SETTINGS = {
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the circle
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     minimumRadius: 0.045, // Don't create circles with a radius smaller than this or bigger than Pi-this (must be bigger than point.hitIdealDistance to prevent almost zero radius circles at intersection points) Also this is the minimum distance between the initial points in a threePointCircle
-    numPoints: 60, // Twice this number are used to draw the edge of the circle and 4 times this many are used to to draw the fill of the circle. These are spread over the front and back parts. MAKE THIS EVEN!
+    numPoints: 40, // This is the number of vertices that are used to draw each front/back arc of the circle, twice this number are used in the front/back fill of the circle (each part contains this many vertices)
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the circle.
     //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the circles drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
@@ -609,7 +608,7 @@ export const SETTINGS = {
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the polygon
     minimumVertexToEdgeThickness: 0.004, // the polygon doesn't exist if distance from any vertex to any non-adjacent edge is less than this.
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
-    numPoints: 60, // The number of extra vertices used to draw the parts of the fill of the polygon that are on the boundary circle. MAKE THIS EVEN!
+    numPoints: 60, // Number vertices used to draw the parts of the fill of the polygon that are on the boundary circle. Half are for front and half for back.
     measuringChangesLabelModeTo: LabelDisplayMode.NameAndValue,
     numberOfTemporaryAngleMarkers: 15, // this is the maximum number of angle markers that will be displayed as the user creates a polygon, the user can create a polygon with more sides that then, but the temporary angle markers will not be display after this number
     //dynamicBackStyle is a flag that means the fill the polygon drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
@@ -659,8 +658,9 @@ export const SETTINGS = {
     turnOffVertexLabelOnCreation: true, // When an angle marker is created with a label at the vertex, that label is turned off if this is set.
     maxGapLengthOrDashLength: 2, // the maximum of the sum of the gap and dash and the endpoint (max value) of the dash range slider
     sliderStepSize: 0.1, //
-    defaultTickMark: false,
-    defaultDoubleArc: false,
+    defaultTickMark: false, // controls if the tick mark is displayed by default (if true tick is displayed until the user turns it off)
+    defaultTickMarkLength: 0.03, // 1/2 is display on the inside of the angle marker and 1/2 out (or if double is on 3/4 displayed after the double mark)
+    defaultDoubleArc: false, // controls if the double mark is displayed by default (if true tick is displayed until the user turns it off)
     defaultRadius: 0.08, // The default radius for angleMarkers
     numCirclePoints: 50, // The number of vertices used to render the circle part of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
     numEdgePoints: 26, // The number of vertices used to render each of the start and end vector edge of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
@@ -678,7 +678,7 @@ export const SETTINGS = {
     arrowHeadTipAngleOuter: (28 * Math.PI) / 180, // the angle between the shaft and the tip edge (half the whole tip angle) away from the angle marker
     arrowHeadRearAngleOuter: (70 * Math.PI) / 180, // the angle between the shaft and the rear edge (half the whole tip angle) away from the angle marker
     arrowHeadLength: 0.01, // the length of the arrow head on the unit ideal sphere, Must be less than the default radius of angle marker
-    arrowHeadDisplay: true,
+    arrowHeadDisplay: true, // Controls if the arrow had is drawn by default (until a user turns it off)
     //The properties of the angleMarker when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
@@ -699,6 +699,10 @@ export const SETTINGS = {
         straight: {
           front: 2,
           back: 1
+        },
+        tick: {
+          front: 3,
+          back: 2
         }
       }, // The thickness of the edge of the angleMarker when drawn front/back,
       dashArray: {
@@ -716,7 +720,8 @@ export const SETTINGS = {
         back: "hsla(0, 100%, 75%, 0.75)"
       },
       circular: { edgeWidth: 5 }, // edgeWidth/2 is the width of the region around the angle (on all sides) that shows the glow
-      straight: { edgeWidth: 2 }
+      straight: { edgeWidth: 2 },
+      tick: { edgeWidth: 2 }
       // The dash pattern will always be the same as the drawn version
     },
     //The properties of the angle marker when it is temporarily shown by the angle measuring tool while drawing
