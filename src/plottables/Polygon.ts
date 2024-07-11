@@ -57,31 +57,43 @@ export default class Polygon extends Nodule {
   /**
    * The stops and gradient for front/back fill
    */
-  private frontGradientColorCenter = new Stop(0, SETTINGS.fill.frontWhite, 1);
+  private frontGradientColorCenter = new Stop(
+    0,
+    SETTINGS.style.fill.frontWhite,
+    1
+  );
   private frontGradientColor = new Stop(
-    2 * SETTINGS.boundaryCircle.radius,
+    SETTINGS.style.fill.gradientPercent,
     SETTINGS.polygon.drawn.fillColor.front,
     1
   );
 
   private frontGradient = new RadialGradient(
-    SETTINGS.fill.lightSource.x,
-    SETTINGS.fill.lightSource.y,
-    1 * SETTINGS.boundaryCircle.radius,
-    [this.frontGradientColorCenter, this.frontGradientColor]
+    SETTINGS.style.fill.center.x,
+    SETTINGS.style.fill.center.y,
+    SETTINGS.boundaryCircle.radius,
+    [this.frontGradientColorCenter, this.frontGradientColor],
+    SETTINGS.style.fill.lightSource.x,
+    SETTINGS.style.fill.lightSource.y
   );
 
-  private backGradientColorCenter = new Stop(0, SETTINGS.fill.backGray, 1);
+  private backGradientColorCenter = new Stop(
+    0,
+    SETTINGS.style.fill.backGray,
+    1
+  );
   private backGradientColor = new Stop(
-    1 * SETTINGS.boundaryCircle.radius,
+    SETTINGS.style.fill.gradientPercent,
     SETTINGS.polygon.drawn.fillColor.back,
     1
   );
   private backGradient = new RadialGradient(
-    -SETTINGS.fill.lightSource.x,
-    -SETTINGS.fill.lightSource.y,
-    2 * SETTINGS.boundaryCircle.radius,
-    [this.backGradientColorCenter, this.backGradientColor]
+    -SETTINGS.style.fill.center.x,
+    -SETTINGS.style.fill.center.y,
+    SETTINGS.boundaryCircle.radius,
+    [this.backGradientColorCenter, this.backGradientColor],
+    -SETTINGS.style.fill.lightSource.x,
+    -SETTINGS.style.fill.lightSource.y
   );
 
   /**
@@ -95,6 +107,10 @@ export default class Polygon extends Nodule {
     segmentFlippedList: boolean[]
   ) {
     super(noduleName);
+
+    this.frontGradient.units = "userSpaceOnUse"; // this means that the gradient uses the coordinates of the layer (but centered on the projection of the circle)
+    this.backGradient.units = "userSpaceOnUse";
+
     this.seEdgeSegments.push(...segmentList);
     this.segmentIsFlipped.push(...segmentFlippedList);
 
@@ -163,7 +179,7 @@ export default class Polygon extends Nodule {
       k <
       (this.seEdgeSegments.length - 2) * 2 * SETTINGS.segment.numPoints +
         2 * 3 * SETTINGS.segment.numPoints +
-        2*BOUNDARYSUBDIVISIONS;
+        2 * BOUNDARYSUBDIVISIONS;
       k++
     ) {
       frontVerticesFill.push(new Anchor(0, 0));
@@ -553,7 +569,7 @@ export default class Polygon extends Nodule {
           // add the boundary vertices from start to end in the direction of toVector
           const boundaryPoints = Nodule.boundaryCircleCoordinates(
             fromVector,
-            Math.floor(angularWidth*BOUNDARYSUBDIVISIONS / (2*Math.PI)),
+            Math.floor((angularWidth * BOUNDARYSUBDIVISIONS) / (2 * Math.PI)),
             toVector,
             angularWidth
           );
@@ -703,7 +719,7 @@ export default class Polygon extends Nodule {
           // add the boundary vertices from start to end in the direction of toVector
           const boundaryPoints = Nodule.boundaryCircleCoordinates(
             fromVector,
-            Math.floor(angularWidth*BOUNDARYSUBDIVISIONS / (2*Math.PI)),
+            Math.floor((angularWidth * BOUNDARYSUBDIVISIONS) / (2 * Math.PI)),
             toVector,
             angularWidth
           );
@@ -1105,7 +1121,7 @@ export default class Polygon extends Nodule {
   stylize(flag: DisplayStyle): void {
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
-        // This should never be executed
+        // This should never be executed there are no temporary polygons
         break;
       }
 
@@ -1118,10 +1134,16 @@ export default class Polygon extends Nodule {
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFills.forEach(fill => fill.noFill());
         } else {
-          this.frontGradientColor.color = frontStyle?.fillColor ?? "black";
-          this.frontFills.forEach(fill => {
-            fill.fill = this.frontGradient;
-          });
+          if (Nodule.globalGradientFill) {
+            this.frontGradientColor.color = frontStyle?.fillColor ?? "black";
+            this.frontFills.forEach(fill => {
+              fill.fill = this.frontGradient;
+            });
+          } else {
+            this.frontFills.forEach(fill => {
+              fill.fill = frontStyle?.fillColor ?? "black";
+            });
+          }
         }
 
         // BACK
@@ -1134,22 +1156,36 @@ export default class Polygon extends Nodule {
           ) {
             this.backFills.forEach(fill => fill.noFill());
           } else {
-            this.backGradientColor.color = Nodule.contrastFillColor(
-              frontStyle?.fillColor ?? "black"
-            );
+            if (Nodule.globalGradientFill) {
+              this.backGradientColor.color = Nodule.contrastFillColor(
+                frontStyle?.fillColor ?? "black"
+              );
 
-            this.backFills.forEach(fill => {
-              fill.fill = this.backGradient;
-            });
+              this.backFills.forEach(fill => {
+                fill.fill = this.backGradient;
+              });
+            } else {
+              this.backFills.forEach(fill => {
+                fill.fill = Nodule.contrastFillColor(
+                  frontStyle?.fillColor ?? "black"
+                );
+              });
+            }
           }
         } else {
           if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this.backFills.forEach(fill => fill.noFill());
           } else {
-            this.backGradientColor.color = backStyle?.fillColor ?? "black";
-            this.backFills.forEach(fill => {
-              fill.fill = this.backGradient;
-            });
+            if (Nodule.globalGradientFill) {
+              this.backGradientColor.color = backStyle?.fillColor ?? "black";
+              this.backFills.forEach(fill => {
+                fill.fill = this.backGradient;
+              });
+            } else {
+              this.backFills.forEach(fill => {
+                fill.fill = backStyle?.fillColor ?? "black";;
+              });
+            }
           }
         }
         break;

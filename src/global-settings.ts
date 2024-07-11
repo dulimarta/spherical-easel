@@ -143,7 +143,25 @@ export const SETTINGS = {
     selectedColor: {
       front: "hsla(0, 100%, 50%, 0.5)",
       back: "hsla(0, 100%, 50%, 0.3)"
-    }
+    },
+    fill: {
+      // offset for the color fill. At this percent of the radius (boundaryCircle) the fill becomes all the fill color and not a bleed from the center color.
+      gradientPercent: 0.8,
+      // Draw the fills using a gradient or not
+      gradientFill: true,
+      //The location of the light source when shading using a gradient fill (also called the focal point) relative to the center of the boundary circle. This must be in the radius of the gradient fill (which is the boundary circle radius)
+      lightSource: {
+        x: -250 / 3, // 250 is the radius of the boundary circle
+        y: 250 / 3
+      },
+      // The location of the center of the radial fill relative to the center of the boundary circle
+      center: {
+        x:0,
+        y:0
+      },
+      frontWhite: "hsla(0, 0%, 90%, 0.2)", // The light source location on the front is this shade of gray (white)
+      backGray: "hsla(0, 0%, 85%, 0.2)" // The antipode of the light source on the back is this shade of gray
+    },
   },
   zoom: {
     maxMagnification: 10, // The greatest zoom in magnification factor
@@ -158,15 +176,6 @@ export const SETTINGS = {
       framesPerSecond: 30, // The momentum rotation will be updated this many times per second
       pauseTimeToTemporarilyDisableMomentum: 0.25 // if you hold the mousepress this long (in seconds) while dragging the momentum doesn't activate
     }
-  },
-  fill: {
-    //The location of the light source when shading
-    lightSource: {
-      x: -250 / 3,
-      y: 250 / 3
-    },
-    frontWhite: "hsla(0, 0%, 90%, 0.2)", // The light source location on the front is this shade of gray (white)
-    backGray: "hsla(0, 0%, 85%, 0.2)" // The antipode of the light source on the back is this shade of gray
   },
   // #region boundarycircle
   boundaryCircle: {
@@ -199,9 +208,9 @@ export const SETTINGS = {
       },
       fillColor: {
         front: "hsla(0, 100%, 75%, 1)",
-        frontHSLA: { h: 0, s: 100, l: 75, a: 1 },
+        //frontHSLA: { h: 0, s: 100, l: 75, a: 1 },
         back: "hsla(0, 100%, 75%, 1)",
-        backHSLA: { h: 0, s: 100, l: 75, a: 1 }
+        //backHSLA: { h: 0, s: 100, l: 75, a: 1 }
       },
       strokeColor: {
         front: "hsla(240, 55%, 55%, 1)",
@@ -242,7 +251,7 @@ export const SETTINGS = {
       scalePercent: 90, // The percent that the size of the (free) points are scaled by to get the size of the nonFreePoint
       fillColor: {
         front: "hsla(0, 50%, 75%, 1)",
-        frontHSLA: { h: 0, s: 50, l: 75, a: 1 },
+        //frontHSLA: { h: 0, s: 50, l: 75, a: 1 },
         back: "hsla(0, 25%, 75%, 1)"
       },
       strokeColor: {
@@ -399,10 +408,10 @@ export const SETTINGS = {
     //The properties of the circle when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)"
-        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
-        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
-        backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
+        front: "hsla(254, 100%, 90%, 0.25)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)"
+        //frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
+        back: "hsla(10, 100%, 50%, 0.15)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
+       // backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
       },
       strokeColor: {
         front: "hsla(217, 90%, 61%, 1)",
@@ -446,9 +455,9 @@ export const SETTINGS = {
     nonFree: {
       fillColor: {
         front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)"
-        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
+        //frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
         back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
-        backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
+        //backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
       },
       strokeColor: {
         front: "hsla(200, 90%, 61%, 1)",
@@ -479,9 +488,9 @@ export const SETTINGS = {
     drawn: {
       fillColor: {
         front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)",
-        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
+        //frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
         back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
-        backHSLA: { h: 254, s: 100, l: 50, a: 0.1 }
+        //backHSLA: { h: 254, s: 100, l: 50, a: 0.1 }
       },
       strokeColor: {
         front: "hsla(217, 90%, 61%, 1)",
@@ -525,9 +534,9 @@ export const SETTINGS = {
     nonFree: {
       fillColor: {
         front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)"
-        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
+        //frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
         back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
-        backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
+        //backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
       },
       strokeColor: {
         front: "hsla(200, 90%, 61%, 1)",
@@ -617,9 +626,9 @@ export const SETTINGS = {
     drawn: {
       fillColor: {
         front: "hsla(254, 100%, 90%, 0.6)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)",
-        frontHSLA: { h: 254, s: 100, l: 90, a: 0.6 },
+        //frontHSLA: { h: 254, s: 100, l: 90, a: 0.6 },
         back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
-        backHSLA: { h: 10, s: 100, l: 50, a: 0.2 }
+        //backHSLA: { h: 10, s: 100, l: 50, a: 0.2 }
       }
       //  strokeColor is determined by each edge
       // strokeWidth is determined by each edge
@@ -635,9 +644,9 @@ export const SETTINGS = {
     fontSize: 15,
     fillColor: {
       front: "hsla(0, 0%, 0%, 1.0)", //"noFill" is "hsla(0,0%,0%,0)",
-      frontHSLA: { h: 0, s: 0, l: 0, a: 1 },
+      //frontHSLA: { h: 0, s: 0, l: 0, a: 1 },
       back: "hsla(0, 0%, 0%, 0.1)", //"noFill" is "hsla(0,0%,0%,0)"
-      backHSLA: { h: 0, s: 0, l: 0, a: 1 }
+      //backHSLA: { h: 0, s: 0, l: 0, a: 1 }
     },
     style: "normal",
     family: "sans/-serif",
@@ -683,9 +692,9 @@ export const SETTINGS = {
     drawn: {
       fillColor: {
         front: "hsla(254, 100%, 90%, 0.5)", //"noFill" is "hsla(0,0%,0%,0)",0.001
-        frontHSLA: { h: 254, s: 100, l: 90, a: 0.5 },
+        //frontHSLA: { h: 254, s: 100, l: 90, a: 0.5 },
         back: "hsla(10, 100%, 50%, 0.4)", //"hsla(0, 0%, 0%, 1)" //"noFill" is "hsla(0,0%,0%,0)"
-        backHSLA: { h: 10, s: 100, l: 50, a: 0.4 }
+        //backHSLA: { h: 10, s: 100, l: 50, a: 0.4 }
       },
       strokeColor: {
         front: "hsla(0, 0%, 0%, 1)",
@@ -1531,7 +1540,6 @@ export const SETTINGS = {
     maxNumberOfIterationArcLength: 5, // maximum number of times it will iterate over the curve to find the arcLength (i.e. the curve is divided into at most subdivisions*maxNumberOfIterationArcLength subdivisions while looking for the arcLength)
     maxChangeInArcLength: 0.0001 // If the change in arcLength is less than this, return the value
   },
-
   supportedLanguages: [
     { locale: "en", name: "English" },
     { locale: "id", name: "Bahasa Indonesia" }

@@ -36,6 +36,9 @@ export default abstract class Nodule implements Stylable, Resizeable {
    */
   static globalBackStyleContrast = SETTINGS.style.backStyleContrast;
 
+  /** Draw the fills using a gradient or not */
+  static globalGradientFill = SETTINGS.style.fill.gradientFill;
+
   /**
    * A map that lets use look up the properties of a plottable object
    * using only the TwoJS id. Useful in the creation of icons when processing the SVG
@@ -136,6 +139,14 @@ export default abstract class Nodule implements Stylable, Resizeable {
     return 1 / Math.tan(x);
   }
 
+  static setGradientFill(value: boolean): void {
+    this.globalGradientFill = value;
+  }
+
+  static getGradientFill(): boolean {
+    return this.globalGradientFill;
+  }
+
   static setBackStyleContrast(contrast: number): void {
     this.globalBackStyleContrast = contrast;
   }
@@ -143,7 +154,6 @@ export default abstract class Nodule implements Stylable, Resizeable {
   static getBackStyleContrast(): number {
     return this.globalBackStyleContrast;
   }
-
   /**
    * Get the back contrasting style using the value of globalBackStyleContrast
    * Principle:

@@ -17,9 +17,9 @@ export default defineConfig({
     },
     extensions: [".mjs", ".js", ".ts", ".jsx", ".tsx", ".json", ".vue"]
   },
-  // optimizeDeps: {
-  //   exclude: ['fsevents']
-  // },
+  optimizeDeps: {
+    exclude: ['fsevents']
+  },
   plugins: [
     Vue({
       isProduction: false,

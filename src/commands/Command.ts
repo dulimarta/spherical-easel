@@ -121,6 +121,88 @@ export abstract class Command {
     return JSON.stringify(out);
   }
 
+  static dumpSVG():string {
+
+    // create a style dictionary
+    //  (key: id - this would be an object name concat a number like point0,
+    // value: [dictionary with keys: name of attribute, value: string of attribute]
+    //
+    // key: name of attribute (string)
+    // fill
+    // fill-opacity default is 1? so if the opacity is specified in the fill color, the fill color determines the opacity
+    // stroke
+    // stroke-width
+    // stroke-opacity default is 1? so if the opacity is specified in the fill color, the fill color determines the opacity
+    // stroke-linecap
+    // stroke-linejoin
+    // stroke-miterlimit
+    // stroke-dasharray
+    // stroke-dashoffset
+    // font-family
+    // font-size
+    // line-height
+    // text-anchor
+    // dominant-baseline
+    // font-style
+    // font-weight
+    // text-decoration
+    // direction
+    //
+    // value:
+    //   value of attribute (string) -- how do I indicate the default value for each of these attributes?
+    //
+    //  Initially contains the style of the boundary circle
+
+    // create an layer dictionary (key: layer number, like 0 (of type number) corresponding to
+    //
+    // backgroundAngleMarkers,0 --> contains only angle markers (edges and fill)
+    // backgroundFills,3 --> contains circles (fills only), ellipse (fills only), polygon
+    // background,4 --> contains lines, segments, circles (edges only), parametric, ellipse, edges only
+    // backgroundPoints,6 --> only contains points
+    // backgroundText,8 --> only contains labels
+    // midground,9 --> contains only the boundary circle
+    // foregroundAngleMarkers,11 --> contains only angle markers (edges and fill)
+    // foregroundFills,13 --> contains circles (fills only), ellipse (fills only), polygon
+    // foreground,14 --> contains lines, segments, circles (edges only), parametric, ellipse, edges only
+    // foregroundPoints,16 --> only contains points
+    // foregroundText, 18 --> only contains labels
+    //   (notice all the glowing layers have been removed - the SVG export doesn't include any glowing objects)
+    //
+    // value: [dictionary with keys: type of object values: ])
+    //
+    // key: type of object (string)
+    // point
+    // line
+    // segment
+    // circle
+    // polygon
+    // angleMarker
+    // ellipse
+    // parametric
+    // labels
+    //
+    // value is a dictionary of the keys (id-- from creation in SENodule like SENodule.id (node count)) values: list of the 1) the style id and 2) SVG code for that object (includes matrix)
+    //
+    // Don't include visibility - all items are visible if they are in the
+    //
+    //  Initially contains the boundary circle in the midground layer
+
+    // for each command pass the style dictionary and the layer dictionary to the object, the toSVG method in each object adds it self to the layer dictionary and its style to the style dictionary
+
+    // Use the style dictionary to create a string style sheet object that contains selectors like
+    // point0 { stroke: blue; stroke-width: 0.7642135452; fill: none} // don't include attributes that default correctly
+    //
+    // Use the layer dictionary to create is an SVG of the current scene object
+    //
+    //
+    // The id of each layer is the name of the layer (from LAYER enum ,like backgroundAngleMarkersGlowing)
+    // The id of each object in a layer is name of object being display - part xx (there are three parts possible for segment, two for )
+
+
+
+    return "blah"
+  }
+
   static setGlobalStore(store: SEStoreType): void {
     Command.store = store;
   }

@@ -15,6 +15,7 @@ import { Stop } from "two.js/src/effects/stop";
 import { RadialGradient } from "two.js/src/effects/radial-gradient";
 import { Anchor } from "two.js/src/anchor";
 import { Path } from "two.js/src/path";
+import { Vector } from "two.js/src/vector";
 
 // The number of vertices used to draw an arc of a projected circle
 const SUBDIVISIONS = SETTINGS.circle.numPoints;
@@ -120,23 +121,48 @@ export default class Circle extends Nodule {
   /**
    * The stops and gradient for front/back fill
    */
-  private frontGradientColorCenter = new Stop(0, SETTINGS.fill.frontWhite, 1);
+
+  private frontGradientColorCenter = new Stop(
+    0,
+    SETTINGS.style.fill.frontWhite,
+    1
+  );
   private frontGradientColor = new Stop(
-    2 * SETTINGS.boundaryCircle.radius,
+    SETTINGS.style.fill.gradientPercent,
     SETTINGS.circle.drawn.fillColor.front,
     1
   );
 
   private frontGradient = new RadialGradient(
-    SETTINGS.fill.lightSource.x,
-    SETTINGS.fill.lightSource.y,
-    1 * SETTINGS.boundaryCircle.radius,
-    [this.frontGradientColorCenter, this.frontGradientColor]
+    SETTINGS.style.fill.center.x,
+    SETTINGS.style.fill.center.y,
+    SETTINGS.boundaryCircle.radius,
+    [this.frontGradientColorCenter, this.frontGradientColor],
+    SETTINGS.style.fill.lightSource.x,
+    SETTINGS.style.fill.lightSource.y
+  );
+
+  private backGradientColorCenter = new Stop(
+    0,
+    SETTINGS.style.fill.backGray,
+    1
+  );
+  private backGradientColor = new Stop(
+    SETTINGS.style.fill.gradientPercent,
+    SETTINGS.circle.drawn.fillColor.back,
+    1
+  );
+  private backGradient = new RadialGradient(
+    -SETTINGS.style.fill.center.x,
+    -SETTINGS.style.fill.center.y,
+    SETTINGS.boundaryCircle.radius,
+    [this.backGradientColorCenter, this.backGradientColor],
+    -SETTINGS.style.fill.lightSource.x,
+    -SETTINGS.style.fill.lightSource.y
   );
 
   //////////////////// Temp to explore gradients
   // private frontGradientColor = new Stop(0.6, "black", 1);
-
 
   // private frontGradientColorCenter0 = new Stop(0.25, "green", 1);
   // private frontGradientColorCenter = new Stop(0.5, "red", 1);
@@ -150,19 +176,6 @@ export default class Circle extends Nodule {
   // );
 
   ////////////////////
-
-  private backGradientColorCenter = new Stop(0, SETTINGS.fill.backGray, 1);
-  private backGradientColor = new Stop(
-    1 * SETTINGS.boundaryCircle.radius,
-    SETTINGS.circle.drawn.fillColor.back,
-    1
-  );
-  private backGradient = new RadialGradient(
-    -SETTINGS.fill.lightSource.x,
-    -SETTINGS.fill.lightSource.y,
-    2 * SETTINGS.boundaryCircle.radius,
-    [this.backGradientColorCenter, this.backGradientColor]
-  );
 
   // SUBDIVISIONS number of equally spaced coordinates on the boundary circle
   static boundaryVertices: [number[]] = [[]];
@@ -207,7 +220,8 @@ export default class Circle extends Nodule {
     // Set the boundary vertices (only populates Circle.boundaryVertices once)
     Circle.setBoundaryVertices();
 
-    this.frontGradient.units = 'userSpaceOnUse'
+    this.frontGradient.units = "userSpaceOnUse"; // this means that the gradient uses the coordinates of the layer (but centered on the projection of the circle)
+    this.backGradient.units = "userSpaceOnUse";
 
     // Create the glowing/back/fill parts.
     this._frontPart = new Arc(0, 0, 0, 0, 0, 0, SUBDIVISIONS);
@@ -360,7 +374,7 @@ export default class Circle extends Nodule {
       my_diff < Math.PI / 2 &&
       !(Math.PI / 2 < my_sum && my_sum < (3 * Math.PI) / 2)
     ) {
-      //console.log("the circle edge is entirely on the front")
+      // the circle edge is entirely on the front")
       this._frontPart.startAngle = 0;
       this._frontPart.endAngle = 2 * Math.PI;
       this._frontPart.closed = true;
@@ -400,7 +414,7 @@ export default class Circle extends Nodule {
       });
 
       if (this.centerVector.z > 0) {
-        //console.log("The interior of the circle is entirely contained on the front")
+        // The interior of the circle is entirely contained on the front")
         // Nothing needs to be added to the frontFill
 
         // backFill
@@ -408,7 +422,7 @@ export default class Circle extends Nodule {
         this._backFillIsEntireBack = false;
         this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
       } else {
-        // console.log("the circle is a hole on the front, the back is entirely covered")
+        //  the circle is a hole on the front, the back is entirely covered")
 
         // Finish setting the frontFill
         // We need 2*SUBDIVISION +2 anchors for the annular region on the front. Currently there are SUBDIVISION in the front fill
@@ -497,7 +511,7 @@ export default class Circle extends Nodule {
       Math.PI / 2 < my_sum &&
       my_sum < (3 * Math.PI) / 2
     ) {
-      // console.log("the circle edge is entirely on the back")
+      //  the circle edge is entirely on the back")
       this._backPart.startAngle = 0;
       this._backPart.endAngle = 2 * Math.PI;
       this._backPart.closed = true;
@@ -645,7 +659,7 @@ export default class Circle extends Nodule {
       Math.PI / 2 < my_sum &&
       my_sum < (3 * Math.PI) / 2
     ) {
-      //console.log("the circle edge intersects the boundary circle");
+      // the circle edge intersects the boundary circle");
       this._frontPartInUse = true;
       this._backPartInUse = true;
       this._frontFillInUse = true;
@@ -987,8 +1001,13 @@ export default class Circle extends Nodule {
         ) {
           this._frontFill.noFill();
         } else {
-          this.frontGradientColor.color = SETTINGS.circle.temp.fillColor.front;
-          this._frontFill.fill = this.frontGradient;
+          if (Nodule.globalGradientFill) {
+            this.frontGradientColor.color =
+              SETTINGS.circle.temp.fillColor.front;
+            this._frontFill.fill = this.frontGradient;
+          } else {
+            this._frontFill.fill = SETTINGS.circle.temp.fillColor.front;
+          }
         }
         if (
           Nodule.hslaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.front)
@@ -1015,8 +1034,12 @@ export default class Circle extends Nodule {
         ) {
           this._backFill.noFill();
         } else {
-          this.backGradientColor.color = SETTINGS.circle.temp.fillColor.back;
-          this._backFill.fill = this.backGradient;
+          if (Nodule.globalGradientFill) {
+            this.backGradientColor.color = SETTINGS.circle.temp.fillColor.back;
+            this._backFill.fill = this.backGradient;
+          } else {
+            this._backFill.fill = SETTINGS.circle.temp.fillColor.back;
+          }
         }
         if (
           Nodule.hslaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.back)
@@ -1051,9 +1074,14 @@ export default class Circle extends Nodule {
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this._frontFill.noFill();
         } else {
-          this.frontGradientColor.color =
+          if (Nodule.globalGradientFill) {
+            this.frontGradientColor.color =
             frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.front;
           this._frontFill.fill = this.frontGradient;
+          } else {
+            this._frontFill.fill =
+            frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.front;
+          }
         }
 
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
@@ -1082,19 +1110,31 @@ export default class Circle extends Nodule {
           ) {
             this._backFill.noFill();
           } else {
-            this.backGradientColor.color = Nodule.contrastFillColor(
-              frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back
-            );
+            if (Nodule.globalGradientFill) {
+              this.backGradientColor.color = Nodule.contrastFillColor(
+                frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back
+              );
+              this._backFill.fill = this.backGradient;
+            } else {
+              this._backFill.fill = Nodule.contrastFillColor(
+                frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back
+              );
+            }
 
-            this._backFill.fill = this.backGradient;
           }
         } else {
           if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this._backFill.noFill();
           } else {
-            this.backGradientColor.color =
-              backStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back;
-            this._backFill.fill = this.backGradient;
+            if (Nodule.globalGradientFill) {
+              this.backGradientColor.color =
+                backStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back;
+              this._backFill.fill = this.backGradient;
+            } else {
+              this._backFill.fill = Nodule.contrastFillColor(
+                backStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back
+              );
+            }
           }
         }
 

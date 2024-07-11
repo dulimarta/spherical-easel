@@ -118,33 +118,42 @@ export default class Ellipse extends Nodule {
    */
   private frontGradientColorCenter = new Stop(
     0,
-    SETTINGS.fill.frontWhite,
+    SETTINGS.style.fill.frontWhite,
     1
   );
   private frontGradientColor = new Stop(
-    2 * SETTINGS.boundaryCircle.radius,
+    SETTINGS.style.fill.gradientPercent,
     SETTINGS.ellipse.drawn.fillColor.front,
     1
   );
 
   private frontGradient = new RadialGradient(
-    SETTINGS.fill.lightSource.x,
-    SETTINGS.fill.lightSource.y,
-    1 * SETTINGS.boundaryCircle.radius,
-    [this.frontGradientColorCenter, this.frontGradientColor]
+    SETTINGS.style.fill.center.x,
+    SETTINGS.style.fill.center.y,
+    SETTINGS.boundaryCircle.radius,
+    [this.frontGradientColorCenter, this.frontGradientColor],
+    SETTINGS.style.fill.lightSource.x,
+    SETTINGS.style.fill.lightSource.y
   );
 
-  private backGradientColorCenter = new Stop(0, SETTINGS.fill.backGray, 1);
+  private backGradientColorCenter = new Stop(
+    0,
+    SETTINGS.style.fill.backGray,
+    1
+  );
   private backGradientColor = new Stop(
-    1 * SETTINGS.boundaryCircle.radius,
+    SETTINGS.style.fill.gradientPercent,
     SETTINGS.ellipse.drawn.fillColor.front,
     1
   );
+
   private backGradient = new RadialGradient(
-    -SETTINGS.fill.lightSource.x,
-    -SETTINGS.fill.lightSource.y,
-    2 * SETTINGS.boundaryCircle.radius,
-    [this.backGradientColorCenter, this.backGradientColor]
+    -SETTINGS.style.fill.center.x,
+    -SETTINGS.style.fill.center.y,
+    SETTINGS.boundaryCircle.radius,
+    [this.backGradientColorCenter, this.backGradientColor],
+    -SETTINGS.style.fill.lightSource.x,
+    -SETTINGS.style.fill.lightSource.y
   );
 
   /** Initialize the current line width that is adjust by the zoom level and the user widthPercent */
@@ -186,6 +195,9 @@ export default class Ellipse extends Nodule {
   constructor(noduleName: string = "None") {
     super(noduleName);
 
+    this.frontGradient.units = "userSpaceOnUse"; // this means that the gradient uses the coordinates of the layer (but centered on the projection of the circle)
+    this.backGradient.units = "userSpaceOnUse";
+
     this._tMax = 2 * Math.PI;
     this._tMin = 0;
     this._closed = true;
@@ -223,11 +235,7 @@ export default class Ellipse extends Nodule {
       // Create Anchors for the paths that will be duplicated later
       frontVertices.push(new Anchor(0, 0));
     }
-    this.frontPart = new Path(
-      frontVertices,
-      /*closed*/ false,
-      /*curve*/ false
-    );
+    this.frontPart = new Path(frontVertices, /*closed*/ false, /*curve*/ false);
 
     // Create the glowing/back/fill parts.
     this.glowingFrontPart = new Path(
@@ -235,11 +243,7 @@ export default class Ellipse extends Nodule {
       /*closed*/ false,
       /*curve*/ false
     );
-    this.backPart = new Path(
-      frontVertices,
-      /*closed*/ false,
-      /*curve*/ false
-    );
+    this.backPart = new Path(frontVertices, /*closed*/ false, /*curve*/ false);
     this.glowingBackPart = new Path(
       frontVertices,
       /*closed*/ false,
@@ -995,8 +999,13 @@ export default class Ellipse extends Nodule {
         ) {
           this.frontFill.noFill();
         } else {
-          this.frontGradientColor.color = SETTINGS.ellipse.temp.fillColor.front;
-          this.frontFill.fill = this.frontGradient;
+          if (Nodule.globalGradientFill) {
+            this.frontGradientColor.color =
+              SETTINGS.ellipse.temp.fillColor.front;
+            this.frontFill.fill = this.frontGradient;
+          } else {
+            this.frontFill.fill = SETTINGS.ellipse.temp.fillColor.front;
+          }
         }
         if (
           Nodule.hslaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.strokeColor.front)
@@ -1023,8 +1032,12 @@ export default class Ellipse extends Nodule {
         ) {
           this.backFill.noFill();
         } else {
-          this.backGradientColor.color = SETTINGS.ellipse.temp.fillColor.back;
-          this.backFill.fill = this.backGradient;
+          if (Nodule.globalGradientFill) {
+            this.backGradientColor.color = SETTINGS.ellipse.temp.fillColor.back;
+            this.backFill.fill = this.backGradient;
+          } else {
+            this.backFill.fill = SETTINGS.ellipse.temp.fillColor.back;
+          }
         }
         if (
           Nodule.hslaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.strokeColor.back)
@@ -1061,11 +1074,15 @@ export default class Ellipse extends Nodule {
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFill.noFill();
         } else {
-          this.frontGradientColor.color =
-            frontStyle?.fillColor ?? SETTINGS.ellipse.drawn.fillColor.front;
-          this.frontFill.fill = this.frontGradient;
+          if (Nodule.globalGradientFill) {
+            this.frontGradientColor.color =
+              frontStyle?.fillColor ?? SETTINGS.ellipse.drawn.fillColor.front;
+            this.frontFill.fill = this.frontGradient;
+          } else {
+            this.frontFill.fill =
+              frontStyle?.fillColor ?? SETTINGS.ellipse.drawn.fillColor.front;
+          }
         }
-
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this.frontPart.noStroke();
         } else {
@@ -1099,18 +1116,28 @@ export default class Ellipse extends Nodule {
           ) {
             this.backFill.noFill();
           } else {
-            this.backGradientColor.color = Nodule.contrastFillColor(
-              frontStyle?.fillColor ?? "black"
-            );
+            if (Nodule.globalGradientFill) {
+              this.backGradientColor.color = Nodule.contrastFillColor(
+                frontStyle?.fillColor ?? "black"
+              );
 
-            this.backFill.fill = this.backGradient;
+              this.backFill.fill = this.backGradient;
+            } else {
+              this.backFill.fill = Nodule.contrastFillColor(
+                frontStyle?.fillColor ?? "black"
+              );
+            }
           }
         } else {
           if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this.backFill.noFill();
           } else {
-            this.backGradientColor.color = backStyle?.fillColor ?? "black";
-            this.backFill.fill = this.backGradient;
+            if (Nodule.globalGradientFill) {
+              this.backGradientColor.color = backStyle?.fillColor ?? "black";
+              this.backFill.fill = this.backGradient;
+            } else {
+              this.backFill.fill = backStyle?.fillColor ?? "black";
+            }
           }
         }
 
