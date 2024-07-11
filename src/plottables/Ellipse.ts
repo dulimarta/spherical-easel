@@ -243,9 +243,16 @@ export default class Ellipse extends Nodule {
       /*closed*/ false,
       /*curve*/ false
     );
-    this.backPart = new Path(frontVertices, /*closed*/ false, /*curve*/ false);
+
+    const backVertices: Anchor[] = [];
+    for (let k = 0; k < SUBDIVISIONS; k++) {
+      // Create Anchors for the paths that will be duplicated later
+      backVertices.push(new Anchor(0, 0));
+    }
+
+    this.backPart = new Path(backVertices, /*closed*/ false, /*curve*/ false);
     this.glowingBackPart = new Path(
-      frontVertices,
+      backVertices,
       /*closed*/ false,
       /*curve*/ false
     );
@@ -283,19 +290,22 @@ export default class Ellipse extends Nodule {
     // bigger than Pi/2 and there is no front/back part and the ellipse is a 'hole')
     // anchors across both fill regions and the anchorStorage (storage is used when the ellipse doesn't cross a boundary).
 
-    const verticesFill: Anchor[] = [];
+    const verticesFrontFill: Anchor[] = [];
     for (let k = 0; k < 2 * SUBDIVISIONS + 1; k++) {
-      verticesFill.push(new Anchor(0, 0));
+      verticesFrontFill.push(new Anchor(0, 0));
     }
     this.frontFill = new Path(
-      verticesFill,
+      verticesFrontFill,
       /* closed */ true,
       /* curve */ false
     );
-
+    const verticesBackFill: Anchor[] = [];
+    for (let k = 0; k < 2 * SUBDIVISIONS + 1; k++) {
+      verticesBackFill.push(new Anchor(0, 0));
+    }
     // create the back part
-    this.backFill = this.frontFill = new Path(
-      verticesFill,
+    this.backFill =  new Path(
+      verticesBackFill,
       /* closed */ true,
       /* curve */ false
     );
@@ -489,7 +499,14 @@ export default class Ellipse extends Nodule {
       this.frontPart.vertices.forEach((v: Anchor) => {
         if (posIndexFill === this.frontFill.vertices.length) {
           //add a vector from the pool
-          this.frontFill.vertices.push(pool.pop()!);
+          const vert = pool.pop();
+          if (vert !== undefined) {
+            this.frontFill.vertices.push(vert);
+          } else {
+            throw new Error(
+              "Ellipse: not enough anchors in the pool to trace the ellipse on the front."
+            );
+          }
         }
         this.frontFill.vertices[posIndexFill].x = v.x;
         this.frontFill.vertices[posIndexFill].y = v.y;
@@ -556,7 +573,14 @@ export default class Ellipse extends Nodule {
       this.frontPart.vertices.forEach((node: Anchor) => {
         if (posIndexFill === this.frontFill.vertices.length) {
           //add a vector from the pool
-          this.frontFill.vertices.push(pool.pop()!);
+          const vert = pool.pop();
+          if (vert !== undefined) {
+            this.frontFill.vertices.push(vert);
+          } else {
+            throw new Error(
+              "Ellipse: not enough anchors in the pool to trace the ellipse on the front."
+            );
+          }
         }
         this.frontFill.vertices[posIndexFill].x = node.x;
         this.frontFill.vertices[posIndexFill].y = node.y;
@@ -566,7 +590,14 @@ export default class Ellipse extends Nodule {
       boundaryPoints.forEach(node => {
         if (posIndexFill === this.frontFill.vertices.length) {
           //add a vector from the pool
-          this.frontFill.vertices.push(pool.pop()!);
+          const vert = pool.pop();
+          if (vert !== undefined) {
+            this.frontFill.vertices.push(vert);
+          } else {
+            throw new Error(
+              "Ellipse: not enough anchors in the pool to trace the ellipse on the front."
+            );
+          }
         }
         this.frontFill.vertices[posIndexFill].x = node[0];
         this.frontFill.vertices[posIndexFill].y = node[1];
@@ -578,7 +609,14 @@ export default class Ellipse extends Nodule {
       this.backPart.vertices.forEach((node: Anchor) => {
         if (negIndexFill === this.backFill.vertices.length) {
           //add a vector from the pool
-          this.backFill.vertices.push(pool.pop()!);
+          const vert = pool.pop();
+          if (vert !== undefined) {
+            this.backFill.vertices.push(vert);
+          } else {
+            throw new Error(
+              "Ellipse: not enough anchors in the pool to trace the ellipse on the back."
+            );
+          }
         }
         this.backFill.vertices[negIndexFill].x = node.x;
         this.backFill.vertices[negIndexFill].y = node.y;
@@ -590,7 +628,14 @@ export default class Ellipse extends Nodule {
       boundaryPoints.reverse().forEach(node => {
         if (negIndexFill === this.backFill.vertices.length) {
           //add a vector from the pool
-          this.backFill.vertices.push(pool.pop()!);
+          const vert = pool.pop();
+          if (vert !== undefined) {
+            this.backFill.vertices.push(vert);
+          } else {
+            throw new Error(
+              "Ellipse: not enough anchors in the pool to trace the ellipse on the back."
+            );
+          }
         }
         this.backFill.vertices[negIndexFill].x = node[0];
         this.backFill.vertices[negIndexFill].y = node[1];
@@ -607,7 +652,14 @@ export default class Ellipse extends Nodule {
       this.backPart.vertices.forEach((v: Anchor) => {
         if (negIndexFill === this.backFill.vertices.length) {
           //add a vector from the pool
-          this.backFill.vertices.push(pool.pop()!);
+          const vert = pool.pop();
+          if (vert !== undefined) {
+            this.backFill.vertices.push(vert);
+          } else {
+            throw new Error(
+              "Ellipse: not enough anchors in the pool to trace the ellipse on the back."
+            );
+          }
         }
         this.backFill.vertices[negIndexFill].x = v.x;
         this.backFill.vertices[negIndexFill].y = v.y;
@@ -624,7 +676,14 @@ export default class Ellipse extends Nodule {
         if (ind % 2 === 0) {
           if (posIndexFill === this.frontFill.vertices.length) {
             //add a vector from the pool
-            this.frontFill.vertices.push(pool.pop()!);
+            const vert = pool.pop();
+            if (vert !== undefined) {
+              this.frontFill.vertices.push(vert);
+            } else {
+              throw new Error(
+                "Ellipse: not enough anchors in the pool to trace the ellipse on the front."
+              );
+            }
           }
           this.frontFill.vertices[posIndexFill].x = v.x;
           this.frontFill.vertices[posIndexFill].y = v.y;
@@ -651,7 +710,15 @@ export default class Ellipse extends Nodule {
           if (ind % 2 === 0) {
             if (negIndexFill === this.backFill.vertices.length) {
               //add a vector from the pool
-              this.backFill.vertices.push(pool.pop()!);
+              const vert = pool.pop();
+          if (vert !== undefined) {
+            this.backFill.vertices.push(vert);
+          } else {
+            throw new Error(
+              "Ellipse: not enough anchors in the pool to trace the ellipse on the back."
+            );
+          }
+
             }
             this.backFill.vertices[negIndexFill].x = v.x;
             this.backFill.vertices[negIndexFill].y = v.y;
@@ -673,7 +740,14 @@ export default class Ellipse extends Nodule {
       this.backPart.vertices.forEach((v: Anchor, index: number) => {
         if (negIndexFill === this.backFill.vertices.length) {
           //add a vector from the pool
-          this.backFill.vertices.push(pool.pop()!);
+          const vert = pool.pop();
+          if (vert !== undefined) {
+            this.backFill.vertices.push(vert);
+          } else {
+            throw new Error(
+              "Ellipse: not enough anchors in the pool to trace the ellipse on the back."
+            );
+          }
         }
         this.backFill.vertices[negIndexFill].x = v.x;
         this.backFill.vertices[negIndexFill].y = v.y;
@@ -697,7 +771,15 @@ export default class Ellipse extends Nodule {
         if (ind % 2 === 0) {
           if (negIndexFill === this.backFill.vertices.length) {
             //add a vector from the pool
-            this.backFill.vertices.push(pool.pop()!);
+            const vert = pool.pop();
+          if (vert !== undefined) {
+            this.backFill.vertices.push(vert);
+          } else {
+            throw new Error(
+              "Ellipse: not enough anchors in the pool to trace the ellipse on the back."
+            );
+          }
+
           }
           this.backFill.vertices[negIndexFill].x = v.x;
           this.backFill.vertices[negIndexFill].y = v.y;
@@ -724,7 +806,15 @@ export default class Ellipse extends Nodule {
           if (ind % 2 === 0) {
             if (posIndexFill === this.frontFill.vertices.length) {
               //add a vector from the pool
-              this.frontFill.vertices.push(pool.pop()!);
+              const vert = pool.pop();
+          if (vert !== undefined) {
+            this.frontFill.vertices.push(vert);
+          } else {
+            throw new Error(
+              "Ellipse: not enough anchors in the pool to trace the ellipse on the front."
+            );
+          }
+
             }
             this.frontFill.vertices[posIndexFill].x = v.x;
             this.frontFill.vertices[posIndexFill].y = v.y;
@@ -745,7 +835,14 @@ export default class Ellipse extends Nodule {
       this.frontPart.vertices.forEach((v: Anchor, index: number) => {
         if (posIndexFill === this.frontFill.vertices.length) {
           //add a vector from the pool
-          this.frontFill.vertices.push(pool.pop()!);
+          const vert = pool.pop();
+          if (vert !== undefined) {
+            this.frontFill.vertices.push(vert);
+          } else {
+            throw new Error(
+              "Ellipse: not enough anchors in the pool to trace the ellipse on the front."
+            );
+          }
         }
         this.frontFill.vertices[posIndexFill].x = v.x;
         this.frontFill.vertices[posIndexFill].y = v.y;
