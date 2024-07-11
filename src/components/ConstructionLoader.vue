@@ -106,75 +106,75 @@ onMounted(() => {
   filteredPublicConstructions.value.push(...publicConstructions.value);
 });
 
-watch(idle, (isIdle: boolean) => {
-  console.debug("Idler handler", isIdle);
-  if (!isIdle) {
-    // searchResult.value = "";
-    return;
-  }
-  if (lastSearchKey === searchKey.value) return;
-  if (searchKey.value.length == 0) {
-    searchResult.value = ""
-    // If no search key, reset all the arr to full contents
-    filteredPublicConstructions.value.splice(0);
-    filteredPrivateConstructions.value.splice(0);
-    filteredStarredConstructions.value.splice(0);
-    filteredPublicConstructions.value.push(...publicConstructions.value);
-    filteredPrivateConstructions.value.push(...privateConstructions.value);
-    filteredStarredConstructions.value.push(...starredConstructions.value);
-  } else {
-    lastSearchKey = searchKey.value;
-    //openPanels.value.splice(0);
-    searchResult.value = "";
-    const matchFound = [];
-    const privateMatch = privateConstructions.value.filter(
-      (c: SphericalConstruction) =>
-        c.description.toLowerCase().includes(searchKey.value.toLowerCase())
-    );
-    if (privateMatch.length > 0) {
-      matchFound.push("private");
-      filteredPrivateConstructions.value = privateMatch;
-    } else {
-      filteredPrivateConstructions.value.splice(0)
-    }
-    const publicMatch = publicConstructions.value.filter(
-      (c: SphericalConstruction) =>
-        c.description.toLowerCase().includes(searchKey.value.toLowerCase())
-    );
-    if (publicMatch.length > 0) {
-      matchFound.push("public");
-      filteredPublicConstructions.value = publicMatch;
-    } else {
-      filteredPublicConstructions.value.splice(0);
-    }
-    const starredMatch = starredConstructions.value.filter(
-      (c: SphericalConstruction) =>
-        c.description.toLowerCase().includes(searchKey.value.toLowerCase())
-    );
-    if (starredMatch.length > 0) {
-      matchFound.push("starred");
-      filteredStarredConstructions.value = starredMatch;
-    } else {
-      filteredStarredConstructions.value.splice(0);
-    }
-    if (matchFound.length > 1) {
-      openMultiple.value = true;
-      openPanels.value = matchFound;
-      searchResult.value = t(`foundMultiple`, {
-        privateCount: privateMatch.length,
-        publicCount: publicMatch.length,
-        starredCount: privateMatch.length
-      });
-    } else {
-      openMultiple.value = false;
-      openPanels.value = matchFound[0];
-      searchResult.value = t("foundSingle", {
-        count: (privateMatch?.length ?? 0) + publicMatch.length,
-        group: matchFound[0]
-      });
-    }
-  }
-});
+// watch(idle, (isIdle: boolean) => {
+//   console.debug("Idler handler", isIdle);
+//   if (!isIdle) {
+//     // searchResult.value = "";
+//     return;
+//   }
+//   if (lastSearchKey === searchKey.value) return;
+//   if (searchKey.value.length == 0) {
+//     searchResult.value = ""
+//     // If no search key, reset all the arr to full contents
+//     filteredPublicConstructions.value.splice(0);
+//     filteredPrivateConstructions.value.splice(0);
+//     filteredStarredConstructions.value.splice(0);
+//     filteredPublicConstructions.value.push(...publicConstructions.value);
+//     filteredPrivateConstructions.value.push(...privateConstructions.value);
+//     filteredStarredConstructions.value.push(...starredConstructions.value);
+//   } else {
+//     lastSearchKey = searchKey.value;
+//     //openPanels.value.splice(0);
+//     searchResult.value = "";
+//     const matchFound = [];
+//     const privateMatch = privateConstructions.value.filter(
+//       (c: SphericalConstruction) =>
+//         c.description.toLowerCase().includes(searchKey.value.toLowerCase())
+//     );
+//     if (privateMatch.length > 0) {
+//       matchFound.push("private");
+//       filteredPrivateConstructions.value = privateMatch;
+//     } else {
+//       filteredPrivateConstructions.value.splice(0)
+//     }
+//     const publicMatch = publicConstructions.value.filter(
+//       (c: SphericalConstruction) =>
+//         c.description.toLowerCase().includes(searchKey.value.toLowerCase())
+//     );
+//     if (publicMatch.length > 0) {
+//       matchFound.push("public");
+//       filteredPublicConstructions.value = publicMatch;
+//     } else {
+//       filteredPublicConstructions.value.splice(0);
+//     }
+//     const starredMatch = starredConstructions.value.filter(
+//       (c: SphericalConstruction) =>
+//         c.description.toLowerCase().includes(searchKey.value.toLowerCase())
+//     );
+//     if (starredMatch.length > 0) {
+//       matchFound.push("starred");
+//       filteredStarredConstructions.value = starredMatch;
+//     } else {
+//       filteredStarredConstructions.value.splice(0);
+//     }
+//     if (matchFound.length > 1) {
+//       openMultiple.value = true;
+//       openPanels.value = matchFound;
+//       searchResult.value = t(`foundMultiple`, {
+//         privateCount: privateMatch.length,
+//         publicCount: publicMatch.length,
+//         starredCount: privateMatch.length
+//       });
+//     } else {
+//       openMultiple.value = false;
+//       openPanels.value = matchFound[0];
+//       searchResult.value = t("foundSingle", {
+//         count: (privateMatch?.length ?? 0) + publicMatch.length,
+//         group: matchFound[0]
+//       });
+//     }
+//   }
+// });
 </script>
 <i18n locale="en" lang="json">
 {
