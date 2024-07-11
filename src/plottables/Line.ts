@@ -202,10 +202,15 @@ export default class Line extends Nodule {
     this._backHalf.rotation = this._rotation;
     this._glowingBackHalf.rotation = this._rotation;
 
-    this._frontHalf.height = 2 * radius * this._halfMinorAxis;
-    this._glowingFrontHalf.height = 2 * radius * this._halfMinorAxis;
-    this._backHalf.height = 2 * radius * this._halfMinorAxis;
-    this._glowingBackHalf.height = 2 * radius * this._halfMinorAxis;
+    // make sure the height is never zero, otherwise you get an SVG error about a NaN
+    const tempHalfMinorAxis =
+      Math.abs(this._halfMinorAxis) < SETTINGS.tolerance
+        ? 0.00001
+        : 2 * radius * this._halfMinorAxis;
+    this._frontHalf.height = tempHalfMinorAxis;
+    this._glowingFrontHalf.height = tempHalfMinorAxis;
+    this._backHalf.height = tempHalfMinorAxis;
+    this._glowingBackHalf.height = tempHalfMinorAxis;
   }
 
   setSelectedColoring(flag: boolean): void {
@@ -221,7 +226,7 @@ export default class Line extends Nodule {
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
 
-   addToLayers(layers: Group[]): void {
+  addToLayers(layers: Group[]): void {
     this._frontHalf.addTo(layers[LAYER.foreground]);
     this._glowingFrontHalf.addTo(layers[LAYER.foregroundGlowing]);
     this._backHalf.addTo(layers[LAYER.background]);

@@ -518,14 +518,20 @@ export default class Segment extends Nodule {
     this._glowingBackExtra.rotation = this._rotation;
 
     // scale to display on the screen and set the heights (widths are all 2*radius)
-    this._frontPart.height = 2 * radius * this._halfMinorAxis;
-    this._glowingFrontPart.height = 2 * radius * this._halfMinorAxis;
-    this._backPart.height = 2 * radius * this._halfMinorAxis;
-    this._glowingBackPart.height = 2 * radius * this._halfMinorAxis;
-    this._frontExtra.height = 2 * radius * this._halfMinorAxis;
-    this._glowingFrontExtra.height = 2 * radius * this._halfMinorAxis;
-    this._backExtra.height = 2 * radius * this._halfMinorAxis;
-    this._glowingBackExtra.height = 2 * radius * this._halfMinorAxis;
+    // make sure the height is never zero, otherwise you get an SVG error about a NaN
+    const tempHalfMinorAxis =
+      Math.abs(this._halfMinorAxis) < SETTINGS.tolerance
+        ? 0.00001
+        : 2 * radius * this._halfMinorAxis;
+
+    this._frontPart.height = tempHalfMinorAxis;
+    this._glowingFrontPart.height = tempHalfMinorAxis;
+    this._backPart.height = tempHalfMinorAxis;
+    this._glowingBackPart.height = tempHalfMinorAxis;
+    this._frontExtra.height = tempHalfMinorAxis;
+    this._glowingFrontExtra.height = tempHalfMinorAxis;
+    this._backExtra.height = tempHalfMinorAxis;
+    this._glowingBackExtra.height = tempHalfMinorAxis;
 
     //for checking to see if the segment is drawn from start to end VERY important for polygon to work correctly
     // this._frontPart.ending = 0.75

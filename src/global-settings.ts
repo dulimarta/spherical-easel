@@ -147,7 +147,7 @@ export const SETTINGS = {
     fill: {
       // offset for the color fill. At this percent of the radius (boundaryCircle) the fill becomes all the fill color and not a bleed from the center color.
       gradientPercent: 0.8,
-      // Draw the fills using a gradient or not
+      // Initially Draw the fills using a gradient or not
       gradientFill: true,
       //The location of the light source when shading using a gradient fill (also called the focal point) relative to the center of the boundary circle. This must be in the radius of the gradient fill (which is the boundary circle radius)
       lightSource: {

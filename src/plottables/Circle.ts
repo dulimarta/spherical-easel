@@ -334,31 +334,35 @@ export default class Circle extends Nodule {
     this._center.rotate(Math.atan2(this._centerVector.y, this._centerVector.x)); //DO NOT Rotate the center vector at the same time you set it equal to this._frontPart.position, this causes unexpected results
 
     //Copy the updated information into the glowing/not front/back parts
-    this._frontPart.height =
-      2 * this._halfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._frontPart.width =
-      2 * this._halfMajorAxis * SETTINGS.boundaryCircle.radius;
+
+    // make sure the height and width are never zero, otherwise you get an SVG error about a NaN
+    const tempHalfMinorAxis =
+      Math.abs(this._halfMinorAxis) < SETTINGS.tolerance
+        ? 2 * radius * this._halfMinorAxis
+        : 0.00001;
+
+    const tempHalfMajorAxis =
+      Math.abs(this._halfMajorAxis) < SETTINGS.tolerance
+        ? 2 * radius * this._halfMajorAxis
+        : 0.00001;
+
+    this._frontPart.height = tempHalfMinorAxis;
+    this._frontPart.width = tempHalfMajorAxis;
     this._frontPart.rotation = this._rotation;
     this._frontPart.position = this._center;
 
-    this._backPart.height =
-      2 * this._halfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._backPart.width =
-      2 * this._halfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._backPart.height = tempHalfMinorAxis;
+    this._backPart.width = tempHalfMajorAxis;
     this._backPart.position = this._center;
     this._backPart.rotation = this._rotation;
 
-    this._glowingFrontPart.height =
-      2 * this._halfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontPart.width =
-      2 * this._halfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontPart.height = tempHalfMinorAxis;
+    this._glowingFrontPart.width = tempHalfMajorAxis;
     this._glowingFrontPart.position = this._center;
     this._glowingFrontPart.rotation = this._rotation;
 
-    this._glowingBackPart.height =
-      2 * this._halfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._glowingBackPart.width =
-      2 * this._halfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._glowingBackPart.height = tempHalfMinorAxis;
+    this._glowingBackPart.width = tempHalfMajorAxis;
     this._glowingBackPart.position = this._center;
     this._glowingBackPart.rotation = this._rotation;
 
@@ -1076,11 +1080,11 @@ export default class Circle extends Nodule {
         } else {
           if (Nodule.globalGradientFill) {
             this.frontGradientColor.color =
-            frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.front;
-          this._frontFill.fill = this.frontGradient;
+              frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.front;
+            this._frontFill.fill = this.frontGradient;
           } else {
             this._frontFill.fill =
-            frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.front;
+              frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.front;
           }
         }
 
@@ -1120,7 +1124,6 @@ export default class Circle extends Nodule {
                 frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back
               );
             }
-
           }
         } else {
           if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
