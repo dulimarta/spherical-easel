@@ -41,7 +41,7 @@ describe("ParametricCuspParameterValues.vue with input", () => {
         modelValue: "173 + 6",
       }
     });
-    const textInput = wrapper.find("#__test_textfield");
+    const textInput = wrapper.find("[data-testid=textfield]");
     await textInput.trigger("keydown.enter");
     // Wait for the setTimeout to work
     await vi.advanceTimersByTimeAsync(3000);
@@ -58,7 +58,7 @@ describe("ParametricCuspParameterValues.vue with input", () => {
         modelValue: "173 + 6, 2 * PI",
       }
     });
-    const textInput = wrapper.find("#__test_textfield");
+    const textInput = wrapper.find("[data-testid=textfield]");
     await textInput.trigger("keydown.enter");
     // Wait for the setTimeout to work
     await vi.advanceTimersByTimeAsync(3000);
@@ -75,7 +75,7 @@ describe("ParametricCuspParameterValues.vue with input", () => {
         modelValue: "3.0 * t",
       }
     });
-    const textInput = wrapper.find("#__test_textfield");
+    const textInput = wrapper.find("[data-testid=textfield]");
     await textInput.trigger("keydown.enter");
     // Wait for the setTimeout to work
     await vi.advanceTimersByTimeAsync(3000);
@@ -92,7 +92,7 @@ describe("ParametricCuspParameterValues.vue with input", () => {
         modelValue: "123,-4+t,3.0 * 3",
       }
     });
-    const textInput = wrapper.find("#__test_textfield");
+    const textInput = wrapper.find("[data-testid=textfield]");
     await textInput.trigger("keydown.enter");
     // Wait for the setTimeout to work
     await vi.advanceTimersByTimeAsync(3000);
@@ -111,12 +111,12 @@ describe("ParametricCuspParameterValues.vue with input", () => {
         constExpr: true
       }
     });
-    const textInput = wrapper.find("#__test_textfield");
+    const textInput = wrapper.find("[data-testid=textfield]");
     await textInput.trigger("keydown.enter");
     // Wait for the setTimeout to work
     await vi.advanceTimersByTimeAsync(3000);
 
-    // console.debug("Text After input", wrapper.text())
+    // // console.debug("Text After input", wrapper.text())
     expect(wrapper.text()).toMatch(/variable M1/i)
   });
 

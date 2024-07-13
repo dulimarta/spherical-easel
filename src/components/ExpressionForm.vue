@@ -5,8 +5,7 @@
         <v-container>
           <v-row>
             <v-col cols="12">
-              <v-textarea
-                id="_test_input_expr"
+              <v-textarea data-testid="input_expr"
                 auto-grow
                 density="compact"
                 full-width
@@ -23,8 +22,7 @@
               </v-textarea>
             </v-col>
           </v-row>
-          <v-text-field
-            id="_test_output_result"
+          <v-text-field data-testid="output_result"
             density="compact"
            variant="outlined"
             readonly
@@ -38,8 +36,7 @@
         <v-spacer></v-spacer>
         <!--- Disable the FAB when either the expression text is empty or
           there is a syntax error -->
-        <v-btn
-          id="_test_add_expr"
+        <v-btn data-testid="add_expr"
          size="small"
           fab
           right
@@ -110,7 +107,7 @@ function onKeyPressed(): void {
 }
 
 function addExpression(): void {
-  // console.debug("Adding expression", calcExpression.value);
+  console.debug("Adding expression", calcExpression.value);
   const calc = new SECalculation(calcExpression.value);
   new AddCalculationCommand(
     calc,

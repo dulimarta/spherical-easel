@@ -16,6 +16,7 @@
         :close-delay="50"
         :open-delay="100">
         <v-sheet
+          data-testid="constructionItem"
           class="constructionDetails mb-1 pa-1"
           v-bind="props"
           elevation="4">
@@ -47,93 +48,99 @@
               {{ r.starCount }}
             </div>
           </span>
-          <div class="constructionDetailsOverlay" v-if="isHovering">
+          <div
+            data-testid="buttonOverlay"
+            class="constructionDetailsOverlay"
+            v-if="isHovering">
             <v-btn
-              id="_test_loadfab"
-              class="mx-1"
+              data-testid="load_btn"
+              id="load_btn"
+              class="ml-1"
               size="x-small"
-              color="secondary"
-              icon="mdi-file-document-edit"
+              color="black"
+              icon="mdi="
               @click="handleLoadConstruction(r.id)"></v-btn>
+            PUBLIC {{ r.publicDocId }} SHARING {{ allowSharing }} Email
+            {{ userEmail }} Firebase UID {{ firebaseUid }}
             <v-btn
+              data-testid="share_btn"
               v-if="r.publicDocId && allowSharing"
-              id="_test_sharefab"
-              class="mx-1"
+              id="share_btn"
+              class="ml-1"
               size="x-small"
-              color="secondary"
+              color="black"
               icon="mdi-share"
               @click="handleShareConstruction(r.publicDocId)"></v-btn>
             <v-btn
+              data-testid="make_private_btn"
               v-if="r.publicDocId && r.author === userEmail"
-              id="_test_make_private"
-              class="mx-1"
+              id="make_private_btn"
+              class="ml-1"
               size="x-small"
               icon="mdi-lock"
-              color="yellow"
+              color="black"
               @click="handleMakePrivate(r.id)"></v-btn>
             <v-btn
+              data-testid="make_public_btn"
               v-if="!r.publicDocId && r.author === userEmail"
-              id="_test_make_public"
-              class="mx-1"
+              id="make_public_btn"
+              class="ml-1"
               size="x-small"
               icon="mdi-lock-off"
-              color="yellow"
+              color="black"
               @click="handleMakePublic(r.id)"></v-btn>
             <!-- show delete button only for its owner -->
-            <v-btn
+            <v-btn data-testid="delete_btn"
               v-if="r.author === userEmail"
-              id="_test_deletefab"
-              class="mx-1"
+              id="delete_btn"
+              class="ml-1"
               size="x-small"
               icon="mdi-trash-can"
               color="red"
               @click="handleDeleteConstruction(r.id)"></v-btn>
             <!-- show star button only for public constructs and not mine -->
-            <v-btn
+            <v-btn data-testid="star_btn"
               v-if="
                 firebaseUid &&
                 r.author !== userEmail &&
                 !inMyStarredList(r.publicDocId)
               "
-              id="_test_starConstruct"
-              class="mx-1"
+              id="star_btn"
+              class="ml-1"
               size="x-small"
-              color="yellow"
+              color="black"
               icon="mdi-star"
               @click="handleUpdateStarred(r.publicDocId)"></v-btn>
-            <v-btn
+            <v-btn data-testid="unstar_btn"
               v-if="inMyStarredList(r.publicDocId)"
-              id="_test_unstarfab"
-              class="mx-1"
+              id="unstar_btn"
+              class="ml-1"
               size="x-small"
               icon="mdi-star-off"
-              color="blue"
+              color="black"
               @click="handleUpdateUnstarred(r.publicDocId)"></v-btn>
-            <v-tooltip text="Load" activator="#_test_loadfab" location="top" />
-            <v-tooltip
-              text="Share"
-              activator="#_test_sharefab"
-              location="top" />
+            <v-tooltip text="Load" activator="#load_btn" location="top" />
+            <v-tooltip text="Share" activator="#share_btn" location="top" />
             <v-tooltip
               text="Delete"
-              activator="#_test_deletefab"
+              activator="#delete_btn"
               location="top" />
             <v-tooltip
               text="Star"
               location="top"
-              activator="#_test_starConstruct" />
+              activator="#star_btn" />
             <v-tooltip
               text="Unstar"
               location="top"
-              activator="#_test_unstarConstruct" />
+              activator="#unstar_btn" />
             <v-tooltip
               text="Make Private"
               location="top"
-              activator="#_test_make_private" />
+              activator="#make_private_btn" />
             <v-tooltip
               text="Make public"
               location="top"
-              activator="#_test_make_public" />
+              activator="#make_public_btn" />
           </div>
         </v-sheet>
         <v-divider />
@@ -218,13 +225,13 @@ const constructionShareDialog: Ref<DialogAction | null> = ref(null);
 const seStore = useSEStore();
 const acctStore = useAccountStore();
 const constructionStore = useConstructionStore();
-const { starredConstructions } = storeToRefs(constructionStore);
+// const { starredConstructions } = storeToRefs(constructionStore);
 const selectedDocId = ref("");
 const sharedDocId = ref("");
 const showDeleteWarning = ref(false);
 const showPrivateWarning = ref(false);
 const showPublicWarning = ref(false);
-const { constructionDocId, userEmail, firebaseUid } = storeToRefs(acctStore);
+const { constructionDocId, userEmail, firebaseUid, starredConstructions } = storeToRefs(acctStore);
 const { hasUnsavedNodules } = storeToRefs(seStore);
 const { t } = useI18n({ useScope: "local" });
 
@@ -243,9 +250,8 @@ function previewOrDefault(dataUrl: string | undefined): string {
 function inMyStarredList(docId: string | undefined): boolean {
   // console.debug(`Starred? ${docId}`, starredConstructions.value.map(s => `ID ${s.id} PUB ${s.publicDocId}`).join(" ") )
   if (!docId) return false;
-  return (
-    starredConstructions.value.findIndex(z => z.publicDocId === docId) >= 0
-  );
+  return starredConstructions.value.some(z => z === docId)
+
 }
 // TODO: the onXXXX functions below are not bug-free yet
 // There is a potential race-condition when the mouse moves too fast
@@ -452,8 +458,8 @@ function doShareConstruction() {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: yellow;
-  opacity: 0.4;
+  padding: 2px;
+  background-color: #0f750f6a;
 }
 .constructionButtons {
   display: inline-flex;

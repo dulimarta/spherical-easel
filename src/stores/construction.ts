@@ -118,7 +118,6 @@ export const useConstructionStore = defineStore("construction", () => {
   // Public constructions is never null
   const starredConstructions: Ref<Array<SphericalConstruction>> = ref([]);
   const currentConstructionPreview: Ref<string | null> = ref(null);
-  const starredConstructionIDs: Array<string> = [];
   const acctStore = useAccountStore();
   const seStore = useSEStore();
   const {
@@ -128,47 +127,52 @@ export const useConstructionStore = defineStore("construction", () => {
     canvasWidth,
     canvasHeight
   } = storeToRefs(seStore);
-    const { firebaseUid, userEmail, includedTools } = storeToRefs(acctStore);
+  const {
+    firebaseUid,
+    starredConstructions: starredConstructionIDs,
+    userEmail,
+    includedTools
+  } = storeToRefs(acctStore);
 
-  watch(firebaseUid, async (uid, oldUid) => {
-    if (uid) {
-      // When an authenticated user logs in
-      // (1) Build the private array
-      const privateColl = collection(appDB, "users", uid, "constructions");
-      await parsePrivateCollection(privateColl, privateConstructions.value);
-      starredConstructionIDs.push(
-        ...(await acctStore.fetchStarredConstructions(uid))
-      );
-      const [starred, unstarred] = publicConstructions.value.partition(z =>
-        starredConstructionIDs.some(s => s === z.publicDocId)
-      );
-      starredConstructions.value.clear();
-      publicConstructions.value.clear();
-      starredConstructions.value.push(...starred);
-      publicConstructions.value.push(...unstarred);
-      const myPublicDocIDs: string[] = privateConstructions.value
-        .filter((s: SphericalConstruction) => s.publicDocId)
-        .map(s => s.publicDocId!!);
-      myPublicDocIDs.forEach((docId: string) => {
-        // Remove my own public constructions from the public list
-        const pos = publicConstructions.value.findLastIndex(
-          (s: SphericalConstruction) => s.publicDocId === docId
+  watch(
+    firebaseUid,
+    async (uid: string | undefined /*, oldUid: string*/) => {
+      if (uid) {
+        // When an authenticated user logs in
+        // (1) Build the private array
+        const privateColl = collection(appDB, "users", uid, "constructions");
+        await parsePrivateCollection(privateColl, privateConstructions.value);
+        const [starred, unstarred] = publicConstructions.value.partition(z =>
+          starredConstructionIDs.value.some(s => s === z.publicDocId)
         );
-        if (pos >= 0) {
-          publicConstructions.value.splice(pos, 1);
-        }
-      });
-    } else {
-      const myPublicDocs = privateConstructions.value.filter(
-        (s: SphericalConstruction) => !s.publicDocId
-      );
-      privateConstructions.value.splice(0);
-      publicConstructions.value.push(...myPublicDocs);
+        starredConstructions.value.clear();
+        publicConstructions.value.clear();
+        starredConstructions.value.push(...starred);
+        publicConstructions.value.push(...unstarred);
+        const myPublicDocIDs: string[] = privateConstructions.value
+          .filter((s: SphericalConstruction) => s.publicDocId)
+          .map(s => s.publicDocId!!);
+        myPublicDocIDs.forEach((docId: string) => {
+          // Remove my own public constructions from the public list
+          const pos = publicConstructions.value.findLastIndex(
+            (s: SphericalConstruction) => s.publicDocId === docId
+          );
+          if (pos >= 0) {
+            publicConstructions.value.splice(pos, 1);
+          }
+        });
+      } else {
+        const myPublicDocs = privateConstructions.value.filter(
+          (s: SphericalConstruction) => !s.publicDocId
+        );
+        privateConstructions.value.splice(0);
+        publicConstructions.value.push(...myPublicDocs);
+      }
+      sortConstructionArray(privateConstructions.value);
+      // sortConstructionArray(starredConstructions.value);
+      sortConstructionArray(publicConstructions.value);
     }
-    sortConstructionArray(privateConstructions.value);
-    sortConstructionArray(starredConstructions.value);
-    sortConstructionArray(publicConstructions.value);
-  });
+  );
 
   // constructionDocId !== null implies overwrite existing construction
   // constructionDocId === null implies create a new construction
@@ -606,15 +610,14 @@ export const useConstructionStore = defineStore("construction", () => {
       publicConstructions.value[pos].starCount++;
       const inPublic = publicConstructions.value.splice(pos, 1);
       starredConstructions.value.push(...inPublic);
-      starredConstructionIDs.push(pubConstructionId);
-      updateStarredArrayInFirebase(starredConstructionIDs);
+      updateStarredArrayInFirebase(starredConstructionIDs.value);
       updateStarCountInFirebase(pubConstructionId, +1);
     }
   }
 
   function unstarConstruction(pubConstructionId: string) {
     const pos = starredConstructions.value.findIndex(
-      (z: SphericalConstruction) => z.publicDocId == pubConstructionId
+      (z: SphericalConstruction) => z.id == pubConstructionId
     );
     if (pos >= 0) {
       const target = starredConstructions.value[pos];
@@ -624,11 +627,13 @@ export const useConstructionStore = defineStore("construction", () => {
       const inStarred = starredConstructions.value.splice(pos, 1);
       publicConstructions.value.push(...inStarred);
     }
-    const pos2 = starredConstructionIDs.findIndex(x => x === pubConstructionId);
+    const pos2 = starredConstructionIDs.value.findIndex(
+      x => x === pubConstructionId
+    );
     if (pos2 >= 0) {
-      starredConstructionIDs.splice(pos2, 1);
+      starredConstructionIDs.value.splice(pos2, 1);
 
-      updateStarredArrayInFirebase(starredConstructionIDs);
+      updateStarredArrayInFirebase(starredConstructionIDs.value);
       updateStarCountInFirebase(pubConstructionId, -1);
     }
   }

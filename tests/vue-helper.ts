@@ -1,4 +1,4 @@
-import { mount, shallowMount, VueWrapper } from "@vue/test-utils";
+import { mount, config } from "@vue/test-utils";
 import { createTestingPinia } from "@pinia/testing";
 // import { createI18n } from "vue-i18n";
 // import router from "@/router";
@@ -21,18 +21,25 @@ const vuetify = createVuetify({ components, directives });
 
 global.ResizeObserver = require("resize-observer-polyfill");
 
+config.global.stubs = {
+  transition: false // suppress transition effect during testing
+}
 export function createWrapper(
   component: any,
   { componentProps = {} /*, componentData = {}*/ } = {},
   isShallow = false
 ) {
-  const testPinia = createTestingPinia({stubActions: false})
+  // stubActions: Allow store actions to be mocked
+  const testPinia = createTestingPinia({
+    stubActions: false,
+    createSpy: vi.fn
+  })
   const configOption = {
     //   i18n,
     //   // store,
     //   // router,
     global: {
-      plugins: [vuetify, i18n, testPinia]
+      plugins: [vuetify, i18n]
       //     mocks: {
       //       t: vi.fn()
       //     },

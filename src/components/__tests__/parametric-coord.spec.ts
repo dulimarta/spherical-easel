@@ -28,9 +28,9 @@ describe("ParametricCoord.vue basics", () => {
   });
 
   it("shows the placeholder", () => {
-    const textArea = wrapper.find("#__test_textarea");
+    const textArea = wrapper.find("[data-testid=textarea]").find('textarea');
     // console.debug("Element: ", textArea.attributes('placeholder'))
-    // console.debug("Text:", textArea.text());
+    console.debug("Text:", textArea.text());
     // console.debug("HTML:", textArea.html());
     expect(textArea.attributes("placeholder")).toBe("ddddd");
   });
@@ -52,7 +52,7 @@ describe("ParametricCoord.vue with input", () => {
         useTValue: 0
       }
     });
-    const textArea = wrapper.find("#__test_textarea");
+    const textArea = wrapper.find("[data-testid=textarea]");
     await textArea.trigger("keydown.enter");
     // Wait for the setTimeout to work
     await vi.advanceTimersByTimeAsync(3000);
@@ -71,7 +71,7 @@ describe("ParametricCoord.vue with input", () => {
         useTValue: .7
       }
     });
-    const textArea = wrapper.find("#__test_textarea");
+    const textArea = wrapper.find("[data-testid=textarea]");
     await textArea.trigger("keydown.enter");
     // Wait for the setTimeout to work
     await vi.advanceTimersByTimeAsync(3000);
@@ -90,7 +90,7 @@ describe("ParametricCoord.vue with input", () => {
         useTValue: 0
       }
     });
-    const textArea = wrapper.find("#__test_textarea");
+    const textArea = wrapper.find("[data-testid=textarea]");
     // trigger a keydown even to initiate the internal timer
     // and invoke the parser
     await textArea.trigger("keydown.enter");
@@ -129,7 +129,7 @@ describe("ParametricCoord.vue with store access", () => {
     });
     const s = useSEStore(testPinia)
     await s.addExpression(new SECalculation("0.1")) // This creates a new expression M1
-    const textArea = wrapper.find("#__test_textarea");
+    const textArea = wrapper.find("[data-testid=textarea]");
     await textArea.trigger("keydown.enter");
     // Wait for the setTimeout to work
     await vi.advanceTimersByTimeAsync(3000);
@@ -151,7 +151,7 @@ describe("ParametricCoord.vue with store access", () => {
     });
     const s = useSEStore(testPinia)
     await s.addExpression(new SECalculation("0.25")) // This creates a new expression M1
-    const textArea = wrapper.find("#__test_textarea");
+    const textArea = wrapper.find("[data-testid=textarea]");
     await textArea.trigger("keydown.enter");
     // Wait for the setTimeout to work
     await vi.advanceTimersByTimeAsync(3000);

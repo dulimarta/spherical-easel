@@ -2,10 +2,12 @@ import ConstructionList from "../ConstructionList.vue";
 import { SphericalConstruction } from "../../types";
 import { Matrix4 } from "three";
 import { vi } from "vitest";
-import axios from "axios";
 import { createWrapper } from "../../../tests/vue-helper";
+import { useAccountStore } from "../../stores/account";
+import { useConstructionStore } from "../../stores/construction"
+import {mockedStore} from "../../../tests/mock-utils"
 // import store from "@/";
-vi.mock("axios"); // Do this once
+// vi.mock("axios"); // Do this once
 
 const sampleData = () => {
   const arr: Array<SphericalConstruction> = [];
@@ -28,45 +30,57 @@ const sampleData = () => {
   return arr;
 };
 
-// store.state.se.svgCanvas = document.createElement("div");
 
-// const createComponent = (extraOption: any) =>
-//   createWrapper(
-//     ConstructionList,
-//     {
-//       mountOptions: {
-//         stubs: { VIcon: true },
-//         mocks: { $appAuth: { currentUser: null } },
-//         // store,
-//         ...extraOption
-//       }
-//     },
-//     true // true: shallow mount
-//   );
-// import f
-import { mockFirebase } from "firestore-vitest-mock/mocks/firebase";
-import { VueWrapper } from "@vue/test-utils";
-// import {getFirestore} from "firebase/firestore"
+// import { mockFirebase } from "firestore-vitest-mock/mocks/firebase";
+function prepareWrapper(
+) {
+  vi.mock("firebase/firestore",  () => {
+    return {
+      collection: vi.fn(),
+      doc: vi.fn(),
+      // docs: vi.fn(),
+      getDoc: vi.fn().mockResolvedValue({} as DocumentSnapshot),
+      getDocs: vi.fn().mockImplementation(() => ({
+        docs: []
+      })),
+      getFirestore: vi.fn(),
+    };
+  });
+  vi.mock("firebase/auth", () => {
+    console.debug("Inside firebase/auth mock")
+    const u: UserCredential = {
+      user: {
+        emailVerified: true
+      } as User,
+      providerId: null,
+      operationType: 'signIn'
+    }
+    return {
+      getAuth: vi.fn(() => ({
+        onAuthStateChanged: vi.fn()
+      })),
+      signInWithEmailAndPassword: vi.fn().mockResolvedValue(u)
+    };
+  });
+  return createWrapper(ConstructionList, {
+    componentProps: {
+      items: [],
+      allowSharing: false
+    }
+  });
+}
+import { DOMWrapper, VueWrapper } from "@vue/test-utils";
+import { User, UserCredential } from "firebase/auth";
+import { collection, DocumentSnapshot, QuerySnapshot } from "firebase/firestore";
+import { TestingPinia } from "@pinia/testing";
+import { setActivePinia } from "pinia";
 const TEST_DATA = sampleData();
 const NO_DATA: Array<SphericalConstruction> = [];
 describe("Construction Lis: empty list", () => {
-  let wrapper: VueWrapper
+  let wrapper: VueWrapper;
   beforeEach(() => {
-    vi.mock("firebase/firestore", () => ({
-      getFirestore: vi.fn()
-    }))
-    vi.mock("firebase/auth", () => ({
-      getAuth: vi.fn(() => ({
-        onAuthStateChanged: vi.fn()
-      }))
-    }))
-    const out = createWrapper(ConstructionList, {
-      componentProps: {
-        items: [],
-        allowSharing: true,
-      }
-    });
-    wrapper = out.wrapper
+    const out = prepareWrapper();
+    wrapper = out.wrapper;
     // mockGoogleCloudFirestore({})
     //   wrapper = createComponent();
     // setActivePinia(createPinia());
@@ -74,47 +88,35 @@ describe("Construction Lis: empty list", () => {
   });
   afterEach(() => {
     // vi.resetAllMocks();
-
-  })
+  });
 
   it("is an instance", () => {
-    expect(wrapper).toBeTruthy()
-  })
-
+    expect(wrapper).toBeTruthy();
+  });
 
   it("shows 'No data' when construction list is empty", () => {
     expect(wrapper.text()).toContain("No data");
   });
-
 });
 
 describe("Construction List: non-empty list", () => {
-  let wrapper: VueWrapper
-  beforeEach(() => {
-    vi.mock("firebase/firestore", () => ({
-      getFirestore: vi.fn()
-    }))
-    vi.mock("firebase/auth", () => ({
-      getAuth: vi.fn(() => ({
-        onAuthStateChanged: vi.fn()
-      }))
-    }))
-    const out = createWrapper(ConstructionList, {
-      componentProps: {
-        items: TEST_DATA,
-        allowSharing: true,
-      }
-    });
-    wrapper = out.wrapper
+  let wrapper: VueWrapper;
+  let testPinia: TestingPinia
+  beforeEach(async() => {
+    const out = prepareWrapper();
+    wrapper = out.wrapper;
+    testPinia = out.testPinia
+    vi.clearAllTimers();
+    await wrapper.setProps({items: TEST_DATA, allowSharing: false})
   });
-  it("shows the right number of items", () => {
-    const z = wrapper.findAll("._test_constructionItem")
-    expect(z.length).toBe(TEST_DATA.length)
+  it("shows the right number of items", async () => {
+    const z = wrapper.findAll("[data-testid=constructionItem]");
+    expect(z.length).toBe(TEST_DATA.length);
   });
 
   it("shows a list of constructions with author name", () => {
-    const cList = wrapper.findAll("._test_constructionItem")
-    expect(cList.length).toBe(TEST_DATA.length)
+    const cList = wrapper.findAll("[data-testid=constructionItem]");
+    expect(cList.length).toBe(TEST_DATA.length);
     for (let k = 0; k < cList.length; k++) {
       const el = cList.at(k);
       expect(el?.text()).toContain(TEST_DATA[k].author);
@@ -122,48 +124,149 @@ describe("Construction List: non-empty list", () => {
   });
 
   it("shows a list of constructions with description", () => {
-    const cList = wrapper.findAll("._test_constructionItem")
-    expect(cList.length).toBe(TEST_DATA.length)
+    const cList = wrapper.findAll("[data-testid=constructionItem]");
+    expect(cList.length).toBe(TEST_DATA.length);
     for (let k = 0; k < cList.length; k++) {
       const el = cList.at(k);
       expect(el?.text()).toContain(TEST_DATA[k].description);
     }
   });
+});
 
-  it.skip("shows overlay on mouse hover", async () => {
-    const cList = wrapper.findAll("._test_constructionItem")
-    expect(cList.length).toBe(TEST_DATA.length)
-    // (axios.get as any).mockResolvedValue({ data: "<svg></svg>" });
-    // const wrapper = createComponent({
-    //   propsData: { items: TEST_DATA, allowSharing: false }
-    // });
-    // const cList = wrapper.findAll("._test_constructionItem");
-    // expect(cList.length).toBeGreaterThan(0);
+describe("Construction List: Overlay buttons", () => {
+  let wrapper: VueWrapper
+  let testPinia: TestingPinia
+  // let overlayContent: DOMWrapper<Element> | undefined
+  beforeEach(() => {
+    vi.useFakeTimers();
+    const out = prepareWrapper()
+    wrapper = out.wrapper
+    testPinia = out.testPinia
+  });
+  afterEach(() => {
+    vi.clearAllTimers();
+  });
+  async function hoverToFirstItem(w: VueWrapper) {
+    const cList = w.findAll("[data-testid=constructionItem]");
+    expect(cList.length).toBe(TEST_DATA.length);
     const el = cList.at(0);
-    await el?.trigger("mouseover");
-    // await wrapper.vm.$nextTick();
-    const content1 = wrapper.find("._test_constructionOverlay");
-    // content1.element.style.setProperty("opacity", "1.0");
-    console.debug("After hover", wrapper.html());
-    // await wrapper.vm.$nextTick();
-    // const opaqueContent = el?.find("._test_constructionOverlay");
-    // console.debug("Opaque?", opaqueContent?.html());
-    // // FIXME:
-    // // From inspection of the HTML tree at runtime Vuetify initially hides
-    // // the overlay by setting its opacity to 0.
-    // // On a mouseover event, the opacity is set to a non-zero value
-    // // However, find() is not able to locate the hidden DOM tree
+    // To simulate hovering, it is important that we also trigger a "mouseneter" event
+    await el?.trigger("mouseenter");
+    await vi.advanceTimersByTime(1000);
+    await w.vm.$nextTick();
+    return el?.find("[data-testid=buttonOverlay]");
+  }
+
+  it("has overlay with button(s)", async () => {
+    await wrapper.setProps({items: TEST_DATA, allowSharing: true})
+    const overlayContent = await hoverToFirstItem(wrapper);
+    expect(overlayContent?.exists).toBeTruthy();
+    const buttons = overlayContent?.findAll("button");
+    expect(buttons?.length).toBeGreaterThan(0);
   });
 
-  // TODO: the following emit events can't be tested until
-  // we have a way to poke into the hidden items on the v-overlay
-  it.skip("emits load-requested", () => {
-    // fail("Incomplete test");
+  it("shows load button", async () => {
+    await wrapper.setProps({ items: TEST_DATA, allowSharing: true });
+    const overlayContent = await hoverToFirstItem(wrapper);
+    const btn = overlayContent?.find("[data-testid=load_btn]");
+    expect(btn?.text()).not.toBeNull();
   });
-  it.skip("emits share-requested", () => {
-    // fail("Incomplete test");
+
+  it("shows share button", async () => {
+    const testDataPublic = TEST_DATA.map((z, idx) => ({
+      ...z,
+      publicDocId: `PUBLICDOC${idx}`,
+    }));
+    await wrapper.setProps({ items: testDataPublic, allowSharing: true });
+    const overlayContent = await hoverToFirstItem(wrapper);
+    const btn = overlayContent?.find("[data-testid=share_btn]");
+    // console.debug("Button", btn?.html())
+    expect(btn?.text()).not.toBeNull();
   });
-  it.skip("emits delete-requested", () => {
-    // fail("Incomplete test");
+
+  it("shows make private button", async () => {
+    const testDataPublic = TEST_DATA.map((z, idx) => ({
+      ...z,
+      publicDocId: `PUBLICDOC${idx}`,
+      author: 'me@test.com'
+    }));
+    await wrapper.setProps({ items: testDataPublic, allowSharing: true });
+    const acctStore = useAccountStore(testPinia);
+    acctStore.userEmail = "me@test.com"
+    const overlayContent = await hoverToFirstItem(wrapper);
+    // console.debug("Overlay", overlayContent?.html())
+    const btn = overlayContent?.find("[data-testid=make_private_btn]");
+    // // console.debug("Button", btn?.html())
+    expect(btn?.exists()).toBeTruthy()
   });
+
+  it("shows make public button for constructions owned by a user", async () => {
+    const testDataPublic = TEST_DATA.map((z, idx) => ({
+      ...z,
+      author: 'me@test.com'
+    }));
+
+    await wrapper.setProps({ items: testDataPublic, allowSharing: true });
+    const acctStore = useAccountStore(testPinia);
+    acctStore.userEmail = "me@test.com"
+    const overlayContent = await hoverToFirstItem(wrapper);
+    const btn = overlayContent?.find("[data-testid=make_public_btn]");
+    // console.debug("Button", btn?.html())
+    expect(btn?.exists()).toBeTruthy()
+  });
+
+  it("shows delete button on constructions owned by a user", async () => {
+    const testDataPublic = TEST_DATA.map((z, idx) => ({
+      ...z,
+      author: 'me@test.com'
+    }));
+    await wrapper.setProps({ items: testDataPublic, allowSharing: true });
+    const acctStore = useAccountStore(testPinia);
+    acctStore.userEmail = "me@test.com"
+    const overlayContent = await hoverToFirstItem(wrapper);
+    const btn = overlayContent?.find("[data-testid=delete_btn]");
+    // console.debug("Button", btn?.html())
+    expect(btn?.exists()).toBeTruthy()
+  });
+
+  it("shows star button on constructions owned by someone else", async () => {
+    const testDataPublic = TEST_DATA.map((z, idx) => ({
+      ...z,
+      publicDocId: `PUBLICDOC${idx}`,
+      author: 'otheruser@test.com'
+    }));
+    // console.debug("TestPinia", testPinia.state.value)
+    const acctStore = useAccountStore(testPinia);
+    const constructionStore = mockedStore(useConstructionStore)
+    // constructionStore.repopulateArrays.mockImplementation(async () => {
+    //   console.debug("Mocked firebaseUid watcher")
+    // })
+    acctStore.userEmail = "me@test.com"
+    acctStore.firebaseUid = "OID61123GYZ"
+    await wrapper.setProps({ items: testDataPublic, allowSharing: true });
+    const overlayContent = await hoverToFirstItem(wrapper);
+    // console.debug("Overlay", overlayContent?.html())
+    const btn = overlayContent?.find("[data-testid=star_btn]");
+    // console.debug("Button", btn?.html())
+    expect(btn?.exists()).toBeTruthy
+  });
+
+  it("shows unstar button on constructions in my star list", async () => {
+    const testDataPublic = TEST_DATA.map((z, idx) => ({
+      ...z,
+      publicDocId: `PUBLICDOC${idx}`,
+      author: 'otheruser@test.com'
+    }));
+    const acctStore = useAccountStore(testPinia);
+    acctStore.userEmail = "me@test.com"
+    acctStore.firebaseUid = "OID61123GYZ"
+    acctStore.starredConstructions = ["PUBLICDOC0"]
+    await wrapper.setProps({ items: testDataPublic, allowSharing: true });
+    const overlayContent = await hoverToFirstItem(wrapper);
+    // console.debug("Overlay", overlayContent?.html())
+    const btn = overlayContent?.find("[data-testid=unstar_btn]");
+    // console.debug("Button", btn?.html())
+    expect(btn?.exists()).toBeTruthy
+  });
+
 });

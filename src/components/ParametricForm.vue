@@ -16,9 +16,10 @@
         </div>
         Open panels {{ panels }}
         <v-expansion-panels multiple v-model="panels">
-          <v-expansion-panel data-testid="xyz_formula"
+          <v-expansion-panel data-testid="xyz_formula_panel"
           :title="t('parametricCoordinates')">
-            <v-expansion-panel-text class="bg-white">
+            <v-expansion-panel-text class="bg-white" data-testid="xyz_formula">
+              Where am I
               <template
                 v-for="(coordinate, idk) in parametricFormulaData"
                 :key="idk">
