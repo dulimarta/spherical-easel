@@ -659,6 +659,7 @@ export const useSEStore = defineStore("se", () => {
     }
   }
   function addSegment(segment: SESegment): void {
+    console.log("seg id", segment.id)
     seSegmentIds.value.push(segment.id);
     seSegmentMap.set(segment.id, segment);
     seNodules.value.push(segment);

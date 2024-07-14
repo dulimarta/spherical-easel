@@ -29,6 +29,8 @@ import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SELatitude } from "@/models/SELatitude";
+import { SELine } from "@/models/SELine";
 
 type TemporaryPlottables = {
   line: Line;
@@ -42,8 +44,6 @@ export default class TangentLineThruPointHandler extends Highlighter {
    * A temporary lines to display while the user is creating a new line -- there needs to be as many temporary lines as there are possible normal lines
    */
   private tempPlots: TemporaryPlottables[] = [];
-  // private temporaryLinesAdded: boolean[] = [];
-  // private temporaryNormals: Vector3[] = []; // The normal to the plane of the temporary line
 
   /**
    * A temporary plottable (TwoJS) point created while the user is making the tangent
@@ -124,9 +124,12 @@ export default class TangentLineThruPointHandler extends Highlighter {
         this.sePointOneDimensionalParent === null &&
         this.sePointVector.isZero() &&
         (this.hitSEPoints.length !== 0 ||
+          this.hitSESegments.length !== 0 ||
+          this.hitSELines.length !== 0 ||
           this.oneDimensional !== null ||
           this.hitSENodules.length === 0)
       ) {
+        console.log("Her");
         // Fill the point object first by the nearby points, then by nearby intersection points,
         // then point on one-dimensional object, then by creating a new point
         if (this.hitSEPoints.length > 0) {
@@ -144,6 +147,32 @@ export default class TangentLineThruPointHandler extends Highlighter {
             this.temporaryPointMarker.addToLayers(this.layers);
             this.temporaryPointAdded = true;
           }
+        } else if (this.hitSESegments.length > 0) {
+          // The start of the line will be a point on a segment
+          //  Eventually, we will create a new SEPointOneDimensional and Point
+          this.sePointOneDimensionalParent = this.hitSESegments[0];
+          this.sePointVector.copy(
+            this.sePointOneDimensionalParent.closestVector(
+              this.currentSphereVector
+            )
+          );
+          this.temporaryPointMarker.positionVector = this.sePointVector;
+          this.temporaryPointMarker.addToLayers(this.layers);
+          this.temporaryPointAdded = true;
+          this.sePoint = null;
+        } else if (this.hitSELines.length > 0) {
+          // The start of the line will be a point on a Line
+          //  Eventually, we will create a new SEPointOneDimensional and Point
+          this.sePointOneDimensionalParent = this.hitSELines[0];
+          this.sePointVector.copy(
+            this.sePointOneDimensionalParent.closestVector(
+              this.currentSphereVector
+            )
+          );
+          this.temporaryPointMarker.positionVector = this.sePointVector;
+          this.temporaryPointMarker.addToLayers(this.layers);
+          this.temporaryPointAdded = true;
+          this.sePoint = null;
         } else if (this.hitSECircles.length > 0) {
           // The start of the line will be a point on a circle
           //  Eventually, we will create a new SEPointOneDimensional and Point
@@ -308,30 +337,38 @@ export default class TangentLineThruPointHandler extends Highlighter {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
     // Only object can be interacted with at a given time, so set the first point nearby to glowing
-    // The user can create points  on circles, segments, and lines ellipses, parametrics, polygons, so
+    // The user can create points on circles, segments, and lines ellipses, parametrics, polygons, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
+    // console.log(
+    //   "data",
+    //   this.sePoint === null,
+    //   this.sePointOneDimensionalParent === null,
+    //   this.sePointVector.isZero(),
+    //   this.oneDimensional === null
+    // );
+
     if (
       this.sePoint === null &&
       this.sePointOneDimensionalParent === null &&
-      this.sePointVector.isZero()
+      this.sePointVector.isZero() &&
+      this.oneDimensional === null
     ) {
+      // console.log("1 both point and one-d not set");
       // glow the one-dimensional when point is not set
       if (this.hitSEPoints.length > 0) {
         this.hitSEPoints[0].glowing = true;
         this.snapToTemporaryPoint = this.hitSEPoints[0];
         this.snapToTemporaryOneDimensional = null;
-      }
-      // else if (this.hitSESegments.length > 0) {
-      //   this.hitSESegments[0].glowing = true;
-      //   this.snapToTemporaryOneDimensional = this.hitSESegments[0];
-      //   this.snapToTemporaryPoint = null;
-      // } else if (this.hitSELines.length > 0) {
-      //   this.hitSELines[0].glowing = true;
-      //   this.snapToTemporaryOneDimensional = this.hitSELines[0];
-      //   this.snapToTemporaryPoint = null;
-      // }
-      else if (this.hitSECircles.length > 0) {
+      } else if (this.hitSESegments.length > 0) {
+        this.hitSESegments[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSESegments[0];
+        this.snapToTemporaryPoint = null;
+      } else if (this.hitSELines.length > 0) {
+        this.hitSELines[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSELines[0];
+        this.snapToTemporaryPoint = null;
+      } else if (this.hitSECircles.length > 0) {
         this.hitSECircles[0].glowing = true;
         this.snapToTemporaryOneDimensional = this.hitSECircles[0];
         this.snapToTemporaryPoint = null;
@@ -355,6 +392,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
       ) &&
       this.oneDimensional === null
     ) {
+      // console.log("2 point is set and one-d not set");
       // in this case the point is set and the one-dimensional is not, so only glow the one-dimensional
       // no need to snap
       if (this.hitSECircles.length > 0) {
@@ -373,9 +411,84 @@ export default class TangentLineThruPointHandler extends Highlighter {
         this.snapToTemporaryOneDimensional = null;
         this.snapToTemporaryPoint = null;
       }
+    } else if (
+      this.sePoint === null &&
+      this.sePointOneDimensionalParent == null &&
+      this.sePointVector.isZero() &&
+      this.oneDimensional !== null
+    ) {
+      // console.log("3 point is not set and one-d is set");
+      // in this case the one dimensional is set and the point is not, so glow all the one-dimensional objects and points
+      if (this.hitSEPoints.length > 0) {
+        this.hitSEPoints[0].glowing = true;
+        this.snapToTemporaryPoint = this.hitSEPoints[0];
+        this.snapToTemporaryOneDimensional = null;
+      } else if (this.hitSESegments.length > 0) {
+        this.hitSESegments[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSESegments[0];
+        this.snapToTemporaryPoint = null;
+      } else if (this.hitSELines.length > 0) {
+        this.hitSELines[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSELines[0];
+        this.snapToTemporaryPoint = null;
+      } else if (this.hitSECircles.length > 0) {
+        this.hitSECircles[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSECircles[0];
+        this.snapToTemporaryPoint = null;
+      } else if (this.hitSEEllipses.length > 0) {
+        this.hitSEEllipses[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSEEllipses[0];
+        this.snapToTemporaryPoint = null;
+      } else if (this.hitSEParametrics.length > 0) {
+        this.hitSEParametrics[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSEParametrics[0];
+        this.snapToTemporaryPoint = null;
+      } else if (this.hitSEPolygons.length > 0) {
+        this.hitSEPolygons[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSEPolygons[0];
+        this.snapToTemporaryPoint = null;
+      } else {
+        this.snapToTemporaryOneDimensional = null;
+        this.snapToTemporaryPoint = null;
+      }
     }
 
     if (this.isOnSphere) {
+      if (
+        this.sePoint === null &&
+        this.sePointOneDimensionalParent === null &&
+        this.sePointVector.isZero() &&
+        this.oneDimensional === null
+      ) {
+        // console.log("11 both point and one-d not set");
+        if (!this.temporaryPointAdded) {
+          this.temporaryPointMarker.addToLayers(this.layers);
+          this.temporaryPointAdded = true;
+        }
+        this.temporaryPointMarker.positionVector = this.currentSphereVector;
+      }
+
+      if (this.snapToTemporaryOneDimensional !== null) {
+         // if this is a line or segment, snap the point to it, if other one dim remove the temp point
+        if (
+         (this.hitSELines[0] !== undefined && this.snapToTemporaryOneDimensional.id === this.hitSELines[0].id) ||
+         (this.hitSESegments[0] !== undefined && this.snapToTemporaryOneDimensional.id === this.hitSESegments[0].id)
+        ) {
+          this.temporaryPointMarker.positionVector =
+            this.snapToTemporaryOneDimensional.closestVector(
+              this.currentSphereVector
+            );
+        } else {
+          this.temporaryPointMarker.removeFromLayers();
+          this.temporaryPointAdded = false;
+        }
+      }
+
+      if (this.snapToTemporaryPoint !== null) {
+        this.temporaryPointMarker.removeFromLayers();
+        this.temporaryPointAdded = false;
+      }
+
       if (
         this.sePoint === null &&
         this.sePointOneDimensionalParent === null &&
@@ -436,7 +549,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
           TangentLineThruPointHandler.store.zoomMagnificationFactor
         );
 
-        // Add more temporary line as needed
+        // Add more temporary lines as needed
         while (this.tempPlots.length < normalList.length) {
           const newLine = new Line();
           const newPoint = new Point();
@@ -525,13 +638,13 @@ export default class TangentLineThruPointHandler extends Highlighter {
         );
         this.sePoint.locationVector =
           sePointOneDimensionalParent.closestVector(sePointVector);
-        const newSELabel =this.sePoint.attachLabelWithOffset(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
-            )
+        const newSELabel = this.sePoint.attachLabelWithOffset(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
           )
+        );
 
         addTangentLineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -545,12 +658,12 @@ export default class TangentLineThruPointHandler extends Highlighter {
         this.sePoint = new SEPoint();
         this.sePoint.locationVector = sePointVector;
         const newSELabel = this.sePoint.attachLabelWithOffset(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
-            )
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
           )
+        );
 
         addTangentLineGroup.addCommand(
           new AddPointCommand(this.sePoint, newSELabel)
@@ -682,12 +795,12 @@ export default class TangentLineThruPointHandler extends Highlighter {
           } else {
             // Create the plottable label
             const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
-                new Vector3(
-                  2 * SETTINGS.point.initialLabelOffset,
-                  SETTINGS.point.initialLabelOffset,
-                  0
-                )
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
               )
+            );
 
             addTangentLineGroup.addCommand(
               new AddIntersectionPointCommand(

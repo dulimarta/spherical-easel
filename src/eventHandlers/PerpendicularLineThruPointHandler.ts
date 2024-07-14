@@ -417,6 +417,52 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         this.hitSEParametrics[0].glowing = true;
         this.snapToTemporaryOneDimensional = null;
         this.snapToTemporaryPoint = null;
+      }
+      // else if (this.hitSEPolygons.length > 0) {
+      //   this.hitSEPolygons[0].glowing = true;
+      //   this.snapToTemporaryOneDimensional = null;
+      //   this.snapToTemporaryPoint = null;
+      // }
+       else {
+        this.snapToTemporaryOneDimensional = null;
+        this.snapToTemporaryPoint = null;
+      }
+    } else if (
+      this.sePoint === null &&
+      this.sePointOneDimensionalParent == null &&
+      this.sePointVector.isZero() &&
+      this.oneDimensional !== null
+    ) {
+      // console.log("3 point is not set and one-d is set");
+      // in this case the one dimensional is set and the point is not, so glow all the one-dimensional objects and points
+      if (this.hitSEPoints.length > 0) {
+        this.hitSEPoints[0].glowing = true;
+        this.snapToTemporaryPoint = this.hitSEPoints[0];
+        this.snapToTemporaryOneDimensional = null;
+      } else if (this.hitSESegments.length > 0) {
+        this.hitSESegments[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSESegments[0];
+        this.snapToTemporaryPoint = null;
+      } else if (this.hitSELines.length > 0) {
+        this.hitSELines[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSELines[0];
+        this.snapToTemporaryPoint = null;
+      } else if (this.hitSECircles.length > 0) {
+        this.hitSECircles[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSECircles[0];
+        this.snapToTemporaryPoint = null;
+      } else if (this.hitSEEllipses.length > 0) {
+        this.hitSEEllipses[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSEEllipses[0];
+        this.snapToTemporaryPoint = null;
+      } else if (this.hitSEParametrics.length > 0) {
+        this.hitSEParametrics[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSEParametrics[0];
+        this.snapToTemporaryPoint = null;
+      } else if (this.hitSEPolygons.length > 0) {
+        this.hitSEPolygons[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSEPolygons[0];
+        this.snapToTemporaryPoint = null;
       } else {
         this.snapToTemporaryOneDimensional = null;
         this.snapToTemporaryPoint = null;
@@ -424,6 +470,28 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     }
 
     if (this.isOnSphere) {
+      if (
+        this.sePoint === null &&
+        this.sePointOneDimensionalParent === null &&
+        this.sePointVector.isZero() &&
+        this.oneDimensional === null
+      ) {
+        // console.log("11 both point and one-d not set");
+        if (!this.temporaryPointAdded) {
+          this.temporaryPointMarker.addToLayers(this.layers);
+          this.temporaryPointAdded = true;
+        }
+        this.temporaryPointMarker.positionVector = this.currentSphereVector;
+      }
+
+      if (
+        this.snapToTemporaryOneDimensional !== null ||
+        this.snapToTemporaryPoint !== null
+      ) {
+        this.temporaryPointMarker.removeFromLayers();
+        this.temporaryPointAdded = false;
+      }
+
       if (
         this.sePoint === null &&
         this.sePointOneDimensionalParent === null &&
@@ -568,7 +636,6 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
     // First create a point if needed. If sePoint is not null, then a point already exists and doesn't need to be created
     if (sePoint === null) {
-
       if (sePointOneDimensionalParent !== null) {
         // create new point on one dimensional object
         // Create the model object for the new point and link them
@@ -578,12 +645,12 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         this.sePoint.locationVector =
           sePointOneDimensionalParent.closestVector(sePointVector);
         const newSELabel = this.sePoint.attachLabelWithOffset(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
-            )
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
           )
+        );
 
         addPerpendicularLineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
@@ -597,12 +664,12 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         this.sePoint = new SEPoint();
         this.sePoint.locationVector = sePointVector;
         const newSELabel = this.sePoint.attachLabelWithOffset(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
-            )
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
           )
+        );
 
         addPerpendicularLineGroup.addCommand(
           new AddPointCommand(this.sePoint, newSELabel)
@@ -763,12 +830,12 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             // );
             // Create the plottable label
             const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
-                new Vector3(
-                  2 * SETTINGS.point.initialLabelOffset,
-                  SETTINGS.point.initialLabelOffset,
-                  0
-                )
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
               )
+            );
 
             const addIntersectionCmd = new AddIntersectionPointCommand(
               item.SEIntersectionPoint,

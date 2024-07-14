@@ -338,14 +338,12 @@ export default class Circle extends Nodule {
     // make sure the height and width are never zero, otherwise you get an SVG error about a NaN
     const tempHalfMinorAxis =
       Math.abs(this._halfMinorAxis) < SETTINGS.tolerance
-        ? 2 * radius * this._halfMinorAxis
-        : 0.00001;
-
+        ? 0.00001
+        : 2 * radius * this._halfMinorAxis;
     const tempHalfMajorAxis =
       Math.abs(this._halfMajorAxis) < SETTINGS.tolerance
-        ? 2 * radius * this._halfMajorAxis
-        : 0.00001;
-
+        ? 0.00001
+        : 2 * radius * this._halfMajorAxis;
     this._frontPart.height = tempHalfMinorAxis;
     this._frontPart.width = tempHalfMajorAxis;
     this._frontPart.rotation = this._rotation;
@@ -783,7 +781,7 @@ export default class Circle extends Nodule {
    * Set or Get the center of the circle vector. (Used by circle handler to set these values for the temporary circle)
    */
   set centerVector(position: Vector3) {
-    this._centerVector.copy(position);
+    this._centerVector.copy(position).normalize(); // must be on the unit sphere
   }
   get centerVector(): Vector3 {
     return this._centerVector;

@@ -17,6 +17,7 @@ import { Line } from "two.js/src/shapes/line";
 import { Vector } from "two.js/src/vector";
 
 const NUMCIRCLEVERTICES = SETTINGS.angleMarker.numCirclePoints;
+const radius = SETTINGS.boundaryCircle.radius;
 
 export default class AngleMarker extends Nodule {
   /**
@@ -582,59 +583,61 @@ export default class AngleMarker extends Nodule {
     ); //DO NOT Rotate the center vector at the same time you set it equal to this._frontPart.position, this causes unexpected results
 
     //Copy the updated information into the glowing/not front/back circle/double parts
-    this._frontCircle.height =
-      2 * this._circleHalfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._frontCircle.width =
-      2 * this._circleHalfMajorAxis * SETTINGS.boundaryCircle.radius;
+    // make sure that the height and width of the projections are not zero
+    const tempHalfMinorAxis =
+      Math.abs(this._circleHalfMinorAxis) < SETTINGS.tolerance
+        ? 0.00001
+        : 2 * radius * this._circleHalfMinorAxis;
+    const tempHalfMajorAxis =
+      Math.abs(this._circleHalfMajorAxis) < SETTINGS.tolerance
+        ? 0.00001
+        : 2 * radius * this._circleHalfMajorAxis;
+    const tempDoubleHalfMinorAxis =
+      Math.abs(this._doubleHalfMinorAxis) < SETTINGS.tolerance
+        ? 0.00001
+        : 2 * radius * this._doubleHalfMinorAxis;
+    const tempDoubleHalfMajorAxis =
+      Math.abs(this._doubleHalfMajorAxis) < SETTINGS.tolerance
+        ? 0.00001
+        : 2 * radius * this._doubleHalfMajorAxis;
+
+    this._frontCircle.height = tempHalfMinorAxis;
+    this._frontCircle.width = tempHalfMajorAxis;
     this._frontCircle.rotation = this._rotation;
     this._frontCircle.position = this._circleCenter;
 
-    this._backCircle.height =
-      2 * this._circleHalfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._backCircle.width =
-      2 * this._circleHalfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._backCircle.height = tempHalfMinorAxis;
+    this._backCircle.width = tempHalfMajorAxis;
     this._backCircle.position = this._circleCenter;
     this._backCircle.rotation = this._rotation;
 
-    this._glowingFrontCircle.height =
-      2 * this._circleHalfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontCircle.width =
-      2 * this._circleHalfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontCircle.height = tempHalfMinorAxis;
+    this._glowingFrontCircle.width = tempHalfMajorAxis;
     this._glowingFrontCircle.position = this._circleCenter;
     this._glowingFrontCircle.rotation = this._rotation;
 
-    this._glowingBackCircle.height =
-      2 * this._circleHalfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._glowingBackCircle.width =
-      2 * this._circleHalfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._glowingBackCircle.height = tempHalfMinorAxis;
+    this._glowingBackCircle.width = tempHalfMajorAxis;
     this._glowingBackCircle.position = this._circleCenter;
     this._glowingBackCircle.rotation = this._rotation;
 
-    this._frontDouble.height =
-      2 * this._doubleHalfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._frontDouble.width =
-      2 * this._doubleHalfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._frontDouble.height = tempDoubleHalfMinorAxis;
+    this._frontDouble.width = tempDoubleHalfMajorAxis;
     this._frontDouble.rotation = this._rotation;
     this._frontDouble.position = this._doubleCenter;
 
-    this._backDouble.height =
-      2 * this._doubleHalfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._backDouble.width =
-      2 * this._doubleHalfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._backDouble.height = tempDoubleHalfMinorAxis;
+    this._backDouble.width = tempDoubleHalfMajorAxis;
     this._backDouble.position = this._doubleCenter;
     this._backDouble.rotation = this._rotation;
 
-    this._glowingFrontDouble.height =
-      2 * this._doubleHalfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontDouble.width =
-      2 * this._doubleHalfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontDouble.height = tempDoubleHalfMinorAxis;
+    this._glowingFrontDouble.width = tempDoubleHalfMajorAxis;
     this._glowingFrontDouble.position = this._doubleCenter;
     this._glowingFrontDouble.rotation = this._rotation;
 
-    this._glowingBackDouble.height =
-      2 * this._doubleHalfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._glowingBackDouble.width =
-      2 * this._doubleHalfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._glowingBackDouble.height = tempDoubleHalfMinorAxis;
+    this._glowingBackDouble.width = tempDoubleHalfMajorAxis;
     this._glowingBackDouble.position = this._doubleCenter;
     this._glowingBackDouble.rotation = this._rotation;
 
@@ -784,25 +787,41 @@ export default class AngleMarker extends Nodule {
     );
 
     // Now set the first vertex of the glowing/not glowing, front/back, not double/double tick marks
-    this._frontTick.vertices[0].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._frontTick.vertices[0].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._frontTickDouble.vertices[0].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._frontTickDouble.vertices[0].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
+    this._frontTick.vertices[0].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._frontTick.vertices[0].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    this._frontTickDouble.vertices[0].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._frontTickDouble.vertices[0].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
-    this._backTick.vertices[0].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._backTick.vertices[0].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._backTickDouble.vertices[0].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._backTickDouble.vertices[0].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
+    this._backTick.vertices[0].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._backTick.vertices[0].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    this._backTickDouble.vertices[0].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._backTickDouble.vertices[0].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
-    this._glowingFrontTick.vertices[0].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTick.vertices[0].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTickDouble.vertices[0].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTickDouble.vertices[0].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
+    this._glowingFrontTick.vertices[0].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontTick.vertices[0].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontTickDouble.vertices[0].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontTickDouble.vertices[0].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
-    this._glowingBackTick.vertices[0].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._glowingBackTick.vertices[0].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._glowingBackTickDouble.vertices[0].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._glowingBackTickDouble.vertices[0].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
+    this._glowingBackTick.vertices[0].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._glowingBackTick.vertices[0].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    this._glowingBackTickDouble.vertices[0].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._glowingBackTickDouble.vertices[0].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
     // Now compute the end of the glowing/not glowing, front/back, not double tick marks
     this.tmpVector1.set(0, 0, 0);
@@ -815,14 +834,22 @@ export default class AngleMarker extends Nodule {
       Math.sin(this._radius + SETTINGS.angleMarker.defaultTickMarkLength / 2)
     );
 
-    this._frontTick.vertices[1].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._frontTick.vertices[1].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._backTick.vertices[1].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._backTick.vertices[1].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTick.vertices[1].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTick.vertices[1].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._glowingBackTick.vertices[1].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._glowingBackTick.vertices[1].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
+    this._frontTick.vertices[1].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._frontTick.vertices[1].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    this._backTick.vertices[1].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._backTick.vertices[1].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontTick.vertices[1].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontTick.vertices[1].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    this._glowingBackTick.vertices[1].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._glowingBackTick.vertices[1].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
     // Now compute the end of the glowing/not glowing, front/back, not double tick marks
     this.tmpVector1.set(0, 0, 0);
@@ -832,16 +859,24 @@ export default class AngleMarker extends Nodule {
     );
     this.tmpVector1.addScaledVector(
       this.tmpVector,
-      Math.sin(this._radiusDouble + 3*this._tickMarkLength / 4)
+      Math.sin(this._radiusDouble + (3 * this._tickMarkLength) / 4)
     );
-    this._frontTickDouble.vertices[1].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._frontTickDouble.vertices[1].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._backTickDouble.vertices[1].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._backTickDouble.vertices[1].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTickDouble.vertices[1].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTickDouble.vertices[1].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._glowingBackTickDouble.vertices[1].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._glowingBackTickDouble.vertices[1].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
+    this._frontTickDouble.vertices[1].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._frontTickDouble.vertices[1].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    this._backTickDouble.vertices[1].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._backTickDouble.vertices[1].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontTickDouble.vertices[1].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontTickDouble.vertices[1].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    this._glowingBackTickDouble.vertices[1].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._glowingBackTickDouble.vertices[1].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
     // Compute the arrow head vertices.
     // The arrow head is a non-convex non-crossed quadrilateral (almost a kite whose diagonals don't intersect)

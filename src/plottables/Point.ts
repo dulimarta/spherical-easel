@@ -27,7 +27,7 @@ export default class Point extends Nodule {
    * It will always be the case the x and y coordinates of these two vectors are the same.
    * The sign of the z coordinate indicates if the Point is on the back of the sphere
    */
-  public _locationVector = new Vector3(1, 0, 0);
+  private _locationVector = new Vector3(1, 0, 0);
   public defaultScreenVectorLocation = new Vector(1, 0);
 
   /**

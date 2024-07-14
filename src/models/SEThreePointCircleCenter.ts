@@ -3,14 +3,13 @@ import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
-import ThreePointCircleCenter from "@/plottables/ThreePointCircleCenter";
 const { t } = i18n.global;
+import { getThreeCircleCenter } from "@/utils/helpingfunctions";
 
 export class SEThreePointCircleCenter extends SEPoint {
   /**
    * The point parents of this SEThreePointCircleCenter
    */
-  public declare ref: ThreePointCircleCenter;
   private _sePointParent1: SEPoint;
   private _sePointParent2: SEPoint;
   private _sePointParent3: SEPoint;
@@ -26,17 +25,16 @@ export class SEThreePointCircleCenter extends SEPoint {
    * @param sePointParent3 The parent
    */
   constructor(
-    // threePointCircleCenter: ThreePointCircleCenter,
     sePointParent1: SEPoint,
     sePointParent2: SEPoint,
     sePointParent3: SEPoint
   ) {
-    super(true);
-    this.ref = new ThreePointCircleCenter();
+    super(true); // Non free point and the plottable is created
+
     this._sePointParent1 = sePointParent1;
     this._sePointParent2 = sePointParent2;
     this._sePointParent3 = sePointParent3;
-    this._locationVector.copy(this.ref._locationVector); // needed so that right after construction but before any (SE)update method to update the DAG, the location is set correctly and not to (0,0,0)
+
   }
 
   public get noduleDescription(): string {
@@ -65,7 +63,7 @@ export class SEThreePointCircleCenter extends SEPoint {
   get seParentPoint3(): SEPoint {
     return this._sePointParent3;
   }
-    //#region shallowupdateview
+  //#region shallowupdateview
   public shallowUpdate(): void {
     // The parent points must exist
     this._exists =
@@ -149,25 +147,16 @@ export class SEThreePointCircleCenter extends SEPoint {
           .isZero(SETTINGS.nearlyAntipodalIdeal)
       );
     if (this._exists) {
-      // WARNING: You might expect that the routines to compute the location of the center of the circle through three points
-      // would be found here, but it is not.  I put the routines to compute the center of the three point circle in the
-      // plottable object because they are lengthy and if I put the routines here, I would have to duplicate them them
-      // in the ThreePointCircleHandler to compute the location of the center of the the temporary object. So to compute the location
-      // simply set the location of the three vectors in the plottable object, execute the updateDisplay method, then read the
-      // location from the plottable object.
-
       // set the location of the plottable object
-      const threePointCircleCenter = this.ref;
-      threePointCircleCenter.vector1 = this._sePointParent1.locationVector;
-      threePointCircleCenter.vector2 = this._sePointParent2.locationVector;
-      threePointCircleCenter.vector3 = this._sePointParent3.locationVector;
+      this._locationVector = getThreeCircleCenter(
+        this._sePointParent1.locationVector,
+        this._sePointParent2.locationVector,
+        this._sePointParent3.locationVector
+      ).normalize()
       // update the display
+      this.ref.positionVector = this._locationVector;
       this.ref.updateDisplay();
-
-      this._locationVector
-        .copy(threePointCircleCenter._locationVector)
-        .normalize();
-    }
+   }
 
     // Update visibility
     if (this.showing && this._exists) {
@@ -177,7 +166,7 @@ export class SEThreePointCircleCenter extends SEPoint {
     }
   }
 
-    //#region updateview
+  //#region updateview
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]

@@ -399,8 +399,7 @@ export default class LineHandler extends Highlighter {
         // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
         this.temporaryLine.normalVector = this.normalVector;
       }
-    }
-    else if (this.isTemporaryStartMarkerAdded) {
+    } else if (this.isTemporaryStartMarkerAdded) {
       // Remove the temporary objects from the display.
       this.temporaryLine.removeFromLayers();
       this.temporaryStartMarker.removeFromLayers();
@@ -568,9 +567,7 @@ export default class LineHandler extends Highlighter {
       if (this.hitSESegments.length > 0) {
         // The end of the line will be a point on a segment
         // Create the model object for the new point and link them
-        vtx = new SEPointOnOneOrTwoDimensional(
-          this.hitSESegments[0]
-        );
+        vtx = new SEPointOnOneOrTwoDimensional(this.hitSESegments[0]);
         // Set the Location
         vtx.locationVector = this.hitSESegments[0].closestVector(
           this.currentSphereVector
@@ -603,9 +600,7 @@ export default class LineHandler extends Highlighter {
         );
       } else if (this.hitSECircles.length > 0) {
         // The end of the line will be a point on a circle
-        vtx = new SEPointOnOneOrTwoDimensional(
-          this.hitSECircles[0]
-        );
+        vtx = new SEPointOnOneOrTwoDimensional(this.hitSECircles[0]);
         // Set the Location
         vtx.locationVector = this.hitSECircles[0].closestVector(
           this.currentSphereVector
@@ -621,9 +616,7 @@ export default class LineHandler extends Highlighter {
         );
       } else if (this.hitSEEllipses.length > 0) {
         // The end of the line will be a point on a ellipse
-        vtx = new SEPointOnOneOrTwoDimensional(
-          this.hitSEEllipses[0]
-        );
+        vtx = new SEPointOnOneOrTwoDimensional(this.hitSEEllipses[0]);
         // Set the Location
         vtx.locationVector = this.hitSEEllipses[0].closestVector(
           this.currentSphereVector
@@ -639,9 +632,7 @@ export default class LineHandler extends Highlighter {
         );
       } else if (this.hitSEParametrics.length > 0) {
         // The end of the line will be a point on a parametric
-        vtx = new SEPointOnOneOrTwoDimensional(
-          this.hitSEParametrics[0]
-        );
+        vtx = new SEPointOnOneOrTwoDimensional(this.hitSEParametrics[0]);
         // Set the Location
         vtx.locationVector = this.hitSEParametrics[0].closestVector(
           this.currentSphereVector
@@ -657,9 +648,7 @@ export default class LineHandler extends Highlighter {
         );
       } else if (this.hitSEPolygons.length > 0) {
         // The end of the line will be a point on a parametric
-        vtx = new SEPointOnOneOrTwoDimensional(
-          this.hitSEPolygons[0]
-        );
+        vtx = new SEPointOnOneOrTwoDimensional(this.hitSEPolygons[0]);
         // Set the Location
         vtx.locationVector = this.hitSEPolygons[0].closestVector(
           this.currentSphereVector
@@ -722,6 +711,13 @@ export default class LineHandler extends Highlighter {
         );
       }
       this.normalVector.copy(this.tmpVector).normalize();
+
+      // if (this.normalVector === undefined) {
+      //   console.error(
+      //     "The normal vector in line handler was not set properly"
+      //   );
+      //   return false;
+      // } //There are some situations in which the mouse actions (hard to duplicate) lead to an undefined normal vector and I'm hoping this will prevent the program from entering an error state.
 
       // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
       this.temporaryLine.normalVector = this.normalVector;
@@ -792,12 +788,12 @@ export default class LineHandler extends Highlighter {
           } else {
             // Create the plottable label
             const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
-                new Vector3(
-                  2 * SETTINGS.point.initialLabelOffset,
-                  SETTINGS.point.initialLabelOffset,
-                  0
-                )
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
               )
+            );
 
             lineGroup.addCommand(
               new AddIntersectionPointCommand(

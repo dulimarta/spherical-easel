@@ -124,7 +124,6 @@ export function intersectLineWithSegment(
     exists: true
   };
   // Plus and minus the cross product of the normal vectors are the possible intersection vectors
-
   tempVec1.crossVectors(line.normalVector, segment.normalVector).normalize();
   tempVec2.copy(tempVec1).multiplyScalar(-1);
   intersection1.vector.copy(tempVec1);
@@ -895,6 +894,7 @@ export function intersectCircleWithEllipse(
   transformedToStandard.applyMatrix4(
     tmpMatrix.copy(ellipse.ref.ellipseFrame).invert()
   );
+
   const radius = circle.circleRadius;
   // The function to find the zeros of is the distance from the transformed center to the
   // point on the ellipse minus the radius of the circle
@@ -927,6 +927,7 @@ export function intersectCircleWithEllipse(
   for (let i = 0; i <= 100; i++) {
     tValues.push((i * 2 * Math.PI) / 100);
   }
+
   const zeros = SENodule.findZerosParametrically(
     d,
     // FIXME
@@ -958,6 +959,7 @@ export function intersectCircleWithEllipse(
   returnItems.push(intersection4);
 
   zeros.forEach((z, ind) => {
+    console.log("in", ind)
     returnItems[ind].vector.copy(
       ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
     );

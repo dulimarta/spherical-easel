@@ -748,6 +748,12 @@ export default class SegmentHandler extends Highlighter {
         eventCtrlKey,
         this.endSEPoint.locationVector
       );
+      if (this.normalVector === undefined) {
+        console.error(
+          "The normal vector in segment handler was not set properly. 1"
+        );
+        return false;
+      } //There are some situations in which the mouse actions (hard to duplicate) lead to an undefined normal vector and I'm hoping this will prevent the program from entering an error state.
 
       // update the location of the endMarker
       this.temporaryEndMarker.positionVector = this.endSEPoint.locationVector;
@@ -915,7 +921,7 @@ export default class SegmentHandler extends Highlighter {
       this.longerThanPi = true;
       this.turnOffLongerThanPi = true;
     } else {
-       // this way when the user releases the length is less than pi.
+      // this way when the user releases the length is less than pi.
       // Check to see if the longThanPi variable needs updating.
       if (this.arcLength > 2) {
         // The startVector and endVector might be antipodal proceed with caution,
