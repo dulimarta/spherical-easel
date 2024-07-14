@@ -70,7 +70,7 @@ const ACTION_MODE_MAP: Map<ActionMode, string> = new Map([
   ["angleBisector", "CreateAngleBisectorDisplayedName"],
   ["nSectLine", "CreateNSectAngleDisplayedName"],
   ["threePointCircle", "CreateThreePointCircleDisplayedName"],
-  ["measuredCircle", "MeasureCircleDisplayedName"],
+  ["measuredCircle", "CreateMeasuredCircleDisplayedName"],
   ["translation", "CreateTranslationDisplayedName"],
   ["rotation", "CreateRotationDisplayedName"],
   ["reflection", "CreateReflectionDisplayedName"],

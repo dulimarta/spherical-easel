@@ -560,7 +560,6 @@ export default class PolygonHandler extends Highlighter {
             );
             this.temporaryAngleMarkersAdded[ind] = true;
             this.temporaryAngleMarkers[ind].addToLayers(this.layers);
-            //EventBus.fire("update-two-instance", {}); //IS THERE A BETTER WAY? if we don't do this the anglemarker fill is not displayed
             this.temporaryAngleMarkers[ind].updateDisplay();
             this.temporaryAngleMarkers[ind].normalDisplay(); // if we don't do this the tick mark and all (front/back) angle markers are displayed on top of each other
           }

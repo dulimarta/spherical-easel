@@ -1131,8 +1131,10 @@ export default class AngleHandler extends Highlighter {
     angleMarkerCommandGroup.execute();
 
     // Update the display of the new angle marker
-    EventBus.fire("update-two-instance", {}); //IS THERE A BETTER WAY?
-    newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
+    setTimeout(function () {
+      newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first, delay this so the two instance updates before this is called
+    }, 1000/60);
+
     // The labels on any newly created points will be incorrect unless we update all the parents.
     newSEAngleMarker.parents.forEach((par:SENodule)=>{
       par.markKidsOutOfDate()
@@ -1256,9 +1258,9 @@ export default class AngleHandler extends Highlighter {
       this.targetLines[1]
     ).execute();
     // Update the display of the new angle marker
-    EventBus.fire("update-two-instance", {}); //IS THERE A BETTER WAY?
-    newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
-
+    setTimeout(function () {
+      newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first, delay this so the two instance updates before this is called
+    }, 1000/60);
     return true;
   }
 
@@ -1366,8 +1368,9 @@ export default class AngleHandler extends Highlighter {
     ).execute();
 
     // Update the display of the new angle marker
-    EventBus.fire("update-two-instance", {}); //IS THERE A BETTER WAY?
-    newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
+    setTimeout(function () {
+      newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first, delay this so the two instance updates before this is called
+    }, 1000/60);
     return true;
   }
 
@@ -1505,8 +1508,9 @@ export default class AngleHandler extends Highlighter {
       this.targetSegments[0]
     ).execute();
     // Update the display of the new angle marker
-    EventBus.fire("update-two-instance", {}); //IS THERE A BETTER WAY?
-    newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
+    setTimeout(function () {
+      newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first, delay this so the two instance updates before this is called
+    }, 1000/60);
     return true;
   }
 }

@@ -265,7 +265,7 @@
     "threePointCircleSecondPointSelected": "The second point of the three point circle have been selected. Now select another.",
     "measuredCircleCenterSelected": "Center of circle selected. Now select a measurement, measurable object, or measurement label.",
     "firstMustCreateMeasurable": "To use this tool you must first create a measurement or measurable object.",
-    "measuredCircleSelect": "Select a circle or a line segment to create the measurement object to use to determine the radius.",
+    "measuredCircleSelect": "Select (or create a) point, then select a measurement, circle or a line segment to use to determine the radius.",
     "rotationPointSelected": "Rotation point selected. Now select a measurement, measurable object, or measurement label.",
     "translationLineOrSegmentSelected": "Axis of translation selected. Now select a measurement, measurable object, or measurement label.",
     "circleCenterSelected": "Center of circle selected. Now select a point on the circle.",

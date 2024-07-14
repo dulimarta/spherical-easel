@@ -752,8 +752,9 @@ export default class CircleHandler extends Highlighter {
 
       circleCommandGroup.execute();
 
-      EventBus.fire("update-two-instance", {}); //IS THERE A BETTER WAY?
-      newSECircle.ref.updateDisplay(); // The newly created circle will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
+      setTimeout(function () {
+        newSECircle.ref.updateDisplay(); // The newly created circle will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first, delay this so the two instance updates before this is called
+      }, 1000/60);
     }
     return true;
   }

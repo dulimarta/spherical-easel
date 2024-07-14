@@ -307,7 +307,6 @@ onBeforeMount((): void => {
   EventBus.listen("set-expression-for-tool", setExpressionForTool);
   EventBus.listen("set-transformation-for-tool", setTransformationForTool);
   EventBus.listen("delete-node", deleteNode);
-  EventBus.listen("update-two-instance",updateTwoJsInstance) //IS THERE A BETTER WAY?
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   // EventBus.listen(
   //   "set-point-visibility-and-label",
@@ -769,10 +768,7 @@ function deleteNode(e: {
   });
 }
 
-//IS THERE A BETTER WAY?
-function updateTwoJsInstance():void {
-  twoInstance.update()
-}
+
 
 // dialogBoxIsActive(e: { active: boolean }): void {
 //   // console.debug(`dialog box is active is ${e.active}`);
