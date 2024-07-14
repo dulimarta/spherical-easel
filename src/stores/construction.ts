@@ -135,16 +135,19 @@ export const useConstructionStore = defineStore("construction", () => {
   } = storeToRefs(acctStore);
 
   watch(
-    firebaseUid,
-    async (uid: string | undefined /*, oldUid: string*/) => {
+  [() => firebaseUid.value, () => starredConstructionIDs.value],
+    async ([uid, starredIds]/*, oldUid: string*/) => {
       if (uid) {
         // When an authenticated user logs in
         // (1) Build the private array
         const privateColl = collection(appDB, "users", uid, "constructions");
         await parsePrivateCollection(privateColl, privateConstructions.value);
-        const [starred, unstarred] = publicConstructions.value.partition(z =>
-          starredConstructionIDs.value.some(s => s === z.publicDocId)
-        );
+        // console.debug("Favorite", starredConstructionIDs.value)
+        // console.debug("Public", publicConstructions.value)
+        const [starred, unstarred] = publicConstructions.value.partition(z => {
+          return starredIds.some(s => s === z.publicDocId)
+        });
+        console.debug(`Construction Store: starred=${starred.length}, unstarred=${unstarred.length}`)
         starredConstructions.value.clear();
         publicConstructions.value.clear();
         starredConstructions.value.push(...starred);
@@ -161,6 +164,8 @@ export const useConstructionStore = defineStore("construction", () => {
             publicConstructions.value.splice(pos, 1);
           }
         });
+        console.debug("Construction store public", publicConstructions.value.map(s => s.id))
+        console.debug("Construction store starred", starredConstructions.value.map(s => s.id))
       } else {
         const myPublicDocs = privateConstructions.value.filter(
           (s: SphericalConstruction) => !s.publicDocId
@@ -171,7 +176,7 @@ export const useConstructionStore = defineStore("construction", () => {
       sortConstructionArray(privateConstructions.value);
       // sortConstructionArray(starredConstructions.value);
       sortConstructionArray(publicConstructions.value);
-    }
+    }, {deep: true}
   );
 
   // constructionDocId !== null implies overwrite existing construction

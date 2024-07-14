@@ -225,7 +225,6 @@ const constructionShareDialog: Ref<DialogAction | null> = ref(null);
 const seStore = useSEStore();
 const acctStore = useAccountStore();
 const constructionStore = useConstructionStore();
-// const { starredConstructions } = storeToRefs(constructionStore);
 const selectedDocId = ref("");
 const sharedDocId = ref("");
 const showDeleteWarning = ref(false);
