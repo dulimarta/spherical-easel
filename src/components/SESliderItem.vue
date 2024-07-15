@@ -9,37 +9,43 @@
       <span>{{ node.name }}: {{ node.value }}</span>
     </div>
     <v-slider
-      v-model.number="node.value"
+      v-model.number="sliderVal"
       :min="node.min"
       :max="node.max"
       :step="node.step"
-      ref="slider"
-      thumb-label></v-slider>
-    <v-container>
-      <v-row align="center">
-        <v-col cols="9">
-          <v-select
-            v-model="playbackMode"
-            append-icon="mdi-menu"
-            :items="playbackSelections"></v-select>
-        </v-col>
-        <v-col cols="3">
-          <v-icon @click="play">mdi-play-circle-outline</v-icon>
-        </v-col>
-
-        <v-col cols="9">
-          <v-select
-            v-model="playbackSpeed"
-            append-icon="mdi-speedometer"
-            :items="speedSelections"></v-select>
-        </v-col>
-        <v-col cols="3">
-          <v-btn size="small" @click="stop">
+      thumb-label
+      @update:modelValue="node.value = sliderVal"></v-slider>
+    <div
+      :style="{
+        display: 'grid',
+        gridTemplateColumns: 'auto',
+        alignItems: 'center'
+      }">
+      <v-select
+        v-model="playbackMode"
+        :items="playbackSelections"
+        label="Playback"
+        density="compact">
+        <template #prepend-inner>
+          <v-icon>mdi-repeat</v-icon>
+        </template>
+        <template #append>
+          <v-btn @click="play">
+            <v-icon>mdi-play-circle-outline</v-icon>
+          </v-btn>
+        </template>
+      </v-select>
+      <v-select v-model="playbackSpeed" label="Speed" :items="speedSelections">
+        <template #prepend-inner>
+          <v-icon>mdi-speedometer</v-icon>
+        </template>
+        <template #append>
+          <v-btn @click="stop">
             <v-icon>mdi-stop-circle-outline</v-icon>
           </v-btn>
-        </v-col>
-      </v-row>
-    </v-container>
+        </template>
+      </v-select>
+    </div>
   </div>
 </template>
 
@@ -53,24 +59,25 @@ import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 
 const store = useSEStore();
-const { sePoints } = storeToRefs(store);
+// const { sePoints } = storeToRefs(store);
 const props = defineProps<{ node: SESlider }>();
 const emit = defineEmits(["object-select"]);
 const playbackMode = ref(SliderPlaybackMode.ONCE);
 const playbackSpeed = ref(750);
+const sliderVal = ref(props.node.value);
 let playbackForward = true;
 let timer: number | null = null;
 
 const playbackSelections = [
-  { text: "Once", value: SliderPlaybackMode.ONCE },
-  { text: "Loop", value: SliderPlaybackMode.LOOP },
-  { text: "Reverse Loop", value: SliderPlaybackMode.REFLECT }
+  { title: "Once", value: SliderPlaybackMode.ONCE },
+  { title: "Loop", value: SliderPlaybackMode.LOOP },
+  { title: "Reverse Loop", value: SliderPlaybackMode.REFLECT }
 ];
 
 const speedSelections = [
-  { text: "Slow", value: 1250 },
-  { text: "Normal", value: 750 },
-  { text: "Fast", value: 250 }
+  { title: "Slow", value: 1250 },
+  { title: "Normal", value: 750 },
+  { title: "Fast", value: 250 }
 ];
 
 function selectMe(): void {

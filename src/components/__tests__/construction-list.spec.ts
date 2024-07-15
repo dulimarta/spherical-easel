@@ -1,7 +1,7 @@
 import ConstructionList from "../ConstructionList.vue";
 import { SphericalConstruction } from "../../types";
 import { Matrix4 } from "three";
-import { vi } from "vitest";
+import { vi, describe, it,beforeEach,expect, afterEach } from "vitest";
 import { createWrapper } from "../../../tests/vue-helper";
 import { useAccountStore } from "../../stores/account";
 import { useConstructionStore } from "../../stores/construction"

@@ -1,6 +1,6 @@
 // import Vue from "vue";
 import TestedComponent from "../ConstructionLoader.vue";
-import { vi } from "vitest";
+import { vi, describe, beforeEach, it, expect } from "vitest";
 import { createWrapper } from "../../../tests/vue-helper";
 import { createI18n, useI18n } from "vue-i18n";
 import { mockFirebase } from "firestore-vitest-mock";

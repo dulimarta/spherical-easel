@@ -21,11 +21,11 @@
             :node="n"
             v-if="!isSlider(n)"
             v-on:object-select="onExpressionSelect"></SENoduleItem>
-          <!--SESliderItem
+          <SESliderItem
             v-else
             :node="toSlider(n) /* a trick to S type error */"
             v-on:object-select="onExpressionSelect"></SESliderItem>
-          <v-divider></v-divider-->
+          <!-- <v-divider></v-divider-->
         </template>
       </div>
     </transition>
@@ -36,6 +36,7 @@ import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from "vue";
 import { SENodule } from "../models/SENodule";
 import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
 import SENoduleItem from "@/components/SENoduleItem.vue";
+import SESliderItem from "./SESliderItem.vue";
 import { SESlider } from "@/models/SESlider";
 import EventBus from "@/eventHandlers/EventBus";
 import { useSEStore } from "@/stores/se";

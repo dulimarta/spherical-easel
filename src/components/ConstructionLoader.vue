@@ -49,7 +49,6 @@
           }})
         </v-expansion-panel-title>
         <v-expansion-panel-text data-testid="starredList">
-          UID {{firebaseUid}}
           <ConstructionList
             :allow-sharing="false"
             :items="filteredStarredConstructions" />

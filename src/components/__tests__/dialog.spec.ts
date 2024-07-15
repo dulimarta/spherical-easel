@@ -1,6 +1,6 @@
 import TestedComponent from "../Dialog.vue";
-import { mount } from "@vue/test-utils";
-import { vi, it } from "vitest";
+import { mount, VueWrapper } from "@vue/test-utils";
+import { vi, it, describe, beforeEach, expect } from "vitest";
 // import { createVuetify } from "vuetify";
 // import * as components from "vuetify/components"
 // import * as directives from "vuetify/directives"
@@ -31,7 +31,7 @@ describe("Dialog.vue", () => {
   });
 
   it("shows correct title", async () => {
-    const wrapper = createWrapper(TestedComponent, {
+    const { wrapper } = createWrapper(TestedComponent, {
       componentProps: {
         props: {
           title: "Dialog Title",
