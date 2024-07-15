@@ -937,6 +937,14 @@ export const useSEStore = defineStore("se", () => {
       n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
     });
   }
+
+  function changeGradientFill(useGradientFill: boolean) {
+    Nodule.setGradientFill(useGradientFill);
+    seNodules.value.forEach(n => {
+      n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
+    });
+  }
+
   function changeSegmentNormalVectorArcLength(change: {
     segmentId: number;
     normal: Vector3;
@@ -3940,6 +3948,7 @@ export const useSEStore = defineStore("se", () => {
     addTemporaryNodule,
     addTransformation,
     changeBackContrast,
+    changeGradientFill,
     changeLineNormalVector,
     changeSegmentNormalVectorArcLength,
     clearUnsavedFlag,

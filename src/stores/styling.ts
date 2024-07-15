@@ -9,7 +9,8 @@ import {
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import { CommandGroup } from "@/commands/CommandGroup";
-import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackstyleContrastCommand";
+import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackStyleContrastCommand";
+import { ChangeFillStyleCommand } from "@/commands/ChangeFillStyleCommand";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { Command } from "@/commands/Command";
 import { SENodule } from "@/models/SENodule";
@@ -104,6 +105,7 @@ export const useStylingStore = defineStore("style", () => {
   let preUpdateStyleOptions: StyleOptions = {}; //
   let postUpdateStyleOptions: StyleOptions = {};
   let backStyleContrastCopy: number = NaN;
+  let fillStyleCopy: boolean = true;
   let activeStyleGroup: StyleCategory | null = null;
   let styleIndividuallyAltered = false;
 
@@ -227,6 +229,7 @@ export const useStylingStore = defineStore("style", () => {
       console.debug("Default style map size = ", defaultStyleMap.size);
 
       backStyleContrastCopy = Nodule.getBackStyleContrast();
+      fillStyleCopy = Nodule.getGradientFill();
     },
     { deep: true }
   );
@@ -323,6 +326,10 @@ export const useStylingStore = defineStore("style", () => {
   );
   function recordGlobalContrast() {
     backStyleContrastCopy = Nodule.getBackStyleContrast();
+  }
+
+  function recordFillStyle() {
+    fillStyleCopy = Nodule.getGradientFill();
   }
 
   function recordCurrentStyleProperties(category: StyleCategory) {
@@ -426,6 +433,15 @@ export const useStylingStore = defineStore("style", () => {
     });
   }
 
+  function changeFillStyle(useGradientFill: boolean): void {
+    Nodule.setGradientFill(useGradientFill);
+    // update all objects display
+    seNodules.value.forEach(n => {
+      console.debug("Calling stylize", n.ref?.name);
+      n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
+    });
+  }
+
   function persistUpdatedStyleOptions() {
     const cmdGroup = new CommandGroup();
     let subCommandCount = 0;
@@ -437,6 +453,16 @@ export const useStylingStore = defineStore("style", () => {
         backStyleContrastCopy
       );
       cmdGroup.addCommand(contrastCommand);
+      subCommandCount++;
+    }
+
+    // Check if the fill style was modifed
+    if (fillStyleCopy !== Nodule.getGradientFill()) {
+      const fillCommand = new ChangeFillStyleCommand(
+        Nodule.getGradientFill(),
+        fillStyleCopy
+      );
+      cmdGroup.addCommand(fillCommand);
       subCommandCount++;
     }
 
@@ -548,8 +574,10 @@ export const useStylingStore = defineStore("style", () => {
     hasDisagreement,
     hasStyle,
     changeBackContrast,
+    changeFillStyle,
     recordCurrentStyleProperties,
     recordGlobalContrast,
+    recordFillStyle,
     deselectActiveGroup,
     persistUpdatedStyleOptions,
     restoreDefaultStyles,

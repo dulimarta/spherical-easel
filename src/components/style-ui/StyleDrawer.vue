@@ -98,11 +98,11 @@
         </v-item>
         <v-item v-slot="{ isSelected, toggle }">
           <v-tooltip
-            activator=".back-contrast"
-            text="Global Back Style Contrast"></v-tooltip>
+            activator="#back-contrast-icon"
+            :text="globalBackStyleContrastToolTip"></v-tooltip>
           <!-- Count only visible objects -->
           <v-badge v-if="hasObjects" :content="visibleNodulesCount">
-            <v-icon class="back-contrast" @click="toggle">
+            <v-icon id="back-contrast-icon" @click="toggle">
               mdi-contrast-box
             </v-icon>
           </v-badge>
@@ -121,7 +121,7 @@
             <!-- Global contrast slider -->
             <v-tooltip
               location="bottom"
-              max-width="400px"
+              max-width="500px"
               activator="#global-contrast">
               <span>{{ t("backStyleContrastToolTip") }}</span>
             </v-tooltip>
@@ -147,6 +147,33 @@
                 }}
               </template>
             </v-slider>
+            <v-divider></v-divider>
+            <!-- Global fill option -->
+            <v-tooltip
+              location="bottom"
+              max-width="400px"
+              activator="#global-fill-choice">
+              <span>{{ t("globalFillStyleToolTip") }}</span>
+            </v-tooltip>
+            <p id="global-fill-choice">
+              <span class="text-subtitle-2" style="color: red">
+                {{ t("globalFillStyle") + " " }}
+              </span>
+              <span
+                v-if="fillStyle"
+                class="text-subtitle-2"
+                style="color: black">
+                {{ t("shadingFill") }}
+              </span>
+              <span v-else class="text-subtitle-2" style="color: black">
+                {{ t("plainFill") }}
+              </span>
+            </p>
+            <v-switch
+              v-model="fillStyle"
+              color="black"
+              :label="t('changeFillStyleText')"
+              hide-details></v-switch>
             <v-btn
               :style="{
                 alignSelf: 'flex-end'
@@ -225,12 +252,12 @@ const minified = ref(true);
 const { t } = useI18n();
 const seStore = useSEStore();
 const styleStore = useStylingStore();
-const { hasObjects, seNodules, seLabels } =
-  storeToRefs(seStore);
+const { hasObjects, seNodules, seLabels } = storeToRefs(seStore);
 const { selectedPlottables, selectedLabels, editedLabels } =
   storeToRefs(styleStore);
 const styleSelection = ref<number | undefined>(undefined);
 // const { hasStyle, hasDisagreement } = styleStore;
+const fillStyle = ref(Nodule.getGradientFill());
 
 const backStyleContrast = ref(Nodule.getBackStyleContrast());
 const backStyleContrastSelectorThumbStrings = [
@@ -254,6 +281,14 @@ watch(
   contrast => {
     console.debug("Updating back contrast to", contrast);
     styleStore.changeBackContrast(contrast);
+  }
+);
+
+watch(
+  () => fillStyle.value,
+  gradientFill => {
+    console.debug("Updating fill style to", gradientFill);
+    styleStore.changeFillStyle(gradientFill);
   }
 );
 
@@ -346,6 +381,11 @@ const frontTooltip = computed((): string => {
   return text;
 });
 
+const globalBackStyleContrastToolTip = computed((): string => {
+  let text = t("globalBackStyleContrastToolTip");
+  return text;
+});
+
 const visibleNodulesCount = computed(
   () => seNodules.value.filter(n => n.showing).length
 );
@@ -378,7 +418,7 @@ function what() {
 <i18n lang="json" locale="en">
 {
   "showDrawer": "Show Style Drawer",
-  "showDrawerDisabled": "Style Draver (disable: no object selected)",
+  "showDrawerDisabled": "Style Drawer (disable: no object selected)",
   "label": "Label",
   "object": "Object",
   "LabelTooltip": "Label Style",
@@ -387,7 +427,13 @@ function what() {
   "disabledTooltip": "(disabled: no object selected)",
   "backStyleContrast": "Back Style Contrast",
   "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of Global Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is invisible and its size reduction is maximized.",
-  "globalBackStyleContrast": "Global Back Style Contrast"
+  "globalBackStyleContrast": "Global Back Style Contrast",
+  "globalBackStyleContrastToolTip": "Adjusts the default display of objects on the back of the sphere and the fill style.",
+  "globalFillStyle": "Current Global Fill Style:",
+  "changeFillStyleText": "Change Fill Style",
+  "globalFillStyleToolTip": "By default a gradient/shading fill is used to make the fill of circles, ellipses, and polygons appear more three dimensional. This switch toggles this feature.",
+  "shadingFill": "Shading",
+  "plainFill": "Plain"
 }
 </i18n>
 <i18n lang="json" locale="id">
