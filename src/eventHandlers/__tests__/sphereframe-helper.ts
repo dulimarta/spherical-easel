@@ -5,7 +5,7 @@ export const TEST_MOUSE_X = 111;
 export const TEST_MOUSE_Y = 137;
 import { SEPoint } from "../../models/SEPoint";
 import { ActionMode } from "../../types";
-import { exp } from "three/examples/jsm/nodes/Nodes.js";
+import { SEStoreType } from "../../stores/se";
 
 /**
  * Simulate mouse click at a specific screen position on the sphere.
@@ -52,29 +52,30 @@ export async function mouseClickOnSphere(
  * @param yScreen
  * @param isBackground
  */
-// export async function drawPointAt(
-//   wrapper: Wrapper<Vue>,
-//   xScreen: number,
-//   yScreen: number,
-//   isBackground = false
-// ): Promise<void> {
-//   SEStore.setActionMode({
-//     id: "point",
-//     name: "Tool Name does not matter"
-//   });
-//   await wrapper.vm.$nextTick();
-//   await mouseClickOnSphere(wrapper, xScreen, yScreen, isBackground);
-// }
+export async function drawPointAt(
+  wrapper: VueWrapper,
+  xScreen: number,
+  yScreen: number,
+  isBackground = false
+): Promise<void> {
+  // SEStore.setActionMode({
+  //   id: "point",
+  //   name: "Tool Name does not matter"
+  // });
+  await wrapper.vm.$nextTick();
+  await mouseClickOnSphere(wrapper, xScreen, yScreen, isBackground);
+}
 
-// export async function makePoint(
-//   wrapper: Wrapper<Vue>,
-//   isBackground: boolean
-// ): Promise<SEPoint> {
-//   await drawPointAt(wrapper, TEST_MOUSE_X, TEST_MOUSE_Y, isBackground);
-//   const count = SEStore.sePoints.length;
-//   // The most recent point
-//   return SEStore.sePoints[count - 1] as SEPoint;
-// }
+export async function makePoint(
+  wrapper: VueWrapper,
+  store: SEStoreType,
+  isBackground: boolean
+): Promise<SEPoint> {
+  await drawPointAt(wrapper, TEST_MOUSE_X, TEST_MOUSE_Y, isBackground);
+  const count = store.sePoints.length;
+  // The most recent point
+  return store.sePoints[count - 1] as SEPoint;
+}
 
 /**
  * Simulate dragging the mouse between two screen positions

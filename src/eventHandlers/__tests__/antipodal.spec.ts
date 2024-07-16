@@ -1,27 +1,28 @@
 // import Vue from "*.vue";
 import SphereFrame from "../../components/SphereFrame.vue";
 import { createWrapper } from "../../../tests/vue-helper";
-import { SEStoreType, useSEStore } from "../../stores/se";
+import { useSEStore } from "../../stores/se";
+import {useAccountStore} from "../../stores/account"
 import { VueWrapper } from "@vue/test-utils";
 import { vi } from "vitest";
 import { mockedStore } from "../../../tests/mock-utils";
-import Handler from "../../eventHandlers/AntipodalPointHandler"
+import Handler from "../AntipodalPointHandler"
 import {
   TEST_MOUSE_X,
   TEST_MOUSE_Y,
   mouseClickOnSphere
 } from "./sphereframe-helper"
 import { createTestingPinia } from "@pinia/testing";
-import MouseHandler from "../../eventHandlers/MouseHandler";
+import MouseHandler from "../Highlighter";
 import { SENodule } from "../../models/internal";
 import {Command} from "../../commands/Command"
-import { useMousePressed } from "@vueuse/core";
 
-describe("SphereFrame: Antipode Tool", () => {
+describe("Antipode Tool", () => {
   let wrapper: VueWrapper;
   let testPinia;
   let SEStore;
   beforeEach(async () => {
+    vi.clearAllMocks() // Reset spy counters etc.
     // Pinia instance MUST be created before mount() is called
     testPinia = createTestingPinia({ stubActions: false });
     const out = createWrapper(SphereFrame, {
@@ -33,12 +34,14 @@ describe("SphereFrame: Antipode Tool", () => {
     });
     // DO NOT initialize the store BEFORE calling createWrapper!!!
     SEStore = mockedStore(useSEStore);
+    useAccountStore(testPinia)
     SEStore.init()
     SENodule.setGlobalStore(SEStore)
     Command.setGlobalStore(SEStore)
     MouseHandler.setGlobalStore(SEStore);
 
     wrapper = out.wrapper;
+    SEStore.setActionMode("select")
     await wrapper.vm.$nextTick();
   });
   async function runAntipodeTest(isForeground: boolean) {
@@ -59,7 +62,7 @@ describe("SphereFrame: Antipode Tool", () => {
     expect(a.locationVector.z).toBe(-b.locationVector.z);
   }
 
-  it("adds a new point and its antipodal when clicking on sphere while using PointTool", async () => {
+  it("adds a new point and its antipodal when clicking on sphere while using  AntiPodalPointTool", async () => {
     const pressSpy = vi.spyOn(Handler.prototype, "mousePressed")
     const moveSpy = vi.spyOn(Handler.prototype, "mouseMoved")
     const releaseSpy = vi.spyOn(Handler.prototype, "mouseReleased")

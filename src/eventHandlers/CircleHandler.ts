@@ -87,6 +87,7 @@ export default class CircleHandler extends Highlighter {
 
   // eslint-disable-next-line no-unused-vars
   mousePressed(_event: MouseEvent): void {
+    console.debug("CircleHandler::mousePressed()")
     // First decide if the location of the event is on the sphere
     if (this.isOnSphere && !this.centerLocationSelected) {
       // The user is making a circle
@@ -200,6 +201,7 @@ export default class CircleHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
+    console.debug("CircleHandler::mouseMoved()")
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
 
@@ -353,6 +355,7 @@ export default class CircleHandler extends Highlighter {
   }
 
   mouseReleased(_event: MouseEvent): void {
+    console.debug("CircleHandler::mouseReleased()")
     if (this.isOnSphere) {
       // Make sure the user didn't trigger the mouse leave event and is actually making a circle
       if (this.centerLocationSelected) {
@@ -379,6 +382,7 @@ export default class CircleHandler extends Highlighter {
   }
 
   mouseLeave(event: MouseEvent): void {
+    console.debug("CircleHandler::mouseLeave()")
     super.mouseLeave(event);
     this.prepareForNextCircle();
   }

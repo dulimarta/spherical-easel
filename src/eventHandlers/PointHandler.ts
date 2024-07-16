@@ -38,6 +38,7 @@ export default class PointHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent): void {
+    console.debug("PointHandler::mousePressed()")
     // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
     // event, mouse press will create a new point at the same location. This is not what we want so
@@ -208,6 +209,7 @@ export default class PointHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
+    console.debug("PointHandler::mouseMoved()")
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
     // glow/highlight all the nearby objects that a point might be put on
@@ -284,6 +286,7 @@ export default class PointHandler extends Highlighter {
   }
 
   mouseLeave(event: MouseEvent): void {
+    console.debug("PointHandler::mouseLeave()")
     super.mouseLeave(event);
 
     if (this.isTemporaryPointAdded) {
@@ -292,7 +295,9 @@ export default class PointHandler extends Highlighter {
     }
     this.snapToTemporaryOneDimensional = null;
   }
+
   activate(): void {
+    console.debug("PointHandler::activate()")
     super.activate();
   }
   deactivate(): void {

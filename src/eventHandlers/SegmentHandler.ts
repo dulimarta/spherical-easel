@@ -122,6 +122,7 @@ export default class SegmentHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent): void {
+    console.debug(`SegmentHandler::mousePressed() (${event.clientX},${event.clientY})`)
     // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
     // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
@@ -237,6 +238,7 @@ export default class SegmentHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
+    console.debug(`SegmentHandler::mouseMoved() (${event.clientX},${event.clientY})`)
     // Highlights the objects near the mouse event
     super.mouseMoved(event);
     // Only object can be interacted with at a given time, so set the first point nearby to glowing
@@ -444,6 +446,7 @@ export default class SegmentHandler extends Highlighter {
   }
 
   mouseReleased(event: MouseEvent): void {
+    console.debug(`SegmentHandler::mouseReleased() (${event.clientX},${event.clientY})`)
     if (this.isOnSphere) {
       // Make sure the user didn't trigger the mouse leave event and is actually making a segment
       if (this.startLocationSelected) {
@@ -480,6 +483,7 @@ export default class SegmentHandler extends Highlighter {
   }
 
   mouseLeave(event: MouseEvent): void {
+    console.debug(`SegmentHandler::Leave() (${event.clientX},${event.clientY})`)
     super.mouseLeave(event);
     this.prepareForNextSegment();
   }
