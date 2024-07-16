@@ -34,7 +34,7 @@
     "mitt": "^3.0.0",
     "newton-raphson-method": "^1.0.2",
     "node-gzip": "^1.1.2",
-    "pinia": "~2.0",
+    "pinia": "~2.1.7",
     "three": "^0.153.0",
     "two.js": "github:jonobr1/two.js#1e2b63f2b31275126602265f7ebf73be563a4eac",
     "vue": "~3.4.27",

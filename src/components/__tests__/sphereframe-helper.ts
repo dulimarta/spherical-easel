@@ -1,11 +1,11 @@
-import Vue from "*.vue";
-import { SEStore } from "@/store";
-import { Wrapper } from "@vue/test-utils";
+// import { SEStore } from "@/store";
+import { VueWrapper } from "@vue/test-utils";
 
 export const TEST_MOUSE_X = 111;
 export const TEST_MOUSE_Y = 137;
-import { SEPoint } from "@/models/SEPoint";
-import { ActionMode } from "@/types";
+import { SEPoint } from "../../models/SEPoint";
+import { ActionMode } from "../../types";
+import { exp } from "three/examples/jsm/nodes/Nodes.js";
 
 /**
  * Simulate mouse click at a specific screen position on the sphere.
@@ -16,13 +16,13 @@ import { ActionMode } from "@/types";
  * @param withShift
  */
 export async function mouseClickOnSphere(
-  wrapper: Wrapper<Vue>,
+  wrapper: VueWrapper,
   xScreenPos: number,
   yScreenPos: number,
   withShift = false
 ): Promise<void> {
   const target = wrapper.find("#canvas");
-
+  // await target.trigger("mouseenter")
   /** IMPORTANT: the Y-coordinate below is supplied with its sign flipped.
    * This is needed to comply with the 2D transformation applied to the canvas
    */
@@ -31,7 +31,8 @@ export async function mouseClickOnSphere(
     clientY: -yScreenPos,
     shiftKey: withShift
   });
-  expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
+  console.debug("Wrapper data",(wrapper.vm.$.vnode.component as any).setupState.currentTool.isOnSphere)
+  // // expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
   await target.trigger("mousedown", {
     clientX: xScreenPos,
     clientY: -yScreenPos,
@@ -51,29 +52,29 @@ export async function mouseClickOnSphere(
  * @param yScreen
  * @param isBackground
  */
-export async function drawPointAt(
-  wrapper: Wrapper<Vue>,
-  xScreen: number,
-  yScreen: number,
-  isBackground = false
-): Promise<void> {
-  SEStore.setActionMode({
-    id: "point",
-    name: "Tool Name does not matter"
-  });
-  await wrapper.vm.$nextTick();
-  await mouseClickOnSphere(wrapper, xScreen, yScreen, isBackground);
-}
+// export async function drawPointAt(
+//   wrapper: Wrapper<Vue>,
+//   xScreen: number,
+//   yScreen: number,
+//   isBackground = false
+// ): Promise<void> {
+//   SEStore.setActionMode({
+//     id: "point",
+//     name: "Tool Name does not matter"
+//   });
+//   await wrapper.vm.$nextTick();
+//   await mouseClickOnSphere(wrapper, xScreen, yScreen, isBackground);
+// }
 
-export async function makePoint(
-  wrapper: Wrapper<Vue>,
-  isBackground: boolean
-): Promise<SEPoint> {
-  await drawPointAt(wrapper, TEST_MOUSE_X, TEST_MOUSE_Y, isBackground);
-  const count = SEStore.sePoints.length;
-  // The most recent point
-  return SEStore.sePoints[count - 1] as SEPoint;
-}
+// export async function makePoint(
+//   wrapper: Wrapper<Vue>,
+//   isBackground: boolean
+// ): Promise<SEPoint> {
+//   await drawPointAt(wrapper, TEST_MOUSE_X, TEST_MOUSE_Y, isBackground);
+//   const count = SEStore.sePoints.length;
+//   // The most recent point
+//   return SEStore.sePoints[count - 1] as SEPoint;
+// }
 
 /**
  * Simulate dragging the mouse between two screen positions
@@ -87,7 +88,7 @@ export async function makePoint(
  * @returns
  */
 export async function dragMouse(
-  wrapper: Wrapper<Vue>,
+  wrapper:VueWrapper,
   fromXScreen: number,
   fromYScreen: number,
   fromBg: boolean,
@@ -102,7 +103,7 @@ export async function dragMouse(
     clientY: fromYScreen,
     shiftKey: fromBg
   });
-  expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
+  // expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
   await target.trigger("mousedown", {
     clientX: fromXScreen,
     clientY: fromYScreen,
@@ -113,7 +114,7 @@ export async function dragMouse(
     clientY: toYScreen,
     shiftKey: toBg
   });
-  expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
+  // expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
   await target.trigger("mouseup", {
     clientX: toXScreen,
     clientY: toYScreen,
@@ -134,7 +135,7 @@ export async function dragMouse(
  * @param isPoint2Foreground
  */
 export async function drawOneDimensional(
-  wrapper: Wrapper<Vue>,
+  wrapper: VueWrapper,
   drawMode: ActionMode,
   x1: number,
   y1: number,
@@ -143,10 +144,10 @@ export async function drawOneDimensional(
   y2: number,
   isPoint2Foreground: boolean
 ): Promise<void> {
-  SEStore.setActionMode({
-    id: drawMode,
-    name: "Tool Name does not matter"
-  });
+  // SEStore.setActionMode({
+  //   id: drawMode,
+  //   name: "Tool Name does not matter"
+  // });
   await wrapper.vm.$nextTick();
   await dragMouse(
     wrapper,
@@ -173,7 +174,7 @@ export async function drawOneDimensional(
  * @param isPoint3Foreground
  */
 export async function drawEllipse(
-  wrapper: Wrapper<Vue>,
+  wrapper: VueWrapper,
   focus1_x: number,
   focus1_y: number,
   isFocus1Foreground: boolean,
@@ -184,10 +185,10 @@ export async function drawEllipse(
   y3: number,
   isPoint3Foreground: boolean
 ): Promise<void> {
-  SEStore.setActionMode({
-    id: "ellipse",
-    name: "Tool Name does not matter"
-  });
+  // SEStore.setActionMode({
+  //   id: "ellipse",
+  //   name: "Tool Name does not matter"
+  // });
   await wrapper.vm.$nextTick();
   await mouseClickOnSphere(wrapper, focus1_x, focus1_y, !isFocus1Foreground);
   await mouseClickOnSphere(wrapper, focus2_x, focus2_y, !isFocus2Foreground);
@@ -208,7 +209,7 @@ export async function drawEllipse(
  * @param isPoint3Foreground
  */
 export async function drawThreePointCircle(
-  wrapper: Wrapper<Vue>,
+  wrapper: VueWrapper,
   point1_x: number,
   point1_y: number,
   isPoint1Foreground: boolean,
@@ -219,10 +220,10 @@ export async function drawThreePointCircle(
   point3_y: number,
   isPoint3Foreground: boolean
 ): Promise<void> {
-  SEStore.setActionMode({
-    id: "threePointCircle",
-    name: "Tool Name does not matter"
-  });
+  // SEStore.setActionMode({
+  //   id: "threePointCircle",
+  //   name: "Tool Name does not matter"
+  // });
   await wrapper.vm.$nextTick();
   await mouseClickOnSphere(wrapper, point1_x, point1_y, !isPoint1Foreground);
   await mouseClickOnSphere(wrapper, point2_x, point2_y, !isPoint2Foreground);

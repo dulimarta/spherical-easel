@@ -19,6 +19,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEExpression } from "@/models/SEExpression";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { contains } from "two.js/src/utils/shape";
 // import "@types/google.maps"
 
 export interface Selectable {

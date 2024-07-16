@@ -3,6 +3,8 @@
     "target": "esnext",
     "module": "esnext",
     "strict": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
     "declaration": false, // Setting this to false, helps to resolve compiler error in the Pinia store
     "jsx": "preserve",
     // "importHelpers": true,
@@ -15,8 +17,8 @@
     "baseUrl": ".",
     "outDir": "ts-out",
     "types": [
-      "vite/client"
-      /* "vitest/globals", "node", "vuetify", "google.maps" */
+      "vite/client",
+      "vitest/globals", /* "node", "vuetify", "google.maps" */
     ],
     "typeRoots": [
       "./node_modules/@types",

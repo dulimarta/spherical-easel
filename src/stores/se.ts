@@ -355,7 +355,7 @@ const seTransformationMap: Map<number, SETransformation> = new Map();
 
 export const useSEStore = defineStore("se", () => {
   const isEarthMode = ref(false);
-  const actionMode: Ref<ActionMode> = ref("rotate");
+  const actionMode: Ref<ActionMode> = ref<ActionMode>("rotate");
   const previousActionMode: Ref<ActionMode> = ref("rotate");
   // activeToolName: "RotateDisplayedName", // the corresponding I18N key of actionMode
   // buttonSelection: {},
@@ -473,6 +473,7 @@ export const useSEStore = defineStore("se", () => {
     layers = grp;
   }
   function setCanvas(c: HTMLDivElement | null): void {
+    console.debug("Set canvas in SE store")
     svgCanvas.value = c;
   }
   function setCanvasDimension(w: number, h: number): void {
@@ -491,6 +492,7 @@ export const useSEStore = defineStore("se", () => {
   // },
 
   function setActionMode(mode: ActionMode): void {
+    console.debug("Changing action mode in SE store to", mode)
     // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
     if (
       !(actionMode.value === "zoomFit" || actionMode.value === "iconFactory")
