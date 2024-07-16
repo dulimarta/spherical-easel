@@ -8,7 +8,7 @@
       <v-icon>$slider</v-icon>
       <span>{{ node.name }}: {{ node.value }}</span>
     </div>
-    <v-slider
+    <v-slider data-testid="slider"
       v-model.number="sliderVal"
       :min="node.min"
       :max="node.max"
@@ -57,6 +57,7 @@ import { SliderPlaybackMode } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
+import { onMounted } from "vue";
 
 const store = useSEStore();
 // const { sePoints } = storeToRefs(store);
@@ -67,6 +68,10 @@ const playbackSpeed = ref(750);
 const sliderVal = ref(props.node.value);
 let playbackForward = true;
 let timer: number | null = null;
+
+onMounted(() => {
+  console.debug("SeSliderItem::onMounted()")
+})
 
 const playbackSelections = [
   { title: "Once", value: SliderPlaybackMode.ONCE },
