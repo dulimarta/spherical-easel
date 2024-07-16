@@ -31,7 +31,7 @@ export async function mouseClickOnSphere(
     clientY: -yScreenPos,
     shiftKey: withShift
   });
-  console.debug("Wrapper data",(wrapper.vm.$.vnode.component as any).setupState.currentTool.isOnSphere)
+  // console.debug("Wrapper data",(wrapper.vm.$.vnode.component as any).setupState.currentTool.isOnSphere)
   // // expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
   await target.trigger("mousedown", {
     clientX: xScreenPos,
