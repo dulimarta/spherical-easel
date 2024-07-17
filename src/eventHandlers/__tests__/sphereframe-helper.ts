@@ -58,11 +58,7 @@ export async function drawPointAt(
   yScreen: number,
   isBackground = false
 ): Promise<void> {
-  // SEStore.setActionMode({
-  //   id: "point",
-  //   name: "Tool Name does not matter"
-  // });
-  await wrapper.vm.$nextTick();
+  // await wrapper.vm.$nextTick();
   await mouseClickOnSphere(wrapper, xScreen, yScreen, isBackground);
 }
 
@@ -71,6 +67,7 @@ export async function makePoint(
   store: SEStoreType,
   isBackground: boolean
 ): Promise<SEPoint> {
+  store.setActionMode("point")
   await drawPointAt(wrapper, TEST_MOUSE_X, TEST_MOUSE_Y, isBackground);
   const count = store.sePoints.length;
   // The most recent point
@@ -137,7 +134,6 @@ export async function dragMouse(
  */
 export async function drawOneDimensional(
   wrapper: VueWrapper,
-  drawMode: ActionMode,
   x1: number,
   y1: number,
   isPoint1Foreground: boolean,
@@ -186,10 +182,6 @@ export async function drawEllipse(
   y3: number,
   isPoint3Foreground: boolean
 ): Promise<void> {
-  // SEStore.setActionMode({
-  //   id: "ellipse",
-  //   name: "Tool Name does not matter"
-  // });
   await wrapper.vm.$nextTick();
   await mouseClickOnSphere(wrapper, focus1_x, focus1_y, !isFocus1Foreground);
   await mouseClickOnSphere(wrapper, focus2_x, focus2_y, !isFocus2Foreground);

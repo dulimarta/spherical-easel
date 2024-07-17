@@ -21,7 +21,7 @@ describe("ParametricForm.vue basics", () => {
     expect(wrapper).toBeTruthy();
   });
 
-  it.skip("has XYZ formula panel", async () => {
+  it.todo("has XYZ formula panel", async () => {
     const xyzFormulaPanel = wrapper.find('[data-testid=xyz_formula_panel]')
     const xyzFormula = xyzFormulaPanel.find("[data-testid]")
     console.debug("Visible before", xyzFormula.isVisible())

@@ -4,8 +4,8 @@ import { createWrapper } from "../../../tests/vue-helper";
 import { SEStoreType, useSEStore } from "../../stores/se";
 import { VueWrapper } from "@vue/test-utils";
 import { drawEllipse } from "./sphereframe-helper";
-import { SENodule } from "../../models/SENodule";
 import { createTestingPinia } from "@pinia/testing";
+import { SENodule } from "../../models/SENodule";
 import { Command } from "../../commands/Command";
 import Handler from "../EllipseHandler";
 

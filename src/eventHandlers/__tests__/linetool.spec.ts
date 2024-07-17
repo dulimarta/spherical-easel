@@ -2,7 +2,6 @@ import SphereFrame from "../../components/SphereFrame.vue";
 import { createWrapper } from "../../../tests/vue-helper";
 import { SEStoreType, useSEStore } from "../../stores/se";
 import { vi } from "vitest";
-
 import { SELine } from "../../models/SELine";
 import { VueWrapper } from "@vue/test-utils";
 import SETTINGS from "../../global-settings";
@@ -51,9 +50,10 @@ describe("Line Tool", () => {
     const endX = TEST_MOUSE_X + 10;
     const endY = TEST_MOUSE_Y - 10;
     const prevLineCount = SEStore.seLines.length;
+    SEStore.setActionMode("line")
+    await wrapper.vm.$nextTick()
     await drawOneDimensional(
       wrapper,
-      "line",
       TEST_MOUSE_X,
       TEST_MOUSE_Y,
       isPoint1Foreground,

@@ -46,7 +46,7 @@ describe("Dialog.vue", () => {
     // expect(b.text()).toMatch("Dialog Title");
   });
 
-  it.skip("shows yes button with correct label", async () => {
+  it.todo("shows yes button with correct label", async () => {
     const wrapper = mount(TestedComponent, {
       props: {
         title: "Test title",
@@ -61,7 +61,7 @@ describe("Dialog.vue", () => {
     expect(b.text()).toMatch("Hello");
   });
 
-  it.skip("shows no button with correct label", async () => {
+  it.todo("shows no button with correct label", async () => {
     const wrapper = mount(TestedComponent, {
       props: {
         title: "Test Title",
@@ -76,7 +76,7 @@ describe("Dialog.vue", () => {
     expect(b.text()).toMatch("No Hello");
   });
 
-  it.skip("calls positive button handler", async () => {
+  it.todo("calls positive button handler", async () => {
     const fakeHandler = vi.fn();
     const wrapper = mount(TestedComponent, {
       mountOptions: {
@@ -92,7 +92,7 @@ describe("Dialog.vue", () => {
     expect(fakeHandler).toHaveBeenCalled();
   });
 
-  it.skip("calls negative button handler", async () => {
+  it.todo("calls negative button handler", async () => {
     const fakeHandler = vi.fn();
     const wrapper = mount(TestedComponent, {
       props: {

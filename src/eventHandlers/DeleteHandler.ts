@@ -40,7 +40,7 @@ export default class DeleteHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent): void {
-    //console.log("Mouse pressed in DeleteHandler");
+    console.log("DeleteHandler::mousePressed");
     //Select an object to delete
     if (this.isOnSphere) {
       // In the case of multiple selections prioritize points > lines > segments > circles > labels
@@ -89,6 +89,7 @@ export default class DeleteHandler extends Highlighter {
         this.victimType = i18n.global.t(`objects.polygons`, 3);
       }
       if (this.victim != null) {
+        console.debug("Candidate to delete", this.victimName)
         // Do the deletion
         const deletedNodeIds = this.delete(this.victim);
         //deletedNodes: "Successfully deleted {type} {name} and {number} {objects} that depend on it.",
@@ -107,11 +108,14 @@ export default class DeleteHandler extends Highlighter {
         });
         // Reset the beforeDeleteState
         this.mouseLeave(event);
+      } else {
+        console.debug("No candidate to delete")
       }
     }
   }
 
   mouseMoved(event: MouseEvent): void {
+    console.log("DeleteHandler::mouseMoved");
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
     // only one object at a time can be deleted so only glow the potential victim
@@ -152,6 +156,7 @@ export default class DeleteHandler extends Highlighter {
   mouseReleased(event: MouseEvent): void {}
 
   mouseLeave(event: MouseEvent): void {
+    console.log("DeleteHandler::mouseLeave");
     super.mouseLeave(event);
     // Reset the victim in preparation for another deletion.
     this.victim = null;
