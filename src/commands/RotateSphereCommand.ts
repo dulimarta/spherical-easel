@@ -1,5 +1,6 @@
 import { Command } from "./Command";
 import { Matrix4 } from "three";
+import { toSVGReturnType } from "@/types";
 
 export class RotateSphereCommand extends Command {
   private rotationMat: Matrix4;
@@ -21,6 +22,13 @@ export class RotateSphereCommand extends Command {
 
   restoreState(): void {
     Command.store.rotateSphere(this.inverseRotation);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

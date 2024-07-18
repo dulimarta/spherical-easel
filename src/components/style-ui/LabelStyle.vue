@@ -657,7 +657,7 @@ const labelTextDecorationItems = [
   },
   {
     text: t("textDecoration.strikethrough"),
-    value: "strikethrough"
+    value: "line-through" //strikethrough doesn't work, but line-through does
   },
   {
     text: t("textDecoration.overline"),
@@ -765,7 +765,7 @@ const conflictItems: ConflictItems = {
   "labelStyle": "Label Style",
   "labelTextDecoration": "Label Text Decoration",
   "labelTextFamily": "Label Text Family",
-  "labelTextRotation": "Label Rotation ()",
+  "labelTextRotation": "Label Rotation (°)",
   "labelTextScale": "Label Scale (%)",
   "labelTextStyle": "Label Text Style",
   "makeLabelsVisible": "Make Labels Visible",

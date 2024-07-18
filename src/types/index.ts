@@ -19,6 +19,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEExpression } from "@/models/SEExpression";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { LAYER } from "@/global-settings";
 // import "@types/google.maps"
 
 export interface Selectable {
@@ -444,10 +445,60 @@ export type MinMaxNumber = {
 /**
  * The properties of a plottable object needed when creating icons
  */
+export type toSVGType = {
+  frontGradientDictionary: Map<
+    svgGradientType,
+    string | Map<svgStopType, string>
+  > | null; // front gradient gradient dictionary (if any)
+  backGradientDictionary: Map<
+    svgGradientType,
+    string | Map<svgStopType, string>
+  > | null; // back gradient gradient dictionary (if any)
+  frontStyleDictionary: Map<svgStyleType, string> | null; // front style dictionary (if any)
+  backStyletDictionary: Map<svgStyleType, string> | null; // back style dictionary (if any)
+  layerSVGArray: Array<[LAYER, string]>; // layer, SVG string array
+  type: plottableType;
+};
+
+export type toSVGReturnType = null | toSVGType
+
+export type svgStyleType =
+  | "fill"
+  | "fill-opacity"
+  | "stroke"
+  | "stroke-width"
+  | "stroke-opacity"
+  | "stroke-linecap"
+  | "stroke-linejoin"
+  | "stroke-miterlimit"
+  | "stroke-dasharray"
+  | "stroke-dashoffset"
+  | "font-family"
+  | "font-size"
+  | "line-height"
+  | "text-anchor"
+  | "dominant-baseline"
+  | "font-style"
+  | "font-weight"
+  | "text-decoration"
+  | "direction";
+
+export type svgGradientType =
+  | "centerX"
+  | "centerY"
+  | "focusX"
+  | "focusY"
+  | "radius"
+  | "units"
+  | "stop";
+
+export type svgStopType = "offset" | "stop-color";
+
 export type plottableType =
   | "boundaryCircle"
   | "point"
   | "line"
+  | "label"
   | "segment"
   | "circle"
   | "angleMarker"
@@ -456,6 +507,7 @@ export type plottableType =
   | "polygon";
 
 export type sides = "front" | "back" | "mid";
+
 export type plottableProperties = {
   type: plottableType;
   side: sides;

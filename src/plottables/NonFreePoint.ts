@@ -10,6 +10,7 @@ import {
   DEFAULT_NONFREEPOINT_BACK_STYLE
 } from "@/types/Styles";
 import Point from "@/plottables/Point";
+import { toSVGType } from "@/types";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -36,6 +37,19 @@ export default class NonFreePoint extends Point {
       StyleCategory.Back,
       DEFAULT_NONFREEPOINT_BACK_STYLE
     );
+  }
+
+  toSVG():toSVGType{
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGType: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyletDictionary: null,
+      layerSVGArray: [],
+      type: "angleMarker"
+    }
+    return returnSVGType
   }
 
   /**

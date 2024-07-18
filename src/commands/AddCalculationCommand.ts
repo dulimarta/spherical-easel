@@ -4,6 +4,8 @@ import { SENodule } from "@/models/SENodule";
 import { SECalculation } from "@/models/SECalculation";
 import { AddExpressionCommand } from "./AddExpressionCommand";
 import { SavedNames, ValueDisplayMode } from "@/types";
+import { toSVGReturnType } from "@/types";
+
 
 export class AddCalculationCommand extends AddExpressionCommand {
   // private seExpression: SEExpression;
@@ -21,6 +23,13 @@ export class AddCalculationCommand extends AddExpressionCommand {
   ) {
     super(seExpression, parents);
     this.arithmeticExpression = arithmeticExpression;
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

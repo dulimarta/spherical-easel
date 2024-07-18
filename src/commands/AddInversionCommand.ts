@@ -3,6 +3,7 @@ import { SENodule } from "@/models/SENodule";
 import { SECircle } from "@/models/SECircle";
 import { SavedNames } from "@/types";
 import { SEInversion } from "@/models/SEInversion";
+import { toSVGReturnType } from "@/types";
 
 export class AddInversionCommand extends Command {
   private seInversion: SEInversion;
@@ -25,6 +26,13 @@ export class AddInversionCommand extends Command {
   restoreState(): void {
     this.seCircle.unregisterChild(this.seInversion);
     Command.store.removeTransformation(this.lastState);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

@@ -12,15 +12,25 @@
 import EventBus from "@/eventHandlers/EventBus";
 import { Vector3 } from "three";
 import { SEStoreType } from "@/stores/se";
+import {
+  plottableType,
+  svgGradientType,
+  svgStopType,
+  svgStyleType as svgStyleType,
+  toSVGReturnType
+} from "@/types/index";
+import SETTINGS, { LAYER } from "@/global-settings";
+import { DeleteNoduleCommand } from "./DeleteNoduleCommand";
+
 export abstract class Command {
   protected static store: SEStoreType;
   protected static tmpVector = new Vector3();
   protected static tmpVector1 = new Vector3();
 
-  //#region commmandArrays
+  //#region commandArrays
   static commandHistory: Command[] = []; // stack of executed commands
   static redoHistory: Command[] = []; // stack of undone commands
-  //#endregion commmandArrays
+  //#endregion commandArrays
 
   //eslint-disable-next-line
   protected lastState: any; // The state can be of ANY type
@@ -121,86 +131,442 @@ export abstract class Command {
     return JSON.stringify(out);
   }
 
-  static dumpSVG():string {
+  static defaultSVGStyleDictionary = new Map<svgStyleType, string>([
+    ["fill", "black"],
+    ["stroke", "none"],
+    ["fill-opacity", "1"],
+    ["stroke-width", "1"],
+    ["stroke-opacity", "1"],
+    ["stroke-linecap", "butt"],
+    ["stroke-linejoin", "miter"],
+    ["stroke-miterlimit", "4"],
+    ["stroke-dasharray", "none"],
+    ["stroke-dashoffset", "0"],
+    // ["font-family", ""], no default
+    // ["font-size", ""], no default
+    // ["line-height", ""], no default?
+    ["text-anchor", "start"],
+    ["dominant-baseline", "auto"],
+    ["font-style", "normal"],
+    ["font-weight", "normal"],
+    ["text-decoration", "none"],
+    ["direction", "ltr"]
+  ]);
 
-    // create a style dictionary
-    //  (key: id - this would be an object name concat a number like point0,
-    // value: [dictionary with keys: name of attribute, value: string of attribute]
+  /**
+   * Returns either null or a six-tuple of information
+   * including four (front|back)(gradient|style)dictionaries for the styling,
+   * Array of the location and SVG strings, and
+   * type of object encoded
+   */
+  abstract toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[];
+
+  /**
+   * Make an array of the ids of all deleted nodes for passing to each toSVG method. When an object is deleted, it
+   *   is removed from the DAG, but the command history will still reference its creation.
+   *   The nodule itself ( and the command that created it) will not know it has been deleted.
+   */
+  protected static deletedNoduleIds: Array<number> = [];
+
+  static dumpSVG(size: number): string {
+    function gradientDictionariesEqual(
+      d1: Map<svgGradientType, string | Map<svgStopType, string>>,
+      d2: Map<svgGradientType, string | Map<svgStopType, string>>
+    ): boolean {
+      // quick check on the number of entries
+      if (d1.size != d2.size) {
+        return false;
+      } else {
+        for (let key of d1.keys()) {
+          if (key !== "stop") {
+            // comparing strings
+            if (d1.get(key) !== d2.get(key)) {
+              return false;
+            }
+          } else {
+            // the values of the key "stop" are dictionaries
+            const stop1Dict = d1.get(key) as Map<svgStopType, string>; // key is "stop" so value is a dictionary and not a string
+            const stop2Dict = d2.get(key) as Map<svgStopType, string>;
+            if (stop1Dict !== undefined && stop2Dict !== undefined) {
+              if (stop1Dict.size !== stop2Dict.size) {
+                return false;
+              } else {
+                for (let key of stop1Dict.keys()) {
+                  if (stop1Dict.get(key) !== stop2Dict.get(key)) {
+                    return false;
+                  }
+                }
+              }
+            } else {
+              return false;
+            }
+          }
+        }
+      }
+      return true;
+    }
+    function styleDictionariesEqual(
+      d1: Map<svgStyleType, string>,
+      d2: Map<svgStyleType, string>
+    ): boolean {
+      // quick check on the number of entries
+      if (d1.size != d2.size) {
+        return false;
+      } else {
+        for (let key of d1.keys()) {
+          if (d1.get(key) !== d2.get(key)) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    // Build the header string for the SVG
+    const SVGpadding = 20 // in pixels
+    let svgHeaderReturnString =
+      '<svg width="' +
+      size +
+      'px" ' +
+      'height="' +
+      size +
+      'px" ' +
+      'viewBox="' +
+      String(-1 * SETTINGS.boundaryCircle.radius-SVGpadding) +
+      " " +
+      String(-1 * SETTINGS.boundaryCircle.radius-SVGpadding) +
+      " " +
+      String(2 * SETTINGS.boundaryCircle.radius+2*SVGpadding) +
+      " " +
+      String(2 * SETTINGS.boundaryCircle.radius+2*SVGpadding) +
+      '"\n ' +
+      'transform="scale(1,-1)"\n vector-effect="non-scaling-stroke"\n ' + // make sure that up is the positive y-axis
+      'xmlns="http://www.w3.org/2000/svg">\n';
+
+    // Record the gradients (which will be radial gradients for us) for the SVG in a dictionary
+    // key: names like circleFrontGradient1 and polygonBackGradient2, etc.
+    // value: a dictionary with
+    //    key: svgGradientType (i.e. string "centerX","focusY", etc.)
+    //    value: string (matching the key) or if the key == "stop" a dictionary with
+    //        keys svgStopType (offset, stop-color) <-- order matters!  when writing to the final object order from smallest to largest
+    //        offest value to match key
+    // This starts as an empty dictionary because there might not be any gradients in the SVG (i.e. circles, ellipse, polygon)
+    const gradientDictionary = new Map<
+      string,
+      Map<svgGradientType, string | Map<svgStopType, string>>
+    >();
+
+    // Next create a style dictionary with
+    //  key: name - this would be an object-type name/ front|back / a number like pointFrontStyle0, lineBackStyle1, labelBackStyle3,etc
+    //  value: a dictionary with
+    //      keys: svgStyleType (string of like "fill", "stroke", etc.)
+    //      value: string of attribute]
     //
-    // key: name of attribute (string)
-    // fill
-    // fill-opacity default is 1? so if the opacity is specified in the fill color, the fill color determines the opacity
-    // stroke
-    // stroke-width
-    // stroke-opacity default is 1? so if the opacity is specified in the fill color, the fill color determines the opacity
-    // stroke-linecap
-    // stroke-linejoin
-    // stroke-miterlimit
-    // stroke-dasharray
-    // stroke-dashoffset
-    // font-family
-    // font-size
-    // line-height
-    // text-anchor
-    // dominant-baseline
-    // font-style
-    // font-weight
-    // text-decoration
-    // direction
-    //
-    // value:
-    //   value of attribute (string) -- how do I indicate the default value for each of these attributes?
+    //      Note: 1) key "fill" can point to a gradient in the gradient dictionary like ("url(#polygonBackGradient2)")
+    //            2) include only those styles key whose values are not the defaults
     //
     //  Initially contains the style of the boundary circle
 
-    // create an layer dictionary (key: layer number, like 0 (of type number) corresponding to
-    //
-    // backgroundAngleMarkers,0 --> contains only angle markers (edges and fill)
-    // backgroundFills,3 --> contains circles (fills only), ellipse (fills only), polygon
-    // background,4 --> contains lines, segments, circles (edges only), parametric, ellipse, edges only
-    // backgroundPoints,6 --> only contains points
-    // backgroundText,8 --> only contains labels
-    // midground,9 --> contains only the boundary circle
-    // foregroundAngleMarkers,11 --> contains only angle markers (edges and fill)
-    // foregroundFills,13 --> contains circles (fills only), ellipse (fills only), polygon
-    // foreground,14 --> contains lines, segments, circles (edges only), parametric, ellipse, edges only
-    // foregroundPoints,16 --> only contains points
-    // foregroundText, 18 --> only contains labels
-    //   (notice all the glowing layers have been removed - the SVG export doesn't include any glowing objects)
-    //
-    // value: [dictionary with keys: type of object values: ])
-    //
-    // key: type of object (string)
-    // point
-    // line
-    // segment
-    // circle
-    // polygon
-    // angleMarker
-    // ellipse
-    // parametric
-    // labels
-    //
-    // value is a dictionary of the keys (id-- from creation in SENodule like SENodule.id (node count)) values: list of the 1) the style id and 2) SVG code for that object (includes matrix)
-    //
-    // Don't include visibility - all items are visible if they are in the
-    //
-    //  Initially contains the boundary circle in the midground layer
+    const styleDictionary = new Map<string, Map<svgStyleType, string>>();
+    // Add the style of the boundary circle
+    const boundaryCircleStyleDict = new Map<svgStyleType, string>([
+      ["fill", "none"],
+      ["stroke", String(SETTINGS.boundaryCircle.color)],
+      ["stroke-width", String(SETTINGS.boundaryCircle.lineWidth)]
+    ]);
+    styleDictionary.set("boundaryCircleStyle", boundaryCircleStyleDict);
 
-    // for each command pass the style dictionary and the layer dictionary to the object, the toSVG method in each object adds it self to the layer dictionary and its style to the style dictionary
-
-    // Use the style dictionary to create a string style sheet object that contains selectors like
-    // point0 { stroke: blue; stroke-width: 0.7642135452; fill: none} // don't include attributes that default correctly
+    // create an layer dictionary with
+    //    key: layer number, like 0 (of type number enum LAYER) corresponding to a layer
+    //    value: list of the 1) the style name key from the styleDictionary and 2) SVG code for that object -
+    //           Note: there should be NO space between the initial < and the name of the object.
+    //                 The first space MUST be after the name of the object
     //
-    // Use the layer dictionary to create is an SVG of the current scene object
+    // Here is a list of the layer name and number (no glowing layers because these are not exported)
+    //    backgroundAngleMarkers,0 --> contains only angle markers (edges and fill)
+    //    backgroundFills,3 --> contains circles (fills only), ellipse (fills only), polygon
+    //    background,4 --> contains lines, segments, circles (edges only), parametric, ellipse, edges only
+    //    backgroundPoints,6 --> only contains points
+    //    backgroundText,8 --> only contains labels
+    //    midground,9 --> contains only the boundary circle
+    //    foregroundAngleMarkers,11 --> contains only angle markers (edges and fill)
+    //    foregroundFills,13 --> contains circles (fills only), ellipse (fills only), polygon
+    //    foreground,14 --> contains lines, segments, circles (edges only), parametric, ellipse, edges only
+    //    foregroundPoints,16 --> only contains points
+    //    foregroundText, 18 --> only contains labels
     //
+    //  Initially contains the boundary circle in the midground layer (The only object in the midground)
+
+    const layerDictionary = new Map<LAYER, [string, string][]>();
+    // Add the boundary circle
+    const boundaryCircleSVG =
+      '<circle cx="0" cy="0" r="' +
+      String(SETTINGS.boundaryCircle.radius) +
+      '"/>';
+    layerDictionary.set(LAYER.midground, [
+      ["boundaryCircleStyle", boundaryCircleSVG]
+    ]);
+
+    // For each command in the history add the necessary items to the (gradient|style|layer)Dictionary
     //
-    // The id of each layer is the name of the layer (from LAYER enum ,like backgroundAngleMarkersGlowing)
-    // The id of each object in a layer is name of object being display - part xx (there are three parts possible for segment, two for )
+    // useful for naming the gradients
+    let frontGradientCount = 0;
+    let backGradientCount = 0;
+    // useful for naming the styles
+    let frontStyleCount = 0;
+    let backStyleCount = 0;
+    Command.commandHistory.forEach((c: Command) => {
+      const toSVGReturnArray = c.toSVG(Command.deletedNoduleIds);
+      if (toSVGReturnArray != null) {
+        for (let information of toSVGReturnArray) {
+          if (information != null) {
+            const frontGradientDictionary = information.frontGradientDictionary;
+            const backGradientDictionary = information.backGradientDictionary;
+            const frontStyleDictionary = information.frontStyleDictionary;
+            const backStyleDictionary = information.backStyletDictionary;
+            const layerSVGInformation = information.layerSVGArray;
+            const typeName = information.type;
 
+            // Incorporate the new gradient dictionaries into gradientDictionary
+            //  Note: For a single object, there is only one front gradient and one back gradient applied to all front/back object fills
+            let frontGradientName: string | null = null;
+            if (frontGradientDictionary !== null) {
+              // Check to see if this dictionary exists already in styleDictionary
+              frontGradientName =
+                typeName + "FrontGradient" + String(frontGradientCount);
+              for (let [name, dict] of gradientDictionary.entries()) {
+                if (gradientDictionariesEqual(dict, frontGradientDictionary)) {
+                  frontGradientName = name;
+                  break;
+                }
+              }
+              if (
+                frontGradientName ==
+                typeName + "FrontGradient" + String(frontGradientCount)
+              ) {
+                // The gradient is new and should be added to the gradientDictionary
+                gradientDictionary.set(
+                  frontGradientName,
+                  frontGradientDictionary
+                );
+                frontGradientCount++;
+              }
+            }
+            let backGradientName: string | null = null;
+            if (backGradientDictionary !== null) {
+              // Check to see if this dictionary exists already in styleDictionary
+              backGradientName =
+                typeName + "BackGradient" + String(backGradientCount);
+              for (let [name, dict] of gradientDictionary.entries()) {
+                if (gradientDictionariesEqual(dict, backGradientDictionary)) {
+                  backGradientName = name;
+                  break;
+                }
+              }
+              if (
+                backGradientName ==
+                typeName + "BackGradient" + String(backGradientCount)
+              ) {
+                // The gradient is new and should be added to the gradientDictionary
+                gradientDictionary.set(
+                  backGradientName,
+                  backGradientDictionary
+                );
+                backGradientCount++;
+              }
+            }
 
+            // Incorporate the style dictionaries into styleDictionary
+            //  Note: For a single object, there is only one front style and one back style applied to all front/back object parts
+            let frontStyleName: string | null = null;
+            if (frontStyleDictionary !== null) {
+              // If there is a frontGradient, make sure that the "fill" in the frontStyleDictionary points to it correctly
+              if (frontGradientName !== null) {
+                frontStyleDictionary.set(
+                  "fill",
+                  "url(#" + frontGradientName + ")"
+                );
+              }
+              // Check to see if this dictionary exists already in styleDictionary
+              frontStyleName =
+                typeName + "FrontStyle" + String(frontStyleCount);
+              for (let [name, dict] of styleDictionary.entries()) {
+                if (styleDictionariesEqual(dict, frontStyleDictionary)) {
+                  frontStyleName = name;
+                  break;
+                }
+              }
+              if (
+                frontStyleName ==
+                typeName + "FrontStyle" + String(frontStyleCount)
+              ) {
+                // The style is new and should be added to the styleDictionary
+                styleDictionary.set(frontStyleName, frontStyleDictionary);
+                frontStyleCount++;
+              }
+            }
+            let backStyleName: string | null = null;
+            if (backStyleDictionary !== null) {
+              // If there is a backGradient, make sure that the "fill" in the backStyleDictionary points it correctly
+              if (backGradientName !== null) {
+                backStyleDictionary.set(
+                  "fill",
+                  "url(#" + backGradientName + ")"
+                );
+              }
+              // Check to see if this dictionary exists already in styleDictionary
+              backStyleName = typeName + "BackStyle" + String(backStyleCount);
+              for (let [name, dict] of styleDictionary.entries()) {
+                if (styleDictionariesEqual(dict, backStyleDictionary)) {
+                  backStyleName = name;
+                  break;
+                }
+              }
+              if (
+                backStyleName ==
+                typeName + "BackStyle" + String(backStyleCount)
+              ) {
+                // The style is new and should be added to the styleDictionary
+                styleDictionary.set(backStyleName, backStyleDictionary);
+                backStyleCount++;
+              }
+            }
 
-    return "blah"
+            // Incorporate the location,SVG array into the layerDictionary
+            for (let [layer, svgString] of layerSVGInformation) {
+              if (layer < LAYER.midground) {
+                // the svg is in the background
+                if (backStyleName !== null) {
+                  const layerSVGStringList = layerDictionary.get(layer);
+                  if (layerSVGStringList != undefined) {
+                    layerSVGStringList.push([backStyleName, svgString]);
+                    layerDictionary.set(layer, layerSVGStringList);
+                  } else {
+                    // the layer key pair doesn't exist yet in the dictionary
+                    layerDictionary.set(layer, [[backStyleName, svgString]]);
+                  }
+                }
+              } else {
+                // the svg is in the foreground
+                if (frontStyleName !== null) {
+                  const styleSVGStringList = layerDictionary.get(layer);
+                  if (styleSVGStringList != undefined) {
+                    styleSVGStringList.push([frontStyleName, svgString]);
+                    layerDictionary.set(layer, styleSVGStringList);
+                  } else {
+                    // the layer key pair doesn't exist yet in the dictionary
+                    layerDictionary.set(layer, [[frontStyleName, svgString]]);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Build the svgReturnString parts from (gradient|style|layer) dictionaries don't add anything that is default value
+    // Start with the gradients
+    var gradientSVGReturnString = "";
+    // If any, create the gradient part of the SVG return string
+    if (gradientDictionary.size != 0) {
+      gradientSVGReturnString += "<defs>\n";
+      for (let [name, dict] of gradientDictionary.entries()) {
+        gradientSVGReturnString += '<radialGradient id="' + name + '" ';
+        let stopSVGReturnStrings: [number, string][] = [];
+        for (let [attribute, value] of dict) {
+          // We have no guarantee of order and the stop attributes must be added last (and in order)
+          if (attribute != "stop") {
+            // The value is a string which is the value of the attribute
+            gradientSVGReturnString +=
+              attribute + '="' + (value as string) + '" ';
+          } else {
+            // The value is a dictionary of the stop
+            let tempStopLine = "<stop ";
+            let tempStopNumber = 0;
+            for (let [key, val] of value as Map<svgStopType, string>) {
+              tempStopLine += key + '="' + val + '" ';
+              if (key == "offset") {
+                tempStopNumber = Number(val);
+              }
+            }
+            tempStopLine += "/>\n";
+            stopSVGReturnStrings.push([tempStopNumber, tempStopLine]);
+          }
+        }
+        // sort the stopSVGReturnStrings
+        stopSVGReturnStrings.sort((a, b) => {
+          if (a[0] < b[0]) {
+            return -1;
+          } else if (a[0] == b[0]) {
+            return 0;
+          } else {
+            return 1;
+          }
+        });
+        // Add the stops
+        for (let [num, val] of stopSVGReturnStrings) {
+          gradientSVGReturnString += val;
+        }
+        // Close the radial gradient
+        gradientSVGReturnString += "</radialGradient>\n";
+      }
+      gradientSVGReturnString += "</defs>\n";
+    }
+
+    // Create the CSS style part of the SVG return string
+    var styleSVGReturnString = '\t<style type="text/css"><![CDATA[\n';
+    for (let [name, styleDict] of styleDictionary.entries()) {
+      styleSVGReturnString += "\t\t." + name + " { ";
+      //Add the list of attributes, but make sure it is not the default
+      for (let [attribute, value] of styleDict) {
+        if (this.defaultSVGStyleDictionary.get(attribute) != value) {
+          styleSVGReturnString += attribute + ":" + value + "; ";
+        }
+      }
+      // Close the CSS style
+      styleSVGReturnString += "}\n";
+    }
+    // Close the CSS style section
+    styleSVGReturnString += "\t]]></style>\n";
+
+    // Use the layer dictionary to create the layer SVG string
+    let layerSVGReturnString = "";
+    for (let layerNumber in LAYER) {
+      if (!isNaN(Number(layerNumber))) {
+        const itemList = layerDictionary.get(Number(layerNumber));
+        if (itemList != undefined) {
+          // This layer is not empty
+
+          // Flip the orientation for text layers IS THIS NECESSARY?
+          if (LAYER[layerNumber].toLowerCase().includes("text")) {
+            layerSVGReturnString +=
+              '\t<g id="' +
+              LAYER[layerNumber].replace("ground", "") +
+              '" transform="matrix(1 0 0 0 -1 0)">\n';
+          } else {
+            layerSVGReturnString +=
+              '\t<g id="' + LAYER[layerNumber].replace("ground", "") + '" >\n';
+          }
+          for (let [styleID, svgString] of itemList) {
+            // insert the style ID class into the svgString using the first space
+            layerSVGReturnString +=
+              "\t\t" + svgString.replace(" ", ' class="' + styleID + '" ') + "\n";
+          }
+          layerSVGReturnString += "\t</g>\n";
+        }
+      }
+    }
+
+    // Build and return the svgReturnString
+    return (
+      (svgHeaderReturnString +
+      gradientSVGReturnString +
+      styleSVGReturnString +
+      layerSVGReturnString +
+      "</svg>").replace(/[\t]/gm,"   ")
+    );
+    // return "blah";
   }
 
   static setGlobalStore(store: SEStoreType): void {

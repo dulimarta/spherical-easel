@@ -6,6 +6,7 @@ import { Vector3 } from "three";
 import { SEEllipse } from "@/models/SEEllipse";
 import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
+import { toSVGReturnType } from "@/types";
 
 export class AddEllipseCommand extends Command {
   private seEllipse: SEEllipse;
@@ -48,6 +49,13 @@ export class AddEllipseCommand extends Command {
     this.ellipseSEPoint.unregisterChild(this.seEllipse);
     this.focus2SEPoint.unregisterChild(this.seEllipse);
     this.focus1SEPoint.unregisterChild(this.seEllipse);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

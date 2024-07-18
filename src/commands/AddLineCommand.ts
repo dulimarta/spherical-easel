@@ -6,6 +6,9 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
+import { toSVGReturnType } from "@/types";
+
+
 export class AddLineCommand extends Command {
   private seLine: SELine;
   private startSEPoint: SEPoint;
@@ -43,6 +46,12 @@ export class AddLineCommand extends Command {
     this.seLabel.unregisterChild(this.seLabel);
     this.startSEPoint.unregisterChild(this.seLine);
     this.endSEPoint.unregisterChild(this.seLine);
+  }
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

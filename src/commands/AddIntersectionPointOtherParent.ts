@@ -1,7 +1,8 @@
 import { Command } from "./Command";
-import { SavedNames, SEOneDimensional } from "@/types";
+import { plottableType, SavedNames, SEOneDimensional, svgGradientType, svgStopType, svgStyleType } from "@/types";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SENodule } from "@/models/SENodule";
+import { LAYER } from "@/global-settings";
 
 export class AddIntersectionPointOtherParent extends Command {
   private seOtherParent: SEOneDimensional;
@@ -33,6 +34,13 @@ export class AddIntersectionPointOtherParent extends Command {
     //   `AddIntersectionPointOtherParentCommand: restoreState For intersection point ${this.seIntersectionPoint.name}, remove ${this.seOtherParent.name}`
     // );
     this.seIntersectionPoint.removeIntersectionOtherParent(this.seOtherParent);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

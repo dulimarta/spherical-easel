@@ -1,6 +1,7 @@
 import { Command } from "./Command";
 import Nodule from "@/plottables/Nodule";
 import { StyleOptions, StyleCategory } from "../types/Styles";
+import { toSVGReturnType } from "@/types";
 
 export class StyleNoduleCommand extends Command {
   private nodules: Nodule[] = [];
@@ -59,6 +60,13 @@ export class StyleNoduleCommand extends Command {
       // );
       this.nodules[i].updateStyle(this.panel,this.pastStyles[i]);
     }
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

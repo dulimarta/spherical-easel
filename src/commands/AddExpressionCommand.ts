@@ -1,6 +1,8 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SEExpression } from "@/models/SEExpression";
+import { toSVGReturnType } from "@/types";
+
 
 export abstract class AddExpressionCommand extends Command {
   protected seExpression: SEExpression;

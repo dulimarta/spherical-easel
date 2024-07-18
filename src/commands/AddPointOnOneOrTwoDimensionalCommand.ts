@@ -6,6 +6,7 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGReturnType } from "@/types";
 
 export class AddPointOnOneDimensionalCommand extends Command {
   private sePointOnOneOrTwoDimensional: SEPointOnOneOrTwoDimensional;
@@ -69,6 +70,13 @@ export class AddPointOnOneDimensionalCommand extends Command {
     Command.store.removePoint(this.lastState);
     this.sePointOnOneOrTwoDimensional.unregisterChild(this.seLabel);
     this.parent.unregisterChild(this.sePointOnOneOrTwoDimensional);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

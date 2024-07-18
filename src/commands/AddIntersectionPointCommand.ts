@@ -5,6 +5,9 @@ import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGReturnType } from "@/types";
+
+
 export class AddIntersectionPointCommand extends Command {
   private seIntersectionPoint: SEIntersectionPoint;
   private principleParent1: SEOneDimensional;
@@ -49,6 +52,13 @@ export class AddIntersectionPointCommand extends Command {
     this.seIntersectionPoint.unregisterChild(this.seLabel);
     this.principleParent1.unregisterChild(this.seIntersectionPoint);
     this.principleParent2.unregisterChild(this.seIntersectionPoint);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

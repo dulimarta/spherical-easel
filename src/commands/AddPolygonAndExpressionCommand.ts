@@ -7,6 +7,7 @@ import { Vector3 } from "three";
 import { SavedNames, ValueDisplayMode } from "@/types";
 import { SEPolygon } from "@/models/SEPolygon";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGReturnType } from "@/types";
 
 export class AddPolygonCommand extends Command {
   /**
@@ -67,6 +68,13 @@ export class AddPolygonCommand extends Command {
     this.seAngleMarkerParents.forEach(angMar =>
       angMar.unregisterChild(this.sePolygon)
     );
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

@@ -8,6 +8,7 @@ import { SECircle } from "@/models/SECircle";
 import { SELine } from "@/models/SELine";
 import { SEInversion } from "@/models/SEInversion";
 import { SEInversionCircleCenter } from "@/models/SEInversionCircleCenter";
+import { toSVGReturnType } from "@/types";
 
 export class AddInvertedCircleCenterCommand extends Command {
   private preimageSECircleOrLine: SECircle | SELine;
@@ -73,6 +74,14 @@ export class AddInvertedCircleCenterCommand extends Command {
     this.parentInversion.unregisterChild(this.invertedSECircleCenter);
     this.preimageSECircleOrLine.unregisterChild(this.invertedSECircleCenter);
   }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
+  }
+
 
   toOpcode(): null | string | Array<string> {
     return [

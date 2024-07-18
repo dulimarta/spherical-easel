@@ -7,6 +7,7 @@ import { SavedNames, SEIsometry } from "@/types";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SELine } from "@/models/SELine";
 import { SEIsometryLine } from "@/models/SEIsometryLine";
+import { toSVGReturnType } from "@/types";
 
 export class AddIsometryLineCommand extends Command {
   private preimageSELine: SELine;
@@ -45,6 +46,13 @@ export class AddIsometryLineCommand extends Command {
     this.isometrySELine.unregisterChild(this.isometrySELineLabel);
     this.parentIsometry.unregisterChild(this.isometrySELine);
     this.preimageSELine.unregisterChild(this.isometrySELine);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

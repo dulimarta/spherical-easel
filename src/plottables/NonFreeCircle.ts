@@ -7,6 +7,7 @@ import {
   DEFAULT_NONFREE_CIRCLE_BACK_STYLE
 } from "@/types/Styles";
 import Circle from "./Circle";
+import { toSVGType } from "@/types";
 
 export default class NonFreeCircle extends Circle {
   /**
@@ -28,6 +29,19 @@ export default class NonFreeCircle extends Circle {
       StyleCategory.Back,
       DEFAULT_NONFREE_CIRCLE_BACK_STYLE
     );
+  }
+
+  toSVG():toSVGType{
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGType: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyletDictionary: null,
+      layerSVGArray: [],
+      type: "angleMarker"
+    }
+    return returnSVGType
   }
 
   /**

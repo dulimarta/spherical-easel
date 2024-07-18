@@ -5,6 +5,7 @@ import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleCategory } from "@/types/Styles";
 import { SELongitude } from "@/models/SELongitude";
+import { toSVGReturnType } from "@/types";
 
 export class AddLongitudeCommand extends Command {
   private seLongitude: SELongitude;
@@ -32,6 +33,13 @@ export class AddLongitudeCommand extends Command {
     Command.store.removeSegment(this.lastState);
     this.seLongitude.unregisterChild(this.seLabel);
     Command.store.removeLabel(this.seLabel.id);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

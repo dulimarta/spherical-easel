@@ -1,5 +1,6 @@
 import { Command } from "./Command";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { toSVGReturnType } from "@/types";
 // import { Labelable } from "@/types";
 // import { SEPoint } from "@/models/SEPoint";
 //import SETTINGS from "@/global-settings";
@@ -66,6 +67,13 @@ export class ConvertIntersectionPointToAntipodalMode extends Command {
     // this.seIntersectionPoint.ref.stylize(DisplayStyle.ApplyTemporaryVariables);
     // // set back to automatically created
     // this.seIntersectionPoint.isUserCreated = false;
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

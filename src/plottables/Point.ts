@@ -13,6 +13,7 @@ import {
 import { Vector } from "two.js/src/vector";
 import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
+import { svgStyleType, toSVGType } from "@/types";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -250,6 +251,44 @@ export default class Point extends Nodule {
     }
     // apply the new color variables to the object
     this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
+
+  toSVG(): toSVGType {
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGObject: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyletDictionary: null,
+      layerSVGArray: [],
+      type: "point"
+    };
+    if (this._locationVector.z > 0) {
+      // the point is on the front
+      const frontReturnDictionary = new Map<svgStyleType, string>();
+      // Collect the style information: fill, stroke, stroke-width
+      frontReturnDictionary.set("fill", this.frontPoint.fill as string);
+      frontReturnDictionary.set("stroke", this.frontPoint.stroke as string);
+      frontReturnDictionary.set(
+        "stroke-width",
+        String(this.frontPoint.linewidth)
+      );
+      returnSVGObject.frontStyleDictionary = frontReturnDictionary
+
+      // Collect the geometric information: radius, center
+      let svgString =
+        '<circle cx="' +
+        String(this.frontPoint.position.x) +
+        '" cy="' +
+        String(this.frontPoint.position.y) +
+        '" r="' +
+        String(this.frontPoint.scale) +
+        '"/>';
+      returnSVGObject.layerSVGArray.push([LAYER.foregroundPoints, svgString]);
+    } else {
+      // the point is on the back
+    }
+    return returnSVGObject;
   }
 
   /**

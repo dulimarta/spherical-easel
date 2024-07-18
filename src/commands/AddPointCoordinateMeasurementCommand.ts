@@ -8,6 +8,7 @@ import {
   SEPointCoordinate
 } from "@/models/SEPointCoordinate";
 import { SavedNames } from "@/types";
+import { toSVGReturnType } from "@/types";
 
 export class AddPointCoordinateMeasurementCommand extends AddExpressionCommand {
   selector: CoordinateSelection;
@@ -25,6 +26,13 @@ export class AddPointCoordinateMeasurementCommand extends AddExpressionCommand {
   ) {
     super(seExpression, [parent]);
     this.selector = selector;
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

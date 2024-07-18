@@ -3,6 +3,7 @@ import { SENodule } from "@/models/SENodule";
 import { SESlider } from "@/models/SESlider";
 import { AddExpressionCommand } from "./AddExpressionCommand";
 import { SavedNames } from "@/types";
+import { toSVGReturnType } from "@/types";
 
 export class AddSliderMeasurementCommand extends AddExpressionCommand {
   /**
@@ -11,6 +12,13 @@ export class AddSliderMeasurementCommand extends AddExpressionCommand {
    */
   constructor(seSlider: SESlider) {
     super(seSlider, []);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

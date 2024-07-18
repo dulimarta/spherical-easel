@@ -9,7 +9,7 @@ import {
   DEFAULT_POLYGON_FRONT_STYLE,
   DEFAULT_POLYGON_BACK_STYLE
 } from "@/types/Styles";
-import { location, visitedIndex } from "@/types";
+import { location, toSVGType, visitedIndex } from "@/types";
 import { SESegment } from "@/models/SESegment";
 //import Two from "two.js";
 import { Path } from "two.js/src/path";
@@ -1082,6 +1082,19 @@ export default class Polygon extends Nodule {
   removeFromLayers(/*layers: Group[]*/): void {
     this.frontFills.forEach(part => part.remove());
     this.backFills.forEach(part => part.remove());
+  }
+
+  toSVG():toSVGType{
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGType: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyletDictionary: null,
+      layerSVGArray: [],
+      type: "angleMarker"
+    }
+    return returnSVGType
   }
 
   /**

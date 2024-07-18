@@ -3,6 +3,7 @@ import { SEPencil } from "@/models/SEPencil";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 import { Command } from "./Command";
 import { CommandGroup } from "./CommandGroup";
+import { toSVGReturnType } from "@/types";
 
 export class AddPencilCommand extends Command {
   private pencil: SEPencil;
@@ -32,6 +33,13 @@ export class AddPencilCommand extends Command {
       Command.store.removeLine(line.id);
     });
     Command.store.removePoint(this.pencil.commonPoint.id);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

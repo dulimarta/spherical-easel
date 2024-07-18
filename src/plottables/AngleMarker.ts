@@ -15,6 +15,7 @@ import { Anchor } from "two.js/src/anchor";
 import { Path } from "two.js/src/path";
 import { Line } from "two.js/src/shapes/line";
 import { Vector } from "two.js/src/vector";
+import { toSVGType } from "@/types";
 
 const NUMCIRCLEVERTICES = SETTINGS.angleMarker.numCirclePoints;
 const radius = SETTINGS.boundaryCircle.radius;
@@ -1639,6 +1640,19 @@ export default class AngleMarker extends Nodule {
 
     this._backTickDouble.remove();
     this._glowingBackTickDouble.remove();
+  }
+
+  toSVG():toSVGType{
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGType: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyletDictionary: null,
+      layerSVGArray: [],
+      type: "angleMarker"
+    }
+    return returnSVGType
   }
 
   /**

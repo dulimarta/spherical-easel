@@ -7,6 +7,7 @@ import {
   DEFAULT_NONFREE_SEGMENT_BACK_STYLE
 } from "@/types/Styles";
 import Segment from "./Segment";
+import { toSVGType } from "@/types";
 
 export default class NonFreeSegment extends Segment {
   /**
@@ -25,6 +26,19 @@ export default class NonFreeSegment extends Segment {
       StyleCategory.Back,
       DEFAULT_NONFREE_SEGMENT_BACK_STYLE
     );
+  }
+
+  toSVG():toSVGType{
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGType: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyletDictionary: null,
+      layerSVGArray: [],
+      type: "angleMarker"
+    }
+    return returnSVGType
   }
 
   /**
@@ -74,13 +88,13 @@ export default class NonFreeSegment extends Segment {
         100) *
         this.nonFreeSegmentScalePercent) /
       100;
-    this.glowingFrontPart.linewidth =
+    this._glowingFrontPart.linewidth =
       (((Segment.currentGlowingSegmentStrokeWidthFront *
         frontStrokeWidthPercent) /
         100) *
         this.nonFreeSegmentScalePercent) /
       100;
-    this.glowingBackPart.linewidth =
+    this._glowingBackPart.linewidth =
       (((Segment.currentGlowingSegmentStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
@@ -102,13 +116,13 @@ export default class NonFreeSegment extends Segment {
         100) *
         this.nonFreeSegmentScalePercent) /
       100;
-    this.glowingFrontExtra.linewidth =
+    this._glowingFrontExtra.linewidth =
       (((Segment.currentGlowingSegmentStrokeWidthFront *
         frontStrokeWidthPercent) /
         100) *
         this.nonFreeSegmentScalePercent) /
       100;
-    this.glowingBackExtra.linewidth =
+    this._glowingBackExtra.linewidth =
       (((Segment.currentGlowingSegmentStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)

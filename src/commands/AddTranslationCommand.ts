@@ -5,6 +5,7 @@ import { SESegment } from "@/models/SESegment";
 import { SavedNames } from "@/types";
 import { SELine } from "@/models/SELine";
 import { SEExpression } from "@/models/SEExpression";
+import { toSVGReturnType } from "@/types";
 
 export class AddTranslationCommand extends Command {
   private seTranslation: SETranslation;
@@ -35,6 +36,13 @@ export class AddTranslationCommand extends Command {
     this.seTranslationDistanceExpression.unregisterChild(this.seTranslation);
     this.seLineOrSegment.unregisterChild(this.seTranslation);
     Command.store.removeTransformation(this.lastState);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

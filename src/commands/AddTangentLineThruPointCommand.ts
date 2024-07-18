@@ -6,6 +6,8 @@ import { SavedNames, SEOneDimensionalNotStraight } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGReturnType } from "@/types";
+
 export class AddTangentLineThruPointCommand extends Command {
   private seTangentLineThruPoint: SETangentLineThruPoint;
   private parentSEPoint: SEPoint;
@@ -43,6 +45,13 @@ export class AddTangentLineThruPointCommand extends Command {
     this.seTangentLineThruPoint.unregisterChild(this.seLabel);
     this.parentOneDimensional.unregisterChild(this.seTangentLineThruPoint);
     this.parentSEPoint.unregisterChild(this.seTangentLineThruPoint);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

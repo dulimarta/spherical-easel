@@ -2,9 +2,11 @@ import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
-import { SavedNames } from "@/types";
+import { SavedNames, toSVGType } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGReturnType } from "@/types";
+import { randInt } from "three/src/math/MathUtils";
 
 //#region addPointCommand
 export class AddPointCommand extends Command {
@@ -53,6 +55,29 @@ export class AddPointCommand extends Command {
     Command.store.removePoint(this.lastState);
   }
 
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[] {
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    if (
+      deletedNoduleIds.findIndex(id => id == this.sePoint.id) == -1 &&
+      this.sePoint.exists &&
+      this.sePoint.showing
+    ) {
+      const info: toSVGType[] = [];
+      info.push(this.sePoint.ref.toSVG());
+      // now check the label (if the point is deleted the label is also so check this inside the first conditional statement)
+      if (
+        deletedNoduleIds.findIndex(id => id == this.seLabel.id) == -1 &&
+        this.seLabel.exists &&
+        this.seLabel.showing
+      ) {
+        info.push(this.seLabel.ref.toSVG());
+      }
+      return info;
+    } else {
+      return null;
+    }
+  }
+
   toOpcode(): null | string | Array<string> {
     return [
       "AddPoint",
@@ -69,9 +94,7 @@ export class AddPointCommand extends Command {
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
-          JSON.stringify(
-            this.sePoint.ref.currentStyleState(StyleCategory.Back)
-          )
+          JSON.stringify(this.sePoint.ref.currentStyleState(StyleCategory.Back))
         ),
       // All labels have these attributes
       "labelName=" + Command.symbolToASCIIDec(this.seLabel.name),

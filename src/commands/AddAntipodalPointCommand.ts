@@ -6,6 +6,8 @@ import { Vector3 } from "three";
 import { SavedNames } from "@/types";
 import { StyleCategory } from "@/types/Styles";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { toSVGReturnType } from "@/types";
+
 
 export class AddAntipodalPointCommand extends Command {
   private seAntipodalPoint: SEAntipodalPoint;
@@ -46,6 +48,13 @@ export class AddAntipodalPointCommand extends Command {
     Command.store.removePoint(this.lastState);
     this.seAntipodalPoint.unregisterChild(this.seLabel);
     this.parentSEPoint.unregisterChild(this.seAntipodalPoint);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

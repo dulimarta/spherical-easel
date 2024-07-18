@@ -11,6 +11,7 @@ import { SEParametricGroup } from "@/models/SEParametricGroup";
 // } from "@/types";
 // import { StyleCategory } from "@/types/Styles";
 // import { CommandGroup } from "./CommandGroup";
+import { toSVGReturnType } from "@/types";
 
 export class AddParametricGroupCommand extends Command {
   private group: SEParametricGroup;
@@ -52,6 +53,13 @@ export class AddParametricGroupCommand extends Command {
     // this.seExpressionParents.forEach(par =>
     //   par.unregisterChild(this.seParametric)
     // );
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

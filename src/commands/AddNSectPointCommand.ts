@@ -7,6 +7,7 @@ import { Vector3 } from "three";
 import { SESegment } from "@/models/SESegment";
 import { SENSectPoint } from "@/models/SENSectPoint";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGReturnType } from "@/types";
 
 export class AddNSectPointCommand extends Command {
   private seNSectPoint: SENSectPoint;
@@ -64,6 +65,13 @@ export class AddNSectPointCommand extends Command {
     Command.store.removePoint(this.lastState);
     this.seNSectPoint.unregisterChild(this.seLabel);
     this.parentSegment.unregisterChild(this.seNSectPoint);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

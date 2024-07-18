@@ -2,7 +2,7 @@ import { Stylable } from "./Styleable";
 import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
 import { StyleOptions, StyleCategory } from "@/types/Styles";
-import { hslaColorType, plottableProperties } from "@/types";
+import { hslaColorType, plottableProperties, toSVGType } from "@/types";
 import { Vector3 } from "three";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
@@ -92,6 +92,11 @@ export default abstract class Nodule implements Stylable, Resizeable {
    * an updated object will be rendered correctly
    */
   abstract updateDisplay(): void;
+
+  /**
+   * Export to SVG code
+   */
+  abstract toSVG(): toSVGType;
 
   /**
    * startPt is a point on the the boundary of the display circle,

@@ -87,7 +87,7 @@
     :title="t('exportConstructionDialogTitle')"
     :yes-text="t('exportAction')"
     :no-text="t('cancelAction')"
-    :yes-action="doExport"
+    :yes-action="doExport1"
     max-width="60%">
     <v-row align="center" justify="space-between">
       <v-col cols="6" v-if="currentConstructionPreview">
@@ -158,6 +158,7 @@ import { useConstructionStore } from "@/stores/construction";
 import FileSaver from "file-saver";
 import { computed, watch } from "vue";
 import { mergeIntoImageUrl } from "@/utils/helpingfunctions";
+import { Command } from "@/commands/Command";
 enum SecretKeyState {
   NONE,
   ACCEPT_S,
@@ -334,6 +335,40 @@ async function doSave(): Promise<void> {
     .finally(() => {
       saveConstructionDialog.value?.hide();
     });
+}
+
+function doExport1() {
+  // if (svgRoot === undefined) {
+  //   // By the time doSave() is called svgCanvas must have been set
+  //   // to it is safe to non-null assert svgCanvas.value
+  //   svgRoot = svgCanvas.value!.querySelector("svg") as SVGElement;
+  // }
+  // const svgElement = svgRoot.cloneNode(true) as SVGElement;
+  // svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  // const svgBlob = new Blob([svgElement.outerHTML], {
+  //   type: "image/svg+xml;charset=utf-8"
+  // });
+  /* dump the command history into SVG */
+  const svgBlock = Command.dumpSVG(svgExportHeight.value);
+  console.log(svgBlock)
+  const svgBlob = new Blob([svgBlock], {
+    type: "image/svg+xml;charset=utf-8"
+  });
+  const svgURL = URL.createObjectURL(svgBlob);
+  if (selectedExportFormat.value === "SVG") {
+    // await nextTick()
+    FileSaver.saveAs(svgURL, "construction.svg");
+  }
+  // else {
+  //   mergeIntoImageUrl(
+  //     [svgURL],
+  //     canvasWidth.value,
+  //     canvasHeight.value,
+  //     selectedExportFormat.value
+  //   ).then((imageUrl: string) => {
+  //     FileSaver.saveAs(imageUrl, "construction." + selectedExportFormat.value);
+  //   });
+  // }
 }
 
 function doExport() {

@@ -7,7 +7,7 @@ import {
   StyleCategory,
   DEFAULT_LABEL_TEXT_STYLE
 } from "@/types/Styles";
-import { LabelDisplayMode, LabelParentTypes } from "@/types";
+import { LabelDisplayMode, LabelParentTypes, toSVGType } from "@/types";
 import { ValueDisplayMode } from "@/types";
 //import Two from "two.js";
 import { Vector } from "two.js/src/vector";
@@ -387,6 +387,19 @@ export default class Label extends Nodule {
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
 
+  toSVG():toSVGType{
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGType: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyletDictionary: null,
+      layerSVGArray: [],
+      type: "angleMarker"
+    }
+    return returnSVGType
+  }
+
   /**
    * Copies the style options set by the Style Panel into the style variables and then updates the
    * js objects (with adjustSize and stylize(ApplyVariables))
@@ -659,7 +672,6 @@ export default class Label extends Nodule {
 
         this.frontText.decoration =
           (labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
-;
         this.backText.decoration =
           (labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
         this.glowingFrontText.decoration =

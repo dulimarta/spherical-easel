@@ -6,6 +6,8 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
+import { toSVGReturnType } from "@/types";
+
 
 export class AddCircleCommand extends Command {
   private seCircle: SECircle;
@@ -43,6 +45,13 @@ export class AddCircleCommand extends Command {
     this.seCircle.unregisterChild(this.seLabel);
     this.centerSEPoint.unregisterChild(this.seCircle);
     this.circleSEPoint.unregisterChild(this.seCircle);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

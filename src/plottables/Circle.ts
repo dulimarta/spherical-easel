@@ -16,6 +16,7 @@ import { RadialGradient } from "two.js/src/effects/radial-gradient";
 import { Anchor } from "two.js/src/anchor";
 import { Path } from "two.js/src/path";
 import { Vector } from "two.js/src/vector";
+import { toSVGType } from "@/types";
 
 // The number of vertices used to draw an arc of a projected circle
 const SUBDIVISIONS = SETTINGS.circle.numPoints;
@@ -931,6 +932,19 @@ export default class Circle extends Nodule {
     this._backPart.remove();
     this._backFill.remove();
     this._glowingBackPart.remove();
+  }
+
+  toSVG():toSVGType{
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGType: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyletDictionary: null,
+      layerSVGArray: [],
+      type: "angleMarker"
+    }
+    return returnSVGType
   }
 
   defaultStyleState(panel: StyleCategory): StyleOptions {

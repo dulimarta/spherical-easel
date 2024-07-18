@@ -2,6 +2,7 @@ import { Command } from "./Command";
 import { SavedNames, SEOneDimensional } from "@/types";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SENodule } from "@/models/SENodule";
+import { toSVGReturnType } from "@/types";
 
 export class ChangeIntersectionPointPrincipleParent extends Command {
   private oldPrincipleParent: SEOneDimensional;
@@ -64,6 +65,14 @@ export class ChangeIntersectionPointPrincipleParent extends Command {
       );
     }
   }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
+  }
+
   toOpcode(): null | string | Array<string> {
     return [
       "ChangeIntersectionPointPrinciplePoint",

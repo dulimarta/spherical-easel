@@ -1,6 +1,7 @@
 import { Command } from "./Command";
 import { Vector3 } from "three";
 import { SESegment } from "@/models/SESegment";
+import { toSVGReturnType } from "@/types";
 
 export class MoveSegmentCommand extends Command {
   private seSegment: SESegment;
@@ -42,6 +43,13 @@ export class MoveSegmentCommand extends Command {
       normal: this.oldNormalVector,
       arcLength: this.oldArcLength
     });
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

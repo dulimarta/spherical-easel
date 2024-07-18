@@ -7,6 +7,7 @@ import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
 import { SETransformation } from "@/models/SETransformation";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
+import { toSVGReturnType } from "@/types";
 
 export class AddTransformedPointCommand extends Command {
   private preimageSEPoint: SEPoint;
@@ -63,6 +64,13 @@ export class AddTransformedPointCommand extends Command {
     this.transformedSEPoint.unregisterChild(this.transformedSEPointLabel);
     this.parentTransformation.unregisterChild(this.transformedSEPoint);
     this.preimageSEPoint.unregisterChild(this.transformedSEPoint);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

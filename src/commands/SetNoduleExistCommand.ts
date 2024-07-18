@@ -2,6 +2,7 @@ import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { Labelable } from "@/types";
 import SETTINGS from "@/global-settings";
+import { toSVGReturnType } from "@/types";
 
 export class SetNoduleExistCommand extends Command {
   private seNodule: SENodule;
@@ -53,6 +54,13 @@ export class SetNoduleExistCommand extends Command {
       (this.seNodule as unknown as Labelable).label!.showing =
         this.initialLabelShowingValue;
     }
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

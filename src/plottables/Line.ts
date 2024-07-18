@@ -9,6 +9,7 @@ import {
 } from "@/types/Styles";
 import { Arc } from "two.js/extras/jsm/arc";
 import { Group } from "two.js/src/group";
+import { toSVGType } from "@/types";
 
 // The number of vectors used to render the front half (and the same number in the back half)
 const SUBDIVS = SETTINGS.line.numPoints;
@@ -238,6 +239,19 @@ export default class Line extends Nodule {
     this._backHalf.remove();
     this._glowingFrontHalf.remove();
     this._glowingBackHalf.remove();
+  }
+
+  toSVG():toSVGType{
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGType: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyletDictionary: null,
+      layerSVGArray: [],
+      type: "angleMarker"
+    }
+    return returnSVGType
   }
 
   /**

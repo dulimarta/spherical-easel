@@ -8,6 +8,7 @@ import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { SEMeasuredCircle } from "@/models/SEMeasuredCircle";
+import { toSVGReturnType } from "@/types";
 
 export class AddMeasuredCircleCommand extends Command {
   private seCircle: SECircle;
@@ -46,6 +47,13 @@ export class AddMeasuredCircleCommand extends Command {
     this.seCircle.unregisterChild(this.seLabel);
     this.centerSEPoint.unregisterChild(this.seCircle);
     this.measurementSEExpression.unregisterChild(this.seCircle);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

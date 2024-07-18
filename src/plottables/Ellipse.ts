@@ -15,6 +15,7 @@ import { Stop } from "two.js/src/effects/stop";
 import { RadialGradient } from "two.js/src/effects/radial-gradient";
 import { Anchor } from "two.js/src/anchor";
 import { Group } from "two.js/src/group";
+import { toSVGType } from "@/types";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -1020,6 +1021,19 @@ export default class Ellipse extends Nodule {
     this.backPart.remove();
     this.backFill.remove();
     this.glowingBackPart.remove();
+  }
+
+  toSVG():toSVGType{
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGType: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyletDictionary: null,
+      layerSVGArray: [],
+      type: "angleMarker"
+    }
+    return returnSVGType
   }
 
   /**

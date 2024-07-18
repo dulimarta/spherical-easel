@@ -8,6 +8,7 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { AngleMode, SavedNames, ValueDisplayMode } from "@/types";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGReturnType } from "@/types";
 
 export class AddAngleMarkerCommand extends Command {
   /**
@@ -78,6 +79,13 @@ export class AddAngleMarkerCommand extends Command {
     }
     this._secondSEParent.unregisterChild(this.seAngleMarker);
     this._firstSEParent.unregisterChild(this.seAngleMarker);
+  }
+
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
+    //
+
+    return null
   }
 
   toOpcode(): null | string | Array<string> {

@@ -11,6 +11,7 @@ import {
 } from "@/types/Styles";
 import { Arc } from "two.js/extras/jsm/arc";
 import { Group } from "two.js/src/group";
+import { toSVGType } from "@/types";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
@@ -50,14 +51,14 @@ export default class Segment extends Nodule {
    * can have two front parts or two back parts. The frontExtra and backExtra are variables to represent those
    * extra parts. There are glowing counterparts for each part.
    */
-  private _frontPart: Arc;
-  private _frontExtra: Arc;
-  private _backPart: Arc;
-  private _backExtra: Arc;
-  private _glowingFrontPart: Arc;
-  private _glowingFrontExtra: Arc;
-  private _glowingBackPart: Arc;
-  private _glowingBackExtra: Arc;
+  protected _frontPart: Arc;
+  protected _frontExtra: Arc;
+  protected _backPart: Arc;
+  protected _backExtra: Arc;
+  protected _glowingFrontPart: Arc;
+  protected _glowingFrontExtra: Arc;
+  protected _glowingBackPart: Arc;
+  protected _glowingBackExtra: Arc;
 
   /** The normal vector determines the rotation and minor axis length of the displayed ellipse */
   private _rotation: number;
@@ -730,6 +731,19 @@ export default class Segment extends Nodule {
     this._glowingFrontExtra.remove();
     this._glowingBackPart.remove();
     this._glowingBackExtra.remove();
+  }
+
+  toSVG():toSVGType{
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGType: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyletDictionary: null,
+      layerSVGArray: [],
+      type: "angleMarker"
+    }
+    return returnSVGType
   }
 
   /**
