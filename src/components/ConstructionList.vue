@@ -42,7 +42,6 @@
               :style="{
                 alignSelf: 'flex-end'
               }">
-              {{ isHovering }}
               {{ r.dateCreated.substring(0, 10) }}
               <v-icon size="x-small">mdi-star</v-icon>
               {{ r.starCount }}
@@ -57,15 +56,14 @@
               id="load_btn"
               class="ml-1"
               size="x-small"
+              icon="mdi-folder-open"
               color="black"
-              icon="mdi="
               @click="handleLoadConstruction(r.id)"></v-btn>
-            PUBLIC {{ r.publicDocId }} SHARING {{ allowSharing }} Email
-            {{ userEmail }} Firebase UID {{ firebaseUid }}
+
             <v-btn
               data-testid="share_btn"
               v-if="r.publicDocId && allowSharing"
-              id="share_btn"
+              id="are_btn"
               class="ml-1"
               size="x-small"
               color="black"

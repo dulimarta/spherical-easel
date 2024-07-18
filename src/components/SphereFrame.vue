@@ -321,18 +321,18 @@ onMounted((): void => {
   twoInstance.appendTo(canvas.value!);
   // Set up the listeners
   canvas.value?.addEventListener("mouseenter", (ev) => {
-    console.debug(`SphereFrame.vue: Mouse entered the canvas (${ev.clientX},${ev.clientY})`)
+    // console.debug(`SphereFrame.vue: Mouse entered the canvas (${ev.clientX},${ev.clientY})`)
   })
   canvas.value!.addEventListener("mousemove", (ev) => {
-    console.debug(`SphereFrame.vue: Mouse moved in canvas (${ev.clientX},${ev.clientY})`)
+    // console.debug(`SphereFrame.vue: Mouse moved in canvas (${ev.clientX},${ev.clientY})`)
     handleMouseMoved(ev)
   });
   canvas.value?.addEventListener("mousedown", (ev) => {
-    console.debug(`SphereFrame.vue: Mouse down in canvas (${ev.clientX},${ev.clientY})`)
+    // console.debug(`SphereFrame.vue: Mouse down in canvas (${ev.clientX},${ev.clientY})`)
     handleMousePressed(ev)
   });
   canvas.value?.addEventListener("mouseup", (ev) => {
-    console.debug(`SphereFrame.vue: Mouse up in canvas (${ev.clientX},${ev.clientY})`)
+    // console.debug(`SphereFrame.vue: Mouse up in canvas (${ev.clientX},${ev.clientY})`)
     handleMouseReleased(ev)
   });
   canvas.value?.addEventListener("mouseleave", handleMouseLeave);

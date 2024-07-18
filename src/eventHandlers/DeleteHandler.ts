@@ -40,7 +40,7 @@ export default class DeleteHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent): void {
-    console.log("DeleteHandler::mousePressed");
+    // console.log("DeleteHandler::mousePressed");
     //Select an object to delete
     if (this.isOnSphere) {
       // In the case of multiple selections prioritize points > lines > segments > circles > labels
@@ -115,7 +115,7 @@ export default class DeleteHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    console.log("DeleteHandler::mouseMoved");
+    // console.log("DeleteHandler::mouseMoved");
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
     // only one object at a time can be deleted so only glow the potential victim
@@ -156,7 +156,7 @@ export default class DeleteHandler extends Highlighter {
   mouseReleased(event: MouseEvent): void {}
 
   mouseLeave(event: MouseEvent): void {
-    console.log("DeleteHandler::mouseLeave");
+    // console.log("DeleteHandler::mouseLeave");
     super.mouseLeave(event);
     // Reset the victim in preparation for another deletion.
     this.victim = null;

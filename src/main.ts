@@ -7,9 +7,9 @@ import App from "./App.vue";
 import router from "./router";
 import vuetify from "./plugins/vuetify";
 import i18n from "./i18n";
-// import "@/extensions/three.extensions";
-// import "@/extensions/number.extensions";
-// import "@/extensions/se-nodule.extensions";
+import "@/extensions/three.extensions";
+import "@/extensions/number.extensions";
+import "@/extensions/se-nodule.extensions";
 import { createPinia } from "pinia";
 import { initializeApp } from "firebase/app";
 import { firebaseConfig } from "./firebase-config";
@@ -24,8 +24,10 @@ const pinia = createPinia();
 const app = createApp(App);
 app.use(vuetify);
 app.use(router);
-app.use(pinia);
 app.use(i18n);
+// When .use(pinia) is NOT the last call, Pinia did not show up in VueJS DevTools
+// https://stackoverflow.com/questions/77456631/why-cant-i-see-pinia-in-vue-devtools
+app.use(pinia);
 app.mount("#app");
 
 const seStore = useSEStore();

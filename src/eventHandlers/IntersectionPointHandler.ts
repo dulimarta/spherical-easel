@@ -10,7 +10,6 @@ import { Group } from "two.js/src/group";
 import { rank_of_type } from "@/utils/helpingfunctions";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
-
 export default class IntersectionPointHandler extends Highlighter {
   /**
    * The two objects to intersect
@@ -38,6 +37,7 @@ export default class IntersectionPointHandler extends Highlighter {
     if (this.isOnSphere) {
       // If the user clicks on an intersection create that intersection or antipodal point (i.e. convert to user created)
       if (this.hitSEPoints.length > 0) {
+        console.debug("IPHandler::mousePressed hit points: ", this.hitSEPoints.length)
         if (
           (this.hitSEPoints[0] instanceof SEIntersectionPoint &&
             !this.hitSEPoints[0].isUserCreated) ||
@@ -66,6 +66,7 @@ export default class IntersectionPointHandler extends Highlighter {
         } else if (this.hitSEParametrics.length > 0) {
           this.oneDimensional1 = this.hitSEParametrics[0];
         }
+        // console.debug("IPHandler::mousePressed One dimensional1 =", this.oneDimensional1)
         if (this.oneDimensional1 !== null) {
           this.oneDimensional1.selected = true;
           EventBus.fire("show-alert", {
@@ -89,6 +90,7 @@ export default class IntersectionPointHandler extends Highlighter {
         } else if (this.hitSEParametrics.length > 0) {
           this.oneDimensional2 = this.hitSEParametrics[0];
         }
+        // console.debug("IPHandler::mousePressed One dimensional2 =", this.oneDimensional2)
         if (this.oneDimensional2 !== null) {
           if (this.oneDimensional1.id !== this.oneDimensional2.id) {
             this.oneDimensional2.selected = true;

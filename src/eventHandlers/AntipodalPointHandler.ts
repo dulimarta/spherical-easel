@@ -67,7 +67,7 @@ export default class AntipodalPointHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent): void {
-    console.debug("AntipodalPointHandler::mousePressed", event)
+    // console.debug("AntipodalPointHandler::mousePressed", event)
     super.mouseMoved(event);
     //Select the point object to create the antipode of
     if (this.isOnSphere) {
@@ -257,7 +257,7 @@ export default class AntipodalPointHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    console.debug("AntipodalPointHandler::mouseMoved", event)
+    // console.debug("AntipodalPointHandler::mouseMoved", event)
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
     let displayTemporaryAntipode = true;
@@ -449,7 +449,7 @@ export default class AntipodalPointHandler extends Highlighter {
   mouseReleased(event: MouseEvent): void {}
 
   mouseLeave(event: MouseEvent): void {
-    console.debug("AntipodalPointHandler::mouseLeave", event)
+    // console.debug("AntipodalPointHandler::mouseLeave", event)
     super.mouseLeave(event);
     // Reset the parent point in preparation for another antipodal points.
     this.parentPoint = null;

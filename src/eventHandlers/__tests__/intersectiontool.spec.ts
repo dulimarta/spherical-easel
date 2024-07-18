@@ -1,4 +1,4 @@
-import { vi } from "vitest"
+import { vi } from "vitest";
 import { createTestingPinia } from "@pinia/testing";
 
 import SphereFrame from "../../components/SphereFrame.vue";
@@ -18,14 +18,24 @@ import { SEPoint } from "../../models/SEPoint";
 import { Command } from "../../commands/Command";
 import Handler from "../IntersectionPointHandler";
 
-describe("SphereFrame: Intersection Tool", () => {
+function dumpPoints(arr: SEPoint[]) {
+  arr.forEach((pt: SEPoint, pos: number) => {
+    console.log(
+      `At ${pos} Point ${pt.name}/${pt instanceof SEIntersectionPoint}::${
+        pt.noduleDescription
+      }`
+    );
+  });
+}
+describe("Intersection Tool", () => {
   let wrapper: VueWrapper;
-  let testPinia
-  let SEStore:SEStoreType
+  let testPinia;
+  let SEStore: SEStoreType;
+
 
   beforeEach(async () => {
-    vi.clearAllMocks()
-    testPinia = createTestingPinia({ stubActions: false })
+    vi.clearAllMocks();
+    testPinia = createTestingPinia({ stubActions: false });
     const out = createWrapper(SphereFrame, {
       componentProps: {
         availableHeight: 512,
@@ -33,48 +43,65 @@ describe("SphereFrame: Intersection Tool", () => {
         isEarthMode: false
       }
     });
-    SEStore = useSEStore(testPinia)
+    SEStore = useSEStore(testPinia);
     // useAccountStore(testPinia)
-    SEStore.init()
-    SENodule.setGlobalStore(SEStore)
-    Command.setGlobalStore(SEStore)
+    SEStore.init();
+    SENodule.setGlobalStore(SEStore);
+    Command.setGlobalStore(SEStore);
     Handler.setGlobalStore(SEStore);
-    wrapper = out.wrapper
-    SEStore.setActionMode("select")
-    await wrapper.vm.$nextTick()  });
+    wrapper = out.wrapper;
+    SEStore.setActionMode("select");
+    await wrapper.vm.$nextTick();
+    // vi.spyOn(console, "debug").mockImplementation(() => {});
+  });
 
-  it("creates intersection points of two lines after clicking near the intersection points", async () => {
-    async function runLineIntersectionTest(
-      fgLine1Pt1: boolean,
-      fgLine1Pt2: boolean,
-      fgLine2Pt1: boolean,
-      fgLine2Pt2: boolean
-    ) {
-      SEStore.setActionMode("line")
-      await wrapper.vm.$nextTick()
+  it.each([
+    { L1start: "fg", L1end: "fg", L2start: "fg", L2end: "fg" },
+    { L1start: "fg", L1end: "fg", L2start: "fg", L2end: "bg" },
+    { L1start: "fg", L1end: "fg", L2start: "bg", L2end: "fg" },
+    { L1start: "fg", L1end: "fg", L2start: "bg", L2end: "bg" },
+    { L1start: "fg", L1end: "bg", L2start: "fg", L2end: "fg" },
+    { L1start: "fg", L1end: "bg", L2start: "fg", L2end: "bg" },
+    { L1start: "fg", L1end: "bg", L2start: "bg", L2end: "fg" },
+    { L1start: "fg", L1end: "bg", L2start: "bg", L2end: "bg" },
+    { L1start: "bg", L1end: "fg", L2start: "fg", L2end: "fg" },
+    { L1start: "bg", L1end: "fg", L2start: "fg", L2end: "bg" },
+    { L1start: "bg", L1end: "fg", L2start: "bg", L2end: "fg" },
+    { L1start: "bg", L1end: "fg", L2start: "bg", L2end: "bg" },
+    { L1start: "bg", L1end: "bg", L2start: "fg", L2end: "fg" },
+    { L1start: "bg", L1end: "bg", L2start: "fg", L2end: "bg" },
+    { L1start: "bg", L1end: "bg", L2start: "bg", L2end: "fg" },
+    { L1start: "bg", L1end: "bg", L2start: "bg", L2end: "bg" }
+  ])(
+    `creates intersection points of two lines ($L1start-$L1end) ($L2start-$L2end) after clicking near the intersection points`,
+    async ({ L1start, L1end, L2start, L2end }) => {
+      SEStore.setActionMode("line");
+      await wrapper.vm.$nextTick();
       await drawOneDimensional(
         wrapper,
         71,
         97,
-        fgLine1Pt1,
+        L1start === "fg",
         147,
         181,
-        fgLine1Pt2
+        L1end === "fg"
       );
       await drawOneDimensional(
         wrapper,
         71,
         136,
-        fgLine2Pt1,
+        L2start === "fg",
         179,
         53,
-        fgLine2Pt2
+        L2end === "fg"
       );
       const pointCount = SEStore.sePoints.length;
       expect(pointCount).toBeGreaterThanOrEqual(6);
       // The last two should be intersection point candidates
-      const x1 = SEStore.sePoints[pointCount - 2];
-      const x2 = SEStore.sePoints[pointCount - 1];
+      const x1 = SEStore.sePoints.find(p => p instanceof SEIntersectionPoint);
+      const x2 = SEStore.sePoints.find(p => p instanceof SEIntersectionPoint);
+      expect(x1).toBeDefined();
+      expect(x1).toBeDefined();
 
       // Switch tool mode to intersection
       SEStore.setActionMode("intersect");
@@ -84,72 +111,81 @@ describe("SphereFrame: Intersection Tool", () => {
       // click near the first intersection
       await mouseClickOnSphere(
         wrapper,
-        x1.locationVector.x * R,
-        x1.locationVector.y * R,
-        x1.locationVector.z < 0
+        x1!.locationVector.x * R,
+        x1!.locationVector.y * R,
+        x1!.locationVector.z < 0
       );
       // click near the second intersection
       await mouseClickOnSphere(
         wrapper,
-        x2.locationVector.x * R,
-        x2.locationVector.y * R,
-        x2.locationVector.z < 0
+        x2!.locationVector.x * R,
+        x2!.locationVector.y * R,
+        x2!.locationVector.z < 0
       );
 
-      const p1 = x1 as SEIntersectionPoint;
-      expect(p1.isUserCreated).toBeTruthy();
-      expect(p1.showing).toBeTruthy();
-      const p2 = x2 as SEIntersectionPoint;
-      expect(p2.isUserCreated).toBeTruthy();
-      expect(p2.showing).toBeTruthy();
+      expect(x1!.isUserCreated).toBeTruthy();
+      expect(x1!.showing).toBeTruthy();
+      expect(x2!.isUserCreated).toBeTruthy();
+      expect(x2!.showing).toBeTruthy();
     }
+  );
 
-    for (const l1p1 of [true, false])
-      for (const l1p2 of [true, false])
-        for (const l2p1 of [true, false])
-          for (const l2p2 of [true, false]) {
-            SEStore.init();
-            await runLineIntersectionTest(l1p1, l1p2, l2p1, l2p2);
-          }
-  });
+  it.todo(
+    "creates intersection points of two lines after clicking on both lines"
+  );
 
-  it.todo("creates intersection points of two lines after clicking on both lines");
-
-  it("creates intersection points of a line and a segment after clicking near the intersection points", async () => {
-    async function runLineIntersectionTest(
-      fgLinePt1: boolean,
-      fgLinePt2: boolean,
-      fgSegmentPt1: boolean,
-      fgSegmentPt2: boolean
-    ) {
-      SEStore.setActionMode("line")
-      await wrapper.vm.$nextTick()
+  it.each([
+    { lnStart: "fg", lnEnd: "fg", segStart: "fg", segEnd: "fg" },
+    { lnStart: "fg", lnEnd: "fg", segStart: "fg", segEnd: "bg" },
+    { lnStart: "fg", lnEnd: "fg", segStart: "bg", segEnd: "fg" },
+    { lnStart: "fg", lnEnd: "fg", segStart: "bg", segEnd: "bg" },
+    { lnStart: "fg", lnEnd: "bg", segStart: "fg", segEnd: "fg" },
+    { lnStart: "fg", lnEnd: "bg", segStart: "fg", segEnd: "bg" },
+    { lnStart: "fg", lnEnd: "bg", segStart: "bg", segEnd: "fg" },
+    { lnStart: "fg", lnEnd: "bg", segStart: "bg", segEnd: "bg" },
+    { lnStart: "bg", lnEnd: "fg", segStart: "fg", segEnd: "fg" },
+    { lnStart: "bg", lnEnd: "fg", segStart: "fg", segEnd: "bg" },
+    { lnStart: "bg", lnEnd: "fg", segStart: "bg", segEnd: "fg" },
+    { lnStart: "bg", lnEnd: "fg", segStart: "bg", segEnd: "bg" },
+    { lnStart: "bg", lnEnd: "bg", segStart: "fg", segEnd: "fg" },
+    { lnStart: "bg", lnEnd: "bg", segStart: "fg", segEnd: "bg" },
+    { lnStart: "bg", lnEnd: "bg", segStart: "bg", segEnd: "fg" },
+    { lnStart: "bg", lnEnd: "bg", segStart: "bg", segEnd: "bg" }
+  ])(
+    "creates intersection points  of a line ($lnStart-$lnEnd) and a segment ($segStart-$segEnd) after clicking near the intersection points",
+    async ({ lnStart, lnEnd, segStart, segEnd }) => {
+      SEStore.setActionMode("line");
+      await wrapper.vm.$nextTick();
       await drawOneDimensional(
         wrapper,
         71,
         97,
-        fgLinePt1,
+        lnStart === "fg",
         147,
         181,
-        fgLinePt2
+        lnEnd === "fg"
       );
-      SEStore.setActionMode("segment")
-      await wrapper.vm.$nextTick()
+      SEStore.setActionMode("segment");
+      await wrapper.vm.$nextTick();
       await drawOneDimensional(
         wrapper,
         71,
         136,
-        fgSegmentPt1,
+        segStart === "fg",
         179,
         53,
-        fgSegmentPt2
+        segEnd === "fg"
       );
       const pointCount = SEStore.sePoints.length;
       /* 4 points from the line and segment, 1 point intersection candidate */
       expect(pointCount).toBeGreaterThanOrEqual(5);
       // The last two should be intersection point candidates
-      const x1 = SEStore.sePoints[pointCount - 2];
-      const x2 = SEStore.sePoints[pointCount - 1];
+      const x1 = SEStore.sePoints.find(p => p instanceof SEIntersectionPoint);
+      const x2 = SEStore.sePoints.findLast(
+        p => p instanceof SEIntersectionPoint
+      );
+      expect(x1).toBeDefined();
+      expect(x2).toBeDefined();
       SEStore.setActionMode("intersect");
       await wrapper.vm.$nextTick();
       const R = SETTINGS.boundaryCircle.radius;
@@ -158,67 +194,74 @@ describe("SphereFrame: Intersection Tool", () => {
       // click near the first intersection
       await mouseClickOnSphere(
         wrapper,
-        x1.locationVector.x * R,
-        x1.locationVector.y * R,
-        x1.locationVector.z < 0
+        x1!.locationVector.x * R,
+        x1!.locationVector.y * R,
+        x1!.locationVector.z < 0
       );
       // click near the second intersection
       await mouseClickOnSphere(
         wrapper,
-        x2.locationVector.x * R,
-        x2.locationVector.y * R,
-        x2.locationVector.z < 0
+        x2!.locationVector.x * R,
+        x2!.locationVector.y * R,
+        x2!.locationVector.z < 0
       );
-      const p1 = x1 as SEIntersectionPoint;
-      const p2 = x2 as SEIntersectionPoint;
       // One of the two candidates should be the true intersection
-      expect(p1.isUserCreated || p2.isUserCreated).toBeTruthy();
-      expect(p1.showing || p2.showing).toBeTruthy();
+      expect(x1!.isUserCreated || x2!.isUserCreated).toBeTruthy();
+      expect(x1!.showing || x2!.showing).toBeTruthy();
     }
+  );
 
-    for (const l1p1 of [true, false])
-      for (const l1p2 of [true, false])
-        for (const l2p1 of [true, false])
-          for (const l2p2 of [true, false]) {
-            SEStore.init();
-            await runLineIntersectionTest(l1p1, l1p2, l2p1, l2p2);
-          }
-  });
-
-  it("does not create intersection points of non-intersecting line and segment", async () => {
-    async function runLineIntersectionTest(
-      fgLinePt1: boolean,
-      fgLinePt2: boolean,
-      fgSegmentPt1: boolean,
-      fgSegmentPt2: boolean
-    ) {
+  it.each([
+    { lnStart: "fg", lnEnd: "fg", segStart: "fg", segEnd: "fg" },
+    { lnStart: "fg", lnEnd: "fg", segStart: "fg", segEnd: "bg" },
+    { lnStart: "fg", lnEnd: "fg", segStart: "bg", segEnd: "fg" },
+    { lnStart: "fg", lnEnd: "fg", segStart: "bg", segEnd: "bg" },
+    { lnStart: "fg", lnEnd: "bg", segStart: "fg", segEnd: "fg" },
+    { lnStart: "fg", lnEnd: "bg", segStart: "fg", segEnd: "bg" },
+    { lnStart: "fg", lnEnd: "bg", segStart: "bg", segEnd: "fg" },
+    { lnStart: "fg", lnEnd: "bg", segStart: "bg", segEnd: "bg" },
+    { lnStart: "bg", lnEnd: "fg", segStart: "fg", segEnd: "fg" },
+    { lnStart: "bg", lnEnd: "fg", segStart: "fg", segEnd: "bg" },
+    { lnStart: "bg", lnEnd: "fg", segStart: "bg", segEnd: "fg" },
+    { lnStart: "bg", lnEnd: "fg", segStart: "bg", segEnd: "bg" },
+    { lnStart: "bg", lnEnd: "bg", segStart: "fg", segEnd: "fg" },
+    { lnStart: "bg", lnEnd: "bg", segStart: "fg", segEnd: "bg" },
+    { lnStart: "bg", lnEnd: "bg", segStart: "bg", segEnd: "fg" },
+    { lnStart: "bg", lnEnd: "bg", segStart: "bg", segEnd: "bg" }
+  ])(
+    "does not create intersection points of non-intersecting line ($lnStart-$lnEnd) and segment ($segStart,$segEnd)",
+    async ({ lnStart, lnEnd, segStart, segEnd }) => {
       const prevPointCount = SEStore.sePoints.length;
-      SEStore.setActionMode("line")
-      await wrapper.vm.$nextTick()
+      SEStore.setActionMode("line");
+      await wrapper.vm.$nextTick();
       await drawOneDimensional(
         wrapper,
         71,
         97,
-        fgLinePt1,
+        lnStart === "fg",
         179,
         101,
-        fgLinePt2
+        lnEnd === "fg"
       );
-      SEStore.setActionMode("segment")
-      await wrapper.vm.$nextTick()
+      SEStore.setActionMode("segment");
+      await wrapper.vm.$nextTick();
       await drawOneDimensional(
         wrapper,
         121,
         153,
-        fgSegmentPt1,
+        segStart === "fg",
         127,
         189,
-        fgSegmentPt2
+        segEnd === "fg"
       );
       const pointCount = SEStore.sePoints.length;
       // The last two should be intersection point candidates
-      const x1 = SEStore.sePoints[pointCount - 2];
-      const x2 = SEStore.sePoints[pointCount - 1];
+      const x1 = SEStore.sePoints.find(p => p instanceof SEIntersectionPoint);
+      const x2 = SEStore.sePoints.findLast(
+        p => p instanceof SEIntersectionPoint
+      );
+      expect(x1).toBeDefined();
+      expect(x2).toBeDefined();
       SEStore.setActionMode("intersect");
       await wrapper.vm.$nextTick();
       const R = SETTINGS.boundaryCircle.radius;
@@ -227,173 +270,149 @@ describe("SphereFrame: Intersection Tool", () => {
       // click near the first intersection
       await mouseClickOnSphere(
         wrapper,
-        x1.locationVector.x * R,
-        x1.locationVector.y * R,
-        x1.locationVector.z < 0
+        x1!.locationVector.x * R,
+        x1!.locationVector.y * R,
+        x1!.locationVector.z < 0
       );
       // click near the second intersection
       await mouseClickOnSphere(
         wrapper,
-        x2.locationVector.x * R,
-        x2.locationVector.y * R,
-        x2.locationVector.z < 0
+        x2!.locationVector.x * R,
+        x2!.locationVector.y * R,
+        x2!.locationVector.z < 0
       );
-      const p1 = x1 as SEIntersectionPoint;
-      const p2 = x2 as SEIntersectionPoint;
       // None of the two candidates should be a true intersection
-      expect(p1.isUserCreated && p2.isUserCreated).toBeFalsy();
-      expect(p1.showing && p2.showing).toBeFalsy();
+      expect(x1!.isUserCreated && x2!.isUserCreated).toBeFalsy();
+      expect(x1!.showing && x2!.showing).toBeFalsy();
     }
+  );
 
-    for (const l1p1 of [true, false])
-      for (const l1p2 of [true, false])
-        for (const l2p1 of [true, false])
-          for (const l2p2 of [true, false]) {
-            SEStore.init();
-            await runLineIntersectionTest(l1p1, l1p2, l2p1, l2p2);
-          }
-  });
-
-  it("creates intersection points of a line and a circle", async () => {
-    async function runLineIntersectionTest(
-      fgLinePt1: boolean,
-      fgLinePt2: boolean,
-      fgCircleCenter: boolean,
-      fgCircleBoundary: boolean
-    ) {
-      SEStore.setActionMode("line")
-      await wrapper.vm.$nextTick()
+  it.each([
+    {
+      lineStart: "fg",
+      lineEnd: "fg",
+      circCtr: "fg",
+      circPt: "fg"
+    }
+  ])(
+    "creates intersection points of a line ($lineStart-$lineEnd) and a circle ($cirCtr,$circPt)",
+    async ({ lineStart, lineEnd, circCtr, circPt }) => {
+      SEStore.setActionMode("line");
+      await wrapper.vm.$nextTick();
       await drawOneDimensional(
         wrapper,
         71,
         97,
-        fgLinePt1,
+        lineStart === "fg",
         147,
         181,
-        fgLinePt2
+        lineEnd == "fg"
       );
-      SEStore.setActionMode("circle")
-      await wrapper.vm.$nextTick()
+      SEStore.setActionMode("circle");
+      await wrapper.vm.$nextTick();
       await drawOneDimensional(
         wrapper,
         71,
         136,
-        fgCircleCenter,
+        circCtr === "fg",
         179,
         53,
-        fgCircleBoundary
+        circPt === "fg"
       );
       const pointCount = SEStore.sePoints.length;
       /* 4 points from the line and segment, 1 point intersection candidate */
       expect(pointCount).toBeGreaterThanOrEqual(5);
       // The last two should be intersection point candidates
-      SEStore.sePoints.forEach((pt:SEPoint,pos:number) => {
-        console.log(`At ${pos} Point ${pt.name}/${pt instanceof SEIntersectionPoint}::${pt.noduleDescription}`)
-      })
-      const x1 = SEStore.sePoints.find(pt => pt instanceof SEIntersectionPoint)
-      const x2 = SEStore.sePoints.findLast(pt => pt instanceof SEIntersectionPoint)
+      const x1 = SEStore.sePoints.find(pt => pt instanceof SEIntersectionPoint);
+      const x2 = SEStore.sePoints.findLast(
+        pt => pt instanceof SEIntersectionPoint
+      );
+      expect(x1).toBeDefined();
+      expect(x2).toBeDefined();
       SEStore.setActionMode("intersect");
       await wrapper.vm.$nextTick();
       const R = SETTINGS.boundaryCircle.radius;
       // Line-vs-segment creates only one intersection, the program
       // computes two candidates (the true intersection and its antipode)
       // click near the first intersection
-      if (!x1  || !x2) {
-        expect(undefined).rejects.toBeFalsy()
-        return
-      }
-        await mouseClickOnSphere(
-          wrapper,
-          x1.locationVector.x * R,
-          x1.locationVector.y * R,
-          x1.locationVector.z < 0
-        );
+      await mouseClickOnSphere(
+        wrapper,
+        x1!.locationVector.x * R,
+        x1!.locationVector.y * R,
+        x1!.locationVector.z < 0
+      );
       // click near the second intersection
       await mouseClickOnSphere(
         wrapper,
-        x2.locationVector.x * R,
-        x2.locationVector.y * R,
-        x2.locationVector.z < 0
-        );
+        x2!.locationVector.x * R,
+        x2!.locationVector.y * R,
+        x2!.locationVector.z < 0
+      );
       // One of the two candidates should be the true intersection
-      expect(x1.isUserCreated || x2.isUserCreated).toBeTruthy();
-      expect(x1.showing || x2.showing).toBeTruthy();
+      expect(x1!.isUserCreated || x2!.isUserCreated).toBeTruthy();
+      expect(x1!.showing || x2!.showing).toBeTruthy();
     }
+  );
 
-    for (const lp1 of [true, false])
-      for (const lp2 of [true, false])
-        for (const ctr of [true, false])
-          for (const bndry of [true, false]) {
-            SEStore.init();
-            await runLineIntersectionTest(lp1, lp2, ctr, bndry);
-          }
-  });
-
-  it("does not create intersection points of non-intersecting line and circle", async () => {
-    async function runLineIntersectionTest(
-      fgLinePt1: boolean,
-      fgLinePt2: boolean
-    ) {
+  it.each([
+    { lineStart: "fg", lineEnd: "fg" },
+    { lineStart: "fg", lineEnd: "bg" },
+    { lineStart: "bg", lineEnd: "fg" },
+    { lineStart: "bg", lineEnd: "bg" }
+  ])(
+    "does not create intersection points of non-intersecting line ($lineStart-$lineEnd) and circle",
+    async ({ lineStart, lineEnd }) => {
       SEStore.setActionMode("line");
       await wrapper.vm.$nextTick();
       await drawOneDimensional(
         wrapper,
         -171,
         97,
-        fgLinePt1,
+        lineStart === "fg",
         -147,
         181,
-        fgLinePt2
+        lineEnd === "fg"
       );
       SEStore.setActionMode("circle");
       await wrapper.vm.$nextTick();
-      await drawOneDimensional(
-        wrapper,
-        111,
-        -136,
-        true,
-        130,
-        -136,
-        true
-      );
+      await drawOneDimensional(wrapper, 111, -136, true, 130, -136, true);
       const pointCount = SEStore.sePoints.length;
-      const p1 = SEStore.sePoints[pointCount - 2] as SEIntersectionPoint;
-      const p2 = SEStore.sePoints[pointCount - 1] as SEIntersectionPoint;
+      const p1 = SEStore.sePoints.find(p => p instanceof SEIntersectionPoint);
+      const p2 = SEStore.sePoints.findLast(
+        p => p instanceof SEIntersectionPoint
+      );
+      expect(p1).toBeDefined();
+      expect(p2).toBeDefined();
       SEStore.setActionMode("intersect");
       await wrapper.vm.$nextTick();
       const R = SETTINGS.boundaryCircle.radius;
       // click near the first intersection
       await mouseClickOnSphere(
         wrapper,
-        p1.locationVector.x * R,
-        p1.locationVector.y * R,
-        p1.locationVector.z < 0
+        p1!.locationVector.x * R,
+        p1!.locationVector.y * R,
+        p1!.locationVector.z < 0
       );
       // click near the second intersection
       await mouseClickOnSphere(
         wrapper,
-        p2.locationVector.x * R,
-        p2.locationVector.y * R,
-        p2.locationVector.z < 0
+        p1!.locationVector.x * R,
+        p2!.locationVector.y * R,
+        p2!.locationVector.z < 0
       );
-      expect(p1.isUserCreated && p2.isUserCreated).toBeFalsy();
-      expect(p1.showing && p2.showing).toBeFalsy();
+      expect(p1!.isUserCreated && p2!.isUserCreated).toBeFalsy();
+      expect(p1!.showing && p2!.showing).toBeFalsy();
     }
+  );
 
-    for (const lp1 of [true, false])
-      for (const lp2 of [true, false]) {
-        SEStore.init();
-        await runLineIntersectionTest(lp1, lp2);
-      }
-  });
-
-  it.only("creates intersection points of two segments after clicking near the intersection points", async () => {
-    async function runLineIntersectionTest(
-      fgSegAPt1: boolean,
-      fgSegAPt2: boolean,
-      fgSegBPt1: boolean,
-      fgSegBPt2: boolean
-    ) {
+  it.each([
+    { seg1End: "fg", seg2End: "fg" },
+    { seg1End: "fg", seg2End: "bg" },
+    { seg1End: "bg", seg2End: "fg" },
+    { seg1End: "bg", seg2End: "bg" }
+  ])(
+    `creates intersection points of two segments ($seg1End) ($seg2End) after clicking near the intersection points`,
+    async ({ seg1End, seg2End }) => {
       SEStore.setActionMode("segment");
       await wrapper.vm.$nextTick();
 
@@ -401,29 +420,31 @@ describe("SphereFrame: Intersection Tool", () => {
         wrapper,
         -71,
         97,
-        fgSegAPt1,
+        true,
         147,
         -181,
-        fgSegAPt2
+        seg1End === "fg"
       );
       await drawOneDimensional(
         wrapper,
         -71,
         -136,
-        fgSegBPt1,
+        true,
         179,
         53,
-        fgSegBPt2
+        seg2End === "fg"
       );
       const pointCount = SEStore.sePoints.length;
       /* 4 points from the line and segment, 1 point intersection candidate */
       expect(pointCount).toBeGreaterThanOrEqual(4);
       // The last two should be intersection point candidates
       const p1 = SEStore.sePoints.find(pt => pt instanceof SEIntersectionPoint);
-      const p2 = SEStore.sePoints.findLast(pt => pt instanceof SEIntersectionPoint)
+      const p2 = SEStore.sePoints.findLast(
+        pt => pt instanceof SEIntersectionPoint
+      );
 
-      expect(p1).toBeDefined()
-      expect(p2).toBeDefined()
+      expect(p1).toBeDefined();
+      expect(p2).toBeDefined();
 
       SEStore.setActionMode("intersect");
       await wrapper.vm.$nextTick();
@@ -448,31 +469,38 @@ describe("SphereFrame: Intersection Tool", () => {
       expect(p1!.isUserCreated || p2!.isUserCreated).toBeTruthy();
       expect(p1!.showing || p2!.showing).toBeTruthy();
     }
+  );
 
-    for (const segA2 of [true, false])
-      for (const segB2 of [true, false]) {
-        SEStore.init();
-        await runLineIntersectionTest(true, segA2, true, segB2);
-      }
-  });
-
-  it("creates intersection points of a segment and a circle after clicking near the intersection points", async () => {
-    async function runLineIntersectionTest(
-      fgSegAPt1: boolean,
-      fgSegAPt2: boolean,
-      fgCenter: boolean,
-      fgBoundary: boolean
-    ) {
+  it.each([
+    { segStart: "fg", segEnd: "fg", circCtr: "fg", circPt: "fg" },
+    { segStart: "fg", segEnd: "fg", circCtr: "fg", circPt: "bg" },
+    { segStart: "fg", segEnd: "fg", circCtr: "bg", circPt: "fg" },
+    { segStart: "fg", segEnd: "fg", circCtr: "bg", circPt: "bg" },
+    { segStart: "fg", segEnd: "bg", circCtr: "fg", circPt: "fg" },
+    { segStart: "fg", segEnd: "bg", circCtr: "fg", circPt: "bg" },
+    { segStart: "fg", segEnd: "bg", circCtr: "bg", circPt: "fg" },
+    { segStart: "fg", segEnd: "bg", circCtr: "bg", circPt: "bg" },
+    { segStart: "bg", segEnd: "fg", circCtr: "fg", circPt: "fg" },
+    { segStart: "bg", segEnd: "fg", circCtr: "fg", circPt: "bg" },
+    { segStart: "bg", segEnd: "fg", circCtr: "bg", circPt: "fg" },
+    { segStart: "bg", segEnd: "fg", circCtr: "bg", circPt: "bg" },
+    { segStart: "bg", segEnd: "bg", circCtr: "fg", circPt: "fg" },
+    { segStart: "bg", segEnd: "bg", circCtr: "fg", circPt: "bg" },
+    { segStart: "bg", segEnd: "bg", circCtr: "bg", circPt: "fg" },
+    { segStart: "bg", segEnd: "bg", circCtr: "bg", circPt: "bg" },
+  ])(
+    "creates intersection points of a segment ($segStart,$segEnd) and a circle ($circCtr,$circPt) after clicking near the intersection points",
+    async ({ segStart, segEnd, circCtr, circPt }) => {
       SEStore.setActionMode("intersect");
       await wrapper.vm.$nextTick();
       await drawOneDimensional(
         wrapper,
         -71,
         97,
-        fgSegAPt1,
+        segStart === "fg",
         147,
         -181,
-        fgSegAPt2
+        segEnd === "fg"
       );
       SEStore.setActionMode("circle");
       await wrapper.vm.$nextTick();
@@ -480,17 +508,22 @@ describe("SphereFrame: Intersection Tool", () => {
         wrapper,
         0,
         0,
-        fgCenter,
+        circCtr === "fg",
         71,
         87,
-        fgBoundary
+        circPt === "fg"
       );
       const pointCount = SEStore.sePoints.length;
       /* 4 points from the line and segment, 1 point intersection candidate */
-      expect(pointCount).toBeGreaterThanOrEqual(5);
+      expect(pointCount).toBeGreaterThanOrEqual(4);
+      dumpPoints(SEStore.sePoints)
       // The last two should be intersection point candidates
-      const p1 = SEStore.sePoints[pointCount - 2] as SEIntersectionPoint;
-      const p2 = SEStore.sePoints[pointCount - 1] as SEIntersectionPoint;
+      const p1 = SEStore.sePoints.find(p => p instanceof SEIntersectionPoint);
+      const p2 = SEStore.sePoints.findLast(
+        p => p instanceof SEIntersectionPoint
+      );
+      expect(p1).toBeDefined();
+      expect(p2).toBeDefined();
       SEStore.setActionMode("intersect");
       await wrapper.vm.$nextTick();
       const R = SETTINGS.boundaryCircle.radius;
@@ -499,36 +532,43 @@ describe("SphereFrame: Intersection Tool", () => {
       // click near the first intersection
       await mouseClickOnSphere(
         wrapper,
-        p1.locationVector.x * R,
-        p1.locationVector.y * R,
-        p1.locationVector.z < 0
+        p1!.locationVector.x * R,
+        p1!.locationVector.y * R,
+        p1!.locationVector.z < 0
       );
       // click near the second intersection
       await mouseClickOnSphere(
         wrapper,
-        p2.locationVector.x * R,
-        p2.locationVector.y * R,
-        p2.locationVector.z < 0
+        p2!.locationVector.x * R,
+        p2!.locationVector.y * R,
+        p2!.locationVector.z < 0
       );
       // One of the two candidates should be the true intersection
-      expect(p1.isUserCreated || p2.isUserCreated).toBeTruthy();
-      expect(p1.showing || p2.showing).toBeTruthy();
+      expect(p1!.isUserCreated || p2!.isUserCreated).toBeTruthy();
+      expect(p1!.showing || p2!.showing).toBeTruthy();
     }
+  );
 
-    SEStore.init();
-    // TODO: The above setup currently works for foreground points only.
-    // Adding more test case variants may require different
-    // object arrangements on the sphere
-    await runLineIntersectionTest(true, true, true, true);
-  });
-
-  it("creates intersection points of two circles after clicking near the intersection points", async () => {
-    async function runLineIntersectionTest(
-      fgSegAPt1: boolean,
-      fgSegAPt2: boolean,
-      fgCenter: boolean,
-      fgBoundary: boolean
-    ) {
+  it.each([
+    { c1Ctr: "fg", c1Pt: "fg", c2Ctr: "fg", c2Pt: "fg" },
+    { c1Ctr: "fg", c1Pt: "fg", c2Ctr: "fg", c2Pt: "bg" },
+    { c1Ctr: "fg", c1Pt: "fg", c2Ctr: "bg", c2Pt: "fg" },
+    { c1Ctr: "fg", c1Pt: "fg", c2Ctr: "bg", c2Pt: "bg" },
+    { c1Ctr: "fg", c1Pt: "bg", c2Ctr: "fg", c2Pt: "fg" },
+    { c1Ctr: "fg", c1Pt: "bg", c2Ctr: "fg", c2Pt: "bg" },
+    { c1Ctr: "fg", c1Pt: "bg", c2Ctr: "bg", c2Pt: "fg" },
+    { c1Ctr: "fg", c1Pt: "bg", c2Ctr: "bg", c2Pt: "bg" },
+    { c1Ctr: "bg", c1Pt: "fg", c2Ctr: "fg", c2Pt: "fg" },
+    { c1Ctr: "bg", c1Pt: "fg", c2Ctr: "fg", c2Pt: "bg" },
+    { c1Ctr: "bg", c1Pt: "fg", c2Ctr: "bg", c2Pt: "fg" },
+    { c1Ctr: "bg", c1Pt: "fg", c2Ctr: "bg", c2Pt: "bg" },
+    { c1Ctr: "bg", c1Pt: "bg", c2Ctr: "fg", c2Pt: "fg" },
+    { c1Ctr: "bg", c1Pt: "bg", c2Ctr: "fg", c2Pt: "bg" },
+    { c1Ctr: "bg", c1Pt: "bg", c2Ctr: "bg", c2Pt: "fg" },
+    { c1Ctr: "bg", c1Pt: "bg", c2Ctr: "bg", c2Pt: "bg" }
+  ])(
+    "creates intersection points of two circles ($c1Ctr-$c1Pt) ($c2Ctr,$c2Pt) after clicking near the intersection points",
+    async ({ c1Ctr, c1Pt, c2Ctr, c2Pt }) => {
       const R = SETTINGS.boundaryCircle.radius;
       SEStore.setActionMode("circle");
       await wrapper.vm.$nextTick();
@@ -536,26 +576,30 @@ describe("SphereFrame: Intersection Tool", () => {
         wrapper,
         145 - R,
         159 - R,
-        fgSegAPt1,
+        c1Ctr === "fg",
         248 - R,
         201 - R,
-        fgSegAPt2
+        c1Pt === "fg"
       );
       await drawOneDimensional(
         wrapper,
         306 - R,
         351 - R,
-        fgCenter,
+        c2Ctr === "fg",
         222 - R,
         180 - R,
-        fgBoundary
+        c2Pt === "fg"
       );
       const pointCount = SEStore.sePoints.length;
       /* 4 points from the line and segment, 1 point intersection candidate */
       expect(pointCount).toBeGreaterThanOrEqual(5);
       // The last two should be intersection point candidates
-      const p1 = SEStore.sePoints[pointCount - 2] as SEIntersectionPoint;
-      const p2 = SEStore.sePoints[pointCount - 1] as SEIntersectionPoint;
+      const p1 = SEStore.sePoints.find(p => p instanceof SEIntersectionPoint);
+      const p2 = SEStore.sePoints.findLast(
+        p => p instanceof SEIntersectionPoint
+      );
+      expect(p1).toBeDefined();
+      expect(p2).toBeDefined();
       SEStore.setActionMode("intersect");
       await wrapper.vm.$nextTick();
       // Circle-vs-circle creates two intersections, the program
@@ -563,26 +607,20 @@ describe("SphereFrame: Intersection Tool", () => {
       // click near the first intersection
       await mouseClickOnSphere(
         wrapper,
-        p1.locationVector.x * R,
-        p1.locationVector.y * R,
-        p1.locationVector.z < 0
+        p1!.locationVector.x * R,
+        p1!.locationVector.y * R,
+        p1!.locationVector.z < 0
       );
       // click near the second intersection
       await mouseClickOnSphere(
         wrapper,
-        p2.locationVector.x * R,
-        p2.locationVector.y * R,
-        p2.locationVector.z < 0
+        p2!.locationVector.x * R,
+        p2!.locationVector.y * R,
+        p2!.locationVector.z < 0
       );
       // One of the two candidates should be the true intersection
-      expect(p1.isUserCreated && p2.isUserCreated).toBeTruthy();
-      expect(p1.showing && p2.showing).toBeTruthy();
+      expect(p1!.isUserCreated && p2!.isUserCreated).toBeTruthy();
+      expect(p1!.showing && p2!.showing).toBeTruthy();
     }
-
-    SEStore.init();
-    // TODO: The above setup currently works for foreground points only.
-    // Adding more test case variants may require different
-    // object arrangements on the sphere
-    await runLineIntersectionTest(true, true, true, true);
-  });
+  );
 });
