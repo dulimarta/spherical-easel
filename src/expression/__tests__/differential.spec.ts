@@ -2,7 +2,7 @@ import {
   ExpressionParser,
   SyntaxTree,
   TokenType
-} from "@/expression/ExpressionParser";
+} from "../ExpressionParser";
 
 describe("Derivatives", () => {
   describe("Generate First Derivative tree", () => {

@@ -1,25 +1,38 @@
-import Vue from "*.vue";
-import SphereFrame from "@/components/SphereFrame.vue";
-import { createWrapper } from "@/../tests/vue-helper";
-import { SEStore } from "@/store";
-import { Wrapper } from "@vue/test-utils";
-import Nodule, { DisplayStyle } from "../../plottables/Nodule";
-import { makePoint } from "./sphereframe-helper";
-import SETTINGS from "@/global-settings";
-import { StyleCategory } from "@/types/Styles";
+import SphereFrame from "../../components/SphereFrame.vue";
+import { vi } from "vitest";
+import { createWrapper } from "../../../tests/vue-helper";
+import { SEStoreType, useSEStore } from "../../stores/se";
+import { VueWrapper } from "@vue/test-utils";
+import { makePoint } from "../../eventHandlers/__tests__/sphereframe-helper"
+import SETTINGS from "../../global-settings";
+import { createTestingPinia } from "@pinia/testing";
+import { StyleCategory } from "../../types/Styles";
+import Nodule from "../../plottables/Nodule";
 
 const R = SETTINGS.boundaryCircle.radius;
 
 describe("SphereFrame: Template", () => {
-  let wrapper: Wrapper<Vue>;
+  let wrapper: VueWrapper;
+  let testPinia;
+  let SEStore: SEStoreType;
   beforeEach(async () => {
-    wrapper = createWrapper(SphereFrame);
-    SEStore.init();
+    vi.clearAllMocks();
+    testPinia = createTestingPinia({ stubActions: false });
+    const out = createWrapper(SphereFrame, {
+      componentProps: {
+        availableHeight: 512,
+        availableWidth: 512,
+        isEarthMode: false
+      }
+    });
+    wrapper = out.wrapper;
+    SEStore = useSEStore(testPinia);
   });
 
   it("correct default styling of a point", async () => {
     const prevPointCount = SEStore.sePoints.length;
-    const p = await makePoint(wrapper, false);
+    SEStore.setActionMode("point")
+    const p = await makePoint(wrapper, SEStore, false);
     expect(SEStore.sePoints.length).toEqual(prevPointCount + 1);
     expect(p.showing).toBe(true);
 
@@ -36,7 +49,8 @@ describe("SphereFrame: Template", () => {
 
   it("update point fill and stroke color", async () => {
     const prevPointCount = SEStore.sePoints.length;
-    const p = await makePoint(wrapper, false);
+    SEStore.setActionMode("point")
+    const p = await makePoint(wrapper, SEStore, false);
     expect(SEStore.sePoints.length).toEqual(prevPointCount + 1);
     expect(p.showing).toBe(true);
 
