@@ -1,15 +1,11 @@
-// <reference path="@/extensions/three-ext.d.ts" />
-// <reference path="@/extensions/number-ext.d.ts" />
-// <reference path="@/extensions/array-ext.d.ts" />
-// <reference path="@/types/two.js/index.d.ts" />
 import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
 import vuetify from "./plugins/vuetify";
 import i18n from "./i18n";
-import "@/extensions/three.extensions";
-import "@/extensions/number.extensions";
-import "@/extensions/se-nodule.extensions";
+import "@/extensions/three-extensions";
+import "@/extensions/number-extensions";
+import "@/extensions/se-nodule-extensions";
 import { createPinia } from "pinia";
 import { initializeApp } from "firebase/app";
 import { firebaseConfig } from "./firebase-config";

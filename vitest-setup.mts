@@ -5,9 +5,8 @@ import { vi, expect } from "vitest"
 // This import solve the following error:
 // Error: Not implemented: HTMLCanvasElement.prototype.getContext
 import "vitest-canvas-mock"
-import "./src/extensions/three.extensions"
-import "./src/extensions/se-nodule.extensions"
-import "./src/extensions/three.extensions"
+import "./src/extensions/three-extensions"
+import "./src/extensions/se-nodule-extensions"
 import { Vector3 } from "three"
 if (!globalThis.defined) {
   config.global.plugins = [bahasa]

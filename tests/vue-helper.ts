@@ -10,7 +10,7 @@ import * as directives from "vuetify/directives";
 import { vi } from "vitest";
 import { customIcons } from "../src/plugins/iconAliases";
 import "../src/extensions/array-extensions"
-import "../src/extensions/number.extensions"
+import "../src/extensions/number-extensions"
 const vuetify = createVuetify({
   components,
   directives

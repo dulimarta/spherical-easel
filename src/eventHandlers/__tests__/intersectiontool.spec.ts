@@ -1,13 +1,10 @@
 import { vi } from "vitest";
 import { createTestingPinia } from "@pinia/testing";
-
 import SphereFrame from "../../components/SphereFrame.vue";
 import { createWrapper } from "../../../tests/vue-helper";
 import { SEStoreType, useSEStore } from "../../stores/se";
 import { VueWrapper } from "@vue/test-utils";
 import {
-  TEST_MOUSE_X,
-  TEST_MOUSE_Y,
   mouseClickOnSphere,
   drawOneDimensional
 } from "./sphereframe-helper";

@@ -1,15 +1,15 @@
-export{}
-declare global {
-  interface Array<T> {
-    // Rotate n elements of an array
-    rotate(n: number): Array<T>;
+// export{}
+// declare global {
+//   interface Array<T> {
+//     // Rotate n elements of an array
+//     rotate(n: number): Array<T>;
 
-    // Remove the current elements
-    clear(): void;
+//     // Remove the current elements
+//     clear(): void;
 
-    partition(pred: (x: T) => boolean): [Array<T>, Array<T>];
-  }
-}
+//     partition(pred: (x: T) => boolean): [Array<T>, Array<T>];
+//   }
+// }
 Array.prototype.rotate = function (count: number) {
   const len = this.length >>> 0;
   let _count = count >> 0;

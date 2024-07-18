@@ -596,7 +596,7 @@ function handleMouseMoved(e: MouseEvent): void {
 }
 
 function handleMousePressed(e: MouseEvent): void {
-  console.debug("SphereFrame::handleMousePress", currentTool !== null)
+  // console.debug("SphereFrame::handleMousePress", currentTool !== null)
   // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
   // const bb = (e.currentTarget as HTMLElement).getBoundingClientRect();
   // console.debug(

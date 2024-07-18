@@ -297,7 +297,7 @@ export default class PointHandler extends Highlighter {
   }
 
   activate(): void {
-    console.debug("PointHandler::activate()")
+    // console.debug("PointHandler::activate()")
     super.activate();
   }
   deactivate(): void {
