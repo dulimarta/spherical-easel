@@ -1,5 +1,5 @@
 import TestedComponent from "../ParametricCuspParameterValues.vue";
-import { createWrapper } from "../../../tests/vue-helper";
+import { createWrapper } from "$/vue-helper";
 import { it, vi } from "vitest";
 import { VueWrapper } from "@vue/test-utils";
 global.ResizeObserver = require("resize-observer-polyfill");

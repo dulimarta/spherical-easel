@@ -1,35 +1,35 @@
 import TestComponent from "../SENoduleItem.vue";
-import { vi, describe } from "vitest";
+import { vi, describe, MockInstance } from "vitest";
 import { Vector3 } from "three";
 import { VueWrapper } from "@vue/test-utils";
-import { createWrapper } from "../../../tests/vue-helper";
-import { SEPoint } from "../../models/SEPoint";
-import { SELabel } from "../../models/SELabel";
-import { SELine } from "../../models/SELine";
-import { SESegment } from "../../models/SESegment";
-import { SECircle } from "../../models/SECircle";
-import { SENodule } from "../../models/SENodule";
-import { SEIntersectionPoint } from "../../models/SEIntersectionPoint";
-// import Point from "../../plottables/Point";
-// import Label from "../../plottables/Label";
-// import Segment from "../../plottables/Segment";
-// import Line from "../../plottables/Line";
-// import Circle from "../../plottables/Circle";
-import { SEAngleMarker } from "../../models/SEAngleMarker";
-// import AngleMarker from "../../plottables/AngleMarker";
-import { AngleMode, LabelParentTypes } from "../../types";
-import { SESegmentLength } from "../../models/SESegmentLength";
-import { SEPointDistance } from "../../models/SEPointDistance";
-import { SESlider } from "../../models/SESlider";
-// import { SetNoduleDisplayCommand } from "../../commands/SetNoduleDisplayCommand";
-import { SEExpression } from "../../models/SEExpression";
+import { createWrapper } from "$/vue-helper";
+import { SEPoint } from "@/models/SEPoint";
+import { SELabel } from "@/models/SELabel";
+import { SELine } from "@/models/SELine";
+import { SESegment } from "@/models/SESegment";
+import { SECircle } from "@/models/SECircle";
+import { SENodule } from "@/models/SENodule";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+// import Point from "@/plottables/Point";
+// import Label from "@/plottables/Label";
+// import Segment from "@/plottables/Segment";
+// import Line from "@/plottables/Line";
+// import Circle from "@/plottables/Circle";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
+// import AngleMarker from "@/plottables/AngleMarker";
+import { AngleMode, LabelParentTypes } from "@/types";
+import { SESegmentLength } from "@/models/SESegmentLength";
+import { SEPointDistance } from "@/models/SEPointDistance";
+import { SESlider } from "@/models/SESlider";
+// import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import { SEExpression } from "@/models/SEExpression";
 import { createTestingPinia, TestingPinia } from "@pinia/testing";
-import { useSEStore } from "../../stores/se";
+import { useSEStore } from "@/stores/se";
 import { setActivePinia } from "pinia";
-// import type { SECalculation } from "../../models/SECalculation";
+// import type { SECalculation } from "@/models/SECalculation";
 
 describe("SENoduleItem.vue", () => {
-  let glowingSpy;
+  let glowingSpy: MockInstance;
   // let visibilitySpy = vi.fn();
 
   // Common routine for testing label and glowing behavior
@@ -66,7 +66,7 @@ describe("SENoduleItem.vue", () => {
     if (n instanceof SEExpression) {
       const selectIt = n.find("[data-testid=selection]");
       expect(selectIt.exists()).toBeTruthy();
-      fail("incomplete test");
+      assert.fail("incomplete test");
       //   await selectIt.trigger("click");
       //   expect(w.emitted()["object-select"]).toBeTruthy();
     }

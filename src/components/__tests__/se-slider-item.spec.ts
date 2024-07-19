@@ -1,6 +1,6 @@
-import TestComponent from "../../components/SESliderItem.vue";
-import { createWrapper } from "../../../tests/vue-helper";
-import { SESlider } from "../../models/SESlider";
+import TestComponent from "@/components/SESliderItem.vue";
+import { createWrapper } from "$/vue-helper";
+import { SESlider } from "@/models/SESlider";
 
 describe("SESliderItem.vue", () => {
   it("is a component", () => {

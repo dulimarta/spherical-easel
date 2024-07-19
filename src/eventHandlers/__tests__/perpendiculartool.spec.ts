@@ -1,15 +1,15 @@
 import { vi } from "vitest";
 import { createTestingPinia } from "@pinia/testing";
-import SphereFrame from "../../components/SphereFrame.vue";
-import { createWrapper } from "../../../tests/vue-helper";
-import { SEStoreType, useSEStore } from "../../stores/se";
+import SphereFrame from "@/components/SphereFrame.vue";
+import { createWrapper } from "$/vue-helper";
+import { SEStoreType, useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
 import {
   drawOneDimensional,
   drawPointAt
 } from "./sphereframe-helper";
-import { SENodule } from "../../models/SENodule";
-import { Command } from "../../commands/Command";
+import { SENodule } from "@/models/SENodule";
+import { Command } from "@/commands/Command";
 import Handler from "../PerpendicularLineThruPointHandler";
 
 describe("Perpendicular Tool", () => {

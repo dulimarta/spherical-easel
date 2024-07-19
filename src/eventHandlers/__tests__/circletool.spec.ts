@@ -1,16 +1,16 @@
-import SphereFrame from "../../components/SphereFrame.vue";
+import SphereFrame from "@/components/SphereFrame.vue";
 import { vi } from "vitest";
-import { createWrapper } from "../../../tests/vue-helper";
-import { SEStoreType, useSEStore } from "../../stores/se";
+import { createWrapper } from "$/vue-helper";
+import { SEStoreType, useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
 import { TEST_MOUSE_X, TEST_MOUSE_Y, dragMouse } from "./sphereframe-helper";
-import SETTINGS from "../../global-settings";
-import { SECircle } from "../../models/SECircle";
+import SETTINGS from "@/global-settings";
+import { SECircle } from "@/models/SECircle";
 import { Vector3 } from "three";
 import { createTestingPinia } from "@pinia/testing";
-import { SENodule } from "../../models/SENodule";
+import { SENodule } from "@/models/SENodule";
 import Handler from "../CircleHandler";
-import { Command } from "../../commands/Command";
+import { Command } from "@/commands/Command";
 describe("Circle Tool", () => {
   let wrapper: VueWrapper;
   let testPinia;

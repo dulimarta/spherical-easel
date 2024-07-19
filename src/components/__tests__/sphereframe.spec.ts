@@ -1,10 +1,10 @@
-import SphereFrame from "../../components/SphereFrame.vue";
+import SphereFrame from "@/components/SphereFrame.vue";
 import { vi } from "vitest";
 import { createTestingPinia } from "@pinia/testing";
-import { createWrapper } from "../../../tests/vue-helper";
-import { SEStoreType,useSEStore } from "../../stores/se";
+import { createWrapper } from "$/vue-helper";
+import { SEStoreType,useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
-import { LAYER } from "../../global-settings";
+import { LAYER } from "@/global-settings";
 /*
 TODO: the test cases below create the object using newly created node.
 Should we include test cases where the tools select existing objects

@@ -1,13 +1,15 @@
-import ConstructionList from "../ConstructionList.vue";
-import { SphericalConstruction } from "../../types";
+import ConstructionList from "@/components/ConstructionList.vue";
+import { SphericalConstruction } from "@/types";
+import { createWrapper } from "$/vue-helper";
+import {mockedStore} from "$/mock-utils"
 import { Matrix4 } from "three";
-import { vi, describe, it,beforeEach,expect, afterEach } from "vitest";
-import { createWrapper } from "../../../tests/vue-helper";
-import { useAccountStore } from "../../stores/account";
-import { useConstructionStore } from "../../stores/construction"
-import {mockedStore} from "../../../tests/mock-utils"
-// import store from "@/";
-// vi.mock("axios"); // Do this once
+import { vi } from "vitest";
+import { useAccountStore } from "@/stores/account";
+import { useConstructionStore } from "@/stores/construction"
+import { VueWrapper } from "@vue/test-utils";
+import { User, UserCredential } from "firebase/auth";
+import { DocumentSnapshot, QuerySnapshot } from "firebase/firestore";
+import { TestingPinia } from "@pinia/testing";
 
 const sampleData = () => {
   const arr: Array<SphericalConstruction> = [];
@@ -69,11 +71,6 @@ function prepareWrapper(
     }
   });
 }
-import { DOMWrapper, VueWrapper } from "@vue/test-utils";
-import { User, UserCredential } from "firebase/auth";
-import { collection, DocumentSnapshot, QuerySnapshot } from "firebase/firestore";
-import { TestingPinia } from "@pinia/testing";
-import { setActivePinia } from "pinia";
 const TEST_DATA = sampleData();
 const NO_DATA: Array<SphericalConstruction> = [];
 describe("Construction Lis: empty list", () => {

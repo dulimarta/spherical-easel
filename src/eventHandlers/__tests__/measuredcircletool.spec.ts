@@ -1,19 +1,19 @@
 import { vi } from "vitest";
 import { createTestingPinia } from "@pinia/testing";
-import SphereFrame from "../../components/SphereFrame.vue";
-import { createWrapper } from "../../../tests/vue-helper";
-import { SEStoreType, useSEStore } from "../../stores/se";
+import SphereFrame from "@/components/SphereFrame.vue";
+import { createWrapper } from "$/vue-helper";
+import { SEStoreType, useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
 import {
   dragMouse,
   drawOneDimensional
 } from "./sphereframe-helper";
-import { SENodule } from "../../models/SENodule";
-import { Command } from "../../commands/Command";
+import { SENodule } from "@/models/SENodule";
+import { Command } from "@/commands/Command";
 import Handler from "../MeasuredCircleHandler";
 
-import SETTINGS from "../../global-settings";
-import { SEIntersectionPoint } from "../../models/SEIntersectionPoint";
+import SETTINGS from "@/global-settings";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 const R = SETTINGS.boundaryCircle.radius;
 
 describe("Measured Circle Tool", () => {

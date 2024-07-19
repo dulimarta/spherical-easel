@@ -1,13 +1,13 @@
-import SphereFrame from "../../components/SphereFrame.vue";
+import SphereFrame from "@/components/SphereFrame.vue";
 import { vi } from "vitest";
-import { createWrapper } from "../../../tests/vue-helper";
-import { SEStoreType, useSEStore } from "../../stores/se";
+import { createWrapper } from "$/vue-helper";
+import { SEStoreType, useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
-import { makePoint } from "../../eventHandlers/__tests__/sphereframe-helper"
-import SETTINGS from "../../global-settings";
+import { makePoint } from "@/eventHandlers/__tests__/sphereframe-helper"
+import SETTINGS from "@/global-settings";
 import { createTestingPinia } from "@pinia/testing";
-import { StyleCategory } from "../../types/Styles";
-import Nodule from "../../plottables/Nodule";
+import { StyleCategory } from "@/types/Styles";
+import Nodule from "@/plottables/Nodule";
 
 const R = SETTINGS.boundaryCircle.radius;
 

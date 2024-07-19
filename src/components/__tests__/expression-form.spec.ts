@@ -1,8 +1,8 @@
 import TestedComponent from "../ExpressionForm.vue";
-import { createWrapper } from "../../../tests/vue-helper";
+import { createWrapper } from "$/vue-helper";
 import { it, vi } from "vitest"
-import { useSEStore } from "../../stores/se";
-import { Command } from "../../commands/Command"
+import { useSEStore } from "@/stores/se";
+import { Command } from "@/commands/Command"
 
 import { VueWrapper,mount } from "@vue/test-utils";
 global.ResizeObserver = require("resize-observer-polyfill");

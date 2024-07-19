@@ -1,9 +1,9 @@
 import TestedComponent from "../ParametricCoordinate.vue";
-import { createWrapper } from "../../../tests/vue-helper";
+import { createWrapper } from "$/vue-helper";
 import { it, vi } from "vitest";
 import { VueWrapper, mount } from "@vue/test-utils";
-import { useSEStore } from "../../stores/se";
-import { SECalculation } from "../../models/SECalculation";
+import { useSEStore } from "@/stores/se";
+import { SECalculation } from "@/models/SECalculation";
 global.ResizeObserver = require("resize-observer-polyfill");
 
 describe("ParametricCoord.vue basics", () => {

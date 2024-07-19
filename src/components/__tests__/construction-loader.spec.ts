@@ -1,13 +1,11 @@
-// import Vue from "vue";
 import TestedComponent from "../ConstructionLoader.vue";
 import { vi, describe, beforeEach, it, expect } from "vitest";
-import { createWrapper } from "../../../tests/vue-helper";
+import { createWrapper } from "$/vue-helper";
 import { createI18n, useI18n } from "vue-i18n";
-import { mockFirebase } from "firestore-vitest-mock";
-import { useConstructionStore } from "../../stores/construction";
-import { SphericalConstruction } from "../../types";
+import { useConstructionStore } from "@/stores/construction";
+import { SphericalConstruction } from "@/types";
 import { Matrix4 } from "three";
-import { useAccountStore } from "../../stores/account";
+import { useAccountStore } from "@/stores/account";
 // import firebasemock from "firebase-mock";
 // const mockAuth = new firebasemock.MockAuthentication();
 // const mockFirestore = new firebasemock.MockFirestore();

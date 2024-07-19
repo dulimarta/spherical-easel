@@ -1,7 +1,7 @@
 import {vi} from "vitest"
-import SphereFrame from "../../components/SphereFrame.vue";
-import { createWrapper } from "../../../tests/vue-helper";
-import { SEStoreType, useSEStore } from "../../stores/se";
+import SphereFrame from "@/components/SphereFrame.vue";
+import { createWrapper } from "$/vue-helper";
+import { SEStoreType, useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
 import {
   drawEllipse,
@@ -9,17 +9,17 @@ import {
   drawPointAt,
   mouseClickOnSphere
 } from "./sphereframe-helper";
-import { SENodule } from "../../models/SENodule";
+import { SENodule } from "@/models/SENodule";
 import { createTestingPinia } from "@pinia/testing";
-import { Command } from "../../commands/Command";
+import { Command } from "@/commands/Command";
 import Handler from "../DeleteHandler";
 import MouseHandler from "../MouseHandler";
 
 import { Vector3 } from "three";
-import SETTINGS from "../../global-settings";
-import { SESegment } from "../../models/SESegment";
-import { SECircle } from "../../models/SECircle";
-import { SEEllipse } from "../../models/SEEllipse";
+import SETTINGS from "@/global-settings";
+import { SESegment } from "@/models/SESegment";
+import { SECircle } from "@/models/SECircle";
+import { SEEllipse } from "@/models/SEEllipse";
 const R = SETTINGS.boundaryCircle.radius;
 
 describe("SphereFrame: Delete Tool", () => {

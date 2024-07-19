@@ -1,11 +1,10 @@
 // import Vue from "*.vue";
-import SphereFrame from "../../components/SphereFrame.vue";
-import { createWrapper } from "../../../tests/vue-helper";
-import { useSEStore } from "../../stores/se";
-import {useAccountStore} from "../../stores/account"
+import SphereFrame from "@/components/SphereFrame.vue";
+import { createWrapper } from "$/vue-helper";
+import { SEStoreType, useSEStore } from "@/stores/se";
+import {useAccountStore} from "@/stores/account"
 import { VueWrapper } from "@vue/test-utils";
 import { vi } from "vitest";
-import { mockedStore } from "../../../tests/mock-utils";
 import Handler from "../AntipodalPointHandler"
 import {
   TEST_MOUSE_X,
@@ -14,13 +13,13 @@ import {
 } from "./sphereframe-helper"
 import { createTestingPinia } from "@pinia/testing";
 import MouseHandler from "../Highlighter";
-import { SENodule } from "../../models/internal";
-import {Command} from "../../commands/Command"
+import { SENodule } from "@/models/internal";
+import {Command} from "@/commands/Command"
 
 describe("Antipode Tool", () => {
   let wrapper: VueWrapper;
   let testPinia;
-  let SEStore;
+  let SEStore: SEStoreType;
   beforeEach(async () => {
     vi.clearAllMocks() // Reset spy counters etc.
     // Pinia instance MUST be created before mount() is called
@@ -33,7 +32,7 @@ describe("Antipode Tool", () => {
       }
     });
     // DO NOT initialize the store BEFORE calling createWrapper!!!
-    SEStore = mockedStore(useSEStore);
+    SEStore = useSEStore(testPinia)
     useAccountStore(testPinia)
     SEStore.init()
     SENodule.setGlobalStore(SEStore)

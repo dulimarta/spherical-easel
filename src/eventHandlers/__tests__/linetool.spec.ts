@@ -1,19 +1,19 @@
-import SphereFrame from "../../components/SphereFrame.vue";
-import { createWrapper } from "../../../tests/vue-helper";
-import { SEStoreType, useSEStore } from "../../stores/se";
+import SphereFrame from "@/components/SphereFrame.vue";
+import { createWrapper } from "$/vue-helper";
+import { SEStoreType, useSEStore } from "@/stores/se";
 import { vi } from "vitest";
-import { SELine } from "../../models/SELine";
+import { SELine } from "@/models/SELine";
 import { VueWrapper } from "@vue/test-utils";
-import SETTINGS from "../../global-settings";
+import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
 import {
   TEST_MOUSE_X,
   TEST_MOUSE_Y,
   drawOneDimensional
 } from "./sphereframe-helper";
-import { SENodule } from "../../models/SENodule";
+import { SENodule } from "@/models/SENodule";
 import { createTestingPinia } from "@pinia/testing";
-import { Command } from "../../commands/Command";
+import { Command } from "@/commands/Command";
 import Handler from "../LineHandler";
 import MouseHandler from "../MouseHandler";
 

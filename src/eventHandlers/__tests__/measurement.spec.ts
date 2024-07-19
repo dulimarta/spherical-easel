@@ -1,9 +1,9 @@
 import { vi } from "vitest";
 import { createTestingPinia } from "@pinia/testing";
 
-import SphereFrame from "../../components/SphereFrame.vue";
-import { createWrapper } from "../../../tests/vue-helper";
-import { SEStoreType, useSEStore } from "../../stores/se";
+import SphereFrame from "@/components/SphereFrame.vue";
+import { createWrapper } from "$/vue-helper";
+import { SEStoreType, useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
 import {
   TEST_MOUSE_X,
@@ -12,11 +12,11 @@ import {
   drawOneDimensional,
   drawPointAt
 } from "./sphereframe-helper";
-import SETTINGS from "../../global-settings";
-import { SEExpression } from "../../models/SEExpression";
-import { SENodule } from "../../models/SENodule";
-import { SEPoint } from "../../models/SEPoint";
-import { Command } from "../../commands/Command";
+import SETTINGS from "@/global-settings";
+import { SEExpression } from "@/models/SEExpression";
+import { SENodule } from "@/models/SENodule";
+import { SEPoint } from "@/models/SEPoint";
+import { Command } from "@/commands/Command";
 import { Vector3 } from "three";
 import Handler from "../SegmentLengthHandler"
 const R = SETTINGS.boundaryCircle.radius;

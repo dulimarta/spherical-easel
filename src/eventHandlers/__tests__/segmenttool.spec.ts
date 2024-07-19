@@ -1,16 +1,16 @@
 import { vi } from "vitest";
-import SphereFrame from "../../components/SphereFrame.vue";
-import { createWrapper } from "../../../tests/vue-helper";
-import { useSEStore, SEStoreType } from "../../stores/se";
+import SphereFrame from "@/components/SphereFrame.vue";
+import { createWrapper } from "$/vue-helper";
+import { useSEStore, SEStoreType } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
 import { TEST_MOUSE_X, TEST_MOUSE_Y, dragMouse } from "./sphereframe-helper";
-import SETTINGS from "../../global-settings";
-import { SESegment } from "../../models/SESegment";
+import SETTINGS from "@/global-settings";
+import { SESegment } from "@/models/SESegment";
 import { Vector3 } from "three";
 import { createTestingPinia } from "@pinia/testing";
 import Handler from "../SegmentHandler";
-import { SENodule } from "../../models/internal";
-import { Command } from "../../commands/Command";
+import { SENodule } from "@/models/internal";
+import { Command } from "@/commands/Command";
 
 describe("Segment Tool", () => {
   let wrapper: VueWrapper;

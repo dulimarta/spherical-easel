@@ -1,9 +1,8 @@
 import { MockInstance, vi } from "vitest";
 import { createTestingPinia } from "@pinia/testing";
-
-import SphereFrame from "../../components/SphereFrame.vue";
-import { createWrapper } from "../../../tests/vue-helper";
-import { SEStoreType, useSEStore } from "../../stores/se";
+import SphereFrame from "@/components/SphereFrame.vue";
+import { createWrapper } from "$/vue-helper";
+import { SEStoreType, useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
 import {
   drawEllipse,
@@ -11,10 +10,10 @@ import {
   drawPointAt,
   mouseClickOnSphere
 } from "./sphereframe-helper";
-import SETTINGS from "../../global-settings";
-import { SENodule } from "../../models/SENodule";
+import SETTINGS from "@/global-settings";
+import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { Command } from "../../commands/Command";
+import { Command } from "@/commands/Command";
 import Handler from "../HideObjectHandler";
 
 const R = SETTINGS.boundaryCircle.radius;
@@ -47,10 +46,6 @@ describe("Hide Tool", () => {
     SEStore.setActionMode("select")
     await wrapper.vm.$nextTick()
     SEStore.init();
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
   });
 
   it("hides points", async () => {

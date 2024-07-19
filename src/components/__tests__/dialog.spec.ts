@@ -4,7 +4,7 @@ import { vi, it, describe, beforeEach, expect } from "vitest";
 // import { createVuetify } from "vuetify";
 // import * as components from "vuetify/components"
 // import * as directives from "vuetify/directives"
-import { createWrapper } from "../../../tests/vue-helper";
+import { createWrapper } from "$/vue-helper";
 // import vuetify from "vite-plugin-vuetify";
 // const vuetify = createVuetify({components, directives})
 
