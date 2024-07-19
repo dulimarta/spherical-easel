@@ -17,7 +17,14 @@ import Nodule from "./plottables/Nodule";
 const firebaseApp = initializeApp(firebaseConfig);
 const pinia = createPinia();
 
+
 const app = createApp(App);
+const qp = location.search.split(/[?&]/).filter(s => s.length > 0)
+const fPos = qp.findIndex(z => z.startsWith("features"))
+if (fPos >= 0) {
+  const [key, value] = qp[fPos].split("=")
+  app.provide(key, value)
+}
 app.use(vuetify);
 app.use(router);
 app.use(i18n);

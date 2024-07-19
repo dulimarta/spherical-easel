@@ -82,6 +82,7 @@ import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers/EventBus";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
+import { inject } from "vue";
 const { t } = useI18n();
 const acctStore = useAccountStore();
 const { userRole, includedTools } = storeToRefs(acctStore);
@@ -92,9 +93,11 @@ const inProductionMode = ref(false);
 const inEditMode = ref(false);
 const expandedPanel: Ref<number | undefined> = ref(undefined);
 const buttonGroup: Ref<Array<ToolButtonGroup>> = ref([]);
+let permissibleButtonGroup: Array<ToolButtonGroup> = []
 const currentToolset: Array<ActionMode> = [];
 const selectedTool: Ref<ActionMode | null> = ref("rotate");
 let lastSelectedTool: ActionMode | null = null;
+const appFeature = inject('features')
 
 /* This is a variable that does NOT belong in the global settings but I don't know where else to
   put it. This is the list of tools that should be displayed*/
@@ -102,12 +105,20 @@ let lastSelectedTool: ActionMode | null = null;
 
 onBeforeMount((): void => {
   inProductionMode.value = import.meta.env.MODE === "production";
-  buttonGroup.value.push(...toolGroups);
+  if (appFeature !== 'beta') {
+    permissibleButtonGroup = toolGroups.filter(grp => grp.group.match(/^(Advanced|Transformation)Tool/) === null)
+  } else {
+    permissibleButtonGroup = toolGroups.splice(0)
+  }
+  buttonGroup.value.push(...permissibleButtonGroup);
   //sort the button list by id so that we don't have to reorder the list each item we add a new button
 
   buttonGroup.value.forEach((gr: ToolButtonGroup) => {
     gr.children.sort((a: ToolButtonType, b: ToolButtonType) => a.id - b.id);
   });
+  if (appFeature !== 'beta') {
+
+  }
   currentToolset.push(...includedTools.value);
 });
 
@@ -115,7 +126,7 @@ watch(
   () => actionMode.value,
   act => {
     if (selectedTool.value !== act) selectedTool.value = act;
-    const activeGroup = toolGroups.findIndex(group => {
+    const activeGroup = permissibleButtonGroup.findIndex(group => {
       return group.children.some((ch: ToolButtonType) => ch.action === act);
     });
     if (activeGroup !== expandedPanel.value) {
@@ -216,10 +227,10 @@ function toggleEditMode(): void {
   buttonGroup.value.splice(0);
   if (inEditMode.value) {
     // Show all buttons
-    buttonGroup.value.push(...toolGroups);
+    buttonGroup.value.push(...permissibleButtonGroup);
   } else {
     // show only included buttons
-    const selected = cloneDeep(toolGroups);
+    const selected = cloneDeep(permissibleButtonGroup);
     selected.forEach((g: ToolButtonGroup) => {
       g.children = g.children.filter((tool: ToolButtonType) =>
         includedTools.value.includes(tool.action)

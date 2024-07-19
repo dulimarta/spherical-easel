@@ -127,8 +127,10 @@ export const useAccountStore = defineStore("acct", () => {
         if (userProfilePictureURL.value === undefined)
           userProfilePictureURL.value = profilePictureURL;
         if (role) userRole.value = role.toLowerCase();
-        if (userStarredConstructions)
+        if (userStarredConstructions) {
+          console.debug(`User ${displayName} (${uid}) has starred constructions`, userStarredConstructions)
           starredConstructions.value.push(...userStarredConstructions);
+        }
         parseAndSetFavoriteTools(favoriteTools ?? "#");
       }
     });

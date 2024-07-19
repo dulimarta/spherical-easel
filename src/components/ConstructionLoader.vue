@@ -42,7 +42,7 @@
       <v-expansion-panel
         data-testid="starredPanel"
         value="starred"
-        v-if="firebaseUid && firebaseUid.length > 0">
+        v-if="filteredStarredConstructions.length > 0 && firebaseUid && firebaseUid.length > 0">
         <v-expansion-panel-title>
           {{ t(`starredConstructions`) }} ({{
             filteredStarredConstructions.length
