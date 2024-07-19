@@ -106,7 +106,7 @@ const appFeature = inject('features')
 onBeforeMount((): void => {
   inProductionMode.value = import.meta.env.MODE === "production";
   if (appFeature !== 'beta') {
-    permissibleButtonGroup = toolGroups.filter(grp => grp.group.match(/^(Advanced|Transformation)Tool/) === null)
+    permissibleButtonGroup = toolGroups.filter(grp => grp.group.match(/^TransformationTool/) === null)
   } else {
     permissibleButtonGroup = toolGroups.splice(0)
   }

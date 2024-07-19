@@ -36,7 +36,7 @@
           prepend-icon=$constructionsTab
           title="Construction"
           value="construction"></v-list-item>
-        <v-list-item
+        <v-list-item v-if="appFeature === 'beta'"
           @click="setHover(3)"
           prepend-icon=$earthTab
           title="Earth"
@@ -89,7 +89,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onBeforeMount, onBeforeUnmount, onMounted, ref, computed } from "vue";
+import { onBeforeMount, onBeforeUnmount, onMounted, ref, computed, inject } from "vue";
 import ToolGroups from "@/components/ToolGroups.vue";
 import EventBus from "@/eventHandlers/EventBus";
 import ObjectTree from "./ObjectTree.vue";
@@ -104,6 +104,8 @@ import { useLayout } from "vuetify";
 import { useDisplay } from "vuetify";
 // import { computed } from "vue";
 // import { set } from "@vueuse/core";
+const appFeature = inject('features')
+
 const seStore = useSEStore();
 const acctStore = useAccountStore();
 const { actionMode } = storeToRefs(seStore);
