@@ -113,7 +113,6 @@ export const useAccountStore = defineStore("acct", () => {
     await getDoc(doc(appDB, "users", uid)).then((ds: DocumentSnapshot) => {
       if (ds?.exists()) {
         const uProfile = ds.data() as UserProfile;
-        // console.debug("User Profile Details from Firestore", uProfile);
         const {
           favoriteTools,
           displayName,
@@ -121,15 +120,14 @@ export const useAccountStore = defineStore("acct", () => {
           role,
           userStarredConstructions
         } = uProfile;
-        userStarredConstructions;
         if (userDisplayedName.value === undefined)
           userDisplayedName.value = displayName;
         if (userProfilePictureURL.value === undefined)
           userProfilePictureURL.value = profilePictureURL;
         if (role) userRole.value = role.toLowerCase();
         if (userStarredConstructions) {
-          console.debug(`User ${displayName} (${uid}) has starred constructions`, userStarredConstructions)
-          starredConstructions.value.push(...userStarredConstructions);
+          // console.debug(`User ${displayName} (${uid}) has starred constructions`, userStarredConstructions)
+          starredConstructions.value = userStarredConstructions;
         }
         parseAndSetFavoriteTools(favoriteTools ?? "#");
       }
@@ -190,6 +188,7 @@ export const useAccountStore = defineStore("acct", () => {
   }
 
   async function signOff(): Promise<void> {
+    starredConstructions.value.splice(0)
     await signOut(appAuth);
   }
 

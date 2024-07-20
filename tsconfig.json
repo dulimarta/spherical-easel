@@ -1,9 +1,57 @@
 {
-  "references": [
-    // This is the TS config for running our app
-    {"path": "./tsconfig.app.json"},
-
-    // This is the TS config used by vite itself inside a NodeJS environment
-    {"path": "./tsconfig.node.json"}
-  ]
+  "compilerOptions": {
+    "pretty": true,
+    "removeComments": true,
+    "composite": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "strict": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    // "declaration": false, // Setting this to false, helps to resolve compiler error in the Pinia store
+    "jsx": "preserve",
+    // "importHelpers": true,
+    // "noImplicitAny": true,
+    "moduleResolution": "node",
+    // "experimentalDecorators": true,
+    "esModuleInterop": true,
+    // "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "outDir": "ts-out",
+    "types": [
+      "vite/client",
+      "vitest/globals", /* "node", "vuetify", "google.maps" */
+    ],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/vuetify/types",
+      "@/types",
+      "./node_modules"
+    ],
+    "paths": {
+      "@/*": ["./src/*"],
+      "$/*": ["./tests/*"]
+    },
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "exclude": ["node_modules"],
+  "include": [
+    "src/**/*.ts",
+    "tests/*.ts", // This is needed to enable path mapping $/* above
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "vitest.d.ts"],
+  "verbose": true
+  // "globals": {
+  //   "ts-jest": {
+  //     "diagnostics": false
+  //   }
+  // },
+  // "vueCompilerOptions": {
+  //   "target": 3
+  // }
 }

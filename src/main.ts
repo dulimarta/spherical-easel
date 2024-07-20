@@ -24,6 +24,8 @@ const fPos = qp.findIndex(z => z.startsWith("features"))
 if (fPos >= 0) {
   const [key, value] = qp[fPos].split("=")
   app.provide(key, value)
+} else {
+  app.provide("features", null)
 }
 app.use(vuetify);
 app.use(router);

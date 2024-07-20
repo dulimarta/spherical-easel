@@ -86,6 +86,5 @@
     "last 2 versions",
     "not dead"
   ],
-  "module": "index.ts",
   "type": "module"
 }

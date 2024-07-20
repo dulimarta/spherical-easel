@@ -101,7 +101,6 @@ const { t } = useI18n();
 const acctStore = useAccountStore();
 const { userRole } = storeToRefs(acctStore);
 const constructionStore = useConstructionStore()
-constructionStore.initialize()
 
 const logoutDialog: Ref<DialogAction | null> = ref(null);
 // const shareConstructionDialog: Ref<DialogAction | null> = ref(null);
@@ -113,6 +112,7 @@ onBeforeMount((): void => {
 
 onMounted((): void => {
   console.log("Base URL is ", import.meta.env.BASE_URL);
+  constructionStore.initialize()
   // SEStore.init();
   // Get the top-level SVG element
 });

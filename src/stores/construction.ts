@@ -113,6 +113,7 @@ function sortConstructionArray(arr: Array<SphericalConstruction>) {
 }
 
 export const useConstructionStore = defineStore("construction", () => {
+  const allPublicConstructions: Array<SphericalConstruction> = [];
   const publicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
   const privateConstructions: Ref<Array<SphericalConstruction>> = ref([]);
   // Public constructions is never null
@@ -133,51 +134,67 @@ export const useConstructionStore = defineStore("construction", () => {
     userEmail,
     includedTools
   } = storeToRefs(acctStore);
+  let currentUID: string | undefined = undefined;
 
   watch(
-  [() => firebaseUid.value, () => starredConstructionIDs.value],
-    async ([uid, starredIds]/*, oldUid: string*/) => {
+    () => firebaseUid.value,
+    async uid => {
+      console.debug("Firebase UID watcher", uid);
       if (uid) {
-        // When an authenticated user logs in
-        // (1) Build the private array
-        const privateColl = collection(appDB, "users", uid, "constructions");
-        await parsePrivateCollection(privateColl, privateConstructions.value);
-        // console.debug("Favorite", starredConstructionIDs.value)
-        // console.debug("Public", publicConstructions.value)
-        const [starred, unstarred] = publicConstructions.value.partition(z => {
-          return starredIds.some(s => s === z.publicDocId)
+        await parsePrivateCollection(uid, privateConstructions.value);
+        // Identiy published owned constructions
+        const myPublicSet: Set<string> = new Set();
+        privateConstructions.value.forEach(s => {
+          if (s.publicDocId) myPublicSet.add(s.publicDocId);
         });
-        console.debug(`Construction Store: starred=${starred.length}, unstarred=${unstarred.length}`)
-        starredConstructions.value.clear();
-        publicConstructions.value.clear();
-        starredConstructions.value.push(...starred);
-        publicConstructions.value.push(...unstarred);
-        const myPublicDocIDs: string[] = privateConstructions.value
-          .filter((s: SphericalConstruction) => s.publicDocId)
-          .map(s => s.publicDocId!!);
-        myPublicDocIDs.forEach((docId: string) => {
-          // Remove my own public constructions from the public list
-          const pos = publicConstructions.value.findLastIndex(
-            (s: SphericalConstruction) => s.publicDocId === docId
-          );
-          if (pos >= 0) {
-            publicConstructions.value.splice(pos, 1);
-          }
-        });
-        console.debug("Construction store public", publicConstructions.value.map(s => s.id))
-        console.debug("Construction store starred", starredConstructions.value.map(s => s.id))
-      } else {
-        const myPublicDocs = privateConstructions.value.filter(
-          (s: SphericalConstruction) => !s.publicDocId
+
+        // Partition private list into mine and theirs
+        const [mine, theirs] = allPublicConstructions.partition(s =>
+          myPublicSet.has(s.publicDocId!)
         );
+        // Exclude mine from public list
+        if (starredConstructions.value.length === 0)
+          publicConstructions.value = theirs;
+      } else {
         privateConstructions.value.splice(0);
-        publicConstructions.value.push(...myPublicDocs);
+        publicConstructions.value = allPublicConstructions.slice(0);
       }
-      sortConstructionArray(privateConstructions.value);
-      // sortConstructionArray(starredConstructions.value);
-      sortConstructionArray(publicConstructions.value);
-    }, {deep: true}
+    }
   );
+
+  watch(starredConstructionIDs, (favorites) => {
+    if (favorites.length > 0) {
+      console.debug("List of favorite items", favorites)
+      const [star, unstar] = allPublicConstructions.partition(s => {
+        const isStar = favorites.some(favId => favId === s.publicDocId)
+        if (isStar)
+          console.debug(`${s.id} # ${s.publicDocId} => ${s.description}`)
+        return isStar
+      })
+      console.debug("Starred constructions", star.map(x => x.publicDocId))
+      console.debug("Unstarred constructions", unstar.map(x => x.publicDocId))
+      starredConstructions.value = star
+      publicConstructions.value = unstar
+      if (star.length !== favorites.length) {
+        console.debug("Some starred constructions are not available anymore")
+      }
+    } else {
+      publicConstructions.value = allPublicConstructions
+    }
+  }, { deep: true })
+
+  //   watch(sta.value, (stars) => {
+  //       console.debug(`Starred Constructions`, stars)
+  //       if (starredIds.length > 0) {
+  //         console.debug(`Looking for starred item in ${publicConstructions.value.length}`)
+  //         const [starred, unstarred] = publicConstructions.value.partition(z => {
+  //           return starredIds.some(s => s === z.publicDocId)
+  //         });
+  //         console.debug(`Construction Store: starred=${starred.length}, unstarred=${unstarred.length}`)
+  //         starredConstructions.value = starred;
+  //         publicConstructions.value = unstarred;
+  //         }
+  // })
 
   // constructionDocId !== null implies overwrite existing construction
   // constructionDocId === null implies create a new construction
@@ -383,13 +400,11 @@ export const useConstructionStore = defineStore("construction", () => {
   }
 
   async function parsePublicCollection(
-    constructionCollection: CollectionReference,
     targetArr: Array<SphericalConstruction>
   ): Promise<void> {
     targetArr.splice(0);
-
     const erroneousDocs: Array<string> = [];
-    const qs: QuerySnapshot = await getDocs(constructionCollection);
+    const qs: QuerySnapshot = await getDocs(collection(appDB, "constructions"));
 
     const parseTasks: Array<Promise<SphericalConstruction>> = qs.docs.map(
       async (qd: QueryDocumentSnapshot) => {
@@ -445,16 +460,15 @@ export const useConstructionStore = defineStore("construction", () => {
   }
 
   async function parsePrivateCollection(
-    constructionCollection: CollectionReference,
+    owner: string,
     targetArr: Array<SphericalConstruction>
   ): Promise<void> {
-    targetArr.splice(0);
-
-    // const erroneousDocs: Array<string> = [];
-    const qs: QuerySnapshot = await getDocs(constructionCollection);
+    const qs: QuerySnapshot = await getDocs(
+      collection(appDB, "users", owner, "constructions")
+    );
 
     const parseTask: Array<Promise<SphericalConstruction>> = qs.docs.map(
-      async (qd: QueryDocumentSnapshot) => {
+      (qd: QueryDocumentSnapshot) => {
         const remoteData = qd.data();
         return parseDocument(qd.id, remoteData as ConstructionInFirestore);
         // if (out.parsedScript.length > 0) targetArr.push(out);
@@ -470,22 +484,12 @@ export const useConstructionStore = defineStore("construction", () => {
     const constructionArray: Array<SphericalConstruction> = await Promise.all(
       parseTask
     );
+    targetArr.splice(0);
     targetArr.push(
       ...constructionArray.filter(
         (s: SphericalConstruction) => s.parsedScript.length > 0
       )
     );
-
-    // Sort by creation date
-    // targetArr.sort((a: SphericalConstruction, b: SphericalConstruction) =>
-    //   a.dateCreated.localeCompare(b.dateCreated)
-    // );
-    // if (erroneousDocs.length > 0) {
-    //   EventBus.fire("show-alert", {
-    //     key: "Missing scripts in documents: " + erroneousDocs.join(","),
-    //     type: "error"
-    //   });
-    // }
   }
 
   async function initialize() {
@@ -494,9 +498,9 @@ export const useConstructionStore = defineStore("construction", () => {
     appStorage = getStorage();
     appAuth = getAuth();
 
-    const publicColl = collection(appDB, "constructions");
-    await parsePublicCollection(publicColl, publicConstructions.value);
-    sortConstructionArray(publicConstructions.value);
+    await parsePublicCollection(allPublicConstructions);
+    sortConstructionArray(allPublicConstructions);
+    publicConstructions.value = allPublicConstructions.slice(0);
     // console.debug(`Public constructions ${publicConstructions.value.length}`);
   }
 
@@ -567,6 +571,7 @@ export const useConstructionStore = defineStore("construction", () => {
       return true;
     } else return false;
   }
+
   async function updateStarredArrayInFirebase(
     arr: Array<string>
   ): Promise<void> {
