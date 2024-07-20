@@ -271,7 +271,7 @@ describe("Construction Loader", () => {
     constructionStore.publicConstructions = testData.slice(0)
     await wrapper.vm.$nextTick();
     const acctStore = useAccountStore(testPinia);
-    acctStore.starredConstructions.push(testData[0].publicDocId, testData[1].publicDocId);
+    acctStore.starredConstructionIDs.push(testData[0].publicDocId, testData[1].publicDocId);
     acctStore.firebaseUid = "AbCD17618U";
     await vi.advanceTimersByTime(1100);
     const searchInput = wrapper.find("[data-testid=searchInput").find("input");

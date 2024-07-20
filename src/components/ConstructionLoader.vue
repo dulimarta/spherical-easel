@@ -49,6 +49,7 @@
           }})
         </v-expansion-panel-title>
         <v-expansion-panel-text data-testid="starredList">
+          Starred {{starredConstructionIDs}}
           <ConstructionList
             :allow-sharing="false"
             :items="filteredStarredConstructions" />
@@ -97,7 +98,7 @@ const acctStore = useAccountStore();
 const constructionStore = useConstructionStore();
 const { publicConstructions, privateConstructions, starredConstructions } =
   storeToRefs(constructionStore);
-const { firebaseUid } = storeToRefs(acctStore);
+const { firebaseUid, starredConstructionIDs } = storeToRefs(acctStore);
 const searchResult = ref("");
 const searchKey = ref("");
 

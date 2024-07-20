@@ -109,7 +109,6 @@ const appFeature = inject('features')
 const seStore = useSEStore();
 const acctStore = useAccountStore();
 const { actionMode } = storeToRefs(seStore);
-const { userEmail } = storeToRefs(acctStore);
 // const props = defineProps<{ minified: boolean }>();
 const { height, width, name } = useDisplay();
 // eslint-disable-next-line no-unused-vars

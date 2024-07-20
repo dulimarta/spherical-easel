@@ -17,7 +17,6 @@ import {
   uploadString
 } from "firebase/storage";
 import {
-  CollectionReference,
   getDocs,
   getDoc,
   updateDoc,
@@ -36,12 +35,14 @@ import {
 } from "firebase/firestore";
 import "@/extensions/array-extensions";
 import axios, { AxiosResponse } from "axios";
-import { Matrix4, Sphere } from "three";
+import { Matrix4 } from "three";
 import { storeToRefs } from "pinia";
 import { useAccountStore } from "@/stores/account";
 import { useSEStore } from "./se";
 import { watch } from "vue";
 import { mergeIntoImageUrl } from "@/utils/helpingfunctions";
+import { watchDebounced, watchPausable } from "@vueuse/core";
+import EventBus from "@/eventHandlers/EventBus";
 let appStorage: FirebaseStorage;
 let appDB: Firestore;
 let appAuth: Auth;
@@ -130,58 +131,66 @@ export const useConstructionStore = defineStore("construction", () => {
   } = storeToRefs(seStore);
   const {
     firebaseUid,
-    starredConstructions: starredConstructionIDs,
+    starredConstructionIDs,
     userEmail,
     includedTools
   } = storeToRefs(acctStore);
   let currentUID: string | undefined = undefined;
 
-  watch(
-    () => firebaseUid.value,
-    async uid => {
-      console.debug("Firebase UID watcher", uid);
-      if (uid) {
-        await parsePrivateCollection(uid, privateConstructions.value);
-        // Identiy published owned constructions
-        const myPublicSet: Set<string> = new Set();
-        privateConstructions.value.forEach(s => {
-          if (s.publicDocId) myPublicSet.add(s.publicDocId);
-        });
+  watchDebounced(firebaseUid, async uid => {
+    console.debug("Firebase UID watcher", uid);
+    if (uid) {
+      await parsePrivateCollection(uid, privateConstructions.value);
+      // Identify published owned constructions
+      const myPublicSet: Set<string> = new Set();
+      privateConstructions.value.forEach(s => {
+        if (s.publicDocId) myPublicSet.add(s.publicDocId);
+      });
 
-        // Partition private list into mine and theirs
-        const [mine, theirs] = allPublicConstructions.partition(s =>
-          myPublicSet.has(s.publicDocId!)
+      // Partition private list into mine and theirs
+      const [theirs, _mine] = allPublicConstructions.partition(s => {
+        const myOwnPublic = myPublicSet.has(s.publicDocId!);
+        const inMyStarList = starredConstructionIDs.value.some(
+          star => star === s.publicDocId
         );
-        // Exclude mine from public list
-        if (starredConstructions.value.length === 0)
-          publicConstructions.value = theirs;
-      } else {
-        privateConstructions.value.splice(0);
-        publicConstructions.value = allPublicConstructions.slice(0);
-      }
-    }
-  );
-
-  watch(starredConstructionIDs, (favorites) => {
-    if (favorites.length > 0) {
-      console.debug("List of favorite items", favorites)
-      const [star, unstar] = allPublicConstructions.partition(s => {
-        const isStar = favorites.some(favId => favId === s.publicDocId)
-        if (isStar)
-          console.debug(`${s.id} # ${s.publicDocId} => ${s.description}`)
-        return isStar
-      })
-      console.debug("Starred constructions", star.map(x => x.publicDocId))
-      console.debug("Unstarred constructions", unstar.map(x => x.publicDocId))
-      starredConstructions.value = star
-      publicConstructions.value = unstar
-      if (star.length !== favorites.length) {
-        console.debug("Some starred constructions are not available anymore")
-      }
+        return !myOwnPublic && !inMyStarList;
+      });
+      publicConstructions.value = theirs;
     } else {
-      publicConstructions.value = allPublicConstructions
+      privateConstructions.value.splice(0);
+      publicConstructions.value = allPublicConstructions.slice(0);
     }
-  }, { deep: true })
+  }, {debounce: 500 /* milliseconds */});
+
+  watch(
+    () => starredConstructionIDs.value,
+    async favorites => {
+      console.debug("Starred watcher", favorites)
+      if (favorites.length > 0) {
+        console.debug("List of favorite items", favorites);
+        const [star, unstar] = allPublicConstructions.partition(s => {
+          const isStar = favorites.some(favId => favId === s.publicDocId);
+          return isStar;
+        });
+        starredConstructions.value = star;
+        publicConstructions.value = unstar;
+        if (star.length !== favorites.length) {
+          EventBus.fire('show-alert', {
+            type: 'info',
+            key: 'Some of your starred constructions are not available anymore'
+          })
+          const cleanStarred = favorites.filter(fav => {
+            const pos = allPublicConstructions.findIndex(z => fav === z.publicDocId);
+            return pos >= 0
+          });
+          await updateStarredArrayInFirebase(cleanStarred)
+        }
+      } else {
+        publicConstructions.value = allPublicConstructions;
+      }
+    },
+    { deep: true }
+  );
 
   //   watch(sta.value, (stars) => {
   //       console.debug(`Starred Constructions`, stars)
@@ -620,6 +629,7 @@ export const useConstructionStore = defineStore("construction", () => {
       publicConstructions.value[pos].starCount++;
       const inPublic = publicConstructions.value.splice(pos, 1);
       starredConstructions.value.push(...inPublic);
+      starredConstructionIDs.value.push(...inPublic.map(z => z.publicDocId!))
       updateStarredArrayInFirebase(starredConstructionIDs.value);
       updateStarCountInFirebase(pubConstructionId, +1);
     }

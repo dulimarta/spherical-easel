@@ -15,7 +15,7 @@
       @click="doLoginOrLogout">
       <v-avatar
         size="small"
-        v-if="userProfilePictureURL !== undefined"
+        v-if="firebaseUid"
         contain
         max-width="40"
         :image="userProfilePictureURL"

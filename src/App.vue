@@ -89,6 +89,7 @@ import { storeToRefs } from "pinia";
 
 import { useI18n } from "vue-i18n";
 import { useConstructionStore } from "./stores/construction";
+import { onUnmounted } from "vue";
 
 // Register vue router in-component navigation guard functions
 // Component.registerHooks([
@@ -104,7 +105,6 @@ const constructionStore = useConstructionStore()
 
 const logoutDialog: Ref<DialogAction | null> = ref(null);
 // const shareConstructionDialog: Ref<DialogAction | null> = ref(null);
-const whoami = ref("");
 
 onBeforeMount((): void => {
   acctStore.resetToolset();
@@ -117,11 +117,14 @@ onMounted((): void => {
   // Get the top-level SVG element
 });
 
+onUnmounted(async () => {
+  await acctStore.signOff()
+})
+
 async function doLogout(): Promise<void> {
   await acctStore.signOff()
   logoutDialog.value?.hide();
   userRole.value = undefined;
-  whoami.value = "";
   acctStore.parseAndSetFavoriteTools("");
 }
 </script>

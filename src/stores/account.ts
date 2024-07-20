@@ -49,7 +49,7 @@ export const useAccountStore = defineStore("acct", () => {
   const firebaseUid: Ref<string | undefined> = ref(undefined);
   const userProfilePictureURL: Ref<string | undefined> = ref(undefined);
   const userRole: Ref<string | undefined> = ref(undefined);
-  const starredConstructions: Ref<Array<string>> = ref([]);
+  const starredConstructionIDs: Ref<Array<string>> = ref([]);
   /** @type { ActionMode[]} */
   const includedTools: Ref<ActionMode[]> = ref([]);
   const excludedTools: Ref<ActionMode[]> = ref([]);
@@ -126,8 +126,8 @@ export const useAccountStore = defineStore("acct", () => {
           userProfilePictureURL.value = profilePictureURL;
         if (role) userRole.value = role.toLowerCase();
         if (userStarredConstructions) {
-          // console.debug(`User ${displayName} (${uid}) has starred constructions`, userStarredConstructions)
-          starredConstructions.value = userStarredConstructions;
+          console.debug(`User ${displayName} (${uid}) has starred constructions`, userStarredConstructions)
+          starredConstructionIDs.value = userStarredConstructions;
         }
         parseAndSetFavoriteTools(favoriteTools ?? "#");
       }
@@ -188,7 +188,9 @@ export const useAccountStore = defineStore("acct", () => {
   }
 
   async function signOff(): Promise<void> {
-    starredConstructions.value.splice(0)
+    starredConstructionIDs.value.splice(0)
+    userEmail.value = undefined
+    userDisplayedName.value = undefined
     await signOut(appAuth);
   }
 
@@ -217,7 +219,7 @@ export const useAccountStore = defineStore("acct", () => {
     firebaseUid,
     includedTools,
     loginEnabled,
-    starredConstructions,
+    starredConstructionIDs,
     temporaryProfilePicture,
     userDisplayedName,
     userEmail,
