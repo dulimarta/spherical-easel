@@ -9,11 +9,11 @@ import {
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import { CommandGroup } from "@/commands/CommandGroup";
-import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackStyleContrastCommand";
 import { ChangeFillStyleCommand } from "@/commands/ChangeFillStyleCommand";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { Command } from "@/commands/Command";
 import { SENodule } from "@/models/SENodule";
+import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackstyleContrastCommand";
 
 // type ObjectStyle = { [_: string]: StylePropertyValue };
 

@@ -15,7 +15,7 @@ import { SEPolygon } from "@/models/SEPolygon";
 import { SETransformation } from "@/models/SETransformation";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SavedNames } from "@/types";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class DeleteNoduleCommand extends Command {
   private seNodule: SENodule;
@@ -152,7 +152,7 @@ export class DeleteNoduleCommand extends Command {
     }
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

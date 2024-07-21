@@ -4,7 +4,7 @@ import { AddExpressionCommand } from "./AddExpressionCommand";
 import { SEPoint } from "@/models/SEPoint";
 import { SEPointDistance } from "@/models/SEPointDistance";
 import { SavedNames, ValueDisplayMode } from "@/types";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddPointDistanceMeasurementCommand extends AddExpressionCommand {
   // /**
@@ -20,7 +20,7 @@ export class AddPointDistanceMeasurementCommand extends AddExpressionCommand {
   //   super(seExpression, parent);
   // }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

@@ -6,7 +6,7 @@ import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleCategory } from "@/types/Styles";
 import { SEEarthPoint } from "@/models/SEEarthPoint";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddEarthPointCommand extends Command {
   private seEarthPoint: SEEarthPoint;
@@ -58,7 +58,7 @@ export class AddEarthPointCommand extends Command {
     Command.store.removePoint(this.lastState);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

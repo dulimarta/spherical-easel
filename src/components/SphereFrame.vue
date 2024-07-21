@@ -135,12 +135,11 @@ const { t } = useI18n();
 
 const props = withDefaults(defineProps<ComponentProps>(), {
   availableHeight: 240,
-  availableWidth: 240,
+  availableWidth: 240
 });
 
-
 const canvas: Ref<HTMLDivElement | null> = ref(null);
-  const animateClass = ref("")
+const animateClass = ref("");
 
 const shortCutIcons = computed((): Array<Array<ToolButtonType>> => {
   // console.debug("Updating shortcut icons");
@@ -308,10 +307,7 @@ onBeforeMount((): void => {
   EventBus.listen("set-transformation-for-tool", setTransformationForTool);
   EventBus.listen("delete-node", deleteNode);
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
-  // EventBus.listen(
-  //   "set-point-visibility-and-label",
-  //   setPointInitialVisibilityAndLabel
-  // );
+  EventBus.listen("export-svg", exportSVG); // TEMP REMOVE
 });
 
 onMounted((): void => {
@@ -380,6 +376,7 @@ onBeforeUnmount((): void => {
   EventBus.unlisten("set-expression-for-tool");
   EventBus.unlisten("set-transformation-for-tool");
   EventBus.unlisten("delete-node");
+  EventBus.unlisten("export-svg"); // TEMP REMOVE
 });
 
 watch(
@@ -416,7 +413,6 @@ watch(
     // });
 
     const radius = Math.min(width, height) / 2 - 16; // 16-pixel gap
-    // setSphereRadius(radius);
 
     const ratio = radius / SETTINGS.boundaryCircle.radius;
     //zoomMagnificationFactor = ratio;
@@ -459,7 +455,7 @@ function updateView() {
   //Now update the display of the arrangement (i.e. make sure the labels are not too far from their associated objects)
   for (let l of seLabels.value) {
     l.update();
-  };
+  }
 }
 //#endregion updateView
 
@@ -701,9 +697,9 @@ function getCurrentSVGForIcon(): void {
 }
 
 function animateCanvas(): void {
-  animateClass.value = "spin"
+  animateClass.value = "spin";
   setTimeout(() => {
-    animateClass.value = ""
+    animateClass.value = "";
   }, 1200);
 }
 
@@ -768,7 +764,10 @@ function deleteNode(e: {
   });
 }
 
-
+// TEMP REMOVE
+function exportSVG():void{
+  console.log(Command.dumpSVG(seStore.canvasWidth, seStore.canvasHeight))
+}
 
 // dialogBoxIsActive(e: { active: boolean }): void {
 //   // console.debug(`dialog box is active is ${e.active}`);
@@ -933,9 +932,7 @@ watch(
         break;
       case "pointOnObject":
         if (!pointOnOneDimensionalTool) {
-          pointOnOneDimensionalTool = new PointOnOneDimensionalHandler(
-            layers
-          );
+          pointOnOneDimensionalTool = new PointOnOneDimensionalHandler(layers);
         }
         currentTool = pointOnOneDimensionalTool;
         break;
@@ -980,9 +977,7 @@ watch(
         break;
       case "tangent":
         if (!tangentLineThruPointTool) {
-          tangentLineThruPointTool = new TangentLineThruPointHandler(
-            layers
-          );
+          tangentLineThruPointTool = new TangentLineThruPointHandler(layers);
         }
         currentTool = tangentLineThruPointTool;
         break;
@@ -1068,9 +1063,7 @@ watch(
         break;
       case "applyTransformation":
         if (!applyTransformationTool) {
-          applyTransformationTool = new ApplyTransformationHandler(
-            layers
-          );
+          applyTransformationTool = new ApplyTransformationHandler(layers);
         }
         currentTool = applyTransformationTool;
         break;

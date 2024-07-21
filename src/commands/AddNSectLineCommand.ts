@@ -8,7 +8,7 @@ import { Vector3 } from "three";
 import { SENSectLine } from "@/models/SENSectLine";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { StyleCategory } from "@/types/Styles";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddNSectLineCommand extends Command {
   private seNSectLine: SENSectLine;
@@ -50,7 +50,7 @@ export class AddNSectLineCommand extends Command {
     this.parentAngle.unregisterChild(this.seNSectLine);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

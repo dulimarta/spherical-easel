@@ -1,6 +1,6 @@
 import Nodule from "@/plottables/Nodule";
 import { Command } from "./Command";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class ChangeFillStyleCommand extends Command {
   private currentFillStyle: boolean;
@@ -27,7 +27,7 @@ export class ChangeFillStyleCommand extends Command {
     Command.store.changeGradientFill(this.pastFillStyle);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

@@ -8,7 +8,7 @@ import { SERotation } from "@/models/SERotation";
 import { SEPoint } from "@/models/SEPoint";
 import { SEExpression } from "@/models/SEExpression";
 import { SEEllipse } from "@/models/SEEllipse";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddRotationCommand extends Command {
   private seRotation: SERotation;
@@ -41,7 +41,7 @@ export class AddRotationCommand extends Command {
     Command.store.removeTransformation(this.lastState);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

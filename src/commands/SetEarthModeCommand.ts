@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SavedNames } from "@/types";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class SetEarthModeCommand extends Command {
   private showing: boolean;
@@ -21,7 +21,7 @@ export class SetEarthModeCommand extends Command {
     Command.store.isEarthMode = !this.showing;
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

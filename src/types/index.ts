@@ -455,7 +455,7 @@ export type toSVGType = {
     string | Map<svgStopType, string>
   > | null; // back gradient gradient dictionary (if any)
   frontStyleDictionary: Map<svgStyleType, string> | null; // front style dictionary (if any)
-  backStyletDictionary: Map<svgStyleType, string> | null; // back style dictionary (if any)
+  backStyleDictionary: Map<svgStyleType, string> | null; // back style dictionary (if any)
   layerSVGArray: Array<[LAYER, string]>; // layer, SVG string array
   type: plottableType;
 };

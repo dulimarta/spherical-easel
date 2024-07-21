@@ -11,6 +11,7 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { Group } from "two.js/src/group";
 import { Command } from "@/commands/Command";
 import { randInt } from "three/src/math/MathUtils";
+import EventBus from "./EventBus";
 
 export default class ToggleLabelDisplayHandler extends Highlighter {
   /**
@@ -231,7 +232,8 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     super.activate();
   }
   deactivate(): void {
-    console.log(Command.dumpSVG(randInt(300,1000))) // FOR TESTING SVG EXPORT ONLY REMOVE!!!!
+
+    EventBus.fire("export-svg",{}); // FOR TESTING SVG EXPORT ONLY REMOVE!!!!
     // Remove the listener
     window.removeEventListener("keydown", this.keyPressHandler);
     super.deactivate();

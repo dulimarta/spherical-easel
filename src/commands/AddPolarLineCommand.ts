@@ -6,7 +6,7 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SEPolarLine } from "@/models/SEPolarLine";
 import { StyleCategory } from "@/types/Styles";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddPolarLineCommand extends Command {
   private sePolarLine: SEPolarLine;
@@ -53,7 +53,7 @@ export class AddPolarLineCommand extends Command {
   //   ].join("/");
   // }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

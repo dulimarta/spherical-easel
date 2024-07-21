@@ -5,7 +5,7 @@ import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleCategory } from "@/types/Styles";
 import { SELongitude } from "@/models/SELongitude";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddLongitudeCommand extends Command {
   private seLongitude: SELongitude;
@@ -35,7 +35,7 @@ export class AddLongitudeCommand extends Command {
     Command.store.removeLabel(this.seLabel.id);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

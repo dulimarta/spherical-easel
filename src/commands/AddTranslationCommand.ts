@@ -5,7 +5,7 @@ import { SESegment } from "@/models/SESegment";
 import { SavedNames } from "@/types";
 import { SELine } from "@/models/SELine";
 import { SEExpression } from "@/models/SEExpression";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddTranslationCommand extends Command {
   private seTranslation: SETranslation;
@@ -38,7 +38,7 @@ export class AddTranslationCommand extends Command {
     Command.store.removeTransformation(this.lastState);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

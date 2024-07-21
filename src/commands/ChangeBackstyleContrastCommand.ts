@@ -1,6 +1,6 @@
 import Nodule from "@/plottables/Nodule";
 import { Command } from "./Command";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 
 export class ChangeBackStyleContrastCommand extends Command {
@@ -27,7 +27,7 @@ export class ChangeBackStyleContrastCommand extends Command {
     Nodule.setBackStyleContrast(this.pastBackStyleContrast);
     Command.store.changeBackContrast(this.pastBackStyleContrast);
   }
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

@@ -17,7 +17,8 @@ import {
   svgGradientType,
   svgStopType,
   svgStyleType as svgStyleType,
-  toSVGReturnType
+  toSVGReturnType,
+  toSVGType
 } from "@/types/index";
 import SETTINGS, { LAYER } from "@/global-settings";
 import { DeleteNoduleCommand } from "./DeleteNoduleCommand";
@@ -159,7 +160,7 @@ export abstract class Command {
    * Array of the location and SVG strings, and
    * type of object encoded
    */
-  abstract toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[];
+  abstract toSVG(deletedNoduleIds: Array<number>): null | toSVGType[];
 
   /**
    * Make an array of the ids of all deleted nodes for passing to each toSVG method. When an object is deleted, it
@@ -168,7 +169,10 @@ export abstract class Command {
    */
   protected static deletedNoduleIds: Array<number> = [];
 
-  static dumpSVG(size: number): string {
+  static dumpSVG(width: number, height?: number): string {
+    if (height == undefined) {
+      height = width;
+    }
     function gradientDictionariesEqual(
       d1: Map<svgGradientType, string | Map<svgStopType, string>>,
       d2: Map<svgGradientType, string | Map<svgStopType, string>>
@@ -221,26 +225,16 @@ export abstract class Command {
       }
       return true;
     }
-
     // Build the header string for the SVG
-    const SVGpadding = 20 // in pixels
+    const size = Math.min(width, height);
+    const sf = (size - 32) / (2 * SETTINGS.boundaryCircle.radius);
     let svgHeaderReturnString =
       '<svg width="' +
-      size +
+      width +
       'px" ' +
       'height="' +
-      size +
+      height +
       'px" ' +
-      'viewBox="' +
-      String(-1 * SETTINGS.boundaryCircle.radius-SVGpadding) +
-      " " +
-      String(-1 * SETTINGS.boundaryCircle.radius-SVGpadding) +
-      " " +
-      String(2 * SETTINGS.boundaryCircle.radius+2*SVGpadding) +
-      " " +
-      String(2 * SETTINGS.boundaryCircle.radius+2*SVGpadding) +
-      '"\n ' +
-      'transform="scale(1,-1)"\n vector-effect="non-scaling-stroke"\n ' + // make sure that up is the positive y-axis
       'xmlns="http://www.w3.org/2000/svg">\n';
 
     // Record the gradients (which will be radial gradients for us) for the SVG in a dictionary
@@ -323,7 +317,7 @@ export abstract class Command {
             const frontGradientDictionary = information.frontGradientDictionary;
             const backGradientDictionary = information.backGradientDictionary;
             const frontStyleDictionary = information.frontStyleDictionary;
-            const backStyleDictionary = information.backStyletDictionary;
+            const backStyleDictionary = information.backStyleDictionary;
             const layerSVGInformation = information.layerSVGArray;
             const typeName = information.type;
 
@@ -465,14 +459,32 @@ export abstract class Command {
       }
     });
 
+    // Start with the scene grouping that set the scale
+    const sceneLayerStart =
+      '\t<g id="sphereScene" ' +
+      'transform = "matrix(' +
+      String(sf) +
+      "," +
+      "0" +
+      "," +
+      "0" +
+      "," +
+      String(-1 * sf) + // make sure that up is the positive y-axis
+      "," +
+      String(width / 2) +
+      "," +
+      String(height / 2) +
+      ')">\n';
+    const sceneLayerEnd = "\t</g>\n";
+
     // Build the svgReturnString parts from (gradient|style|layer) dictionaries don't add anything that is default value
     // Start with the gradients
     var gradientSVGReturnString = "";
     // If any, create the gradient part of the SVG return string
     if (gradientDictionary.size != 0) {
-      gradientSVGReturnString += "<defs>\n";
+      gradientSVGReturnString += "\t<defs>\n";
       for (let [name, dict] of gradientDictionary.entries()) {
-        gradientSVGReturnString += '<radialGradient id="' + name + '" ';
+        gradientSVGReturnString += '\t\t<radialGradient id="' + name + '" ';
         let stopSVGReturnStrings: [number, string][] = [];
         for (let [attribute, value] of dict) {
           // We have no guarantee of order and the stop attributes must be added last (and in order)
@@ -482,7 +494,7 @@ export abstract class Command {
               attribute + '="' + (value as string) + '" ';
           } else {
             // The value is a dictionary of the stop
-            let tempStopLine = "<stop ";
+            let tempStopLine = "\t\t\t<stop ";
             let tempStopNumber = 0;
             for (let [key, val] of value as Map<svgStopType, string>) {
               tempStopLine += key + '="' + val + '" ';
@@ -509,15 +521,18 @@ export abstract class Command {
           gradientSVGReturnString += val;
         }
         // Close the radial gradient
-        gradientSVGReturnString += "</radialGradient>\n";
+        gradientSVGReturnString += "\t\t</radialGradient>\n";
       }
-      gradientSVGReturnString += "</defs>\n";
+      gradientSVGReturnString += "\t</defs>\n";
     }
+    // Every text item has several styles that do not change. create a style string to add those to each text item
+    const textStyleString =
+      "\t\t\t.text { font-size:15px; text-anchor:middle; line-height:middle; dominant-baseline:middle; }\n";
 
     // Create the CSS style part of the SVG return string
     var styleSVGReturnString = '\t<style type="text/css"><![CDATA[\n';
     for (let [name, styleDict] of styleDictionary.entries()) {
-      styleSVGReturnString += "\t\t." + name + " { ";
+      styleSVGReturnString += "\t\t\t." + name + " { ";
       //Add the list of attributes, but make sure it is not the default
       for (let [attribute, value] of styleDict) {
         if (this.defaultSVGStyleDictionary.get(attribute) != value) {
@@ -527,8 +542,14 @@ export abstract class Command {
       // Close the CSS style
       styleSVGReturnString += "}\n";
     }
+    //add the close of the style string
+    if (styleSVGReturnString.includes("label")) {
+      styleSVGReturnString += textStyleString;
+    }
+    // remove the last newline character
+    styleSVGReturnString = styleSVGReturnString.slice(0, -1);
     // Close the CSS style section
-    styleSVGReturnString += "\t]]></style>\n";
+    styleSVGReturnString += "]]>\n\t</style>\n";
 
     // Use the layer dictionary to create the layer SVG string
     let layerSVGReturnString = "";
@@ -541,31 +562,47 @@ export abstract class Command {
           // Flip the orientation for text layers IS THIS NECESSARY?
           if (LAYER[layerNumber].toLowerCase().includes("text")) {
             layerSVGReturnString +=
-              '\t<g id="' +
+              '\t\t<g id="' +
               LAYER[layerNumber].replace("ground", "") +
-              '" transform="matrix(1 0 0 0 -1 0)">\n';
+              '" transform="scale(1,-1)">\n';
           } else {
             layerSVGReturnString +=
-              '\t<g id="' + LAYER[layerNumber].replace("ground", "") + '" >\n';
+              '\t\t<g id="' +
+              LAYER[layerNumber].replace("ground", "") +
+              '" >\n';
           }
           for (let [styleID, svgString] of itemList) {
             // insert the style ID class into the svgString using the first space
-            layerSVGReturnString +=
-              "\t\t" + svgString.replace(" ", ' class="' + styleID + '" ') + "\n";
+            if (svgString.toLowerCase().includes("text")) {
+              layerSVGReturnString +=
+                "\t\t\t" +
+                svgString.replace(
+                  " ",
+                  ' class="' + styleID + ' text" ' // add the styling that applies to all text items
+                ) +
+                "\n";
+            } else {
+              layerSVGReturnString +=
+                "\t\t\t" +
+                svgString.replace(" ", ' class="' + styleID + '" ') +
+                "\n";
+            }
           }
-          layerSVGReturnString += "\t</g>\n";
+          layerSVGReturnString += "\t\t</g>\n";
         }
       }
     }
 
     // Build and return the svgReturnString
     return (
-      (svgHeaderReturnString +
+      svgHeaderReturnString +
       gradientSVGReturnString +
       styleSVGReturnString +
+      sceneLayerStart +
       layerSVGReturnString +
-      "</svg>").replace(/[\t]/gm,"   ")
-    );
+      sceneLayerEnd +
+      "</svg>"
+    ).replace(/[\t]/gm, "   ");
     // return "blah";
   }
 

@@ -11,7 +11,7 @@ import { SEParametricGroup } from "@/models/SEParametricGroup";
 // } from "@/types";
 // import { StyleCategory } from "@/types/Styles";
 // import { CommandGroup } from "./CommandGroup";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddParametricGroupCommand extends Command {
   private group: SEParametricGroup;
@@ -55,7 +55,7 @@ export class AddParametricGroupCommand extends Command {
     // );
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

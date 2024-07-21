@@ -5,7 +5,7 @@ import { AddExpressionCommand } from "./AddExpressionCommand";
 import { SESegment } from "@/models/SESegment";
 import { SESegmentLength } from "@/models/SESegmentLength";
 import { SavedNames, ValueDisplayMode } from "@/types";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddLengthMeasurementCommand extends AddExpressionCommand {
   /**
@@ -19,7 +19,7 @@ export class AddLengthMeasurementCommand extends AddExpressionCommand {
     super(seExpression, [parent]);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

@@ -649,7 +649,7 @@ export const SETTINGS = {
       //backHSLA: { h: 0, s: 0, l: 0, a: 1 }
     },
     style: "normal",
-    family: "sans/-serif",
+    family: "sans-serif",
     decoration: "none",
     rotation: 0,
     glowingStrokeWidth: { front: 3, back: 3 },

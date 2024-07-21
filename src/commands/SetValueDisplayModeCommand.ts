@@ -3,7 +3,7 @@ import { SEExpression } from "../models/SEExpression";
 
 import { SavedNames, ValueDisplayMode } from "../types";
 import { SENodule } from "@/models/SENodule";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class SetValueDisplayModeCommand extends Command {
   private seExpression: SEExpression;
@@ -33,7 +33,7 @@ export class SetValueDisplayModeCommand extends Command {
     this.seExpression.valueDisplayMode = this.oldValueDisplayMode;
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

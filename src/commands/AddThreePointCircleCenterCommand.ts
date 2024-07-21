@@ -6,7 +6,7 @@ import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
 import { SEThreePointCircleCenter } from "@/models/SEThreePointCircleCenter";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddThreePointCircleCenterCommand extends Command {
   private seThreePointCircleCenter: SEThreePointCircleCenter;
@@ -73,7 +73,7 @@ export class AddThreePointCircleCenterCommand extends Command {
     this.firstSEPoint.unregisterChild(this.seThreePointCircleCenter);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

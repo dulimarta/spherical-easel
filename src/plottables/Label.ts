@@ -7,7 +7,12 @@ import {
   StyleCategory,
   DEFAULT_LABEL_TEXT_STYLE
 } from "@/types/Styles";
-import { LabelDisplayMode, LabelParentTypes, toSVGType } from "@/types";
+import {
+  LabelDisplayMode,
+  LabelParentTypes,
+  svgStyleType,
+  toSVGType
+} from "@/types";
 import { ValueDisplayMode } from "@/types";
 //import Two from "two.js";
 import { Vector } from "two.js/src/vector";
@@ -160,7 +165,7 @@ export default class Label extends Nodule {
     Label.textScaleFactor *= factor;
   }
 
-  static isEarthMode = false
+  static isEarthMode = false;
 
   constructor(noduleName: string, parentType: LabelParentTypes) {
     super(noduleName);
@@ -196,7 +201,6 @@ export default class Label extends Nodule {
   }
 
   set valueDisplayMode(vdm: ValueDisplayMode) {
-    // console.log("set vdm in label");
     this._valueDisplayMode = vdm;
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
@@ -270,9 +274,7 @@ export default class Label extends Nodule {
     this.updateStyle(StyleCategory.Label, {
       labelDisplayMode: mode
     });
-    // this.textLabelMode = mode;
     this.stylize(DisplayStyle.ApplyCurrentVariables);
-    // console.log("Label initialLabelDisplayMode", mode);
   }
   get labelDisplayMode(): LabelDisplayMode {
     const labelStyle = this.styleOptions.get(StyleCategory.Label);
@@ -387,17 +389,86 @@ export default class Label extends Nodule {
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
 
-  toSVG():toSVGType{
+  toSVG(): toSVGType {
     // Create an empty return type and then fill in the non-null parts
-    const returnSVGType: toSVGType = {
+    const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,
       backGradientDictionary: null,
       frontStyleDictionary: null,
-      backStyletDictionary: null,
+      backStyleDictionary: null,
       layerSVGArray: [],
-      type: "angleMarker"
+      type: "label"
+    };
+    if (this._locationVector.z > 0) {
+      const frontReturnDictionary = new Map<svgStyleType, string>();
+      frontReturnDictionary.set("font-family", this.frontText.family);
+      frontReturnDictionary.set("font-style", this.frontText.style);
+      frontReturnDictionary.set("font-weight", String(this.frontText.weight));
+      frontReturnDictionary.set("text-decoration", this.frontText.decoration);
+      frontReturnDictionary.set("fill", this.frontText.fill as string);
+      returnSVGObject.frontStyleDictionary = frontReturnDictionary;
+
+      let svgString =
+        '<text transform="matrix(' +
+        String(
+          Math.cos(this.frontText.rotation) * Number(this.frontText.scale)
+        ) +
+        "," +
+        String(
+          Math.sin(this.frontText.rotation) * Number(this.frontText.scale)
+        ) +
+        "," +
+        String(
+          -Math.sin(this.frontText.rotation) * Number(this.frontText.scale)
+        ) +
+        "," +
+        String(
+          Math.cos(this.frontText.rotation) * Number(this.frontText.scale)
+        ) +
+        "," +
+        String(this.frontText.position.x) +
+        "," +
+        String(this.frontText.position.y) +
+        ')" ';
+
+      svgString += ">" + this.frontText.value + "</text>";
+      returnSVGObject.layerSVGArray.push([LAYER.foregroundText, svgString]);
+    } else {
+      const backReturnDictionary = new Map<svgStyleType, string>();
+      backReturnDictionary.set("font-family", this.backText.family);
+      backReturnDictionary.set("font-style", this.backText.style);
+      backReturnDictionary.set("font-weight", String(this.backText.weight));
+      backReturnDictionary.set("text-decoration", this.backText.decoration);
+      backReturnDictionary.set("fill", this.backText.fill as string);
+      returnSVGObject.backStyleDictionary = backReturnDictionary;
+
+      let svgString =
+        '<text transform="matrix(' +
+        String(
+          Math.cos(this.backText.rotation) * Number(this.backText.scale)
+        ) +
+        "," +
+        String(
+          Math.sin(this.backText.rotation) * Number(this.backText.scale)
+        ) +
+        "," +
+        String(
+          -Math.sin(this.backText.rotation) * Number(this.backText.scale)
+        ) +
+        "," +
+        String(
+          Math.cos(this.backText.rotation) * Number(this.backText.scale)
+        ) +
+        "," +
+        String(this.backText.position.x) +
+        "," +
+        String(this.backText.position.y) +
+        ')" ';
+
+      svgString += ">" + this.backText.value + "</text>";
+      returnSVGObject.layerSVGArray.push([LAYER.backgroundText, svgString]);
     }
-    return returnSVGType
+    return returnSVGObject;
   }
 
   /**
@@ -642,14 +713,14 @@ export default class Label extends Nodule {
         this.glowingFrontText.value = labelText;
         this.glowingBackText.value = labelText;
         if (labelStyle?.labelTextStyle !== "bold") {
-          this.frontText.style =
-            (labelStyle?.labelTextStyle ?? SETTINGS.label.style) as "normal"|"italic";
-          this.backText.style =
-            (labelStyle?.labelTextStyle ?? SETTINGS.label.style) as "normal"|"italic";
-          this.glowingFrontText.style =
-            (labelStyle?.labelTextStyle ?? SETTINGS.label.style) as "normal"|"italic";
-          this.glowingBackText.style =
-            (labelStyle?.labelTextStyle ?? SETTINGS.label.style) as "normal"|"italic";
+          this.frontText.style = (labelStyle?.labelTextStyle ??
+            SETTINGS.label.style) as "normal" | "italic";
+          this.backText.style = (labelStyle?.labelTextStyle ??
+            SETTINGS.label.style) as "normal" | "italic";
+          this.glowingFrontText.style = (labelStyle?.labelTextStyle ??
+            SETTINGS.label.style) as "normal" | "italic";
+          this.glowingBackText.style = (labelStyle?.labelTextStyle ??
+            SETTINGS.label.style) as "normal" | "italic";
           this.frontText.weight = 500;
           this.backText.weight = 500;
           this.glowingFrontText.weight = 500;
@@ -670,14 +741,14 @@ export default class Label extends Nodule {
         this.glowingBackText.family =
           labelStyle?.labelTextFamily ?? SETTINGS.label.family;
 
-        this.frontText.decoration =
-          (labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
-        this.backText.decoration =
-          (labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
-        this.glowingFrontText.decoration =
-          (labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
-        this.glowingBackText.decoration =
-          (labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
+        this.frontText.decoration = (labelStyle?.labelTextDecoration ??
+          SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
+        this.backText.decoration = (labelStyle?.labelTextDecoration ??
+          SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
+        this.glowingFrontText.decoration = (labelStyle?.labelTextDecoration ??
+          SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
+        this.glowingBackText.decoration = (labelStyle?.labelTextDecoration ??
+          SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
 
         this.frontText.rotation = labelStyle?.labelTextRotation ?? 0;
         this.backText.rotation = labelStyle?.labelTextRotation ?? 0;
@@ -685,12 +756,10 @@ export default class Label extends Nodule {
         this.glowingBackText.rotation = labelStyle?.labelTextRotation ?? 0;
 
         // FRONT
-        // const frontStyle = this.styleOptions.get(StyleCategory.Front)
         const frontFillColor =
           labelStyle?.labelFrontFillColor ?? SETTINGS.label.fillColor.front;
         const backFillColor =
           labelStyle?.labelBackFillColor ?? SETTINGS.label.fillColor.back;
-        // console.log("front fill label", frontFillColor);
         if (Nodule.hslaIsNoFillOrNoStroke(frontFillColor)) {
           this.frontText.noFill();
         } else {

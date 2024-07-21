@@ -6,7 +6,7 @@ import { SavedNames } from "@/types";
 import { AddTranslationCommand } from "./AddTranslationCommand";
 import { SEPointReflection } from "@/models/SEPointReflection";
 import { SEPoint } from "@/models/SEPoint";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddPointReflectionCommand extends Command {
   private sePointReflection: SEPointReflection;
@@ -31,7 +31,7 @@ export class AddPointReflectionCommand extends Command {
     Command.store.removeTransformation(this.lastState);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

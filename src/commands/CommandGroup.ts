@@ -2,7 +2,7 @@
  * This class is needed to group several commands together so
  * one single call to undo() undoes multiple effects
  */
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 import { Command } from "./Command";
 
 export class CommandGroup extends Command {
@@ -32,13 +32,13 @@ export class CommandGroup extends Command {
     });
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
-    const group: Array<toSVGReturnType> = [];
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
+    const group: Array<toSVGType> = [];
     this.subCommands.forEach((cmd: Command) => {
       const converted = cmd.toSVG(deletedNoduleIds);
       // We all all add the command to the group when
       // it returns non-null
-      if (converted !== null) group.push(converted[0]);
+      if (converted !== null) group.push(...converted);
     });
     // When all the sub-commands return null, we ended up
     // with an empty array. In which case we return

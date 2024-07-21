@@ -6,7 +6,7 @@ import { SavedNames, SEOneDimensional } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddPerpendicularLineThruPointCommand extends Command {
   private sePerpendicularLineThruPoint: SEPerpendicularLineThruPoint;
@@ -49,7 +49,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
     this.parentSEPoint.unregisterChild(this.sePerpendicularLineThruPoint);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

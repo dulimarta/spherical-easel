@@ -185,7 +185,6 @@ export default class Point extends Nodule {
   }
 
   frontNormalDisplay(): void {
-    //console.log("frt normal disp point front id:", this.frontPoint.id);
     this.frontPoint.visible = true;
     this.glowingFrontPoint.visible = false;
     this.backPoint.visible = false;
@@ -259,7 +258,7 @@ export default class Point extends Nodule {
       frontGradientDictionary: null,
       backGradientDictionary: null,
       frontStyleDictionary: null,
-      backStyletDictionary: null,
+      backStyleDictionary: null,
       layerSVGArray: [],
       type: "point"
     };
@@ -271,7 +270,7 @@ export default class Point extends Nodule {
       frontReturnDictionary.set("stroke", this.frontPoint.stroke as string);
       frontReturnDictionary.set(
         "stroke-width",
-        String(this.frontPoint.linewidth)
+        String((this.frontPoint.scale as number)*this.frontPoint.linewidth)
       );
       returnSVGObject.frontStyleDictionary = frontReturnDictionary
 
@@ -282,11 +281,31 @@ export default class Point extends Nodule {
         '" cy="' +
         String(this.frontPoint.position.y) +
         '" r="' +
-        String(this.frontPoint.scale) +
-        '"/>';
+        String((this.frontPoint.scale as number)*this.frontPoint.radius) +
+        '" />';
       returnSVGObject.layerSVGArray.push([LAYER.foregroundPoints, svgString]);
     } else {
       // the point is on the back
+      const backReturnDictionary = new Map<svgStyleType, string>();
+      // Collect the style information: fill, stroke, stroke-width
+      backReturnDictionary.set("fill", this.backPoint.fill as string);
+      backReturnDictionary.set("stroke", this.backPoint.stroke as string);
+      backReturnDictionary.set(
+        "stroke-width",
+        String((this.backPoint.scale as number)*this.backPoint.linewidth)
+      );
+      returnSVGObject.backStyleDictionary = backReturnDictionary
+
+      // Collect the geometric information: radius, center
+      let svgString =
+        '<circle cx="' +
+        String(this.backPoint.position.x) +
+        '" cy="' +
+        String(this.backPoint.position.y) +
+        '" r="' +
+        String((this.backPoint.scale as number)*this.backPoint.radius) +
+        '" />';
+      returnSVGObject.layerSVGArray.push([LAYER.backgroundPoints, svgString]);
     }
     return returnSVGObject;
   }
@@ -357,11 +376,8 @@ export default class Point extends Nodule {
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
-    // console.log("before point fill frt: ", this.frontPoint.fill);
-    // console.log("before point glowing fill frt: ", this.glowingFrontPoint.fill);
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
-        // console.log("temp front id ", this.frontPoint.id);
         // Use the SETTINGS temporary options to directly modify the js objects.
         // FRONT
         if (
@@ -389,17 +405,14 @@ export default class Point extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
-        // console.log("NONtemp front id ", this.frontPoint.id);
         // Use the current variables to directly modify the js objects.
         // FRONT
         const frontStyle = this.styleOptions.get(StyleCategory.Front)!;
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle.fillColor)) {
           this.frontPoint.noFill();
         } else {
-          //console.log("Point Fill color before: ", frontStyle.fillColor);
           this.frontPoint.fill =
             frontStyle.fillColor ?? SETTINGS.point.drawn.fillColor.front;
-          //console.log("Point Fill color after: ", this.frontPoint.fill);
         }
         if (Nodule.hslaIsNoFillOrNoStroke(frontStyle.strokeColor)) {
           this.frontPoint.noStroke();
@@ -488,7 +501,5 @@ export default class Point extends Nodule {
         break;
       }
     }
-    // console.log("after point fill frt: ", this.frontPoint.fill);
-    // console.log("after point glowing fill frt: ", this.glowingFrontPoint.fill);
   }
 }

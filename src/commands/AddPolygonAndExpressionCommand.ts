@@ -7,7 +7,7 @@ import { Vector3 } from "three";
 import { SavedNames, ValueDisplayMode } from "@/types";
 import { SEPolygon } from "@/models/SEPolygon";
 import { StyleCategory } from "@/types/Styles";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddPolygonCommand extends Command {
   /**
@@ -70,7 +70,7 @@ export class AddPolygonCommand extends Command {
     );
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

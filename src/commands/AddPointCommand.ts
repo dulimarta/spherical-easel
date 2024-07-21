@@ -5,8 +5,7 @@ import { Vector3 } from "three";
 import { SavedNames, toSVGType } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleCategory } from "@/types/Styles";
-import { toSVGReturnType } from "@/types";
-import { randInt } from "three/src/math/MathUtils";
+
 
 //#region addPointCommand
 export class AddPointCommand extends Command {
@@ -55,7 +54,7 @@ export class AddPointCommand extends Command {
     Command.store.removePoint(this.lastState);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[] {
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[] {
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     if (
       deletedNoduleIds.findIndex(id => id == this.sePoint.id) == -1 &&

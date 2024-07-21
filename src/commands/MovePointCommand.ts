@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { Vector3 } from "three";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class MovePointCommand extends Command {
   private sePoint: SEPoint;
@@ -37,7 +37,7 @@ export class MovePointCommand extends Command {
     });
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class MoveLabelCommand extends Command {
   private seLabel: SELabel;
@@ -37,7 +37,7 @@ export class MoveLabelCommand extends Command {
     });
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

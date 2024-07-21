@@ -76,7 +76,7 @@
           :class="{ shake: animatedInput.labelTextScalePercent }"
           :min="minLabelTextScalePercent"
           :max="maxLabelTextScalePercent"
-          :step="20"
+          :step="22.5"
           :thumb-string-values="textScaleSelectorThumbStrings" />
         <PropertySlider
           :numSelected="selectedLabels.size"
@@ -404,7 +404,7 @@ onBeforeMount((): void => {
   }
   // console.log(
   //   "rotation angle thumb labels",
-  //   this.textRotationSelectorThumbStrings
+  //   textRotationSelectorThumbStrings
   // );
 });
 
@@ -611,7 +611,7 @@ const labelDisplayModeItems: LabelDisplayModeItem[] = [
 const labelTextFamilyItems = [
   {
     text: t("fonts.genericSanSerif"),
-    value: "sans/-serif"
+    value: "sans-serif"
   },
   {
     text: t("fonts.genericSerif"),

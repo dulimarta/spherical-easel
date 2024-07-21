@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SESlider } from "@/models/SESlider";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class ChangeSliderCommand extends Command {
   private seSlider: SESlider;
@@ -30,7 +30,7 @@ export class ChangeSliderCommand extends Command {
     this.seSlider.value = this.oldSliderValue;
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

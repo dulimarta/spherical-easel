@@ -8,7 +8,7 @@ import { SESegment } from "@/models/SESegment";
 import { SELine } from "@/models/SELine";
 import { SEPolarPoint } from "@/models/SEPolarPoint";
 import { StyleCategory } from "@/types/Styles";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddPolarPointCommand extends Command {
   private sePolarPoint: SEPolarPoint;
@@ -71,7 +71,7 @@ export class AddPolarPointCommand extends Command {
     this.parent.unregisterChild(this.sePolarPoint);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

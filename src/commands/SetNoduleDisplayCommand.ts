@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { Labelable, SavedNames } from "@/types";
 import SETTINGS from "@/global-settings";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class SetNoduleDisplayCommand extends Command {
   private seNodule: SENodule;
@@ -53,7 +53,7 @@ export class SetNoduleDisplayCommand extends Command {
     }
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

@@ -8,7 +8,7 @@ import SETTINGS from "@/global-settings";
 // import { SavedNames } from "@/types";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import EventBus from "@/eventHandlers/EventBus";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 /**
  * This is used when an intersection point was automatically created and the user
@@ -128,7 +128,7 @@ export class SetPointUserCreatedValueCommand extends Command {
     EventBus.fire("update-points-user-created", {});
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 

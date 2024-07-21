@@ -8,7 +8,7 @@ import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SEIsometrySegment } from "@/models/SEIsometrySegment";
 import { SEReflection } from "@/models/SEReflection";
 import { SESegment } from "@/models/SESegment";
-import { toSVGReturnType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddIsometrySegmentCommand extends Command {
   private preimageSESegment: SESegment;
@@ -49,7 +49,7 @@ export class AddIsometrySegmentCommand extends Command {
     this.preimageSESegment.unregisterChild(this.isometrySESegment);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGReturnType[]{
+  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
     //
 
