@@ -409,27 +409,13 @@ export default class Label extends Nodule {
       returnSVGObject.frontStyleDictionary = frontReturnDictionary;
 
       let svgString =
-        '<text transform="matrix(' +
-        String(
-          Math.cos(this.frontText.rotation) * Number(this.frontText.scale)
-        ) +
-        "," +
-        String(
-          Math.sin(this.frontText.rotation) * Number(this.frontText.scale)
-        ) +
-        "," +
-        String(
-          -Math.sin(this.frontText.rotation) * Number(this.frontText.scale)
-        ) +
-        "," +
-        String(
-          Math.cos(this.frontText.rotation) * Number(this.frontText.scale)
-        ) +
-        "," +
-        String(this.frontText.position.x) +
-        "," +
-        String(this.frontText.position.y) +
-        ')" ';
+        "<text " +
+        Label.svgTransformMatrixString(
+          this.frontText.rotation,
+          (this.frontText.scale as number),
+          this.frontText.position.x,
+          this.frontText.position.y
+        );
 
       svgString += ">" + this.frontText.value + "</text>";
       returnSVGObject.layerSVGArray.push([LAYER.foregroundText, svgString]);
@@ -444,21 +430,15 @@ export default class Label extends Nodule {
 
       let svgString =
         '<text transform="matrix(' +
-        String(
-          Math.cos(this.backText.rotation) * Number(this.backText.scale)
-        ) +
+        String(Math.cos(this.backText.rotation) * Number(this.backText.scale)) +
         "," +
-        String(
-          Math.sin(this.backText.rotation) * Number(this.backText.scale)
-        ) +
+        String(Math.sin(this.backText.rotation) * Number(this.backText.scale)) +
         "," +
         String(
           -Math.sin(this.backText.rotation) * Number(this.backText.scale)
         ) +
         "," +
-        String(
-          Math.cos(this.backText.rotation) * Number(this.backText.scale)
-        ) +
+        String(Math.cos(this.backText.rotation) * Number(this.backText.scale)) +
         "," +
         String(this.backText.position.x) +
         "," +

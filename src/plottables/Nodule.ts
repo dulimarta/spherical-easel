@@ -139,9 +139,65 @@ export default abstract class Nodule implements Stylable, Resizeable {
     return returnArray;
   }
 
-  // The cotangent function used in Circle and Anglemarker
+  /**  The cotangent function used in Circle and Anglemarker*/
   static ctg(x: number): number {
     return 1 / Math.tan(x);
+  }
+
+  /**
+   * For the ellipse which is the projection of the circle (of radius circleRadius and rotated rotations)
+   * onto the view plane (in the unit circle),
+   * @param t
+   * @returns Return the coordinates of a point with parameter value t
+   */
+  public static pointOnProjectedEllipse(
+    centerVector: Vector3,
+    circleRadius: number,
+    t: number
+  ): Array<number> {
+    const beta = Math.acos(centerVector.z);
+    const rotation = -Math.atan2(centerVector.x, centerVector.y);
+    return [
+      (Math.sqrt(2 - Math.cos(circleRadius) ** 2) *
+        Math.cos(rotation) *
+        Math.sin(t)) /
+        Math.sqrt(2 + Nodule.ctg(circleRadius) ** 2) -
+        (Math.cos(t) * Math.cos(beta) * Math.sin(circleRadius) +
+          Math.cos(circleRadius) * Math.sin(beta)) *
+          Math.sin(rotation),
+      Math.cos(t) *
+        Math.cos(beta) *
+        Math.cos(rotation) *
+        Math.sin(circleRadius) +
+        Math.cos(circleRadius) * Math.cos(rotation) * Math.sin(beta) +
+        (Math.sqrt(2 - Math.cos(circleRadius) ** 2) *
+          Math.sin(t) *
+          Math.sin(rotation)) /
+          Math.sqrt(2 + Nodule.ctg(circleRadius) ** 2)
+    ];
+  }
+
+  static svgTransformMatrixString(
+    rotation: number,
+    scale: number,
+    xPosition: number,
+    yPosition: number
+  ): string {
+    return (
+      'transform="matrix(' +
+      String(Math.cos(rotation) * Number(scale)) +
+      "," +
+      String(Math.sin(rotation) * Number(scale)) +
+      "," +
+      String(-Math.sin(rotation) * Number(scale)) +
+      "," +
+      String(Math.cos(rotation) * Number(scale)) +
+      "," +
+      String(xPosition) +
+      "," +
+      String(yPosition) +
+      ')" '
+    );
   }
 
   static setGradientFill(value: boolean): void {

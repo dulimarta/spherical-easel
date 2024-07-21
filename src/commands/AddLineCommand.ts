@@ -49,9 +49,25 @@ export class AddLineCommand extends Command {
   }
   toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
-    //
-
-    return null
+    if (
+      deletedNoduleIds.findIndex(id => id == this.seLine.id) == -1 &&
+      this.seLine.exists &&
+      this.seLine.showing
+    ) {
+      const info: toSVGType[] = [];
+      info.push(this.seLine.ref.toSVG());
+      // now check the label (if the point is deleted the label is also so check this inside the first conditional statement)
+      if (
+        deletedNoduleIds.findIndex(id => id == this.seLabel.id) == -1 &&
+        this.seLabel.exists &&
+        this.seLabel.showing
+      ) {
+        info.push(this.seLabel.ref.toSVG());
+      }
+      return info;
+    } else {
+      return null;
+    }
   }
 
   toOpcode(): null | string | Array<string> {

@@ -15,7 +15,6 @@ import { Stop } from "two.js/src/effects/stop";
 import { RadialGradient } from "two.js/src/effects/radial-gradient";
 import { Anchor } from "two.js/src/anchor";
 import { Path } from "two.js/src/path";
-import { Vector } from "two.js/src/vector";
 import { toSVGType } from "@/types";
 
 // The number of vertices used to draw an arc of a projected circle
@@ -692,13 +691,21 @@ export default class Circle extends Nodule {
       this._backPart.endAngle = Math.PI / 2 + this._boundaryParameter;
       this._glowingBackPart.endAngle = Math.PI / 2 + this._boundaryParameter;
 
-      const startPoint = this.pointOnProjectedEllipse(this._boundaryParameter);
+      const startPoint = Circle.pointOnProjectedEllipse(
+        this._centerVector,
+        this._circleRadius,
+        this._boundaryParameter
+      );
       //find the angular width of the part of the boundary circle to be copied
       // Compute the angle from the positive x axis to the last frontPartVertex
       //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
       const startAngle = Math.atan2(startPoint[1], startPoint[0]);
 
-      const endPoint = this.pointOnProjectedEllipse(-this._boundaryParameter);
+      const endPoint = Circle.pointOnProjectedEllipse(
+        this._centerVector,
+        this._circleRadius,
+        -this._boundaryParameter
+      );
       // Compute the angle from the positive x axis to the first frontPartVertex
       //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
       const endAngle = Math.atan2(endPoint[1], endPoint[0]);
@@ -796,34 +803,6 @@ export default class Circle extends Nodule {
   }
   get circleRadius(): number {
     return this._circleRadius;
-  }
-
-  /**
-   * For the ellipse which is the projection of the circle onto the view plane (in the unit circle)
-   * @param t
-   * @returns Return the coordinates of a point with parameter value t
-   */
-  pointOnProjectedEllipse(t: number): Array<number> {
-    return [
-      (Math.sqrt(2 - Math.cos(this._circleRadius) ** 2) *
-        Math.cos(this._rotation) *
-        Math.sin(t)) /
-        Math.sqrt(2 + Nodule.ctg(this._circleRadius) ** 2) -
-        (Math.cos(t) * Math.cos(this._beta) * Math.sin(this._circleRadius) +
-          Math.cos(this._circleRadius) * Math.sin(this._beta)) *
-          Math.sin(this._rotation),
-      Math.cos(t) *
-        Math.cos(this._beta) *
-        Math.cos(this._rotation) *
-        Math.sin(this._circleRadius) +
-        Math.cos(this._circleRadius) *
-          Math.cos(this._rotation) *
-          Math.sin(this._beta) +
-        (Math.sqrt(2 - Math.cos(this._circleRadius) ** 2) *
-          Math.sin(t) *
-          Math.sin(this._rotation)) /
-          Math.sqrt(2 + Nodule.ctg(this._circleRadius) ** 2)
-    ];
   }
 
   glowingDisplay(): void {
@@ -934,7 +913,7 @@ export default class Circle extends Nodule {
     this._glowingBackPart.remove();
   }
 
-  toSVG():toSVGType{
+  toSVG(): toSVGType {
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,
@@ -943,8 +922,8 @@ export default class Circle extends Nodule {
       backStyleDictionary: null,
       layerSVGArray: [],
       type: "angleMarker"
-    }
-    return returnSVGObject
+    };
+    return returnSVGObject;
   }
 
   defaultStyleState(panel: StyleCategory): StyleOptions {

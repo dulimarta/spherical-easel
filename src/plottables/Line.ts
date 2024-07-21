@@ -9,7 +9,7 @@ import {
 } from "@/types/Styles";
 import { Arc } from "two.js/extras/jsm/arc";
 import { Group } from "two.js/src/group";
-import { toSVGType } from "@/types";
+import { svgStyleType, toSVGType } from "@/types";
 
 // The number of vectors used to render the front half (and the same number in the back half)
 const SUBDIVS = SETTINGS.line.numPoints;
@@ -194,7 +194,7 @@ export default class Line extends Nodule {
   /**
    * Update the display of line
    * This method updates the TwoJS objects (frontHalf, backHalf, ...) for display
-   * This is only accurate if the normal vector is correct so only
+   * This is only accurate if the normal vector is correct and set using the set method in this plottable has been  so only
    * call this method once that vector is updated.
    */
   public updateDisplay(): void {
@@ -241,7 +241,7 @@ export default class Line extends Nodule {
     this._glowingBackHalf.remove();
   }
 
-  toSVG():toSVGType{
+  toSVG(): toSVGType {
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,
@@ -249,9 +249,92 @@ export default class Line extends Nodule {
       frontStyleDictionary: null,
       backStyleDictionary: null,
       layerSVGArray: [],
-      type: "angleMarker"
+      type: "line"
+    };
+    // collect the front style of the line
+    const frontReturnDictionary = new Map<svgStyleType, string>();
+    // Collect the style information: fill, stroke, stroke-width
+    frontReturnDictionary.set("fill", "none");
+    frontReturnDictionary.set("stroke", this._frontHalf.stroke as string);
+    frontReturnDictionary.set(
+      "stroke-width",
+      String(this._frontHalf.linewidth)
+    );
+
+    // check to see if there is any dashing for the front of line
+    //console.log("front dash", this._frontHalf.dashes)
+    if (
+      !(this._frontHalf.dashes.length == 2 && this._frontHalf.dashes[0] == 0 && this._frontHalf.dashes[1] == 0 )
+    ) {
+      var dashString = "";
+      for (let num =0; num < this._frontHalf.dashes.length; num++) {
+        dashString += this._frontHalf.dashes[num] + " ";
+      }
+      frontReturnDictionary.set("stroke-dasharray", dashString);
+      //frontReturnDictionary.set("stroke-dashoffset", this._frontHalf.dashes[offset]);
     }
-    return returnSVGObject
+
+    returnSVGObject.frontStyleDictionary = frontReturnDictionary;
+
+    // collect the back style of the line
+    const backReturnDictionary = new Map<svgStyleType, string>();
+    // Collect the style information: fill, stroke, stroke-width
+    backReturnDictionary.set("fill", "none");
+    backReturnDictionary.set("stroke", this._backHalf.stroke as string);
+    backReturnDictionary.set(
+      "stroke-width",
+      String(this._backHalf.linewidth)
+    );
+
+    // check to see if there is any dashing for the back of line
+    //console.log("back dash", this._backHalf.dashes)
+    if (
+      !(this._backHalf.dashes.length == 2 && this._backHalf.dashes[0] == 0 && this._backHalf.dashes[1] == 0 )
+    ) {
+      var dashString = "";
+      for (let num =0; num < this._backHalf.dashes.length; num++) {
+        dashString += this._backHalf.dashes[num] + " ";
+      }
+      backReturnDictionary.set("stroke-dasharray", dashString);
+      //backReturnDictionary.set("stroke-dashoffset", this._backHalf.dashes[offset]);
+    }
+
+    returnSVGObject.backStyleDictionary = backReturnDictionary;
+
+    // Collect the geometric information for the front
+    // x-radius y-radius rotation large-arc-flag sweep-flag ending-x ending-y
+    let svgFrontString =
+      "<path " +
+      Line.svgTransformMatrixString(this._frontHalf.rotation, 1, 0, 0) + // matrix does the rotation, scaling, and translation
+      ' d="M 250,0 A'; //Start point (250,0)
+    svgFrontString +=
+      SETTINGS.boundaryCircle.radius + // x radius
+      "," +
+      this._frontHalf.height / 2 + // y radius
+      " ";
+    svgFrontString += "0 "; // rotation
+    svgFrontString += this._normalVector.z > 0 ? "1 0 " : "0 1 "; // flags to control which portion of the ellipse is displayed
+    svgFrontString += '-250,0"/>'; // end point
+
+    returnSVGObject.layerSVGArray.push([LAYER.foreground, svgFrontString]);
+
+    // Collect the geometric information for the front
+    let svgBackString =
+      "<path " +
+      Line.svgTransformMatrixString(this._backHalf.rotation, 1, 0, 0) + // matrix does the rotation, scaling, and translation
+      ' d="M 250,0 A'; //Start point (250,0)
+    svgBackString +=
+      SETTINGS.boundaryCircle.radius + // x radius
+      "," +
+      this._backHalf.height / 2 + // y radius
+      " ";
+    svgBackString += "0 "; // rotation
+    svgBackString += this._normalVector.z > 0 ? "0 1 " : "1 0 "; // flags to control which portion of the ellipse is displayed
+    svgBackString += '-250,0"/>'; // end point
+
+    returnSVGObject.layerSVGArray.push([LAYER.background, svgBackString]);
+
+    return returnSVGObject;
   }
 
   /**
