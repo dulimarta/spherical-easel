@@ -15,7 +15,7 @@
       @click="doLoginOrLogout">
       <v-avatar
         size="small"
-        v-if="userProfilePictureURL !== undefined"
+        v-if="firebaseUid"
         contain
         max-width="40"
         :image="userProfilePictureURL"
@@ -27,21 +27,25 @@
         :text="firebaseUid ? 'Logout' : 'Login'"></v-tooltip>
     </v-btn>
     <router-link to="/settings/" v-if="firebaseUid">
-      <v-icon size="large" color="white">mdi-cog</v-icon>
+      <v-btn icon size="x-small" color="green-lighten-1">
+        <v-icon size="large" color="white">mdi-cog</v-icon>
+      </v-btn>
     </router-link>
     <HintButton
-      color="secondary"
+      color="green-lighten-2"
       v-if="firebaseUid && hasObjects"
       @click="() => saveConstructionDialog?.show()"
       tooltip="Save construction">
       <template #icon>mdi-content-save</template>
     </HintButton>
     <HintButton
+      color="green-lighten-2"
       tooltip="Share saved cons"
       v-if="constructionDocId /*&& isPublicConstruction(constructionDocId)*/">
       <template #icon>mdi-share-variant</template>
     </HintButton>
     <HintButton
+      color="green-lighten-2"
       v-if="constructionDocId"
       @click="() => exportConstructionDialog?.show()"
       tooltip="Export Construction">

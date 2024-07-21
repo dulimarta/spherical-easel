@@ -12,11 +12,12 @@ export default mergeConfig(
       globals: true,
       setupFiles: ["./vitest-setup.mts"],
       environment: "jsdom",
-      include: [
+      //include: [
+        //"**/sphereframe.spec.ts"
         //"**/parametric-cusp-values.spec.ts",
         //"**/parametric-coord.spec.ts",
-        "**/construction-*.spec.ts"
-      ],
+        //"**/eventHandlers/__tests__/*.spec.ts"
+      //],
       server: {
         deps: {
           inline: ["vuetify", "vue-i18n"]

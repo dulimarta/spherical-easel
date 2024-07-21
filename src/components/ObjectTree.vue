@@ -16,7 +16,7 @@
             <ExpressionForm></ExpressionForm>
           </v-expansion-panel-text>
         </v-expansion-panel>
-        <v-expansion-panel>
+        <v-expansion-panel v-if="appFeature === 'beta'">
           <v-expansion-panel-title color="accent">
             <h3 class="body-1 font-weight-bold button-group-heading">
               {{ t("parametricCurves") }}
@@ -40,7 +40,7 @@
             <!--v-overlay-->
           </v-expansion-panel-text>
         </v-expansion-panel>
-        <v-expansion-panel>
+        <v-expansion-panel v-if="appFeature === 'beta'">
           <v-expansion-panel-title color="accent">
             <h3 class="body-1 font-weight-bold button-group-heading">
               {{ t("slider") }}
@@ -162,7 +162,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from "vue";
+import { computed, onBeforeMount, onBeforeUnmount, ref, Ref, watch } from "vue";
 import SENoduleList from "@/components/SENoduleList.vue";
 import ExpressionForm from "@/components/ExpressionForm.vue";
 import ParametricForm from "@/components/ParametricForm.vue";
@@ -173,6 +173,7 @@ import { storeToRefs } from "pinia";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { useI18n } from "vue-i18n";
+import { inject } from "vue";
 const seStore = useSEStore();
 const {
   sePoints,
@@ -191,6 +192,8 @@ let displayExpressionSheetAgain = true;
 const pointsKey = ref(0);
 const parametricVisible = ref(true);
 const panels: Ref<Array<number>> = ref([]);
+const appFeature = inject('features')
+
 // const userCreatedPoints = computed(() => {
 //   return sePoints.value.filter(
 //     pt =>

@@ -1,22 +1,27 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
+    "pretty": true,
+    "removeComments": true,
+    "composite": true,
+    "target": "ESNext",
+    "module": "ESNext",
     "strict": true,
-    "declaration": false, // Setting this to false, helps to resolve compiler error in the Pinia store
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    // "declaration": false, // Setting this to false, helps to resolve compiler error in the Pinia store
     "jsx": "preserve",
     // "importHelpers": true,
-    "noImplicitAny": true,
+    // "noImplicitAny": true,
     "moduleResolution": "node",
     // "experimentalDecorators": true,
-    // "esModuleInterop": true,
+    "esModuleInterop": true,
     // "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "baseUrl": ".",
     "outDir": "ts-out",
     "types": [
-      "vite/client"
-      /* "vitest/globals", "node", "vuetify", "google.maps" */
+      "vite/client",
+      "vitest/globals", /* "node", "vuetify", "google.maps" */
     ],
     "typeRoots": [
       "./node_modules/@types",
@@ -25,21 +30,21 @@
       "./node_modules"
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "$/*": ["./tests/*"]
     },
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
     "resolveJsonModule": true,
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true
   },
-  "exclude": ["node_modules", "**/__tests__/**", "**/tests/unit/**"],
+  "exclude": ["node_modules"],
   "include": [
     "src/**/*.ts",
+    "tests/*.ts", // This is needed to enable path mapping $/* above
     "src/**/*.tsx",
     "src/**/*.vue",
-    "src/**/*.ext"
-    // "tests/*.d.ts",
-  ],
+    "vitest.d.ts"],
   "verbose": true
   // "globals": {
   //   "ts-jest": {

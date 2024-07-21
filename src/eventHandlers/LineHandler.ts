@@ -95,6 +95,7 @@ export default class LineHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent): void {
+    // console.debug(`LineHandler::mousePressed (${event.clientX},${event.clientY})`)
     // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
     // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
@@ -191,6 +192,7 @@ export default class LineHandler extends Highlighter {
     }
   }
   mouseMoved(event: MouseEvent): void {
+    // console.debug(`LineHandler::mouseMoved (${event.clientX},${event.clientY})`)
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
     // Only one object can be interacted with at a given time, so set the first point nearby to glowing
@@ -415,6 +417,7 @@ export default class LineHandler extends Highlighter {
     }
   }
   mouseReleased(event: MouseEvent): void {
+    // console.debug(`LineHandler::mouseReleased (${event.clientX},${event.clientY})`)
     if (this.isOnSphere) {
       // Make sure the user didn't trigger the mouse leave event and is actually making a line
       if (this.startLocationSelected) {

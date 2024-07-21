@@ -2,7 +2,7 @@
   <v-tooltip bottom max-width="400px">
     <template v-slot:activator="{ props }">
       <v-text-field
-        id="__test_textfield"
+        data-testid="textfield"
         v-model="tValueExpression"
         v-bind="props"
         density="compact"

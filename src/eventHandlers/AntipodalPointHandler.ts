@@ -56,6 +56,7 @@ export default class AntipodalPointHandler extends Highlighter {
 
   constructor(layers: Group[]) {
     super(layers);
+    console.debug("AntipodalPointHandler::constructor")
     // Create and style the temporary antipode/point marking the antipode/point being created
     this.temporaryAntipodeMarker = new Point();
     AntipodalPointHandler.store.addTemporaryNodule(
@@ -66,6 +67,7 @@ export default class AntipodalPointHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent): void {
+    // console.debug("AntipodalPointHandler::mousePressed", event)
     super.mouseMoved(event);
     //Select the point object to create the antipode of
     if (this.isOnSphere) {
@@ -255,6 +257,7 @@ export default class AntipodalPointHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
+    // console.debug("AntipodalPointHandler::mouseMoved", event)
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
     let displayTemporaryAntipode = true;
@@ -446,6 +449,7 @@ export default class AntipodalPointHandler extends Highlighter {
   mouseReleased(event: MouseEvent): void {}
 
   mouseLeave(event: MouseEvent): void {
+    // console.debug("AntipodalPointHandler::mouseLeave", event)
     super.mouseLeave(event);
     // Reset the parent point in preparation for another antipodal points.
     this.parentPoint = null;
@@ -465,6 +469,8 @@ export default class AntipodalPointHandler extends Highlighter {
     this.snapToTemporaryPoint = null;
   }
   activate(): void {
+    console.debug("AntipodalPointHandler::activate")
+
     // If there is exactly one point selected, reveal its anitpode unless it is already visible
     if (AntipodalPointHandler.store.selectedSENodules.length == 1) {
       const object = AntipodalPointHandler.store.selectedSENodules[0];
@@ -497,6 +503,8 @@ export default class AntipodalPointHandler extends Highlighter {
   }
 
   deactivate(): void {
+    console.debug("AntipodalPointHandler::deActivate")
+
     super.deactivate();
   }
 

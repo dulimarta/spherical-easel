@@ -1,10 +1,9 @@
 import TestComponent from "../SliderForm.vue";
-// import store from "@/store";
-import { createWrapper } from "../../../tests/vue-helper";
+import { createWrapper } from "$/vue-helper";
 import { VueWrapper } from "@vue/test-utils";
-import { useSEStore } from "../../stores/se";
-import {Command} from "../../commands/Command"
-import { SESlider } from "../../models/SESlider";
+import { useSEStore } from "@/stores/se";
+import {Command} from "@/commands/Command"
+import { SESlider } from "@/models/SESlider";
 
 describe("SliderForm.vue", () => {
   let wrapper: VueWrapper;
@@ -45,7 +44,7 @@ describe("SliderForm with store access", () => {
       await addBtn.trigger("click");
       const countAfter = s.seExpressions.length;
       expect(countAfter).toEqual(countBefore + 1);
-      const slider: SESlider = s.seExpressions[countBefore];
+      const slider: SESlider = s.seExpressions[countBefore] as SESlider;
       expect(slider.min).toEqual(0.3);
       expect(slider.step).toEqual(0.02);
       expect(slider.max).toEqual(0.61);

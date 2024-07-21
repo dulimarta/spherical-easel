@@ -6,7 +6,7 @@ import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
 import i18n from "@/i18n";
 import EventBus from "@/eventHandlers/EventBus";
-import {useI18n} from "vue-i18n";
+const {t} = i18n.global
 
 // const emptySet = new Set<string>();
 
@@ -78,7 +78,7 @@ export abstract class SEExpression extends SENodule {
   }
 
   prettyValue(fullPrecision = false): string {
-    const {t} = useI18n()
+    // const {t} = useI18n()
     switch (this._valueDisplayMode) {
       case ValueDisplayMode.Number:
         return String(

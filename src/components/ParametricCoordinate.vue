@@ -1,8 +1,7 @@
 <template>
   <v-tooltip bottom max-width="400px">
     <template v-slot:activator="{ props }">
-      <v-textarea
-        id="__test_textarea"
+      <v-textarea data-testid="textarea"
         v-model="coordinateExpression"
         v-bind="props"
         :label="label"

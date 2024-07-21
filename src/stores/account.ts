@@ -15,9 +15,17 @@ import {
 } from "firebase/firestore";
 import { UserProfile } from "@/types";
 import {
-  GoogleAuthProvider, User, UserCredential, createUserWithEmailAndPassword, getAuth, sendEmailVerification, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup,
+  GoogleAuthProvider,
+  User,
+  UserCredential,
+  createUserWithEmailAndPassword,
+  getAuth,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+  signInWithPopup,
   signOut
- } from "firebase/auth";
+} from "firebase/auth";
 
 // Declare helper functions OUTSIDE the store definition
 function insertAscending(newItem: string, arr: string[]): void {
@@ -41,6 +49,7 @@ export const useAccountStore = defineStore("acct", () => {
   const firebaseUid: Ref<string | undefined> = ref(undefined);
   const userProfilePictureURL: Ref<string | undefined> = ref(undefined);
   const userRole: Ref<string | undefined> = ref(undefined);
+  const starredConstructionIDs: Ref<Array<string>> = ref([]);
   /** @type { ActionMode[]} */
   const includedTools: Ref<ActionMode[]> = ref([]);
   const excludedTools: Ref<ActionMode[]> = ref([]);
@@ -104,99 +113,129 @@ export const useAccountStore = defineStore("acct", () => {
     await getDoc(doc(appDB, "users", uid)).then((ds: DocumentSnapshot) => {
       if (ds?.exists()) {
         const uProfile = ds.data() as UserProfile;
-        // console.debug("User Profile Details from Firestore", uProfile);
-        const { favoriteTools, displayName, profilePictureURL, role } =
-          uProfile;
+        const {
+          favoriteTools,
+          displayName,
+          profilePictureURL,
+          role,
+          userStarredConstructions
+        } = uProfile;
         if (userDisplayedName.value === undefined)
           userDisplayedName.value = displayName;
         if (userProfilePictureURL.value === undefined)
           userProfilePictureURL.value = profilePictureURL;
         if (role) userRole.value = role.toLowerCase();
+        if (userStarredConstructions) {
+          console.debug(`User ${displayName} (${uid}) has starred constructions`, userStarredConstructions)
+          starredConstructionIDs.value = userStarredConstructions;
+        }
         parseAndSetFavoriteTools(favoriteTools ?? "#");
       }
     });
   }
 
-  async function fetchStarredConstructions(uid: string): Promise<string[]> {
-    const ds: DocumentSnapshot = await getDoc(doc(appDB, "users", uid));
-    if (ds?.exists()) {
-      const uProfile = ds.data() as UserProfile;
-      // console.debug("User Profile Details from Firestore", uProfile);
-      const { userStarredConstructions } = uProfile;
-      return userStarredConstructions ?? [];
-    } else {
-      return []
-    }
-  }
+  // async function fetchStarredConstructions(uid: string): Promise<string[]> {
+  //   const ds: DocumentSnapshot = await getDoc(doc(appDB, "users", uid));
+  //   if (ds?.exists()) {
+  //     const uProfile = ds.data() as UserProfile;
+  //     // console.debug("User Profile Details from Firestore", uProfile);
+  //     const { userStarredConstructions } = uProfile;
+  //     return userStarredConstructions ?? [];
+  //   } else {
+  //     return []
+  //   }
+  // }
 
-  async function signIn(email: string, password: string): Promise<boolean | string> {
+  async function signIn(
+    email: string,
+    password: string
+  ): Promise<boolean | string> {
     try {
-      const credential: UserCredential = await signInWithEmailAndPassword(appAuth, email, password)
+      const credential: UserCredential = await signInWithEmailAndPassword(
+        appAuth,
+        email,
+        password
+      );
       if (credential.user?.emailVerified) {
-        parseUserProfile(credential.user.uid)
-        userEmail.value = email
-        return true
+        console.debug("User email is verified");
+        parseUserProfile(credential.user.uid);
+        userEmail.value = email;
+        return true;
       } else {
-        return false
+        return false;
       }
     } catch (error: any) {
-      return error as string
+      return error as string;
     }
   }
 
-  async function signUp(email: string, password: string): Promise<boolean | string> {
+  async function signUp(
+    email: string,
+    password: string
+  ): Promise<boolean | string> {
     try {
-      const credential: UserCredential = await createUserWithEmailAndPassword(appAuth, email, password)
-      sendEmailVerification(credential.user)
-      userEmail.value = email
-      return true
+      const credential: UserCredential = await createUserWithEmailAndPassword(
+        appAuth,
+        email,
+        password
+      );
+      sendEmailVerification(credential.user);
+      userEmail.value = email;
+      return true;
     } catch (error: any) {
-      return error
+      return error;
     }
   }
 
   async function signOff(): Promise<void> {
-    await signOut(appAuth)
+    starredConstructionIDs.value.splice(0)
+    userEmail.value = undefined
+    userDisplayedName.value = undefined
+    await signOut(appAuth);
   }
 
   async function passwordReset(email: string) {
-    await sendPasswordResetEmail(appAuth, email)
+    await sendPasswordResetEmail(appAuth, email);
   }
 
-  async function googleLogin(): Promise<string|null> {
+  async function googleLogin(): Promise<string | null> {
     const provider = new GoogleAuthProvider();
     // provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     try {
-      const cred = await signInWithPopup(appAuth, provider)
-      parseUserProfile(cred.user.uid)
-      userEmail.value = cred.user.email!!
-      return null
+      const cred = await signInWithPopup(appAuth, provider);
+      parseUserProfile(cred.user.uid);
+      userEmail.value = cred.user.email!!;
+      return null;
+    } catch (error: any) {
+      return error;
     }
-    catch (error: any) {
-      return error
-    }
-
   }
 
   return {
-    userRole,
-    userEmail,
-    firebaseUid,
-    userDisplayedName,
-    loginEnabled,
-    userProfilePictureURL,
-    temporaryProfilePicture,
+    /* state */
     constructionDocId,
     favoriteTools,
+    firebaseUid,
     includedTools,
-    includeToolName,
+    loginEnabled,
+    starredConstructionIDs,
+    temporaryProfilePicture,
+    userDisplayedName,
+    userEmail,
+    userProfilePictureURL,
+    userRole,
+
+    /* functions */
     excludeToolName,
-    resetToolset,
+    googleLogin,
+    includeToolName,
     parseAndSetFavoriteTools,
     parseUserProfile,
-    fetchStarredConstructions,
-    signIn, signOff,
-    signUp, passwordReset, googleLogin
+    passwordReset,
+    resetToolset,
+    signIn,
+    signOff,
+    signUp,
   };
 });

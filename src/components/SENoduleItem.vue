@@ -1,10 +1,9 @@
 <template>
-  <div @mouseenter="glowMe(true)" @mouseleave="glowMe(false)" class="node">
+  <div @mouseenter="glowMe(true)" @mouseleave="glowMe(false)" class="nodeItem">
     <v-icon size="medium" :icon="iconName" :class="animationClassName"></v-icon>
     <v-tooltip location="end">
       <template v-slot:activator="{ props }">
-        <div
-          id="_test_selection"
+        <div data-testid="_test_selection"
           class="contentText"
           @click="selectMe"
           v-bind="props"
@@ -13,15 +12,14 @@
             shakeMeasurementDisplay,
             shakeTransformationDisplay
           ]">
-          <span class="text-truncate ml-1"
-          :key="displayCycleValueUpdateKey">
+          <span class="text-truncate ml-1" :key="displayCycleValueUpdateKey">
             {{ node.noduleItemText }}
           </span>
         </div>
       </template>
       <span>{{ node.noduleDescription }}/ {{ nodeName }}</span>
     </v-tooltip>
-    <span style="flex-grow: 1;">
+    <span style="flex-grow: 1">
       <!-- This is a spacer to push both groups to the left and right-->
     </span>
     <v-tooltip location="end">
@@ -50,8 +48,7 @@
     </v-tooltip>
     <v-tooltip location="end">
       <template v-slot:activator="{ props }">
-        <v-icon
-          id="_test_toggle_visibility"
+        <v-icon data-testid="toggle_visibility"
           v-if="isPlottable"
           v-bind="props"
           @click="toggleVisibility"
@@ -86,7 +83,7 @@
       </template>
       <span>{{ t("deleteNode") }}</span>
     </v-tooltip>
-          <!--v-icon v-else-if="isParametric" medium>
+    <!--v-icon v-else-if="isParametric" medium>
             $parametric
           </v-icon>
           <v-slider
@@ -95,7 +92,7 @@
             :max="parametricTMax"
             :step="parametricTStep" />
           <v-icon @click="animateCurvePoint">mdi-run</v-icon-->
-  </div>
+          </div>
 </template>
 
 <script lang="ts" setup>
@@ -194,7 +191,7 @@ onBeforeMount(() => {
   if (navigator.clipboard) {
     supportsClipboard.value = true;
   }
-  const theLabel = props.node.getLabel()
+  const theLabel = props.node.getLabel();
   if (theLabel) {
     nodeName = theLabel.ref.shortUserName ?? "";
   } else {
@@ -357,17 +354,19 @@ onMounted((): void => {
     parametricTStep.value = (tMax - tMin) / 100;
     onParametricTimeChanged(tMin);
   }
-  EventBus.listen("update-label-and-showing-and-measurement-display", updateVisibilityKeys);
+  EventBus.listen(
+    "update-label-and-showing-and-measurement-display",
+    updateVisibilityKeys
+  );
 });
 
-watch(()=> props.node.noduleItemText, updateVisibilityKeys)
+watch(() => props.node.noduleItemText, updateVisibilityKeys);
 // Without this, the display/label icon doesn't change between the two showing and not showing variants and the display cycle mode doesn't update
 function updateVisibilityKeys() {
-  console.log("UPDATE seNoduleItem Visibility keys")
+  console.log("UPDATE seNoduleItem Visibility keys");
   visibilityUpdateKey.value = 1 - visibilityUpdateKey.value;
   labelVisibilityUpdateKey.value = visibilityUpdateKey.value;
-  displayCycleValueUpdateKey.value = visibilityUpdateKey.value
-
+  displayCycleValueUpdateKey.value = visibilityUpdateKey.value;
 }
 
 onBeforeUnmount((): void => {
@@ -475,7 +474,7 @@ function toggleLabelDisplay(): void {
       ).execute();
     }
   }
-  updateVisibilityKeys();// Without this, the display/label icon doesn't change between the two showing and not showing variants.
+  updateVisibilityKeys(); // Without this, the display/label icon doesn't change between the two showing and not showing variants.
 }
 
 function copyToClipboard(): void {
@@ -731,7 +730,7 @@ const shakeTransformationDisplay = computed((): string => {
   color: gray;
   font-style: italic;
 }
-.node,
+.nodeItem,
 .visibleNode {
   padding-left: 8px;
   padding-top: 2px;
@@ -757,7 +756,7 @@ const shakeTransformationDisplay = computed((): string => {
     background-color: lightgray;
   }
 }
-.node :hover {
+.nodeItem :hover {
   // background-color: green;
 }
 </style>

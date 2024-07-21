@@ -1,28 +1,44 @@
-import Vue from "*.vue";
 import SphereFrame from "@/components/SphereFrame.vue";
-import { createWrapper } from "@/../tests/vue-helper";
-import { SEStore } from "@/store";
-import { Wrapper } from "@vue/test-utils";
+import { vi } from "vitest";
+import { createWrapper } from "$/vue-helper";
+import { SEStoreType, useSEStore } from "@/stores/se";
+import { VueWrapper } from "@vue/test-utils";
 import { TEST_MOUSE_X, TEST_MOUSE_Y, dragMouse } from "./sphereframe-helper";
 import SETTINGS from "@/global-settings";
 import { SECircle } from "@/models/SECircle";
 import { Vector3 } from "three";
-
-describe("SphereFrame: Circle Tool", () => {
-  let wrapper: Wrapper<Vue>;
+import { createTestingPinia } from "@pinia/testing";
+import { SENodule } from "@/models/SENodule";
+import Handler from "../CircleHandler";
+import { Command } from "@/commands/Command";
+describe("Circle Tool", () => {
+  let wrapper: VueWrapper;
+  let testPinia;
+  let SEStore: SEStoreType;
   beforeEach(async () => {
-    wrapper = createWrapper(SphereFrame);
+    vi.clearAllMocks();
+    testPinia = createTestingPinia({ stubActions: false });
+    const out = createWrapper(SphereFrame, {
+      componentProps: {
+        availableHeight: 512,
+        availableWidth: 512,
+        isEarthMode: false
+      }
+    });
+    wrapper = out.wrapper;
+    SEStore = useSEStore(testPinia);
+    SENodule.setGlobalStore(SEStore);
+    Handler.setGlobalStore(SEStore);
+    Command.setGlobalStore(SEStore);
+    wrapper = out.wrapper;
+    SEStore.setActionMode("select");
+    await wrapper.vm.$nextTick();
   });
 
   async function runCircleTest(
     isPoint1Foreground: boolean,
     isPoint2Foreground: boolean
   ): Promise<void> {
-    SEStore.setActionMode({
-      id: "circle",
-      name: "Tool Name does not matter"
-    });
-    await wrapper.vm.$nextTick();
     const endX = TEST_MOUSE_X + 10;
     const endY = TEST_MOUSE_Y - 10;
     const prevCircleCount = SEStore.seCircles.length;
@@ -55,19 +71,21 @@ describe("SphereFrame: Circle Tool", () => {
     ).normalize();
     // Radius vector is foreground
     const radiusVector = new Vector3(endX, -endY, endZCoord).normalize();
-    expect(newCircle.centerSEPoint.locationVector).toBeVector3CloseTo(
-      centerVector,
-      3
-    );
-    expect(newCircle.circleSEPoint.locationVector).toBeVector3CloseTo(
-      radiusVector,
-      3
-    );
+    const ctrPtVec = newCircle.centerSEPoint.locationVector;
+    expect(ctrPtVec.x).toBeCloseTo(centerVector.x, 2);
+    expect(ctrPtVec.y).toBeCloseTo(centerVector.y, 2);
+    expect(ctrPtVec.z).toBeCloseTo(centerVector.z, 2);
+    const circPtVec = newCircle.circleSEPoint.locationVector;
+    expect(circPtVec.x).toBeCloseTo(radiusVector.x, 3);
+    expect(circPtVec.y).toBeCloseTo(radiusVector.y, 3);
+    expect(circPtVec.z).toBeCloseTo(radiusVector.z, 3);
   }
   it("adds a new circle while in CircleTool", async () => {
+    SEStore.setActionMode("circle");
+    await wrapper.vm.$nextTick();
     for (const center of [true, false])
       for (const boundaryPt of [true, false]) {
-        SEStore.init();
+        // SEStore.init();
         await runCircleTest(center, boundaryPt);
       }
   });

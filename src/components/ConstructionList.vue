@@ -10,157 +10,140 @@
   <div>
     <!-- the class "nodata" is used for testing. Do not remove it -->
     <span v-if="items.length === 0" class="_test_nodata">No data</span>
-    <v-list lines="three" @mouseleave="onListLeave">
-      <template v-for="(r, pos) in items" :key="r.id">
-        <!-- <template>  -->
-        <v-hover v-slot:default="{ isHovering, props }">
-          <v-list-item
-            @mouseover.capture="onItemHover(r)"
-            class="_test_constructionItem custom-list-item"
-            v-bind="props">
-            <template #prepend>
-              <div class="item-image">
-                <img
-                  :src="previewOrDefault(r.preview)"
-                  class="mr-1"
-                  alt="preview"
-                  width="64" />
-              </div>
-            </template>
-            <!--- show a Load button as an overlay when the mouse hovers -->
-            <v-overlay
-              :key="`${r.id}-overlay`"
-              contained
-              :model-value="isHovering!"
-              class="_test_constructionOverlay align-center justify-center"
-              scrim="#00007F">
-              <!-- the class "constructionItem" is used for testing. Do not remove it -->
-              <div class="constructionItem">
-                <v-tooltip text="Load" location="top">
-                  <template #activator="{ props }">
-                    <v-btn
-                      v-bind="props"
-                      id="_test_loadfab"
-                      class="mx-1"
-                      size="x-small"
-                      color="secondary"
-                      icon="mdi-file-document-edit"
-                      @click="handleLoadConstruction(r.id)"></v-btn>
-                  </template>
-                </v-tooltip>
-                <v-tooltip text="Share" location="top">
-                  <template #activator="{ props }">
-                    <v-btn
-                      v-bind="props"
-                      v-if="r.publicDocId && allowSharing"
-                      id="_test_sharefab"
-                      class="mx-1"
-                      size="x-small"
-                      color="secondary"
-                      icon="mdi-share"
-                      @click="handleShareConstruction(r.publicDocId)"></v-btn>
-                  </template>
-                </v-tooltip>
-                <v-tooltip text="Star" location="top">
-                  <template #activator="props">
-                    <!-- show star button only for public constructs and not mine -->
-                    <v-btn
-                      v-bind="props"
-                      v-if="
-                        firebaseUid &&
-                        r.author !== userEmail &&
-                        !inMyStarredList(r.publicDocId)
-                      "
-                      id="_test_starConstruct"
-                      class="mx-1"
-                      size="x-small"
-                      color="yellow"
-                      icon="mdi-star"
-                      @click="handleUpdateStarred(r.publicDocId)"></v-btn>
-                  </template>
-                </v-tooltip>
-                <v-tooltip text="Delete" location="top">
-                  <template #activator="{ props }">
-                    <!-- show delete button only for its owner -->
-                    <v-btn
-                      v-bind="props"
-                      v-if="r.author === userEmail"
-                      id="_test_deletefab"
-                      class="mx-1"
-                      size="x-small"
-                      icon="mdi-trash-can"
-                      color="red"
-                      @click="handleDeleteConstruction(r.id)"></v-btn>
-                  </template>
-                </v-tooltip>
-                <v-tooltip text="Make private" location="top">
-                  <template #activator="{ props }">
-                    <v-btn
-                      v-bind="props"
-                      v-if="r.publicDocId && r.author === userEmail"
-                      id="_test_make_private"
-                      class="mx-1"
-                      size="x-small"
-                      icon="mdi-lock"
-                      color="yellow"
-                      @click="handleMakePrivate(r.id)"></v-btn>
-                  </template>
-                </v-tooltip>
-                <v-tooltip text="Make public" location="top">
-                  <template #activator="{ props }">
-                    <v-btn
-                      v-bind="props"
-                      v-if="!r.publicDocId && r.author === userEmail"
-                      id="_test_make_public"
-                      class="mx-1"
-                      size="x-small"
-                      icon="mdi-lock-off"
-                      color="yellow"
-                      @click="handleMakePublic(r.id)"></v-btn>
-                    <!-- converted to r.id instead r.publicDocId -->
-                    <!-- show unstar button only for starred construction list items-->
-                  </template>
-                </v-tooltip>
-                <v-tooltip text="Unstar" location="top">
-                  <template #activator="{ props }">
-                    <v-btn
-                      v-bind="props"
-                      v-if="inMyStarredList(r.publicDocId)"
-                      id="_test_unstarfab"
-                      class="mx-1"
-                      size="x-small"
-                      icon="mdi-star-off"
-                      color="blue"
-                      @click="handleUpdateUnstarred(r.publicDocId)"></v-btn>
-                  </template>
-                </v-tooltip>
-              </div>
-            </v-overlay>
-            <v-list-item-title class="text-truncate">
-              {{ r.description || "N/A" }}
-            </v-list-item-title>
-            <v-list-item-subtitle>
-              <code>{{ r.id.substring(0, 5) }}</code>
-              {{ r.objectCount }} objects,
-              <span class="text-truncate">{{ r.author }}</span>
-              <!-- currently not seeing the CSS applied-->
-              <div class="star-rating-line">
-                <div class="date-and-star">
-                  {{ r.dateCreated.substring(0, 10) }}
-                </div>
-                <div class="star-and-count">
-                  <v-icon size="x-small" color="orange-darken-4">mdi-star</v-icon>
-                  <!-- Always filled star -->
-                  {{ r.starCount }}
-                </div>
-              </div>
-            </v-list-item-subtitle>
-            <v-divider />
-          </v-list-item>
-        </v-hover>
-        <!-- </template> -->
-      </template>
-    </v-list>
+    <template v-for="(r, pos) in items" :key="`${r.id}-${pos}`">
+      <v-hover
+        v-slot:default="{ isHovering, props }"
+        :close-delay="50"
+        :open-delay="100">
+        <v-sheet
+          data-testid="constructionItem"
+          class="constructionDetails mb-1 pa-1"
+          v-bind="props"
+          elevation="4">
+          <v-img
+            style="flex-grow: 0"
+            :src="previewOrDefault(r.preview)"
+            :width="64"
+            :height="64"
+            :aspect-ratio="1"
+            cover />
+          <span
+            :style="{ flexGrow: 1, display: 'flex', flexDirection: 'column' }"
+            class="ml-1">
+            <div
+              class="font-weight-bold d-inline-block text-truncate"
+              style="max-width: 11em">
+              {{ r.description }}
+            </div>
+            <div>{{ r.id.substring(0, 6) }} ({{ r.objectCount }} objects)</div>
+            <div class="text-caption">{{ r.author }}</div>
+            <div
+              class="text-caption"
+              :style="{
+                alignSelf: 'flex-end'
+              }">
+              {{ r.dateCreated.substring(0, 10) }}
+              <v-icon size="x-small">mdi-star</v-icon>
+              {{ r.starCount }}
+            </div>
+          </span>
+          <div
+            data-testid="buttonOverlay"
+            class="constructionDetailsOverlay"
+            v-if="isHovering">
+            <v-btn
+              data-testid="load_btn"
+              id="load_btn"
+              class="ml-1"
+              size="x-small"
+              icon="mdi-folder-open"
+              color="black"
+              @click="handleLoadConstruction(r.id)"></v-btn>
+
+            <v-btn
+              data-testid="share_btn"
+              v-if="r.publicDocId && allowSharing"
+              id="are_btn"
+              class="ml-1"
+              size="x-small"
+              color="black"
+              icon="mdi-share"
+              @click="handleShareConstruction(r.publicDocId)"></v-btn>
+            <v-btn
+              data-testid="make_private_btn"
+              v-if="r.publicDocId && r.author === userEmail"
+              id="make_private_btn"
+              class="ml-1"
+              size="x-small"
+              icon="mdi-lock"
+              color="black"
+              @click="handleMakePrivate(r.id)"></v-btn>
+            <v-btn
+              data-testid="make_public_btn"
+              v-if="!r.publicDocId && r.author === userEmail"
+              id="make_public_btn"
+              class="ml-1"
+              size="x-small"
+              icon="mdi-lock-off"
+              color="black"
+              @click="handleMakePublic(r.id)"></v-btn>
+            <!-- show delete button only for its owner -->
+            <v-btn data-testid="delete_btn"
+              v-if="r.author === userEmail"
+              id="delete_btn"
+              class="ml-1"
+              size="x-small"
+              icon="mdi-trash-can"
+              color="red"
+              @click="handleDeleteConstruction(r.id)"></v-btn>
+            <!-- show star button only for public constructs and not mine -->
+            <v-btn data-testid="star_btn"
+              v-if="
+                firebaseUid &&
+                r.author !== userEmail &&
+                !inMyStarredList(r.publicDocId)
+              "
+              id="star_btn"
+              class="ml-1"
+              size="x-small"
+              color="black"
+              icon="mdi-star"
+              @click="handleUpdateStarred(r.publicDocId)"></v-btn>
+            <v-btn data-testid="unstar_btn"
+              v-if="inMyStarredList(r.publicDocId)"
+              id="unstar_btn"
+              class="ml-1"
+              size="x-small"
+              icon="mdi-star-off"
+              color="black"
+              @click="handleUpdateUnstarred(r.publicDocId)"></v-btn>
+            <v-tooltip text="Load" activator="#load_btn" location="top" />
+            <v-tooltip text="Share" activator="#share_btn" location="top" />
+            <v-tooltip
+              text="Delete"
+              activator="#delete_btn"
+              location="top" />
+            <v-tooltip
+              text="Star"
+              location="top"
+              activator="#star_btn" />
+            <v-tooltip
+              text="Unstar"
+              location="top"
+              activator="#unstar_btn" />
+            <v-tooltip
+              text="Make Private"
+              location="top"
+              activator="#make_private_btn" />
+            <v-tooltip
+              text="Make public"
+              location="top"
+              activator="#make_public_btn" />
+          </div>
+        </v-sheet>
+        <v-divider />
+      </v-hover>
+    </template>
   </div>
   <Dialog
     ref="constructionLoadDialog"
@@ -213,7 +196,11 @@
 </template>
 
 <script lang="ts" setup>
-import { type ActionMode, type ConstructionScript, SphericalConstruction } from "@/types";
+import {
+  type ActionMode,
+  type ConstructionScript,
+  SphericalConstruction
+} from "@/types";
 import Dialog, { DialogAction } from "./Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import { useAccountStore } from "@/stores/account";
@@ -226,6 +213,7 @@ import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
 import { useConstructionStore } from "@/stores/construction";
 import { useClipboard, usePermission } from "@vueuse/core";
+import { isHeritageClause } from "typescript";
 const props = defineProps<{
   items: Array<SphericalConstruction>;
   allowSharing: boolean;
@@ -235,13 +223,12 @@ const constructionShareDialog: Ref<DialogAction | null> = ref(null);
 const seStore = useSEStore();
 const acctStore = useAccountStore();
 const constructionStore = useConstructionStore();
-const { starredConstructions } = storeToRefs(constructionStore);
 const selectedDocId = ref("");
 const sharedDocId = ref("");
 const showDeleteWarning = ref(false);
 const showPrivateWarning = ref(false);
 const showPublicWarning = ref(false);
-const { constructionDocId, userEmail, firebaseUid } = storeToRefs(acctStore);
+const { constructionDocId, userEmail, firebaseUid, starredConstructionIDs } = storeToRefs(acctStore);
 const { hasUnsavedNodules } = storeToRefs(seStore);
 const { t } = useI18n({ useScope: "local" });
 
@@ -260,9 +247,8 @@ function previewOrDefault(dataUrl: string | undefined): string {
 function inMyStarredList(docId: string | undefined): boolean {
   // console.debug(`Starred? ${docId}`, starredConstructions.value.map(s => `ID ${s.id} PUB ${s.publicDocId}`).join(" ") )
   if (!docId) return false;
-  return (
-    starredConstructions.value.findIndex(z => z.publicDocId === docId) >= 0
-  );
+  return starredConstructionIDs.value.some(z => z === docId)
+
 }
 // TODO: the onXXXX functions below are not bug-free yet
 // There is a potential race-condition when the mouse moves too fast
@@ -459,7 +445,20 @@ function doShareConstruction() {
 </script>
 
 <style scoped>
-.constructionItem {
+.constructionDetails {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+}
+.constructionDetailsOverlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 2px;
+  background-color: #0f750f6a;
+}
+.constructionButtons {
   display: inline-flex;
   flex-direction: row;
   justify-content: center;

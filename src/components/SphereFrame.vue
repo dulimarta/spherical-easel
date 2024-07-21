@@ -311,12 +311,25 @@ onBeforeMount((): void => {
 });
 
 onMounted((): void => {
+  console.debug("SphereFrame::onMounted")
   // Put the main js instance into the canvas
   twoInstance.appendTo(canvas.value!);
   // Set up the listeners
-  canvas.value!.addEventListener("mousemove", handleMouseMoved);
-  canvas.value?.addEventListener("mousedown", handleMousePressed);
-  canvas.value?.addEventListener("mouseup", handleMouseReleased);
+  canvas.value?.addEventListener("mouseenter", (ev) => {
+    // console.debug(`SphereFrame.vue: Mouse entered the canvas (${ev.clientX},${ev.clientY})`)
+  })
+  canvas.value!.addEventListener("mousemove", (ev) => {
+    // console.debug(`SphereFrame.vue: Mouse moved in canvas (${ev.clientX},${ev.clientY})`)
+    handleMouseMoved(ev)
+  });
+  canvas.value?.addEventListener("mousedown", (ev) => {
+    // console.debug(`SphereFrame.vue: Mouse down in canvas (${ev.clientX},${ev.clientY})`)
+    handleMousePressed(ev)
+  });
+  canvas.value?.addEventListener("mouseup", (ev) => {
+    // console.debug(`SphereFrame.vue: Mouse up in canvas (${ev.clientX},${ev.clientY})`)
+    handleMouseReleased(ev)
+  });
   canvas.value?.addEventListener("mouseleave", handleMouseLeave);
   // Add the passive option to avoid Chrome warning
   // Without this option, scroll events will potentially block touch/wheel events
@@ -354,7 +367,26 @@ watch(
       }
       i++;
     }
+    if (!earthMode) {
+      boundaryCircle.stroke = "black";
+      boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
+    } else {
+      let currentLineWidth = boundaryCircle.linewidth;
+      boundaryCircle.stroke = "blue";
+      let intervalHandle: any;
+      // Gradually decrease the linewidth until it disappears
+      intervalHandle = setInterval(() => {
+        currentLineWidth -= 0.2;
+        if (currentLineWidth < 0) {
+          boundaryCircle.linewidth = 0;
+          clearInterval(intervalHandle);
+        } else {
+          boundaryCircle.linewidth = currentLineWidth;
+        }
+      }, 100);
+    }
   }
+
 );
 
 onBeforeUnmount((): void => {
@@ -380,32 +412,9 @@ onBeforeUnmount((): void => {
 });
 
 watch(
-  () => isEarthMode.value,
-  isEarthMode => {
-    if (!isEarthMode) {
-      boundaryCircle.stroke = "black";
-      boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
-    } else {
-      let currentLineWidth = boundaryCircle.linewidth;
-      boundaryCircle.stroke = "blue";
-      let intervalHandle: any;
-      // Gradually decrease the linewidth until it disappears
-      intervalHandle = setInterval(() => {
-        currentLineWidth -= 0.2;
-        if (currentLineWidth < 0) {
-          boundaryCircle.linewidth = 0;
-          clearInterval(intervalHandle);
-        } else {
-          boundaryCircle.linewidth = currentLineWidth;
-        }
-      }, 100);
-    }
-  }
-);
-
-watch(
   [() => props.availableWidth, () => props.availableHeight],
   ([width, height]): void => {
+    console.debug(`Available rectangle WxH ${width}x${height}`)
     twoInstance.width = width;
     twoInstance.height = height;
     // groups.forEach(z => {
@@ -582,6 +591,7 @@ function handleMouseMoved(e: MouseEvent): void {
 }
 
 function handleMousePressed(e: MouseEvent): void {
+  // console.debug("SphereFrame::handleMousePress", currentTool !== null)
   // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
   // const bb = (e.currentTarget as HTMLElement).getBoundingClientRect();
   // console.debug(
@@ -798,7 +808,7 @@ function exportSVG():void{
 watch(
   () => actionMode.value,
   (mode: ActionMode): void => {
-    //console.debug("Switch tool /action mode");
+    console.debug("Switch tool /action mode to", mode);
     currentTool?.deactivate();
     currentTool = null;
     //set the default footer color -- override as necessary
@@ -1069,6 +1079,8 @@ watch(
         break;
       default:
         currentTool = null;
+        if (import.meta.env.MODE === 'test')
+        assertNever(mode)
     }
     if (currentTool && directiveMsg) {
       EventBus.fire("show-alert", directiveMsg);
@@ -1076,6 +1088,11 @@ watch(
     currentTool?.activate();
   }
 );
+
+function assertNever(x: any): never {
+  throw Error("This should not happen", x)
+}
+
 function listItemStyle(idx: number, xLoc: string, yLoc: string) {
   //xLoc determines left or right, yLoc determines top or bottom
   const style: any = {};
