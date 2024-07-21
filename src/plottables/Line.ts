@@ -318,7 +318,7 @@ export default class Line extends Nodule {
 
     returnSVGObject.layerSVGArray.push([LAYER.foreground, svgFrontString]);
 
-    // Collect the geometric information for the front
+    // Collect the geometric information for the back
     let svgBackString =
       "<path " +
       Line.svgTransformMatrixString(this._backHalf.rotation, 1, 0, 0) + // matrix does the rotation, scaling, and translation

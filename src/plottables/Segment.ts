@@ -11,7 +11,7 @@ import {
 } from "@/types/Styles";
 import { Arc } from "two.js/extras/jsm/arc";
 import { Group } from "two.js/src/group";
-import { toSVGType } from "@/types";
+import { svgStyleType, toSVGType } from "@/types";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
@@ -733,7 +733,7 @@ export default class Segment extends Nodule {
     this._glowingBackExtra.remove();
   }
 
-  toSVG():toSVGType{
+  toSVG(): toSVGType {
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,
@@ -741,9 +741,227 @@ export default class Segment extends Nodule {
       frontStyleDictionary: null,
       backStyleDictionary: null,
       layerSVGArray: [],
-      type: "angleMarker"
+      type: "segment"
+    };
+    // collect the front style of the line
+    const frontReturnDictionary = new Map<svgStyleType, string>();
+    // Collect the style information: fill, stroke, stroke-width
+    frontReturnDictionary.set("fill", "none");
+    frontReturnDictionary.set("stroke", this._frontPart.stroke as string);
+    frontReturnDictionary.set(
+      "stroke-width",
+      String(this._frontPart.linewidth)
+    );
+
+    // check to see if there is any dashing for the front of line
+    //console.log("front dash", this._frontHalf.dashes)
+    if (
+      !(
+        this._frontPart.dashes.length == 2 &&
+        this._frontPart.dashes[0] == 0 &&
+        this._frontPart.dashes[1] == 0
+      )
+    ) {
+      var dashString = "";
+      for (let num = 0; num < this._frontPart.dashes.length; num++) {
+        dashString += this._frontPart.dashes[num] + " ";
+      }
+      frontReturnDictionary.set("stroke-dasharray", dashString);
+      //frontReturnDictionary.set("stroke-dashoffset", this._frontHalf.dashes[offset]);
     }
-    return returnSVGObject
+
+    returnSVGObject.frontStyleDictionary = frontReturnDictionary;
+
+    // collect the back style of the line
+    const backReturnDictionary = new Map<svgStyleType, string>();
+    // Collect the style information: fill, stroke, stroke-width
+    backReturnDictionary.set("fill", "none");
+    backReturnDictionary.set("stroke", this._backPart.stroke as string);
+    backReturnDictionary.set("stroke-width", String(this._backPart.linewidth));
+
+    // check to see if there is any dashing for the back of line
+    //console.log("back dash", this._backPart.dashes)
+    if (
+      !(
+        this._backPart.dashes.length == 2 &&
+        this._backPart.dashes[0] == 0 &&
+        this._backPart.dashes[1] == 0
+      )
+    ) {
+      var dashString = "";
+      for (let num = 0; num < this._backPart.dashes.length; num++) {
+        dashString += this._backPart.dashes[num] + " ";
+      }
+      backReturnDictionary.set("stroke-dasharray", dashString);
+      //backReturnDictionary.set("stroke-dashoffset", this._backHalf.dashes[offset]);
+    }
+
+    returnSVGObject.backStyleDictionary = backReturnDictionary;
+
+    // Collect the geometric information for the front
+    if (this._frontPartInUse) {
+      let startIndex = this._frontExtraInUse
+        ? this._frontPart.vertices.length - 1
+        : 0;
+      let endIndex = this._frontExtraInUse
+        ? 0
+        : this._frontPart.vertices.length - 1;
+
+      let frontDisplayFlags = ""; // flags to control which portion of the ellipse is displayed
+      if (!this._backExtraInUse && !this._frontExtraInUse) {
+        // the segment goes from front to back or back to front
+        if (this._normalVector.z > 0) {
+          frontDisplayFlags = "0 1 ";
+        } else {
+          frontDisplayFlags = "0 0 ";
+        }
+      } else if (this._backExtraInUse) {
+        // the front is the entire front (half ellipse)
+        if (this._normalVector.z > 0) {
+          frontDisplayFlags = "1 0 ";
+        } else {
+          frontDisplayFlags = "1 1 ";
+        }
+      } else if (this._frontExtraInUse) {
+        // the back is the entire back (half ellipse) and the frontPart and frontExtra are partial segments
+        if (this._normalVector.z > 0) {
+          frontDisplayFlags = "0 1 ";
+        } else {
+          frontDisplayFlags = "0 0 ";
+        }
+      }
+
+      let svgFrontString =
+        "<path " +
+        Segment.svgTransformMatrixString(this._frontExtra.rotation, 1, 0, 0) + // matrix does the rotation, scaling, and translation
+        ' d="M ' + //Start point
+        this._frontPart.vertices[startIndex].x +
+        "," +
+        this._frontPart.vertices[startIndex].y +
+        " A";
+      svgFrontString +=
+        SETTINGS.boundaryCircle.radius + // x radius
+        "," +
+        this._frontExtra.height / 2 + // y radius
+        " ";
+      svgFrontString += "0 "; // rotation
+      svgFrontString += frontDisplayFlags; // flags to control which portion of the ellipse is displayed
+      svgFrontString +=
+        this._frontPart.vertices[endIndex].x +
+        "," +
+        this._frontPart.vertices[endIndex].y +
+        '"/>'; // end point
+
+      returnSVGObject.layerSVGArray.push([LAYER.foreground, svgFrontString]);
+    }
+
+    if (this._frontExtraInUse) {
+      let svgFrontString =
+        "<path " +
+        Segment.svgTransformMatrixString(this._frontExtra.rotation, 1, 0, 0) + // matrix does the rotation, scaling, and translation
+        ' d="M ' + //Start point
+        this._frontExtra.vertices[this._frontExtra.vertices.length - 1].x +
+        "," +
+        this._frontExtra.vertices[this._frontExtra.vertices.length - 1].y +
+        " A";
+      svgFrontString +=
+        SETTINGS.boundaryCircle.radius + // x radius
+        "," +
+        this._frontExtra.height / 2 + // y radius
+        " ";
+      svgFrontString += "0 "; // rotation
+      svgFrontString += this._normalVector.z > 0 ? "0 1 " : "0 0 "; // flags to control which portion of the ellipse is displayed
+      svgFrontString +=
+        this._frontExtra.vertices[0].x +
+        "," +
+        this._frontExtra.vertices[0].y +
+        '"/>'; // end point
+
+      returnSVGObject.layerSVGArray.push([LAYER.foreground, svgFrontString]);
+    }
+
+    // Collect the geometric information for the back
+    if (this._backPartInUse) {
+      let startIndex = this._backExtraInUse
+        ? this._backPart.vertices.length - 1
+        : 0;
+      let endIndex = this._backExtraInUse
+        ? 0
+        : this._backPart.vertices.length - 1;
+
+      let backDisplayFlags = ""; // flags to control which portion of the ellipse is displayed
+      if (!this._backExtraInUse && !this._frontExtraInUse) {
+        // the segment goes from front to back or back to front
+        if (this._normalVector.z > 0) {
+          backDisplayFlags = "0 1 ";
+        } else {
+          backDisplayFlags = "0 0 ";
+        }
+      } else if (this._frontExtraInUse) {
+        // the back is the entire back (half ellipse)
+        if (this._normalVector.z > 0) {
+          backDisplayFlags = "1 0 ";
+        } else {
+          backDisplayFlags = "1 1 ";
+        }
+      } else if (this._backExtraInUse) {
+        console.log("nor ", this._normalVector.z);
+        if (this._normalVector.z > 0) {
+          backDisplayFlags = "0 1 ";
+        } else {
+          backDisplayFlags = "0 0 ";
+        }
+      }
+
+      let svgBackString =
+        "<path " +
+        Segment.svgTransformMatrixString(this._backExtra.rotation, 1, 0, 0) + // matrix does the rotation, scaling, and translation
+        ' d="M ' + //Start point
+        this._backPart.vertices[startIndex].x +
+        "," +
+        this._backPart.vertices[startIndex].y +
+        " A";
+      svgBackString +=
+        SETTINGS.boundaryCircle.radius + // x radius
+        "," +
+        this._backExtra.height / 2 + // y radius
+        " ";
+      svgBackString += "0 "; // rotation
+      svgBackString += backDisplayFlags; // flags to control which portion of the ellipse is displayed
+      svgBackString +=
+        this._backPart.vertices[endIndex].x +
+        "," +
+        this._backPart.vertices[endIndex].y +
+        '"/>'; // end point
+
+      returnSVGObject.layerSVGArray.push([LAYER.background, svgBackString]);
+    }
+
+    if (this._backExtraInUse) {
+      let svgBackString =
+        "<path " +
+        Segment.svgTransformMatrixString(this._backExtra.rotation, 1, 0, 0) + // matrix does the rotation, scaling, and translation
+        ' d="M ' + //Start point
+        this._backExtra.vertices[this._backExtra.vertices.length - 1].x +
+        "," +
+        this._backExtra.vertices[this._backExtra.vertices.length - 1].y +
+        " A";
+      svgBackString +=
+        SETTINGS.boundaryCircle.radius + // x radius
+        "," +
+        this._backExtra.height / 2 + // y radius
+        " ";
+      svgBackString += "0 "; // rotation
+      svgBackString += this._normalVector.z > 0 ? "1 0 " : "0 0 "; // flags to control which portion of the ellipse is displayed
+      svgBackString +=
+        this._backExtra.vertices[0].x +
+        "," +
+        this._backExtra.vertices[0].y +
+        '"/>'; // end point
+
+      returnSVGObject.layerSVGArray.push([LAYER.background, svgBackString]);
+    }
+    return returnSVGObject;
   }
 
   /**

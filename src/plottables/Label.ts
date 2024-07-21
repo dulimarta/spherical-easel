@@ -408,7 +408,7 @@ export default class Label extends Nodule {
       frontReturnDictionary.set("fill", this.frontText.fill as string);
       returnSVGObject.frontStyleDictionary = frontReturnDictionary;
 
-      let svgString =
+      let svgFrontString =
         "<text " +
         Label.svgTransformMatrixString(
           this.frontText.rotation,
@@ -417,8 +417,8 @@ export default class Label extends Nodule {
           this.frontText.position.y
         );
 
-      svgString += ">" + this.frontText.value + "</text>";
-      returnSVGObject.layerSVGArray.push([LAYER.foregroundText, svgString]);
+      svgFrontString += ">" + this.frontText.value + "</text>";
+      returnSVGObject.layerSVGArray.push([LAYER.foregroundText, svgFrontString]);
     } else {
       const backReturnDictionary = new Map<svgStyleType, string>();
       backReturnDictionary.set("font-family", this.backText.family);
@@ -428,25 +428,17 @@ export default class Label extends Nodule {
       backReturnDictionary.set("fill", this.backText.fill as string);
       returnSVGObject.backStyleDictionary = backReturnDictionary;
 
-      let svgString =
-        '<text transform="matrix(' +
-        String(Math.cos(this.backText.rotation) * Number(this.backText.scale)) +
-        "," +
-        String(Math.sin(this.backText.rotation) * Number(this.backText.scale)) +
-        "," +
-        String(
-          -Math.sin(this.backText.rotation) * Number(this.backText.scale)
-        ) +
-        "," +
-        String(Math.cos(this.backText.rotation) * Number(this.backText.scale)) +
-        "," +
-        String(this.backText.position.x) +
-        "," +
-        String(this.backText.position.y) +
-        ')" ';
+      let svgBackString =
+        "<text " +
+        Label.svgTransformMatrixString(
+          this.backText.rotation,
+          (this.backText.scale as number),
+          this.backText.position.x,
+          this.backText.position.y
+        );
 
-      svgString += ">" + this.backText.value + "</text>";
-      returnSVGObject.layerSVGArray.push([LAYER.backgroundText, svgString]);
+      svgBackString += ">" + this.backText.value + "</text>";
+      returnSVGObject.layerSVGArray.push([LAYER.backgroundText, svgBackString]);
     }
     return returnSVGObject;
   }
