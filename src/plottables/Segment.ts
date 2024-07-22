@@ -798,18 +798,18 @@ export default class Segment extends Nodule {
 
     returnSVGObject.backStyleDictionary = backReturnDictionary;
 
-    // Collect the geometric information for the front
-    if (this._frontPartInUse) {
-      let startIndex = this._frontExtraInUse
-        ? this._frontPart.vertices.length - 1
-        : 0;
-      let endIndex = this._frontExtraInUse
-        ? 0
-        : this._frontPart.vertices.length - 1;
+    // Collect geometric information on the front.
+    let startIndex = this._frontExtraInUse
+      ? this._frontPart.vertices.length - 1
+      : 0;
+    let endIndex = this._frontExtraInUse
+      ? 0
+      : this._frontPart.vertices.length - 1;
 
+    if (this._frontPartInUse) {
       let frontDisplayFlags = ""; // flags to control which portion of the ellipse is displayed
       if (!this._backExtraInUse && !this._frontExtraInUse) {
-        // the segment goes from front to back or back to front
+        // the segment goes from front to back or back to front or is contained entirely on the front
         if (this._normalVector.z > 0) {
           frontDisplayFlags = "0 1 ";
         } else {
@@ -820,7 +820,7 @@ export default class Segment extends Nodule {
         if (this._normalVector.z > 0) {
           frontDisplayFlags = "1 0 ";
         } else {
-          frontDisplayFlags = "1 1 ";
+          frontDisplayFlags = "0 1 ";
         }
       } else if (this._frontExtraInUse) {
         // the back is the entire back (half ellipse) and the frontPart and frontExtra are partial segments
@@ -833,12 +833,14 @@ export default class Segment extends Nodule {
 
       let svgFrontString =
         "<path " +
-        Segment.svgTransformMatrixString(this._frontExtra.rotation, 1, 0, 0) + // matrix does the rotation, scaling, and translation
-        ' d="M ' + //Start point
-        this._frontPart.vertices[startIndex].x +
-        "," +
-        this._frontPart.vertices[startIndex].y +
-        " A";
+        Segment.svgTransformMatrixString(this._frontExtra.rotation, 1, 0, 0); // matrix does the rotation, scaling, and translation
+      svgFrontString += this._backExtraInUse
+        ? ' d="M 250,0 A' //Start point when the front is the entire front
+        : ' d="M ' + //Start point
+          this._frontPart.vertices[startIndex].x.zeroOut() +
+          "," +
+          this._frontPart.vertices[startIndex].y.zeroOut() +
+          " A";
       svgFrontString +=
         SETTINGS.boundaryCircle.radius + // x radius
         "," +
@@ -846,11 +848,12 @@ export default class Segment extends Nodule {
         " ";
       svgFrontString += "0 "; // rotation
       svgFrontString += frontDisplayFlags; // flags to control which portion of the ellipse is displayed
-      svgFrontString +=
-        this._frontPart.vertices[endIndex].x +
-        "," +
-        this._frontPart.vertices[endIndex].y +
-        '"/>'; // end point
+      svgFrontString += this._backExtraInUse
+        ? '-250,0"/>' // end point when the front in the entire front
+        : this._frontPart.vertices[endIndex].x.zeroOut() +
+          "," +
+          this._frontPart.vertices[endIndex].y.zeroOut() +
+          '"/>'; // end point
 
       returnSVGObject.layerSVGArray.push([LAYER.foreground, svgFrontString]);
     }
@@ -882,16 +885,9 @@ export default class Segment extends Nodule {
 
     // Collect the geometric information for the back
     if (this._backPartInUse) {
-      let startIndex = this._backExtraInUse
-        ? this._backPart.vertices.length - 1
-        : 0;
-      let endIndex = this._backExtraInUse
-        ? 0
-        : this._backPart.vertices.length - 1;
-
       let backDisplayFlags = ""; // flags to control which portion of the ellipse is displayed
       if (!this._backExtraInUse && !this._frontExtraInUse) {
-        // the segment goes from front to back or back to front
+        // the segment goes from front to back or back to front or is entirely contained on the back
         if (this._normalVector.z > 0) {
           backDisplayFlags = "0 1 ";
         } else {
@@ -900,27 +896,28 @@ export default class Segment extends Nodule {
       } else if (this._frontExtraInUse) {
         // the back is the entire back (half ellipse)
         if (this._normalVector.z > 0) {
-          backDisplayFlags = "1 0 ";
-        } else {
-          backDisplayFlags = "1 1 ";
-        }
-      } else if (this._backExtraInUse) {
-        console.log("nor ", this._normalVector.z);
-        if (this._normalVector.z > 0) {
           backDisplayFlags = "0 1 ";
         } else {
+          backDisplayFlags = "1 0 ";
+        }
+      } else if (this._backExtraInUse) {
+        if (this._normalVector.z > 0) {
           backDisplayFlags = "0 0 ";
+        } else {
+          backDisplayFlags = "0 1 ";
         }
       }
 
       let svgBackString =
         "<path " +
-        Segment.svgTransformMatrixString(this._backExtra.rotation, 1, 0, 0) + // matrix does the rotation, scaling, and translation
-        ' d="M ' + //Start point
-        this._backPart.vertices[startIndex].x +
-        "," +
-        this._backPart.vertices[startIndex].y +
-        " A";
+        Segment.svgTransformMatrixString(this._backExtra.rotation, 1, 0, 0); // matrix does the rotation, scaling, and translation
+      svgBackString += this._frontExtraInUse
+        ? ' d="M 250,0 A' //Start point (250,0) when the back is the entire back
+        : ' d="M ' + //Start point
+          this._backPart.vertices[startIndex].x.zeroOut() +
+          "," +
+          this._backPart.vertices[startIndex].y.zeroOut() +
+          " A";
       svgBackString +=
         SETTINGS.boundaryCircle.radius + // x radius
         "," +
@@ -928,11 +925,12 @@ export default class Segment extends Nodule {
         " ";
       svgBackString += "0 "; // rotation
       svgBackString += backDisplayFlags; // flags to control which portion of the ellipse is displayed
-      svgBackString +=
-        this._backPart.vertices[endIndex].x +
-        "," +
-        this._backPart.vertices[endIndex].y +
-        '"/>'; // end point
+      svgBackString += this._frontExtraInUse
+        ? '-250,0"/>' // end point
+        : this._backPart.vertices[endIndex].x.zeroOut() +
+          "," +
+          this._backPart.vertices[endIndex].y.zeroOut() +
+          '"/>'; // end point
 
       returnSVGObject.layerSVGArray.push([LAYER.background, svgBackString]);
     }
@@ -942,9 +940,9 @@ export default class Segment extends Nodule {
         "<path " +
         Segment.svgTransformMatrixString(this._backExtra.rotation, 1, 0, 0) + // matrix does the rotation, scaling, and translation
         ' d="M ' + //Start point
-        this._backExtra.vertices[this._backExtra.vertices.length - 1].x +
+        this._backExtra.vertices[this._backExtra.vertices.length - 1].x.zeroOut() +
         "," +
-        this._backExtra.vertices[this._backExtra.vertices.length - 1].y +
+        this._backExtra.vertices[this._backExtra.vertices.length - 1].y.zeroOut() +
         " A";
       svgBackString +=
         SETTINGS.boundaryCircle.radius + // x radius
@@ -952,11 +950,11 @@ export default class Segment extends Nodule {
         this._backExtra.height / 2 + // y radius
         " ";
       svgBackString += "0 "; // rotation
-      svgBackString += this._normalVector.z > 0 ? "1 0 " : "0 0 "; // flags to control which portion of the ellipse is displayed
+      svgBackString += this._normalVector.z > 0 ? "0 1 " : "0 0 "; // flags to control which portion of the ellipse is displayed
       svgBackString +=
-        this._backExtra.vertices[0].x +
+        this._backExtra.vertices[0].x.zeroOut() +
         "," +
-        this._backExtra.vertices[0].y +
+        this._backExtra.vertices[0].y.zeroOut() +
         '"/>'; // end point
 
       returnSVGObject.layerSVGArray.push([LAYER.background, svgBackString]);
