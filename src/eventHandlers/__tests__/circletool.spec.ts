@@ -35,58 +35,55 @@ describe("Circle Tool", () => {
     await wrapper.vm.$nextTick();
   });
 
-  async function runCircleTest(
-    isPoint1Foreground: boolean,
-    isPoint2Foreground: boolean
-  ): Promise<void> {
-    const endX = TEST_MOUSE_X + 10;
-    const endY = TEST_MOUSE_Y - 10;
-    const prevCircleCount = SEStore.seCircles.length;
-    await dragMouse(
-      wrapper,
-      TEST_MOUSE_X,
-      TEST_MOUSE_Y,
-      !isPoint1Foreground,
-      endX,
-      endY,
-      !isPoint2Foreground
-    );
-    // await wrapper.vm.$nextTick();
-    const newCircleCount = SEStore.seCircles.length;
-    expect(newCircleCount).toBe(prevCircleCount + 1);
-    const R = SETTINGS.boundaryCircle.radius;
-    const startZCoord =
-      Math.sqrt(
-        R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
-      ) * (isPoint1Foreground ? +1 : -1);
-    const endZCoord =
-      Math.sqrt(R * R - endX * endX - endY * endY) *
-      (isPoint2Foreground ? +1 : -1);
-    const newCircle: SECircle = SEStore.seCircles[prevCircleCount];
-    // Center vector is foreground
-    const centerVector = new Vector3(
-      TEST_MOUSE_X,
-      -TEST_MOUSE_Y,
-      startZCoord
-    ).normalize();
-    // Radius vector is foreground
-    const radiusVector = new Vector3(endX, -endY, endZCoord).normalize();
-    const ctrPtVec = newCircle.centerSEPoint.locationVector;
-    expect(ctrPtVec.x).toBeCloseTo(centerVector.x, 2);
-    expect(ctrPtVec.y).toBeCloseTo(centerVector.y, 2);
-    expect(ctrPtVec.z).toBeCloseTo(centerVector.z, 2);
-    const circPtVec = newCircle.circleSEPoint.locationVector;
-    expect(circPtVec.x).toBeCloseTo(radiusVector.x, 3);
-    expect(circPtVec.y).toBeCloseTo(radiusVector.y, 3);
-    expect(circPtVec.z).toBeCloseTo(radiusVector.z, 3);
-  }
-  it("adds a new circle while in CircleTool", async () => {
-    SEStore.setActionMode("circle");
-    await wrapper.vm.$nextTick();
-    for (const center of [true, false])
-      for (const boundaryPt of [true, false]) {
-        // SEStore.init();
-        await runCircleTest(center, boundaryPt);
-      }
-  });
+  it.each([
+    { ctr: "fg", boundary: "fg" },
+    { ctr: "fg", boundary: "bg" },
+    { ctr: "bg", boundary: "fg" },
+    { ctr: "bg", boundary: "bg" }
+  ])(
+    "adds a new circle ($ctr,$boundary) while in CircleTool",
+    async ({ ctr, boundary }) => {
+      SEStore.setActionMode("circle");
+      const endX = TEST_MOUSE_X + 10;
+      const endY = TEST_MOUSE_Y - 10;
+      const prevCircleCount = SEStore.seCircles.length;
+      await dragMouse(
+        wrapper,
+        TEST_MOUSE_X,
+        TEST_MOUSE_Y,
+        ctr === "fg",
+        endX,
+        endY,
+        boundary === "fg"
+      );
+      // await wrapper.vm.$nextTick();
+      const newCircleCount = SEStore.seCircles.length;
+      expect(newCircleCount).toBe(prevCircleCount + 1);
+      const R = SETTINGS.boundaryCircle.radius;
+      const startZCoord =
+        Math.sqrt(
+          R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
+        ) * (ctr === "fg" ? +1 : -1);
+      const endZCoord =
+        Math.sqrt(R * R - endX * endX - endY * endY) *
+        (boundary === "fg" ? +1 : -1);
+      const newCircle: SECircle = SEStore.seCircles[prevCircleCount];
+      // Center vector is foreground
+      const centerVector = new Vector3(
+        TEST_MOUSE_X,
+        -TEST_MOUSE_Y,
+        startZCoord
+      ).normalize();
+      // Radius vector is foreground
+      const radiusVector = new Vector3(endX, -endY, endZCoord).normalize();
+      const ctrPtVec = newCircle.centerSEPoint.locationVector;
+      expect(ctrPtVec.x).toBeCloseTo(centerVector.x, 2);
+      expect(ctrPtVec.y).toBeCloseTo(centerVector.y, 2);
+      expect(ctrPtVec.z).toBeCloseTo(centerVector.z, 2);
+      const circPtVec = newCircle.circleSEPoint.locationVector;
+      expect(circPtVec.x).toBeCloseTo(radiusVector.x, 3);
+      expect(circPtVec.y).toBeCloseTo(radiusVector.y, 3);
+      expect(circPtVec.z).toBeCloseTo(radiusVector.z, 3);
+    }
+  );
 });
