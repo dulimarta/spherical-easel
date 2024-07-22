@@ -151,11 +151,11 @@
             :color="hasDisagreement('dashArray') ? 'red' : ''"
             density="compact">
             <template #prepend>
-              {{ styleOptions.reverseDashArray ? "Dash" : "Gap" }}
+              {{ styleOptions.reverseDashArray ? "Gap" : "Dash" }}
               {{ dashArray[0] }}
             </template>
             <template #append>
-              {{ styleOptions.reverseDashArray ? "Gap" : "Dash" }}
+              {{ styleOptions.reverseDashArray ? "Dash" : "Gap" }}
               {{ dashArray[1] }}
             </template>
           </v-range-slider>
@@ -316,10 +316,7 @@ const { t } = useI18n({ useScope: "local" });
 const angleMarkerRadiusPercentage = ref(
   styleOptions.value.angleMarkerRadiusPercent ?? 100
 );
-// automaticBackState is controlled by user
-// automaticBackStyle : FALSE means she wants to customize back style
-// automaticBackStyle : TRUE means the program will customize back style
-const dashArray: Ref<number[]> = ref([1,5])
+const dashArray: Ref<number[]> = ref([2,8]) // first number must be smaller
 const useDashPattern = ref(false);
 const flipDashPattern= ref(false);
 // const emptyDashPattern = computed(() =>
@@ -349,14 +346,14 @@ watch(() => styleOptions.value, opt => {
   } else {
     flipDashPattern.value = false
   }
-}, {deep: true})
+}, {deep: true, once: true})
 
 watch(
   () => useDashPattern.value,
   useDash => {
     if (useDash) {
-      if (flipDashPattern.value) styleOptions.value.dashArray = dashArray.value.slice(0);
-      else styleOptions.value.dashArray = dashArray.value.toReversed()
+      styleOptions.value.reverseDashArray = flipDashPattern.value
+      styleOptions.value.dashArray = dashArray.value.slice(0);
     } else {
       delete styleOptions.value.dashArray;
     }
@@ -367,8 +364,7 @@ watch(
   (dArr, oldArr) => {
     if (!useDashPattern.value) return
     // TwoJS interpretation: dashes[0] = gap length; dashes[1] = dash length
-    if (flipDashPattern.value) styleOptions.value.dashArray = dArr.slice(0);
-    else styleOptions.value.dashArray = dArr.toReversed();
+    styleOptions.value.dashArray = dArr.slice(0)
   },
   { deep: true, immediate: true }
 );
@@ -379,11 +375,6 @@ watch(
     if (typeof flip === "undefined") return;
     if (!useDashPattern.value) return
     styleOptions.value.reverseDashArray = flip;
-    if (flip) {
-      styleOptions.value.dashArray = dashArray.value.slice(0);
-    } else {
-      styleOptions.value.dashArray = dashArray.value.toReversed();
-    }
   }
 );
 
@@ -437,13 +428,6 @@ function setStep(angleMarker: boolean): number {
     return SETTINGS.style.sliderStepSize;
   }
 }
-
-// usingAutomaticBackStyle = false means that the user is setting the color for the back on their own and is
-// *not* using the contrast (i.e. not using the dynamic back styling)
-// usingAutomaticBackStyle = true means the program is setting the style of the back objects
-
-// dbAgreement and udbCommonValue are computed by the program
-// useDB is set by user
 
 onBeforeMount((): void => {
   for (
