@@ -2,8 +2,7 @@ import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Easel from "@/views/Easel.vue";
 import Login from "@/views/Login.vue";
 import PhotoCropper from "@/views/PhotoCropper.vue";
-import { prodErrorMap } from "firebase/auth";
-
+import TeacherDashboard from "@/views/TeacherDashboard.vue";
 let routes: Array<RouteRecordRaw> = [
   {
     path: "/",
@@ -46,7 +45,8 @@ let routes: Array<RouteRecordRaw> = [
         props: true
       }
     ]
-  }
+  },
+  {name: "Teacher Dashboard", path: "/teacher-dashboard/:studioId", component: TeacherDashboard, props: true}
 ];
 
 if (import.meta.env.MODE !== "production") {

@@ -16,9 +16,10 @@ import { SENodule } from "./models/internal";
 import Nodule from "./plottables/Nodule";
 const firebaseApp = initializeApp(firebaseConfig);
 const pinia = createPinia();
-
-
+console.debug("WHere am I")
 const app = createApp(App);
+
+
 const qp = location.search.split(/[?&]/).filter(s => s.length > 0)
 const fPos = qp.findIndex(z => z.startsWith("features"))
 if (fPos >= 0) {

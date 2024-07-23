@@ -4,7 +4,7 @@
     class="my-1"
     v-if="loginEnabled"
     :style="{
-      alignItems: 'flex-start',
+      alignItems: 'center',
       rowGap: '8px'
     }">
     <!-- {{ userDisplayedName }} {{ userEmail }} -->
@@ -26,18 +26,21 @@
         activator="parent"
         :text="firebaseUid ? 'Logout' : 'Login'"></v-tooltip>
     </v-btn>
-    <router-link to="/settings/" v-if="firebaseUid">
-      <v-btn icon size="x-small" color="green-lighten-1">
-        <v-icon size="large" color="white">mdi-cog</v-icon>
-      </v-btn>
-    </router-link>
-    <HintButton
-      color="green-lighten-2"
-      v-if="firebaseUid && hasObjects"
-      @click="() => saveConstructionDialog?.show()"
-      tooltip="Save construction">
-      <template #icon>mdi-content-save</template>
-    </HintButton>
+    <template v-if="firebaseUid">
+      <StudioSession />
+      <router-link to="/settings/">
+        <v-btn icon size="x-small" color="green-lighten-1">
+          <v-icon size="large" color="white">mdi-cog</v-icon>
+        </v-btn>
+      </router-link>
+      <HintButton
+        color="green-lighten-2"
+        v-if="hasObjects"
+        @click="() => saveConstructionDialog?.show()"
+        tooltip="Save construction">
+        <template #icon>mdi-content-save</template>
+      </HintButton>
+    </template>
     <HintButton
       color="green-lighten-2"
       tooltip="Share saved cons"
@@ -149,6 +152,7 @@
 import { Ref, ref, onMounted, onBeforeUnmount } from "vue";
 import HintButton from "./HintButton.vue";
 import Dialog from "./Dialog.vue";
+import StudioSession from "./StudioSession.vue";
 import { storeToRefs } from "pinia";
 import { useAccountStore } from "@/stores/account";
 import { useSEStore } from "@/stores/se";

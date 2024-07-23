@@ -46,11 +46,12 @@
       <template v-slot:append>
         <div
           :style="{
+            width: '64px',
             display: 'flex',
             flexDirection: 'column',
-            marginLeft: mouseOnDrawer ? '18px' : '0px',
+            // marginLeft: mouseOnDrawer ? '18px' : '0px',
             marginBottom: '8px',
-            alignItems: mouseOnDrawer ? 'flex-start' : 'center'
+            alignItems: 'center'
           }">
           <template v-if="!inProductionMode">
             <!-- A rudimentary tool to clean up unused SVG/script files in Firebase Storage -->
