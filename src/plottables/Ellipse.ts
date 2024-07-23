@@ -1023,7 +1023,7 @@ export default class Ellipse extends Nodule {
     this.glowingBackPart.remove();
   }
 
-  toSVG():toSVGType{
+  toSVG():toSVGType[]{
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,
@@ -1033,7 +1033,7 @@ export default class Ellipse extends Nodule {
       layerSVGArray: [],
       type: "angleMarker"
     }
-    return returnSVGObject
+    return [returnSVGObject]
   }
 
   /**

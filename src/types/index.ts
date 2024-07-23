@@ -461,7 +461,7 @@ export type toSVGType = {
   type: plottableType;
 };
 
-export type toSVGReturnType = null | toSVGType
+export type toSVGReturnType = null | toSVGType;
 
 export type svgStyleType =
   | "fill"
@@ -502,10 +502,15 @@ export type plottableType =
   | "label"
   | "segment"
   | "circle"
-  | "angleMarker"
   | "ellipse"
   | "parametric"
-  | "polygon";
+  | "polygon"
+  | "angleMarkerFill"
+  | "angleMarkerCircle"
+  | "angleMarkerTick"
+  | "angleMarkerDouble"
+  | "angleMarkerEdge"
+  | "angleMarkerArrowHead";
 
 export type sides = "front" | "back" | "mid";
 

@@ -241,7 +241,7 @@ export default class Line extends Nodule {
     this._glowingBackHalf.remove();
   }
 
-  toSVG(): toSVGType {
+  toSVG(): toSVGType[] {
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,
@@ -334,7 +334,7 @@ export default class Line extends Nodule {
 
     returnSVGObject.layerSVGArray.push([LAYER.background, svgBackString]);
 
-    return returnSVGObject;
+    return [returnSVGObject];
   }
 
   /**

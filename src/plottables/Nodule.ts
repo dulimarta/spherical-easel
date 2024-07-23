@@ -96,7 +96,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   /**
    * Export to SVG code
    */
-  abstract toSVG(): toSVGType;
+  abstract toSVG(): toSVGType[];
 
   /**
    * startPt is a point on the the boundary of the display circle,

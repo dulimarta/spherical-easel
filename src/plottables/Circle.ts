@@ -913,7 +913,7 @@ export default class Circle extends Nodule {
     this._glowingBackPart.remove();
   }
 
-  toSVG(): toSVGType {
+  toSVG(): toSVGType[] {
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,
@@ -1329,7 +1329,7 @@ export default class Circle extends Nodule {
       const ang = this._centerVector.angleTo(
         new Vector3(startPoint[0], startPoint[1], 0)
       );
-      console.log("Ang",ang)
+
       const frontEllipseDisplayFlags = ang > Math.PI/2 ? "0,0 " : "1,0 ";
       const frontCircleDisplayFlags = ang > Math.PI/2 ? "1,0 " : "0,0 ";
       const backEllipseDisplayFlags = ang > Math.PI/2 ? "1,1 " : "0,1 ";
@@ -1385,7 +1385,7 @@ export default class Circle extends Nodule {
         svgBackString
       ]);
     }
-    return returnSVGObject;
+    return [returnSVGObject];
   }
 
   defaultStyleState(panel: StyleCategory): StyleOptions {

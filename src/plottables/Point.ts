@@ -252,7 +252,7 @@ export default class Point extends Nodule {
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
 
-  toSVG(): toSVGType {
+  toSVG(): toSVGType[] {
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,
@@ -307,7 +307,7 @@ export default class Point extends Nodule {
         '" />';
       returnSVGObject.layerSVGArray.push([LAYER.backgroundPoints, svgString]);
     }
-    return returnSVGObject;
+    return [returnSVGObject];
   }
 
   /**

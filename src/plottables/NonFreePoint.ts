@@ -39,7 +39,7 @@ export default class NonFreePoint extends Point {
     );
   }
 
-  toSVG():toSVGType{
+  toSVG():toSVGType[]{
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,
@@ -49,7 +49,7 @@ export default class NonFreePoint extends Point {
       layerSVGArray: [],
       type: "angleMarker"
     }
-    return returnSVGObject
+    return [returnSVGObject]
   }
 
   /**

@@ -15,7 +15,8 @@ import { Anchor } from "two.js/src/anchor";
 import { Path } from "two.js/src/path";
 import { Line } from "two.js/src/shapes/line";
 import { Vector } from "two.js/src/vector";
-import { toSVGType } from "@/types";
+import { svgStyleType, toSVGType } from "@/types";
+import { aM } from "vitest/dist/reporters-yx5ZTtEV";
 
 const NUMCIRCLEVERTICES = SETTINGS.angleMarker.numCirclePoints;
 const radius = SETTINGS.boundaryCircle.radius;
@@ -50,6 +51,11 @@ export default class AngleMarker extends Nodule {
    * _angleMarkerOnFront controls if the all front or all back parts are displayed
    */
   private _angleMarkerOnFront = true;
+
+  /**
+   * The measure of the angle that the angleMarker measures
+   */
+  private _angleMarkerValue = 0;
 
   /**
    * The radius of the angle marker. This get scaled by angleMarkerRadiusPercent
@@ -89,13 +95,11 @@ export default class AngleMarker extends Nodule {
   private _circleCenter = new Anchor(0, 0); // equal to  (boundary circle radius)* < (Sin[_beta + r] + Sin[_beta - r])/2, 0 >,  and then rotated by Math.atan2(this._vertexVector.y, this._vertexVector.x)). r= this._radius
   private _circleHalfMinorAxis = 0; // equal to (Sin[_beta + r] - Sin[_beta - r])/2 r = this._radius
   private _circleHalfMajorAxis = 0; // // equal to Sqrt[2 - Cos[r]^2]/Sqrt[Cot[r]^2 + 2] r = this._radius
-  private _circleWidth = 0; // equal to Sqrt[2 - Cos[r]^2]/Sqrt[Cot[r]^2 + 2] r = this._radius
 
   //Data for the the double circular arc
   private _doubleCenter = new Anchor(0, 0); // equal to  (boundary circle radius)* < (Sin[_beta + r] + Sin[_beta - r])/2, 0 >,  and then rotated by Math.atan2(this._vertexVector.y, this._vertexVector.x)). r= this._radiusDouble
   private _doubleHalfMinorAxis = 0; // equal to (Sin[_beta + r] - Sin[_beta - r])/2 r = this._radiusDouble
   private _doubleHalfMajorAxis = 0; // // equal to Sqrt[2 - Cos[r]^2]/Sqrt[Cot[r]^2 + 2] r = this._radiusDouble
-  private _doubleWidth = 0; // equal to Sqrt[2 - Cos[r]^2]/Sqrt[Cot[r]^2 + 2] r = this._radiusDouble
 
   /**
    * The TwoJS objects to display the straight front/back parts and their glowing counterparts.
@@ -264,25 +268,25 @@ export default class AngleMarker extends Nodule {
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this._frontCircle.id), {
-      type: "angleMarker",
+      type: "angleMarkerCircle",
       side: "front",
       fill: false,
       part: ""
     });
     Nodule.idPlottableDescriptionMap.set(String(this._frontDouble.id), {
-      type: "angleMarker",
+      type: "angleMarkerDouble",
       side: "front",
       fill: false,
       part: ""
     });
     Nodule.idPlottableDescriptionMap.set(String(this._backCircle.id), {
-      type: "angleMarker",
+      type: "angleMarkerCircle",
       side: "back",
       fill: false,
       part: ""
     });
     Nodule.idPlottableDescriptionMap.set(String(this._backDouble.id), {
-      type: "angleMarker",
+      type: "angleMarkerDouble",
       side: "back",
       fill: false,
       part: ""
@@ -321,7 +325,7 @@ export default class AngleMarker extends Nodule {
     Nodule.idPlottableDescriptionMap.set(
       String(this._frontStraightVertexToStart.id),
       {
-        type: "angleMarker",
+        type: "angleMarkerEdge",
         side: "front",
         fill: false,
         part: "edge"
@@ -330,7 +334,7 @@ export default class AngleMarker extends Nodule {
     Nodule.idPlottableDescriptionMap.set(
       String(this._backStraightVertexToStart.id),
       {
-        type: "angleMarker",
+        type: "angleMarkerEdge",
         side: "back",
         fill: false,
         part: "edge"
@@ -339,7 +343,7 @@ export default class AngleMarker extends Nodule {
     Nodule.idPlottableDescriptionMap.set(
       String(this._frontStraightEndToVertex.id),
       {
-        type: "angleMarker",
+        type: "angleMarkerEdge",
         side: "front",
         fill: false,
         part: "edge"
@@ -348,7 +352,7 @@ export default class AngleMarker extends Nodule {
     Nodule.idPlottableDescriptionMap.set(
       String(this._backStraightEndToVertex.id),
       {
-        type: "angleMarker",
+        type: "angleMarkerEdge",
         side: "back",
         fill: false,
         part: "edge"
@@ -414,13 +418,13 @@ export default class AngleMarker extends Nodule {
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this._frontArrowHeadPath.id), {
-      type: "angleMarker",
+      type: "angleMarkerArrowHead",
       side: "front",
       fill: false,
       part: ""
     });
     Nodule.idPlottableDescriptionMap.set(String(this._backArrowHeadPath.id), {
-      type: "angleMarker",
+      type: "angleMarkerArrowHead",
       side: "back",
       fill: false,
       part: ""
@@ -459,14 +463,14 @@ export default class AngleMarker extends Nodule {
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this._frontFill.id), {
-      type: "angleMarker",
+      type: "angleMarkerFill",
       side: "front",
       fill: true,
       part: ""
     });
 
     Nodule.idPlottableDescriptionMap.set(String(this._backFill.id), {
-      type: "angleMarker",
+      type: "angleMarkerFill",
       side: "back",
       fill: true,
       part: ""
@@ -498,14 +502,14 @@ export default class AngleMarker extends Nodule {
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this._frontTick.id), {
-      type: "angleMarker",
+      type: "angleMarkerTick",
       side: "front",
       fill: true,
       part: ""
     });
 
     Nodule.idPlottableDescriptionMap.set(String(this._backTick.id), {
-      type: "angleMarker",
+      type: "angleMarkerTick",
       side: "back",
       fill: true,
       part: ""
@@ -1084,79 +1088,77 @@ export default class AngleMarker extends Nodule {
 
     //  Now build the straight edge from vertex to start
 
-    this._frontStraightVertexToStart.vertices[0].x =
-      this.vertexVector.x * SETTINGS.boundaryCircle.radius;
-    this._frontStraightVertexToStart.vertices[0].y =
-      this.vertexVector.y * SETTINGS.boundaryCircle.radius;
-    this._frontStraightVertexToStart.vertices[1].x =
-      this.startVector.x * SETTINGS.boundaryCircle.radius;
-    this._frontStraightVertexToStart.vertices[1].y =
-      this.startVector.y * SETTINGS.boundaryCircle.radius;
+    const vertexX = this.vertexVector.x * SETTINGS.boundaryCircle.radius;
+    const vertexY = this.vertexVector.y * SETTINGS.boundaryCircle.radius;
+    let startX = this.startVector.x * SETTINGS.boundaryCircle.radius;
+    let startY = this.startVector.y * SETTINGS.boundaryCircle.radius;
+    let endX = this.endVector.x * SETTINGS.boundaryCircle.radius;
+    let endY = this.endVector.y * SETTINGS.boundaryCircle.radius;
 
-    this._backStraightVertexToStart.vertices[0].x =
-      this.vertexVector.x * SETTINGS.boundaryCircle.radius;
-    this._backStraightVertexToStart.vertices[0].y =
-      this.vertexVector.y * SETTINGS.boundaryCircle.radius;
-    this._backStraightVertexToStart.vertices[1].x =
-      this.startVector.x * SETTINGS.boundaryCircle.radius;
-    this._backStraightVertexToStart.vertices[1].y =
-      this.startVector.y * SETTINGS.boundaryCircle.radius;
+    // if the double is visible these are a bit longer
+    if (
+      frontStyle?.angleMarkerDoubleArc &&
+      frontStyle.angleMarkerDoubleArc === true
+    ) {
+      const localMatrix = this._frontDouble.matrix;
+      const startCoords = localMatrix.multiply(
+        this._frontDouble.vertices[0].x,
+        this._frontDouble.vertices[0].y,
+        1
+      );
 
-    this._glowingFrontStraightVertexToStart.vertices[0].x =
-      this.vertexVector.x * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontStraightVertexToStart.vertices[0].y =
-      this.vertexVector.y * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontStraightVertexToStart.vertices[1].x =
-      this.startVector.x * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontStraightVertexToStart.vertices[1].y =
-      this.startVector.y * SETTINGS.boundaryCircle.radius;
+      const endCoords = localMatrix.multiply(
+        this._frontDouble.vertices[this._frontDouble.vertices.length - 1].x,
+        this._frontDouble.vertices[this._frontDouble.vertices.length - 1].y,
+        1
+      );
+      startX = startCoords[0]; //* SETTINGS.boundaryCircle.radius;
+      startY = startCoords[1]; //* SETTINGS.boundaryCircle.radius;
+      endX = endCoords[0]; // doubleEnd[0] * SETTINGS.boundaryCircle.radius;
+      endY = endCoords[1]; //doubleEnd[1] * SETTINGS.boundaryCircle.radius;
+    }
 
-    this._glowingBackStraightVertexToStart.vertices[0].x =
-      this.vertexVector.x * SETTINGS.boundaryCircle.radius;
-    this._glowingBackStraightVertexToStart.vertices[0].y =
-      this.vertexVector.y * SETTINGS.boundaryCircle.radius;
-    this._glowingBackStraightVertexToStart.vertices[1].x =
-      this.startVector.x * SETTINGS.boundaryCircle.radius;
-    this._glowingBackStraightVertexToStart.vertices[1].y =
-      this.startVector.y * SETTINGS.boundaryCircle.radius;
+    this._frontStraightVertexToStart.vertices[0].x = vertexX;
+    this._frontStraightVertexToStart.vertices[0].y = vertexY;
+    this._frontStraightVertexToStart.vertices[1].x = startX;
+    this._frontStraightVertexToStart.vertices[1].y = startY;
+
+    this._backStraightVertexToStart.vertices[0].x = vertexX;
+    this._backStraightVertexToStart.vertices[0].y = vertexY;
+    this._backStraightVertexToStart.vertices[1].x = startX;
+    this._backStraightVertexToStart.vertices[1].y = startY;
+
+    this._glowingFrontStraightVertexToStart.vertices[0].x = vertexX;
+    this._glowingFrontStraightVertexToStart.vertices[0].y = vertexY;
+    this._glowingFrontStraightVertexToStart.vertices[1].x = startX;
+    this._glowingFrontStraightVertexToStart.vertices[1].y = startY;
+
+    this._glowingBackStraightVertexToStart.vertices[0].x = vertexX;
+    this._glowingBackStraightVertexToStart.vertices[0].y = vertexY;
+    this._glowingBackStraightVertexToStart.vertices[1].x = startX;
+    this._glowingBackStraightVertexToStart.vertices[1].y = startY;
 
     // //  Now build the straight edge from end to vertex (so that the angle marker is traces vertex -> start -> end -> vertex in order)
 
-    this._frontStraightEndToVertex.vertices[0].x =
-      this.endVector.x * SETTINGS.boundaryCircle.radius;
-    this._frontStraightEndToVertex.vertices[0].y =
-      this.endVector.y * SETTINGS.boundaryCircle.radius;
-    this._frontStraightEndToVertex.vertices[1].x =
-      this.vertexVector.x * SETTINGS.boundaryCircle.radius;
-    this._frontStraightEndToVertex.vertices[1].y =
-      this.vertexVector.y * SETTINGS.boundaryCircle.radius;
+    this._frontStraightEndToVertex.vertices[0].x = endX;
+    this._frontStraightEndToVertex.vertices[0].y = endY;
+    this._frontStraightEndToVertex.vertices[1].x = vertexX;
+    this._frontStraightEndToVertex.vertices[1].y = vertexY;
 
-    this._backStraightEndToVertex.vertices[0].x =
-      this.endVector.x * SETTINGS.boundaryCircle.radius;
-    this._backStraightEndToVertex.vertices[0].y =
-      this.endVector.y * SETTINGS.boundaryCircle.radius;
-    this._backStraightEndToVertex.vertices[1].x =
-      this.vertexVector.x * SETTINGS.boundaryCircle.radius;
-    this._backStraightEndToVertex.vertices[1].y =
-      this.vertexVector.y * SETTINGS.boundaryCircle.radius;
+    this._backStraightEndToVertex.vertices[0].x = endX;
+    this._backStraightEndToVertex.vertices[0].y = endY;
+    this._backStraightEndToVertex.vertices[1].x = vertexX;
+    this._backStraightEndToVertex.vertices[1].y = vertexY;
 
-    this._glowingFrontStraightEndToVertex.vertices[0].x =
-      this.endVector.x * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontStraightEndToVertex.vertices[0].y =
-      this.endVector.y * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontStraightEndToVertex.vertices[1].x =
-      this.vertexVector.x * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontStraightEndToVertex.vertices[1].y =
-      this.vertexVector.y * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontStraightEndToVertex.vertices[0].x = endX;
+    this._glowingFrontStraightEndToVertex.vertices[0].y = endY;
+    this._glowingFrontStraightEndToVertex.vertices[1].x = vertexX;
+    this._glowingFrontStraightEndToVertex.vertices[1].y = vertexY;
 
-    this._glowingBackStraightEndToVertex.vertices[0].x =
-      this.endVector.x * SETTINGS.boundaryCircle.radius;
-    this._glowingBackStraightEndToVertex.vertices[0].y =
-      this.endVector.y * SETTINGS.boundaryCircle.radius;
-    this._glowingBackStraightEndToVertex.vertices[1].x =
-      this.vertexVector.x * SETTINGS.boundaryCircle.radius;
-    this._glowingBackStraightEndToVertex.vertices[1].y =
-      this.vertexVector.y * SETTINGS.boundaryCircle.radius;
+    this._glowingBackStraightEndToVertex.vertices[0].x = endX;
+    this._glowingBackStraightEndToVertex.vertices[0].y = endY;
+    this._glowingBackStraightEndToVertex.vertices[1].x = vertexX;
+    this._glowingBackStraightEndToVertex.vertices[1].y = vertexY;
 
     //Now build the front/back fill objects based on the front/back straight and circular parts
     // get the local matrix for the frontCircle vertices
@@ -1209,6 +1211,9 @@ export default class AngleMarker extends Nodule {
     return this._radius;
   }
 
+  set angleMarkerValue(value: number) {
+    this._angleMarkerValue = value;
+  }
   /**
    * Use this method to set the display of the angle marker using three vectors. The angle from vertex to start is *not* necessary the
    * the same as the angle form vertex to end. This method sets the _vertex, _start, _end vectors (all non-zero and unit) so that
@@ -1642,17 +1647,542 @@ export default class AngleMarker extends Nodule {
     this._glowingBackTickDouble.remove();
   }
 
-  toSVG():toSVGType{
+  toSVG(): toSVGType[] {
     // Create an empty return type and then fill in the non-null parts
-    const returnSVGObject: toSVGType = {
+    // Always return angleMarkerCircle, angleMarkerFill, angleMarkerEdge
+    // If user selected return: angleMarkerDouble (no fill, edge only), angleMarkerTick, angleMarkerArrowHead
+
+    ////////////////////////////////////////////////Circle Edge Object//////////////////////////////////////
+    // Create the always return objects
+    const angleMarkerCircleSVGObject: toSVGType = {
       frontGradientDictionary: null,
       backGradientDictionary: null,
       frontStyleDictionary: null,
       backStyleDictionary: null,
       layerSVGArray: [],
-      type: "angleMarker"
+      type: "angleMarkerCircle"
+    };
+    const amCircleStyleDictionary = new Map<svgStyleType, string>();
+
+    amCircleStyleDictionary.set("fill", "none");
+    amCircleStyleDictionary.set("stroke-linecap", "butt");
+    if (
+      !(
+        this._frontCircle.dashes.length == 2 &&
+        this._frontCircle.dashes[0] == 0 &&
+        this._frontCircle.dashes[1] == 0
+      )
+    ) {
+      var dashString = "";
+      for (let num = 0; num < this._frontCircle.dashes.length; num++) {
+        dashString += this._frontCircle.dashes[num] + " ";
+      }
+      amCircleStyleDictionary.set("stroke-dasharray", dashString);
     }
-    return returnSVGObject
+    if (this._angleMarkerOnFront) {
+      amCircleStyleDictionary.set("stroke", String(this._frontCircle.stroke));
+      amCircleStyleDictionary.set(
+        "stroke-width",
+        String(this._frontCircle.linewidth)
+      );
+      angleMarkerCircleSVGObject.frontStyleDictionary = amCircleStyleDictionary;
+    } else {
+      amCircleStyleDictionary.set("stroke", String(this._backCircle.stroke));
+      amCircleStyleDictionary.set(
+        "stroke-width",
+        String(this._backCircle.linewidth)
+      );
+      angleMarkerCircleSVGObject.backStyleDictionary = amCircleStyleDictionary;
+    }
+
+    // now collect the geometric information for this part
+
+    // set the flag for which part of the ellipse to draw
+    let displayFlagsCircle = "";
+    if (this._angleMarkerOnFront) {
+      displayFlagsCircle = this._angleMarkerValue > Math.PI ? "1 1 " : "0 1 ";
+    } else {
+      displayFlagsCircle = this._angleMarkerValue > Math.PI ? "1 0 " : "0 0 ";
+    }
+    let amCircleSVGString =
+      "<path " +
+      Nodule.svgTransformMatrixString(
+        this._frontCircle.rotation,
+        1,
+        this._frontCircle.position.x,
+        this._frontCircle.position.y
+      );
+    amCircleSVGString +=
+      'd="M ' +
+      this._frontCircle.vertices[0].x +
+      " " +
+      this._frontCircle.vertices[0].y +
+      " "; // move to the start of the circle
+    amCircleSVGString +=
+      "A" +
+      Math.abs(this._circleHalfMajorAxis) * SETTINGS.boundaryCircle.radius +
+      "," +
+      Math.abs(this._circleHalfMinorAxis) * SETTINGS.boundaryCircle.radius +
+      " ";
+    amCircleSVGString += "0 "; // the rotation of the ellipse
+    amCircleSVGString += displayFlagsCircle; // flag to control which part of the ellipse is drawn
+    amCircleSVGString +=
+      this._frontCircle.vertices[this._frontCircle.vertices.length - 1].x +
+      "," +
+      this._frontCircle.vertices[this._frontCircle.vertices.length - 1].y +
+      '"/>'; // The ellipse part is done
+
+    if (this._angleMarkerOnFront) {
+      angleMarkerCircleSVGObject.layerSVGArray.push([
+        LAYER.foregroundAngleMarkers,
+        amCircleSVGString
+      ]);
+    } else {
+      angleMarkerCircleSVGObject.layerSVGArray.push([
+        LAYER.backgroundAngleMarkers,
+        amCircleSVGString
+      ]);
+    }
+    ////////////////////////////////////////////////Fill Object//////////////////////////////////////
+    // Create the always return objects
+    const angleMarkerFillSVGObject: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyleDictionary: null,
+      layerSVGArray: [],
+      type: "angleMarkerFill"
+    };
+    const amFillStyleDictionary = new Map<svgStyleType, string>();
+
+    amFillStyleDictionary.set("stroke", "none");
+    if (this._angleMarkerOnFront) {
+      amFillStyleDictionary.set("fill", String(this._frontFill.fill));
+      angleMarkerFillSVGObject.frontStyleDictionary = amFillStyleDictionary;
+    } else {
+      amFillStyleDictionary.set("fill", String(this._backFill.fill));
+      angleMarkerFillSVGObject.backStyleDictionary = amFillStyleDictionary;
+    }
+
+    // now collect the geometric information for this part
+
+    // set the flag for which part of the ellipse to draw
+    let displayFlags = "";
+    if (this._angleMarkerOnFront) {
+      displayFlags = this._angleMarkerValue > Math.PI ? "1 1 " : "0 1 ";
+    } else {
+      displayFlags = this._angleMarkerValue > Math.PI ? "1 0 " : "0 0 ";
+    }
+    let amSVGString =
+      "<path " +
+      Nodule.svgTransformMatrixString(
+        this._frontCircle.rotation,
+        1,
+        this._frontCircle.position.x,
+        this._frontCircle.position.y
+      );
+    amSVGString +=
+      'd="M ' + this._vertexVector.x + " " + this._vertexVector.y + " "; // move to the vertex
+    amSVGString +=
+      "L " +
+      this._frontCircle.vertices[0].x +
+      " " +
+      this._frontCircle.vertices[0].y +
+      " "; // move to the start of the ellipse
+    amSVGString +=
+      "A" +
+      Math.abs(this._circleHalfMajorAxis) * SETTINGS.boundaryCircle.radius +
+      "," +
+      Math.abs(this._circleHalfMinorAxis) * SETTINGS.boundaryCircle.radius +
+      " ";
+    amSVGString += "0 "; // the rotation of the ellipse
+    amSVGString += displayFlags; // flag to control which part of the ellipse is drawn
+    amSVGString +=
+      this._frontCircle.vertices[this._frontCircle.vertices.length - 1].x +
+      "," +
+      this._frontCircle.vertices[this._frontCircle.vertices.length - 1].y +
+      "  "; // The ellipse part is done
+    amSVGString +=
+      "L " + this._vertexVector.x + " " + this._vertexVector.y + '"/>'; // move back to the vertex
+
+    if (this._angleMarkerOnFront) {
+      angleMarkerFillSVGObject.layerSVGArray.push([
+        LAYER.foregroundAngleMarkersGlowing,
+        amSVGString
+      ]);
+    } else {
+      angleMarkerFillSVGObject.layerSVGArray.push([
+        LAYER.backgroundAngleMarkersGlowing,
+        amSVGString
+      ]);
+    }
+
+    ////////////////////////////////////////////////Straight Edge Object//////////////////////////////////////
+    const angleMarkerEdgeSVGObject: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyleDictionary: null,
+      layerSVGArray: [],
+      type: "angleMarkerEdge"
+    };
+    const amEdgeStyleDictionary = new Map<svgStyleType, string>();
+
+    amEdgeStyleDictionary.set("fill", "none");
+    amEdgeStyleDictionary.set("stroke-linecap", "square");
+    if (this._angleMarkerOnFront) {
+      amEdgeStyleDictionary.set(
+        "stroke",
+        String(this._frontStraightEndToVertex.stroke)
+      );
+      amEdgeStyleDictionary.set(
+        "stroke-width",
+        String(this._frontStraightEndToVertex.linewidth)
+      );
+      angleMarkerEdgeSVGObject.frontStyleDictionary = amEdgeStyleDictionary;
+    } else {
+      amEdgeStyleDictionary.set(
+        "stroke",
+        String(this._backStraightEndToVertex.stroke)
+      );
+      amEdgeStyleDictionary.set(
+        "stroke-width",
+        String(this._backStraightEndToVertex.linewidth)
+      );
+      angleMarkerEdgeSVGObject.backStyleDictionary = amEdgeStyleDictionary;
+    }
+
+    // now collect the geometric information for this part
+    let amEdgeSVGString =
+      '<polyline points="' +
+      this._frontStraightEndToVertex.vertices[0].x +
+      " " +
+      this._frontStraightEndToVertex.vertices[0].y +
+      ", " +
+      this._frontStraightEndToVertex.vertices[1].x +
+      " " +
+      this._frontStraightEndToVertex.vertices[1].y +
+      ", " +
+      this._frontStraightVertexToStart.vertices[1].x +
+      " " +
+      this._frontStraightVertexToStart.vertices[1].y +
+      '"/>';
+    if (this._angleMarkerOnFront) {
+      angleMarkerEdgeSVGObject.layerSVGArray.push([
+        LAYER.foregroundAngleMarkers,
+        amEdgeSVGString
+      ]);
+    } else {
+      angleMarkerEdgeSVGObject.layerSVGArray.push([
+        LAYER.backgroundAngleMarkers,
+        amEdgeSVGString
+      ]);
+    }
+
+    // form the return object array
+    const returnSVGObjects: toSVGType[] = [
+      angleMarkerCircleSVGObject,
+      angleMarkerFillSVGObject,
+      angleMarkerEdgeSVGObject
+    ];
+
+    // Now add the optional returned objects
+    ////////////////////////////////////////////////Double Object//////////////////////////////////////
+    if (this._frontDouble.visible || this._backDouble.visible) {
+      const angleMarkerDoubleSVGObject: toSVGType = {
+        frontGradientDictionary: null,
+        backGradientDictionary: null,
+        frontStyleDictionary: null,
+        backStyleDictionary: null,
+        layerSVGArray: [],
+        type: "angleMarkerDouble"
+      };
+      const amDoubleStyleDictionary = new Map<svgStyleType, string>();
+      if (
+        !(
+          this._frontDouble.dashes.length == 2 &&
+          this._frontDouble.dashes[0] == 0 &&
+          this._frontDouble.dashes[1] == 0
+        )
+      ) {
+        var dashString = "";
+        for (let num = 0; num < this._frontDouble.dashes.length; num++) {
+          dashString += this._frontDouble.dashes[num] + " ";
+        }
+        amDoubleStyleDictionary.set("stroke-dasharray", dashString);
+      }
+      amDoubleStyleDictionary.set("fill", "none");
+      amDoubleStyleDictionary.set("stroke-linecap", "butt");
+      if (this._angleMarkerOnFront) {
+        amDoubleStyleDictionary.set("stroke", String(this._frontDouble.stroke));
+        amDoubleStyleDictionary.set(
+          "stroke-width",
+          String(this._frontDouble.linewidth)
+        );
+        angleMarkerDoubleSVGObject.frontStyleDictionary =
+          amDoubleStyleDictionary;
+      } else {
+        amDoubleStyleDictionary.set("stroke", String(this._backDouble.stroke));
+        amDoubleStyleDictionary.set(
+          "stroke-width",
+          String(this._backDouble.linewidth)
+        );
+        angleMarkerDoubleSVGObject.backStyleDictionary =
+          amDoubleStyleDictionary;
+      }
+
+      // now collect the geometric information for this part
+
+      // set the flag for which part of the ellipse to draw
+      let displayFlagsCircle = "";
+      if (this._angleMarkerOnFront) {
+        displayFlagsCircle = this._angleMarkerValue > Math.PI ? "1 1 " : "0 1 ";
+      } else {
+        displayFlagsCircle = this._angleMarkerValue > Math.PI ? "1 0 " : "0 0 ";
+      }
+      let amDoubleSVGString =
+        "<path " +
+        Nodule.svgTransformMatrixString(
+          this._frontDouble.rotation,
+          1,
+          this._frontDouble.position.x,
+          this._frontDouble.position.y
+        );
+      amDoubleSVGString +=
+        'd="M ' +
+        this._frontDouble.vertices[0].x +
+        " " +
+        this._frontDouble.vertices[0].y +
+        " "; // move to the start of the circle
+      amDoubleSVGString +=
+        "A" +
+        Math.abs(this._doubleHalfMajorAxis) * SETTINGS.boundaryCircle.radius +
+        "," +
+        Math.abs(this._doubleHalfMinorAxis) * SETTINGS.boundaryCircle.radius +
+        " ";
+      amDoubleSVGString += "0 "; // the rotation of the ellipse
+      amDoubleSVGString += displayFlagsCircle; // flag to control which part of the ellipse is drawn
+      amDoubleSVGString +=
+        this._frontDouble.vertices[this._frontDouble.vertices.length - 1].x +
+        "," +
+        this._frontDouble.vertices[this._frontDouble.vertices.length - 1].y +
+        '"/>'; // The ellipse part is done
+
+      if (this._angleMarkerOnFront) {
+        angleMarkerDoubleSVGObject.layerSVGArray.push([
+          LAYER.foregroundAngleMarkers,
+          amDoubleSVGString
+        ]);
+      } else {
+        angleMarkerDoubleSVGObject.layerSVGArray.push([
+          LAYER.backgroundAngleMarkers,
+          amDoubleSVGString
+        ]);
+      }
+
+      returnSVGObjects.push(angleMarkerDoubleSVGObject);
+    }
+    ////////////////////////////////////////////////Arrow Head Object//////////////////////////////////////
+    if (this._frontArrowHeadPath.visible || this._backArrowHeadPath.visible) {
+      const angleMarkerArrowHeadSVGObject: toSVGType = {
+        frontGradientDictionary: null,
+        backGradientDictionary: null,
+        frontStyleDictionary: null,
+        backStyleDictionary: null,
+        layerSVGArray: [],
+        type: "angleMarkerArrowHead"
+      };
+      const amArrowHeadStyleDictionary = new Map<svgStyleType, string>();
+
+      amArrowHeadStyleDictionary.set("fill", "none");
+      amArrowHeadStyleDictionary.set("stroke-linecap", "butt");
+      amArrowHeadStyleDictionary.set("stroke-linejoin", "miter");
+      amArrowHeadStyleDictionary.set("stroke-miterlimit", "4");
+      if (this._angleMarkerOnFront) {
+        amArrowHeadStyleDictionary.set(
+          "stroke",
+          String(this._frontArrowHeadPath.stroke)
+        );
+        amArrowHeadStyleDictionary.set(
+          "stroke-width",
+          String(this._frontArrowHeadPath.linewidth)
+        );
+        angleMarkerArrowHeadSVGObject.frontStyleDictionary =
+          amArrowHeadStyleDictionary;
+      } else {
+        console.log("here1");
+        amArrowHeadStyleDictionary.set(
+          "stroke",
+          String(this._backArrowHeadPath.stroke)
+        );
+        amArrowHeadStyleDictionary.set(
+          "stroke-width",
+          String(this._backArrowHeadPath.linewidth)
+        );
+        angleMarkerArrowHeadSVGObject.backStyleDictionary =
+          amArrowHeadStyleDictionary;
+      }
+
+      // now collect the geometric information for this part
+      let amArrowHeadSVGString =
+        '<polyline points="' +
+        this._frontArrowHeadPath.vertices[0].x +
+        " " +
+        this._frontArrowHeadPath.vertices[0].y +
+        ", " +
+        this._frontArrowHeadPath.vertices[1].x +
+        " " +
+        this._frontArrowHeadPath.vertices[1].y +
+        ", " +
+        this._frontArrowHeadPath.vertices[2].x +
+        " " +
+        this._frontArrowHeadPath.vertices[2].y +
+        "," +
+        this._frontArrowHeadPath.vertices[3].x +
+        " " +
+        this._frontArrowHeadPath.vertices[3].y +
+        "," + // no close the arrow head path
+        this._frontArrowHeadPath.vertices[0].x +
+        " " +
+        this._frontArrowHeadPath.vertices[0].y +
+        '"/>';
+      if (this._angleMarkerOnFront) {
+        angleMarkerArrowHeadSVGObject.layerSVGArray.push([
+          LAYER.foregroundAngleMarkers,
+          amArrowHeadSVGString
+        ]);
+      } else {
+        console.log("here2");
+        angleMarkerArrowHeadSVGObject.layerSVGArray.push([
+          LAYER.backgroundAngleMarkers,
+          amArrowHeadSVGString
+        ]);
+      }
+
+      returnSVGObjects.push(angleMarkerArrowHeadSVGObject);
+    }
+    ////////////////////////////////////////////////Double Tick Object//////////////////////////////////////
+    if (this._frontTickDouble.visible || this._backTickDouble.visible) {
+      const angleMarkerTickDoubleSVGObject: toSVGType = {
+        frontGradientDictionary: null,
+        backGradientDictionary: null,
+        frontStyleDictionary: null,
+        backStyleDictionary: null,
+        layerSVGArray: [],
+        type: "angleMarkerTick"
+      };
+
+      const amTickDoubleStyleDictionary = new Map<svgStyleType, string>();
+
+      amTickDoubleStyleDictionary.set("fill", "none");
+      amTickDoubleStyleDictionary.set("stroke-linecap", "square");
+      if (this._angleMarkerOnFront) {
+        amTickDoubleStyleDictionary.set(
+          "stroke",
+          String(this._frontTickDouble.stroke)
+        );
+        amTickDoubleStyleDictionary.set(
+          "stroke-width",
+          String(this._frontTickDouble.linewidth)
+        );
+        angleMarkerTickDoubleSVGObject.frontStyleDictionary =
+          amTickDoubleStyleDictionary;
+      } else {
+        amTickDoubleStyleDictionary.set(
+          "stroke",
+          String(this._backTickDouble.stroke)
+        );
+        amTickDoubleStyleDictionary.set(
+          "stroke-width",
+          String(this._backTickDouble.linewidth)
+        );
+        angleMarkerTickDoubleSVGObject.backStyleDictionary =
+          amTickDoubleStyleDictionary;
+      }
+
+      // now collect the geometric information for this part
+      let amTickDoubleSVGString =
+        '<polyline points="' +
+        this._frontTickDouble.vertices[0].x +
+        " " +
+        this._frontTickDouble.vertices[0].y +
+        ", " +
+        this._frontTickDouble.vertices[1].x +
+        " " +
+        this._frontTickDouble.vertices[1].y +
+        '"/>';
+      if (this._angleMarkerOnFront) {
+        angleMarkerTickDoubleSVGObject.layerSVGArray.push([
+          LAYER.foregroundAngleMarkers,
+          amTickDoubleSVGString
+        ]);
+      } else {
+        angleMarkerTickDoubleSVGObject.layerSVGArray.push([
+          LAYER.backgroundAngleMarkers,
+          amTickDoubleSVGString
+        ]);
+      }
+
+      returnSVGObjects.push(angleMarkerTickDoubleSVGObject);
+    }
+
+    ////////////////////////////////////////////////Tick Object//////////////////////////////////////
+    if (this._frontTick.visible || this._backTick.visible) {
+      const angleMarkerTickSVGObject: toSVGType = {
+        frontGradientDictionary: null,
+        backGradientDictionary: null,
+        frontStyleDictionary: null,
+        backStyleDictionary: null,
+        layerSVGArray: [],
+        type: "angleMarkerTick"
+      };
+
+      const amTickStyleDictionary = new Map<svgStyleType, string>();
+
+      amTickStyleDictionary.set("fill", "none");
+      amTickStyleDictionary.set("stroke-linecap", "square");
+      if (this._angleMarkerOnFront) {
+        amTickStyleDictionary.set("stroke", String(this._frontTick.stroke));
+        amTickStyleDictionary.set(
+          "stroke-width",
+          String(this._frontTick.linewidth)
+        );
+        angleMarkerTickSVGObject.frontStyleDictionary = amTickStyleDictionary;
+      } else {
+        amTickStyleDictionary.set("stroke", String(this._backTick.stroke));
+        amTickStyleDictionary.set(
+          "stroke-width",
+          String(this._backTick.linewidth)
+        );
+        angleMarkerTickSVGObject.backStyleDictionary = amTickStyleDictionary;
+      }
+
+      // now collect the geometric information for this part
+      let amTickSVGString =
+        '<polyline points="' +
+        this._frontTick.vertices[0].x +
+        " " +
+        this._frontTick.vertices[0].y +
+        ", " +
+        this._frontTick.vertices[1].x +
+        " " +
+        this._frontTick.vertices[1].y +
+        '"/>';
+      if (this._angleMarkerOnFront) {
+        angleMarkerTickSVGObject.layerSVGArray.push([
+          LAYER.foregroundAngleMarkers,
+          amTickSVGString
+        ]);
+      } else {
+        angleMarkerTickSVGObject.layerSVGArray.push([
+          LAYER.backgroundAngleMarkers,
+          amTickSVGString
+        ]);
+      }
+
+      returnSVGObjects.push(angleMarkerTickSVGObject);
+    }
+    return returnSVGObjects;
   }
 
   /**

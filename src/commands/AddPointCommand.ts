@@ -62,14 +62,14 @@ export class AddPointCommand extends Command {
       this.sePoint.showing
     ) {
       const info: toSVGType[] = [];
-      info.push(this.sePoint.ref.toSVG());
+      info.push(...this.sePoint.ref.toSVG());
       // now check the label (if the point is deleted the label is also so check this inside the first conditional statement)
       if (
         deletedNoduleIds.findIndex(id => id == this.seLabel.id) == -1 &&
         this.seLabel.exists &&
         this.seLabel.showing
       ) {
-        info.push(this.seLabel.ref.toSVG());
+        info.push(...this.seLabel.ref.toSVG());
       }
       return info;
     } else {

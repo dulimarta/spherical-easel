@@ -31,7 +31,7 @@ export default class NonFreeCircle extends Circle {
     );
   }
 
-  toSVG():toSVGType{
+  toSVG():toSVGType[]{
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,
@@ -41,7 +41,7 @@ export default class NonFreeCircle extends Circle {
       layerSVGArray: [],
       type: "angleMarker"
     }
-    return returnSVGObject
+    return [returnSVGObject]
   }
 
   /**

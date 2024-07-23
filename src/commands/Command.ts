@@ -138,9 +138,9 @@ export abstract class Command {
     ["fill-opacity", "1"],
     ["stroke-width", "1"],
     ["stroke-opacity", "1"],
-    ["stroke-linecap", "butt"],
-    ["stroke-linejoin", "miter"],
-    ["stroke-miterlimit", "4"],
+    // ["stroke-linecap", "butt"],
+    // ["stroke-linejoin", "miter"],
+    // ["stroke-miterlimit", "4"],
     ["stroke-dasharray", "none"],
     ["stroke-dashoffset", "0"],
     // ["font-family", ""], no default
@@ -287,7 +287,7 @@ export abstract class Command {
     //           Note: there should be NO space between the initial < and the name of the object.
     //                 The first space MUST be after the name of the object
     //
-    // Here is a list of the layer name and number (no glowing layers because these are not exported)
+    // Here is a list of the layer name and number Glowing layer is used by anglemarker to get the fill not to overlap with the stroke of the edge
     //    backgroundAngleMarkers,0 --> contains only angle markers (edges and fill)
     //    backgroundFills,3 --> contains circles (fills only), ellipse (fills only), polygon
     //    background,4 --> contains lines, segments, circles (edges only), parametric, ellipse, edges only
@@ -402,10 +402,15 @@ export abstract class Command {
               frontStyleName =
                 typeName + "FrontStyle" + String(frontStyleCount);
               for (let [name, dict] of styleDictionary.entries()) {
+                //console.log("check equal",name,frontStyleName)
                 if (styleDictionariesEqual(dict, frontStyleDictionary)) {
+                  //console.log("yes",dict,frontStyleDictionary)
                   frontStyleName = name;
                   break;
                 }
+                // else {
+                //   console.log("NO")
+                // }
               }
               if (
                 frontStyleName ==

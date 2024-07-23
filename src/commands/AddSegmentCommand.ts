@@ -54,14 +54,14 @@ export class AddSegmentCommand extends Command {
       this.seSegment.showing
     ) {
       const info: toSVGType[] = [];
-      info.push(this.seSegment.ref.toSVG());
+      info.push(...this.seSegment.ref.toSVG());
       // now check the label (if the point is deleted the label is also so check this inside the first conditional statement)
       if (
         deletedNoduleIds.findIndex(id => id == this.seLabel.id) == -1 &&
         this.seLabel.exists &&
         this.seLabel.showing
       ) {
-        info.push(this.seLabel.ref.toSVG());
+        info.push(...this.seLabel.ref.toSVG());
       }
       return info;
     } else {

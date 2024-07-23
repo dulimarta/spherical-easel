@@ -900,6 +900,8 @@ export class SEAngleMarker
         this._vertexVector,
         this._endVector
       );
+      // Set the measure in the plottable anglemarker so that export to SVG works correctly
+      this.ref.angleMarkerValue = this._measure
 
       // display the new angleMarker
       this.ref.updateDisplay();

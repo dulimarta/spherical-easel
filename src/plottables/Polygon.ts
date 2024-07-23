@@ -1084,7 +1084,7 @@ export default class Polygon extends Nodule {
     this.backFills.forEach(part => part.remove());
   }
 
-  toSVG():toSVGType{
+  toSVG():toSVGType[]{
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,
@@ -1094,7 +1094,7 @@ export default class Polygon extends Nodule {
       layerSVGArray: [],
       type: "angleMarker"
     }
-    return returnSVGObject
+    return [returnSVGObject]
   }
 
   /**
