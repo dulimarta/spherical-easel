@@ -174,30 +174,40 @@ export abstract class Command {
       height = width;
     }
     function gradientDictionariesEqual(
-      d1: Map<svgGradientType, string | Map<svgStopType, string>>,
-      d2: Map<svgGradientType, string | Map<svgStopType, string>>
+      d1: Map<svgGradientType, string | Map<svgStopType, string>[]>,
+      d2: Map<svgGradientType, string | Map<svgStopType, string>[]>
     ): boolean {
       // quick check on the number of entries
       if (d1.size != d2.size) {
         return false;
       } else {
         for (let key of d1.keys()) {
-          if (key !== "stop") {
+          if (key !== "stops") {
             // comparing strings
             if (d1.get(key) !== d2.get(key)) {
               return false;
             }
           } else {
-            // the values of the key "stop" are dictionaries
-            const stop1Dict = d1.get(key) as Map<svgStopType, string>; // key is "stop" so value is a dictionary and not a string
-            const stop2Dict = d2.get(key) as Map<svgStopType, string>;
-            if (stop1Dict !== undefined && stop2Dict !== undefined) {
-              if (stop1Dict.size !== stop2Dict.size) {
+            // the values of the key "stops" is an array of stop dictionaries
+            const d1StopArray = d1.get("stops") as Map<svgStopType, string>[];
+            const d2StopArray = d2.get("stops") as Map<svgStopType, string>[];
+            if (d1StopArray != undefined && d2StopArray != undefined) {
+              if (d1StopArray.length != d2StopArray.length) {
                 return false;
               } else {
-                for (let key of stop1Dict.keys()) {
-                  if (stop1Dict.get(key) !== stop2Dict.get(key)) {
-                    return false;
+                for (let ind = 0; ind < d1StopArray.length; ind++) {
+                  const stop1Dict = d1StopArray[ind]; // key is "stops" so value is a dictionary and not a string
+                  const stop2Dict = d2StopArray[ind];
+                  if (stop1Dict !== undefined && stop2Dict !== undefined) {
+                    if (stop1Dict.size !== stop2Dict.size) {
+                      return false;
+                    } else {
+                      for (let key of stop1Dict.keys()) {
+                        if (stop1Dict.get(key) !== stop2Dict.get(key)) {
+                          return false;
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -209,6 +219,7 @@ export abstract class Command {
       }
       return true;
     }
+
     function styleDictionariesEqual(
       d1: Map<svgStyleType, string>,
       d2: Map<svgStyleType, string>
@@ -247,7 +258,7 @@ export abstract class Command {
     // This starts as an empty dictionary because there might not be any gradients in the SVG (i.e. circles, ellipse, polygon)
     const gradientDictionary = new Map<
       string,
-      Map<svgGradientType, string | Map<svgStopType, string>>
+      Map<svgGradientType, string | Map<svgStopType, string>[]>
     >();
 
     // Next create a style dictionary with
@@ -282,9 +293,9 @@ export abstract class Command {
     //    background,4 --> contains lines, segments, circles (edges only), parametric, ellipse, edges only
     //    backgroundPoints,6 --> only contains points
     //    backgroundText,8 --> only contains labels
+    //    foregroundFills,13 --> contains circles (fills only), ellipse (fills only), polygon
     //    midground,9 --> contains only the boundary circle
     //    foregroundAngleMarkers,11 --> contains only angle markers (edges and fill)
-    //    foregroundFills,13 --> contains circles (fills only), ellipse (fills only), polygon
     //    foreground,14 --> contains lines, segments, circles (edges only), parametric, ellipse, edges only
     //    foregroundPoints,16 --> only contains points
     //    foregroundText, 18 --> only contains labels
@@ -312,6 +323,7 @@ export abstract class Command {
     Command.commandHistory.forEach((c: Command) => {
       const toSVGReturnArray = c.toSVG(Command.deletedNoduleIds);
       if (toSVGReturnArray != null) {
+        // console.log("here style", toSVGReturnArray.length )
         for (let information of toSVGReturnArray) {
           if (information != null) {
             const frontGradientDictionary = information.frontGradientDictionary;
@@ -320,6 +332,11 @@ export abstract class Command {
             const backStyleDictionary = information.backStyleDictionary;
             const layerSVGInformation = information.layerSVGArray;
             const typeName = information.type;
+            // console.log("type", typeName)
+            // console.log("fgd",frontGradientDictionary)
+            // console.log("bgd",backGradientDictionary)
+            // console.log("fsd", frontStyleDictionary)
+            // console.log("bsd",backStyleDictionary)
 
             // Incorporate the new gradient dictionaries into gradientDictionary
             //  Note: For a single object, there is only one front gradient and one back gradient applied to all front/back object fills
@@ -484,41 +501,32 @@ export abstract class Command {
     if (gradientDictionary.size != 0) {
       gradientSVGReturnString += "\t<defs>\n";
       for (let [name, dict] of gradientDictionary.entries()) {
+        const arrayOfStops: Map<svgStopType, string>[] = [];
         gradientSVGReturnString += '\t\t<radialGradient id="' + name + '" ';
-        let stopSVGReturnStrings: [number, string][] = [];
         for (let [attribute, value] of dict) {
           // We have no guarantee of order and the stop attributes must be added last (and in order)
-          if (attribute != "stop") {
+          if (attribute != "stops") {
             // The value is a string which is the value of the attribute
             gradientSVGReturnString +=
               attribute + '="' + (value as string) + '" ';
           } else {
-            // The value is a dictionary of the stop
-            let tempStopLine = "\t\t\t<stop ";
-            let tempStopNumber = 0;
-            for (let [key, val] of value as Map<svgStopType, string>) {
-              tempStopLine += key + '="' + val + '" ';
-              if (key == "offset") {
-                tempStopNumber = Number(val);
-              }
-            }
-            tempStopLine += "/>\n";
-            stopSVGReturnStrings.push([tempStopNumber, tempStopLine]);
+            arrayOfStops.push(...(value as Map<svgStopType, string>[]));
           }
         }
-        // sort the stopSVGReturnStrings
-        stopSVGReturnStrings.sort((a, b) => {
-          if (a[0] < b[0]) {
-            return -1;
-          } else if (a[0] == b[0]) {
-            return 0;
-          } else {
-            return 1;
+        // close the start of the radial gradient
+        gradientSVGReturnString += ">\n";
+        // The stops are always added last
+        for (let stopDict of arrayOfStops) {
+          let tempStopLine = "\t\t\t<stop ";
+          let tempStopNumber = 0;
+          for (let [key, val] of stopDict) {
+            tempStopLine += key + '="' + val + '" ';
+            if (key == "offset") {
+              tempStopNumber = Number(val);
+            }
           }
-        });
-        // Add the stops
-        for (let [num, val] of stopSVGReturnStrings) {
-          gradientSVGReturnString += val;
+          tempStopLine += "/>\n";
+          gradientSVGReturnString += tempStopLine;
         }
         // Close the radial gradient
         gradientSVGReturnString += "\t\t</radialGradient>\n";
@@ -553,45 +561,54 @@ export abstract class Command {
 
     // Use the layer dictionary to create the layer SVG string
     let layerSVGReturnString = "";
+    // The front fills need to be *before* the mid layer because the when the circle is a hole on the front
+    // the edge of the fill that is along the boundary circle can't be not stroked and would be on top of the boundary
+    // circle. So customize the order of the layer
+    const myLayers: number[] = [];
     for (let layerNumber in LAYER) {
       if (!isNaN(Number(layerNumber))) {
-        const itemList = layerDictionary.get(Number(layerNumber));
-        if (itemList != undefined) {
-          // This layer is not empty
-
-          // Flip the orientation for text layers IS THIS NECESSARY?
-          if (LAYER[layerNumber].toLowerCase().includes("text")) {
-            layerSVGReturnString +=
-              '\t\t<g id="' +
-              LAYER[layerNumber].replace("ground", "") +
-              '" transform="scale(1,-1)">\n';
-          } else {
-            layerSVGReturnString +=
-              '\t\t<g id="' +
-              LAYER[layerNumber].replace("ground", "") +
-              '" >\n';
-          }
-          for (let [styleID, svgString] of itemList) {
-            // insert the style ID class into the svgString using the first space
-            if (svgString.toLowerCase().includes("text")) {
-              layerSVGReturnString +=
-                "\t\t\t" +
-                svgString.replace(
-                  " ",
-                  ' class="' + styleID + ' text" ' // add the styling that applies to all text items
-                ) +
-                "\n";
-            } else {
-              layerSVGReturnString +=
-                "\t\t\t" +
-                svgString.replace(" ", ' class="' + styleID + '" ') +
-                "\n";
-            }
-          }
-          layerSVGReturnString += "\t\t</g>\n";
+        if (Number(layerNumber) == LAYER.midground) {
+          myLayers.push(LAYER.foregroundFills);
+          myLayers.push(LAYER.midground);
+        } else if (Number(layerNumber) != LAYER.foregroundFills) {
+          myLayers.push(Number(layerNumber));
         }
       }
     }
+    myLayers.forEach(layerNumber => {
+      const itemList = layerDictionary.get(Number(layerNumber));
+      if (itemList != undefined) {
+        // This layer is not empty
+        // Flip the orientation for text layers
+        if (LAYER[layerNumber].toLowerCase().includes("text")) {
+          layerSVGReturnString +=
+            '\t\t<g id="' +
+            LAYER[layerNumber].replace("ground", "") +
+            '" transform="scale(1,-1)">\n';
+        } else {
+          layerSVGReturnString +=
+            '\t\t<g id="' + LAYER[layerNumber].replace("ground", "") + '">\n';
+        }
+        for (let [styleID, svgString] of itemList) {
+          // insert the style ID class into the svgString using the first space
+          if (svgString.toLowerCase().includes("text")) {
+            layerSVGReturnString +=
+              "\t\t\t" +
+              svgString.replace(
+                " ",
+                ' class="' + styleID + ' text" ' // add the styling that applies to all text items
+              ) +
+              "\n";
+          } else {
+            layerSVGReturnString +=
+              "\t\t\t" +
+              svgString.replace(" ", ' class="' + styleID + '" ') +
+              "\n";
+          }
+        }
+        layerSVGReturnString += "\t\t</g>\n";
+      }
+    });
 
     // Build and return the svgReturnString
     return (

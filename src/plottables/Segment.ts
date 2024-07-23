@@ -767,7 +767,7 @@ export default class Segment extends Nodule {
         dashString += this._frontPart.dashes[num] + " ";
       }
       frontReturnDictionary.set("stroke-dasharray", dashString);
-      //frontReturnDictionary.set("stroke-dashoffset", this._frontHalf.dashes[offset]);
+
     }
 
     returnSVGObject.frontStyleDictionary = frontReturnDictionary;
@@ -844,7 +844,7 @@ export default class Segment extends Nodule {
       svgFrontString +=
         SETTINGS.boundaryCircle.radius + // x radius
         "," +
-        this._frontExtra.height / 2 + // y radius
+        Math.abs(this._frontExtra.height)/ 2 + // y radius
         " ";
       svgFrontString += "0 "; // rotation
       svgFrontString += frontDisplayFlags; // flags to control which portion of the ellipse is displayed
@@ -870,7 +870,7 @@ export default class Segment extends Nodule {
       svgFrontString +=
         SETTINGS.boundaryCircle.radius + // x radius
         "," +
-        this._frontExtra.height / 2 + // y radius
+        Math.abs(this._frontExtra.height) / 2 + // y radius
         " ";
       svgFrontString += "0 "; // rotation
       svgFrontString += this._normalVector.z > 0 ? "0 1 " : "0 0 "; // flags to control which portion of the ellipse is displayed
@@ -921,7 +921,7 @@ export default class Segment extends Nodule {
       svgBackString +=
         SETTINGS.boundaryCircle.radius + // x radius
         "," +
-        this._backExtra.height / 2 + // y radius
+        Math.abs(this._backExtra.height) / 2 + // y radius
         " ";
       svgBackString += "0 "; // rotation
       svgBackString += backDisplayFlags; // flags to control which portion of the ellipse is displayed
@@ -947,7 +947,7 @@ export default class Segment extends Nodule {
       svgBackString +=
         SETTINGS.boundaryCircle.radius + // x radius
         "," +
-        this._backExtra.height / 2 + // y radius
+        Math.abs(this._backExtra.height) / 2 + // y radius
         " ";
       svgBackString += "0 "; // rotation
       svgBackString += this._normalVector.z > 0 ? "0 1 " : "0 0 "; // flags to control which portion of the ellipse is displayed

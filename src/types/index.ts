@@ -449,11 +449,11 @@ export type MinMaxNumber = {
 export type toSVGType = {
   frontGradientDictionary: Map<
     svgGradientType,
-    string | Map<svgStopType, string>
+    string | Map<svgStopType, string>[]
   > | null; // front gradient gradient dictionary (if any)
   backGradientDictionary: Map<
     svgGradientType,
-    string | Map<svgStopType, string>
+    string | Map<svgStopType, string>[]
   > | null; // back gradient gradient dictionary (if any)
   frontStyleDictionary: Map<svgStyleType, string> | null; // front style dictionary (if any)
   backStyleDictionary: Map<svgStyleType, string> | null; // back style dictionary (if any)
@@ -491,7 +491,7 @@ export type svgGradientType =
   | "focusY"
   | "radius"
   | "units"
-  | "stop";
+  | "stops";
 
 export type svgStopType = "offset" | "stop-color";
 
