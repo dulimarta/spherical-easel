@@ -14,11 +14,18 @@ export const useStudioStore = defineStore("studio", () => {
     console.debug("Studio ID", id)
     return id
   }
+
+  async function getAvailableStudios() {
+    console.debug("Checking studio query.....")
+    const out = await socket.emitWithAck('studio-query')
+    console.debug("Available studios", out)
+  }
   return {
     /* state */
     socketID,
 
     /* functions */
     createStudio,
+    getAvailableStudios
   }
 })

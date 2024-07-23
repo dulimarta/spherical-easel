@@ -10,11 +10,13 @@
     </v-btn>
   </template>
   <template v-else>
-    <v-btn id="student-studio" size="x-small" icon color="green">
+    <v-btn id="student-studio" @click="prepareToJoinStudio" size="x-small" icon color="green">
       <v-icon>mdi-account-school</v-icon>
     </v-btn>
   </template>
-  <v-tooltip activator="#teacher-studio" :text="studioID ? 'One' : 'Two'"></v-tooltip>
+  <v-tooltip
+    activator="#teacher-studio"
+    :text="studioID ? 'Studio Dashboard' : 'Create a Studio'"></v-tooltip>
   <v-tooltip activator="#student-studio" text="Join a studio" />
   <Dialog
     ref="initiateSessionDialog"
@@ -23,12 +25,11 @@
     yes-text="Create"
     no-text="Cancel"
     :yes-action="doLaunchStudio">
-
-    <v-text-field v-model="studioName"
+    <v-text-field
+      v-model="studioName"
       name="What is this"
       label="Studio Name"
-      id="id"
-    ></v-text-field>
+      id="id"></v-text-field>
   </Dialog>
 </template>
 <script lang="ts" setup>
@@ -44,14 +45,14 @@ const router = useRouter();
 const { userRole, userDisplayedName } = storeToRefs(acctStore);
 const { socketID } = storeToRefs(studioStore);
 const studioID: Ref<string | undefined> = ref(undefined);
-  const studioName = ref("")
+const studioName = ref("");
 const initiateSessionDialog: Ref<DialogAction | null> = ref(null);
 onMounted(() => {
-    console.debug("Studio Session mounted")
-  })
-  onUnmounted(() => {
-    console.debug("Studio Session unmounted")
-  })
+  console.debug("Studio Session mounted. User role is", userRole.value);
+});
+onUnmounted(() => {
+  console.debug("Studio Session unmounted");
+});
 function prepareToLaunchStudio() {
   if (studioID.value) {
     router.push({
@@ -64,15 +65,20 @@ function prepareToLaunchStudio() {
 
 async function doLaunchStudio() {
   initiateSessionDialog.value?.hide();
-  studioID.value = await studioStore.createStudio(studioName.value, userDisplayedName?.value ?? "No Instructor Name")
-  router.push({ name: "Teacher Dashboard", params: { studioId: studioID.value } });
+  studioID.value = await studioStore.createStudio(
+    studioName.value,
+    userDisplayedName?.value ?? "No Instructor Name"
+  );
+  router.push({
+    name: "Teacher Dashboard",
+    params: { studioId: studioID.value }
+  });
 }
 
 function prepareToJoinStudio() {
-
+  console.debug("StudioSession::preparetoJoin")
+  studioStore.getAvailableStudios();
 }
 
-function joinStudio(id: string) {
-
-}
+function joinStudio(id: string) {}
 </script>
