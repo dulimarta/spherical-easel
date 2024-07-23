@@ -62,7 +62,7 @@ export const useAccountStore = defineStore("acct", () => {
     if (u) {
       firebaseUid.value = u.uid;
       loginEnabled.value = true;
-      await parseUserProfile(u.uid);
+      await parseUserProfile(u);
       if (u.email && !userEmail.value) userEmail.value = u.email;
       if (u.displayName && !userDisplayedName.value)
         userDisplayedName.value = u.displayName;
@@ -108,9 +108,9 @@ export const useAccountStore = defineStore("acct", () => {
     } else favoriteTools.value = DEFAULT_TOOL_NAMES;
   }
 
-  async function parseUserProfile(uid: string): Promise<void> {
-    firebaseUid.value = uid;
-    await getDoc(doc(appDB, "users", uid)).then((ds: DocumentSnapshot) => {
+  async function parseUserProfile(u: User): Promise<void> {
+    firebaseUid.value = u.uid;
+    await getDoc(doc(appDB, "users", u.uid)).then((ds: DocumentSnapshot) => {
       if (ds?.exists()) {
         const uProfile = ds.data() as UserProfile;
         const {
@@ -126,10 +126,14 @@ export const useAccountStore = defineStore("acct", () => {
           userProfilePictureURL.value = profilePictureURL;
         if (role) userRole.value = role.toLowerCase();
         if (userStarredConstructions) {
-          console.debug(`User ${displayName} (${uid}) has starred constructions`, userStarredConstructions)
+          console.debug(`User ${displayName} (${u.uid}) has starred constructions`, userStarredConstructions)
           starredConstructionIDs.value = userStarredConstructions;
         }
         parseAndSetFavoriteTools(favoriteTools ?? "#");
+      } else {
+        console.debug("Initialize user profile with login provider data?")
+        userDisplayedName.value = u.displayName ?? undefined
+        userProfilePictureURL.value = u.photoURL ?? undefined
       }
     });
   }
@@ -158,7 +162,7 @@ export const useAccountStore = defineStore("acct", () => {
       );
       if (credential.user?.emailVerified) {
         console.debug("User email is verified");
-        parseUserProfile(credential.user.uid);
+        parseUserProfile(credential.user);
         userEmail.value = email;
         return true;
       } else {
@@ -204,7 +208,7 @@ export const useAccountStore = defineStore("acct", () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     try {
       const cred = await signInWithPopup(appAuth, provider);
-      parseUserProfile(cred.user.uid);
+      parseUserProfile(cred.user);
       userEmail.value = cred.user.email!!;
       return null;
     } catch (error: any) {

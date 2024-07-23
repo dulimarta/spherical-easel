@@ -59,10 +59,14 @@ async function parseDocument(
       storageRef(appStorage, trimmedScript)
     )
       .then((url: string) => axios.get(url))
-      .then((r: AxiosResponse) => r.data);
+      .then((r: AxiosResponse) => r.data)
+      .catch((err: any) => {
+        console.debug("Firebase Storage error in fetching construction script", err)
+        return []
+      });
 
     parsedScript = scriptText as ConstructionScript;
-  } else {
+  } else if (trimmedScript.length > 0) {
     // Parse the script directly from the Firestore document
     parsedScript = JSON.parse(trimmedScript) as ConstructionScript;
   }
@@ -72,7 +76,12 @@ async function parseDocument(
   if (remoteDoc.preview?.startsWith("https:")) {
     svgData = await getDownloadURL(storageRef(appStorage, remoteDoc.preview))
       .then((url: string) => axios.get(url))
-      .then((r: AxiosResponse) => r.data);
+      .then((r: AxiosResponse) => r.data)
+      .catch((err: any) => {
+        console.debug("Firebase Storage error in fetching SVG preview", err)
+        return ""
+      });
+
     // console.debug(
     //   "SVG preview from Firebase Storage ",
     //   svgData?.substring(0, 70)
@@ -81,11 +90,15 @@ async function parseDocument(
     svgData = remoteDoc.preview;
     // console.debug("SVG preview from Firestore ", svgData?.substring(0, 70));
   }
-  const objectCount = parsedScript
-    // A simple command contributes 1 object
-    // A CommandGroup contributes N objects (as many elements in its subcommands)
-    .map((z: string | Array<string>) => (typeof z === "string" ? 1 : z.length))
-    .reduce((prev: number, curr: number) => prev + curr);
+  let objectCount = 0
+  if (Array.isArray(parsedScript) && parsedScript.length > 0) {
+    objectCount = parsedScript
+      // A simple command contributes 1 object
+      // A CommandGroup contributes N objects (as many elements in its subcommands)
+      .map((z: string | Array<string>) => (typeof z === "string" ? 1 : z.length))
+      .reduce((prev: number, curr: number) => prev + curr, /* initial value */0);
+  } else
+    parsedScript = []
 
   if (remoteDoc.rotationMatrix) {
     const matrixData = JSON.parse(remoteDoc.rotationMatrix);
@@ -449,11 +462,7 @@ export const useConstructionStore = defineStore("construction", () => {
     const constructionArr: Array<SphericalConstruction> = await Promise.all(
       parseTasks
     );
-    targetArr.push(
-      ...constructionArr.filter(
-        (c: SphericalConstruction) => c.parsedScript.length > 0
-      )
-    );
+    targetArr.push(...constructionArr);
     // Sort by creation date
     // targetArr.sort((a: SphericalConstruction, b: SphericalConstruction) =>
     //   a.dateCreated.localeCompare(b.dateCreated)
@@ -496,7 +505,7 @@ export const useConstructionStore = defineStore("construction", () => {
     targetArr.splice(0);
     targetArr.push(
       ...constructionArray.filter(
-        (s: SphericalConstruction) => s.parsedScript.length > 0
+        (s: SphericalConstruction) => s.parsedScript.length > 0 || true
       )
     );
   }
@@ -525,13 +534,26 @@ export const useConstructionStore = defineStore("construction", () => {
     // Delete script and preview if they are stored
     // on the Firebase Storage
     if (victimDetails.publicDocId) {
-      await deleteDoc(doc(appDB, "constructions", victimDetails.publicDocId));
+      try {
+        await deleteDoc(doc(appDB, "constructions", victimDetails.publicDocId));
+      } catch (err: any) {
+        console.debug("Unable to delete public construction", victimDetails.publicDocId)
+      }
     }
     if (victimDetails.script.startsWith("https://")) {
-      await deleteObject(storageRef(appStorage, `/scripts/${docId}`));
+      try {
+        await deleteObject(storageRef(appStorage, `/scripts/${docId}`));
+      } catch (err: any) {
+        console.debug(`Unable to delete script ${docId} in Firebase storage`)
+      }
     }
     if (victimDetails.preview.startsWith("https://"))
-      await deleteObject(storageRef(appStorage, `/construction-svg/${docId}`));
+      try {
+        await deleteObject(storageRef(appStorage, `/construction-svg/${docId}`));
+      } catch (err: any) {
+        console.debug(`Unable to delete SVG preview ${docId} in Firebase storage`)
+
+      }
     await deleteDoc(doc(appDB, "users", uid, "constructions", docId));
     privateConstructions.value.splice(pos, 1);
     return true;
