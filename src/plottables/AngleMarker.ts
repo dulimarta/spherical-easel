@@ -124,10 +124,10 @@ export default class AngleMarker extends Nodule {
   private _backTick: Line;
   private _glowingFrontTick: Line;
   private _glowingBackTick: Line;
-  private _frontTickDouble: Line;
-  private _backTickDouble: Line;
-  private _glowingFrontTickDouble: Line;
-  private _glowingBackTickDouble: Line;
+  // private _frontTickDouble: Line;
+  // private _backTickDouble: Line;
+  // private _glowingFrontTickDouble: Line;
+  // private _glowingBackTickDouble: Line;
 
   /**
    * The TwoJS object to display the arrow head for beginners.
@@ -485,20 +485,20 @@ export default class AngleMarker extends Nodule {
     this._backTick = new Line();
     this._glowingFrontTick = new Line();
     this._glowingBackTick = new Line();
-    this._frontTickDouble = new Line();
-    this._backTickDouble = new Line();
-    this._glowingFrontTickDouble = new Line();
-    this._glowingBackTickDouble = new Line();
+    // this._frontTickDouble = new Line();
+    // this._backTickDouble = new Line();
+    // this._glowingFrontTickDouble = new Line();
+    // this._glowingBackTickDouble = new Line();
 
     // Set the style that never changes -- fill
     this._frontTick.noFill();
     this._backTick.noFill();
-    this._frontTickDouble.noFill();
-    this._backTickDouble.noFill();
+    // this._frontTickDouble.noFill();
+    // this._backTickDouble.noFill();
     this._glowingFrontTick.noFill();
     this._glowingBackTick.noFill();
-    this._glowingFrontTickDouble.noFill();
-    this._glowingBackTickDouble.noFill();
+    // this._glowingFrontTickDouble.noFill();
+    // this._glowingBackTickDouble.noFill();
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
     Nodule.idPlottableDescriptionMap.set(String(this._frontTick.id), {
@@ -520,10 +520,10 @@ export default class AngleMarker extends Nodule {
     this._backTick.cap = "square";
     this._glowingFrontTick.cap = "square";
     this._glowingBackTick.cap = "square";
-    this._frontTickDouble.cap = "square";
-    this._backTickDouble.cap = "square";
-    this._glowingFrontTickDouble.cap = "square";
-    this._glowingBackTickDouble.cap = "square";
+    // this._frontTickDouble.cap = "square";
+    // this._backTickDouble.cap = "square";
+    // this._glowingFrontTickDouble.cap = "square";
+    // this._glowingBackTickDouble.cap = "square";
 
     this.styleOptions.set(
       StyleCategory.Front,
@@ -796,48 +796,63 @@ export default class AngleMarker extends Nodule {
       this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
     this._frontTick.vertices[0].y =
       this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
-    this._frontTickDouble.vertices[0].x =
-      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
-    this._frontTickDouble.vertices[0].y =
-      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    // this._frontTickDouble.vertices[0].x =
+    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    // this._frontTickDouble.vertices[0].y =
+    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
     this._backTick.vertices[0].x =
       this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
     this._backTick.vertices[0].y =
       this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
-    this._backTickDouble.vertices[0].x =
-      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
-    this._backTickDouble.vertices[0].y =
-      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    // this._backTickDouble.vertices[0].x =
+    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    // this._backTickDouble.vertices[0].y =
+    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
     this._glowingFrontTick.vertices[0].x =
       this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
     this._glowingFrontTick.vertices[0].y =
       this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTickDouble.vertices[0].x =
-      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTickDouble.vertices[0].y =
-      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    // this._glowingFrontTickDouble.vertices[0].x =
+    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    // this._glowingFrontTickDouble.vertices[0].y =
+    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
     this._glowingBackTick.vertices[0].x =
       this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
     this._glowingBackTick.vertices[0].y =
       this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
-    this._glowingBackTickDouble.vertices[0].x =
-      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
-    this._glowingBackTickDouble.vertices[0].y =
-      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    // this._glowingBackTickDouble.vertices[0].x =
+    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    // this._glowingBackTickDouble.vertices[0].y =
+    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
     // Now compute the end of the glowing/not glowing, front/back, not double tick marks
-    this.tmpVector1.set(0, 0, 0);
-    this.tmpVector1.addScaledVector(
-      this.desiredZAxis,
-      Math.cos(this._radius + SETTINGS.angleMarker.defaultTickMarkLength / 2)
-    );
-    this.tmpVector1.addScaledVector(
-      this.tmpVector,
-      Math.sin(this._radius + SETTINGS.angleMarker.defaultTickMarkLength / 2)
-    );
+    if (
+      frontStyle?.angleMarkerDoubleArc &&
+      frontStyle.angleMarkerDoubleArc === true
+    ) {
+      this.tmpVector1.set(0, 0, 0);
+      this.tmpVector1.addScaledVector(
+        this.desiredZAxis,
+        Math.cos(this._radiusDouble + this._tickMarkLength / 2)
+      );
+      this.tmpVector1.addScaledVector(
+        this.tmpVector,
+        Math.sin(this._radiusDouble + (3 * this._tickMarkLength) / 4)
+      );
+    } else {
+      this.tmpVector1.set(0, 0, 0);
+      this.tmpVector1.addScaledVector(
+        this.desiredZAxis,
+        Math.cos(this._radius + SETTINGS.angleMarker.defaultTickMarkLength / 2)
+      );
+      this.tmpVector1.addScaledVector(
+        this.tmpVector,
+        Math.sin(this._radius + SETTINGS.angleMarker.defaultTickMarkLength / 2)
+      );
+    }
 
     this._frontTick.vertices[1].x =
       this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
@@ -856,32 +871,32 @@ export default class AngleMarker extends Nodule {
     this._glowingBackTick.vertices[1].y =
       this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
-    // Now compute the end of the glowing/not glowing, front/back, not double tick marks
-    this.tmpVector1.set(0, 0, 0);
-    this.tmpVector1.addScaledVector(
-      this.desiredZAxis,
-      Math.cos(this._radiusDouble + this._tickMarkLength / 2)
-    );
-    this.tmpVector1.addScaledVector(
-      this.tmpVector,
-      Math.sin(this._radiusDouble + (3 * this._tickMarkLength) / 4)
-    );
-    this._frontTickDouble.vertices[1].x =
-      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
-    this._frontTickDouble.vertices[1].y =
-      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
-    this._backTickDouble.vertices[1].x =
-      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
-    this._backTickDouble.vertices[1].y =
-      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTickDouble.vertices[1].x =
-      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTickDouble.vertices[1].y =
-      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
-    this._glowingBackTickDouble.vertices[1].x =
-      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
-    this._glowingBackTickDouble.vertices[1].y =
-      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    // // Now compute the end of the glowing/not glowing, front/back, not double tick marks
+    // this.tmpVector1.set(0, 0, 0);
+    // this.tmpVector1.addScaledVector(
+    //   this.desiredZAxis,
+    //   Math.cos(this._radiusDouble + this._tickMarkLength / 2)
+    // );
+    // this.tmpVector1.addScaledVector(
+    //   this.tmpVector,
+    //   Math.sin(this._radiusDouble + (3 * this._tickMarkLength) / 4)
+    // );
+    // this._frontTickDouble.vertices[1].x =
+    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    // this._frontTickDouble.vertices[1].y =
+    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    // this._backTickDouble.vertices[1].x =
+    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    // this._backTickDouble.vertices[1].y =
+    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    // this._glowingFrontTickDouble.vertices[1].x =
+    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    // this._glowingFrontTickDouble.vertices[1].y =
+    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    // this._glowingBackTickDouble.vertices[1].x =
+    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    // this._glowingBackTickDouble.vertices[1].y =
+    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
     // Compute the arrow head vertices.
     // The arrow head is a non-convex non-crossed quadrilateral (almost a kite whose diagonals don't intersect)
@@ -1299,16 +1314,16 @@ export default class AngleMarker extends Nodule {
       frontStyle?.angleMarkerTickMark &&
       frontStyle.angleMarkerTickMark === true
     ) {
-      if (
-        frontStyle?.angleMarkerDoubleArc &&
-        frontStyle.angleMarkerDoubleArc === true
-      ) {
-        this._frontTickDouble.visible = true;
-        this._glowingFrontTickDouble.visible = true;
-      } else {
-        this._frontTick.visible = true;
-        this._glowingFrontTick.visible = true;
-      }
+      // if (
+      //   frontStyle?.angleMarkerDoubleArc &&
+      //   frontStyle.angleMarkerDoubleArc === true
+      // ) {
+      //   this._frontTickDouble.visible = true;
+      //   this._glowingFrontTickDouble.visible = true;
+      // } else {
+      this._frontTick.visible = true;
+      this._glowingFrontTick.visible = true;
+      // }
     }
   }
   backGlowingDisplay(): void {
@@ -1346,16 +1361,16 @@ export default class AngleMarker extends Nodule {
       frontStyle?.angleMarkerTickMark &&
       frontStyle.angleMarkerTickMark === true
     ) {
-      if (
-        frontStyle?.angleMarkerDoubleArc &&
-        frontStyle.angleMarkerDoubleArc === true
-      ) {
-        this._backTickDouble.visible = true;
-        this._glowingBackTickDouble.visible = true;
-      } else {
-        this._backTick.visible = true;
-        this._glowingBackTick.visible = true;
-      }
+      // if (
+      //   frontStyle?.angleMarkerDoubleArc &&
+      //   frontStyle.angleMarkerDoubleArc === true
+      // ) {
+      //   this._backTickDouble.visible = true;
+      //   this._glowingBackTickDouble.visible = true;
+      // } else {
+      this._backTick.visible = true;
+      this._glowingBackTick.visible = true;
+      // }
     }
   }
   glowingDisplay(): void {
@@ -1391,14 +1406,14 @@ export default class AngleMarker extends Nodule {
       frontStyle?.angleMarkerTickMark &&
       frontStyle.angleMarkerTickMark === true
     ) {
-      if (
-        frontStyle?.angleMarkerDoubleArc &&
-        frontStyle.angleMarkerDoubleArc === true
-      ) {
-        this._frontTickDouble.visible = true;
-      } else {
-        this._frontTick.visible = true;
-      }
+      // if (
+      //   frontStyle?.angleMarkerDoubleArc &&
+      //   frontStyle.angleMarkerDoubleArc === true
+      // ) {
+      //   this._frontTickDouble.visible = true;
+      // } else {
+      this._frontTick.visible = true;
+      // }
     }
   }
   backNormalDisplay(): void {
@@ -1432,14 +1447,14 @@ export default class AngleMarker extends Nodule {
       frontStyle?.angleMarkerTickMark &&
       frontStyle.angleMarkerTickMark === true
     ) {
-      if (
-        frontStyle?.angleMarkerDoubleArc &&
-        frontStyle.angleMarkerDoubleArc === true
-      ) {
-        this._backTickDouble.visible = true;
-      } else {
-        this._backTick.visible = true;
-      }
+      // if (
+      //   frontStyle?.angleMarkerDoubleArc &&
+      //   frontStyle.angleMarkerDoubleArc === true
+      // ) {
+      //   this._backTickDouble.visible = true;
+      // } else {
+      this._backTick.visible = true;
+      // }
     }
   }
   normalDisplay(): void {
@@ -1473,8 +1488,8 @@ export default class AngleMarker extends Nodule {
       this._frontTick.visible = false;
       this._glowingFrontTick.visible = false;
 
-      this._frontTickDouble.visible = false;
-      this._glowingFrontTickDouble.visible = false;
+      // this._frontTickDouble.visible = false;
+      // this._glowingFrontTickDouble.visible = false;
 
       //back
       this._backStraightVertexToStart.visible = false;
@@ -1498,8 +1513,8 @@ export default class AngleMarker extends Nodule {
       this._backTick.visible = false;
       this._glowingBackTick.visible = false;
 
-      this._backTickDouble.visible = false;
-      this._glowingBackTickDouble.visible = false;
+      // this._backTickDouble.visible = false;
+      // this._glowingBackTickDouble.visible = false;
     } else {
       this.normalDisplay();
     }
@@ -1554,10 +1569,10 @@ export default class AngleMarker extends Nodule {
     this._frontTick.addTo(layers[LAYER.foregroundAngleMarkers]);
     this._glowingFrontTick.addTo(layers[LAYER.foregroundAngleMarkersGlowing]);
 
-    this._frontTickDouble.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this._glowingFrontTickDouble.addTo(
-      layers[LAYER.foregroundAngleMarkersGlowing]
-    );
+    // this._frontTickDouble.addTo(layers[LAYER.foregroundAngleMarkers]);
+    // this._glowingFrontTickDouble.addTo(
+    //   layers[LAYER.foregroundAngleMarkersGlowing]
+    // );
 
     // back
     this._backFill.addTo(layers[LAYER.backgroundAngleMarkers]);
@@ -1588,10 +1603,10 @@ export default class AngleMarker extends Nodule {
     this._backTick.addTo(layers[LAYER.backgroundAngleMarkers]);
     this._glowingBackTick.addTo(layers[LAYER.backgroundAngleMarkersGlowing]);
 
-    this._backTickDouble.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this._glowingBackTickDouble.addTo(
-      layers[LAYER.backgroundAngleMarkersGlowing]
-    );
+    // this._backTickDouble.addTo(layers[LAYER.backgroundAngleMarkers]);
+    // this._glowingBackTickDouble.addTo(
+    //   layers[LAYER.backgroundAngleMarkersGlowing]
+    // );
   }
 
   removeFromLayers(): void {
@@ -1618,8 +1633,8 @@ export default class AngleMarker extends Nodule {
     this._frontTick.remove();
     this._glowingFrontTick.remove();
 
-    this._frontTickDouble.remove();
-    this._glowingFrontTickDouble.remove();
+    // this._frontTickDouble.remove();
+    // this._glowingFrontTickDouble.remove();
 
     //back
     this._backStraightVertexToStart.remove();
@@ -1643,8 +1658,8 @@ export default class AngleMarker extends Nodule {
     this._backTick.remove();
     this._glowingBackTick.remove();
 
-    this._backTickDouble.remove();
-    this._glowingBackTickDouble.remove();
+    // this._backTickDouble.remove();
+    // this._glowingBackTickDouble.remove();
   }
 
   toSVG(): toSVGType[] {
@@ -2062,69 +2077,69 @@ export default class AngleMarker extends Nodule {
       returnSVGObjects.push(angleMarkerArrowHeadSVGObject);
     }
     ////////////////////////////////////////////////Double Tick Object//////////////////////////////////////
-    if (this._frontTickDouble.visible || this._backTickDouble.visible) {
-      const angleMarkerTickDoubleSVGObject: toSVGType = {
-        frontGradientDictionary: null,
-        backGradientDictionary: null,
-        frontStyleDictionary: null,
-        backStyleDictionary: null,
-        layerSVGArray: [],
-        type: "angleMarkerTick"
-      };
+    // if (this._frontTickDouble.visible || this._backTickDouble.visible) {
+    //   const angleMarkerTickDoubleSVGObject: toSVGType = {
+    //     frontGradientDictionary: null,
+    //     backGradientDictionary: null,
+    //     frontStyleDictionary: null,
+    //     backStyleDictionary: null,
+    //     layerSVGArray: [],
+    //     type: "angleMarkerTick"
+    //   };
 
-      const amTickDoubleStyleDictionary = new Map<svgStyleType, string>();
+    //   const amTickDoubleStyleDictionary = new Map<svgStyleType, string>();
 
-      amTickDoubleStyleDictionary.set("fill", "none");
-      amTickDoubleStyleDictionary.set("stroke-linecap", "square");
-      if (this._angleMarkerOnFront) {
-        amTickDoubleStyleDictionary.set(
-          "stroke",
-          String(this._frontTickDouble.stroke)
-        );
-        amTickDoubleStyleDictionary.set(
-          "stroke-width",
-          String(this._frontTickDouble.linewidth)
-        );
-        angleMarkerTickDoubleSVGObject.frontStyleDictionary =
-          amTickDoubleStyleDictionary;
-      } else {
-        amTickDoubleStyleDictionary.set(
-          "stroke",
-          String(this._backTickDouble.stroke)
-        );
-        amTickDoubleStyleDictionary.set(
-          "stroke-width",
-          String(this._backTickDouble.linewidth)
-        );
-        angleMarkerTickDoubleSVGObject.backStyleDictionary =
-          amTickDoubleStyleDictionary;
-      }
+    //   amTickDoubleStyleDictionary.set("fill", "none");
+    //   amTickDoubleStyleDictionary.set("stroke-linecap", "square");
+    //   if (this._angleMarkerOnFront) {
+    //     amTickDoubleStyleDictionary.set(
+    //       "stroke",
+    //       String(this._frontTickDouble.stroke)
+    //     );
+    //     amTickDoubleStyleDictionary.set(
+    //       "stroke-width",
+    //       String(this._frontTickDouble.linewidth)
+    //     );
+    //     angleMarkerTickDoubleSVGObject.frontStyleDictionary =
+    //       amTickDoubleStyleDictionary;
+    //   } else {
+    //     amTickDoubleStyleDictionary.set(
+    //       "stroke",
+    //       String(this._backTickDouble.stroke)
+    //     );
+    //     amTickDoubleStyleDictionary.set(
+    //       "stroke-width",
+    //       String(this._backTickDouble.linewidth)
+    //     );
+    //     angleMarkerTickDoubleSVGObject.backStyleDictionary =
+    //       amTickDoubleStyleDictionary;
+    //   }
 
-      // now collect the geometric information for this part
-      let amTickDoubleSVGString =
-        '<polyline points="' +
-        this._frontTickDouble.vertices[0].x +
-        " " +
-        this._frontTickDouble.vertices[0].y +
-        ", " +
-        this._frontTickDouble.vertices[1].x +
-        " " +
-        this._frontTickDouble.vertices[1].y +
-        '"/>';
-      if (this._angleMarkerOnFront) {
-        angleMarkerTickDoubleSVGObject.layerSVGArray.push([
-          LAYER.foregroundAngleMarkers,
-          amTickDoubleSVGString
-        ]);
-      } else {
-        angleMarkerTickDoubleSVGObject.layerSVGArray.push([
-          LAYER.backgroundAngleMarkers,
-          amTickDoubleSVGString
-        ]);
-      }
+    //   // now collect the geometric information for this part
+    //   let amTickDoubleSVGString =
+    //     '<polyline points="' +
+    //     this._frontTickDouble.vertices[0].x +
+    //     " " +
+    //     this._frontTickDouble.vertices[0].y +
+    //     ", " +
+    //     this._frontTickDouble.vertices[1].x +
+    //     " " +
+    //     this._frontTickDouble.vertices[1].y +
+    //     '"/>';
+    //   if (this._angleMarkerOnFront) {
+    //     angleMarkerTickDoubleSVGObject.layerSVGArray.push([
+    //       LAYER.foregroundAngleMarkers,
+    //       amTickDoubleSVGString
+    //     ]);
+    //   } else {
+    //     angleMarkerTickDoubleSVGObject.layerSVGArray.push([
+    //       LAYER.backgroundAngleMarkers,
+    //       amTickDoubleSVGString
+    //     ]);
+    //   }
 
-      returnSVGObjects.push(angleMarkerTickDoubleSVGObject);
-    }
+    //   returnSVGObjects.push(angleMarkerTickDoubleSVGObject);
+    // }
 
     ////////////////////////////////////////////////Tick Object//////////////////////////////////////
     if (this._frontTick.visible || this._backTick.visible) {
@@ -2272,13 +2287,13 @@ export default class AngleMarker extends Nodule {
         frontStrokeWidthPercent) /
       100;
 
-    this._frontTickDouble.linewidth =
-      (AngleMarker.currentTickStrokeWidthFront * frontStrokeWidthPercent) / 100;
+    // this._frontTickDouble.linewidth =
+    //   (AngleMarker.currentTickStrokeWidthFront * frontStrokeWidthPercent) / 100;
 
-    this._glowingFrontTickDouble.linewidth =
-      (AngleMarker.currentGlowingTickStrokeWidthFront *
-        frontStrokeWidthPercent) /
-      100;
+    // this._glowingFrontTickDouble.linewidth =
+    //   (AngleMarker.currentGlowingTickStrokeWidthFront *
+    //     frontStrokeWidthPercent) /
+    //   100;
 
     this._frontDouble.linewidth =
       (AngleMarker.currentCircularStrokeWidthFront * frontStrokeWidthPercent) /
@@ -2356,19 +2371,19 @@ export default class AngleMarker extends Nodule {
           : backStrokeWidthPercent)) /
       100;
 
-    this._backTickDouble.linewidth =
-      (AngleMarker.currentTickStrokeWidthBack *
-        (backStyle?.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
-          : backStrokeWidthPercent)) /
-      100;
+    // this._backTickDouble.linewidth =
+    //   (AngleMarker.currentTickStrokeWidthBack *
+    //     (backStyle?.dynamicBackStyle
+    //       ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+    //       : backStrokeWidthPercent)) /
+    //   100;
 
-    this._glowingBackTickDouble.linewidth =
-      (AngleMarker.currentGlowingTickStrokeWidthBack *
-        (backStyle?.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
-          : backStrokeWidthPercent)) /
-      100;
+    // this._glowingBackTickDouble.linewidth =
+    //   (AngleMarker.currentGlowingTickStrokeWidthBack *
+    //     (backStyle?.dynamicBackStyle
+    //       ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+    //       : backStrokeWidthPercent)) /
+    //   100;
 
     this._backDouble.linewidth =
       (AngleMarker.currentCircularStrokeWidthBack *
@@ -2604,7 +2619,7 @@ export default class AngleMarker extends Nodule {
 
           this._frontDouble.noStroke();
           this._frontTick.noStroke();
-          this._frontTickDouble.noStroke();
+          // this._frontTickDouble.noStroke();
           this._frontArrowHeadPath.noStroke();
           this._frontArrowHeadPath.noFill(); // arrow head fill is the same as the stroke of the circle path
         } else {
@@ -2616,7 +2631,7 @@ export default class AngleMarker extends Nodule {
 
           this._frontDouble.stroke = frontStyle?.strokeColor ?? "black";
           this._frontTick.stroke = frontStyle?.strokeColor ?? "black";
-          this._frontTickDouble.stroke = frontStyle?.strokeColor ?? "black";
+          // this._frontTickDouble.stroke = frontStyle?.strokeColor ?? "black";
           this._frontArrowHeadPath.stroke = frontStyle?.strokeColor ?? "black";
           this._frontArrowHeadPath.fill = frontStyle?.strokeColor ?? "black"; // arrow head fill is the same as the stroke of the circle path
         }
@@ -2680,7 +2695,7 @@ export default class AngleMarker extends Nodule {
 
             this._backDouble.noStroke();
             this._backTick.noStroke();
-            this._backTickDouble.noStroke();
+            // this._backTickDouble.noStroke();
             this._backArrowHeadPath.noStroke();
             this._backArrowHeadPath.noFill(); // arrow head fill is the same as the stroke of the circle path
           } else {
@@ -2700,9 +2715,9 @@ export default class AngleMarker extends Nodule {
             this._backTick.stroke = Nodule.contrastStrokeColor(
               frontStyle?.strokeColor ?? "black"
             );
-            this._backTickDouble.stroke = Nodule.contrastStrokeColor(
-              frontStyle?.strokeColor ?? "black"
-            );
+            // this._backTickDouble.stroke = Nodule.contrastStrokeColor(
+            //   frontStyle?.strokeColor ?? "black"
+            // );
             this._backArrowHeadPath.stroke = Nodule.contrastStrokeColor(
               frontStyle?.strokeColor ?? "black"
             );
@@ -2771,7 +2786,7 @@ export default class AngleMarker extends Nodule {
 
         this._glowingFrontDouble.stroke = this.glowingStrokeColorFront;
         this._glowingFrontTick.stroke = this.glowingStrokeColorFront;
-        this._glowingFrontTickDouble.stroke = this.glowingStrokeColorFront;
+        // this._glowingFrontTickDouble.stroke = this.glowingStrokeColorFront;
         this._glowingFrontArrowHeadPath.stroke = this.glowingStrokeColorFront;
 
         // strokeWidthPercent applied by adjustSize()
@@ -2804,7 +2819,7 @@ export default class AngleMarker extends Nodule {
 
         this._glowingBackDouble.stroke = this.glowingStrokeColorBack;
         this._glowingBackTick.stroke = this.glowingStrokeColorBack;
-        this._glowingBackTickDouble.stroke = this.glowingStrokeColorBack;
+        // this._glowingBackTickDouble.stroke = this.glowingStrokeColorBack;
         this._glowingBackArrowHeadPath.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
         // Copy the back dash properties to the glowing object
