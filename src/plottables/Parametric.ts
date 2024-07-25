@@ -620,7 +620,7 @@ export default class Parametric extends Nodule {
       frontStyleDictionary: null,
       backStyleDictionary: null,
       layerSVGArray: [],
-      type: "angleMarker"
+      type: "parametric"
     }
     return [returnSVGObject]
   }

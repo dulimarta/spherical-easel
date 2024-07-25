@@ -129,7 +129,6 @@ export default class TangentLineThruPointHandler extends Highlighter {
           this.oneDimensional !== null ||
           this.hitSENodules.length === 0)
       ) {
-        console.log("Her");
         // Fill the point object first by the nearby points, then by nearby intersection points,
         // then point on one-dimensional object, then by creating a new point
         if (this.hitSEPoints.length > 0) {

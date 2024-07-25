@@ -2024,7 +2024,6 @@ export default class AngleMarker extends Nodule {
         angleMarkerArrowHeadSVGObject.frontStyleDictionary =
           amArrowHeadStyleDictionary;
       } else {
-        console.log("here1");
         amArrowHeadStyleDictionary.set(
           "stroke",
           String(this._backArrowHeadPath.stroke)
@@ -2066,7 +2065,6 @@ export default class AngleMarker extends Nodule {
           amArrowHeadSVGString
         ]);
       } else {
-        console.log("here2");
         angleMarkerArrowHeadSVGObject.layerSVGArray.push([
           LAYER.backgroundAngleMarkers,
           amArrowHeadSVGString

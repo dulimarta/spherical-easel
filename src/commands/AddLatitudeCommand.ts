@@ -35,11 +35,8 @@ export class AddLatitudeCommand extends Command {
     Command.store.removeLabel(this.seLabel.id);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
-    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
-    //
-
-    return null
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seLatitude, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

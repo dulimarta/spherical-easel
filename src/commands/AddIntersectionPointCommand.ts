@@ -54,11 +54,8 @@ export class AddIntersectionPointCommand extends Command {
     this.principleParent2.unregisterChild(this.seIntersectionPoint);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
-    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
-    //
-
-    return null
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seIntersectionPoint, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

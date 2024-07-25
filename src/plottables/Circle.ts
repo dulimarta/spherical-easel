@@ -1063,6 +1063,7 @@ export default class Circle extends Nodule {
       }
       returnSVGObject.backStyleDictionary = backReturnDictionary;
     }
+
     // variables that indicate where the extremes of the circle are
     const my_diff = this._beta - this._circleRadius; // my_diff is the angular distance from the north pole to the closest point on the circle
     const my_sum = this._beta + this._circleRadius; // my_sum is the angular distance from the north pole to the furthest point on the circle
@@ -1241,7 +1242,7 @@ export default class Circle extends Nodule {
 
         returnSVGObject.layerSVGArray.push([edgeLayer, svgString]);
       } else {
-        console.log("HOLE");
+        // console.log("HOLE");
         //  the circle is a hole on the front or back, the back/front is entirely covered
 
         // Find two points on the ellipse that are close but not the same, draw the long ellipse between them

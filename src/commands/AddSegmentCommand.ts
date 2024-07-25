@@ -46,27 +46,8 @@ export class AddSegmentCommand extends Command {
     this.endSEPoint.unregisterChild(this.seSegment);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
-    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
-    if (
-      deletedNoduleIds.findIndex(id => id == this.seSegment.id) == -1 &&
-      this.seSegment.exists &&
-      this.seSegment.showing
-    ) {
-      const info: toSVGType[] = [];
-      info.push(...this.seSegment.ref.toSVG());
-      // now check the label (if the point is deleted the label is also so check this inside the first conditional statement)
-      if (
-        deletedNoduleIds.findIndex(id => id == this.seLabel.id) == -1 &&
-        this.seLabel.exists &&
-        this.seLabel.showing
-      ) {
-        info.push(...this.seLabel.ref.toSVG());
-      }
-      return info;
-    } else {
-      return null;
-    }
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seSegment, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

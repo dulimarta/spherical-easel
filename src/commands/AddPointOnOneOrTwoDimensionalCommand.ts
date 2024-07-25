@@ -72,11 +72,8 @@ export class AddPointOnOneDimensionalCommand extends Command {
     this.parent.unregisterChild(this.sePointOnOneOrTwoDimensional);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
-    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
-    //
-
-    return null
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.sePointOnOneOrTwoDimensional, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

@@ -21,7 +21,7 @@ import {
   toSVGType
 } from "@/types/index";
 import SETTINGS, { LAYER } from "@/global-settings";
-import { DeleteNoduleCommand } from "./DeleteNoduleCommand";
+import { SELabel, SENodule } from "@/models/internal";
 
 export abstract class Command {
   protected static store: SEStoreType;
@@ -155,12 +155,13 @@ export abstract class Command {
   ]);
 
   /**
-   * Returns either null or a six-tuple of information
-   * including four (front|back)(gradient|style)dictionaries for the styling,
-   * Array of the location and SVG strings, and
-   * type of object encoded
+   * @returns all the pairs [SENodule, SELabel] that might need to be converted to SVG
+   * returns the empty array if nothing to process
+   * override this method if there are geometric objects to convert to SVG
    */
-  abstract toSVG(deletedNoduleIds: Array<number>): null | toSVGType[];
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [];  // returns the empty array if nothing to process; override this method if there are geometric objects to convert to SVG
+  }
 
   /**
    * Make an array of the ids of all deleted nodes for passing to each toSVG method. When an object is deleted, it
@@ -287,7 +288,7 @@ export abstract class Command {
     //           Note: there should be NO space between the initial < and the name of the object.
     //                 The first space MUST be after the name of the object
     //
-    // Here is a list of the layer name and number Glowing layer is used by anglemarker to get the fill not to overlap with the stroke of the edge
+    // Here is a list of the layer name and number. Glowing layer enum is used by anglemarker to get the fill not to overlap with the stroke of the edge
     //    backgroundAngleMarkers,0 --> contains only angle markers (edges and fill)
     //    backgroundFills,3 --> contains circles (fills only), ellipse (fills only), polygon
     //    background,4 --> contains lines, segments, circles (edges only), parametric, ellipse, edges only
@@ -321,158 +322,167 @@ export abstract class Command {
     let frontStyleCount = 0;
     let backStyleCount = 0;
     Command.commandHistory.forEach((c: Command) => {
-      const toSVGReturnArray = c.toSVG(Command.deletedNoduleIds);
-      if (toSVGReturnArray != null) {
-        // console.log("here style", toSVGReturnArray.length )
-        for (let information of toSVGReturnArray) {
-          if (information != null) {
-            const frontGradientDictionary = information.frontGradientDictionary;
-            const backGradientDictionary = information.backGradientDictionary;
-            const frontStyleDictionary = information.frontStyleDictionary;
-            const backStyleDictionary = information.backStyleDictionary;
-            const layerSVGInformation = information.layerSVGArray;
-            const typeName = information.type;
-            // console.log("type", typeName)
-            // console.log("fgd",frontGradientDictionary)
-            // console.log("bgd",backGradientDictionary)
-            // console.log("fsd", frontStyleDictionary)
-            // console.log("bsd",backStyleDictionary)
+      ///// former toSVG on each command is the same
+      const objectPairs = c.getSVGObjectLabelPairs(); // returns the empty array if nothing to process
+      const svgTypeArray: toSVGType[] = [];
+      objectPairs.forEach(pair => {
+        if (
+          Command.deletedNoduleIds.findIndex(id => id == pair[0].id) == -1 &&
+          pair[0].exists &&
+          pair[0].showing
+        ) {
+          if (pair[0].ref != undefined) {
+            svgTypeArray.push(...pair[0].ref.toSVG());
+          }
+          // now check the label (if the point is deleted the label is also so check this inside the first conditional statement)
+          // labels are never deleted only hidden
+          if (pair[1].exists && pair[1].showing) {
+            svgTypeArray.push(...pair[1].ref.toSVG());
+          }
+        }
+      });
+      if (svgTypeArray.length != 0) {
+        // now incorporate the new information to the dictionaries and layer array
+        for (let information of svgTypeArray) {
+          const frontGradientDictionary = information.frontGradientDictionary;
+          const backGradientDictionary = information.backGradientDictionary;
+          const frontStyleDictionary = information.frontStyleDictionary;
+          const backStyleDictionary = information.backStyleDictionary;
+          const layerSVGInformation = information.layerSVGArray;
+          const typeName = information.type;
+          // console.log("type", typeName)
+          // console.log("fgd",frontGradientDictionary)
+          // console.log("bgd",backGradientDictionary)
+          // console.log("fsd", frontStyleDictionary)
+          // console.log("bsd",backStyleDictionary)
 
-            // Incorporate the new gradient dictionaries into gradientDictionary
-            //  Note: For a single object, there is only one front gradient and one back gradient applied to all front/back object fills
-            let frontGradientName: string | null = null;
-            if (frontGradientDictionary !== null) {
-              // Check to see if this dictionary exists already in styleDictionary
-              frontGradientName =
-                typeName + "FrontGradient" + String(frontGradientCount);
-              for (let [name, dict] of gradientDictionary.entries()) {
-                if (gradientDictionariesEqual(dict, frontGradientDictionary)) {
-                  frontGradientName = name;
-                  break;
-                }
-              }
-              if (
-                frontGradientName ==
-                typeName + "FrontGradient" + String(frontGradientCount)
-              ) {
-                // The gradient is new and should be added to the gradientDictionary
-                gradientDictionary.set(
-                  frontGradientName,
-                  frontGradientDictionary
-                );
-                frontGradientCount++;
+          // Incorporate the new gradient dictionaries into gradientDictionary
+          //  Note: For a single object, there is only one front gradient and one back gradient applied to all front/back object fills
+          let frontGradientName: string | null = null;
+          if (frontGradientDictionary !== null) {
+            // Check to see if this dictionary exists already in styleDictionary
+            frontGradientName =
+              typeName + "FrontGradient" + String(frontGradientCount);
+            for (let [name, dict] of gradientDictionary.entries()) {
+              if (gradientDictionariesEqual(dict, frontGradientDictionary)) {
+                frontGradientName = name;
+                break;
               }
             }
-            let backGradientName: string | null = null;
-            if (backGradientDictionary !== null) {
-              // Check to see if this dictionary exists already in styleDictionary
-              backGradientName =
-                typeName + "BackGradient" + String(backGradientCount);
-              for (let [name, dict] of gradientDictionary.entries()) {
-                if (gradientDictionariesEqual(dict, backGradientDictionary)) {
-                  backGradientName = name;
-                  break;
-                }
-              }
-              if (
-                backGradientName ==
-                typeName + "BackGradient" + String(backGradientCount)
-              ) {
-                // The gradient is new and should be added to the gradientDictionary
-                gradientDictionary.set(
-                  backGradientName,
-                  backGradientDictionary
-                );
-                backGradientCount++;
+            if (
+              frontGradientName ==
+              typeName + "FrontGradient" + String(frontGradientCount)
+            ) {
+              // The gradient is new and should be added to the gradientDictionary
+              gradientDictionary.set(
+                frontGradientName,
+                frontGradientDictionary
+              );
+              frontGradientCount++;
+            }
+          }
+          let backGradientName: string | null = null;
+          if (backGradientDictionary !== null) {
+            // Check to see if this dictionary exists already in styleDictionary
+            backGradientName =
+              typeName + "BackGradient" + String(backGradientCount);
+            for (let [name, dict] of gradientDictionary.entries()) {
+              if (gradientDictionariesEqual(dict, backGradientDictionary)) {
+                backGradientName = name;
+                break;
               }
             }
+            if (
+              backGradientName ==
+              typeName + "BackGradient" + String(backGradientCount)
+            ) {
+              // The gradient is new and should be added to the gradientDictionary
+              gradientDictionary.set(backGradientName, backGradientDictionary);
+              backGradientCount++;
+            }
+          }
 
-            // Incorporate the style dictionaries into styleDictionary
-            //  Note: For a single object, there is only one front style and one back style applied to all front/back object parts
-            let frontStyleName: string | null = null;
-            if (frontStyleDictionary !== null) {
-              // If there is a frontGradient, make sure that the "fill" in the frontStyleDictionary points to it correctly
-              if (frontGradientName !== null) {
-                frontStyleDictionary.set(
-                  "fill",
-                  "url(#" + frontGradientName + ")"
-                );
+          // Incorporate the style dictionaries into styleDictionary
+          //  Note: For a single object, there is only one front style and one back style applied to all front/back object parts
+          let frontStyleName: string | null = null;
+          if (frontStyleDictionary !== null) {
+            // If there is a frontGradient, make sure that the "fill" in the frontStyleDictionary points to it correctly
+            if (frontGradientName !== null) {
+              frontStyleDictionary.set(
+                "fill",
+                "url(#" + frontGradientName + ")"
+              );
+            }
+            // Check to see if this dictionary exists already in styleDictionary
+            frontStyleName = typeName + "FrontStyle" + String(frontStyleCount);
+            for (let [name, dict] of styleDictionary.entries()) {
+              //console.log("check equal",name,frontStyleName)
+              if (styleDictionariesEqual(dict, frontStyleDictionary)) {
+                //console.log("yes",dict,frontStyleDictionary)
+                frontStyleName = name;
+                break;
               }
-              // Check to see if this dictionary exists already in styleDictionary
-              frontStyleName =
-                typeName + "FrontStyle" + String(frontStyleCount);
-              for (let [name, dict] of styleDictionary.entries()) {
-                //console.log("check equal",name,frontStyleName)
-                if (styleDictionariesEqual(dict, frontStyleDictionary)) {
-                  //console.log("yes",dict,frontStyleDictionary)
-                  frontStyleName = name;
-                  break;
-                }
-                // else {
-                //   console.log("NO")
-                // }
-              }
-              if (
-                frontStyleName ==
-                typeName + "FrontStyle" + String(frontStyleCount)
-              ) {
-                // The style is new and should be added to the styleDictionary
-                styleDictionary.set(frontStyleName, frontStyleDictionary);
-                frontStyleCount++;
+              // else {
+              //   console.log("NO")
+              // }
+            }
+            if (
+              frontStyleName ==
+              typeName + "FrontStyle" + String(frontStyleCount)
+            ) {
+              // The style is new and should be added to the styleDictionary
+              styleDictionary.set(frontStyleName, frontStyleDictionary);
+              frontStyleCount++;
+            }
+          }
+          let backStyleName: string | null = null;
+          if (backStyleDictionary !== null) {
+            // If there is a backGradient, make sure that the "fill" in the backStyleDictionary points it correctly
+            if (backGradientName !== null) {
+              backStyleDictionary.set("fill", "url(#" + backGradientName + ")");
+            }
+            // Check to see if this dictionary exists already in styleDictionary
+            backStyleName = typeName + "BackStyle" + String(backStyleCount);
+            for (let [name, dict] of styleDictionary.entries()) {
+              if (styleDictionariesEqual(dict, backStyleDictionary)) {
+                backStyleName = name;
+                break;
               }
             }
-            let backStyleName: string | null = null;
-            if (backStyleDictionary !== null) {
-              // If there is a backGradient, make sure that the "fill" in the backStyleDictionary points it correctly
-              if (backGradientName !== null) {
-                backStyleDictionary.set(
-                  "fill",
-                  "url(#" + backGradientName + ")"
-                );
-              }
-              // Check to see if this dictionary exists already in styleDictionary
-              backStyleName = typeName + "BackStyle" + String(backStyleCount);
-              for (let [name, dict] of styleDictionary.entries()) {
-                if (styleDictionariesEqual(dict, backStyleDictionary)) {
-                  backStyleName = name;
-                  break;
-                }
-              }
-              if (
-                backStyleName ==
-                typeName + "BackStyle" + String(backStyleCount)
-              ) {
-                // The style is new and should be added to the styleDictionary
-                styleDictionary.set(backStyleName, backStyleDictionary);
-                backStyleCount++;
-              }
+            if (
+              backStyleName ==
+              typeName + "BackStyle" + String(backStyleCount)
+            ) {
+              // The style is new and should be added to the styleDictionary
+              styleDictionary.set(backStyleName, backStyleDictionary);
+              backStyleCount++;
             }
+          }
 
-            // Incorporate the location,SVG array into the layerDictionary
-            for (let [layer, svgString] of layerSVGInformation) {
-              if (layer < LAYER.midground) {
-                // the svg is in the background
-                if (backStyleName !== null) {
-                  const layerSVGStringList = layerDictionary.get(layer);
-                  if (layerSVGStringList != undefined) {
-                    layerSVGStringList.push([backStyleName, svgString]);
-                    layerDictionary.set(layer, layerSVGStringList);
-                  } else {
-                    // the layer key pair doesn't exist yet in the dictionary
-                    layerDictionary.set(layer, [[backStyleName, svgString]]);
-                  }
+          // Incorporate the location,SVG array into the layerDictionary
+          for (let [layer, svgString] of layerSVGInformation) {
+            if (layer < LAYER.midground) {
+              // the svg is in the background
+              if (backStyleName !== null) {
+                const layerSVGStringList = layerDictionary.get(layer);
+                if (layerSVGStringList != undefined) {
+                  layerSVGStringList.push([backStyleName, svgString]);
+                  layerDictionary.set(layer, layerSVGStringList);
+                } else {
+                  // the layer key pair doesn't exist yet in the dictionary
+                  layerDictionary.set(layer, [[backStyleName, svgString]]);
                 }
-              } else {
-                // the svg is in the foreground
-                if (frontStyleName !== null) {
-                  const styleSVGStringList = layerDictionary.get(layer);
-                  if (styleSVGStringList != undefined) {
-                    styleSVGStringList.push([frontStyleName, svgString]);
-                    layerDictionary.set(layer, styleSVGStringList);
-                  } else {
-                    // the layer key pair doesn't exist yet in the dictionary
-                    layerDictionary.set(layer, [[frontStyleName, svgString]]);
-                  }
+              }
+            } else {
+              // the svg is in the foreground
+              if (frontStyleName !== null) {
+                const styleSVGStringList = layerDictionary.get(layer);
+                if (styleSVGStringList != undefined) {
+                  styleSVGStringList.push([frontStyleName, svgString]);
+                  layerDictionary.set(layer, styleSVGStringList);
+                } else {
+                  // the layer key pair doesn't exist yet in the dictionary
+                  layerDictionary.set(layer, [[frontStyleName, svgString]]);
                 }
               }
             }
@@ -491,7 +501,7 @@ export abstract class Command {
       "," +
       "0" +
       "," +
-      String(-1 * sf) + // make sure that up is the positive y-axis
+      String(-1 * sf) + // make sure that up is the positive y-axis, so this is negative
       "," +
       String(width / 2) +
       "," +

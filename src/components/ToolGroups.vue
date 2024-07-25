@@ -140,7 +140,6 @@ function doTransformationEffect(): void {
   switch (actionMode.value) {
     case "measuredCircle":
       if (seExpressions.value.length > 0) {
-        console.log("here2")
         //...open the object tree tab,
         EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
         EventBus.fire("expand-measurement-sheet", {});

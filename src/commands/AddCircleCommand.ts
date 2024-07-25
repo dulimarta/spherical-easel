@@ -47,27 +47,8 @@ export class AddCircleCommand extends Command {
     this.circleSEPoint.unregisterChild(this.seCircle);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
-    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
-    if (
-      deletedNoduleIds.findIndex(id => id == this.seCircle.id) == -1 &&
-      this.seCircle.exists &&
-      this.seCircle.showing
-    ) {
-      const info: toSVGType[] = [];
-      info.push(...this.seCircle.ref.toSVG());
-      // now check the label (if the point is deleted the label is also so check this inside the first conditional statement)
-      if (
-        deletedNoduleIds.findIndex(id => id == this.seLabel.id) == -1 &&
-        this.seLabel.exists &&
-        this.seLabel.showing
-      ) {
-        info.push(...this.seLabel.ref.toSVG());
-      }
-      return info;
-    } else {
-      return null;
-    }
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seCircle, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

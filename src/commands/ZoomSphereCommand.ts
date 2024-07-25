@@ -49,14 +49,6 @@ export class ZoomSphereCommand extends Command {
     //Command.store("zoomSphere");
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
-    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
-    //
-
-    return null
-  }
-
-
   toOpcode(): null | string | Array<string> {
     return null; // Exclude this command from interpretation
   }

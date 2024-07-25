@@ -4,6 +4,7 @@
  */
 import { toSVGType } from "@/types";
 import { Command } from "./Command";
+import { SELabel, SENodule } from "@/models/internal";
 
 export class CommandGroup extends Command {
   public subCommands: Command[] = [];
@@ -32,17 +33,17 @@ export class CommandGroup extends Command {
     });
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
-    const group: Array<toSVGType> = [];
-    this.subCommands.forEach((cmd: Command) => {
-      const converted = cmd.toSVG(deletedNoduleIds);
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    const group: Array<[SENodule, SELabel]> = [];
+   this.subCommands.forEach((cmd: Command) => {
+      const converted = cmd.getSVGObjectLabelPairs();
       // We all all add the command to the group when
       // it returns non-null
-      if (converted !== null) group.push(...converted);
+      if (converted.length !== 0) group.push(...converted);
     });
-    // When all the sub-commands return null, we ended up
-    // with an empty array. In which case we return
-    return group?.length > 0 ? group : null;
+    // When all the sub-commands return empty, we ended up
+    // with an empty array. In which case we return empty
+    return group?.length > 0 ? group : [];
   }
 
   toOpcode(): null | string | Array<string> {

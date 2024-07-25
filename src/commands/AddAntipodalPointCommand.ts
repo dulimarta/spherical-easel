@@ -50,11 +50,8 @@ export class AddAntipodalPointCommand extends Command {
     this.parentSEPoint.unregisterChild(this.seAntipodalPoint);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
-    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
-    //
-
-    return null
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seAntipodalPoint, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

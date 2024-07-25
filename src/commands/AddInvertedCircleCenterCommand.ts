@@ -75,11 +75,8 @@ export class AddInvertedCircleCenterCommand extends Command {
     this.preimageSECircleOrLine.unregisterChild(this.invertedSECircleCenter);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
-    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
-    //
-
-    return null
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.invertedSECircleCenter, this.invertedSECircleCenterLabel]];
   }
 
 

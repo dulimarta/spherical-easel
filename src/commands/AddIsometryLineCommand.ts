@@ -48,11 +48,8 @@ export class AddIsometryLineCommand extends Command {
     this.preimageSELine.unregisterChild(this.isometrySELine);
   }
 
-  toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
-    // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
-    //
-
-    return null
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.isometrySELine, this.isometrySELineLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

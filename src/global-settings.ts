@@ -697,7 +697,7 @@ export const SETTINGS = {
         //backHSLA: { h: 10, s: 100, l: 50, a: 0.4 }
       },
       strokeColor: {
-        front: "hsla(0, 0%, 0%, 1)",
+        front: "hsla(0, 0%, 0%, 0.5)",
         back: "hsla(0, 0%, 0%, 0.3)"
       },
       strokeWidth: {
@@ -1548,21 +1548,21 @@ export const SETTINGS = {
 
 //#region layers
 export enum LAYER {
-  backgroundAngleMarkersGlowing,
-  backgroundAngleMarkers,
   backgroundGlowing,
   backgroundFills,
   background,
+  backgroundAngleMarkersGlowing,
+  backgroundAngleMarkers,
   backgroundPointsGlowing,
   backgroundPoints,
   backgroundTextGlowing,
   backgroundText,
   midground,
-  foregroundAngleMarkersGlowing,
-  foregroundAngleMarkers,
   foregroundGlowing,
   foregroundFills,
   foreground,
+  foregroundAngleMarkersGlowing,
+  foregroundAngleMarkers,
   foregroundPointsGlowing,
   foregroundPoints,
   foregroundTextGlowing,
