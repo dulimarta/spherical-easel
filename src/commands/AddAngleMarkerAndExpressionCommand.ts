@@ -102,8 +102,6 @@ export class AddAngleMarkerCommand extends Command {
     } else {
       return null;
     }
-
-    return null
   }
 
   toOpcode(): null | string | Array<string> {

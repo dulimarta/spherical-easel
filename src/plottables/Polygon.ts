@@ -9,7 +9,15 @@ import {
   DEFAULT_POLYGON_FRONT_STYLE,
   DEFAULT_POLYGON_BACK_STYLE
 } from "@/types/Styles";
-import { location, toSVGType, visitedIndex } from "@/types";
+import {
+  location,
+  svgArcObject,
+  svgGradientType,
+  svgStopType,
+  svgStyleType,
+  toSVGType,
+  visitedIndex
+} from "@/types";
 import { SESegment } from "@/models/SESegment";
 //import Two from "two.js";
 import { Path } from "two.js/src/path";
@@ -18,6 +26,7 @@ import { Stop } from "two.js/src/effects/stop";
 import { RadialGradient } from "two.js/src/effects/radial-gradient";
 import { Group } from "two.js/src/group";
 import { Vector } from "two.js/src/vector";
+import { set } from "@vueuse/core";
 
 const BOUNDARYSUBDIVISIONS = SETTINGS.polygon.numPoints; // The number of points used to draw parts of the boundary circle when the polygon crosses it.
 
@@ -54,6 +63,17 @@ export default class Polygon extends Nodule {
 
   private pool: Anchor[] = []; //The pool of vertices, initially empty
 
+  private allEdgesOnFront = true;
+  private allEdgesOnBack = false;
+
+  //Export to SVG booleans
+  // private frontFillIsWholeHemisphere = false;
+  // private backFillIsWholeHemisphere = false;
+  private frontFillInUse = false;
+  private backFillInUse = false;
+
+  private boundaryCircleArcObjectsFront: svgArcObject[] = [];
+  private boundaryCircleArcObjectsBack: svgArcObject[] = [];
   /**
    * The stops and gradient for front/back fill
    */
@@ -250,6 +270,9 @@ export default class Polygon extends Nodule {
    * Use the existing and already updated segments to trace each part of the fill
    */
   public updateDisplay(): void {
+    // Reset the list of svgArcObjects
+    this.boundaryCircleArcObjectsFront = [];
+    this.boundaryCircleArcObjectsBack = [];
     //Build the front/back fill objects based on the segments on the edge
     // Bring all the anchor points to a common pool
     // Each front/back fill will pull anchor points from this pool as needed
@@ -392,12 +415,17 @@ export default class Polygon extends Nodule {
       });
 
     // console.log("number in location Array", locationArray.length);
-    const allEdgesOnFront = locationArray.every(loc => loc.front === true);
-    const allEdgesOnBack = locationArray.every(loc => loc.front === false);
+    this.allEdgesOnFront = locationArray.every(loc => loc.front === true);
+    this.allEdgesOnBack = locationArray.every(loc => loc.front === false);
     // console.log("#############DUM############")
     // locationArray.forEach((loc,ind) => {console.log("@vec ", ind, "\n", loc.x, "\n", loc.y, "\n", loc.front)})
     // The polygon interior is split between front and back
-    if (!allEdgesOnFront && !allEdgesOnBack) {
+    if (!this.allEdgesOnFront && !this.allEdgesOnBack) {
+      // this.frontFillIsWholeHemisphere = false;
+      // this.backFillIsWholeHemisphere = false;
+      this.frontFillInUse = true;
+      this.backFillInUse = true;
+
       // Count and record the indices of intersections with the boundary circle
       const frontToBackIntersectionIndices: visitedIndex[] = []; // i is on this list if location[i-1] is on front and location[i] is on back
       const backToFrontIntersectionIndices: visitedIndex[] = []; // i is on this list if location[i-1] is on back and location[i] is on front
@@ -551,13 +579,9 @@ export default class Polygon extends Nodule {
               locationArray[previousIndex].y * locationArray[previousIndex].y
           );
           const fromVector = [
-            (SETTINGS.boundaryCircle.radius *
-              (locationArray[previousIndex].x *
-                SETTINGS.boundaryCircle.radius)) /
+            (locationArray[previousIndex].x * SETTINGS.boundaryCircle.radius) /
               size,
-            (SETTINGS.boundaryCircle.radius *
-              (locationArray[previousIndex].y *
-                SETTINGS.boundaryCircle.radius)) /
+            (locationArray[previousIndex].y * SETTINGS.boundaryCircle.radius) /
               size
           ];
 
@@ -573,6 +597,32 @@ export default class Polygon extends Nodule {
             toVector,
             angularWidth
           );
+
+          // Record this for SVG export
+
+          // The arc ends at
+          // cos(angleWidth)*from + sin(angleWidth)*to
+          const endPt = [
+            Math.cos(angularWidth) * fromVector[0] +
+              Math.sin(angularWidth) * toVector[0],
+            Math.cos(angularWidth) * fromVector[1] +
+              Math.sin(angularWidth) * toVector[1]
+          ];
+
+          const object: svgArcObject = {
+            startPt: { x: fromVector[0], y: fromVector[1] },
+            radiiXYWithSpace:
+              String(SETTINGS.boundaryCircle.radius) +
+              " " +
+              String(SETTINGS.boundaryCircle.radius) +
+              " ",
+            rotationDegrees: 0,
+            displayShort0OrLong1: angularWidth > Math.PI ? 1 : 0,
+            displayCCW0OrCW1: 0,
+            endPt: { x: endPt[0], y: endPt[1] }
+          };
+          this.boundaryCircleArcObjectsFront.push(object);
+
           boundaryPoints.forEach(pt => {
             const vertex = this.pool.pop();
             if (vertex !== undefined) {
@@ -701,13 +751,9 @@ export default class Polygon extends Nodule {
               locationArray[previousIndex].y * locationArray[previousIndex].y
           );
           const fromVector = [
-            (SETTINGS.boundaryCircle.radius *
-              (locationArray[previousIndex].x *
-                SETTINGS.boundaryCircle.radius)) /
+            (locationArray[previousIndex].x * SETTINGS.boundaryCircle.radius) /
               size,
-            (SETTINGS.boundaryCircle.radius *
-              (locationArray[previousIndex].y *
-                SETTINGS.boundaryCircle.radius)) /
+            (locationArray[previousIndex].y * SETTINGS.boundaryCircle.radius) /
               size
           ];
 
@@ -723,6 +769,32 @@ export default class Polygon extends Nodule {
             toVector,
             angularWidth
           );
+
+          // Record this for SVG export
+
+          // The arc ends at
+          // cos(angleWidth)*from + sin(angleWidth)*to
+          const endPt = [
+            Math.cos(angularWidth) * fromVector[0] +
+              Math.sin(angularWidth) * toVector[0],
+            Math.cos(angularWidth) * fromVector[1] +
+              Math.sin(angularWidth) * toVector[1]
+          ];
+
+          const object: svgArcObject = {
+            startPt: { x: fromVector[0], y: fromVector[1] },
+            radiiXYWithSpace:
+              String(SETTINGS.boundaryCircle.radius) +
+              " " +
+              String(SETTINGS.boundaryCircle.radius) +
+              " ",
+            rotationDegrees: 0,
+            displayShort0OrLong1: angularWidth > Math.PI ? 1 : 0,
+            displayCCW0OrCW1: 1,
+            endPt: { x: endPt[0], y: endPt[1] }
+          };
+          this.boundaryCircleArcObjectsBack.push(object);
+
           boundaryPoints.forEach(pt => {
             const vertex = this.pool.pop();
             if (vertex !== undefined) {
@@ -756,7 +828,11 @@ export default class Polygon extends Nodule {
       // });
     }
     // The polygon interior is only on the front of the sphere
-    else if (allEdgesOnFront && this._area < 2 * Math.PI) {
+    else if (this.allEdgesOnFront && this._area < 2 * Math.PI) {
+      // this.frontFillIsWholeHemisphere = false;
+      // this.backFillIsWholeHemisphere = false;
+      this.frontFillInUse = true;
+      this.backFillInUse = false;
       locationArray.forEach(loc => {
         const vertex = this.pool.pop();
         if (vertex !== undefined) {
@@ -771,7 +847,12 @@ export default class Polygon extends Nodule {
       });
     }
     // The polygon interior is only on the back of the sphere
-    else if (allEdgesOnBack && this._area < 2 * Math.PI) {
+    else if (this.allEdgesOnBack && this._area < 2 * Math.PI) {
+      // this.frontFillIsWholeHemisphere = false;
+      // this.backFillIsWholeHemisphere = false;
+      this.frontFillInUse = false;
+      this.backFillInUse = true;
+
       locationArray.forEach(loc => {
         const vertex = this.pool.pop();
         if (vertex !== undefined) {
@@ -786,7 +867,11 @@ export default class Polygon extends Nodule {
       });
     }
     // The polygon interior covers the entire front half of the sphere and is a 'hole' on the back
-    else if (allEdgesOnBack && this._area > 2 * Math.PI) {
+    else if (this.allEdgesOnBack && this._area > 2 * Math.PI) {
+      // this.frontFillIsWholeHemisphere = true;
+      // this.backFillIsWholeHemisphere = false;
+      this.frontFillInUse = true;
+      this.backFillInUse = true;
       // location[0] is a point *not* necessarily on the boundary circle, we project to the boundary circle so that when
       // tracing the boundary we start close to this point
       const size = Math.sqrt(
@@ -794,12 +879,8 @@ export default class Polygon extends Nodule {
           locationArray[0].y * locationArray[0].y
       );
       const startPoint = [
-        (SETTINGS.boundaryCircle.radius *
-          (locationArray[0].x * SETTINGS.boundaryCircle.radius)) /
-          size,
-        (SETTINGS.boundaryCircle.radius *
-          (locationArray[0].y * SETTINGS.boundaryCircle.radius)) /
-          size
+        (locationArray[0].x * SETTINGS.boundaryCircle.radius) / size,
+        (locationArray[0].y * SETTINGS.boundaryCircle.radius) / size
       ];
       const boundary = Nodule.boundaryCircleCoordinates(
         startPoint,
@@ -863,7 +944,11 @@ export default class Polygon extends Nodule {
       }
     }
     // // The polygon interior covers the entire back half of the sphere and is a 'hole' on the front
-    else if (allEdgesOnFront && this._area > 2 * Math.PI) {
+    else if (this.allEdgesOnFront && this._area > 2 * Math.PI) {
+      // this.frontFillIsWholeHemisphere = false;
+      // this.backFillIsWholeHemisphere = true;
+      this.frontFillInUse = true;
+      this.backFillInUse = true;
       // location[0] is a point *not* on the boundary circle, we project to the boundary circle so that when
       // tracing the boundary we start close to this point
       const size = Math.sqrt(
@@ -871,12 +956,8 @@ export default class Polygon extends Nodule {
           locationArray[0].y * locationArray[0].y
       );
       const startPoint = [
-        (SETTINGS.boundaryCircle.radius *
-          (locationArray[0].x * SETTINGS.boundaryCircle.radius)) /
-          size,
-        (SETTINGS.boundaryCircle.radius *
-          (locationArray[0].y * SETTINGS.boundaryCircle.radius)) /
-          size
+        (locationArray[0].x * SETTINGS.boundaryCircle.radius) / size,
+        (locationArray[0].y * SETTINGS.boundaryCircle.radius) / size
       ];
       const boundary = Nodule.boundaryCircleCoordinates(
         startPoint,
@@ -965,27 +1046,7 @@ export default class Polygon extends Nodule {
   set area(newArea: number) {
     this._area = newArea;
   }
-  // set SEPolygon(sePolygon: SEPolygon) {
-  // this._sePolgon = sePolygon;
-  // }
 
-  // frontGlowingDisplay(): void {
-  //   this.frontFills.forEach(part => (part.visible = true));
-  //   this.seEdgeSegments.forEach(seg => {
-  //     if (!seg.selected) {
-  //       seg.ref.frontGlowingDisplay();
-  //     }
-  //   });
-  // }
-
-  // backGlowingDisplay(): void {
-  //   this.backFills.forEach(part => (part.visible = true));
-  //   this.seEdgeSegments.forEach(seg => {
-  //     if (!seg.selected) {
-  //       seg.ref.backGlowingDisplay();
-  //     }
-  //   });
-  // }
   glowingDisplay(): void {
     this.frontFills.forEach(part => {
       if (part.vertices.length !== 0) {
@@ -1007,22 +1068,7 @@ export default class Polygon extends Nodule {
       }
     });
   }
-  // frontNormalDisplay(): void {
-  //   this.frontFills.forEach(part => (part.visible = true));
-  //   this.seEdgeSegments.forEach(seg => {
-  //     if (!seg.selected) {
-  //       seg.ref.frontNormalDisplay();
-  //     }
-  //   });
-  // }
-  // backNormalDisplay(): void {
-  //   this.backFills.forEach(part => (part.visible = true));
-  //   this.seEdgeSegments.forEach(seg => {
-  //     if (!seg.selected) {
-  //       seg.ref.backNormalDisplay();
-  //     }
-  //   });
-  // }
+
   normalDisplay(): void {
     this.frontFills.forEach((part, ind) => {
       if (part.vertices.length !== 0) {
@@ -1084,7 +1130,9 @@ export default class Polygon extends Nodule {
     this.backFills.forEach(part => part.remove());
   }
 
-  toSVG():toSVGType[]{
+  toSVG(): toSVGType[] {
+    //make sure that everything is upto date
+    this.updateDisplay();
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,
@@ -1092,11 +1140,481 @@ export default class Polygon extends Nodule {
       frontStyleDictionary: null,
       backStyleDictionary: null,
       layerSVGArray: [],
-      type: "angleMarker"
+      type: "polygon"
+    };
+
+    const frontArcObjects: svgArcObject[] = [];
+    const backArcObjects: svgArcObject[] = [];
+    this.seEdgeSegments.forEach(seg => {
+      frontArcObjects.push(...seg.ref.svgArcObjectsFront);
+      backArcObjects.push(...seg.ref.svgArcObjectsBack);
+    });
+
+    // frontArcObjects.forEach((obj, ind) =>
+    //   console.log(
+    //     "front" + ind + "\n",
+    //     "start " +
+    //       obj.startPt.x.toFixed(2) +
+    //       "," +
+    //       obj.startPt.y.toFixed(2) +
+    //       "\n",
+    //     "end " + obj.endPt.x.toFixed(2) + "," + obj.endPt.y.toFixed(2) + "\n"
+    //   )
+    // );
+    // backArcObjects.forEach((obj, ind) =>
+    //   console.log(
+    //     "back" + ind + "\n",
+    //     "start " +
+    //       obj.startPt.x.toFixed(2) +
+    //       "," +
+    //       obj.startPt.y.toFixed(2) +
+    //       "\n",
+    //     "end " + obj.endPt.x.toFixed(2) + "," + obj.endPt.y.toFixed(2) + "\n"
+    //   )
+    // );
+    // this.boundaryCircleArcObjectsFront.forEach((obj, ind) =>
+    //   console.log(
+    //     "bd front" + ind + "\n",
+    //     "start " +
+    //       obj.startPt.x.toFixed(2) +
+    //       "," +
+    //       obj.startPt.y.toFixed(2) +
+    //       "\n",
+    //     "end " + obj.endPt.x.toFixed(2) + "," + obj.endPt.y.toFixed(2) + "\n"
+    //   )
+    // );
+    // this.boundaryCircleArcObjectsBack.forEach((obj, ind) =>
+    //   console.log(
+    //     "bd back" + ind + "\n",
+    //     "start " +
+    //       obj.startPt.x.toFixed(2) +
+    //       "," +
+    //       obj.startPt.y.toFixed(2) +
+    //       "\n",
+    //     "end " + obj.endPt.x.toFixed(2) + "," + obj.endPt.y.toFixed(2) + "\n"
+    //   )
+    // );
+    // Add the gradient to the gradient dictionary (if used)
+    if (Nodule.getGradientFill()) {
+      if (this.frontFillInUse) {
+        const frontGradientDictionary = new Map<
+          svgGradientType,
+          string | Map<svgStopType, string>[]
+        >();
+        frontGradientDictionary.set("cx", String(this.frontGradient.center.x));
+        frontGradientDictionary.set("cy", String(this.frontGradient.center.y));
+        frontGradientDictionary.set("fx", String(this.frontGradient.focal.x));
+        frontGradientDictionary.set("fy", String(this.frontGradient.focal.y));
+        frontGradientDictionary.set("gradientUnits", this.frontGradient.units);
+        frontGradientDictionary.set(
+          "r",
+          String(SETTINGS.boundaryCircle.radius)
+        );
+        frontGradientDictionary.set("spreadMethod", "pad");
+        const stop1FrontDictionary = new Map<svgStopType, string>();
+        stop1FrontDictionary.set(
+          "offset",
+          String(this.frontGradientColorCenter.offset * 100) + "%"
+        );
+        stop1FrontDictionary.set(
+          "stop-color",
+          String(this.frontGradientColorCenter.color)
+        );
+        const stop2FrontDictionary = new Map<svgStopType, string>();
+        stop2FrontDictionary.set(
+          "offset",
+          String(this.frontGradientColor.offset * 100) + "%"
+        );
+        stop2FrontDictionary.set(
+          "stop-color",
+          String(this.frontGradientColor.color)
+        );
+        frontGradientDictionary.set("stops", [
+          stop1FrontDictionary,
+          stop2FrontDictionary
+        ]);
+        returnSVGObject.frontGradientDictionary = frontGradientDictionary;
+      }
+
+      if (this.backFillInUse) {
+        const backGradientDictionary = new Map<
+          svgGradientType,
+          string | Map<svgStopType, string>[]
+        >();
+        backGradientDictionary.set("cx", String(this.backGradient.center.x));
+        backGradientDictionary.set("cy", String(this.backGradient.center.y));
+        backGradientDictionary.set("fx", String(this.backGradient.focal.x));
+        backGradientDictionary.set("fy", String(this.backGradient.focal.y));
+        backGradientDictionary.set("gradientUnits", this.backGradient.units);
+        backGradientDictionary.set("r", String(SETTINGS.boundaryCircle.radius));
+        backGradientDictionary.set("spreadMethod", "pad");
+        const stop1BackDictionary = new Map<svgStopType, string>();
+        stop1BackDictionary.set(
+          "offset",
+          String(this.backGradientColorCenter.offset * 100) + "%"
+        );
+        stop1BackDictionary.set(
+          "stop-color",
+          String(this.backGradientColorCenter.color)
+        );
+        const stop2BackDictionary = new Map<svgStopType, string>();
+        stop2BackDictionary.set(
+          "offset",
+          String(this.backGradientColor.offset * 100) + "%"
+        );
+        stop2BackDictionary.set(
+          "stop-color",
+          String(this.backGradientColor.color)
+        );
+        backGradientDictionary.set("stops", [
+          stop1BackDictionary,
+          stop2BackDictionary
+        ]);
+        returnSVGObject.backGradientDictionary = backGradientDictionary;
+      }
     }
-    return [returnSVGObject]
+
+    // collect the front style of the circle
+    if (this.frontFillInUse) {
+      const frontReturnDictionary = new Map<svgStyleType, string>();
+      // Collect the style information: fill, stroke, stroke-width
+      frontReturnDictionary.set("fill", String(this.frontFills[0].fill)); // if the fill is a gradient, this will be overwritten in Command.ts, if the fill is a color it won't be overwritten
+      frontReturnDictionary.set("stroke", "none");
+
+      returnSVGObject.frontStyleDictionary = frontReturnDictionary;
+    }
+    // collect the front style of the circle
+    if (this.backFillInUse) {
+      const backReturnDictionary = new Map<svgStyleType, string>();
+      // Collect the style information: fill, stroke, stroke-width
+
+      backReturnDictionary.set("fill", String(this.backFills[0].fill)); // if the fill is a gradient, this will be overwritten in Command.ts, if the fill is a color it won't be overwritten
+      backReturnDictionary.set("stroke", "none");
+
+      returnSVGObject.backStyleDictionary = backReturnDictionary;
+    }
+    // now collect the geometric information
+    // The polygon interior is split between front and back
+    if (!this.allEdgesOnFront && !this.allEdgesOnBack) {
+      // build the front strings and trace all the front fills
+      // console.log("################### front Faces################");
+      while (this.boundaryCircleArcObjectsFront.length != 0) {
+        // get the first arc object and remove it from the boundary list.
+        // The boundary arc objects are all correctly ordered from the startPt to
+        // endPt we go clock wise. This is *not* true of the front arc objects.
+        // The arc objects in the front (and back) might be traced from startPt to endPt
+        // or endPT to startPt we don't know. It was too complex to record in a
+        // consistent way because each would start horizontal and then could be
+        // rotated plus or minus degrees making it unclear where the start or end was
+        //
+        let arcObject = this.boundaryCircleArcObjectsFront.splice(0, 1)[0];
+
+        // determine the starting place and the nextPt to search for in the
+        // front or boundary arc objects in the loop of edges tracing a fill on the front
+
+        let startPt = arcObject.startPt;
+        let nextPt = arcObject.endPt;
+
+        // console.log("start pt", startPt.x, startPt.y);
+        // console.log("next pt", nextPt.x, nextPt.y);
+        // build the front string
+        let svgFrontString = '<path d="';
+        // add the arc object
+        svgFrontString += Nodule.svgArcString(arcObject, true);
+
+        // loop until we return to the start point, then a face has been traced
+        while (!Polygon.same(startPt, nextPt)) {
+          // find the next arcObject could be on the front or on the boundary
+          // first check the front arcs
+          const ind1 = frontArcObjects.findIndex(arcObject => {
+            return (
+              Polygon.same(arcObject.startPt, nextPt) ||
+              Polygon.same(arcObject.endPt, nextPt)
+            );
+          });
+          if (ind1 == -1) {
+            // the next point is on the boundary
+            // console.log("next point is on boundary");
+            const ind2 = this.boundaryCircleArcObjectsFront.findIndex(
+              arcObject => Polygon.same(arcObject.startPt, nextPt) // the boundary is always correctly ordered so we do not have to check if endPt=nextPt
+            );
+
+            if (ind2 == -1) {
+              // this should never happen
+              console.error("Polygon export to SVG failed");
+              break;
+            } else {
+              // get current svg object and remove it from the list
+              arcObject = this.boundaryCircleArcObjectsFront.splice(ind2, 1)[0];
+              // arcObject.displayCCW0OrCW1 = 0; // if on the front we need CCW
+            }
+          } else {
+            // console.log("next pt is on the front");
+            // get current svg object and remove it from the list
+            arcObject = frontArcObjects.splice(ind1, 1)[0];
+          }
+          // does the object need to be reversed?
+          if (Polygon.same(arcObject.startPt, nextPt)) {
+            // no reversing arc object when adding to svg string
+            svgFrontString += Nodule.svgArcString(arcObject);
+            nextPt = arcObject.endPt;
+          } else {
+            svgFrontString += Nodule.svgArcStringReverse(arcObject);
+            // reverse the arc object when adding to svg string
+            nextPt = arcObject.startPt;
+          }
+          // console.log("next pt", nextPt.x, nextPt.y);
+        }
+        // console.log("######## front face traced");
+        svgFrontString += '"/>';
+            returnSVGObject.layerSVGArray.push([
+              LAYER.foregroundFills,
+              svgFrontString
+            ]);
+      }
+      // console.log("################### Back Faces################");
+      // build the back strings and trace all the back fills
+      while (this.boundaryCircleArcObjectsBack.length != 0) {
+        // get the first arc object and remove it from the boundary list.
+        // The boundary arc objects are all correctly ordered from the startPt to
+        // endPt we go clock wise. This is *not* true of the front arc objects.
+        // The arc objects in the front (and back) might be traced from startPt to endPt
+        // or endPT to startPt we don't know. It was too complex to record in a
+        // consistent way because each would start horizontal and then could be
+        // rotated plus or minus degrees making it unclear where the start or end was
+        //
+        let arcObject = this.boundaryCircleArcObjectsBack.splice(0, 1)[0];
+
+        // determine the starting place and the nextPt to search for in the
+        // front or boundary arc objects in the loop of edges tracing a fill on the front
+
+        let startPt = arcObject.startPt;
+        let nextPt = arcObject.endPt;
+
+        // console.log("start pt", startPt.x, startPt.y);
+        // console.log("next pt", nextPt.x, nextPt.y);
+        // build the front string
+        let svgBackString = '<path d="';
+        // add the arc object
+        svgBackString += Nodule.svgArcString(arcObject, true);
+        // loop until we return to the start point, then a face has been traced
+        while (!Polygon.same(startPt, nextPt)) {
+          // find the next arcObject could be on the front or on the boundary
+          // first check the front arcs
+          const ind1 = backArcObjects.findIndex(arcObject => {
+            return (
+              Polygon.same(arcObject.startPt, nextPt) ||
+              Polygon.same(arcObject.endPt, nextPt)
+            );
+          });
+          if (ind1 == -1) {
+            // the next point is on the boundary
+            // console.log("next point is boundary");
+            const ind2 = this.boundaryCircleArcObjectsBack.findIndex(
+              arcObject => Polygon.same(arcObject.startPt, nextPt) // the boundary is always correctly ordered so we do not have to check if endPt=nextPt
+            );
+
+            if (ind2 == -1) {
+              // this should never happen
+              console.error("Polygon export to SVG failed");
+              break;
+            } else {
+              // get current svg object and remove it from the list
+              arcObject = this.boundaryCircleArcObjectsBack.splice(ind2, 1)[0];
+              // arcObject.displayCCW0OrCW1 = 1; // if on the back we need CW
+            }
+          } else {
+            // console.log("next point is on back");
+            // get current svg object and remove it from the list
+            arcObject = backArcObjects.splice(ind1, 1)[0];
+          }
+          // does the object need to be reversed?
+          if (Polygon.same(arcObject.startPt, nextPt)) {
+            // no reversing arc object when adding to svg string
+            svgBackString += Nodule.svgArcString(arcObject);
+            nextPt = arcObject.endPt;
+          } else {
+            svgBackString += Nodule.svgArcStringReverse(arcObject);
+            // reverse the arc object when adding to svg string
+            nextPt = arcObject.startPt;
+          }
+          // console.log("next pt", nextPt.x, nextPt.y);
+        }
+        // console.log("############### back face traced");
+        svgBackString += '"/>';
+        returnSVGObject.layerSVGArray.push([
+          LAYER.backgroundFills,
+          svgBackString
+        ]);
+      }
+    }
+    // The polygon interior is only on the front of the sphere
+    else if (this.allEdgesOnFront || this.allEdgesOnBack) {
+      // back|front SVGObjects and boundaryCircleSVGObjectsBack&Front should be empty
+
+      let fillLayer = LAYER.foregroundFills;
+      if (this.allEdgesOnBack) {
+        fillLayer = LAYER.backgroundFills;
+      }
+
+      // Find the segment with an edge whose start vertex is closest to the boundary circle (needed in case the polygon
+      // is a 'hole' on the front/back)
+      let maxAngle = 0;
+      let startIndex = -1;
+      const northPole = new Vector3(1, 0, 0);
+      let startVector = northPole; // dummy vector3 to avoid declaring another vector 3
+
+      this.seEdgeSegments.forEach((seg, ind) => {
+        startVector = this.segmentIsFlipped[ind]
+          ? seg.endSEPoint.locationVector
+          : seg.startSEPoint.locationVector;
+        if (northPole.angleTo(startVector) > maxAngle) {
+          startIndex = ind;
+        }
+      });
+
+      // set the object list to front or back
+      const arcObjects =
+        fillLayer == LAYER.foregroundFills ? frontArcObjects : backArcObjects;
+
+      // get the corresponding arc object to the startIndex
+      startVector = this.segmentIsFlipped[startIndex]
+        ? this.seEdgeSegments[startIndex].endSEPoint.locationVector
+        : this.seEdgeSegments[startIndex].startSEPoint.locationVector;
+      let startPt = {
+        x: startVector.x * SETTINGS.boundaryCircle.radius,
+        y: startVector.y * SETTINGS.boundaryCircle.radius
+      };
+      // we know that endVector is on the same side as startVector because all edges are on the same side. endPt determines correct the direction of tracing
+      let endVector = this.segmentIsFlipped[startIndex]
+        ? this.seEdgeSegments[startIndex].startSEPoint.locationVector
+        : this.seEdgeSegments[startIndex].endSEPoint.locationVector;
+      let endPt = {
+        x: endVector.x * SETTINGS.boundaryCircle.radius,
+        y: endVector.y * SETTINGS.boundaryCircle.radius
+      };
+      // now find the arc
+      let ind = arcObjects.findIndex(obj => {
+        return (
+          (Polygon.same(obj.startPt, startPt) &&
+            Polygon.same(obj.endPt, endPt)) ||
+          (Polygon.same(obj.startPt, endPt) && Polygon.same(obj.endPt, startPt))
+        );
+      });
+      let arcObject = arcObjects.splice(ind, 1)[0]; // remove this object from the list
+
+      // Build the svg string
+      let svgString = '<path d="';
+      // does the object need to be reversed?
+      let nextPt = { x: 0, y: 0 };
+      if (Polygon.same(arcObject.startPt, startPt)) {
+        // no reversing arc object when adding to svg string
+        svgString += Nodule.svgArcString(arcObject, true);
+        nextPt = arcObject.endPt;
+      } else {
+        svgString += Nodule.svgArcStringReverse(arcObject, true);
+        // reverse the arc object when adding to svg string
+        nextPt = arcObject.startPt;
+      }
+      // console.log("start", startPt);
+      // console.log("next", nextPt);
+      // if ind ==-1 then the start/end pts were not found in the arcObjects and we should not trace the face (and the last arcObjecgt was removed with .splice(-1,1))
+      while (arcObjects.length != 0 || ind ==-1) {
+        let ind2 = arcObjects.findIndex(
+          arcObject =>
+            Polygon.same(arcObject.startPt, nextPt) ||
+            Polygon.same(arcObject.endPt, nextPt)
+        );
+
+        if (ind2 != -1) {
+          // get current svg object and remove it from the list
+          arcObject = arcObjects.splice(ind2, 1)[0];
+
+          // does the object need to be reversed?
+          if (Polygon.same(arcObject.startPt, nextPt)) {
+            // no reversing arc object when adding to svg string
+            svgString += Nodule.svgArcString(arcObject);
+            nextPt = arcObject.endPt;
+          } else {
+            svgString += Nodule.svgArcStringReverse(arcObject);
+            // reverse the arc object when adding to svg string
+            nextPt = arcObject.startPt;
+          }
+        } else {
+          //this should never happen
+          console.error("Polygon export to SVG failed");
+          break;
+        }
+      }
+      if (this._area > 2 * Math.PI) {
+        // The polygon interior covers the entire back/front half of the sphere and is a 'hole' on the front/back
+        // Find the location on the boundary circle that is closest start was done at the start of this section
+        const circleStartAngle = Math.atan2(startPt.y, startPt.x);
+
+        const deltaAng = 1 / 50;
+
+        const circleStartPoint = [
+          Math.cos(circleStartAngle),
+          Math.sin(circleStartAngle)
+        ].map(num => num * SETTINGS.boundaryCircle.radius);
+        const deltaAdjustAngle =
+          fillLayer == LAYER.foregroundFills
+            ? circleStartAngle + deltaAng
+            : circleStartAngle - deltaAng;
+        const circleEndPoint = [
+          Math.cos(deltaAdjustAngle),
+          Math.sin(deltaAdjustAngle)
+        ].map(num => num * SETTINGS.boundaryCircle.radius);
+
+        //create an svgArcObject
+
+        const svgCircleObject: svgArcObject = {
+          startPt: { x: circleStartPoint[0], y: circleStartPoint[1] },
+          radiiXYWithSpace:
+            SETTINGS.boundaryCircle.radius +
+            "," +
+            SETTINGS.boundaryCircle.radius +
+            " ",
+          rotationDegrees: 0,
+          displayShort0OrLong1: 1,
+          displayCCW0OrCW1: fillLayer == LAYER.foregroundFills ? 0 : 1,
+          endPt: { x: circleEndPoint[0], y: circleEndPoint[1] }
+        };
+
+        svgString += "L " + startPt.x + "," + startPt.y + " "; // close the polygon, with a line to the start
+        svgString += Nodule.svgArcString(svgCircleObject, true);
+        svgString +=
+          "L " + circleStartPoint[0] + "," + circleStartPoint[1] + " "; // close the circle, with a line to the start
+        svgString += "M " + startPt.x + "," + startPt.y + " "; // move (not line) to the start polygon
+
+        const entireSideSVGString =
+          '<circle cx="0" cy="0" r="' + SETTINGS.boundaryCircle.radius + '" />';
+        returnSVGObject.layerSVGArray.push([
+          fillLayer == LAYER.foregroundFills
+            ? LAYER.backgroundFills
+            : LAYER.foregroundFills,
+          entireSideSVGString
+        ]);
+      }
+      svgString += '"/>';
+
+      returnSVGObject.layerSVGArray.push([fillLayer, svgString]);
+    }
+    return [returnSVGObject];
   }
 
+  static same(
+    pair1: { x: number; y: number },
+    pair2: { x: number; y: number },
+    tol?: number
+  ): boolean {
+    if (tol == undefined) {
+      tol = 10 ** -5;
+    }
+    return (
+      Math.abs(pair1.x - pair2.x) < tol && Math.abs(pair1.y - pair2.y) < tol
+    );
+  }
   /**
    * Return the default style state
    */
@@ -1196,7 +1714,7 @@ export default class Polygon extends Nodule {
               });
             } else {
               this.backFills.forEach(fill => {
-                fill.fill = backStyle?.fillColor ?? "black";;
+                fill.fill = backStyle?.fillColor ?? "black";
               });
             }
           }

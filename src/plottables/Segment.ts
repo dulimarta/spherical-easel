@@ -11,7 +11,7 @@ import {
 } from "@/types/Styles";
 import { Arc } from "two.js/extras/jsm/arc";
 import { Group } from "two.js/src/group";
-import { svgStyleType, toSVGType } from "@/types";
+import { svgArcObject, svgStyleType, toSVGType } from "@/types";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
@@ -93,6 +93,9 @@ export default class Segment extends Nodule {
   private toVector = new Vector3(); // The segment starts at _startVector and goes toward toVector, toVector is always 90 degrees from the _startVector
   private tempVector = new Vector3(); // Temp vector for figuring out end/mid Vectors
 
+  /** A list of the up to three arc objects that describe the parts of the segment */
+  private _svgArcObjectsFront: svgArcObject[] = [];
+  private _svgArcObjectsBack: svgArcObject[] = [];
   /**
    * The styling variables for the drawn segment. The user can modify these.
    */
@@ -616,6 +619,12 @@ export default class Segment extends Nodule {
   get endParameter(): number {
     return this._endParameter;
   }
+  get svgArcObjectsFront(): svgArcObject[] {
+    return this._svgArcObjectsFront;
+  }
+  get svgArcObjectsBack(): svgArcObject[] {
+    return this._svgArcObjectsBack;
+  }
 
   normalDisplay(): void {
     if (this._frontPartInUse) {
@@ -734,6 +743,10 @@ export default class Segment extends Nodule {
   }
 
   toSVG(): toSVGType[] {
+    // reset the list of svgArcObjects
+    this._svgArcObjectsFront = []
+    this._svgArcObjectsBack = []
+
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,
@@ -767,7 +780,6 @@ export default class Segment extends Nodule {
         dashString += this._frontPart.dashes[num] + " ";
       }
       frontReturnDictionary.set("stroke-dasharray", dashString);
-
     }
 
     returnSVGObject.frontStyleDictionary = frontReturnDictionary;
@@ -807,155 +819,215 @@ export default class Segment extends Nodule {
       : this._frontPart.vertices.length - 1;
 
     if (this._frontPartInUse) {
-      let frontDisplayFlags = ""; // flags to control which portion of the ellipse is displayed
+      let frontDisplayFlags: [0 | 1, 0 | 1] = [0, 0]; // flags to control which portion of the ellipse is displayed
       if (!this._backExtraInUse && !this._frontExtraInUse) {
         // the segment goes from front to back or back to front or is contained entirely on the front
         if (this._normalVector.z > 0) {
-          frontDisplayFlags = "0 1 ";
+          frontDisplayFlags = [0, 1];
         } else {
-          frontDisplayFlags = "0 0 ";
+          frontDisplayFlags = [0, 0];
         }
       } else if (this._backExtraInUse) {
         // the front is the entire front (half ellipse)
         if (this._normalVector.z > 0) {
-          frontDisplayFlags = "1 0 ";
+          frontDisplayFlags = [1, 0];
         } else {
-          frontDisplayFlags = "0 1 ";
+          frontDisplayFlags = [0, 1];
         }
       } else if (this._frontExtraInUse) {
         // the back is the entire back (half ellipse) and the frontPart and frontExtra are partial segments
         if (this._normalVector.z > 0) {
-          frontDisplayFlags = "0 1 ";
+          frontDisplayFlags = [0, 1];
         } else {
-          frontDisplayFlags = "0 0 ";
+          frontDisplayFlags = [0, 0];
         }
       }
+      // form an ArcObject
+      const frontPartObject: svgArcObject = {
+        startPt: this._backExtraInUse
+          ? { x: 250, y: 0 } // this front is the entire front
+          : {
+              x: this._frontPart.vertices[startIndex].x,
+              y: this._frontPart.vertices[startIndex].y
+            },
+        radiiXYWithSpace:
+          SETTINGS.boundaryCircle.radius + // x radius
+          "," +
+          Math.abs(this._frontExtra.height) / 2 + // y radius
+          " ",
+        rotationDegrees: 0,
+        displayShort0OrLong1: frontDisplayFlags[0],
+        displayCCW0OrCW1: frontDisplayFlags[1],
+        endPt: this._backExtraInUse
+          ? { x: -250, y: 0 } // this front is the entire front
+          : {
+              x: this._frontPart.vertices[endIndex].x,
+              y: this._frontPart.vertices[endIndex].y
+            },
+      };
 
       let svgFrontString =
         "<path " +
-        Segment.svgTransformMatrixString(this._frontExtra.rotation, 1, 0, 0); // matrix does the rotation, scaling, and translation
-      svgFrontString += this._backExtraInUse
-        ? ' d="M 250,0 A' //Start point when the front is the entire front
-        : ' d="M ' + //Start point
-          this._frontPart.vertices[startIndex].x.zeroOut() +
-          "," +
-          this._frontPart.vertices[startIndex].y.zeroOut() +
-          " A";
-      svgFrontString +=
-        SETTINGS.boundaryCircle.radius + // x radius
-        "," +
-        Math.abs(this._frontExtra.height)/ 2 + // y radius
-        " ";
-      svgFrontString += "0 "; // rotation
-      svgFrontString += frontDisplayFlags; // flags to control which portion of the ellipse is displayed
-      svgFrontString += this._backExtraInUse
-        ? '-250,0"/>' // end point when the front in the entire front
-        : this._frontPart.vertices[endIndex].x.zeroOut() +
-          "," +
-          this._frontPart.vertices[endIndex].y.zeroOut() +
-          '"/>'; // end point
+        Segment.svgTransformMatrixString(this._frontExtra.rotation, 1, 0, 0) + // matrix does the rotation, scaling,...
+        'd="';
+      svgFrontString += Segment.svgArcString(frontPartObject,true);
+      svgFrontString += '"/>'; // end point
+
+      // now make the arcObject independent of the local matrix so it is useful outside of segment (in polygon)
+
+      this._svgArcObjectsFront.push(
+        Segment.applyMatrixToSVGArcString(
+          frontPartObject,
+          this._frontPart.matrix,
+          this._frontExtra.rotation.toDegrees()
+        )
+      );
 
       returnSVGObject.layerSVGArray.push([LAYER.foreground, svgFrontString]);
     }
 
     if (this._frontExtraInUse) {
+      // form an ArcObject
+      const frontExtraObject: svgArcObject = {
+        startPt: {
+          x: this._frontExtra.vertices[0].x,
+          y: this._frontExtra.vertices[0].y
+        },
+        radiiXYWithSpace:
+          SETTINGS.boundaryCircle.radius + // x radius
+          "," +
+          Math.abs(this._frontExtra.height) / 2 + // y radius
+          " ",
+        rotationDegrees: 0,
+        displayShort0OrLong1: this._normalVector.z > 0 ? 0 : 0,
+        displayCCW0OrCW1: this._normalVector.z > 0 ? 0 : 1,
+        endPt: {
+          x: this._frontExtra.vertices[this._frontExtra.vertices.length - 1].x,
+          y: this._frontExtra.vertices[this._frontExtra.vertices.length - 1].y
+        },
+      };
       let svgFrontString =
         "<path " +
-        Segment.svgTransformMatrixString(this._frontExtra.rotation, 1, 0, 0) + // matrix does the rotation, scaling, and translation
-        ' d="M ' + //Start point
-        this._frontExtra.vertices[this._frontExtra.vertices.length - 1].x +
-        "," +
-        this._frontExtra.vertices[this._frontExtra.vertices.length - 1].y +
-        " A";
-      svgFrontString +=
-        SETTINGS.boundaryCircle.radius + // x radius
-        "," +
-        Math.abs(this._frontExtra.height) / 2 + // y radius
-        " ";
-      svgFrontString += "0 "; // rotation
-      svgFrontString += this._normalVector.z > 0 ? "0 1 " : "0 0 "; // flags to control which portion of the ellipse is displayed
-      svgFrontString +=
-        this._frontExtra.vertices[0].x +
-        "," +
-        this._frontExtra.vertices[0].y +
-        '"/>'; // end point
+        Segment.svgTransformMatrixString(this._frontExtra.rotation, 1, 0, 0) +
+        'd="'; // matrix does the rotation, scaling, and translation
+      svgFrontString += Segment.svgArcString(frontExtraObject,true);
+      svgFrontString += '"/>';
+
+      // now make the arcObject independent of the matrix so it is useful outside of segment (in polygon)
+      this._svgArcObjectsFront.push(
+        Segment.applyMatrixToSVGArcString(
+          frontExtraObject,
+          this._frontPart.matrix,
+          this._frontExtra.rotation.toDegrees()
+        )
+      );
 
       returnSVGObject.layerSVGArray.push([LAYER.foreground, svgFrontString]);
     }
 
     // Collect the geometric information for the back
     if (this._backPartInUse) {
-      let backDisplayFlags = ""; // flags to control which portion of the ellipse is displayed
+      let backDisplayFlags: [0 | 1, 0 | 1] = [0, 0]; // flags to control which portion of the ellipse is displayed
       if (!this._backExtraInUse && !this._frontExtraInUse) {
         // the segment goes from front to back or back to front or is entirely contained on the back
         if (this._normalVector.z > 0) {
-          backDisplayFlags = "0 1 ";
+          backDisplayFlags = [0, 1];
         } else {
-          backDisplayFlags = "0 0 ";
+          backDisplayFlags = [0, 0];
         }
       } else if (this._frontExtraInUse) {
         // the back is the entire back (half ellipse)
         if (this._normalVector.z > 0) {
-          backDisplayFlags = "0 1 ";
+          backDisplayFlags = [0, 0];
         } else {
-          backDisplayFlags = "1 0 ";
+          backDisplayFlags = [1, 1];
         }
       } else if (this._backExtraInUse) {
         if (this._normalVector.z > 0) {
-          backDisplayFlags = "0 0 ";
+          backDisplayFlags = [0, 0];
         } else {
-          backDisplayFlags = "0 1 ";
+          backDisplayFlags = [0, 1];
         }
       }
 
+      // form an ArcObject
+      const backPartObject: svgArcObject = {
+        startPt: this._frontExtraInUse
+          ? { x: -250, y: 0 }
+          : {
+              x: this._backPart.vertices[startIndex].x,
+              y: this._backPart.vertices[startIndex].y
+            },
+        radiiXYWithSpace:
+          SETTINGS.boundaryCircle.radius + // x radius
+          "," +
+          Math.abs(this._backExtra.height) / 2 + // y radius
+          " ",
+        rotationDegrees: 0,
+        displayShort0OrLong1: backDisplayFlags[0],
+        displayCCW0OrCW1: backDisplayFlags[1],
+        endPt: this._frontExtraInUse
+          ? { x: 250, y: 0 }
+          : {
+              x: this._backPart.vertices[endIndex].x,
+              y: this._backPart.vertices[endIndex].y
+            }
+      };
       let svgBackString =
         "<path " +
-        Segment.svgTransformMatrixString(this._backExtra.rotation, 1, 0, 0); // matrix does the rotation, scaling, and translation
-      svgBackString += this._frontExtraInUse
-        ? ' d="M 250,0 A' //Start point (250,0) when the back is the entire back
-        : ' d="M ' + //Start point
-          this._backPart.vertices[startIndex].x.zeroOut() +
-          "," +
-          this._backPart.vertices[startIndex].y.zeroOut() +
-          " A";
-      svgBackString +=
-        SETTINGS.boundaryCircle.radius + // x radius
-        "," +
-        Math.abs(this._backExtra.height) / 2 + // y radius
-        " ";
-      svgBackString += "0 "; // rotation
-      svgBackString += backDisplayFlags; // flags to control which portion of the ellipse is displayed
-      svgBackString += this._frontExtraInUse
-        ? '-250,0"/>' // end point
-        : this._backPart.vertices[endIndex].x.zeroOut() +
-          "," +
-          this._backPart.vertices[endIndex].y.zeroOut() +
-          '"/>'; // end point
+        Segment.svgTransformMatrixString(this._backExtra.rotation, 1, 0, 0) + // matrix does the rotation, scaling,...
+        'd="';
+      svgBackString += Segment.svgArcString(backPartObject,true);
+      svgBackString += '"/>'; // end point
+
+      // now make the arcObject independent of the local matrix so it is useful outside of segment (in polygon)
+      this._svgArcObjectsBack.push(
+        Segment.applyMatrixToSVGArcString(
+          backPartObject,
+          this._backPart.matrix,
+          this._backExtra.rotation.toDegrees()
+        )
+      );
 
       returnSVGObject.layerSVGArray.push([LAYER.background, svgBackString]);
     }
 
     if (this._backExtraInUse) {
+      // form an ArcObject
+      const backExtraObject: svgArcObject = {
+        startPt: {
+          x: this._backExtra.vertices[this._backExtra.vertices.length - 1].x,
+          y: this._backExtra.vertices[this._backExtra.vertices.length - 1].y
+        },
+        radiiXYWithSpace:
+          SETTINGS.boundaryCircle.radius + // x radius
+          "," +
+          Math.abs(this._backExtra.height) / 2 + // y radius
+          " ",
+        rotationDegrees: 0,
+        displayShort0OrLong1: this._normalVector.z > 0 ? 0 : 0,
+        displayCCW0OrCW1: this._normalVector.z > 0 ? 1 : 0,
+
+        endPt: {
+          x: this._backExtra.vertices[0].x,
+          y: this._backExtra.vertices[0].y
+        },
+      };
       let svgBackString =
         "<path " +
-        Segment.svgTransformMatrixString(this._backExtra.rotation, 1, 0, 0) + // matrix does the rotation, scaling, and translation
-        ' d="M ' + //Start point
-        this._backExtra.vertices[this._backExtra.vertices.length - 1].x.zeroOut() +
-        "," +
-        this._backExtra.vertices[this._backExtra.vertices.length - 1].y.zeroOut() +
-        " A";
-      svgBackString +=
-        SETTINGS.boundaryCircle.radius + // x radius
-        "," +
-        Math.abs(this._backExtra.height) / 2 + // y radius
-        " ";
-      svgBackString += "0 "; // rotation
-      svgBackString += this._normalVector.z > 0 ? "0 1 " : "0 0 "; // flags to control which portion of the ellipse is displayed
-      svgBackString +=
-        this._backExtra.vertices[0].x.zeroOut() +
-        "," +
-        this._backExtra.vertices[0].y.zeroOut() +
-        '"/>'; // end point
+        Segment.svgTransformMatrixString(this._backExtra.rotation, 1, 0, 0) +
+        'd="'; // matrix does the rotation, scaling, and translation
+      svgBackString += Segment.svgArcString(backExtraObject,true);
+      svgBackString += '"/>';
+
+      // now make the arcObject independent of the matrix so it is useful outside of segment (in polygon)
+      this._svgArcObjectsBack.push(
+        Segment.applyMatrixToSVGArcString(
+          backExtraObject,
+          this._backPart.matrix,
+          this._backExtra.rotation.toDegrees()
+        )
+      );
 
       returnSVGObject.layerSVGArray.push([LAYER.background, svgBackString]);
     }

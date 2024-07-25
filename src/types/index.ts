@@ -463,6 +463,15 @@ export type toSVGType = {
 
 export type toSVGReturnType = null | toSVGType;
 
+export type svgArcObject = {
+  startPt: { x: number; y: number };
+  radiiXYWithSpace: string;
+  rotationDegrees: number;
+  displayShort0OrLong1: 0 | 1;
+  displayCCW0OrCW1: 0 | 1;
+  endPt: { x: number; y: number };
+};
+
 export type svgStyleType =
   | "fill"
   | "fill-opacity"
@@ -485,12 +494,14 @@ export type svgStyleType =
   | "direction";
 
 export type svgGradientType =
-  | "centerX"
-  | "centerY"
-  | "focusX"
-  | "focusY"
+  | "cx"
+  | "cy"
+  | "fx"
+  | "fy"
   | "radius"
-  | "units"
+  | "gradientUnits"
+  | "spreadMethod"
+  | "r"
   | "stops";
 
 export type svgStopType = "offset" | "stop-color";

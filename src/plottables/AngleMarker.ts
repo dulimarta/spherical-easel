@@ -16,7 +16,6 @@ import { Path } from "two.js/src/path";
 import { Line } from "two.js/src/shapes/line";
 import { Vector } from "two.js/src/vector";
 import { svgStyleType, toSVGType } from "@/types";
-import { aM } from "vitest/dist/reporters-yx5ZTtEV";
 
 const NUMCIRCLEVERTICES = SETTINGS.angleMarker.numCirclePoints;
 const radius = SETTINGS.boundaryCircle.radius;

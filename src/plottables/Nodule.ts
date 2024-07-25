@@ -2,11 +2,17 @@ import { Stylable } from "./Styleable";
 import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
 import { StyleOptions, StyleCategory } from "@/types/Styles";
-import { hslaColorType, plottableProperties, toSVGType } from "@/types";
+import {
+  hslaColorType,
+  plottableProperties,
+  svgArcObject,
+  toSVGType
+} from "@/types";
 import { Vector3 } from "three";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import Color from "color";
+import { Matrix } from "two.js/src/matrix";
 
 export enum DisplayStyle {
   ApplyTemporaryVariables,
@@ -19,8 +25,8 @@ const tmpVector = new Vector3();
  * A Nodule consists of one or more TwoJS(SVG) elements
  */
 export default abstract class Nodule implements Stylable, Resizeable {
-  //public static NODULE_COUNT = 0;
-  //public id = 0;
+  // public static NODULE_COUNT = 0; // useful for export to SVG to identify arc objects
+  // public id = 0;
   /* If the object is not visible then showing = true (The user can hide objects)*/
   protected _showing = true;
   readonly name: string = "<noname-nodule>";
@@ -175,6 +181,75 @@ export default abstract class Nodule implements Stylable, Resizeable {
           Math.sin(rotation)) /
           Math.sqrt(2 + Nodule.ctg(circleRadius) ** 2)
     ];
+  }
+
+  /**
+   *
+   * @param object
+   * @returns string of startPointX startPointX A radiusX radiusY rotation displayFlag1 displayFlag2 ednPointX endPointy
+   */
+  static svgArcString(object: svgArcObject, includeStart?: boolean): string {
+    let svgReturnString = "";
+    if (includeStart == undefined || includeStart == false) {
+      svgReturnString += " A";
+    } else {
+      svgReturnString +=
+        "M" +
+        object.startPt.x.zeroOut() +
+        " " +
+        object.startPt.y.zeroOut() +
+        " A";
+    }
+    svgReturnString += object.radiiXYWithSpace;
+    svgReturnString += object.rotationDegrees + " ";
+    svgReturnString +=
+      object.displayShort0OrLong1 + " " + object.displayCCW0OrCW1 + " ";
+    svgReturnString +=
+      object.endPt.x.zeroOut() + " " + object.endPt.y.zeroOut()+" ";
+    return svgReturnString;
+  }
+
+  /**
+   *
+   * @param object
+   * @returns string of endPointX endPointX A radiusX radiusY rotation displayFlag1 displayFlag2 startPointX startPointy
+   */
+  static svgArcStringReverse(
+    object: svgArcObject,
+    includeStart?: boolean
+  ): string {
+    let svgReturnString = "";
+    if (includeStart == undefined || includeStart == false) {
+      svgReturnString += " A";
+    } else {
+      svgReturnString =
+        "M" + object.endPt.x.zeroOut() + " " + object.endPt.y.zeroOut() + " A";
+    }
+    svgReturnString += object.radiiXYWithSpace;
+    svgReturnString += object.rotationDegrees + " ";
+    svgReturnString +=
+      object.displayShort0OrLong1 +
+      " " +
+      (object.displayCCW0OrCW1 == 1 ? 0 : 1) + " ";
+    svgReturnString +=
+      object.startPt.x.zeroOut() + " " + object.startPt.y.zeroOut() +" ";
+    return svgReturnString;
+  }
+
+  //** Applies matrix to the start and end point and changes the rotation to rot */
+  static applyMatrixToSVGArcString(
+    object: svgArcObject,
+    mat: Matrix,
+    rot: number
+  ): svgArcObject {
+    let coords = mat.multiply(object.startPt.x, object.startPt.y, 1);
+    object.startPt.x = coords[0];
+    object.startPt.y = coords[1];
+    coords = mat.multiply(object.endPt.x, object.endPt.y, 1);
+    object.endPt.x = coords[0];
+    object.endPt.y = coords[1];
+    object.rotationDegrees = rot;
+    return object;
   }
 
   static svgTransformMatrixString(

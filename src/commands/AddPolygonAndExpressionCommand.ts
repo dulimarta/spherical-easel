@@ -72,7 +72,25 @@ export class AddPolygonCommand extends Command {
 
   toSVG(deletedNoduleIds: Array<number>): null | toSVGType[]{
     // First check to make sure that the object is not deleted, is showing, and exists (otherwise return null)
-    //
+    if (
+      deletedNoduleIds.findIndex(id => id == this.sePolygon.id) == -1 &&
+      this.sePolygon.exists &&
+      this.sePolygon.showing
+    ) {
+      const info: toSVGType[] = [];
+      info.push(...this.sePolygon.ref.toSVG());
+      // now check the label (if the point is deleted the label is also so check this inside the first conditional statement)
+      if (
+        deletedNoduleIds.findIndex(id => id == this.seLabel.id) == -1 &&
+        this.seLabel.exists &&
+        this.seLabel.showing
+      ) {
+        info.push(...this.seLabel.ref.toSVG());
+      }
+      return info;
+    } else {
+      return null;
+    }
 
     return null
   }

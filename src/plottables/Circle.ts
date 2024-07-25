@@ -15,7 +15,13 @@ import { Stop } from "two.js/src/effects/stop";
 import { RadialGradient } from "two.js/src/effects/radial-gradient";
 import { Anchor } from "two.js/src/anchor";
 import { Path } from "two.js/src/path";
-import { svgGradientType, svgStopType, svgStyleType, toSVGType } from "@/types";
+import {
+  svgArcObject,
+  svgGradientType,
+  svgStopType,
+  svgStyleType,
+  toSVGType
+} from "@/types";
 
 // The number of vertices used to draw an arc of a projected circle
 const SUBDIVISIONS = SETTINGS.circle.numPoints;
@@ -930,27 +936,20 @@ export default class Circle extends Nodule {
           svgGradientType,
           string | Map<svgStopType, string>[]
         >();
+        frontGradientDictionary.set("cx", String(this.frontGradient.center.x));
+        frontGradientDictionary.set("cy", String(this.frontGradient.center.y));
+        frontGradientDictionary.set("fx", String(this.frontGradient.focal.x));
+        frontGradientDictionary.set("fy", String(this.frontGradient.focal.y));
+        frontGradientDictionary.set("gradientUnits", this.frontGradient.units);
         frontGradientDictionary.set(
-          "centerX",
-          String(this.frontGradient.center.x)
+          "r",
+          String(SETTINGS.boundaryCircle.radius)
         );
-        frontGradientDictionary.set(
-          "centerY",
-          String(this.frontGradient.center.y)
-        );
-        frontGradientDictionary.set(
-          "focusX",
-          String(this.frontGradient.focal.x)
-        );
-        frontGradientDictionary.set(
-          "focusY",
-          String(this.frontGradient.focal.y)
-        );
-        frontGradientDictionary.set("units", this.frontGradient.units);
+        frontGradientDictionary.set("spreadMethod", "pad");
         const stop1FrontDictionary = new Map<svgStopType, string>();
         stop1FrontDictionary.set(
           "offset",
-          String(this.frontGradientColorCenter.offset)
+          String(this.frontGradientColorCenter.offset * 100) + "%"
         );
         stop1FrontDictionary.set(
           "stop-color",
@@ -959,7 +958,7 @@ export default class Circle extends Nodule {
         const stop2FrontDictionary = new Map<svgStopType, string>();
         stop2FrontDictionary.set(
           "offset",
-          String(this.frontGradientColor.offset)
+          String(this.frontGradientColor.offset * 100) + "%"
         );
         stop2FrontDictionary.set(
           "stop-color",
@@ -977,21 +976,17 @@ export default class Circle extends Nodule {
           svgGradientType,
           string | Map<svgStopType, string>[]
         >();
-        backGradientDictionary.set(
-          "centerX",
-          String(this.backGradient.center.x)
-        );
-        backGradientDictionary.set(
-          "centerY",
-          String(this.backGradient.center.y)
-        );
-        backGradientDictionary.set("focusX", String(this.backGradient.focal.x));
-        backGradientDictionary.set("focusY", String(this.backGradient.focal.y));
-        backGradientDictionary.set("units", this.backGradient.units);
+        backGradientDictionary.set("cx", String(this.backGradient.center.x));
+        backGradientDictionary.set("cy", String(this.backGradient.center.y));
+        backGradientDictionary.set("fx", String(this.backGradient.focal.x));
+        backGradientDictionary.set("fy", String(this.backGradient.focal.y));
+        backGradientDictionary.set("gradientUnits", this.backGradient.units);
+        backGradientDictionary.set("r", String(SETTINGS.boundaryCircle.radius));
+        backGradientDictionary.set("spreadMethod", "pad");
         const stop1BackDictionary = new Map<svgStopType, string>();
         stop1BackDictionary.set(
           "offset",
-          String(this.backGradientColorCenter.offset)
+          String(this.backGradientColorCenter.offset * 100) + "%"
         );
         stop1BackDictionary.set(
           "stop-color",
@@ -1000,7 +995,7 @@ export default class Circle extends Nodule {
         const stop2BackDictionary = new Map<svgStopType, string>();
         stop2BackDictionary.set(
           "offset",
-          String(this.backGradientColor.offset)
+          String(this.backGradientColor.offset * 100) + "%"
         );
         stop2BackDictionary.set(
           "stop-color",
@@ -1073,234 +1068,8 @@ export default class Circle extends Nodule {
     const my_sum = this._beta + this._circleRadius; // my_sum is the angular distance from the north pole to the furthest point on the circle
     // get the local transformation matrix of the circle (should be the same for all parts glowing/not front/back)
     const localMatrix = this._frontPart.matrix; //local matrix works for just the position, rotation, and scale of that object in its local frame (The front and back matrices are the same)
+
     if (
-      -Math.PI / 2 < my_diff &&
-      my_diff < Math.PI / 2 &&
-      !(Math.PI / 2 < my_sum && my_sum < (3 * Math.PI) / 2)
-    ) {
-      // the circle edge is entirely on the front
-      if (this._centerVector.z > 0) {
-        // The interior of the circle is entirely contained on the front
-        let svgFrontString =
-          '<ellipse cx="0" cy="0" rx="' +
-          Math.abs(this._halfMajorAxis) * SETTINGS.boundaryCircle.radius +
-          '" ry="' +
-          Math.abs(this._halfMinorAxis) * SETTINGS.boundaryCircle.radius +
-          '" ';
-        svgFrontString +=
-          Circle.svgTransformMatrixString(
-            this._rotation,
-            1,
-            this._frontPart.position.x,
-            this._frontPart.position.y
-          ) + " />";
-
-        returnSVGObject.layerSVGArray.push([LAYER.foreground, svgFrontString]);
-      } else {
-        //  the circle is a hole on the front, the back is entirely covered
-        // Find two points on the ellipse that are close but not the same, draw the long ellipse between them
-        const untransformedEllipseStartPoint =
-          this._frontPart.vertices[this._frontPart.vertices.length - 2];
-        const ellipseStartPoint = localMatrix.multiply(
-          untransformedEllipseStartPoint.x,
-          untransformedEllipseStartPoint.y,
-          1
-        );
-
-        let untransformedEllipseEndPoint = this._frontPart.vertices[0];
-        let ellipseEndPoint = localMatrix.multiply(
-          untransformedEllipseEndPoint.x,
-          untransformedEllipseEndPoint.y,
-          1
-        );
-        // Find two point on the boundary circle that are across from the start of the ellipse
-        // two points not the same, but close
-        // Do some trig, law of sines to figure out an angle and then pick the angle at the center (0,0)
-        const ellipseAng = Math.atan2(
-          ellipseStartPoint[1] - this._center.y,
-          ellipseStartPoint[0] - this._center.x
-        );
-        const distCircleCenterToEllipseCenter = Math.sqrt(
-          this._center.x ** 2 + this._center.y ** 2
-        );
-
-        const circleStartAngle =
-          ellipseAng -
-          Math.asin(
-            (distCircleCenterToEllipseCenter * Math.sin(Math.PI - ellipseAng)) /
-              SETTINGS.boundaryCircle.radius
-          );
-
-        const deltaAng = 1 / SUBDIVISIONS;
-
-        const circleStartPoint = [
-          Math.cos(circleStartAngle),
-          Math.sin(circleStartAngle)
-        ].map(num => num * SETTINGS.boundaryCircle.radius);
-        const circleEndPoint = [
-          Math.cos(circleStartAngle + deltaAng),
-          Math.sin(circleStartAngle + deltaAng)
-        ].map(num => num * SETTINGS.boundaryCircle.radius);
-
-        let svgFrontString =
-          '<path d="M ' +
-          ellipseStartPoint[0] +
-          "," +
-          ellipseStartPoint[1] +
-          " A";
-        svgFrontString +=
-          Math.abs(this._halfMajorAxis) * SETTINGS.boundaryCircle.radius +
-          "," +
-          Math.abs(this._halfMinorAxis) * SETTINGS.boundaryCircle.radius +
-          " ";
-        svgFrontString += this._frontPart.rotation.toDegrees() + " "; //rotate the ellipse part
-        svgFrontString += "1,1 "; // Control the part of the ellipse drawn
-        svgFrontString += ellipseEndPoint[0] + "," + ellipseEndPoint[1] + " "; // The ellipse is done
-        svgFrontString +=
-          "L " + ellipseStartPoint[0] + "," + ellipseStartPoint[1] + " "; // close the ellipse, with a line to the start
-        svgFrontString +=
-          "M " + circleStartPoint[0] + "," + circleStartPoint[1] + " A"; // Move (not line!) to the start of the circle
-        svgFrontString +=
-          SETTINGS.boundaryCircle.radius +
-          "," +
-          SETTINGS.boundaryCircle.radius +
-          " ";
-        svgFrontString += 0 + " "; // no rotation
-        svgFrontString += "1,0 "; // Control the part of the boundary circle drawn
-        svgFrontString += circleEndPoint[0] + "," + circleEndPoint[1] + " "; // The circle is done
-        svgFrontString +=
-          "L " + circleStartPoint[0] + "," + circleStartPoint[1] + " "; // close the circle, with a line to the start
-        svgFrontString +=
-          "M " + ellipseStartPoint[0] + "," + ellipseStartPoint[1] + " "; // move (not line) to the start ellipse
-        svgFrontString += '"/>';
-
-        returnSVGObject.layerSVGArray.push([
-          LAYER.foregroundFills,
-          svgFrontString
-        ]);
-
-        // now add the background fill which is a circle of radius boundary circle
-        let svgBackString =
-          '<circle cx="0" cy="0" r="' + SETTINGS.boundaryCircle.radius + '" />';
-        returnSVGObject.layerSVGArray.push([
-          LAYER.backgroundFills,
-          svgBackString
-        ]);
-      }
-    } else if (
-      !(-Math.PI / 2 < my_diff && my_diff < Math.PI / 2) &&
-      Math.PI / 2 < my_sum &&
-      my_sum < (3 * Math.PI) / 2
-    ) {
-      //  the circle edge is entirely on the back")
-      if (this.centerVector.z < 0) {
-        let svgBackString =
-          '<ellipse cx="0" cy="0" rx="' +
-          Math.abs(this._halfMajorAxis) * SETTINGS.boundaryCircle.radius +
-          '" ry="' +
-          Math.abs(this._halfMinorAxis) * SETTINGS.boundaryCircle.radius +
-          '" ';
-        svgBackString +=
-          Circle.svgTransformMatrixString(
-            this._rotation,
-            1,
-            this._backPart.position.x,
-            this._backPart.position.y
-          ) + " />";
-
-        returnSVGObject.layerSVGArray.push([LAYER.background, svgBackString]);
-      } else {
-        //  the circle is a hole on the back, the front is entirely covered
-        // Find two points on the ellipse that are close but not the same, draw the long ellipse between them
-        const untransformedEllipseStartPoint =
-          this._backPart.vertices[this._backPart.vertices.length - 2];
-        const ellipseStartPoint = localMatrix.multiply(
-          untransformedEllipseStartPoint.x,
-          untransformedEllipseStartPoint.y,
-          1
-        );
-
-        const untransformedEllipseEndPoint = this._backPart.vertices[0];
-        const ellipseEndPoint = localMatrix.multiply(
-          untransformedEllipseEndPoint.x,
-          untransformedEllipseEndPoint.y,
-          1
-        );
-
-        // Find two point on the boundary circle that are across from the start of the ellipse
-        // two points not the same, but close
-        // Do some trig, law of sines to figure out an angle and then pick the angle at the center (0,0)
-        const ellipseAng = Math.atan2(
-          ellipseStartPoint[1] - this._center.y,
-          ellipseStartPoint[0] - this._center.x
-        );
-        const distCircleCenterToEllipseCenter = Math.sqrt(
-          this._center.x ** 2 + this._center.y ** 2
-        );
-
-        const circleStartAngle =
-          ellipseAng -
-          Math.asin(
-            (distCircleCenterToEllipseCenter * Math.sin(Math.PI - ellipseAng)) /
-              SETTINGS.boundaryCircle.radius
-          );
-        const deltaAng = 1 / SUBDIVISIONS;
-
-        const circleStartPoint = [
-          Math.cos(circleStartAngle),
-          Math.sin(circleStartAngle)
-        ].map(num => num * SETTINGS.boundaryCircle.radius);
-        const circleEndPoint = [
-          Math.cos(circleStartAngle - deltaAng),
-          Math.sin(circleStartAngle - deltaAng)
-        ].map(num => num * SETTINGS.boundaryCircle.radius);
-
-        let svgBackString =
-          '<path d="M ' +
-          ellipseStartPoint[0] +
-          "," +
-          ellipseStartPoint[1] +
-          " A";
-        svgBackString +=
-          Math.abs(this._halfMajorAxis) * SETTINGS.boundaryCircle.radius +
-          "," +
-          Math.abs(this._halfMinorAxis) * SETTINGS.boundaryCircle.radius +
-          " ";
-        svgBackString += this._backPart.rotation.toDegrees() + " "; //rotate the ellipse part
-        svgBackString += "1,0 "; // Control the part of the ellipse drawn
-        svgBackString += ellipseEndPoint[0] + "," + ellipseEndPoint[1] + " "; // The ellipse is done
-        svgBackString +=
-          "L " + ellipseStartPoint[0] + "," + ellipseStartPoint[1] + " "; // close the ellipse, with a line to the start
-        svgBackString +=
-          "M " + circleStartPoint[0] + "," + circleStartPoint[1] + " A"; // Move (not line!) to the start of the circle
-        svgBackString +=
-          SETTINGS.boundaryCircle.radius +
-          "," +
-          SETTINGS.boundaryCircle.radius +
-          " ";
-        svgBackString += 0 + " "; // no rotation
-        svgBackString += "1,1 "; // Control the part of the boundary circle drawn
-        svgBackString += circleEndPoint[0] + "," + circleEndPoint[1] + " "; // The circle is done
-        svgBackString +=
-          "L " + circleStartPoint[0] + "," + circleStartPoint[1] + " "; // close the circle, with a line to the start
-        svgBackString +=
-          "M " + ellipseStartPoint[0] + "," + ellipseStartPoint[1] + " "; // move (not line) to the start ellipse
-        svgBackString += '"/>';
-
-        returnSVGObject.layerSVGArray.push([
-          LAYER.backgroundFills,
-          svgBackString
-        ]);
-
-        // now add the background fill which is a circle of radius boundary circle
-        let svgFrontString =
-          '<circle cx="0" cy="0" r="' + SETTINGS.boundaryCircle.radius + '" />';
-        returnSVGObject.layerSVGArray.push([
-          LAYER.foregroundFills,
-          svgFrontString
-        ]);
-      }
-    } else if (
       -Math.PI / 2 < my_diff &&
       my_diff < Math.PI / 2 &&
       Math.PI / 2 < my_sum &&
@@ -1330,29 +1099,43 @@ export default class Circle extends Nodule {
         new Vector3(startPoint[0], startPoint[1], 0)
       );
 
-      const frontEllipseDisplayFlags = ang > Math.PI/2 ? "0,0 " : "1,0 ";
-      const frontCircleDisplayFlags = ang > Math.PI/2 ? "1,0 " : "0,0 ";
-      const backEllipseDisplayFlags = ang > Math.PI/2 ? "1,1 " : "0,1 ";
-      const backCircleDisplayFlags = ang > Math.PI/2 ? "1,0 " : "0,0 ";
+      const frontEllipseDisplayFlags: [0 | 1, 0 | 1] =
+        ang > Math.PI / 2 ? [0, 0] : [1, 0];
+      const frontCircleDisplayFlags: [0 | 1, 0 | 1] =
+        ang > Math.PI / 2 ? [1, 0] : [0, 0];
+      const backEllipseDisplayFlags: [0 | 1, 0 | 1] =
+        ang > Math.PI / 2 ? [1, 1] : [0, 1];
+      const backCircleDisplayFlags: [0 | 1, 0 | 1] =
+        ang > Math.PI / 2 ? [1, 0] : [0, 0];
 
-      let svgFrontString =
-        '<path d="M ' + startPoint[0] + "," + startPoint[1] + " A";
-      svgFrontString +=
-        Math.abs(this._halfMajorAxis) * SETTINGS.boundaryCircle.radius +
-        "," +
-        Math.abs(this._halfMinorAxis) * SETTINGS.boundaryCircle.radius +
-        " ";
-      svgFrontString += this._frontPart.rotation.toDegrees() + " "; //rotate the ellipse part
-      svgFrontString += frontEllipseDisplayFlags; // Control the part of the ellipse drawn
-      svgFrontString += endPoint[0] + "," + endPoint[1] + " A"; // The ellipse part is done
-      svgFrontString +=
-        SETTINGS.boundaryCircle.radius +
-        "," +
-        SETTINGS.boundaryCircle.radius +
-        " ";
-      svgFrontString += 0 + " "; // no rotation
-      svgFrontString += frontCircleDisplayFlags; // Control the part of the boundary circle drawn
-      svgFrontString += startPoint[0] + "," + startPoint[1] + " "; // The circle part is done
+      // form  svg arc objects
+      const ellipseArc: svgArcObject = {
+        startPt: { x: startPoint[0], y: startPoint[1] },
+        radiiXYWithSpace:
+          Math.abs(this._halfMajorAxis) * SETTINGS.boundaryCircle.radius +
+          "," +
+          Math.abs(this._halfMinorAxis) * SETTINGS.boundaryCircle.radius +
+          " ",
+        rotationDegrees: this._frontPart.rotation.toDegrees(),
+        displayShort0OrLong1: frontEllipseDisplayFlags[0],
+        displayCCW0OrCW1: frontEllipseDisplayFlags[1],
+        endPt: { x: endPoint[0], y: endPoint[1] }
+      };
+      const circleArc: svgArcObject = {
+        startPt: { x: endPoint[0], y: endPoint[1] },
+        radiiXYWithSpace:
+          SETTINGS.boundaryCircle.radius +
+          "," +
+          SETTINGS.boundaryCircle.radius +
+          " ",
+        rotationDegrees: 0,
+        displayShort0OrLong1: frontCircleDisplayFlags[0],
+        displayCCW0OrCW1: frontCircleDisplayFlags[1],
+        endPt: { x: startPoint[0], y: startPoint[1] }
+      };
+      let svgFrontString = '<path d="';
+      svgFrontString += Nodule.svgArcString(ellipseArc, true);
+      svgFrontString += Nodule.svgArcString(circleArc);
       svgFrontString += ' Z"/>';
 
       returnSVGObject.layerSVGArray.push([
@@ -1360,30 +1143,209 @@ export default class Circle extends Nodule {
         svgFrontString
       ]);
 
-      let svgBackString =
-        '<path d="M ' + startPoint[0] + "," + startPoint[1] + " A";
-      svgBackString +=
-        Math.abs(this._halfMajorAxis) * SETTINGS.boundaryCircle.radius +
-        "," +
-        Math.abs(this._halfMinorAxis) * SETTINGS.boundaryCircle.radius +
-        " ";
-      svgBackString += this._frontPart.rotation.toDegrees() + " "; //rotate the ellipse part
-      svgBackString += backEllipseDisplayFlags; // Control the part of the ellipse drawn
-      svgBackString += endPoint[0] + "," + endPoint[1] + " A"; // The ellipse part is done
-      svgBackString +=
-        SETTINGS.boundaryCircle.radius +
-        "," +
-        SETTINGS.boundaryCircle.radius +
-        " ";
-      svgBackString += 0 + " "; // no rotation
-      svgBackString += backCircleDisplayFlags; // Control the part of the boundary circle drawn
-      svgBackString += startPoint[0] + "," + startPoint[1] + " "; // The circle part is done
+      // update the flags for the back
+      ellipseArc.displayShort0OrLong1 = backEllipseDisplayFlags[0];
+      ellipseArc.displayCCW0OrCW1 = backEllipseDisplayFlags[1];
+      circleArc.displayShort0OrLong1 = backCircleDisplayFlags[0];
+      circleArc.displayCCW0OrCW1 = backCircleDisplayFlags[1];
+
+      let svgBackString = '<path d="';
+      svgBackString += Nodule.svgArcString(ellipseArc, true);
+      svgBackString += Nodule.svgArcString(circleArc);
       svgBackString += ' Z"/>';
 
       returnSVGObject.layerSVGArray.push([
         LAYER.backgroundFills,
         svgBackString
       ]);
+
+      // let svgFrontString =
+      //   '<path d="M ' + startPoint[0] + "," + startPoint[1] + " A";
+      // svgFrontString +=
+      //   Math.abs(this._halfMajorAxis) * SETTINGS.boundaryCircle.radius +
+      //   "," +
+      //   Math.abs(this._halfMinorAxis) * SETTINGS.boundaryCircle.radius +
+      //   " ";
+      // svgFrontString += this._frontPart.rotation.toDegrees() + " "; //rotate the ellipse part
+      // svgFrontString += frontEllipseDisplayFlags; // Control the part of the ellipse drawn
+      // svgFrontString += endPoint[0] + "," + endPoint[1] + " A"; // The ellipse part is done
+      // svgFrontString +=
+      //   SETTINGS.boundaryCircle.radius +
+      //   "," +
+      //   SETTINGS.boundaryCircle.radius +
+      //   " ";
+      // svgFrontString += 0 + " "; // no rotation
+      // svgFrontString += frontCircleDisplayFlags; // Control the part of the boundary circle drawn
+      // svgFrontString += startPoint[0] + "," + startPoint[1] + " "; // The circle part is done
+      // svgFrontString += ' Z"/>';
+
+      // let svgBackString =
+      //   '<path d="M ' + startPoint[0] + "," + startPoint[1] + " A";
+      // svgBackString +=
+      //   Math.abs(this._halfMajorAxis) * SETTINGS.boundaryCircle.radius +
+      //   "," +
+      //   Math.abs(this._halfMinorAxis) * SETTINGS.boundaryCircle.radius +
+      //   " ";
+      // svgBackString += this._frontPart.rotation.toDegrees() + " "; //rotate the ellipse part
+      // svgBackString += backEllipseDisplayFlags; // Control the part of the ellipse drawn
+      // svgBackString += endPoint[0] + "," + endPoint[1] + " A"; // The ellipse part is done
+      // svgBackString +=
+      //   SETTINGS.boundaryCircle.radius +
+      //   "," +
+      //   SETTINGS.boundaryCircle.radius +
+      //   " ";
+      // svgBackString += 0 + " "; // no rotation
+      // svgBackString += backCircleDisplayFlags; // Control the part of the boundary circle drawn
+      // svgBackString += startPoint[0] + "," + startPoint[1] + " "; // The circle part is done
+      // svgBackString += ' Z"/>';
+
+      // returnSVGObject.layerSVGArray.push([
+      //   LAYER.backgroundFills,
+      //   svgBackString
+      // ]);
+      return [returnSVGObject];
+    } else {
+      // the circle edge is entirely on the front or the circle edge is entirely on the back")
+      let fillLayer = LAYER.foregroundFills;
+      let edgeLayer = LAYER.foreground;
+      if (
+        !(-Math.PI / 2 < my_diff && my_diff < Math.PI / 2) &&
+        Math.PI / 2 < my_sum &&
+        my_sum < (3 * Math.PI) / 2
+      ) {
+        fillLayer = LAYER.backgroundFills;
+        edgeLayer = LAYER.background;
+      }
+      if (
+        (this._centerVector.z > 0 && edgeLayer == LAYER.foreground) ||
+        (this._centerVector.z < 0 && edgeLayer == LAYER.background)
+      ) {
+        // The interior of the circle is entirely contained on the front or back
+        let svgString =
+          '<ellipse cx="0" cy="0" rx="' +
+          Math.abs(this._halfMajorAxis) * SETTINGS.boundaryCircle.radius +
+          '" ry="' +
+          Math.abs(this._halfMinorAxis) * SETTINGS.boundaryCircle.radius +
+          '" ';
+        svgString +=
+          Circle.svgTransformMatrixString(
+            this._rotation,
+            1,
+            edgeLayer == LAYER.background
+              ? this._backPart.position.x
+              : this._frontPart.position.x,
+            edgeLayer == LAYER.background
+              ? this._backPart.position.y
+              : this._frontPart.position.y
+          ) + " />";
+
+        returnSVGObject.layerSVGArray.push([edgeLayer, svgString]);
+      } else {
+        console.log("HOLE");
+        //  the circle is a hole on the front or back, the back/front is entirely covered
+
+        // Find two points on the ellipse that are close but not the same, draw the long ellipse between them
+        const untransformedEllipseStartPoint =
+          edgeLayer == LAYER.background
+            ? this._backPart.vertices[this._backPart.vertices.length - 2]
+            : this._frontPart.vertices[this._frontPart.vertices.length - 2];
+        const ellipseStartPoint = localMatrix.multiply(
+          untransformedEllipseStartPoint.x,
+          untransformedEllipseStartPoint.y,
+          1
+        );
+
+        const untransformedEllipseEndPoint =
+          edgeLayer == LAYER.background
+            ? this._backPart.vertices[0]
+            : this._frontPart.vertices[0];
+        const ellipseEndPoint = localMatrix.multiply(
+          untransformedEllipseEndPoint.x,
+          untransformedEllipseEndPoint.y,
+          1
+        );
+
+        // Find two point on the boundary circle that are across from the start of the ellipse
+        // two points not the same, but close
+        // Do some trig, law of sines to figure out an angle and then pick the angle at the center (0,0)
+        const ellipseAng = Math.atan2(
+          ellipseStartPoint[1] - this._center.y,
+          ellipseStartPoint[0] - this._center.x
+        );
+        const distCircleCenterToEllipseCenter = Math.sqrt(
+          this._center.x ** 2 + this._center.y ** 2
+        );
+
+        const circleStartAngle =
+          ellipseAng -
+          Math.asin(
+            (distCircleCenterToEllipseCenter * Math.sin(Math.PI - ellipseAng)) /
+              SETTINGS.boundaryCircle.radius
+          );
+
+        const deltaAng = 1 / SUBDIVISIONS;
+
+        const circleStartPoint = [
+          Math.cos(circleStartAngle),
+          Math.sin(circleStartAngle)
+        ].map(num => num * SETTINGS.boundaryCircle.radius);
+        const deltaAdjustAngle =
+          fillLayer == LAYER.backgroundFills
+            ? circleStartAngle - deltaAng
+            : circleStartAngle + deltaAng;
+        const circleEndPoint = [
+          Math.cos(deltaAdjustAngle),
+          Math.sin(deltaAdjustAngle)
+        ].map(num => num * SETTINGS.boundaryCircle.radius);
+
+        //create an svgArcObject
+        const svgEllipseObject: svgArcObject = {
+          startPt: { x: ellipseStartPoint[0], y: ellipseStartPoint[1] },
+          radiiXYWithSpace:
+            Math.abs(this._halfMajorAxis) * SETTINGS.boundaryCircle.radius +
+            "," +
+            Math.abs(this._halfMinorAxis) * SETTINGS.boundaryCircle.radius +
+            " ",
+          rotationDegrees: this._frontPart.rotation.toDegrees(),
+          displayShort0OrLong1: 1,
+          displayCCW0OrCW1: fillLayer == LAYER.backgroundFills ? 0 : 1,
+          endPt: { x: ellipseEndPoint[0], y: ellipseEndPoint[1] }
+        };
+        const svgCircleObject: svgArcObject = {
+          startPt: { x: circleStartPoint[0], y: circleStartPoint[1] },
+          radiiXYWithSpace:
+            SETTINGS.boundaryCircle.radius +
+            "," +
+            SETTINGS.boundaryCircle.radius +
+            " ",
+          rotationDegrees: 0,
+          displayShort0OrLong1: 1,
+          displayCCW0OrCW1: fillLayer == LAYER.backgroundFills ? 1 : 0,
+          endPt: { x: circleEndPoint[0], y: circleEndPoint[1] }
+        };
+        let svgString = '<path d="';
+        svgString += Nodule.svgArcString(svgEllipseObject, true);
+        svgString +=
+          "L" + ellipseStartPoint[0] + "," + ellipseStartPoint[1] + " "; // close the ellipse, with a line to the start
+        svgString += Nodule.svgArcString(svgCircleObject, true);
+        svgString +=
+          "L" + circleStartPoint[0] + "," + circleStartPoint[1] + " "; // close the circle, with a line to the start
+        svgString +=
+          "M" + ellipseStartPoint[0] + "," + ellipseStartPoint[1] + " "; // move (not line) to the start ellipse
+        svgString += '"/>';
+
+        returnSVGObject.layerSVGArray.push([fillLayer, svgString]);
+
+        // now add the back/foreground fill which is a circle of radius boundary circle
+        let svgEntireCircleString =
+          '<circle cx="0" cy="0" r="' + SETTINGS.boundaryCircle.radius + '" />';
+        returnSVGObject.layerSVGArray.push([
+          fillLayer == LAYER.backgroundFills
+            ? LAYER.foregroundFills
+            : LAYER.backgroundFills,
+          svgEntireCircleString
+        ]);
+      }
     }
     return [returnSVGObject];
   }
