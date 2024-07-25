@@ -8,16 +8,23 @@
       color="orange">
       <v-icon>mdi-human-male-board</v-icon>
     </v-btn>
+    <v-tooltip
+      activator="#teacher-studio"
+      :text="
+        typeof studioID === 'undefined' ? 'Create a Studio' : 'Studio Dashboard'
+      "></v-tooltip>
   </template>
   <template v-else>
-    <v-btn id="student-studio" @click="prepareToJoinStudio" size="x-small" icon color="green">
+    <v-btn
+      id="student-studio"
+      @click="prepareToJoinStudio"
+      size="x-small"
+      icon
+      color="green">
       <v-icon>mdi-account-school</v-icon>
     </v-btn>
+    <v-tooltip activator="#student-studio" text="Join a studio" />
   </template>
-  <v-tooltip
-    activator="#teacher-studio"
-    :text="studioID ? 'Studio Dashboard' : 'Create a Studio'"></v-tooltip>
-  <v-tooltip activator="#student-studio" text="Join a studio" />
   <Dialog
     ref="initiateSessionDialog"
     title="New Studio"
@@ -31,6 +38,33 @@
       label="Studio Name"
       id="id"></v-text-field>
   </Dialog>
+  <Dialog
+    ref="studioListDialog"
+    title="Select a studio to join"
+    yes-text="Cancel"
+    max-width="60%">
+    <v-text-field
+      v-model="participantName"
+      variant="outlined"
+      label="Your Name"
+      hint="Your name as a studio participant" />
+    <v-data-table
+      :items="availableStudios"
+      :headers="tableHeaders"
+      item-value="id">
+      <template #no-data>No active sessions available</template>
+      <template #item.participants="{ value }">
+        {{ value.length > 0 ? `${value.length} members` : "None" }}
+      </template>
+      <template #item.actions="{ item }">
+        <v-icon
+          @click="joinStudio(item.id)"
+          :disabled="participantName.length < 3">
+          mdi-location-enter
+        </v-icon>
+      </template>
+    </v-data-table>
+  </Dialog>
 </template>
 <script lang="ts" setup>
 import { ref, Ref, computed, onMounted, onUnmounted } from "vue";
@@ -38,15 +72,31 @@ import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useAccountStore } from "@/stores/account";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
-import { useStudioStore } from "@/stores/sd";
+// import { useTeacherStudioStore, useStudentStudioStore, StudioDetails } from "@/stores/studio";
+import {
+  useTeacherStudioStore,
+  useStudentStudioStore,
+  StudioDetails
+} from "@/stores/studio";
 const acctStore = useAccountStore();
-const studioStore = useStudioStore();
+const teacherStudioStore = useTeacherStudioStore();
+const studentStudioStore = useStudentStudioStore();
 const router = useRouter();
 const { userRole, userDisplayedName } = storeToRefs(acctStore);
-const { socketID } = storeToRefs(studioStore);
+// const { socketID } = storeToRefs(studioStore);
 const studioID: Ref<string | undefined> = ref(undefined);
 const studioName = ref("");
+const participantName = ref("");
+const availableStudios: Ref<Array<StudioDetails>> = ref([]);
 const initiateSessionDialog: Ref<DialogAction | null> = ref(null);
+const studioListDialog: Ref<DialogAction | null> = ref(null);
+const tableHeaders = [
+  { title: "ID", key: "id" },
+  { title: "Topic", key: "name" },
+  { title: "Instructor", key: "instructor" },
+  { title: "Participants", key: "participants" },
+  { title: "Join", key: "actions" }
+];
 onMounted(() => {
   console.debug("Studio Session mounted. User role is", userRole.value);
 });
@@ -65,7 +115,7 @@ function prepareToLaunchStudio() {
 
 async function doLaunchStudio() {
   initiateSessionDialog.value?.hide();
-  studioID.value = await studioStore.createStudio(
+  studioID.value = await teacherStudioStore.createStudio(
     studioName.value,
     userDisplayedName?.value ?? "No Instructor Name"
   );
@@ -75,10 +125,18 @@ async function doLaunchStudio() {
   });
 }
 
-function prepareToJoinStudio() {
-  console.debug("StudioSession::preparetoJoin")
-  studioStore.getAvailableStudios();
+async function prepareToJoinStudio() {
+  console.debug("StudioSession::preparetoJoin");
+  availableStudios.value = await studentStudioStore.getAvailableStudios();
+  studioListDialog.value?.show();
 }
 
-function joinStudio(id: string) {}
+function joinStudio(id: string) {
+  console.debug("Joining a studio", id);
+  studioListDialog.value?.hide();
+  studentStudioStore.joinAsStudent(id, participantName.value);
+}
+function leaveStudio() {
+  console.debug(`Participant left the studio ${studioID.value} session`);
+}
 </script>
