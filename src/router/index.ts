@@ -3,6 +3,7 @@ import Easel from "@/views/Easel.vue";
 import Login from "@/views/Login.vue";
 import PhotoCropper from "@/views/PhotoCropper.vue";
 import TeacherDashboard from "@/views/TeacherDashboard.vue";
+import StudentDashboard from "@/views/StudentDashboard.vue";
 let routes: Array<RouteRecordRaw> = [
   {
     path: "/",
@@ -46,7 +47,17 @@ let routes: Array<RouteRecordRaw> = [
       }
     ]
   },
-  {name: "Teacher Dashboard", path: "/teacher-dashboard/:studioId", component: TeacherDashboard, props: true}
+  {
+    name: "Teacher Dashboard",
+    path: "/teacher-dashboard",
+    component: TeacherDashboard
+  },
+  {
+    name: "Student Dashboard",
+    path: "/student-dashboard",
+    component: StudentDashboard
+  }
+
 ];
 
 if (import.meta.env.MODE !== "production") {
