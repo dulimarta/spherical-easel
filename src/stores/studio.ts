@@ -65,12 +65,20 @@ export const useTeacherStudioStore = defineStore("studio-teacher", () => {
       myStudio.value = null
     }
   }
+
+  function broadcastMessage(m: string) {
+    socket.emit('notify-all', {
+      room: 'chat:' + myStudio.value!.id,
+      message: m
+    })
+  }
   return {
     /* state */
     myStudio,
     // socketID,
 
     /* functions */
+    broadcastMessage,
     createStudio,
     stopStudio,
   };
@@ -81,7 +89,8 @@ export const useStudentStudioStore = defineStore("studio-student", () => {
     autoConnect: false
   });
   const incomingMessage = ref("");
-  const activeStudioName: Ref<string | null> = ref(null);
+  const activeStudioId: Ref<string | null> = ref(null);
+  const activeStudioTitle: Ref<string|null> = ref(null)
   const participantName = ref("");
   socket.on('connect', () => {
     console.debug("Student StudioStore: Socket is connected with ID", socket.id);
@@ -97,12 +106,13 @@ export const useStudentStudioStore = defineStore("studio-student", () => {
     return JSON.parse(out);
   }
 
-  function joinAsStudent(studioId: string, myName: string) {
-    activeStudioName.value = studioId;
+  function joinAsStudent(studioId: string, studioTitle: string, myName: string) {
+    activeStudioId.value = studioId;
+    activeStudioTitle.value = studioTitle
     participantName.value = myName;
     incomingMessage.value = ""
     socket.emit("student-join", { who: myName, session: studioId });
-    socket.on("notify-all", (msg: string) => {
+    socket.on("chat-msg", (msg: string) => {
       incomingMessage.value = msg;
     });
     socket.on("bcast-cmd", (cmd: string) => {
@@ -110,21 +120,21 @@ export const useStudentStudioStore = defineStore("studio-student", () => {
     });
     socket.on("studio-end", () => {
       console.debug("This student must leave the current studio")
-      incomingMessage.value = `Studio ${activeStudioName.value} has ended`;
-      activeStudioName.value = null;
+      incomingMessage.value = `Studio ${activeStudioId.value} has ended`;
+      activeStudioId.value = null;
+      activeStudioTitle.value = null
     });
   }
 
   async function leaveStudio(): Promise<boolean> {
     const result = await socket.emitWithAck("student-leave", {
       who: participantName.value,
-      session: activeStudioName.value
+      session: activeStudioId.value
     });
     if (result) {
-      console.debug("Leaving studio before", activeStudioName.value)
-      activeStudioName.value = null
+      activeStudioId.value = null
+      activeStudioTitle.value = null
       participantName.value = ""
-      console.debug("Leaving studio after", activeStudioName.value)
     }
     else {
       console.debug("Error while attempting to leave studio")
@@ -133,7 +143,8 @@ export const useStudentStudioStore = defineStore("studio-student", () => {
   }
   return {
     /* state */
-    activeStudioName,
+    activeStudioId,
+    activeStudioTitle,
     participantName,
     incomingMessage,
     /* actions */

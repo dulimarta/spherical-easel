@@ -23,7 +23,7 @@
   <v-tooltip
     activator="#student-studio"
     :text="
-      activeStudioName === null ? 'Join a studio' : 'Go to current studio'
+      activeStudioId === null ? 'Join a studio' : `Go to studio ${activeStudioTitle}`
     " />
   <Dialog
     ref="initiateSessionDialog"
@@ -58,7 +58,7 @@
       </template>
       <template #item.actions="{ item }">
         <v-icon
-          @click="joinStudio(item.id)"
+          @click="joinStudio(item)"
           :disabled="participantName.length < 3">
           mdi-location-enter
         </v-icon>
@@ -85,7 +85,7 @@ const router = useRouter();
 const { userRole, userDisplayedName } = storeToRefs(acctStore);
 // const { socketID } = storeToRefs(studioStore);
 const { myStudio } = storeToRefs(teacherStudioStore);
-const { activeStudioName } = storeToRefs(studentStudioStore);
+const { activeStudioId, activeStudioTitle } = storeToRefs(studentStudioStore);
 // const studioID: Ref<string | undefined> = ref(undefined);
 const studioName = ref("");
 const participantName = ref("");
@@ -128,7 +128,7 @@ async function doLaunchStudio() {
 }
 
 async function prepareToJoinStudio() {
-  if (activeStudioName.value === null) {
+  if (activeStudioId.value === null) {
     console.debug("StudioSession::preparetoJoin");
     availableStudios.value = await studentStudioStore.getAvailableStudios();
     studioListDialog.value?.show();
@@ -138,10 +138,10 @@ async function prepareToJoinStudio() {
   }
 }
 
-function joinStudio(id: string) {
-  console.debug("Joining a studio", id);
+function joinStudio(s: StudioDetails) {
+  console.debug("Joining a studio", s.id);
   studioListDialog.value?.hide();
-  studentStudioStore.joinAsStudent(id, participantName.value);
+  studentStudioStore.joinAsStudent(s.id, s.name, participantName.value);
   router.push({ path: "/student-dashboard" });
 }
 // function leaveStudio() {

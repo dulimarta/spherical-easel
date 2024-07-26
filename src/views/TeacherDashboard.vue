@@ -7,7 +7,7 @@
     <li>Participants ({{ myStudio!.participants.length }}): {{ myStudio!.participants.join(", ") }}</li>
   </template>
   </ul>
-  <v-textarea rows="3" outlined color="secondary" class="ma-3"></v-textarea>
+  <v-textarea v-model="message" rows="3" outlined color="secondary" class="ma-3"></v-textarea>
   <v-btn size="small" @click="() => {router.back()}">Back to Main</v-btn>
   <v-btn size="small" @click="broadcastMessage">Broadcast</v-btn>
   <v-btn size="small" @click="terminateSession">Close Studio</v-btn>
@@ -37,7 +37,7 @@ onMounted(() => {
 })
 
 function broadcastMessage() {
-
+  studioStore.broadcastMessage(message.value)
 }
 
 async function terminateSession() {
