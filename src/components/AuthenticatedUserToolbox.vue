@@ -24,10 +24,10 @@
       <v-icon size="x-large" v-else>mdi-account</v-icon>
       <v-tooltip
         activator="parent"
-        :text="firebaseUid ? 'Logout' : 'Login'"></v-tooltip>
+        :text="firebaseUid ? `Logout ${userEmail}` : 'Login'"></v-tooltip>
     </v-btn>
+    <StudioSession />
     <template v-if="firebaseUid">
-      <StudioSession />
       <router-link to="/settings/">
         <v-btn icon size="x-small" color="green-lighten-1">
           <v-icon size="large" color="white">mdi-cog</v-icon>
@@ -178,6 +178,7 @@ const {
   loginEnabled,
   userProfilePictureURL,
   userDisplayedName,
+  userEmail,
   constructionDocId,
   firebaseUid
 } = storeToRefs(acctStore);

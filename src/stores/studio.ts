@@ -13,10 +13,12 @@ export const useTeacherStudioStore = defineStore("studio-teacher", () => {
   const socket: Socket = io("http://localhost:4000", {
     autoConnect: false
   });
+  const myStudio: Ref<StudioDetails | null> = ref(null)
+
+
   socket.on('connect', () => {
     console.debug("Teacher StudioStore: Socket is connected with ID", socket.id);
   })
-  const myStudio: Ref<StudioDetails|null> = ref(null)
   // const socketID = ref(socket.id);
   // const participants: Ref<Array<string>> = ref([])
 
@@ -56,7 +58,12 @@ export const useTeacherStudioStore = defineStore("studio-teacher", () => {
   }
 
   function stopStudio() {
-    socket.emit("teacher-leave")
+    console.debug("Inside stopStudio()", myStudio.value, "xxxx")
+    if (myStudio.value) {
+      socket.emit("close-studio", myStudio.value.id)
+      console.debug("Setting myStudio to null")
+      myStudio.value = null
+    }
   }
   return {
     /* state */
@@ -64,7 +71,8 @@ export const useTeacherStudioStore = defineStore("studio-teacher", () => {
     // socketID,
 
     /* functions */
-    createStudio
+    createStudio,
+    stopStudio,
   };
 });
 
@@ -92,6 +100,7 @@ export const useStudentStudioStore = defineStore("studio-student", () => {
   function joinAsStudent(studioId: string, myName: string) {
     activeStudioName.value = studioId;
     participantName.value = myName;
+    incomingMessage.value = ""
     socket.emit("student-join", { who: myName, session: studioId });
     socket.on("notify-all", (msg: string) => {
       incomingMessage.value = msg;
@@ -100,12 +109,13 @@ export const useStudentStudioStore = defineStore("studio-student", () => {
       console.debug("Receive command to execute");
     });
     socket.on("studio-end", () => {
+      console.debug("This student must leave the current studio")
       incomingMessage.value = `Studio ${activeStudioName.value} has ended`;
       activeStudioName.value = null;
     });
   }
 
-  async function leaveStudio() {
+  async function leaveStudio(): Promise<boolean> {
     const result = await socket.emitWithAck("student-leave", {
       who: participantName.value,
       session: activeStudioName.value
@@ -119,11 +129,13 @@ export const useStudentStudioStore = defineStore("studio-student", () => {
     else {
       console.debug("Error while attempting to leave studio")
     }
+    return result
   }
   return {
     /* state */
     activeStudioName,
     participantName,
+    incomingMessage,
     /* actions */
     getAvailableStudios,
     joinAsStudent,

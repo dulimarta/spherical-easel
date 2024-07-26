@@ -16,7 +16,6 @@ import { SENodule } from "./models/internal";
 import Nodule from "./plottables/Nodule";
 const firebaseApp = initializeApp(firebaseConfig);
 const pinia = createPinia();
-console.debug("WHere am I")
 const app = createApp(App);
 
 

@@ -10,21 +10,21 @@
     </v-btn>
     <v-tooltip
       activator="#teacher-studio"
-      :text="
-        myStudio === null ? 'Create a Studio' : 'Studio Dashboard'
-      "></v-tooltip>
+      :text="myStudio ? 'Studio Dashboard' : 'Create a Studio'"></v-tooltip>
   </template>
-  <template v-else>
-    <v-btn
-      id="student-studio"
-      @click="prepareToJoinStudio"
-      size="x-small"
-      icon
-      color="green">
-      <v-icon>mdi-account-school</v-icon>
-    </v-btn>
-    <v-tooltip activator="#student-studio" :text="activeStudioName === null ? 'Join a studio': 'Go to current studio'" />
-  </template>
+  <v-btn v-if="myStudio === null"
+    id="student-studio"
+    @click="prepareToJoinStudio"
+    size="x-small"
+    icon
+    color="green">
+    <v-icon>mdi-account-school</v-icon>
+  </v-btn>
+  <v-tooltip
+    activator="#student-studio"
+    :text="
+      activeStudioName === null ? 'Join a studio' : 'Go to current studio'
+    " />
   <Dialog
     ref="initiateSessionDialog"
     title="New Studio"
@@ -84,8 +84,8 @@ const studentStudioStore = useStudentStudioStore();
 const router = useRouter();
 const { userRole, userDisplayedName } = storeToRefs(acctStore);
 // const { socketID } = storeToRefs(studioStore);
-const { myStudio } = storeToRefs(teacherStudioStore)
-const { activeStudioName} = storeToRefs(studentStudioStore)
+const { myStudio } = storeToRefs(teacherStudioStore);
+const { activeStudioName } = storeToRefs(studentStudioStore);
 // const studioID: Ref<string | undefined> = ref(undefined);
 const studioName = ref("");
 const participantName = ref("");
@@ -122,7 +122,7 @@ async function doLaunchStudio() {
     userDisplayedName?.value ?? "No Instructor Name"
   );
   router.push({
-    name: "Teacher Dashboard",
+    name: "Teacher Dashboard"
     // params: { studioId: studioID }
   });
 }
@@ -133,8 +133,8 @@ async function prepareToJoinStudio() {
     availableStudios.value = await studentStudioStore.getAvailableStudios();
     studioListDialog.value?.show();
   } else {
-    console.debug("Visit my active studio")
-    router.push({path: "/student-dashboard"})
+    console.debug("Visit my active studio");
+    router.push({ path: "/student-dashboard" });
   }
 }
 
@@ -142,6 +142,7 @@ function joinStudio(id: string) {
   console.debug("Joining a studio", id);
   studioListDialog.value?.hide();
   studentStudioStore.joinAsStudent(id, participantName.value);
+  router.push({ path: "/student-dashboard" });
 }
 // function leaveStudio() {
 //   console.debug(`Participant left the studio ${studioID.value} session`);
