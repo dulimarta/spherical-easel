@@ -1094,9 +1094,9 @@ export default class Ellipse extends Nodule {
       let svgString = '<path d="';
       part.vertices.forEach((v: Anchor, index: number) => {
         if (index == 0) {
-          svgString += "M" + v.x + " " + v.y + ",";
+          svgString += "M" + v.x + " " + v.y + " ";
         } else {
-          svgString += "L" + v.x + " " + v.y + ",";
+          svgString += "L" + v.x + " " + v.y + " ";
         }
       });
       if (this._a < Math.PI / 2) {
@@ -1156,7 +1156,7 @@ export default class Ellipse extends Nodule {
           startPt: { x: circleStartPoint[0], y: circleStartPoint[1] },
           radiiXYWithSpace:
             SETTINGS.boundaryCircle.radius +
-            "," +
+            " " +
             SETTINGS.boundaryCircle.radius +
             " ",
           rotationDegrees: 0,
@@ -1165,12 +1165,12 @@ export default class Ellipse extends Nodule {
           endPt: { x: circleEndPoint[0], y: circleEndPoint[1] }
         };
         svgString +=
-          "L" + ellipseStartPoint[0] + "," + ellipseStartPoint[1] + " "; // close the ellipse, with a line to the start
+          "L" + ellipseStartPoint[0] + " " + ellipseStartPoint[1] + " "; // close the ellipse, with a line to the start
         svgString += Nodule.svgArcString(svgCircleObject, true);
         svgString +=
-          "L" + circleStartPoint[0] + "," + circleStartPoint[1] + " "; // close the circle, with a line to the start
+          "L" + circleStartPoint[0] + " " + circleStartPoint[1] + " "; // close the circle, with a line to the start
         svgString +=
-          "M" + ellipseStartPoint[0] + "," + ellipseStartPoint[1] + " "; // move (not line) to the start ellipse
+          "M" + ellipseStartPoint[0] + " " + ellipseStartPoint[1] + " "; // move (not line) to the start ellipse
         svgString += '"/>';
 
         returnSVGObject.layerSVGArray.push([layer, svgString]);

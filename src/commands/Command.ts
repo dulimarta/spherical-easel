@@ -190,14 +190,6 @@ export abstract class Command {
     if (value == undefined || value == "") {
       return false;
     }
-    console.log(
-      "nav",
-      name,
-      attribute,
-      value,
-      name.toLowerCase().includes("circle"),
-      Command.allowedCircleAndEllipseAttributes.includes(attribute)
-    );
     if (
       (name.toLowerCase().includes("point") &&
         Command.allowedPointAttributes.includes(attribute)) ||
@@ -214,16 +206,13 @@ export abstract class Command {
         (name.toLowerCase().includes("label") &&
           Command.allowedLabelAttributes.includes(attribute))
     ) {
-      console.log("here");
       if (
         this.defaultSVGStyleDictionary.get(attribute) == undefined ||
         this.defaultSVGStyleDictionary.get(attribute) != value
       ) {
-        console.log("true");
         return true;
       }
     }
-    console.log("false");
     return false;
   }
   static defaultSVGStyleDictionary = new Map<svgStyleType, string>([
@@ -249,6 +238,7 @@ export abstract class Command {
   ]);
 
   /**
+   * This returns an array when a command group's getSVGObjectLabelPairs is called
    * @returns all the pairs [SENodule, SELabel] that might need to be converted to SVG
    * returns the empty array if nothing to process
    * override this method if there are geometric objects to convert to SVG
