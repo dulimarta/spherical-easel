@@ -744,8 +744,8 @@ export default class Segment extends Nodule {
 
   toSVG(): toSVGType[] {
     // reset the list of svgArcObjects
-    this._svgArcObjectsFront = []
-    this._svgArcObjectsBack = []
+    this._svgArcObjectsFront = [];
+    this._svgArcObjectsBack = [];
 
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
@@ -757,58 +757,17 @@ export default class Segment extends Nodule {
       type: "segment"
     };
     // collect the front style of the line
-    const frontReturnDictionary = new Map<svgStyleType, string>();
-    // Collect the style information: fill, stroke, stroke-width
-    frontReturnDictionary.set("fill", "none");
-    frontReturnDictionary.set("stroke", this._frontPart.stroke as string);
-    frontReturnDictionary.set(
-      "stroke-width",
-      String(this._frontPart.linewidth)
-    );
-
-    // check to see if there is any dashing for the front of line
-    //console.log("front dash", this._frontHalf.dashes)
-    if (
-      !(
-        this._frontPart.dashes.length == 2 &&
-        this._frontPart.dashes[0] == 0 &&
-        this._frontPart.dashes[1] == 0
-      )
-    ) {
-      var dashString = "";
-      for (let num = 0; num < this._frontPart.dashes.length; num++) {
-        dashString += this._frontPart.dashes[num] + " ";
-      }
-      frontReturnDictionary.set("stroke-dasharray", dashString);
+    if (this._frontPartInUse) {
+      returnSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({
+        strokeObject: this._frontPart
+      });
     }
 
-    returnSVGObject.frontStyleDictionary = frontReturnDictionary;
-
-    // collect the back style of the line
-    const backReturnDictionary = new Map<svgStyleType, string>();
-    // Collect the style information: fill, stroke, stroke-width
-    backReturnDictionary.set("fill", "none");
-    backReturnDictionary.set("stroke", this._backPart.stroke as string);
-    backReturnDictionary.set("stroke-width", String(this._backPart.linewidth));
-
-    // check to see if there is any dashing for the back of line
-    //console.log("back dash", this._backPart.dashes)
-    if (
-      !(
-        this._backPart.dashes.length == 2 &&
-        this._backPart.dashes[0] == 0 &&
-        this._backPart.dashes[1] == 0
-      )
-    ) {
-      var dashString = "";
-      for (let num = 0; num < this._backPart.dashes.length; num++) {
-        dashString += this._backPart.dashes[num] + " ";
-      }
-      backReturnDictionary.set("stroke-dasharray", dashString);
-      //backReturnDictionary.set("stroke-dashoffset", this._backHalf.dashes[offset]);
+    if (this._backPartInUse) {
+      returnSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({
+        strokeObject: this._backPart
+      });
     }
-
-    returnSVGObject.backStyleDictionary = backReturnDictionary;
 
     // Collect geometric information on the front.
     let startIndex = this._frontExtraInUse
@@ -863,14 +822,14 @@ export default class Segment extends Nodule {
           : {
               x: this._frontPart.vertices[endIndex].x,
               y: this._frontPart.vertices[endIndex].y
-            },
+            }
       };
 
       let svgFrontString =
         "<path " +
         Segment.svgTransformMatrixString(this._frontExtra.rotation, 1, 0, 0) + // matrix does the rotation, scaling,...
         'd="';
-      svgFrontString += Segment.svgArcString(frontPartObject,true);
+      svgFrontString += Segment.svgArcString(frontPartObject, true);
       svgFrontString += '"/>'; // end point
 
       // now make the arcObject independent of the local matrix so it is useful outside of segment (in polygon)
@@ -904,13 +863,13 @@ export default class Segment extends Nodule {
         endPt: {
           x: this._frontExtra.vertices[this._frontExtra.vertices.length - 1].x,
           y: this._frontExtra.vertices[this._frontExtra.vertices.length - 1].y
-        },
+        }
       };
       let svgFrontString =
         "<path " +
         Segment.svgTransformMatrixString(this._frontExtra.rotation, 1, 0, 0) +
         'd="'; // matrix does the rotation, scaling, and translation
-      svgFrontString += Segment.svgArcString(frontExtraObject,true);
+      svgFrontString += Segment.svgArcString(frontExtraObject, true);
       svgFrontString += '"/>';
 
       // now make the arcObject independent of the matrix so it is useful outside of segment (in polygon)
@@ -977,7 +936,7 @@ export default class Segment extends Nodule {
         "<path " +
         Segment.svgTransformMatrixString(this._backExtra.rotation, 1, 0, 0) + // matrix does the rotation, scaling,...
         'd="';
-      svgBackString += Segment.svgArcString(backPartObject,true);
+      svgBackString += Segment.svgArcString(backPartObject, true);
       svgBackString += '"/>'; // end point
 
       // now make the arcObject independent of the local matrix so it is useful outside of segment (in polygon)
@@ -1011,13 +970,13 @@ export default class Segment extends Nodule {
         endPt: {
           x: this._backExtra.vertices[0].x,
           y: this._backExtra.vertices[0].y
-        },
+        }
       };
       let svgBackString =
         "<path " +
         Segment.svgTransformMatrixString(this._backExtra.rotation, 1, 0, 0) +
         'd="'; // matrix does the rotation, scaling, and translation
-      svgBackString += Segment.svgArcString(backExtraObject,true);
+      svgBackString += Segment.svgArcString(backExtraObject, true);
       svgBackString += '"/>';
 
       // now make the arcObject independent of the matrix so it is useful outside of segment (in polygon)
@@ -1189,7 +1148,7 @@ export default class Segment extends Nodule {
         // FRONT PART
         const frontStyle = this.styleOptions.get(StyleCategory.Front);
         // no fillColor
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontPart.noStroke();
         } else {
           this._frontPart.stroke =
@@ -1214,7 +1173,7 @@ export default class Segment extends Nodule {
         }
         // FRONT EXTRA
         // no fillColor
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontExtra.noStroke();
         } else {
           this._frontExtra.stroke =
@@ -1244,7 +1203,7 @@ export default class Segment extends Nodule {
 
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
@@ -1255,7 +1214,7 @@ export default class Segment extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this._backPart.noStroke();
           } else {
             this._backPart.stroke =
@@ -1283,7 +1242,7 @@ export default class Segment extends Nodule {
         // no fillColor
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
@@ -1294,7 +1253,7 @@ export default class Segment extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this._backExtra.noStroke();
           } else {
             this._backExtra.stroke =

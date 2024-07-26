@@ -3,16 +3,20 @@ import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
 import { StyleOptions, StyleCategory } from "@/types/Styles";
 import {
-  hslaColorType,
   plottableProperties,
   svgArcObject,
+  svgGradientType,
+  svgStopType,
+  svgStyleType,
   toSVGType
 } from "@/types";
 import { Vector3 } from "three";
-//import Two from "two.js";
 import { Group } from "two.js/src/group";
-import Color from "color";
+import convert from "color-convert";
 import { Matrix } from "two.js/src/matrix";
+import { Stop } from "two.js/src/effects/stop";
+import { RadialGradient } from "two.js/src/effects/radial-gradient";
+import { Path } from "two.js/src/path";
 
 export enum DisplayStyle {
   ApplyTemporaryVariables,
@@ -205,7 +209,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
     svgReturnString +=
       object.displayShort0OrLong1 + " " + object.displayCCW0OrCW1 + " ";
     svgReturnString +=
-      object.endPt.x.zeroOut() + " " + object.endPt.y.zeroOut()+" ";
+      object.endPt.x.zeroOut() + " " + object.endPt.y.zeroOut() + " ";
     return svgReturnString;
   }
 
@@ -230,9 +234,10 @@ export default abstract class Nodule implements Stylable, Resizeable {
     svgReturnString +=
       object.displayShort0OrLong1 +
       " " +
-      (object.displayCCW0OrCW1 == 1 ? 0 : 1) + " ";
+      (object.displayCCW0OrCW1 == 1 ? 0 : 1) +
+      " ";
     svgReturnString +=
-      object.startPt.x.zeroOut() + " " + object.startPt.y.zeroOut() +" ";
+      object.startPt.x.zeroOut() + " " + object.startPt.y.zeroOut() + " ";
     return svgReturnString;
   }
 
@@ -275,6 +280,111 @@ export default abstract class Nodule implements Stylable, Resizeable {
     );
   }
 
+  static createSVGGradientDictionary(
+    gradient: RadialGradient,
+    centerStop: Stop,
+    colorStop: Stop
+  ): Map<svgGradientType, string | Map<svgStopType, string>[]> {
+    const returnDictionary = new Map<
+      svgGradientType,
+      string | Map<svgStopType, string>[]
+    >();
+    returnDictionary.set("cx", String(gradient.center.x));
+    returnDictionary.set("cy", String(gradient.center.y));
+    returnDictionary.set("fx", String(gradient.focal.x));
+    returnDictionary.set("fy", String(gradient.focal.y));
+    returnDictionary.set("gradientUnits", gradient.units);
+    returnDictionary.set("r", String(SETTINGS.boundaryCircle.radius));
+    returnDictionary.set("spreadMethod", "pad");
+    const stop1FrontDictionary = new Map<svgStopType, string>();
+    stop1FrontDictionary.set("offset", String(centerStop.offset * 100) + "%");
+
+    stop1FrontDictionary.set(
+      "stop-color",
+      String(centerStop.color).slice(0, 7) // separate out the alpha channel
+    );
+    stop1FrontDictionary.set(
+      "stop-opacity",
+      String(Number("0x" + String(centerStop.color).slice(7)) / 255) // separate out the alpha channel
+    );
+    const stop2FrontDictionary = new Map<svgStopType, string>();
+    stop2FrontDictionary.set("offset", String(colorStop.offset * 100) + "%");
+
+    stop2FrontDictionary.set(
+      "stop-color",
+      String(colorStop.color).slice(0, 7) // separate out the alpha channel
+    );
+    stop2FrontDictionary.set(
+      "stop-opacity",
+      String(Number("0x" + String(colorStop.color).slice(7)) / 255) // separate out the alpha channel
+    );
+
+    returnDictionary.set("stops", [stop1FrontDictionary, stop2FrontDictionary]);
+
+    return returnDictionary;
+  }
+
+  static createSVGStyleDictionary(args: {
+    strokeObject?: Path;
+    fillObject?: Path;
+    strokeScale?: number;
+  }): Map<svgStyleType, string> {
+    const returnStyleDictionary = new Map<svgStyleType, string>();
+
+    // Collect the style information: fill, stroke, stroke-width
+    if (args.fillObject && typeof args.fillObject.fill == "string") {
+      returnStyleDictionary.set(
+        "fill",
+        String(args.fillObject.fill).slice(0, 7) // separate out the alpha channel
+      );
+      returnStyleDictionary.set(
+        "fill-opacity",
+        String(Number("0x" + String(args.fillObject.fill).slice(7)) / 255) // separate out the alpha channel
+      );
+    } else {
+      returnStyleDictionary.set("fill", "none"); // if the fill is a gradient, this will be overwritten in Command.ts, if the fill is a color it won't be overwritten
+    }
+
+    if (args.strokeObject && typeof args.strokeObject.stroke == "string") {
+      returnStyleDictionary.set(
+        "stroke",
+        String(args.strokeObject.stroke).slice(0, 7) // separate out the alpha channel
+      );
+      returnStyleDictionary.set(
+        "stroke-opacity",
+        String(Number("0x" + String(args.strokeObject.stroke).slice(7)) / 255) // separate out the alpha channel
+      );
+      const scale = args.strokeScale == undefined ? 1 : args.strokeScale;
+      returnStyleDictionary.set(
+        "stroke-width",
+        String(args.strokeObject.linewidth * scale)
+      );
+      returnStyleDictionary.set("stroke-linecap", args.strokeObject.cap);
+      returnStyleDictionary.set("stroke-linejoin", args.strokeObject.join);
+      returnStyleDictionary.set(
+        "stroke-miterlimit",
+        String(args.strokeObject.miter)
+      );
+      // check to see if there is any dashing for the front of circle
+      if (
+        !(
+          args.strokeObject.dashes.length == 2 &&
+          args.strokeObject.dashes[0] == 0 &&
+          args.strokeObject.dashes[1] == 0
+        )
+      ) {
+        var dashString = "";
+        for (let num = 0; num < args.strokeObject.dashes.length; num++) {
+          dashString += args.strokeObject.dashes[num] + " ";
+        }
+        returnStyleDictionary.set("stroke-dasharray", dashString);
+      }
+    } else {
+      returnStyleDictionary.set("stroke", "none");
+    }
+    return returnStyleDictionary;
+  }
+
   static setGradientFill(value: boolean): void {
     this.globalGradientFill = value;
   }
@@ -298,27 +408,45 @@ export default abstract class Nodule implements Stylable, Resizeable {
    */
   static contrastFillColor(frontColor: string | undefined): string {
     if (
-      Nodule.hslaIsNoFillOrNoStroke(frontColor) ||
+      Nodule.rgbaIsNoFillOrNoStroke(frontColor) ||
       Nodule.globalBackStyleContrast === 0
     ) {
-      return "hsla(0,0%,0%,0)";
+      return "#00000000"; // transparent
     }
-
-    const hslaColor = Nodule.convertStringToHSLAObject(frontColor);
-    hslaColor.l = 1 - (1 - hslaColor.l) * Nodule.globalBackStyleContrast;
-    return Nodule.convertHSLAObjectToString(hslaColor);
+    if (frontColor != undefined) {
+      const hexColorString = frontColor.slice(1, 7);
+      const alphaString = frontColor.slice(7);
+      const hslArray = convert.hex.hsl.raw(hexColorString);
+      const newLValue =
+        1 - (1 - hslArray[2] / 100) * Nodule.globalBackStyleContrast;
+      return (
+        "#" +
+        convert.hsl.hex([hslArray[0], hslArray[1], newLValue * 100]) +
+        alphaString
+      );
+    }
+    return "#00000011"; //solid black = failure of the the method
   }
-
   static contrastStrokeColor(frontColor: string | undefined): string {
     if (
-      Nodule.hslaIsNoFillOrNoStroke(frontColor) ||
+      Nodule.rgbaIsNoFillOrNoStroke(frontColor) ||
       Nodule.globalBackStyleContrast === 0
     ) {
-      return "hsla(0,0%,0%,0)";
+      return "#00000000"; // transparent
     }
-    const hslaColor = Nodule.convertStringToHSLAObject(frontColor);
-    hslaColor.l = 1 - (1 - hslaColor.l) * Nodule.globalBackStyleContrast;
-    return Nodule.convertHSLAObjectToString(hslaColor);
+    if (frontColor != undefined) {
+      const hexColorString = frontColor.slice(1, 7);
+      const alphaString = frontColor.slice(7);
+      const hslArray = convert.hex.hsl.raw(hexColorString);
+      const newLValue =
+        1 - (1 - hslArray[2] / 100) * Nodule.globalBackStyleContrast;
+      return (
+        "#" +
+        convert.hsl.hex([hslArray[0], hslArray[1], newLValue * 100]) +
+        alphaString
+      );
+    }
+    return "#00000011"; //solid black = failure of the the method
   }
 
   // The back linewidth can be up to 20% smaller than their front counterparts.
@@ -332,63 +460,17 @@ export default abstract class Nodule implements Stylable, Resizeable {
   static contrastTextScalePercent(frontPercent: number): number {
     return frontPercent - 20 * (1 - Nodule.globalBackStyleContrast);
   }
-  static convertStringToHSLAObject(
-    colorStringOld: string | undefined
-  ): hslaColorType {
-    if (colorStringOld) {
-      const numberArray = Color(colorStringOld).hsl().array();
-      if (numberArray.length < 4) {
-        // Alpha value is missing (or not parsed), default alpha to 1.0 (fully opaque)
-        let alpha: number = 1;
-        if (colorStringOld.startsWith("#") && colorStringOld.length === 9) {
-          // If we have 8 hex digits, positions 7 and 8 are the alpha value
-          const alphaHexString = colorStringOld.substring(7);
-          alpha = parseInt(alphaHexString, 16) / 255;
-        }
-        numberArray.push(alpha);
-      }
-      return {
-        h: numberArray[0],
-        s: numberArray[1] / 100,
-        l: numberArray[2] / 100,
-        a: numberArray[3]
-      };
-    } else {
-      // This should never happen
-      throw new Error(`Color string is undefined`);
-    }
-  }
-  static hslaIsNoFillOrNoStroke(colorStringOld: string | undefined): boolean {
+
+  static rgbaIsNoFillOrNoStroke(colorStringOld: string | undefined): boolean {
     if (colorStringOld === undefined) return true;
     if (colorStringOld === "none") return true;
-    if (colorStringOld?.startsWith("#")) return false;
-    if (colorStringOld) {
-      const { h, s, l, a } = Nodule.convertStringToHSLAObject(colorStringOld);
-      if (h === 0 && s === 0 && l === 0 && a === 0) return true;
-      return (
-        Number.isNaN(h) || Number.isNaN(s) || Number.isNaN(l) || Number.isNaN(a)
-      );
-    } else {
-      throw new Error(`Color string is undefined`);
-    }
-  }
-  static convertHSLAObjectToString(colorObject: hslaColorType): string {
-    // if (colorObject.a == undefined || colorObject.a == 0) {
-    //   // If the alpha/opacity value is zero the color picker slider for alpha/opacity disappears and can't be returned
-    //   colorObject.a = 0.001;
-    //   //this.displayOpacityZeroMessage = true;
-    // }
-    return (
-      "hsla(" +
-      colorObject.h +
-      ", " +
-      colorObject.s * 100 +
-      "%, " +
-      colorObject.l * 100 +
-      "%, " +
-      colorObject.a +
-      ")"
-    );
+    if (
+      colorStringOld.startsWith("#") &&
+      colorStringOld.length == 9 &&
+      colorStringOld.endsWith("00")
+    )
+      return true;
+    return false;
   }
 
   /** Get the current style state of the Nodule */

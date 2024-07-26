@@ -709,7 +709,7 @@ export default class Parametric extends Nodule {
         // THIS SHOULD NEVER BE EXECUTED
         //FRONT
         if (
-          Nodule.hslaIsNoFillOrNoStroke(
+          Nodule.rgbaIsNoFillOrNoStroke(
             SETTINGS.parametric.temp.strokeColor.front
           )
         ) {
@@ -736,7 +736,7 @@ export default class Parametric extends Nodule {
         }
         //BACK
         if (
-          Nodule.hslaIsNoFillOrNoStroke(
+          Nodule.rgbaIsNoFillOrNoStroke(
             SETTINGS.parametric.temp.strokeColor.back
           )
         ) {
@@ -774,7 +774,7 @@ export default class Parametric extends Nodule {
         const frontStyle = this.styleOptions.get(StyleCategory.Front);
         const strokeColorFront = frontStyle?.strokeColor ?? "black";
 
-        if (Nodule.hslaIsNoFillOrNoStroke(strokeColorFront)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(strokeColorFront)) {
           this.frontParts.forEach(part => part.noStroke());
         } else {
           this.frontParts.forEach(part => (part.stroke = strokeColorFront));
@@ -803,7 +803,7 @@ export default class Parametric extends Nodule {
         const strokeColorBack = backStyle?.strokeColor ?? "black";
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(strokeColorFront)
             )
           ) {
@@ -815,7 +815,7 @@ export default class Parametric extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(strokeColorBack)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(strokeColorBack)) {
             this.backParts.forEach(part => part.noStroke());
           } else {
             this.backParts.forEach(part => (part.stroke = strokeColorBack));

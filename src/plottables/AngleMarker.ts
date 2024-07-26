@@ -1676,37 +1676,12 @@ export default class AngleMarker extends Nodule {
       layerSVGArray: [],
       type: "angleMarkerCircle"
     };
-    const amCircleStyleDictionary = new Map<svgStyleType, string>();
 
-    amCircleStyleDictionary.set("fill", "none");
-    amCircleStyleDictionary.set("stroke-linecap", "butt");
-    if (
-      !(
-        this._frontCircle.dashes.length == 2 &&
-        this._frontCircle.dashes[0] == 0 &&
-        this._frontCircle.dashes[1] == 0
-      )
-    ) {
-      var dashString = "";
-      for (let num = 0; num < this._frontCircle.dashes.length; num++) {
-        dashString += this._frontCircle.dashes[num] + " ";
-      }
-      amCircleStyleDictionary.set("stroke-dasharray", dashString);
-    }
     if (this._angleMarkerOnFront) {
-      amCircleStyleDictionary.set("stroke", String(this._frontCircle.stroke));
-      amCircleStyleDictionary.set(
-        "stroke-width",
-        String(this._frontCircle.linewidth)
-      );
-      angleMarkerCircleSVGObject.frontStyleDictionary = amCircleStyleDictionary;
+      angleMarkerCircleSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject:this._frontCircle})
+
     } else {
-      amCircleStyleDictionary.set("stroke", String(this._backCircle.stroke));
-      amCircleStyleDictionary.set(
-        "stroke-width",
-        String(this._backCircle.linewidth)
-      );
-      angleMarkerCircleSVGObject.backStyleDictionary = amCircleStyleDictionary;
+      angleMarkerCircleSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject:this._backCircle})
     }
 
     // now collect the geometric information for this part
@@ -1767,17 +1742,13 @@ export default class AngleMarker extends Nodule {
       layerSVGArray: [],
       type: "angleMarkerFill"
     };
-    const amFillStyleDictionary = new Map<svgStyleType, string>();
 
-    amFillStyleDictionary.set("stroke", "none");
     if (this._angleMarkerOnFront) {
-      amFillStyleDictionary.set("fill", String(this._frontFill.fill));
-      angleMarkerFillSVGObject.frontStyleDictionary = amFillStyleDictionary;
-    } else {
-      amFillStyleDictionary.set("fill", String(this._backFill.fill));
-      angleMarkerFillSVGObject.backStyleDictionary = amFillStyleDictionary;
-    }
+      angleMarkerFillSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({fillObject:this._frontFill})
 
+    } else {
+      angleMarkerFillSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({fillObject:this._backFill})
+    }
     // now collect the geometric information for this part
 
     // set the flag for which part of the ellipse to draw
@@ -1840,30 +1811,11 @@ export default class AngleMarker extends Nodule {
       layerSVGArray: [],
       type: "angleMarkerEdge"
     };
-    const amEdgeStyleDictionary = new Map<svgStyleType, string>();
 
-    amEdgeStyleDictionary.set("fill", "none");
-    amEdgeStyleDictionary.set("stroke-linecap", "square");
     if (this._angleMarkerOnFront) {
-      amEdgeStyleDictionary.set(
-        "stroke",
-        String(this._frontStraightEndToVertex.stroke)
-      );
-      amEdgeStyleDictionary.set(
-        "stroke-width",
-        String(this._frontStraightEndToVertex.linewidth)
-      );
-      angleMarkerEdgeSVGObject.frontStyleDictionary = amEdgeStyleDictionary;
+      angleMarkerEdgeSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject: this._frontStraightEndToVertex})
     } else {
-      amEdgeStyleDictionary.set(
-        "stroke",
-        String(this._backStraightEndToVertex.stroke)
-      );
-      amEdgeStyleDictionary.set(
-        "stroke-width",
-        String(this._backStraightEndToVertex.linewidth)
-      );
-      angleMarkerEdgeSVGObject.backStyleDictionary = amEdgeStyleDictionary;
+      angleMarkerEdgeSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject: this._backStraightEndToVertex})
     }
 
     // now collect the geometric information for this part
@@ -1911,38 +1863,11 @@ export default class AngleMarker extends Nodule {
         layerSVGArray: [],
         type: "angleMarkerDouble"
       };
-      const amDoubleStyleDictionary = new Map<svgStyleType, string>();
-      if (
-        !(
-          this._frontDouble.dashes.length == 2 &&
-          this._frontDouble.dashes[0] == 0 &&
-          this._frontDouble.dashes[1] == 0
-        )
-      ) {
-        var dashString = "";
-        for (let num = 0; num < this._frontDouble.dashes.length; num++) {
-          dashString += this._frontDouble.dashes[num] + " ";
-        }
-        amDoubleStyleDictionary.set("stroke-dasharray", dashString);
-      }
-      amDoubleStyleDictionary.set("fill", "none");
-      amDoubleStyleDictionary.set("stroke-linecap", "butt");
+
       if (this._angleMarkerOnFront) {
-        amDoubleStyleDictionary.set("stroke", String(this._frontDouble.stroke));
-        amDoubleStyleDictionary.set(
-          "stroke-width",
-          String(this._frontDouble.linewidth)
-        );
-        angleMarkerDoubleSVGObject.frontStyleDictionary =
-          amDoubleStyleDictionary;
+        angleMarkerDoubleSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject: this._frontDouble})
       } else {
-        amDoubleStyleDictionary.set("stroke", String(this._backDouble.stroke));
-        amDoubleStyleDictionary.set(
-          "stroke-width",
-          String(this._backDouble.linewidth)
-        );
-        angleMarkerDoubleSVGObject.backStyleDictionary =
-          amDoubleStyleDictionary;
+        angleMarkerDoubleSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject: this._backDouble})
       }
 
       // now collect the geometric information for this part
@@ -2006,35 +1931,12 @@ export default class AngleMarker extends Nodule {
         layerSVGArray: [],
         type: "angleMarkerArrowHead"
       };
-      const amArrowHeadStyleDictionary = new Map<svgStyleType, string>();
-
-      amArrowHeadStyleDictionary.set("fill", "none");
-      amArrowHeadStyleDictionary.set("stroke-linecap", "butt");
-      amArrowHeadStyleDictionary.set("stroke-linejoin", "miter");
-      amArrowHeadStyleDictionary.set("stroke-miterlimit", "4");
       if (this._angleMarkerOnFront) {
-        amArrowHeadStyleDictionary.set(
-          "stroke",
-          String(this._frontArrowHeadPath.stroke)
-        );
-        amArrowHeadStyleDictionary.set(
-          "stroke-width",
-          String(this._frontArrowHeadPath.linewidth)
-        );
-        angleMarkerArrowHeadSVGObject.frontStyleDictionary =
-          amArrowHeadStyleDictionary;
+        angleMarkerArrowHeadSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject: this._frontArrowHeadPath})
       } else {
-        amArrowHeadStyleDictionary.set(
-          "stroke",
-          String(this._backArrowHeadPath.stroke)
-        );
-        amArrowHeadStyleDictionary.set(
-          "stroke-width",
-          String(this._backArrowHeadPath.linewidth)
-        );
-        angleMarkerArrowHeadSVGObject.backStyleDictionary =
-          amArrowHeadStyleDictionary;
+        angleMarkerArrowHeadSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject: this._backArrowHeadPath})
       }
+      const amArrowHeadStyleDictionary = new Map<svgStyleType, string>();
 
       // now collect the geometric information for this part
       let amArrowHeadSVGString =
@@ -2073,70 +1975,6 @@ export default class AngleMarker extends Nodule {
 
       returnSVGObjects.push(angleMarkerArrowHeadSVGObject);
     }
-    ////////////////////////////////////////////////Double Tick Object//////////////////////////////////////
-    // if (this._frontTickDouble.visible || this._backTickDouble.visible) {
-    //   const angleMarkerTickDoubleSVGObject: toSVGType = {
-    //     frontGradientDictionary: null,
-    //     backGradientDictionary: null,
-    //     frontStyleDictionary: null,
-    //     backStyleDictionary: null,
-    //     layerSVGArray: [],
-    //     type: "angleMarkerTick"
-    //   };
-
-    //   const amTickDoubleStyleDictionary = new Map<svgStyleType, string>();
-
-    //   amTickDoubleStyleDictionary.set("fill", "none");
-    //   amTickDoubleStyleDictionary.set("stroke-linecap", "square");
-    //   if (this._angleMarkerOnFront) {
-    //     amTickDoubleStyleDictionary.set(
-    //       "stroke",
-    //       String(this._frontTickDouble.stroke)
-    //     );
-    //     amTickDoubleStyleDictionary.set(
-    //       "stroke-width",
-    //       String(this._frontTickDouble.linewidth)
-    //     );
-    //     angleMarkerTickDoubleSVGObject.frontStyleDictionary =
-    //       amTickDoubleStyleDictionary;
-    //   } else {
-    //     amTickDoubleStyleDictionary.set(
-    //       "stroke",
-    //       String(this._backTickDouble.stroke)
-    //     );
-    //     amTickDoubleStyleDictionary.set(
-    //       "stroke-width",
-    //       String(this._backTickDouble.linewidth)
-    //     );
-    //     angleMarkerTickDoubleSVGObject.backStyleDictionary =
-    //       amTickDoubleStyleDictionary;
-    //   }
-
-    //   // now collect the geometric information for this part
-    //   let amTickDoubleSVGString =
-    //     '<polyline points="' +
-    //     this._frontTickDouble.vertices[0].x +
-    //     " " +
-    //     this._frontTickDouble.vertices[0].y +
-    //     ", " +
-    //     this._frontTickDouble.vertices[1].x +
-    //     " " +
-    //     this._frontTickDouble.vertices[1].y +
-    //     '"/>';
-    //   if (this._angleMarkerOnFront) {
-    //     angleMarkerTickDoubleSVGObject.layerSVGArray.push([
-    //       LAYER.foregroundAngleMarkers,
-    //       amTickDoubleSVGString
-    //     ]);
-    //   } else {
-    //     angleMarkerTickDoubleSVGObject.layerSVGArray.push([
-    //       LAYER.backgroundAngleMarkers,
-    //       amTickDoubleSVGString
-    //     ]);
-    //   }
-
-    //   returnSVGObjects.push(angleMarkerTickDoubleSVGObject);
-    // }
 
     ////////////////////////////////////////////////Tick Object//////////////////////////////////////
     if (this._frontTick.visible || this._backTick.visible) {
@@ -2149,24 +1987,10 @@ export default class AngleMarker extends Nodule {
         type: "angleMarkerTick"
       };
 
-      const amTickStyleDictionary = new Map<svgStyleType, string>();
-
-      amTickStyleDictionary.set("fill", "none");
-      amTickStyleDictionary.set("stroke-linecap", "square");
       if (this._angleMarkerOnFront) {
-        amTickStyleDictionary.set("stroke", String(this._frontTick.stroke));
-        amTickStyleDictionary.set(
-          "stroke-width",
-          String(this._frontTick.linewidth)
-        );
-        angleMarkerTickSVGObject.frontStyleDictionary = amTickStyleDictionary;
+        angleMarkerTickSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject: this._frontTick})
       } else {
-        amTickStyleDictionary.set("stroke", String(this._backTick.stroke));
-        amTickStyleDictionary.set(
-          "stroke-width",
-          String(this._backTick.linewidth)
-        );
-        angleMarkerTickSVGObject.backStyleDictionary = amTickStyleDictionary;
+        angleMarkerTickSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject: this._backTick})
       }
 
       // now collect the geometric information for this part
@@ -2438,7 +2262,7 @@ export default class AngleMarker extends Nodule {
 
         //FRONT
         if (
-          Nodule.hslaIsNoFillOrNoStroke(
+          Nodule.rgbaIsNoFillOrNoStroke(
             SETTINGS.angleMarker.temp.fillColor.front
           )
         ) {
@@ -2448,7 +2272,7 @@ export default class AngleMarker extends Nodule {
           this._frontFill.fill = SETTINGS.angleMarker.temp.fillColor.front;
         }
         if (
-          Nodule.hslaIsNoFillOrNoStroke(
+          Nodule.rgbaIsNoFillOrNoStroke(
             SETTINGS.angleMarker.temp.strokeColor.front
           )
         ) {
@@ -2505,7 +2329,7 @@ export default class AngleMarker extends Nodule {
         }
         //BACK
         if (
-          Nodule.hslaIsNoFillOrNoStroke(
+          Nodule.rgbaIsNoFillOrNoStroke(
             SETTINGS.angleMarker.temp.fillColor.back
           )
         ) {
@@ -2514,7 +2338,7 @@ export default class AngleMarker extends Nodule {
           this._backFill.fill = SETTINGS.angleMarker.temp.fillColor.back;
         }
         if (
-          Nodule.hslaIsNoFillOrNoStroke(
+          Nodule.rgbaIsNoFillOrNoStroke(
             SETTINGS.angleMarker.temp.strokeColor.back
           )
         ) {
@@ -2602,14 +2426,14 @@ export default class AngleMarker extends Nodule {
 
         // FRONT
         const frontStyle = this.styleOptions.get(StyleCategory.Front);
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this._frontFill.noFill();
         } else {
           this._frontFill.fill =
             frontStyle?.fillColor ?? SETTINGS.angleMarker.drawn.fillColor.front;
         }
 
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontStraightVertexToStart.noStroke();
           this._frontCircle.noStroke();
           this._frontStraightEndToVertex.noStroke();
@@ -2662,7 +2486,7 @@ export default class AngleMarker extends Nodule {
         const backStyle = this.styleOptions.get(StyleCategory.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontStyle?.fillColor)
             )
           ) {
@@ -2673,7 +2497,7 @@ export default class AngleMarker extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this._backFill.noFill();
           } else {
             this._backFill.fill = backStyle?.fillColor ?? "black";
@@ -2682,7 +2506,7 @@ export default class AngleMarker extends Nodule {
 
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
@@ -2723,7 +2547,7 @@ export default class AngleMarker extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this._backStraightVertexToStart.noStroke();
             this._backCircle.noStroke();
             this._backStraightEndToVertex.noStroke();

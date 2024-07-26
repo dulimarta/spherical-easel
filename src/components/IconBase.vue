@@ -750,7 +750,7 @@ function getStrokeColor(
         }
       }
   }
-  return "hsla(0, 0%, 0%, 1)";
+  return "#000000ff";
 }
 
 function getFillColor(
@@ -877,7 +877,7 @@ function getFillColor(
         }
       }
   }
-  return "hsla(0, 0%, 0%, 0)";
+  return "#00000000";
 }
 </script>
 

@@ -132,8 +132,102 @@ export abstract class Command {
     return JSON.stringify(out);
   }
 
+  static allowedPointAttributes: svgStyleType[] = [
+    "fill",
+    "stroke",
+    "fill-opacity",
+    "stroke-opacity",
+    "stroke-width"
+  ];
+  static allowedLineAndSegmentAttributes: svgStyleType[] = [
+    "fill",
+    "stroke",
+    "stroke-opacity",
+    "stroke-width",
+    "stroke-dasharray",
+    "stroke-dashoffset"
+  ];
+  static allowedLabelAttributes: svgStyleType[] = [
+    "fill",
+    "fill-opacity",
+    "direction",
+    "font-family",
+    "font-size",
+    "font-style",
+    "font-weight",
+    "dominant-baseline",
+    "text-decoration",
+    "text-anchor"
+  ];
+  static allowedPolygonAttributes: svgStyleType[] = ["fill", "fill-opacity"];
+  static allowedCircleAndEllipseAttributes: svgStyleType[] = [
+    "fill",
+    "fill-opacity",
+    "stroke",
+    "stroke-opacity",
+    "stroke-width",
+    "stroke-dasharray",
+    "stroke-dashoffset"
+  ];
+  static allowedAngleMarkerAttributes: svgStyleType[] = [
+    "fill",
+    "fill-opacity",
+    "stroke",
+    "stroke-opacity",
+    "stroke-width",
+    "stroke-dasharray",
+    "stroke-dashoffset",
+    "stroke-linecap",
+    "stroke-linejoin",
+    "stroke-miterlimit"
+  ];
+
+  static includeStyleOption(
+    name: string,
+    attribute: svgStyleType,
+    value: string
+  ): boolean {
+    if (value == undefined || value == "") {
+      return false;
+    }
+    console.log(
+      "nav",
+      name,
+      attribute,
+      value,
+      name.toLowerCase().includes("circle"),
+      Command.allowedCircleAndEllipseAttributes.includes(attribute)
+    );
+    if (
+      (name.toLowerCase().includes("point") &&
+        Command.allowedPointAttributes.includes(attribute)) ||
+      ((name.toLowerCase().includes("line") ||
+        name.toLowerCase().includes("segment")) &&
+        Command.allowedLineAndSegmentAttributes.includes(attribute)) ||
+      ((name.toLowerCase().includes("circle") ||
+        name.toLowerCase().includes("ellipse")) &&
+        Command.allowedCircleAndEllipseAttributes.includes(attribute)) ||
+      (name.toLowerCase().includes("angle") &&
+        Command.allowedAngleMarkerAttributes.includes(attribute)) ||
+      (name.toLowerCase().includes("polygon") &&
+        Command.allowedPolygonAttributes.includes(attribute))||
+        (name.toLowerCase().includes("label") &&
+          Command.allowedLabelAttributes.includes(attribute))
+    ) {
+      console.log("here");
+      if (
+        this.defaultSVGStyleDictionary.get(attribute) == undefined ||
+        this.defaultSVGStyleDictionary.get(attribute) != value
+      ) {
+        console.log("true");
+        return true;
+      }
+    }
+    console.log("false");
+    return false;
+  }
   static defaultSVGStyleDictionary = new Map<svgStyleType, string>([
-    ["fill", "black"],
+    ["fill", "#000000"],
     ["stroke", "none"],
     ["fill-opacity", "1"],
     ["stroke-width", "1"],
@@ -160,7 +254,7 @@ export abstract class Command {
    * override this method if there are geometric objects to convert to SVG
    */
   getSVGObjectLabelPairs(): [SENodule, SELabel][] {
-    return [];  // returns the empty array if nothing to process; override this method if there are geometric objects to convert to SVG
+    return []; // returns the empty array if nothing to process; override this method if there are geometric objects to convert to SVG
   }
 
   /**
@@ -170,10 +264,7 @@ export abstract class Command {
    */
   protected static deletedNoduleIds: Array<number> = [];
 
-  static dumpSVG(width: number, height?: number): string {
-    if (height == undefined) {
-      height = width;
-    }
+  static dumpSVG(width: number): string {
     function gradientDictionariesEqual(
       d1: Map<svgGradientType, string | Map<svgStopType, string>[]>,
       d2: Map<svgGradientType, string | Map<svgStopType, string>[]>
@@ -238,14 +329,13 @@ export abstract class Command {
       return true;
     }
     // Build the header string for the SVG
-    const size = Math.min(width, height);
-    const sf = (size - 32) / (2 * SETTINGS.boundaryCircle.radius);
+    const sf = (width - 32) / (2 * SETTINGS.boundaryCircle.radius); // 16 pixel boundary from edges
     let svgHeaderReturnString =
       '<svg width="' +
       width +
       'px" ' +
       'height="' +
-      height +
+      width +
       'px" ' +
       'xmlns="http://www.w3.org/2000/svg">\n';
 
@@ -277,7 +367,13 @@ export abstract class Command {
     // Add the style of the boundary circle
     const boundaryCircleStyleDict = new Map<svgStyleType, string>([
       ["fill", "none"],
-      ["stroke", String(SETTINGS.boundaryCircle.color)],
+      ["stroke", String(SETTINGS.boundaryCircle.color).slice(0, 7)],
+      [
+        "stroke-opacity",
+        String(
+          Number("0x" + String(SETTINGS.boundaryCircle.color).slice(7)) / 255
+        )
+      ],
       ["stroke-width", String(SETTINGS.boundaryCircle.lineWidth)]
     ]);
     styleDictionary.set("boundaryCircleStyle", boundaryCircleStyleDict);
@@ -505,7 +601,7 @@ export abstract class Command {
       "," +
       String(width / 2) +
       "," +
-      String(height / 2) +
+      String(width / 2) +
       ')">\n';
     const sceneLayerEnd = "\t</g>\n";
 
@@ -553,12 +649,12 @@ export abstract class Command {
       "\t\t\t.text { font-size:15px; text-anchor:middle; line-height:middle; dominant-baseline:middle; }\n";
 
     // Create the CSS style part of the SVG return string
-    var styleSVGReturnString = '\t<style type="text/css"><![CDATA[\n';
+    var styleSVGReturnString = '\t<style type="text/css">\n'; //<![CDATA[\n';
     for (let [name, styleDict] of styleDictionary.entries()) {
       styleSVGReturnString += "\t\t\t." + name + " { ";
       //Add the list of attributes, but make sure it is not the default
       for (let [attribute, value] of styleDict) {
-        if (this.defaultSVGStyleDictionary.get(attribute) != value) {
+        if (Command.includeStyleOption(name, attribute, value)) {
           styleSVGReturnString += attribute + ":" + value + "; ";
         }
       }
@@ -572,7 +668,7 @@ export abstract class Command {
     // remove the last newline character
     styleSVGReturnString = styleSVGReturnString.slice(0, -1);
     // Close the CSS style section
-    styleSVGReturnString += "]]>\n\t</style>\n";
+    styleSVGReturnString += "\n\t</style>\n"; //"]]>\n\t</style>\n";
 
     // Use the layer dictionary to create the layer SVG string
     let layerSVGReturnString = "";

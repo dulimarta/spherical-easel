@@ -261,8 +261,7 @@ onBeforeMount((): void => {
   // and scale it later to fit the canvas
   boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
   boundaryCircle.noFill();
-  // boundaryCircle.stroke = "rgba(255, 0, 0, 0.2)";
-
+  boundaryCircle.stroke = SETTINGS.boundaryCircle.color
   boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
   boundaryCircle.addTo(layers[Number(LAYER.midground)]);
 
@@ -311,24 +310,24 @@ onBeforeMount((): void => {
 });
 
 onMounted((): void => {
-  console.debug("SphereFrame::onMounted")
+  console.debug("SphereFrame::onMounted");
   // Put the main js instance into the canvas
   twoInstance.appendTo(canvas.value!);
   // Set up the listeners
-  canvas.value?.addEventListener("mouseenter", (ev) => {
+  canvas.value?.addEventListener("mouseenter", ev => {
     // console.debug(`SphereFrame.vue: Mouse entered the canvas (${ev.clientX},${ev.clientY})`)
-  })
-  canvas.value!.addEventListener("mousemove", (ev) => {
+  });
+  canvas.value!.addEventListener("mousemove", ev => {
     // console.debug(`SphereFrame.vue: Mouse moved in canvas (${ev.clientX},${ev.clientY})`)
-    handleMouseMoved(ev)
+    handleMouseMoved(ev);
   });
-  canvas.value?.addEventListener("mousedown", (ev) => {
+  canvas.value?.addEventListener("mousedown", ev => {
     // console.debug(`SphereFrame.vue: Mouse down in canvas (${ev.clientX},${ev.clientY})`)
-    handleMousePressed(ev)
+    handleMousePressed(ev);
   });
-  canvas.value?.addEventListener("mouseup", (ev) => {
+  canvas.value?.addEventListener("mouseup", ev => {
     // console.debug(`SphereFrame.vue: Mouse up in canvas (${ev.clientX},${ev.clientY})`)
-    handleMouseReleased(ev)
+    handleMouseReleased(ev);
   });
   canvas.value?.addEventListener("mouseleave", handleMouseLeave);
   // Add the passive option to avoid Chrome warning
@@ -386,7 +385,6 @@ watch(
       }, 100);
     }
   }
-
 );
 
 onBeforeUnmount((): void => {
@@ -414,7 +412,7 @@ onBeforeUnmount((): void => {
 watch(
   [() => props.availableWidth, () => props.availableHeight],
   ([width, height]): void => {
-    console.debug(`Available rectangle WxH ${width}x${height}`)
+    console.debug(`Available rectangle WxH ${width}x${height}`);
     twoInstance.width = width;
     twoInstance.height = height;
     // groups.forEach(z => {
@@ -658,7 +656,13 @@ function getCurrentSVGForIcon(): void {
     if (
       element.getAttribute("visibility") === "hidden" ||
       element.getAttribute("d") === "" ||
-      (description?.type === "angleMarker" && description.part === "edge")
+      ((description?.type === "angleMarkerArrowHead" ||
+        description?.type === "angleMarkerCircle" ||
+        description?.type === "angleMarkerDouble" ||
+        description?.type === "angleMarkerEdge" ||
+        description?.type === "angleMarkerFill" ||
+        description?.type === "angleMarkerTick") &&
+        description.part === "edge")
     ) {
       element.remove();
     }
@@ -775,8 +779,8 @@ function deleteNode(e: {
 }
 
 // TEMP REMOVE
-function exportSVG():void{
-  console.log(Command.dumpSVG(seStore.canvasWidth, seStore.canvasHeight))
+function exportSVG(): void {
+  console.log(Command.dumpSVG(seStore.canvasWidth));
 }
 
 // dialogBoxIsActive(e: { active: boolean }): void {
@@ -1079,8 +1083,7 @@ watch(
         break;
       default:
         currentTool = null;
-        if (import.meta.env.MODE === 'test')
-        assertNever(mode)
+        if (import.meta.env.MODE === "test") assertNever(mode);
     }
     if (currentTool && directiveMsg) {
       EventBus.fire("show-alert", directiveMsg);
@@ -1090,7 +1093,7 @@ watch(
 );
 
 function assertNever(x: any): never {
-  throw Error("This should not happen", x)
+  throw Error("This should not happen", x);
 }
 
 function listItemStyle(idx: number, xLoc: string, yLoc: string) {

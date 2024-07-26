@@ -22,7 +22,7 @@ export class SelectionRectangle extends Group {
       false
     );
     this.path.noFill();
-    this.path.stroke = "hsla(0, 0%, 0%, 1)";
+    this.path.stroke = "#00000000";
     this.path.opacity = 1;
     this.path.linewidth = 1;
     this.path.dashes.push(...[1, 5]);

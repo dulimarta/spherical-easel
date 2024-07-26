@@ -141,8 +141,8 @@ export const SETTINGS = {
       ]
     ],
     selectedColor: {
-      front: "hsla(0, 100%, 50%, 0.5)",
-      back: "hsla(0, 100%, 50%, 0.3)"
+      front: "#ff000080",
+      back: "#ff00004d"
     },
     fill: {
       // offset for the color fill. At this percent of the radius (boundaryCircle) the fill becomes all the fill color and not a bleed from the center color.
@@ -159,8 +159,8 @@ export const SETTINGS = {
         x:0,
         y:0
       },
-      frontWhite: "hsla(0, 0%, 90%, 0.2)", // The light source location on the front is this shade of gray (white)
-      backGray: "hsla(0, 0%, 85%, 0.2)" // The antipode of the light source on the back is this shade of gray
+      frontWhite: "#e6e6e633", // The light source location on the front is this shade of gray (white)
+      backGray: "#d9d9d933" // The antipode of the light source on the back is this shade of gray
     },
   },
   zoom: {
@@ -180,7 +180,7 @@ export const SETTINGS = {
   // #region boundarycircle
   boundaryCircle: {
     radius: 250 /* default radius */,
-    color: "hsla(0, 0%, 0%, 1)",
+    color: "#000000FF",
     lineWidth: 3
   },
   // #endregion boundarycircle
@@ -207,14 +207,12 @@ export const SETTINGS = {
         back: 3 // The default radius of the point drawn on the back,
       },
       fillColor: {
-        front: "hsla(0, 100%, 75%, 1)",
-        //frontHSLA: { h: 0, s: 100, l: 75, a: 1 },
-        back: "hsla(0, 100%, 75%, 1)",
-        //backHSLA: { h: 0, s: 100, l: 75, a: 1 }
+        front: "#ff8080FF",
+        back: "#ff8080FF",
       },
       strokeColor: {
-        front: "hsla(240, 55%, 55%, 1)",
-        back: "hsla(240, 55%, 75%, 1)"
+        front: "#4d4dcbFF",
+        back: "#9c9ce2ff"
       },
       pointStrokeWidth: { front: 2, back: 2 } // The thickness of the edge of the point when drawn
       // No dashing for points
@@ -223,13 +221,13 @@ export const SETTINGS = {
     glowing: {
       annularWidth: 3, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
       fillColor: {
-        front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.71)"
+        front: "#ff0000ff",
+        back: "#ff8080b5"
       },
       strokeColor: {
         // is this ever used?
-        front: "hsla(0, 100%, 35%, 1)",
-        back: "hsla(0, 100%, 45%, 0.7)"
+        front: "#b30000ff",
+        back: "#e60000b3"
       }
       // No dashing - this is highlighting the object
     },
@@ -237,12 +235,12 @@ export const SETTINGS = {
     temp: {
       // The radius is the same as the default for drawn points
       fillColor: {
-        front: "hsla(0, 0%, 50%, 1)",
-        back: "hsla(0, 0%, 75%, 1)"
+        front: "#808080ff",
+        back: "#bfbfbfff"
       },
       strokeColor: {
-        front: "hsla(0, 0%, 0%, 1)",
-        back: "hsla(0, 0%, 50%, 1)"
+        front: "#000000FF",
+        back: "#808080ff"
       }
       // The temp stroke width is the same as the default drawn stroke width
       // No dashing for points
@@ -250,13 +248,12 @@ export const SETTINGS = {
     nonFree: {
       scalePercent: 90, // The percent that the size of the (free) points are scaled by to get the size of the nonFreePoint
       fillColor: {
-        front: "hsla(0, 50%, 75%, 1)",
-        //frontHSLA: { h: 0, s: 50, l: 75, a: 1 },
-        back: "hsla(0, 25%, 75%, 1)"
+        front: "#df9f9fff",
+        back: "#cfafafff"
       },
       strokeColor: {
-        front: "hsla(240, 30%, 55%, 1)",
-        back: "hsla(240, 35%, 75%, 1)"
+        front: "#6a6aafff",
+        back: "#a9a9d6ff"
       },
       pointStrokeWidth: { front: 2, back: 2 } // The thickness of the edge of the point when drawn
       // No dashing for points
@@ -278,8 +275,8 @@ export const SETTINGS = {
     drawn: {
       // No fill for line segments
       strokeColor: {
-        front: "hsla(217, 90%, 61%, 1)",
-        back: "hsla(217, 90%, 80%, 1)"
+        front: "#4287f5ff",
+        back: "#9ec1faff"
       },
       strokeWidth: {
         front: 2.5,
@@ -296,8 +293,8 @@ export const SETTINGS = {
     glowing: {
       // No fill for line segments
       strokeColor: {
-        front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.72)"
+        front: "#ff0000ff",
+        back: "#ff8080b8"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the segment that shows the glow
       // the dashing pattern is copied from the drawn version
@@ -306,8 +303,8 @@ export const SETTINGS = {
     temp: {
       // No fill for line segments
       strokeColor: {
-        front: "hsla(0, 0%, 42%, 1)",
-        back: "hsla(0, 0%, 71%, 1)"
+        front: "#6b6b6bff",
+        back: "#b5b5b5ff"
       }
       // The width is the same as the default drawn version
       // The dashing pattern is copied from the default drawn version
@@ -315,8 +312,8 @@ export const SETTINGS = {
     nonFree: {
       // No fill for lines
       strokeColor: {
-        front: "hsla(200, 90%, 61%, 1)",
-        back: "hsla(200, 90%, 80%, 1)"
+        front: "#42b9f5ff",
+        back: "#9edbfaff"
       },
       // The thickness reduction of the nonFree line when drawn
       scalePercent: 85, // The percent that the size of the (free) lines are scaled by to get the thickness of the nonFreeLine
@@ -343,8 +340,8 @@ export const SETTINGS = {
     drawn: {
       // No fill for lines
       strokeColor: {
-        front: "hsla(217, 90%, 61%, 1)",
-        back: "hsla(217, 90%, 80%, 1)"
+        front: "#4287f5ff",
+        back: "#9ec1faff"
       },
       // The thickness of the line when drawn
       strokeWidth: {
@@ -362,8 +359,8 @@ export const SETTINGS = {
     glowing: {
       // No fill for lines
       strokeColor: {
-        front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.73)"
+        front: "#ff0000ff",
+        back: "#ff8080ba"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the line that shows the glow
       // Dashing is the same as the drawn version
@@ -372,8 +369,8 @@ export const SETTINGS = {
     temp: {
       // No fill for lines
       strokeColor: {
-        front: "hsla(0, 0%, 42%, 1)",
-        back: "hsla(0, 0%, 71%, 1)"
+        front: "#6b6b6bff",
+        back: "#b5b5b5ff"
       }
       // The width is the same as the default drawn version
       // Dashing is the same as the default drawn version
@@ -381,8 +378,8 @@ export const SETTINGS = {
     nonFree: {
       // No fill for lines
       strokeColor: {
-        front: "hsla(200, 90%, 61%, 1)",
-        back: "hsla(200, 90%, 80%, 1)"
+        front: "#42b9f5ff",
+        back: "#9edbfaff"
       },
       // The thickness reduction of the nonFree line when drawn
       scalePercent: 85, // The percent that the size of the (free) lines are scaled by to get the thickness of the nonFreeLine
@@ -408,14 +405,12 @@ export const SETTINGS = {
     //The properties of the circle when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.25)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)"
-        //frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
-        back: "hsla(10, 100%, 50%, 0.15)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
-       // backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
+        front: "#d8ccff33",
+        back: "#ff2b0026",
       },
       strokeColor: {
-        front: "hsla(217, 90%, 61%, 1)",
-        back: "hsla(217, 90%, 80%, 1)"
+        front: "#4287f5ff",
+        back: "#9ec1faff"
       },
       strokeWidth: {
         // The thickness of the circle when drawn front/back
@@ -433,8 +428,8 @@ export const SETTINGS = {
     glowing: {
       // There is no fill for highlighting objects
       strokeColor: {
-        front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.74)"
+        front: "#ff0000ff",
+        back: "#ff8080bd"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the circle (on each side) that shows the glow
       // The dash pattern will always be the same as the drawn version
@@ -442,26 +437,24 @@ export const SETTINGS = {
     //The properties of the circle when it is temporarily shown by the circle tool while drawing
     temp: {
       fillColor: {
-        front: "hsla(0, 0%, 90%, 0.3)", //"noFill" is "hsla(0,0%,0%,0)",
-        back: "hsla(0, 0%, 50%, 0.3)" //"noFill" is "hsla(0,0%,0%,0)"
+        front: "#e6e6e64d",
+        back: "#8080804d"
       },
       strokeColor: {
-        front: "hsla(0, 0%, 0%, 1.0)",
-        back: "hsla(0, 0%, 0%, 0.1)"
+        front: "#000000FF",
+        back: "#0000001a"
       }
       // The width is the same as the default drawn version
       // The dash pattern will always be the same as the default drawn version
     },
     nonFree: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)"
-        //frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
-        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
-        //backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
+        front: "#d8ccff33",
+        back: "#ff2b001a",
       },
       strokeColor: {
-        front: "hsla(200, 90%, 61%, 1)",
-        back: "hsla(200, 90%, 80%, 1)"
+        front: "#42b9f5ff",
+        back: "#9edbfaff"
       },
       // The thickness reduction of the nonFree circles when drawn
       scalePercent: 85, // The percent that the size of the (free) circles are scaled by to get the thickness of the nonFreeCircle
@@ -487,14 +480,12 @@ export const SETTINGS = {
     //The properties of the ellipse when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)",
-        //frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
-        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
-        //backHSLA: { h: 254, s: 100, l: 50, a: 0.1 }
+        front: "#d8ccff33",
+        back: "#ff2b001a",
       },
       strokeColor: {
-        front: "hsla(217, 90%, 61%, 1)",
-        back: "hsla(217, 90%, 80%, 1)"
+        front: "#4287f5ff",
+        back: "#9ec1faff"
       },
       strokeWidth: {
         // The thickness of the ellipse when drawn front/back
@@ -512,8 +503,8 @@ export const SETTINGS = {
     glowing: {
       // There is no fill for highlighting objects
       strokeColor: {
-        front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.74)"
+        front: "#ff0000ff",
+        back: "#ff8080bd"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the ellipse (on each side) that shows the glow
       // The dash pattern will always be the same as the drawn version
@@ -521,26 +512,24 @@ export const SETTINGS = {
     //The properties of the ellipse when it is temporarily shown by the ellipse tool while drawing
     temp: {
       fillColor: {
-        front: "hsla(0, 0%, 90%, 0.3)", //"noFill" is "hsla(0,0%,0%,0)",
-        back: "hsla(0, 0%, 50%, 0.3)" //"noFill" is "hsla(0,0%,0%,0)"
+        front: "#e6e6e64d",
+        back: "#8080804d"
       },
       strokeColor: {
-        front: "hsla(0, 0%, 0%, 1.0)",
-        back: "hsla(0, 0%, 0%, 0.1)"
+        front: "#000000FF",
+        back: "#0000001a"
       }
       // The width is the same as the default drawn version
       // The dash pattern will always be the same as the default drawn version
     },
     nonFree: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)"
-        //frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
-        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
-        //backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
+        front: "#d8ccff33",
+        back: "#ff2b001a",
       },
       strokeColor: {
-        front: "hsla(200, 90%, 61%, 1)",
-        back: "hsla(200, 90%, 80%, 1)"
+        front: "#42b9f5ff",
+        back: "#9edbfaff"
       },
       // The thickness reduction of the nonFree circles when drawn
       scalePercent: 85, // The percent that the size of the (free) circles are scaled by to get the thickness of the nonFreeCircle
@@ -567,12 +556,12 @@ export const SETTINGS = {
     //The properties of the parametric curve when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)",
-        back: "hsla(10, 100%, 50%, 0.1)" //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
+        front: "#d8ccff33",
+        back: "#ff2b001a"
       },
       strokeColor: {
-        front: "hsla(217, 90%, 61%, 1)",
-        back: "hsla(217, 90%, 80%, 1)"
+        front: "#4287f5ff",
+        back: "#9ec1faff"
       },
       strokeWidth: {
         // The thickness of the parametric curve when drawn front/back
@@ -590,8 +579,8 @@ export const SETTINGS = {
     glowing: {
       // There is no fill for highlighting objects
       strokeColor: {
-        front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.74)"
+        front: "#ff0000ff",
+        back: "#ff8080bd"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the parametric curve (on each side) that shows the glow
       // The dash pattern will always be the same as the drawn version
@@ -599,12 +588,12 @@ export const SETTINGS = {
     //The properties of the parametric curve when it is temporarily shown by the parametric curve tool while drawing
     temp: {
       fillColor: {
-        front: "hsla(0, 0%, 90%, 0.3)", //"noFill" is "hsla(0,0%,0%,0)",
-        back: "hsla(0, 0%, 50%, 0.3)" //"noFill" is "hsla(0,0%,0%,0)"
+        front: "#e6e6e64d",
+        back: "#8080804d"
       },
       strokeColor: {
-        front: "hsla(0, 0%, 0%, 1.0)",
-        back: "hsla(0, 0%, 0%, 0.1)"
+        front: "#000000FF",
+        back: "#0000001a"
       }
       // The width is the same as the default drawn version
       // The dash pattern will always be the same as the default drawn version
@@ -625,10 +614,8 @@ export const SETTINGS = {
     //The properties of the polygon when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.6)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)",
-        //frontHSLA: { h: 254, s: 100, l: 90, a: 0.6 },
-        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
-        //backHSLA: { h: 10, s: 100, l: 50, a: 0.2 }
+        front: "#d8ccff99",
+        back: "#ff2b001a",
       }
       //  strokeColor is determined by each edge
       // strokeWidth is determined by each edge
@@ -643,10 +630,8 @@ export const SETTINGS = {
     dynamicBackStyle: true,
     fontSize: 15,
     fillColor: {
-      front: "hsla(0, 0%, 0%, 1.0)", //"noFill" is "hsla(0,0%,0%,0)",
-      //frontHSLA: { h: 0, s: 0, l: 0, a: 1 },
-      back: "hsla(0, 0%, 0%, 0.1)", //"noFill" is "hsla(0,0%,0%,0)"
-      //backHSLA: { h: 0, s: 0, l: 0, a: 1 }
+      front: "#000000FF",
+      back: "#0000001a",
     },
     style: "normal",
     family: "sans-serif",
@@ -654,8 +639,8 @@ export const SETTINGS = {
     rotation: 0,
     glowingStrokeWidth: { front: 3, back: 3 },
     glowingStrokeColor: {
-      front: "hsla(0, 0%, 70%, 1)",
-      back: "hsla(0, 0%, 85%, 1)"
+      front: "#b3b3b3ff",
+      back: "#d9d9d9ff"
     }
   },
   angleMarker: {
@@ -691,14 +676,12 @@ export const SETTINGS = {
     //The properties of the angleMarker when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.5)", //"noFill" is "hsla(0,0%,0%,0)",0.001
-        //frontHSLA: { h: 254, s: 100, l: 90, a: 0.5 },
-        back: "hsla(10, 100%, 50%, 0.4)", //"hsla(0, 0%, 0%, 1)" //"noFill" is "hsla(0,0%,0%,0)"
-        //backHSLA: { h: 10, s: 100, l: 50, a: 0.4 }
+        front: "#d8ccff99",
+        back: "#ff2b0066",
       },
       strokeColor: {
-        front: "hsla(0, 0%, 0%, 0.5)",
-        back: "hsla(0, 0%, 0%, 0.3)"
+        front: "#00000080",
+        back: "#0000004d"
       },
       strokeWidth: {
         circular: {
@@ -725,8 +708,8 @@ export const SETTINGS = {
     glowing: {
       // There is no fill for highlighting objects
       strokeColor: {
-        front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.75)"
+        front: "#ff0000ff",
+        back: "#ff8080bf"
       },
       circular: { edgeWidth: 5 }, // edgeWidth/2 is the width of the region around the angle (on all sides) that shows the glow
       straight: { edgeWidth: 2 },
@@ -736,12 +719,12 @@ export const SETTINGS = {
     //The properties of the angle marker when it is temporarily shown by the angle measuring tool while drawing
     temp: {
       fillColor: {
-        front: "hsla(340, 0%, 50%, 0.4)", //front: "hsla(0, 0%, 90%, 0.3)", //"noFill" is "hsla(0,0%,0%,0)",
-        back: "hsla(0, 0%, 50%, 0.3)" //"noFill" is "hsla(0,0%,0%,0)"
+        front: "#80808066",
+        back: "#8080804d"
       },
       strokeColor: {
-        front: "hsla(0, 0%, 0%, 0.6)",
-        back: "hsla(0, 0%, 0%, 0.4)"
+        front: "#00000099",
+        back: "#00000066"
       }
       // The width is the same as the default drawn version
       // The dash pattern will always be the same as the default drawn version
@@ -752,7 +735,7 @@ export const SETTINGS = {
     defaultInlineIconSize: 25,
     boundaryCircle: {
       strokeWidth: 1.5,
-      color: "hsla(0, 0%, 0%, 1)"
+      color: "#000000FF"
     },
     // These are the detail of how the icon parts (points, lines, circles, etc.) are drawn when emphasized
     emphasize: {
@@ -762,12 +745,12 @@ export const SETTINGS = {
           back: 2.5
         },
         edgeColor: {
-          front: "hsla(0, 0%, 0%, 1)",
-          back: "hsla(0, 0%, 0%, 0.3)"
+          front: "#000000FF",
+          back: "#0000004d"
         },
         fillColor: {
-          front: "hsla(254, 100%, 90%, 1)",
-          back: "hsla(10,100%, 50%, 1)"
+          front: "#d8ccffff",
+          back: "#ff2b00ff"
         }
       },
       circle: {
@@ -775,10 +758,10 @@ export const SETTINGS = {
           front: 1,
           back: 1
         },
-        edgeColor: { front: "hsla(0, 0%, 0%, 1)", back: "hsla(0, 0%, 0%, 1)" },
+        edgeColor: { front: "#000000FF", back: "#000000FF" },
         fillColor: {
-          front: "hsla(0, 100%, 75%, 1)",
-          back: "hsla(0, 100%, 75%, 1)"
+          front: "#ff8080FF",
+          back: "#ff8080FF"
         }
       },
       ellipse: {
@@ -786,10 +769,10 @@ export const SETTINGS = {
           front: 1,
           back: 1
         },
-        edgeColor: { front: "hsla(0, 0%, 0%, 1)", back: "hsla(0, 0%, 0%, 1)" },
+        edgeColor: { front: "#000000FF", back: "#000000FF" },
         fillColor: {
-          front: "hsla(0, 100%, 75%, 1)",
-          back: "hsla(0, 100%, 75%, 1)"
+          front: "#ff8080FF",
+          back: "#ff8080FF"
         }
       },
       point: {
@@ -797,10 +780,10 @@ export const SETTINGS = {
           front: 0.7,
           back: 0.7
         },
-        edgeColor: { front: "hsla(0, 0%, 0%, 1)", back: "hsla(0, 0%, 0%, 1)" },
+        edgeColor: { front: "#000000FF", back: "#000000FF" },
         fillColor: {
-          front: "hsla(0, 100%, 75%, 1)",
-          back: "hsla(0, 100%, 75%, 1)"
+          front: "#ff8080FF",
+          back: "#ff8080FF"
         }
       },
       line: {
@@ -809,8 +792,8 @@ export const SETTINGS = {
           back: 1.5
         },
         edgeColor: {
-          front: "hsla(217, 90%, 61%, 1)",
-          back: "hsla(217, 90%, 80%, 1)"
+          front: "#4287f5ff",
+          back: "#9ec1faff"
         }
       },
       segment: {
@@ -819,8 +802,8 @@ export const SETTINGS = {
           back: 1.5
         },
         edgeColor: {
-          front: "hsla(217, 90%, 61%, 1)",
-          back: "hsla(217, 90%, 80%, 1)"
+          front: "#4287f5ff",
+          back: "#9ec1faff"
         }
       }
     },
@@ -836,12 +819,12 @@ export const SETTINGS = {
           back: 1
         },
         edgeColor: {
-          front: "hsla(0, 0%, 40%, 1)",
-          back: "hsla(0, 0%, 60%, 1)"
+          front: "#666666ff",
+          back: "#999999ff"
         },
         fillColor: {
-          front: "hsla(0, 0%, 90%, 0.4)",
-          back: "hsla(0, 0%, 100%, 0.2)"
+          front: "#e6e6e666",
+          back: "#ffffff33"
         }
       },
       circle: {
@@ -850,12 +833,12 @@ export const SETTINGS = {
           back: 1
         },
         edgeColor: {
-          front: "hsla(0, 0%, 40%, 1)",
-          back: "hsla(0, 0%, 60%, 1)"
+          front: "#666666ff",
+          back: "#999999ff"
         },
         fillColor: {
-          front: "hsla(0, 0%, 90%, 0.4)",
-          back: "hsla(0, 0%, 100%, 0.2)"
+          front: "#e6e6e666",
+          back: "#ffffff33"
         }
       },
       ellipse: {
@@ -864,12 +847,12 @@ export const SETTINGS = {
           back: 1
         },
         edgeColor: {
-          front: "hsla(0, 0%, 40%, 1)",
-          back: "hsla(0, 0%, 60%, 1)"
+          front: "#666666ff",
+          back: "#999999ff"
         },
         fillColor: {
-          front: "hsla(0, 0%, 90%, 0.4)",
-          back: "hsla(0, 0%, 100%, 0.2)"
+          front: "#e6e6e666",
+          back: "#ffffff33"
         }
       },
       point: {
@@ -882,12 +865,12 @@ export const SETTINGS = {
           back: 0.7
         },
         edgeColor: {
-          front: "hsla(0, 0%, 40%, 1)",
-          back: "hsla(0, 0%, 60%, 1)"
+          front: "#666666ff",
+          back: "#999999ff"
         },
         fillColor: {
-          front: "hsla(0, 0%, 90%, 1)",
-          back: "hsla(0, 0%, 100%, 1)"
+          front: "#e6e6e6ff",
+          back: "#ffffffff"
         }
       },
       line: {
@@ -896,8 +879,8 @@ export const SETTINGS = {
           back: 1
         },
         edgeColor: {
-          front: "hsla(0, 0%, 40%, 1)",
-          back: "hsla(0, 0%, 60%, 1)"
+          front: "#666666ff",
+          back: "#999999ff"
         }
       },
       segment: {
@@ -906,8 +889,8 @@ export const SETTINGS = {
           back: 1
         },
         edgeColor: {
-          front: "hsla(0, 0%, 40%, 1)",
-          back: "hsla(0, 0%, 60%, 1)"
+          front: "#666666ff",
+          back: "#999999ff"
         }
       }
     },

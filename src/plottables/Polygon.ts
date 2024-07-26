@@ -1195,103 +1195,38 @@ export default class Polygon extends Nodule {
     //   )
     // );
     // Add the gradient to the gradient dictionary (if used)
-    if (Nodule.getGradientFill()) {
-      if (this.frontFillInUse) {
-        const frontGradientDictionary = new Map<
-          svgGradientType,
-          string | Map<svgStopType, string>[]
-        >();
-        frontGradientDictionary.set("cx", String(this.frontGradient.center.x));
-        frontGradientDictionary.set("cy", String(this.frontGradient.center.y));
-        frontGradientDictionary.set("fx", String(this.frontGradient.focal.x));
-        frontGradientDictionary.set("fy", String(this.frontGradient.focal.y));
-        frontGradientDictionary.set("gradientUnits", this.frontGradient.units);
-        frontGradientDictionary.set(
-          "r",
-          String(SETTINGS.boundaryCircle.radius)
-        );
-        frontGradientDictionary.set("spreadMethod", "pad");
-        const stop1FrontDictionary = new Map<svgStopType, string>();
-        stop1FrontDictionary.set(
-          "offset",
-          String(this.frontGradientColorCenter.offset * 100) + "%"
-        );
-        stop1FrontDictionary.set(
-          "stop-color",
-          String(this.frontGradientColorCenter.color)
-        );
-        const stop2FrontDictionary = new Map<svgStopType, string>();
-        stop2FrontDictionary.set(
-          "offset",
-          String(this.frontGradientColor.offset * 100) + "%"
-        );
-        stop2FrontDictionary.set(
-          "stop-color",
-          String(this.frontGradientColor.color)
-        );
-        frontGradientDictionary.set("stops", [
-          stop1FrontDictionary,
-          stop2FrontDictionary
-        ]);
-        returnSVGObject.frontGradientDictionary = frontGradientDictionary;
-      }
+        // Add the gradient to the gradient dictionary (if used)
+        if (Nodule.getGradientFill()) {
+          if (this.frontFillInUse) {
+            returnSVGObject.frontGradientDictionary =
+              Nodule.createSVGGradientDictionary(
+                this.frontGradient,
+                this.frontGradientColorCenter,
+                this.frontGradientColor
+              );
+          }
 
-      if (this.backFillInUse) {
-        const backGradientDictionary = new Map<
-          svgGradientType,
-          string | Map<svgStopType, string>[]
-        >();
-        backGradientDictionary.set("cx", String(this.backGradient.center.x));
-        backGradientDictionary.set("cy", String(this.backGradient.center.y));
-        backGradientDictionary.set("fx", String(this.backGradient.focal.x));
-        backGradientDictionary.set("fy", String(this.backGradient.focal.y));
-        backGradientDictionary.set("gradientUnits", this.backGradient.units);
-        backGradientDictionary.set("r", String(SETTINGS.boundaryCircle.radius));
-        backGradientDictionary.set("spreadMethod", "pad");
-        const stop1BackDictionary = new Map<svgStopType, string>();
-        stop1BackDictionary.set(
-          "offset",
-          String(this.backGradientColorCenter.offset * 100) + "%"
-        );
-        stop1BackDictionary.set(
-          "stop-color",
-          String(this.backGradientColorCenter.color)
-        );
-        const stop2BackDictionary = new Map<svgStopType, string>();
-        stop2BackDictionary.set(
-          "offset",
-          String(this.backGradientColor.offset * 100) + "%"
-        );
-        stop2BackDictionary.set(
-          "stop-color",
-          String(this.backGradientColor.color)
-        );
-        backGradientDictionary.set("stops", [
-          stop1BackDictionary,
-          stop2BackDictionary
-        ]);
-        returnSVGObject.backGradientDictionary = backGradientDictionary;
-      }
-    }
+          if (this.backFillInUse) {
+            returnSVGObject.backGradientDictionary =
+              Nodule.createSVGGradientDictionary(
+                this.backGradient,
+                this.backGradientColorCenter,
+                this.backGradientColor
+              );
+          }
+        }
 
     // collect the front style of the circle
     if (this.frontFillInUse) {
-      const frontReturnDictionary = new Map<svgStyleType, string>();
-      // Collect the style information: fill, stroke, stroke-width
-      frontReturnDictionary.set("fill", String(this.frontFills[0].fill)); // if the fill is a gradient, this will be overwritten in Command.ts, if the fill is a color it won't be overwritten
-      frontReturnDictionary.set("stroke", "none");
-
-      returnSVGObject.frontStyleDictionary = frontReturnDictionary;
+      returnSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({
+        fillObject: this.frontFills[0]
+      });
     }
     // collect the front style of the circle
     if (this.backFillInUse) {
-      const backReturnDictionary = new Map<svgStyleType, string>();
-      // Collect the style information: fill, stroke, stroke-width
-
-      backReturnDictionary.set("fill", String(this.backFills[0].fill)); // if the fill is a gradient, this will be overwritten in Command.ts, if the fill is a color it won't be overwritten
-      backReturnDictionary.set("stroke", "none");
-
-      returnSVGObject.backStyleDictionary = backReturnDictionary;
+      returnSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({
+        fillObject: this.backFills[0]
+      });
     }
     // now collect the geometric information
     // The polygon interior is split between front and back
@@ -1662,7 +1597,7 @@ export default class Polygon extends Nodule {
         // FRONT
         const frontStyle = this.styleOptions.get(StyleCategory.Front);
 
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFills.forEach(fill => fill.noFill());
         } else {
           if (Nodule.globalGradientFill) {
@@ -1681,7 +1616,7 @@ export default class Polygon extends Nodule {
         const backStyle = this.styleOptions.get(StyleCategory.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontStyle?.fillColor)
             )
           ) {
@@ -1704,7 +1639,7 @@ export default class Polygon extends Nodule {
             }
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this.backFills.forEach(fill => fill.noFill());
           } else {
             if (Nodule.globalGradientFill) {

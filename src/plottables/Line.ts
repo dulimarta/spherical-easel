@@ -251,55 +251,16 @@ export default class Line extends Nodule {
       layerSVGArray: [],
       type: "line"
     };
-    // collect the front style of the line
-    const frontReturnDictionary = new Map<svgStyleType, string>();
-    // Collect the style information: fill, stroke, stroke-width
-    frontReturnDictionary.set("fill", "none");
-    frontReturnDictionary.set("stroke", this._frontHalf.stroke as string);
-    frontReturnDictionary.set(
-      "stroke-width",
-      String(this._frontHalf.linewidth)
+
+    // collect the front style
+    returnSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary(
+      {strokeObject:this._frontHalf}
     );
 
-    // check to see if there is any dashing for the front of line
-    //console.log("front dash", this._frontHalf.dashes)
-    if (
-      !(this._frontHalf.dashes.length == 2 && this._frontHalf.dashes[0] == 0 && this._frontHalf.dashes[1] == 0 )
-    ) {
-      var dashString = "";
-      for (let num =0; num < this._frontHalf.dashes.length; num++) {
-        dashString += this._frontHalf.dashes[num] + " ";
-      }
-      frontReturnDictionary.set("stroke-dasharray", dashString);
-
-    }
-
-    returnSVGObject.frontStyleDictionary = frontReturnDictionary;
-
-    // collect the back style of the line
-    const backReturnDictionary = new Map<svgStyleType, string>();
-    // Collect the style information: fill, stroke, stroke-width
-    backReturnDictionary.set("fill", "none");
-    backReturnDictionary.set("stroke", this._backHalf.stroke as string);
-    backReturnDictionary.set(
-      "stroke-width",
-      String(this._backHalf.linewidth)
+    // collect the back style
+    returnSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary(
+      {strokeObject:this._backHalf}
     );
-
-    // check to see if there is any dashing for the back of line
-    //console.log("back dash", this._backHalf.dashes)
-    if (
-      !(this._backHalf.dashes.length == 2 && this._backHalf.dashes[0] == 0 && this._backHalf.dashes[1] == 0 )
-    ) {
-      var dashString = "";
-      for (let num =0; num < this._backHalf.dashes.length; num++) {
-        dashString += this._backHalf.dashes[num] + " ";
-      }
-      backReturnDictionary.set("stroke-dasharray", dashString);
-      //backReturnDictionary.set("stroke-dashoffset", this._backHalf.dashes[offset]);
-    }
-
-    returnSVGObject.backStyleDictionary = backReturnDictionary;
 
     // Collect the geometric information for the front
     // x-radius y-radius rotation large-arc-flag sweep-flag ending-x ending-y
@@ -402,7 +363,7 @@ export default class Line extends Nodule {
         // Front
         // no fillColor
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.front)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.front)
         ) {
           this._frontHalf.noStroke();
         } else {
@@ -424,7 +385,7 @@ export default class Line extends Nodule {
         // Back
         // no fill color
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.back)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.back)
         ) {
           this._backHalf.noStroke();
         } else {
@@ -456,7 +417,7 @@ export default class Line extends Nodule {
         // Front
         const frontStyle = this.styleOptions.get(StyleCategory.Front);
         // no fillColor
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontHalf.noStroke();
         } else {
           this._frontHalf.stroke = frontStyle?.strokeColor ?? "black";
@@ -484,7 +445,7 @@ export default class Line extends Nodule {
         // no fillColor
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
@@ -495,7 +456,7 @@ export default class Line extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this._backHalf.noStroke();
           } else {
             this._backHalf.stroke = backStyle?.strokeColor ?? "black";

@@ -932,136 +932,37 @@ export default class Circle extends Nodule {
     // Add the gradient to the gradient dictionary (if used)
     if (Nodule.getGradientFill()) {
       if (this._frontFillInUse) {
-        const frontGradientDictionary = new Map<
-          svgGradientType,
-          string | Map<svgStopType, string>[]
-        >();
-        frontGradientDictionary.set("cx", String(this.frontGradient.center.x));
-        frontGradientDictionary.set("cy", String(this.frontGradient.center.y));
-        frontGradientDictionary.set("fx", String(this.frontGradient.focal.x));
-        frontGradientDictionary.set("fy", String(this.frontGradient.focal.y));
-        frontGradientDictionary.set("gradientUnits", this.frontGradient.units);
-        frontGradientDictionary.set(
-          "r",
-          String(SETTINGS.boundaryCircle.radius)
-        );
-        frontGradientDictionary.set("spreadMethod", "pad");
-        const stop1FrontDictionary = new Map<svgStopType, string>();
-        stop1FrontDictionary.set(
-          "offset",
-          String(this.frontGradientColorCenter.offset * 100) + "%"
-        );
-        stop1FrontDictionary.set(
-          "stop-color",
-          String(this.frontGradientColorCenter.color)
-        );
-        const stop2FrontDictionary = new Map<svgStopType, string>();
-        stop2FrontDictionary.set(
-          "offset",
-          String(this.frontGradientColor.offset * 100) + "%"
-        );
-        stop2FrontDictionary.set(
-          "stop-color",
-          String(this.frontGradientColor.color)
-        );
-        frontGradientDictionary.set("stops", [
-          stop1FrontDictionary,
-          stop2FrontDictionary
-        ]);
-        returnSVGObject.frontGradientDictionary = frontGradientDictionary;
+        returnSVGObject.frontGradientDictionary =
+          Nodule.createSVGGradientDictionary(
+            this.frontGradient,
+            this.frontGradientColorCenter,
+            this.frontGradientColor
+          );
       }
 
       if (this._backFillInUse) {
-        const backGradientDictionary = new Map<
-          svgGradientType,
-          string | Map<svgStopType, string>[]
-        >();
-        backGradientDictionary.set("cx", String(this.backGradient.center.x));
-        backGradientDictionary.set("cy", String(this.backGradient.center.y));
-        backGradientDictionary.set("fx", String(this.backGradient.focal.x));
-        backGradientDictionary.set("fy", String(this.backGradient.focal.y));
-        backGradientDictionary.set("gradientUnits", this.backGradient.units);
-        backGradientDictionary.set("r", String(SETTINGS.boundaryCircle.radius));
-        backGradientDictionary.set("spreadMethod", "pad");
-        const stop1BackDictionary = new Map<svgStopType, string>();
-        stop1BackDictionary.set(
-          "offset",
-          String(this.backGradientColorCenter.offset * 100) + "%"
-        );
-        stop1BackDictionary.set(
-          "stop-color",
-          String(this.backGradientColorCenter.color)
-        );
-        const stop2BackDictionary = new Map<svgStopType, string>();
-        stop2BackDictionary.set(
-          "offset",
-          String(this.backGradientColor.offset * 100) + "%"
-        );
-        stop2BackDictionary.set(
-          "stop-color",
-          String(this.backGradientColor.color)
-        );
-        backGradientDictionary.set("stops", [
-          stop1BackDictionary,
-          stop2BackDictionary
-        ]);
-        returnSVGObject.backGradientDictionary = backGradientDictionary;
+        returnSVGObject.backGradientDictionary =
+          Nodule.createSVGGradientDictionary(
+            this.backGradient,
+            this.backGradientColorCenter,
+            this.backGradientColor
+          );
       }
     }
 
     // collect the front style of the circle
     if (this._frontFillInUse) {
-      const frontReturnDictionary = new Map<svgStyleType, string>();
-      // Collect the style information: fill, stroke, stroke-width
-      frontReturnDictionary.set("fill", String(this._frontFill.fill)); // if the fill is a gradient, this will be overwritten in Command.ts, if the fill is a color it won't be overwritten
-      frontReturnDictionary.set("stroke", this._frontPart.stroke as string);
-      frontReturnDictionary.set(
-        "stroke-width",
-        String(this._frontPart.linewidth)
-      );
-
-      // check to see if there is any dashing for the front of circle
-      if (
-        !(
-          this._frontPart.dashes.length == 2 &&
-          this._frontPart.dashes[0] == 0 &&
-          this._frontPart.dashes[1] == 0
-        )
-      ) {
-        var dashString = "";
-        for (let num = 0; num < this._frontPart.dashes.length; num++) {
-          dashString += this._frontPart.dashes[num] + " ";
-        }
-        frontReturnDictionary.set("stroke-dasharray", dashString);
-      }
-      returnSVGObject.frontStyleDictionary = frontReturnDictionary;
+      returnSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({
+        fillObject: this._frontFill,
+        strokeObject: this._frontPart
+      });
     }
     // collect the front style of the circle
     if (this._backFillInUse) {
-      const backReturnDictionary = new Map<svgStyleType, string>();
-      // Collect the style information: fill, stroke, stroke-width
-      backReturnDictionary.set("fill", String(this._backFill.fill)); // if the fill is a gradient, this will be overwritten in Command.ts, if the fill is a color it won't be overwritten
-      backReturnDictionary.set("stroke", this._backPart.stroke as string);
-      backReturnDictionary.set(
-        "stroke-width",
-        String(this._backPart.linewidth)
-      );
-
-      // check to see if there is any dashing for the back of circle
-      if (
-        !(
-          this._backPart.dashes.length == 2 &&
-          this._backPart.dashes[0] == 0 &&
-          this._backPart.dashes[1] == 0
-        )
-      ) {
-        var dashString = "";
-        for (let num = 0; num < this._backPart.dashes.length; num++) {
-          dashString += this._backPart.dashes[num] + " ";
-        }
-        backReturnDictionary.set("stroke-dasharray", dashString);
-      }
-      returnSVGObject.backStyleDictionary = backReturnDictionary;
+      returnSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({
+        fillObject: this._backFill,
+        strokeObject: this._backPart
+      });
     }
 
     // variables that indicate where the extremes of the circle are
@@ -1417,7 +1318,7 @@ export default class Circle extends Nodule {
 
         //FRONT
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.front)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.front)
         ) {
           this._frontFill.noFill();
         } else {
@@ -1430,7 +1331,7 @@ export default class Circle extends Nodule {
           }
         }
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.front)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.front)
         ) {
           this._frontPart.noStroke();
         } else {
@@ -1450,7 +1351,7 @@ export default class Circle extends Nodule {
         }
         //BACK
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.back)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.back)
         ) {
           this._backFill.noFill();
         } else {
@@ -1462,7 +1363,7 @@ export default class Circle extends Nodule {
           }
         }
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.back)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.back)
         ) {
           this._backPart.noStroke();
         } else {
@@ -1491,7 +1392,7 @@ export default class Circle extends Nodule {
 
         // FRONT
         const frontStyle = this.styleOptions.get(StyleCategory.Front);
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this._frontFill.noFill();
         } else {
           if (Nodule.globalGradientFill) {
@@ -1504,7 +1405,7 @@ export default class Circle extends Nodule {
           }
         }
 
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontPart.noStroke();
         } else {
           this._frontPart.stroke =
@@ -1524,7 +1425,7 @@ export default class Circle extends Nodule {
         const backStyle = this.styleOptions.get(StyleCategory.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontStyle?.fillColor)
             )
           ) {
@@ -1542,7 +1443,7 @@ export default class Circle extends Nodule {
             }
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this._backFill.noFill();
           } else {
             if (Nodule.globalGradientFill) {
@@ -1559,7 +1460,7 @@ export default class Circle extends Nodule {
 
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
@@ -1570,7 +1471,7 @@ export default class Circle extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this._backPart.noStroke();
           } else {
             this._backPart.stroke =

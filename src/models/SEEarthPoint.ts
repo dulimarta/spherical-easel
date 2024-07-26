@@ -13,8 +13,8 @@ export class SEEarthPoint extends SEPoint {
     this._latitude = latitudeDegrees;
     // style the earth point
     this.ref.updateStyle(StyleCategory.Front, {
-      fillColor: "hsla(200, 80%, 50%, 1)",
-      strokeColor: "hsla(0, 0%, 0%, 1)"
+      fillColor: "#19a1e6ff",
+      strokeColor: "#000000ff"
     })
   }
   get longitude(): number {

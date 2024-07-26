@@ -405,7 +405,14 @@ export default class Label extends Nodule {
       frontReturnDictionary.set("font-style", this.frontText.style);
       frontReturnDictionary.set("font-weight", String(this.frontText.weight));
       frontReturnDictionary.set("text-decoration", this.frontText.decoration);
-      frontReturnDictionary.set("fill", this.frontText.fill as string);
+      frontReturnDictionary.set(
+        "fill",
+        String(this.frontText.fill).slice(0, 7) // separate out the alpha channel
+      );
+      frontReturnDictionary.set(
+        "fill-opacity",
+        String(Number("0x" + String(this.frontText.fill).slice(7)) / 255) // separate out the alpha channel
+      );
       returnSVGObject.frontStyleDictionary = frontReturnDictionary;
 
       let svgFrontString =
@@ -425,7 +432,15 @@ export default class Label extends Nodule {
       backReturnDictionary.set("font-style", this.backText.style);
       backReturnDictionary.set("font-weight", String(this.backText.weight));
       backReturnDictionary.set("text-decoration", this.backText.decoration);
-      backReturnDictionary.set("fill", this.backText.fill as string);
+      backReturnDictionary.set(
+        "fill",
+        String(this.backText.fill).slice(0, 7) // separate out the alpha channel
+      );
+      backReturnDictionary.set(
+        "fill-opacity",
+        String(Number("0x" + String(this.backText.fill).slice(7)) / 255) // separate out the alpha channel
+      );
+
       returnSVGObject.backStyleDictionary = backReturnDictionary;
 
       let svgBackString =
@@ -732,7 +747,7 @@ export default class Label extends Nodule {
           labelStyle?.labelFrontFillColor ?? SETTINGS.label.fillColor.front;
         const backFillColor =
           labelStyle?.labelBackFillColor ?? SETTINGS.label.fillColor.back;
-        if (Nodule.hslaIsNoFillOrNoStroke(frontFillColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontFillColor)) {
           this.frontText.noFill();
         } else {
           this.frontText.fill = frontFillColor;
@@ -745,7 +760,7 @@ export default class Label extends Nodule {
           labelStyle?.labelDynamicBackStyle === true
         ) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontFillColor)
             )
           ) {
@@ -754,7 +769,7 @@ export default class Label extends Nodule {
             this.backText.fill = Nodule.contrastFillColor(frontFillColor);
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backFillColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backFillColor)) {
             this.backText.noFill();
           } else {
             this.backText.fill = backFillColor;

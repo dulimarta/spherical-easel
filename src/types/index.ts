@@ -504,7 +504,7 @@ export type svgGradientType =
   | "r"
   | "stops";
 
-export type svgStopType = "offset" | "stop-color";
+export type svgStopType = "offset" | "stop-color" | "stop-opacity";
 
 export type plottableType =
   | "boundaryCircle"
@@ -557,13 +557,6 @@ export type SEMeasurable =
   | SEExpression;
 
 export type SEOneDimensionalNotStraight = SECircle | SEEllipse | SEParametric;
-
-export type hslaColorType = {
-  h: number;
-  s: number;
-  l: number;
-  a: number;
-};
 
 /**
  * There are three modes for displaying a value of a measurement.

@@ -264,16 +264,10 @@ export default class Point extends Nodule {
     };
     if (this._locationVector.z > 0) {
       // the point is on the front
-      const frontReturnDictionary = new Map<svgStyleType, string>();
-      // Collect the style information: fill, stroke, stroke-width
-      frontReturnDictionary.set("fill", this.frontPoint.fill as string);
-      frontReturnDictionary.set("stroke", this.frontPoint.stroke as string);
-      frontReturnDictionary.set(
-        "stroke-width",
-        String((this.frontPoint.scale as number)*this.frontPoint.linewidth)
-      );
-      returnSVGObject.frontStyleDictionary = frontReturnDictionary
 
+      returnSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary(
+        {strokeObject:this.frontPoint,fillObject:this.frontPoint,strokeScale:this.frontPoint.scale as number}
+      );
       // Collect the geometric information: radius, center
       let svgString =
         '<circle cx="' +
@@ -286,16 +280,9 @@ export default class Point extends Nodule {
       returnSVGObject.layerSVGArray.push([LAYER.foregroundPoints, svgString]);
     } else {
       // the point is on the back
-      const backReturnDictionary = new Map<svgStyleType, string>();
-      // Collect the style information: fill, stroke, stroke-width
-      backReturnDictionary.set("fill", this.backPoint.fill as string);
-      backReturnDictionary.set("stroke", this.backPoint.stroke as string);
-      backReturnDictionary.set(
-        "stroke-width",
-        String((this.backPoint.scale as number)*this.backPoint.linewidth)
+      returnSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary(
+        {strokeObject:this.backPoint,fillObject:this.backPoint}
       );
-      returnSVGObject.backStyleDictionary = backReturnDictionary
-
       // Collect the geometric information: radius, center
       let svgString =
         '<circle cx="' +
@@ -381,7 +368,7 @@ export default class Point extends Nodule {
         // Use the SETTINGS temporary options to directly modify the js objects.
         // FRONT
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.point.temp.fillColor.front)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.point.temp.fillColor.front)
         ) {
           this.frontPoint.noFill();
         } else {
@@ -392,7 +379,7 @@ export default class Point extends Nodule {
         // front pointRadiusPercent applied by adjustSize(); (accounts for zoom)
 
         // BACK
-        if (Nodule.hslaIsNoFillOrNoStroke(SETTINGS.point.temp.fillColor.back)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.point.temp.fillColor.back)) {
           this.backPoint.noFill();
         } else {
           this.backPoint.fill = SETTINGS.point.temp.fillColor.back;
@@ -408,13 +395,13 @@ export default class Point extends Nodule {
         // Use the current variables to directly modify the js objects.
         // FRONT
         const frontStyle = this.styleOptions.get(StyleCategory.Front)!;
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle.fillColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle.fillColor)) {
           this.frontPoint.noFill();
         } else {
           this.frontPoint.fill =
             frontStyle.fillColor ?? SETTINGS.point.drawn.fillColor.front;
         }
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle.strokeColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle.strokeColor)) {
           this.frontPoint.noStroke();
         } else {
           this.frontPoint.stroke =
@@ -427,7 +414,7 @@ export default class Point extends Nodule {
         const backStyle = this.styleOptions.get(StyleCategory.Back)!;
         if (backStyle.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontStyle.fillColor)
             )
           ) {
@@ -438,7 +425,7 @@ export default class Point extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle.fillColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle.fillColor)) {
             this.backPoint.noFill();
           } else {
             this.backPoint.fill =
@@ -447,7 +434,7 @@ export default class Point extends Nodule {
         }
         if (backStyle.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle.strokeColor)
             )
           ) {
@@ -458,7 +445,7 @@ export default class Point extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle.strokeColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle.strokeColor)) {
             this.backPoint.noStroke();
           } else {
             this.backPoint.stroke =
@@ -469,12 +456,12 @@ export default class Point extends Nodule {
         // pointRadiusPercent applied by adjustSize();
 
         // FRONT Glowing
-        if (Nodule.hslaIsNoFillOrNoStroke(this.glowingFillColorFront)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(this.glowingFillColorFront)) {
           this.glowingFrontPoint.noFill();
         } else {
           this.glowingFrontPoint.fill = this.glowingFillColorFront;
         }
-        if (Nodule.hslaIsNoFillOrNoStroke(this.glowingStrokeColorBack)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(this.glowingStrokeColorBack)) {
           this.glowingFrontPoint.noStroke();
         } else {
           this.glowingFrontPoint.stroke = this.glowingStrokeColorBack;
@@ -484,13 +471,13 @@ export default class Point extends Nodule {
 
         // Back Glowing
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.point.glowing.fillColor.back)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.point.glowing.fillColor.back)
         ) {
           this.glowingBackPoint.noFill();
         } else {
           this.glowingBackPoint.fill = this.glowingFillColorBack;
         }
-        if (Nodule.hslaIsNoFillOrNoStroke(this.glowingStrokeColorBack)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(this.glowingStrokeColorBack)) {
           this.glowingBackPoint.noStroke();
         } else {
           this.glowingBackPoint.stroke = this.glowingStrokeColorBack;

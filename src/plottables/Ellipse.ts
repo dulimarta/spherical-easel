@@ -1045,137 +1045,42 @@ export default class Ellipse extends Nodule {
       layerSVGArray: [],
       type: "ellipse"
     };
-    /// Collect the gradient and style information
+
+
     // Add the gradient to the gradient dictionary (if used)
     if (Nodule.getGradientFill()) {
       if (this.frontFillInUse) {
-        const frontGradientDictionary = new Map<
-          svgGradientType,
-          string | Map<svgStopType, string>[]
-        >();
-        frontGradientDictionary.set("cx", String(this.frontGradient.center.x));
-        frontGradientDictionary.set("cy", String(this.frontGradient.center.y));
-        frontGradientDictionary.set("fx", String(this.frontGradient.focal.x));
-        frontGradientDictionary.set("fy", String(this.frontGradient.focal.y));
-        frontGradientDictionary.set("gradientUnits", this.frontGradient.units);
-        frontGradientDictionary.set(
-          "r",
-          String(SETTINGS.boundaryCircle.radius)
-        );
-        frontGradientDictionary.set("spreadMethod", "pad");
-        const stop1FrontDictionary = new Map<svgStopType, string>();
-        stop1FrontDictionary.set(
-          "offset",
-          String(this.frontGradientColorCenter.offset * 100) + "%"
-        );
-        stop1FrontDictionary.set(
-          "stop-color",
-          String(this.frontGradientColorCenter.color)
-        );
-        const stop2FrontDictionary = new Map<svgStopType, string>();
-        stop2FrontDictionary.set(
-          "offset",
-          String(this.frontGradientColor.offset * 100) + "%"
-        );
-        stop2FrontDictionary.set(
-          "stop-color",
-          String(this.frontGradientColor.color)
-        );
-        frontGradientDictionary.set("stops", [
-          stop1FrontDictionary,
-          stop2FrontDictionary
-        ]);
-        returnSVGObject.frontGradientDictionary = frontGradientDictionary;
+        returnSVGObject.frontGradientDictionary =
+          Nodule.createSVGGradientDictionary(
+            this.frontGradient,
+            this.frontGradientColorCenter,
+            this.frontGradientColor
+          );
       }
 
       if (this.backFillInUse) {
-        const backGradientDictionary = new Map<
-          svgGradientType,
-          string | Map<svgStopType, string>[]
-        >();
-        backGradientDictionary.set("cx", String(this.backGradient.center.x));
-        backGradientDictionary.set("cy", String(this.backGradient.center.y));
-        backGradientDictionary.set("fx", String(this.backGradient.focal.x));
-        backGradientDictionary.set("fy", String(this.backGradient.focal.y));
-        backGradientDictionary.set("gradientUnits", this.backGradient.units);
-        backGradientDictionary.set("r", String(SETTINGS.boundaryCircle.radius));
-        backGradientDictionary.set("spreadMethod", "pad");
-        const stop1BackDictionary = new Map<svgStopType, string>();
-        stop1BackDictionary.set(
-          "offset",
-          String(this.backGradientColorCenter.offset * 100) + "%"
-        );
-        stop1BackDictionary.set(
-          "stop-color",
-          String(this.backGradientColorCenter.color)
-        );
-        const stop2BackDictionary = new Map<svgStopType, string>();
-        stop2BackDictionary.set(
-          "offset",
-          String(this.backGradientColor.offset * 100) + "%"
-        );
-        stop2BackDictionary.set(
-          "stop-color",
-          String(this.backGradientColor.color)
-        );
-        backGradientDictionary.set("stops", [
-          stop1BackDictionary,
-          stop2BackDictionary
-        ]);
-        returnSVGObject.backGradientDictionary = backGradientDictionary;
+        returnSVGObject.backGradientDictionary =
+          Nodule.createSVGGradientDictionary(
+            this.backGradient,
+            this.backGradientColorCenter,
+            this.backGradientColor
+          );
       }
     }
 
-    // collect the front style of the ellipse
+    // collect the front style
     if (this.frontFillInUse) {
-      const frontReturnDictionary = new Map<svgStyleType, string>();
-      // Collect the style information: fill, stroke, stroke-width
-      frontReturnDictionary.set("fill", String(this.frontFill.fill)); // if the fill is a gradient, this will be overwritten in Command.ts, if the fill is a color it won't be overwritten
-      frontReturnDictionary.set("stroke", this.frontPart.stroke as string);
-      frontReturnDictionary.set(
-        "stroke-width",
-        String(this.frontPart.linewidth)
+      returnSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary(
+        {strokeObject:this.frontPart,
+        fillObject:this.frontFill}
       );
-
-      // check to see if there is any dashing for the front of ellipse
-      if (
-        !(
-          this.frontPart.dashes.length == 2 &&
-          this.frontPart.dashes[0] == 0 &&
-          this.frontPart.dashes[1] == 0
-        )
-      ) {
-        var dashString = "";
-        for (let num = 0; num < this.frontPart.dashes.length; num++) {
-          dashString += this.frontPart.dashes[num] + " ";
-        }
-        frontReturnDictionary.set("stroke-dasharray", dashString);
-      }
-      returnSVGObject.frontStyleDictionary = frontReturnDictionary;
     }
-    // collect the front style of the ellipse
+    // collect the front style
     if (this.backFillInUse) {
-      const backReturnDictionary = new Map<svgStyleType, string>();
-      // Collect the style information: fill, stroke, stroke-width
-      backReturnDictionary.set("fill", String(this.backFill.fill)); // if the fill is a gradient, this will be overwritten in Command.ts, if the fill is a color it won't be overwritten
-      backReturnDictionary.set("stroke", this.backPart.stroke as string);
-      backReturnDictionary.set("stroke-width", String(this.backPart.linewidth));
-
-      // check to see if there is any dashing for the back of ellipse
-      if (
-        !(
-          this.backPart.dashes.length == 2 &&
-          this.backPart.dashes[0] == 0 &&
-          this.backPart.dashes[1] == 0
-        )
-      ) {
-        var dashString = "";
-        for (let num = 0; num < this.backPart.dashes.length; num++) {
-          dashString += this.backPart.dashes[num] + " ";
-        }
-        backReturnDictionary.set("stroke-dasharray", dashString);
-      }
-      returnSVGObject.backStyleDictionary = backReturnDictionary;
+      returnSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary(
+        {strokeObject: this.backPart,
+        fillObject:this.backFill}
+      );
     }
     // the ellipse edge is entirely on the front or the ellipse edge is entirely on the back")
     if (this.frontPart.closed || this.backPart.closed) {
@@ -1286,9 +1191,9 @@ export default class Ellipse extends Nodule {
       let svgFrontString = '<path d="';
       this.frontFill.vertices.forEach((v: Anchor, index: number) => {
         if (index == 0) {
-          svgFrontString += "M" + v.x + " " + v.y + ",";
+          svgFrontString += "M" + v.x + " " + v.y + " ";
         } else {
-          svgFrontString += "L" + v.x + " " + v.y + ",";
+          svgFrontString += "L" + v.x + " " + v.y + " ";
         }
       });
       svgFrontString += 'Z "/>';
@@ -1301,9 +1206,9 @@ export default class Ellipse extends Nodule {
       let svgBackString = '<path d="';
       this.backFill.vertices.forEach((v: Anchor, index: number) => {
         if (index == 0) {
-          svgBackString += "M" + v.x + " " + v.y + ",";
+          svgBackString += "M" + v.x + " " + v.y + " ";
         } else {
-          svgBackString += "L" + v.x + " " + v.y + ",";
+          svgBackString += "L" + v.x + " " + v.y + " ";
         }
       });
       svgBackString += 'Z "/>';
@@ -1726,7 +1631,7 @@ export default class Ellipse extends Nodule {
 
         //FRONT
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.fillColor.front)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.fillColor.front)
         ) {
           this.frontFill.noFill();
         } else {
@@ -1739,7 +1644,7 @@ export default class Ellipse extends Nodule {
           }
         }
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.strokeColor.front)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.strokeColor.front)
         ) {
           this.frontPart.noStroke();
         } else {
@@ -1759,7 +1664,7 @@ export default class Ellipse extends Nodule {
         }
         //BACK
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.fillColor.back)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.fillColor.back)
         ) {
           this.backFill.noFill();
         } else {
@@ -1771,7 +1676,7 @@ export default class Ellipse extends Nodule {
           }
         }
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.strokeColor.back)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.strokeColor.back)
         ) {
           this.backPart.noStroke();
         } else {
@@ -1802,7 +1707,7 @@ export default class Ellipse extends Nodule {
         // FRONT
         const frontStyle = this.styleOptions.get(StyleCategory.Front);
 
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFill.noFill();
         } else {
           if (Nodule.globalGradientFill) {
@@ -1814,7 +1719,7 @@ export default class Ellipse extends Nodule {
               frontStyle?.fillColor ?? SETTINGS.ellipse.drawn.fillColor.front;
           }
         }
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this.frontPart.noStroke();
         } else {
           this.frontPart.stroke =
@@ -1841,7 +1746,7 @@ export default class Ellipse extends Nodule {
         const backStyle = this.styleOptions.get(StyleCategory.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontStyle?.fillColor)
             )
           ) {
@@ -1860,7 +1765,7 @@ export default class Ellipse extends Nodule {
             }
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this.backFill.noFill();
           } else {
             if (Nodule.globalGradientFill) {
@@ -1874,7 +1779,7 @@ export default class Ellipse extends Nodule {
 
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
@@ -1885,7 +1790,7 @@ export default class Ellipse extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this.backPart.noStroke();
           } else {
             this.backPart.stroke = backStyle?.strokeColor ?? "black";

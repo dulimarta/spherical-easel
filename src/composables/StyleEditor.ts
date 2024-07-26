@@ -31,7 +31,7 @@ export function useStyleEditor(
   // You are not allow to style labels directly so remove them from the selection and warn the user
   const seStore = useSEStore();
   const {
-    selectedSENodules,
+    selectedSENodules
     // oldStyleSelections,
     // initialStyleStatesMap,
     // defaultStyleStatesMap
@@ -270,34 +270,51 @@ export function useStyleEditor(
     return a.every((val: number, k: number) => val === b[k]);
   }
 
-  function hslaCompare(colorString1: string, colorString2: string): boolean {
+  function rgbaCompare(colorString1: string, colorString2: string): boolean {
     if (colorString1 === undefined && colorString2 === undefined) {
       return true;
     }
     if (colorString1 === undefined || colorString2 === undefined) {
       return false;
     }
-    if (
-      colorString1.search(/hsla/) === -1 ||
-      colorString2.search(/hsla/) === -1
-    ) {
+    if (colorString1.search(/#/) === -1 || colorString2.search(/#/) === -1) {
       throw new Error(
-        `Style editor in hslaCompare: at least one of the strings is not a color string: ${colorString1},${colorString2}`
+        `Style editor in rgbaCompare: at least one of the strings is not a hex color string: ${colorString1},${colorString2}`
       );
     }
-    const hlsaObject1 = Nodule.convertStringToHSLAObject(colorString1);
-    const hlsaObject2 = Nodule.convertStringToHSLAObject(colorString2);
-    // console.log("hsla objects", hlsaObject1.h, hlsaObject2.h);
-    if (
-      Math.abs(hlsaObject1.h - hlsaObject2.h) < SETTINGS.tolerance &&
-      Math.abs(hlsaObject1.s - hlsaObject2.s) < SETTINGS.tolerance &&
-      Math.abs(hlsaObject1.l - hlsaObject2.l) < SETTINGS.tolerance &&
-      Math.abs(hlsaObject1.a - hlsaObject2.a) < SETTINGS.tolerance
-    ) {
+    if (colorString1 == colorString2) {
       return true;
     }
     return false;
   }
+  // function hslaCompare(colorString1: string, colorString2: string): boolean {
+  //   if (colorString1 === undefined && colorString2 === undefined) {
+  //     return true;
+  //   }
+  //   if (colorString1 === undefined || colorString2 === undefined) {
+  //     return false;
+  //   }
+  //   if (
+  //     colorString1.search(/hsla/) === -1 ||
+  //     colorString2.search(/hsla/) === -1
+  //   ) {
+  //     throw new Error(
+  //       `Style editor in hslaCompare: at least one of the strings is not a color string: ${colorString1},${colorString2}`
+  //     );
+  //   }
+  //   const hlsaObject1 = Nodule.convertStringToHSLAObject(colorString1);
+  //   const hlsaObject2 = Nodule.convertStringToHSLAObject(colorString2);
+  //   // console.log("hsla objects", hlsaObject1.h, hlsaObject2.h);
+  //   if (
+  //     Math.abs(hlsaObject1.h - hlsaObject2.h) < SETTINGS.tolerance &&
+  //     Math.abs(hlsaObject1.s - hlsaObject2.s) < SETTINGS.tolerance &&
+  //     Math.abs(hlsaObject1.l - hlsaObject2.l) < SETTINGS.tolerance &&
+  //     Math.abs(hlsaObject1.a - hlsaObject2.a) < SETTINGS.tolerance
+  //   ) {
+  //     return true;
+  //   }
+  //   return false;
+  // }
 
   watch(() => activeStyleOptions.value, onStyleOptionsChanged, {
     deep: true,
@@ -339,7 +356,7 @@ export function useStyleEditor(
         aEqualsb = dashArrayCompare(b, a);
       } else if (p.search(/Color/) > -1) {
         // Without this the comparasion was saying that "hsla(0, 0%, 0%, 0.1)" was different than "hsla(0,0%,0%,0.100)"
-        aEqualsb = hslaCompare(b, a);
+        aEqualsb = rgbaCompare(b, a); // hslaCompare(b, a);
       } else aEqualsb = b === a;
 
       // Exclude the property from payload if it did not change
