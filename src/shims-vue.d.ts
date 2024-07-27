@@ -14,14 +14,16 @@ interface ImportMeta {
     VITE_APP_GOOGLE_MAP_API_KEY: string;
     VITE_APP_TESTUSER: string;
     VITE_APP_TESTPASSWORD: string;
+    VITE_APP_SERVER_BASEURL: string;
+    VITE_APP_SERVER_PORT: string;
   };
 }
 
-declare module "vue" {
-  import { CompatVue } from "@vue/runtime-dom";
-  const Vue: CompatVue;
-  export default Vue;
-  export * from "@vue/runtime-dom";
+// declare module "vue" {
+  // import { CompatVue } from "@vue/runtime-dom";
+  // const Vue: CompatVue;
+  // export default Vue;
+  // export * from "@vue/runtime-dom";
   // const { configureCompat } = Vue
   // export {configureCompat}
-}
+// }

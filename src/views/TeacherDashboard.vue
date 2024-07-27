@@ -4,12 +4,17 @@
     <li>Name: {{ userDisplayedName }}</li>
     <template v-if="myStudio">
     <li>Studio ID: <code>{{ myStudio!.id }}</code></li>
+    <li>Socket ID: {{ socketID }}</li>
+    <li>Studio Title: {{ myStudio!.name }}</li>
     <li>Participants ({{ myStudio!.participants.length }}): {{ myStudio!.participants.join(", ") }}</li>
   </template>
   </ul>
-  <v-textarea v-model="message" rows="3" outlined color="secondary" class="ma-3"></v-textarea>
-  <v-btn size="small" @click="toMain">Back to Main</v-btn>
+  <v-sheet elevation="4" class="ma-3 pa-2" rounded="lg">
+  <v-textarea v-model="message" rows="3" outlined label="Broadcast Message"
+  color="secondary" class="ma-3"></v-textarea>
   <v-btn size="small" @click="broadcastMessage">Broadcast</v-btn>
+</v-sheet>
+  <v-btn size="small" @click="toMain">Back to Main</v-btn>
   <v-btn size="small" @click="terminateSession">Close Studio</v-btn>
 </template>
 <script setup lang="ts">
@@ -26,7 +31,7 @@ const acctStore = useAccountStore()
 //   studioId: string
 // }
 // const props = defineProps<ComponentProps>()
-const { myStudio } = storeToRefs(studioStore)
+const { myStudio, socketID } = storeToRefs(studioStore)
 const { userDisplayedName, userEmail, userProfilePictureURL} = storeToRefs(acctStore)
 const message = ref("")
 

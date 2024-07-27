@@ -118,10 +118,10 @@ async function doLaunchStudio() {
     studioName.value,
     userDisplayedName?.value ?? "No Instructor Name"
   );
-  router.push({
-    name: "Teacher Dashboard"
-    // params: { studioId: studioID }
-  });
+  // router.push({
+  //   name: "Teacher Dashboard"
+  //   // params: { studioId: studioID }
+  // });
 }
 
 async function prepareToJoinStudio() {
