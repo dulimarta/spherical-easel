@@ -12,10 +12,14 @@
 import EventBus from "@/eventHandlers/EventBus";
 import { Vector3 } from "three";
 import { SEStoreType } from "@/stores/se";
+import { Socket } from "socket.io-client";
+
 export abstract class Command {
   protected static store: SEStoreType;
   protected static tmpVector = new Vector3();
   protected static tmpVector1 = new Vector3();
+  private static clientSocket: Socket | null = null;
+  private static studioId = "";
 
   //#region commmandArrays
   static commandHistory: Command[] = []; // stack of executed commands
@@ -70,6 +74,15 @@ export abstract class Command {
     this.saveState(); /* Allow the command to save necessary data to restore later */
     this.do(); /* perform the actual action of this command */
 
+    if (Command.clientSocket !== null) {
+      const opcode = this.toOpcode();
+      const roomName = `cmd:${Command.studioId}`
+      console.debug("Sending command to room", roomName)
+      Command.clientSocket.emit("notify-all", {
+        room: roomName,
+        message: JSON.stringify(opcode)
+      });
+    }
     /**
      * Suppose you create a segment from point A to B, then you move point B to location C, then push
      * undo, this moves the operation "move point from B to C" onto the redo stack and moves the point to location B
@@ -123,6 +136,13 @@ export abstract class Command {
 
   static setGlobalStore(store: SEStoreType): void {
     Command.store = store;
+    EventBus.listen("toggle-command-broadcast", (args: any) => {
+      console.debug("Command toggle-broadcast", args);
+      Command.clientSocket = args.socket;
+      Command.studioId = args.id
+      // console.debug("Command: update broadcast flag to", sock !== null)
+      // Command.clientSocket = sock
+    });
   }
   // Child classes of Command must implement the following abstract methods
   /**

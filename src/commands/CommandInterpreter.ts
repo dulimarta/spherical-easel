@@ -195,7 +195,7 @@ function executeIndividual(command: string): Command {
  * @param command a string that represents a single command or
  *   an array of strings that represents a command group
  */
-function interpret(command: string | Array<string>): void {
+export function interpret(command: string | Array<string>): void {
   if (typeof command === "string") {
     /* This is an individual command */
     executeIndividual(command).execute();

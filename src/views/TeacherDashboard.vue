@@ -8,7 +8,7 @@
   </template>
   </ul>
   <v-textarea v-model="message" rows="3" outlined color="secondary" class="ma-3"></v-textarea>
-  <v-btn size="small" @click="() => {router.back()}">Back to Main</v-btn>
+  <v-btn size="small" @click="toMain">Back to Main</v-btn>
   <v-btn size="small" @click="broadcastMessage">Broadcast</v-btn>
   <v-btn size="small" @click="terminateSession">Close Studio</v-btn>
 </template>
@@ -43,6 +43,10 @@ function broadcastMessage() {
 async function terminateSession() {
   console.debug("Invoking stopStudio()")
   await studioStore.stopStudio()
+  router.back()
+}
+
+function toMain() {
   router.back()
 }
 </script>

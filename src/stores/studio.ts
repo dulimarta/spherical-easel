@@ -1,6 +1,8 @@
 import { defineStore } from "pinia";
 import { ref, Ref, reactive } from "vue";
 import { io, Socket } from "socket.io-client";
+import EventBus from "@/eventHandlers/EventBus";
+import { interpret } from "@/commands/CommandInterpreter";
 
 export type StudioDetails = {
   id: string;
@@ -33,6 +35,7 @@ export const useTeacherStudioStore = defineStore("studio-teacher", () => {
       instructor: who,
       name: studioName
     });
+    EventBus.fire('toggle-command-broadcast', { socket, id })
 
     myStudio.value = {
       id,
@@ -64,6 +67,7 @@ export const useTeacherStudioStore = defineStore("studio-teacher", () => {
       console.debug("Setting myStudio to null")
       myStudio.value = null
     }
+    EventBus.fire('toggle-command-broadcast', { socket: null, id: "" })
   }
 
   function broadcastMessage(m: string) {
@@ -116,7 +120,8 @@ export const useStudentStudioStore = defineStore("studio-student", () => {
       incomingMessage.value = msg;
     });
     socket.on("bcast-cmd", (cmd: string) => {
-      console.debug("Receive command to execute");
+      console.debug("Receive command to execute", cmd);
+      interpret(JSON.parse(cmd))
     });
     socket.on("studio-end", () => {
       console.debug("This student must leave the current studio")

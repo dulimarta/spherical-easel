@@ -19,7 +19,7 @@
     icon
     color="green">
     <v-icon>mdi-account-school</v-icon>
-  </v-btn>
+</v-btn>
   <v-tooltip
     activator="#student-studio"
     :text="
@@ -72,7 +72,6 @@ import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useAccountStore } from "@/stores/account";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
-// import { useTeacherStudioStore, useStudentStudioStore, StudioDetails } from "@/stores/studio";
 import {
   useTeacherStudioStore,
   useStudentStudioStore,
@@ -83,10 +82,8 @@ const teacherStudioStore = useTeacherStudioStore();
 const studentStudioStore = useStudentStudioStore();
 const router = useRouter();
 const { userRole, userDisplayedName } = storeToRefs(acctStore);
-// const { socketID } = storeToRefs(studioStore);
 const { myStudio } = storeToRefs(teacherStudioStore);
 const { activeStudioId, activeStudioTitle } = storeToRefs(studentStudioStore);
-// const studioID: Ref<string | undefined> = ref(undefined);
 const studioName = ref("");
 const participantName = ref("");
 const availableStudios: Ref<Array<StudioDetails>> = ref([]);
