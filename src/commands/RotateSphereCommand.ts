@@ -13,6 +13,7 @@ export class RotateSphereCommand extends Command {
   }
 
   do(): void {
+    console.log(this.rotationMat.toArray())
     Command.store.rotateSphere(this.rotationMat);
   }
 

@@ -113,6 +113,7 @@ import { ToolButtonType } from "@/types";
 import Two from "two.js";
 import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
+import { Vector3 } from "three";
 
 type ComponentProps = {
   availableHeight: number;
@@ -126,6 +127,9 @@ const {
   zoomMagnificationFactor,
   zoomTranslation,
   seLabels,
+  seEllipses,
+  sePolygons,
+  seCircles,
   // twojsLayers: layers,
   isEarthMode
 } = storeToRefs(seStore);
@@ -261,7 +265,7 @@ onBeforeMount((): void => {
   // and scale it later to fit the canvas
   boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
   boundaryCircle.noFill();
-  boundaryCircle.stroke = SETTINGS.boundaryCircle.color
+  boundaryCircle.stroke = SETTINGS.boundaryCircle.color;
   boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
   boundaryCircle.addTo(layers[Number(LAYER.midground)]);
 
@@ -307,6 +311,8 @@ onBeforeMount((): void => {
   EventBus.listen("delete-node", deleteNode);
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   EventBus.listen("export-svg", exportSVG); // TEMP REMOVE
+  EventBus.listen("update-two-instance", updateTwoInstance);
+  EventBus.listen("update-fill-objects",updateObjectsWithFill)
 });
 
 onMounted((): void => {
@@ -407,6 +413,8 @@ onBeforeUnmount((): void => {
   EventBus.unlisten("set-transformation-for-tool");
   EventBus.unlisten("delete-node");
   EventBus.unlisten("export-svg"); // TEMP REMOVE
+  EventBus.unlisten("update-two-instance");
+  EventBus.unlisten("update-fill-objects")
 });
 
 watch(
@@ -779,10 +787,34 @@ function deleteNode(e: {
 }
 
 // TEMP REMOVE
-function exportSVG(): void {
-  console.log(Command.dumpSVG(seStore.canvasWidth));
+function updateTwoInstance() {
+  twoInstance.update();
 }
 
+// TEMP REMOVE
+function exportSVG(): void {
+  console.log(
+    Command.dumpSVG(seStore.canvasWidth, {
+      axis: new Vector3(0, 1, 0),
+      degrees: 2*Math.PI ,
+      duration: 4, // in seconds
+      frames: 120,
+      repeat: 0
+    })
+  );
+}
+
+function updateObjectsWithFill() {
+  for (let e of seEllipses.value) {
+    e.update();
+  }
+  for (let c of seCircles.value) {
+    c.update();
+  }
+  for (let p of sePolygons.value) {
+    p.update();
+  }
+}
 // dialogBoxIsActive(e: { active: boolean }): void {
 //   // console.debug(`dialog box is active is ${e.active}`);
 //   if (hideTool) {

@@ -91,7 +91,7 @@
     :title="t('exportConstructionDialogTitle')"
     :yes-text="t('exportAction')"
     :no-text="t('cancelAction')"
-    :yes-action="doExport1"
+    :yes-action="doExport"
     max-width="60%">
     <v-row align="center" justify="space-between">
       <v-col cols="6" v-if="currentConstructionPreview">
@@ -163,6 +163,7 @@ import FileSaver from "file-saver";
 import { computed, watch } from "vue";
 import { mergeIntoImageUrl } from "@/utils/helpingfunctions";
 import { Command } from "@/commands/Command";
+import { Matrix4, Vector2, Vector3 } from "three";
 enum SecretKeyState {
   NONE,
   ACCEPT_S,
@@ -342,6 +343,10 @@ async function doSave(): Promise<void> {
 }
 
 function doExport1() {
+  const m = new Matrix4();
+  const axis = new Vector3(0,0,1)
+  m.makeRotationAxis(axis,Math.PI/4)
+  seStore.rotateSphere(m);
   /* dump the command history into SVG */
   const svgBlock = Command.dumpSVG(svgExportHeight.value);
   var svgBlob = new Blob([svgBlock], {
@@ -364,7 +369,7 @@ function doExport1() {
   }
 }
 
-// OLD?
+// OLD
 function doExport() {
   if (svgRoot === undefined) {
     // By the time doSave() is called svgCanvas must have been set
@@ -373,6 +378,7 @@ function doExport() {
   }
   const svgElement = svgRoot.cloneNode(true) as SVGElement;
   svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
   const svgBlob = new Blob([svgElement.outerHTML], {
     type: "image/svg+xml;charset=utf-8"
   });

@@ -10,7 +10,7 @@
  */
 
 import EventBus from "@/eventHandlers/EventBus";
-import { Vector3 } from "three";
+import { Matrix4, Vector3 } from "three";
 import { SEStoreType } from "@/stores/se";
 import {
   plottableType,
@@ -22,6 +22,8 @@ import {
 } from "@/types/index";
 import SETTINGS, { LAYER } from "@/global-settings";
 import { SELabel, SENodule } from "@/models/internal";
+import { aN } from "vitest/dist/reporters-yx5ZTtEV";
+import { nextTick } from "vue";
 
 export abstract class Command {
   protected static store: SEStoreType;
@@ -182,6 +184,8 @@ export abstract class Command {
     "stroke-miterlimit"
   ];
 
+  // make sure that each style option only includes the appropriate ones and no extra (because Inkscape ignores
+  // all styles that have extra options and chrome doesn't)
   static includeStyleOption(
     name: string,
     attribute: svgStyleType,
@@ -202,9 +206,9 @@ export abstract class Command {
       (name.toLowerCase().includes("angle") &&
         Command.allowedAngleMarkerAttributes.includes(attribute)) ||
       (name.toLowerCase().includes("polygon") &&
-        Command.allowedPolygonAttributes.includes(attribute))||
-        (name.toLowerCase().includes("label") &&
-          Command.allowedLabelAttributes.includes(attribute))
+        Command.allowedPolygonAttributes.includes(attribute)) ||
+      (name.toLowerCase().includes("label") &&
+        Command.allowedLabelAttributes.includes(attribute))
     ) {
       if (
         this.defaultSVGStyleDictionary.get(attribute) == undefined ||
@@ -247,14 +251,16 @@ export abstract class Command {
     return []; // returns the empty array if nothing to process; override this method if there are geometric objects to convert to SVG
   }
 
-  /**
-   * Make an array of the ids of all deleted nodes for passing to each toSVG method. When an object is deleted, it
-   *   is removed from the DAG, but the command history will still reference its creation.
-   *   The nodule itself ( and the command that created it) will not know it has been deleted.
-   */
-  protected static deletedNoduleIds: Array<number> = [];
-
-  static dumpSVG(width: number): string {
+  static dumpSVG(
+    width: number,
+    animate?: {
+      axis: Vector3;
+      degrees: number;
+      duration: number;
+      frames: number;
+      repeat: number; // 0 is indefinite
+    }
+  ): string {
     function gradientDictionariesEqual(
       d1: Map<svgGradientType, string | Map<svgStopType, string>[]>,
       d2: Map<svgGradientType, string | Map<svgStopType, string>[]>
@@ -317,6 +323,10 @@ export abstract class Command {
         }
       }
       return true;
+    }
+
+    function sleep(ms: number) {
+      return new Promise(resolve => setTimeout(resolve, ms));
     }
     // Build the header string for the SVG
     const sf = (width - 32) / (2 * SETTINGS.boundaryCircle.radius); // 16 pixel boundary from edges
@@ -388,214 +398,216 @@ export abstract class Command {
     //    foregroundText, 18 --> only contains labels
     //
     //  Initially contains the boundary circle in the midground layer (The only object in the midground)
+    const layerDictionaryArray: Map<LAYER, [string, string][]>[] = [];
+    const numFrames = animate == undefined ? 1 : animate.frames;
 
-    const layerDictionary = new Map<LAYER, [string, string][]>();
-    // Add the boundary circle
-    const boundaryCircleSVG =
-      '<circle cx="0" cy="0" r="' +
-      String(SETTINGS.boundaryCircle.radius) +
-      '"/>';
-    layerDictionary.set(LAYER.midground, [
-      ["boundaryCircleStyle", boundaryCircleSVG]
-    ]);
+    for (let i = 0; i < numFrames; i++) {
+      const layerDictionary = new Map<LAYER, [string, string][]>();
+      // Add the boundary circle
+      const boundaryCircleSVG =
+        '<circle cx="0" cy="0" r="' +
+        String(SETTINGS.boundaryCircle.radius) +
+        '"/>';
+      layerDictionary.set(LAYER.midground, [
+        ["boundaryCircleStyle", boundaryCircleSVG]
+      ]);
 
-    // For each command in the history add the necessary items to the (gradient|style|layer)Dictionary
-    //
-    // useful for naming the gradients
-    let frontGradientCount = 0;
-    let backGradientCount = 0;
-    // useful for naming the styles
-    let frontStyleCount = 0;
-    let backStyleCount = 0;
-    Command.commandHistory.forEach((c: Command) => {
-      ///// former toSVG on each command is the same
-      const objectPairs = c.getSVGObjectLabelPairs(); // returns the empty array if nothing to process
-      const svgTypeArray: toSVGType[] = [];
-      objectPairs.forEach(pair => {
-        if (
-          Command.deletedNoduleIds.findIndex(id => id == pair[0].id) == -1 &&
-          pair[0].exists &&
-          pair[0].showing
-        ) {
-          if (pair[0].ref != undefined) {
-            svgTypeArray.push(...pair[0].ref.toSVG());
+      // now apply rotation about the animate axis by degrees/frames
+
+      if (i != 0 && animate) {
+        const m = new Matrix4();
+        m.makeRotationAxis(animate.axis, animate.degrees / numFrames);
+
+        Command.store.rotateSphere(m);
+
+        EventBus.fire("update-two-instance", {});
+      }
+      // wait 1/60 of a second so that the two-instance updates
+      // sleep(1000 / 60).then(() => {
+      // For each command in the history add the necessary items to the (gradient|style|layer)Dictionary
+      // useful for naming the gradients
+      let frontGradientCount = 0;
+      let backGradientCount = 0;
+      // useful for naming the styles
+      let frontStyleCount = 0;
+      let backStyleCount = 0;
+      Command.commandHistory.forEach((c: Command) => {
+        ///// former toSVG on each command is the same
+        const objectPairs = c.getSVGObjectLabelPairs(); // returns the empty array if nothing to process
+        const svgTypeArray: toSVGType[] = [];
+        objectPairs.forEach(pair => {
+          if (pair[0].exists && pair[0].showing) {
+            if (pair[0].ref != undefined) {
+              svgTypeArray.push(...pair[0].ref.toSVG());
+            }
+            // now check the label (if the point is deleted the label is also so check this inside the first conditional statement)
+            // labels are never deleted only hidden
+            if (pair[1].exists && pair[1].showing) {
+              svgTypeArray.push(...pair[1].ref.toSVG());
+            }
           }
-          // now check the label (if the point is deleted the label is also so check this inside the first conditional statement)
-          // labels are never deleted only hidden
-          if (pair[1].exists && pair[1].showing) {
-            svgTypeArray.push(...pair[1].ref.toSVG());
+        });
+        if (svgTypeArray.length != 0) {
+          // now incorporate the new information to the dictionaries and layer array
+          for (let information of svgTypeArray) {
+            const frontGradientDictionary = information.frontGradientDictionary;
+            const backGradientDictionary = information.backGradientDictionary;
+            const frontStyleDictionary = information.frontStyleDictionary;
+            const backStyleDictionary = information.backStyleDictionary;
+            const layerSVGInformation = information.layerSVGArray;
+            const typeName = information.type;
+            // console.log("type", typeName)
+            // console.log("fgd",frontGradientDictionary)
+            // console.log("bgd",backGradientDictionary)
+            // console.log("fsd", frontStyleDictionary)
+            // console.log("bsd",backStyleDictionary)
+
+            // Incorporate the new gradient dictionaries into gradientDictionary
+            //  Note: For a single object, there is only one front gradient and one back gradient applied to all front/back object fills
+            let frontGradientName: string | null = null;
+            if (frontGradientDictionary !== null) {
+              // Check to see if this dictionary exists already in styleDictionary
+              frontGradientName =
+                typeName + "FrontGradient" + String(frontGradientCount);
+              for (let [name, dict] of gradientDictionary.entries()) {
+                if (gradientDictionariesEqual(dict, frontGradientDictionary)) {
+                  frontGradientName = name;
+                  break;
+                }
+              }
+              if (
+                frontGradientName ==
+                typeName + "FrontGradient" + String(frontGradientCount)
+              ) {
+                // The gradient is new and should be added to the gradientDictionary
+                gradientDictionary.set(
+                  frontGradientName,
+                  frontGradientDictionary
+                );
+                frontGradientCount++;
+              }
+            }
+            let backGradientName: string | null = null;
+            if (backGradientDictionary !== null) {
+              // Check to see if this dictionary exists already in styleDictionary
+              backGradientName =
+                typeName + "BackGradient" + String(backGradientCount);
+              for (let [name, dict] of gradientDictionary.entries()) {
+                if (gradientDictionariesEqual(dict, backGradientDictionary)) {
+                  backGradientName = name;
+                  break;
+                }
+              }
+              if (
+                backGradientName ==
+                typeName + "BackGradient" + String(backGradientCount)
+              ) {
+                // The gradient is new and should be added to the gradientDictionary
+                gradientDictionary.set(
+                  backGradientName,
+                  backGradientDictionary
+                );
+                backGradientCount++;
+              }
+            }
+
+            // Incorporate the style dictionaries into styleDictionary
+            //  Note: For a single object, there is only one front style and one back style applied to all front/back object parts
+            let frontStyleName: string | null = null;
+            if (frontStyleDictionary !== null) {
+              // If there is a frontGradient, make sure that the "fill" in the frontStyleDictionary points to it correctly
+              if (frontGradientName !== null) {
+                frontStyleDictionary.set(
+                  "fill",
+                  "url(#" + frontGradientName + ")"
+                );
+              }
+              // Check to see if this dictionary exists already in styleDictionary
+              frontStyleName =
+                typeName + "FrontStyle" + String(frontStyleCount);
+              for (let [name, dict] of styleDictionary.entries()) {
+                //console.log("check equal",name,frontStyleName)
+                if (styleDictionariesEqual(dict, frontStyleDictionary)) {
+                  //console.log("yes",dict,frontStyleDictionary)
+                  frontStyleName = name;
+                  break;
+                }
+                // else {
+                //   console.log("NO")
+                // }
+              }
+              if (
+                frontStyleName ==
+                typeName + "FrontStyle" + String(frontStyleCount)
+              ) {
+                // The style is new and should be added to the styleDictionary
+                styleDictionary.set(frontStyleName, frontStyleDictionary);
+                frontStyleCount++;
+              }
+            }
+            let backStyleName: string | null = null;
+            if (backStyleDictionary !== null) {
+              // If there is a backGradient, make sure that the "fill" in the backStyleDictionary points it correctly
+              if (backGradientName !== null) {
+                backStyleDictionary.set(
+                  "fill",
+                  "url(#" + backGradientName + ")"
+                );
+              }
+              // Check to see if this dictionary exists already in styleDictionary
+              backStyleName = typeName + "BackStyle" + String(backStyleCount);
+              for (let [name, dict] of styleDictionary.entries()) {
+                if (styleDictionariesEqual(dict, backStyleDictionary)) {
+                  backStyleName = name;
+                  break;
+                }
+              }
+              if (
+                backStyleName ==
+                typeName + "BackStyle" + String(backStyleCount)
+              ) {
+                // The style is new and should be added to the styleDictionary
+                styleDictionary.set(backStyleName, backStyleDictionary);
+                backStyleCount++;
+              }
+            }
+
+            // Incorporate the location,SVG array into the layerDictionary
+            for (let [layer, svgString] of layerSVGInformation) {
+              if (layer < LAYER.midground) {
+                // the svg is in the background
+                if (backStyleName !== null) {
+                  const layerSVGStringList = layerDictionary.get(layer);
+                  if (layerSVGStringList != undefined) {
+                    layerSVGStringList.push([backStyleName, svgString]);
+                    layerDictionary.set(layer, layerSVGStringList);
+                  } else {
+                    // the layer key pair doesn't exist yet in the dictionary
+                    layerDictionary.set(layer, [[backStyleName, svgString]]);
+                  }
+                }
+              } else {
+                // the svg is in the foreground
+                if (frontStyleName !== null) {
+                  const styleSVGStringList = layerDictionary.get(layer);
+                  if (styleSVGStringList != undefined) {
+                    styleSVGStringList.push([frontStyleName, svgString]);
+                    layerDictionary.set(layer, styleSVGStringList);
+                  } else {
+                    // the layer key pair doesn't exist yet in the dictionary
+                    layerDictionary.set(layer, [[frontStyleName, svgString]]);
+                  }
+                }
+              }
+            }
           }
         }
       });
-      if (svgTypeArray.length != 0) {
-        // now incorporate the new information to the dictionaries and layer array
-        for (let information of svgTypeArray) {
-          const frontGradientDictionary = information.frontGradientDictionary;
-          const backGradientDictionary = information.backGradientDictionary;
-          const frontStyleDictionary = information.frontStyleDictionary;
-          const backStyleDictionary = information.backStyleDictionary;
-          const layerSVGInformation = information.layerSVGArray;
-          const typeName = information.type;
-          // console.log("type", typeName)
-          // console.log("fgd",frontGradientDictionary)
-          // console.log("bgd",backGradientDictionary)
-          // console.log("fsd", frontStyleDictionary)
-          // console.log("bsd",backStyleDictionary)
-
-          // Incorporate the new gradient dictionaries into gradientDictionary
-          //  Note: For a single object, there is only one front gradient and one back gradient applied to all front/back object fills
-          let frontGradientName: string | null = null;
-          if (frontGradientDictionary !== null) {
-            // Check to see if this dictionary exists already in styleDictionary
-            frontGradientName =
-              typeName + "FrontGradient" + String(frontGradientCount);
-            for (let [name, dict] of gradientDictionary.entries()) {
-              if (gradientDictionariesEqual(dict, frontGradientDictionary)) {
-                frontGradientName = name;
-                break;
-              }
-            }
-            if (
-              frontGradientName ==
-              typeName + "FrontGradient" + String(frontGradientCount)
-            ) {
-              // The gradient is new and should be added to the gradientDictionary
-              gradientDictionary.set(
-                frontGradientName,
-                frontGradientDictionary
-              );
-              frontGradientCount++;
-            }
-          }
-          let backGradientName: string | null = null;
-          if (backGradientDictionary !== null) {
-            // Check to see if this dictionary exists already in styleDictionary
-            backGradientName =
-              typeName + "BackGradient" + String(backGradientCount);
-            for (let [name, dict] of gradientDictionary.entries()) {
-              if (gradientDictionariesEqual(dict, backGradientDictionary)) {
-                backGradientName = name;
-                break;
-              }
-            }
-            if (
-              backGradientName ==
-              typeName + "BackGradient" + String(backGradientCount)
-            ) {
-              // The gradient is new and should be added to the gradientDictionary
-              gradientDictionary.set(backGradientName, backGradientDictionary);
-              backGradientCount++;
-            }
-          }
-
-          // Incorporate the style dictionaries into styleDictionary
-          //  Note: For a single object, there is only one front style and one back style applied to all front/back object parts
-          let frontStyleName: string | null = null;
-          if (frontStyleDictionary !== null) {
-            // If there is a frontGradient, make sure that the "fill" in the frontStyleDictionary points to it correctly
-            if (frontGradientName !== null) {
-              frontStyleDictionary.set(
-                "fill",
-                "url(#" + frontGradientName + ")"
-              );
-            }
-            // Check to see if this dictionary exists already in styleDictionary
-            frontStyleName = typeName + "FrontStyle" + String(frontStyleCount);
-            for (let [name, dict] of styleDictionary.entries()) {
-              //console.log("check equal",name,frontStyleName)
-              if (styleDictionariesEqual(dict, frontStyleDictionary)) {
-                //console.log("yes",dict,frontStyleDictionary)
-                frontStyleName = name;
-                break;
-              }
-              // else {
-              //   console.log("NO")
-              // }
-            }
-            if (
-              frontStyleName ==
-              typeName + "FrontStyle" + String(frontStyleCount)
-            ) {
-              // The style is new and should be added to the styleDictionary
-              styleDictionary.set(frontStyleName, frontStyleDictionary);
-              frontStyleCount++;
-            }
-          }
-          let backStyleName: string | null = null;
-          if (backStyleDictionary !== null) {
-            // If there is a backGradient, make sure that the "fill" in the backStyleDictionary points it correctly
-            if (backGradientName !== null) {
-              backStyleDictionary.set("fill", "url(#" + backGradientName + ")");
-            }
-            // Check to see if this dictionary exists already in styleDictionary
-            backStyleName = typeName + "BackStyle" + String(backStyleCount);
-            for (let [name, dict] of styleDictionary.entries()) {
-              if (styleDictionariesEqual(dict, backStyleDictionary)) {
-                backStyleName = name;
-                break;
-              }
-            }
-            if (
-              backStyleName ==
-              typeName + "BackStyle" + String(backStyleCount)
-            ) {
-              // The style is new and should be added to the styleDictionary
-              styleDictionary.set(backStyleName, backStyleDictionary);
-              backStyleCount++;
-            }
-          }
-
-          // Incorporate the location,SVG array into the layerDictionary
-          for (let [layer, svgString] of layerSVGInformation) {
-            if (layer < LAYER.midground) {
-              // the svg is in the background
-              if (backStyleName !== null) {
-                const layerSVGStringList = layerDictionary.get(layer);
-                if (layerSVGStringList != undefined) {
-                  layerSVGStringList.push([backStyleName, svgString]);
-                  layerDictionary.set(layer, layerSVGStringList);
-                } else {
-                  // the layer key pair doesn't exist yet in the dictionary
-                  layerDictionary.set(layer, [[backStyleName, svgString]]);
-                }
-              }
-            } else {
-              // the svg is in the foreground
-              if (frontStyleName !== null) {
-                const styleSVGStringList = layerDictionary.get(layer);
-                if (styleSVGStringList != undefined) {
-                  styleSVGStringList.push([frontStyleName, svgString]);
-                  layerDictionary.set(layer, styleSVGStringList);
-                } else {
-                  // the layer key pair doesn't exist yet in the dictionary
-                  layerDictionary.set(layer, [[frontStyleName, svgString]]);
-                }
-              }
-            }
-          }
-        }
-      }
-    });
-
-    // Start with the scene grouping that set the scale
-    const sceneLayerStart =
-      '\t<g id="sphereScene" ' +
-      'transform = "matrix(' +
-      String(sf) +
-      "," +
-      "0" +
-      "," +
-      "0" +
-      "," +
-      String(-1 * sf) + // make sure that up is the positive y-axis, so this is negative
-      "," +
-      String(width / 2) +
-      "," +
-      String(width / 2) +
-      ')">\n';
-    const sceneLayerEnd = "\t</g>\n";
-
-    // Build the svgReturnString parts from (gradient|style|layer) dictionaries don't add anything that is default value
+      // Store the dictionaries in an array in frame order
+      layerDictionaryArray.push(layerDictionary);
+      // });
+    }
+    // Build the svg gradient|style String parts from (gradient|style) dictionaries don't add anything that is default value
     // Start with the gradients
     var gradientSVGReturnString = "";
     // If any, create the gradient part of the SVG return string
@@ -660,8 +672,6 @@ export abstract class Command {
     // Close the CSS style section
     styleSVGReturnString += "\n\t</style>\n"; //"]]>\n\t</style>\n";
 
-    // Use the layer dictionary to create the layer SVG string
-    let layerSVGReturnString = "";
     // The front fills need to be *before* the mid layer because the when the circle is a hole on the front
     // the edge of the fill that is along the boundary circle can't be not stroked and would be on top of the boundary
     // circle. So customize the order of the layer
@@ -676,52 +686,136 @@ export abstract class Command {
         }
       }
     }
-    myLayers.forEach(layerNumber => {
-      const itemList = layerDictionary.get(Number(layerNumber));
-      if (itemList != undefined) {
-        // This layer is not empty
-        // Flip the orientation for text layers
-        if (LAYER[layerNumber].toLowerCase().includes("text")) {
-          layerSVGReturnString +=
-            '\t\t<g id="' +
-            LAYER[layerNumber].replace("ground", "") +
-            '" transform="scale(1,-1)">\n';
-        } else {
-          layerSVGReturnString +=
-            '\t\t<g id="' + LAYER[layerNumber].replace("ground", "") + '">\n';
-        }
-        for (let [styleID, svgString] of itemList) {
-          // insert the style ID class into the svgString using the first space
-          if (svgString.toLowerCase().includes("text")) {
+    const sceneSVGReturnStringArray: string[] = [];
+    for (let frameNum = 0; frameNum < numFrames; frameNum++) {
+      const layerDictionary = layerDictionaryArray[frameNum];
+      // Start with the scene grouping that set the scale
+      const sceneLayerStart =
+        '\t\t<g id="frame' +
+        frameNum +
+        '" ' +
+        'transform = "matrix(' +
+        String(sf) +
+        "," +
+        "0" +
+        "," +
+        "0" +
+        "," +
+        String(-1 * sf) + // make sure that up is the positive y-axis, so this is negative
+        "," +
+        String(width / 2) +
+        "," +
+        String(width / 2) +
+        ')">\n';
+      const sceneLayerEnd = "\t\t</g>\n";
+
+      // Use the layer dictionary to create the layer SVG string
+      let layerSVGReturnString = "";
+      myLayers.forEach(layerNumber => {
+        const itemList = layerDictionary.get(Number(layerNumber));
+        if (itemList != undefined) {
+          // This layer is not empty
+          // Flip the orientation for text layers
+          if (LAYER[layerNumber].toLowerCase().includes("text")) {
             layerSVGReturnString +=
-              "\t\t\t" +
-              svgString.replace(
-                " ",
-                ' class="' + styleID + ' text" ' // add the styling that applies to all text items
-              ) +
-              "\n";
+              '\t\t\t<g id="' +
+              LAYER[layerNumber].replace("ground", "") +
+              '" transform="scale(1,-1)">\n';
           } else {
             layerSVGReturnString +=
-              "\t\t\t" +
-              svgString.replace(" ", ' class="' + styleID + '" ') +
-              "\n";
+              '\t\t\t<g id="' +
+              LAYER[layerNumber].replace("ground", "") +
+              '">\n';
+          }
+          for (let [styleID, svgString] of itemList) {
+            // insert the style ID class into the svgString using the first space
+            if (svgString.toLowerCase().includes("text")) {
+              layerSVGReturnString +=
+                "\t\t\t\t" +
+                svgString.replace(
+                  " ",
+                  ' class="' + styleID + ' text" ' // add the styling that applies to all text items
+                ) +
+                "\n";
+            } else {
+              layerSVGReturnString +=
+                "\t\t\t\t" +
+                svgString.replace(" ", ' class="' + styleID + '" ') +
+                "\n";
+            }
+          }
+          layerSVGReturnString += "\t\t\t</g>\n";
+        }
+      });
+
+      // Create the animation SVG strings (add only if there numFrames >0)
+      if (animate) {
+        let animationSVGString =
+          '\t\t\t<animate id="animateFrame' +
+          frameNum +
+          '" attributeName="display"\n';
+
+        // Create the keyTimes and values strings (there are numFrames +1 times and numFrames +1 values)
+        let keyTimeString = '\t\t\tkeyTimes="0;'; // all keyTimes start with zero
+        let time = 0;
+        let valuesString = '\t\t\tvalues="';
+        for (let j = 0; j < numFrames; j++) {
+          time += 1 / numFrames;
+          keyTimeString += String(time) + ";";
+          if (frameNum == j) {
+            valuesString += "inline;";
+          } else {
+            valuesString += "none;";
           }
         }
-        layerSVGReturnString += "\t\t</g>\n";
-      }
-    });
+        keyTimeString = keyTimeString.slice(0, -1); // remove the last semi-colin otherwise the animation fails
 
+        const repeat = animate.repeat <= 0 ? "indefinite" : animate.repeat;
+        animationSVGString += valuesString + 'none"\n'; // all values end with none
+        animationSVGString += keyTimeString + '"\n';
+        animationSVGString += '\t\t\tdur="' + animate.duration + 's" ';
+        animationSVGString += 'begin="0s" ';
+        animationSVGString += 'repeatCount="' + repeat + '"/>\n';
+
+        // add the animation string only if there are more than 1 frame
+        if (numFrames > 0) {
+          sceneSVGReturnStringArray.push(
+            sceneLayerStart +
+              layerSVGReturnString +
+              animationSVGString +
+              sceneLayerEnd
+          );
+        }
+      } else {
+        sceneSVGReturnStringArray.push(
+          sceneLayerStart + layerSVGReturnString + sceneLayerEnd
+        );
+      }
+    }
     // Build and return the svgReturnString
-    return (
+    let returnString =
       svgHeaderReturnString +
       gradientSVGReturnString +
       styleSVGReturnString +
-      sceneLayerStart +
-      layerSVGReturnString +
-      sceneLayerEnd +
-      "</svg>"
-    ).replace(/[\t]/gm, "   ");
-    // return "blah";
+      '\t<g id="sphereScene">\n';
+
+    for (let frameNum = 0; frameNum < numFrames; frameNum++) {
+      returnString += sceneSVGReturnStringArray[frameNum];
+    }
+
+    returnString += "\t</g>\n</svg>"; // the sphereScene and the SVG
+
+    // return the sphere to its original position
+    if (animate) {
+      const m = new Matrix4();
+      m.makeRotationAxis(animate.axis, -animate.degrees)// + 1 / animate.degrees);
+      Command.store.rotateSphere(m);
+      // We need to update the two-instance so that the fills can be correctly calculated
+      EventBus.fire("update-two-instance", {});
+      //sleep(1000 / 60).then(() => {}); // wait 1/60 of a second so that the two-instance updates then update the
+      EventBus.fire("update-fill-objects", {});
+    }
+    return returnString.replace(/[\t]/gm, "   ");
   }
 
   static setGlobalStore(store: SEStoreType): void {
