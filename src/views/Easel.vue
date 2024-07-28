@@ -423,7 +423,7 @@ function resizePlottables(e: { factor: number }): void {
 
 function doLeave(): void {
   confirmedLeaving = true;
-  if (attemptedToRoute) router.replace({ path: attemptedToRoute.path });
+  if (attemptedToRoute) router.push({ path: attemptedToRoute.path });
 }
 
 //When the SetEarthModeCommand is undone, we need to watch the isEarthMode variable in the store

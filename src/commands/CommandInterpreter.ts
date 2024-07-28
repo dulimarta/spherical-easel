@@ -196,10 +196,7 @@ function executeIndividual(command: string): Command {
  *   an array of strings that represents a command group
  */
 export function interpret(command: string | Array<string>): void {
-  if (typeof command === "string") {
-    /* This is an individual command */
-    executeIndividual(command).execute();
-  } else {
+  if (Array.isArray(command)) {
     // This is a CommandGroup, interpret each command individually
     const group = new CommandGroup();
     command
@@ -210,6 +207,9 @@ export function interpret(command: string | Array<string>): void {
       });
     // Then execute as a group
     group.execute();
+  } else {
+    /* This is an individual command */
+    executeIndividual(command).execute();
   }
 }
 

@@ -138,8 +138,9 @@ export const useStudentStudioStore = defineStore("studio-student", () => {
       incomingMessage.value = msg;
     });
     socket.on("exec-cmd", (cmd: string) => {
-      console.debug("Receive command to execute", cmd);
-      interpret(JSON.parse(cmd));
+      const asJSON = JSON.parse(cmd)
+      console.debug("Receive command to execute", asJSON);
+      interpret(asJSON);
       seStore.updateDisplay()
     });
     socket.on("studio-end", () => {

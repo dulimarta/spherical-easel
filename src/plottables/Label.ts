@@ -396,10 +396,13 @@ export default class Label extends Nodule {
     super.updateStyle(mode, options);
 
     if (options.labelDisplayText) {
+      console.debug(`plottables/Label name: |${options.labelDisplayText}|`)
       this._shortUserName = options.labelDisplayText.slice(
         0,
         SETTINGS.label.maxLabelDisplayTextLength
       );
+    } else {
+      console.debug("plottable/Label: missing labelDisplayText")
     }
 
     if (options.labelDisplayCaption) {
@@ -464,6 +467,7 @@ export default class Label extends Nodule {
       // use the parent name for the short name, so to get around this we use this
       // and the (angleMarker|polygon)Number.
       // The default name is set in the constructor for all objects
+      console.debug(`plottables/Label: default label name is ${this._defaultName}`)
       return {
         ...DEFAULT_LABEL_TEXT_STYLE,
         labelDisplayText: this._defaultName,
@@ -581,6 +585,7 @@ export default class Label extends Nodule {
           }
         }
 
+        console.debug(`plottables/Label::stylize, label text is |${labelStyle?.labelDisplayText}| or |${labelText}|`)
         switch (labelStyle?.labelDisplayMode) {
           case LabelDisplayMode.NameOnly: {
             labelText = labelStyle?.labelDisplayText ?? "No Label Text1";

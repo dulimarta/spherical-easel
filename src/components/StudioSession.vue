@@ -10,7 +10,7 @@
     </v-btn>
     <v-tooltip
       activator="#teacher-studio"
-      :text="myStudio ? 'Studio Dashboard' : 'Create a Studio'"></v-tooltip>
+      :text="myStudio ? `Studio: ${myStudio.name}` : 'Create a Studio'"></v-tooltip>
   </template>
   <v-btn v-if="myStudio === null"
     id="student-studio"
