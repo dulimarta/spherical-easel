@@ -241,7 +241,12 @@ export default class Line extends Nodule {
     this._glowingBackHalf.remove();
   }
 
-  toSVG(): toSVGType[] {
+  toSVG(nonScaling?: {
+    stroke?: boolean;
+    text?: boolean;
+    point?: boolean;
+    scaleFactor?: number;
+  }): toSVGType[] {
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,

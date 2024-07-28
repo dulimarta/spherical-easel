@@ -742,7 +742,12 @@ export default class Segment extends Nodule {
     this._glowingBackExtra.remove();
   }
 
-  toSVG(): toSVGType[] {
+  toSVG(nonScaling?: {
+    stroke: boolean;
+    text: boolean;
+    pointRadius: boolean;
+    scaleFactor: number;
+  }): toSVGType[] {
     // reset the list of svgArcObjects
     this._svgArcObjectsFront = [];
     this._svgArcObjectsBack = [];

@@ -491,7 +491,8 @@ export type svgStyleType =
   | "font-style"
   | "font-weight"
   | "text-decoration"
-  | "direction";
+  | "direction"
+  | "vector-effect";
 
 export type svgGradientType =
   | "cx"

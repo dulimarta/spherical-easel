@@ -253,6 +253,12 @@ export abstract class Command {
 
   static dumpSVG(
     width: number,
+    nonScaling?: {
+      stroke: boolean;
+      text: boolean;
+      pointRadius: boolean;
+      scaleFactor: number;
+    },
     animate?: {
       axis: Vector3;
       degrees: number;
@@ -328,8 +334,8 @@ export abstract class Command {
     function sleep(ms: number) {
       return new Promise(resolve => setTimeout(resolve, ms));
     }
+
     // Build the header string for the SVG
-    const sf = (width - 32) / (2 * SETTINGS.boundaryCircle.radius); // 16 pixel boundary from edges
     let svgHeaderReturnString =
       '<svg width="' +
       width +
@@ -337,7 +343,7 @@ export abstract class Command {
       'height="' +
       width +
       'px" ' +
-      'xmlns="http://www.w3.org/2000/svg">\n';
+      'xmlns="http://www.w3.org/2000/svg" style="background-color:white" overflow="visible" >\n';
 
     // Record the gradients (which will be radial gradients for us) for the SVG in a dictionary
     // key: names like circleFrontGradient1 and polygonBackGradient2, etc.
@@ -438,12 +444,12 @@ export abstract class Command {
         objectPairs.forEach(pair => {
           if (pair[0].exists && pair[0].showing) {
             if (pair[0].ref != undefined) {
-              svgTypeArray.push(...pair[0].ref.toSVG());
+              svgTypeArray.push(...pair[0].ref.toSVG(nonScaling));
             }
             // now check the label (if the point is deleted the label is also so check this inside the first conditional statement)
             // labels are never deleted only hidden
             if (pair[1].exists && pair[1].showing) {
-              svgTypeArray.push(...pair[1].ref.toSVG());
+              svgTypeArray.push(...pair[1].ref.toSVG(nonScaling));
             }
           }
         });
@@ -660,6 +666,9 @@ export abstract class Command {
           styleSVGReturnString += attribute + ":" + value + "; ";
         }
       }
+      if (nonScaling?.stroke) {
+        styleSVGReturnString += 'vector-effect: non-scaling-stroke;';
+      }
       // Close the CSS style
       styleSVGReturnString += "}\n";
     }
@@ -687,6 +696,7 @@ export abstract class Command {
       }
     }
     const sceneSVGReturnStringArray: string[] = [];
+    const scaleFactor = (width - 32) / (2 * SETTINGS.boundaryCircle.radius); // scale so that there is a 16 pixel boundary from edges
     for (let frameNum = 0; frameNum < numFrames; frameNum++) {
       const layerDictionary = layerDictionaryArray[frameNum];
       // Start with the scene grouping that set the scale
@@ -695,13 +705,13 @@ export abstract class Command {
         frameNum +
         '" ' +
         'transform = "matrix(' +
-        String(sf) +
+        String(scaleFactor) +
         "," +
         "0" +
         "," +
         "0" +
         "," +
-        String(-1 * sf) + // make sure that up is the positive y-axis, so this is negative
+        String(-1 * scaleFactor) + // make sure that up is the positive y-axis, so this is negative
         "," +
         String(width / 2) +
         "," +
@@ -797,7 +807,7 @@ export abstract class Command {
       svgHeaderReturnString +
       gradientSVGReturnString +
       styleSVGReturnString +
-      '\t<g id="sphereScene">\n';
+      '\t<g id="sphereScene" >\n';
 
     for (let frameNum = 0; frameNum < numFrames; frameNum++) {
       returnString += sceneSVGReturnStringArray[frameNum];

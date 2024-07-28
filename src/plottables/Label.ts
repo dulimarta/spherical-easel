@@ -389,7 +389,12 @@ export default class Label extends Nodule {
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
 
-  toSVG(): toSVGType[] {
+  toSVG( nonScaling?: {
+    stroke: boolean;
+    text: boolean;
+    pointRadius: boolean;
+    scaleFactor: number;
+  }): toSVGType[] {
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,
@@ -419,13 +424,16 @@ export default class Label extends Nodule {
         "<text " +
         Label.svgTransformMatrixString(
           this.frontText.rotation,
-          (this.frontText.scale as number),
+          nonScaling?.text ? 1/nonScaling.scaleFactor : (this.frontText.scale as number),
           this.frontText.position.x,
           this.frontText.position.y
         );
 
       svgFrontString += ">" + this.frontText.value + "</text>";
-      returnSVGObject.layerSVGArray.push([LAYER.foregroundText, svgFrontString]);
+      returnSVGObject.layerSVGArray.push([
+        LAYER.foregroundText,
+        svgFrontString
+      ]);
     } else {
       const backReturnDictionary = new Map<svgStyleType, string>();
       backReturnDictionary.set("font-family", this.backText.family);
@@ -447,7 +455,7 @@ export default class Label extends Nodule {
         "<text " +
         Label.svgTransformMatrixString(
           this.backText.rotation,
-          (this.backText.scale as number),
+          this.backText.scale as number,
           this.backText.position.x,
           this.backText.position.y
         );

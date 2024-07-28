@@ -1130,7 +1130,12 @@ export default class Polygon extends Nodule {
     this.backFills.forEach(part => part.remove());
   }
 
-  toSVG(): toSVGType[] {
+  toSVG(nonScaling?: {
+    stroke: boolean;
+    text: boolean;
+    pointRadius: boolean;
+    scaleFactor: number;
+  }): toSVGType[] {
     //make sure that everything is upto date
     this.updateDisplay();
     // Create an empty return type and then fill in the non-null parts

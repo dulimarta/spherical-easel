@@ -1661,7 +1661,12 @@ export default class AngleMarker extends Nodule {
     // this._glowingBackTickDouble.remove();
   }
 
-  toSVG(): toSVGType[] {
+  toSVG( nonScaling?: {
+    stroke: boolean;
+    text: boolean;
+    pointRadius: boolean;
+    scaleFactor: number;
+  }): toSVGType[] {
     // Create an empty return type and then fill in the non-null parts
     // Always return angleMarkerCircle, angleMarkerFill, angleMarkerEdge
     // If user selected return: angleMarkerDouble (no fill, edge only), angleMarkerTick, angleMarkerArrowHead

@@ -794,14 +794,22 @@ function updateTwoInstance() {
 // TEMP REMOVE
 function exportSVG(): void {
   console.log(
-    Command.dumpSVG(seStore.canvasWidth, {
-      axis: new Vector3(0, 1, 0),
-      degrees: 2*Math.PI ,
-      duration: 4, // in seconds
-      frames: 120,
-      repeat: 0
-    })
-  );
+    Command.dumpSVG(seStore.canvasWidth,
+    {
+    stroke: false,
+    text: false,
+    pointRadius: false,
+    scaleFactor: (seStore.canvasWidth - 32) / (2 * SETTINGS.boundaryCircle.radius)
+  }
+
+    // , {
+    //   axis: new Vector3(0, 1, 0),
+    //   degrees: 2*Math.PI ,
+    //   duration: 4, // in seconds
+    //   frames: 120,
+    //   repeat: 0
+    // })
+  ));
 }
 
 function updateObjectsWithFill() {

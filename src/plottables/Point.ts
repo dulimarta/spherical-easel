@@ -252,7 +252,12 @@ export default class Point extends Nodule {
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
 
-  toSVG(): toSVGType[] {
+  toSVG(nonScaling?: {
+    stroke: boolean;
+    text: boolean;
+    pointRadius: boolean;
+    scaleFactor: number;
+  }): toSVGType[] {
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,
@@ -265,9 +270,11 @@ export default class Point extends Nodule {
     if (this._locationVector.z > 0) {
       // the point is on the front
 
-      returnSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary(
-        {strokeObject:this.frontPoint,fillObject:this.frontPoint,strokeScale:this.frontPoint.scale as number}
-      );
+      returnSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({
+        strokeObject: this.frontPoint,
+        fillObject: this.frontPoint,
+        strokeScale: this.frontPoint.scale as number
+      });
       // Collect the geometric information: radius, center
       let svgString =
         '<circle cx="' +
@@ -275,14 +282,20 @@ export default class Point extends Nodule {
         '" cy="' +
         String(this.frontPoint.position.y) +
         '" r="' +
-        String((this.frontPoint.scale as number)*this.frontPoint.radius) +
+        String(
+          nonScaling?.pointRadius
+            ? (this.frontPoint.radius / nonScaling.scaleFactor) *
+                (this.frontPoint.scale as number)
+            : (this.frontPoint.scale as number) * this.frontPoint.radius
+        ) +
         '" />';
       returnSVGObject.layerSVGArray.push([LAYER.foregroundPoints, svgString]);
     } else {
       // the point is on the back
-      returnSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary(
-        {strokeObject:this.backPoint,fillObject:this.backPoint}
-      );
+      returnSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({
+        strokeObject: this.backPoint,
+        fillObject: this.backPoint
+      });
       // Collect the geometric information: radius, center
       let svgString =
         '<circle cx="' +
@@ -290,7 +303,7 @@ export default class Point extends Nodule {
         '" cy="' +
         String(this.backPoint.position.y) +
         '" r="' +
-        String((this.backPoint.scale as number)*this.backPoint.radius) +
+        String((this.backPoint.scale as number) * this.backPoint.radius) +
         '" />';
       returnSVGObject.layerSVGArray.push([LAYER.backgroundPoints, svgString]);
     }

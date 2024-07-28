@@ -1035,7 +1035,12 @@ export default class Ellipse extends Nodule {
     this.glowingBackPart.remove();
   }
 
-  toSVG(): toSVGType[] {
+  toSVG( nonScaling?: {
+    stroke: boolean;
+    text: boolean;
+    pointRadius: boolean;
+    scaleFactor: number;
+  }): toSVGType[] {
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,

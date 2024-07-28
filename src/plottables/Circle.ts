@@ -919,7 +919,12 @@ export default class Circle extends Nodule {
     this._glowingBackPart.remove();
   }
 
-  toSVG(): toSVGType[] {
+  toSVG( nonScaling?: {
+    stroke: boolean;
+    text: boolean;
+    pointRadius: boolean;
+    scaleFactor: number;
+  }): toSVGType[] {
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,

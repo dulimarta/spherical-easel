@@ -91,7 +91,7 @@
     :title="t('exportConstructionDialogTitle')"
     :yes-text="t('exportAction')"
     :no-text="t('cancelAction')"
-    :yes-action="doExport"
+    :yes-action="doExport1"
     max-width="60%">
     <v-row align="center" justify="space-between">
       <v-col cols="6" v-if="currentConstructionPreview">
@@ -103,10 +103,9 @@
             <p>
               {{
                 t("sliderFileDimensions", {
-                  widthHeight: `${(
-                    (svgExportHeight * canvasWidth) /
-                    canvasHeight
-                  ).toFixed(0)}x${svgExportHeight}`
+                  widthHeight: `${svgExportHeight.toFixed(
+                    0
+                  )}x${svgExportHeight}`
                 })
               }}
             </p>
@@ -192,8 +191,8 @@ const saveConstructionDialog: Ref<DialogAction | null> = ref(null);
 const exportConstructionDialog: Ref<DialogAction | null> = ref(null);
 const isSavedAsPublicConstruction = ref(false);
 const shouldSaveOverwrite = ref(false);
-const selectedExportFormat = ref("");
-const svgExportHeight = ref(100);
+const selectedExportFormat = ref("SVG");
+const svgExportHeight = ref(Math.min(canvasHeight.value,canvasWidth.value));
 // let authSubscription: Unsubscribe | null = null;
 let svgRoot: SVGElement;
 type ComponentProps = {
@@ -343,15 +342,16 @@ async function doSave(): Promise<void> {
 }
 
 function doExport1() {
-  const m = new Matrix4();
-  const axis = new Vector3(0,0,1)
-  m.makeRotationAxis(axis,Math.PI/4)
-  seStore.rotateSphere(m);
+  // const m = new Matrix4();
+  // const axis = new Vector3(0,0,1)
+  // m.makeRotationAxis(axis,Math.PI/4)
+  // seStore.rotateSphere(m);
   /* dump the command history into SVG */
   const svgBlock = Command.dumpSVG(svgExportHeight.value);
-  var svgBlob = new Blob([svgBlock], {
-    type: "text/plain;charset=utf-8"
-  });
+  let svgBlob = new Blob([svgBlock], { type: "image/svg+xml;charset=utf-8" });
+  // var svgBlob = new Blob([svgBlock], {
+  //   type: "text/plain;charset=utf-8"
+  // });
   const svgURL = URL.createObjectURL(svgBlob);
   console.log(svgURL);
   if (selectedExportFormat.value === "SVG") {
@@ -360,8 +360,8 @@ function doExport1() {
   } else {
     mergeIntoImageUrl(
       [svgURL],
-      canvasWidth.value,
-      canvasHeight.value,
+      svgExportHeight.value,
+      svgExportHeight.value,
       selectedExportFormat.value
     ).then((imageUrl: string) => {
       FileSaver.saveAs(imageUrl, "construction." + selectedExportFormat.value);
