@@ -24,7 +24,6 @@ export class SEInversionCircleCenter extends SEPoint {
   private tempVector3 = new Vector3();
   /**
    * Create an intersection point between two one-dimensional objects
-   * @param inversionCircleCenter the TwoJS point associated with this intersection
    * @param seCircleOrLineParent The parent
    * @param inversionParent
    */

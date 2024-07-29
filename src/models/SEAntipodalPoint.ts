@@ -15,8 +15,8 @@ export class SEAntipodalPoint extends SEPoint {
 
   /**
    * Create an intersection point between two one-dimensional objects
-   * @param point the TwoJS point associated with this intersection
    * @param antipodalPointParent The parent
+   * @param isUserCreated
    */
   constructor(antipodalPointParent: SEPoint, isUserCreated: boolean) {
     super(true); // Non free point and the plottable is created

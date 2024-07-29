@@ -14,7 +14,6 @@ export class SEPolarLine
   private tempVector = new Vector3();
   /**
    * Create an SELine
-   * @param line plottable (TwoJS) line associated with this line
    * @param lineStartSEPoint One Point on the line (not *ever* visible and updated only by this line)
    * @param lineEndSEPoint A second Point on the line (not *ever* visible and updated only by this line)
    * @param polarPointParent The polar point parent of the line

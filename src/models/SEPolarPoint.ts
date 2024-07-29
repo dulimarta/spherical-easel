@@ -12,7 +12,6 @@ export class SEPolarPoint extends SEPoint {
 
   /**
    *
-   * @param point The TwoJS object associated with this SEPoint
    * @param polarLineOrSegmentParent The SELine parent of this SEPoint
    * @param index Which point is this?  There are two polar points associated with each line
    */

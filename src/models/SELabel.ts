@@ -56,7 +56,7 @@ export class SELabel extends SENodule implements Visitable {
   private tmpVector = new Vector3();
   /**
    * Create a label of the parent object
-   * @param label the TwoJS label associated with this SELabel
+   * @param labelType
    * @param parent The parent SENodule object
    */
   constructor(labelType: LabelParentTypes, parent: SENodule) {

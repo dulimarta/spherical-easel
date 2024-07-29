@@ -17,7 +17,6 @@ export class SEMeasuredCircle extends SECircle {
 
   /**
    * Create a model SECircle using:
-   * @param circ The plottable TwoJS Object associated to this object (non free circle)
    * @param centerPoint The model SEPoint object that is the center of the circle
    * @param hiddenCirclePoint A point on the circle (not *ever* visible and updated only by this circle)
    * @param radiusMeasurementSEExpression The model SEExpression that determines the radius

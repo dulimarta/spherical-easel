@@ -50,7 +50,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
 
   /**
    * Create a model SEPoint using:
-   * @param point The plottable TwoJS Object associated to this object
+   * @param createNonFreePoint
    */
   constructor(createNonFreePoint: boolean = false) {
     super();

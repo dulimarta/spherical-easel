@@ -24,9 +24,10 @@ export class SEIsometryCircle extends SECircle {
 
   /**
    * Create a model SECircle using:
-   * @param circ The plottable TwoJS Object associated to this object
    * @param centerPoint The model SEPoint object that is the center of the circle
    * @param circlePoint The model SEPoint object that is on the circle
+   * @param seParentCircle
+   * @param seParentIsometry
    */
   constructor(
     // circ: Circle,

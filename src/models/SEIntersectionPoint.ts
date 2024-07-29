@@ -59,7 +59,6 @@ export class SEIntersectionPoint extends SEPoint {
   private tempVector = new Vector3();
   /**
    * Create an intersection point between two one-dimensional objects
-   * @param pt the TwoJS point associated with this intersection
    * @param seParent1 The first parent
    * @param seParent2 The second parent
    * @param order The order of this intersection point (in case there are multiple intersections)

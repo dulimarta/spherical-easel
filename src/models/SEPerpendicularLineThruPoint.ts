@@ -37,7 +37,6 @@ export class SEPerpendicularLineThruPoint extends SELine {
   // private _pencilSize: number;
   /**
    * Create an intersection point between two one-dimensional objects
-   * @param line the TwoJS Line associated with this intersection
    * @param seParentOneDimensional The one-dimensional parent
    * @param seParentPoint The point parent
    * @param normalVector

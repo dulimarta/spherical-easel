@@ -34,7 +34,6 @@ export class SETangentLineThruPoint extends SELine {
   private _index: number;
   /**
    * Create an intersection point between two one-dimensional objects
-   * @param line the TwoJS Line associated with this intersection
    * @param _seParentOneDimensional The one-dimensional parent
    * @param _seParentPoint The point parent
    * @param normalVector

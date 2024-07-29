@@ -76,10 +76,10 @@ export class SEEllipse
 
   /**
    * Create a model SEEllipse using:
-   * @param ellipse The plottable TwoJS Object associated to this object
    * @param focus1Point The model SEPoint object that is one of the foci of the ellipse
    * @param focus2Point The model SEPoint object that is one of the foci of the ellipse
    * @param ellipsePoint The model SEPoint object that is on the circle
+   * @param createNonFree
    */
   constructor(
     // ellipse: Ellipse,

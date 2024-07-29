@@ -20,7 +20,6 @@ export class SEThreePointCircleCenter extends SEPoint {
   private tempVector3 = new Vector3();
   /**
    * Create an intersection point between two one-dimensional objects
-   * @param threePointCircleCenter the TwoJS point associated with this intersection
    * @param sePointParent1 The parent
    * @param sePointParent2 The parent
    * @param sePointParent3 The parent

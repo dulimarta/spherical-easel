@@ -69,9 +69,9 @@ export class SECircle
   // #region circleConstructor
   /**
    * Create a model SECircle using:
-   * @param circ The plottable TwoJS Object associated to this object
    * @param centerPoint The model SEPoint object that is the center of the circle
    * @param circlePoint The model SEPoint object that is on the circle
+   * @param createNonFreeCircle
    */
   constructor(
     centerPoint: SEPoint,

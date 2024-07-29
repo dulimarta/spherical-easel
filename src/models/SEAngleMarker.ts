@@ -110,10 +110,13 @@ export class SEAngleMarker
   private _measure = 0;
   /**
    * Create a model SEAngleMarker using:
-   * @param angMar The plottable TwoJS Object associated to this object
+   * @param mode AngleMode enum
+   * @param zoomMagnificationFactor
    * @param firstParent The model SE object that is the first parent of the angle marker
    * @param secondParent The model SE object that is the second parent of the angle marker
    * @param thirdParent The model SE object that is the third parent of the angle marker (defined only if the other two parents are SEPoints)
+   * @param firstLineClickLocation
+   * @param secondLineClickLocation
    */
   constructor(
     // angMar: AngleMarker,

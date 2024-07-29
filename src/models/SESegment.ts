@@ -75,11 +75,11 @@ export class SESegment
 
   /**
    * Create a model SESegment using:
-   * @param seg  The plottable TwoJS Object associated to this object
    * @param segmentStartSEPoint The model SEPoint object that is the start of the segment
    * @param segmentNormalVector The vector3 that is perpendicular to the plane containing the segment
    * @param segmentArcLength The arcLength number of the segment
    * @param segmentEndSEPoint The model SEPoint object that is the end of the segment
+   * @param [createNonFreeSegment=false]
    */
   constructor(
     // seg: Segment,

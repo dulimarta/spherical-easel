@@ -155,8 +155,13 @@ export class SEParametric
   readonly prevVarMap = new Map<string, number>();
 
   /**
-   * Create a model SEParametric using:
-   * @param parametric The plottable TwoJS Object associated to this object
+   *
+   * @param coordinateExpressions
+   * @param tExpressions
+   * @param tNumbers
+   * @param c1DiscontinuityParameterValues
+   * @param measurementParents
+   * @param isClosed
    */
   constructor(
     coordinateExpressions: { x: string; y: string; z: string },

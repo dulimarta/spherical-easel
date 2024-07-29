@@ -63,7 +63,7 @@ function broadcastMessage() {
 async function terminateSession() {
   console.debug("Invoking stopStudio()");
   await studioStore.stopStudio();
-  // router.back();
+  router.back();
 }
 
 function toMain() {

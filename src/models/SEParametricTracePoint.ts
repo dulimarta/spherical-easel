@@ -15,6 +15,10 @@ export class SEParametricTracePoint extends SEPoint {
 
   // private tmpVector4 = new Vector3();
   private tmpMatrix = new Matrix4();
+  /**
+   *
+   * @param parametricParent
+   */
   constructor(/*point: Point, */ parametricParent: SEParametric) {
     super(true); // NonFree?
     // this.ref = point;

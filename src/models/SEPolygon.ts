@@ -70,10 +70,8 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   private _area = 0;
   /**
    * Create a model SEPolygon using:
-   * @param poly The plottable TwoJS Object associated to this object
    * @param edges
    * @param orderBooleans
-   * @param interiorDirectionMultipliers
    * @param angleMarkers
    */
   constructor(

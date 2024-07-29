@@ -14,7 +14,9 @@ export class SENSectLine extends SELine {
   private tempVector = new Vector3();
   /**
    *
-   * @param line The plottable
+   * @param seAngleParent
+   * @param normalVector
+   * @param endSEPoint
    * @param seAngleParent
    * @param index
    * @param N

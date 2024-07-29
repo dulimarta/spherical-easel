@@ -17,6 +17,11 @@ export class SEParametricEndPoint extends SEPoint {
 
   private tmpVector4 = new Vector3();
 
+  /**
+   *
+   * @param parametricParent
+   * @param endPoint
+   */
   constructor(parametricParent: SEParametric, endPoint: string) {
     super(true); // NonFree?
     // this.ref = point;

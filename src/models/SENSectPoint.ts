@@ -15,7 +15,6 @@ export class SENSectPoint extends SEPoint {
 
   /**
    *
-   * @param point The plottable
    * @param seSegmentParent
    * @param index
    * @param N

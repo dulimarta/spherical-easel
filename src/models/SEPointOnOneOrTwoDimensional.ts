@@ -13,7 +13,6 @@ export class SEPointOnOneOrTwoDimensional extends SEPoint {
   private tmpVector4 = new Vector3();
   /**
    * Create an intersection point between two one-dimensional objects
-   * @param point the TwoJS point associated with this intersection
    * @param oneDimensionalParent The parent
    */
   constructor(oneDimensionalParent: SEOneOrTwoDimensional) {

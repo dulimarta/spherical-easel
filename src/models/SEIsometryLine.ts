@@ -30,10 +30,11 @@ export class SEIsometryLine extends SELine {
 
   /**
    * Create an SELine
-   * @param line plottable (TwoJS) line associated with this line
    * @param lineStartSEPoint One Point on the line
    * @param normalVector The normal vector to the plane containing the line
    * @param lineEndSEPoint A second Point on the line
+   * @param seParentLine
+   * @param seParentIsometry
    */
   constructor(
     // line: Line,
