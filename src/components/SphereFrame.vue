@@ -316,7 +316,6 @@ onBeforeMount((): void => {
 });
 
 onMounted((): void => {
-  console.debug("SphereFrame::onMounted")
   // Put the main js instance into the canvas
   twoInstance.appendTo(canvas.value!);
   // Set up the listeners

@@ -401,8 +401,6 @@ export default class Label extends Nodule {
         0,
         SETTINGS.label.maxLabelDisplayTextLength
       );
-    } else {
-      console.debug("plottable/Label: missing labelDisplayText")
     }
 
     if (options.labelDisplayCaption) {
@@ -585,7 +583,7 @@ export default class Label extends Nodule {
           }
         }
 
-        console.debug(`plottables/Label::stylize, label text is |${labelStyle?.labelDisplayText}| or |${labelText}|`)
+        // console.debug(`plottables/Label::stylize, label text is |${labelStyle?.labelDisplayText}| or |${labelText}|`)
         switch (labelStyle?.labelDisplayMode) {
           case LabelDisplayMode.NameOnly: {
             labelText = labelStyle?.labelDisplayText ?? "No Label Text1";

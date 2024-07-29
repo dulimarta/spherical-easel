@@ -126,7 +126,6 @@ async function doLaunchStudio() {
 
 async function prepareToJoinStudio() {
   if (activeStudioId.value === null) {
-    console.debug("StudioSession::preparetoJoin");
     availableStudios.value = await studentStudioStore.getAvailableStudios();
     studioListDialog.value?.show();
   } else {
@@ -139,7 +138,7 @@ function joinStudio(s: StudioDetails) {
   console.debug("Joining a studio", s.id);
   studioListDialog.value?.hide();
   studentStudioStore.joinAsStudent(s.id, s.name, participantName.value);
-  router.push({ path: "/student-dashboard" });
+  // router.push({ path: "/student-dashboard" });
 }
 // function leaveStudio() {
 //   console.debug(`Participant left the studio ${studioID.value} session`);

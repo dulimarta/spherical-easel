@@ -168,6 +168,9 @@ export class AddSegmentCommand extends Command {
       } else {
         throw new Error("AddSegment: Label Name doesn't exist");
       }
+      console.debug("AddSegmentCommand::parse. SESegment", seSegment)
+      console.debug("AddSegmentCommand::parse. startSEPoint", segmentStartPoint)
+      console.debug("AddSegmentCommand::parse. endSEPoint", segmentEndPoint)
       return new AddSegmentCommand(
         seSegment,
         segmentStartPoint,

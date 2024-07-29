@@ -438,9 +438,9 @@ watch(
 onBeforeRouteLeave(
   (
     toRoute: RouteLocationNormalized,
-    // eslint-disable-next-line no-unused-vars
     _: RouteLocationNormalized
   ): boolean => {
+    if (toRoute.path.includes('dashboard')) return true
     if (hasObjects.value && !confirmedLeaving) {
       unsavedWorkDialog.value?.show();
       attemptedToRoute = toRoute;

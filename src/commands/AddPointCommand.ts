@@ -91,6 +91,7 @@ export class AddPointCommand extends Command {
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
     const tokens = command.split("&");
+    console.debug("AddPointCommand::parse. Tokens", tokens)
     const propMap = new Map<SavedNames, string>();
     // load the tokens into the map
     tokens.forEach((token, ind) => {
@@ -119,6 +120,7 @@ export class AddPointCommand extends Command {
         JSON.parse(pointBackStyleString)
       );
     }
+    console.debug("AddPointCommand::parse. SEPoint", sePoint)
 
     //make the label
     const seLabel = new SELabel("point", sePoint);
@@ -132,7 +134,9 @@ export class AddPointCommand extends Command {
         StyleCategory.Label,
         JSON.parse(labelStyleString)
       );
+      seLabel.ref.adjustSize()
     }
+    console.debug("AddPointCommand::parse. seLabel", seLabel)
 
     //put the point in the object map
     if (propMap.get("objectName") !== undefined) {
@@ -156,6 +160,7 @@ export class AddPointCommand extends Command {
     } else {
       throw new Error("AddPoint: Label Name doesn't exist");
     }
+
     return new AddPointCommand(
       sePoint,
       seLabel,

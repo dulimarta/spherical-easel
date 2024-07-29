@@ -483,7 +483,6 @@ export default class SegmentHandler extends Highlighter {
   }
 
   mouseLeave(event: MouseEvent): void {
-    console.debug(`SegmentHandler::Leave() (${event.clientX},${event.clientY})`)
     super.mouseLeave(event);
     this.prepareForNextSegment();
   }
@@ -518,24 +517,25 @@ export default class SegmentHandler extends Highlighter {
   }
   private makeSegment(eventCtrlKey: boolean, fromActivate = false): boolean {
     // Create a new command group to store potentially three commands. Those to add the endpoints (which might be new) and the segment itself.
+    console.debug("SegmentHandler::makeSegment is invoked")
     const segmentGroup = new CommandGroup();
     const newlyCreatedSEPoints: SEPoint[] = [];
     if (this.startSEPoint === null) {
       // We have to create a new SEPointOnOneOrTwoDimensional or SEPoint and Point
 
-      let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
+      let startVtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
       let newSELabel: SELabel | null = null;
       if (this.startSEPointOneDimensionalParent) {
         // Starting mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
-        vtx = new SEPointOnOneOrTwoDimensional(
+        startVtx = new SEPointOnOneOrTwoDimensional(
           this.startSEPointOneDimensionalParent
         );
-        newSELabel = new SELabel("point", vtx);
+        newSELabel = new SELabel("point", startVtx);
 
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
+            startVtx as SEPointOnOneOrTwoDimensional,
             this.startSEPointOneDimensionalParent,
             newSELabel
           )
@@ -543,24 +543,26 @@ export default class SegmentHandler extends Highlighter {
       } else {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
-        vtx = new SEPoint();
-        newSELabel = new SELabel("point", vtx);
-        segmentGroup.addCommand(new AddPointCommand(vtx, newSELabel));
+        startVtx = new SEPoint();
+        newSELabel = new SELabel("point", startVtx);
+        console.debug("SegmentHandler::makeSegment. startSEPoint", startVtx)
+        console.debug("SegmentHandler::makeSegment. startSELabel", newSELabel)
+        segmentGroup.addCommand(new AddPointCommand(startVtx, newSELabel));
       }
 
-      vtx.locationVector = this.startVector;
+      startVtx.locationVector = this.startVector;
       /////////////
-      // Create the antipode of the new point, vtx
+      // Create the antipode of the new point, startVtx
       const antipode = SegmentHandler.addCreateAntipodeCommand(
-        vtx,
+        startVtx,
         segmentGroup
       );
-      newlyCreatedSEPoints.push(vtx, antipode);
+      newlyCreatedSEPoints.push(startVtx, antipode);
       ///////////
 
       // Set the initial label location
       this.tmpVector
-        .copy(vtx.locationVector)
+        .copy(startVtx.locationVector)
         .add(
           new Vector3(
             2 * SETTINGS.segment.initialLabelOffset,
@@ -571,7 +573,7 @@ export default class SegmentHandler extends Highlighter {
         .normalize();
       newSELabel.locationVector = this.tmpVector;
 
-      this.startSEPoint = vtx;
+      this.startSEPoint = startVtx;
     } else if (
       (this.startSEPoint instanceof SEIntersectionPoint &&
         !this.startSEPoint.isUserCreated) ||
@@ -615,20 +617,20 @@ export default class SegmentHandler extends Highlighter {
     } else if (!fromActivate) {
       // We have to create a new Point for the end
 
-      let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
+      let endVtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
       let newSELabel: SELabel | null = null;
       if (this.hitSESegments.length > 0) {
         // The end of the line will be a point on a segment
         // Create the model object for the new point and link them
-        vtx = new SEPointOnOneOrTwoDimensional(this.hitSESegments[0]);
+        endVtx = new SEPointOnOneOrTwoDimensional(this.hitSESegments[0]);
         // Set the Location
-        vtx.locationVector = this.hitSESegments[0].closestVector(
+        endVtx.locationVector = this.hitSESegments[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel("point", vtx);
+        newSELabel = new SELabel("point", endVtx);
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
+            endVtx as SEPointOnOneOrTwoDimensional,
             this.hitSESegments[0],
             newSELabel
           )
@@ -636,105 +638,106 @@ export default class SegmentHandler extends Highlighter {
       } else if (this.hitSELines.length > 0) {
         // The end of the line will be a point on a line
         // Create the model object for the new point and link them
-        vtx = new SEPointOnOneOrTwoDimensional(this.hitSELines[0]);
+        endVtx = new SEPointOnOneOrTwoDimensional(this.hitSELines[0]);
         // Set the Location
-        vtx.locationVector = this.hitSELines[0].closestVector(
+        endVtx.locationVector = this.hitSELines[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel("point", vtx);
+        newSELabel = new SELabel("point", endVtx);
 
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
+            endVtx as SEPointOnOneOrTwoDimensional,
             this.hitSELines[0],
             newSELabel
           )
         );
       } else if (this.hitSECircles.length > 0) {
         // The end of the line will be a point on a circle
-        vtx = new SEPointOnOneOrTwoDimensional(this.hitSECircles[0]);
+        endVtx = new SEPointOnOneOrTwoDimensional(this.hitSECircles[0]);
         // Set the Location
-        vtx.locationVector = this.hitSECircles[0].closestVector(
+        endVtx.locationVector = this.hitSECircles[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel("point", vtx);
+        newSELabel = new SELabel("point", endVtx);
 
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
+            endVtx as SEPointOnOneOrTwoDimensional,
             this.hitSECircles[0],
             newSELabel
           )
         );
       } else if (this.hitSEEllipses.length > 0) {
         // The end of the line will be a point on a Ellipse
-        vtx = new SEPointOnOneOrTwoDimensional(this.hitSEEllipses[0]);
+        endVtx = new SEPointOnOneOrTwoDimensional(this.hitSEEllipses[0]);
         // Set the Location
-        vtx.locationVector = this.hitSEEllipses[0].closestVector(
+        endVtx.locationVector = this.hitSEEllipses[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel("point", vtx);
+        newSELabel = new SELabel("point", endVtx);
 
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
+            endVtx as SEPointOnOneOrTwoDimensional,
             this.hitSEEllipses[0],
             newSELabel
           )
         );
       } else if (this.hitSEParametrics.length > 0) {
         // The end of the line will be a point on a Ellipse
-        vtx = new SEPointOnOneOrTwoDimensional(this.hitSEParametrics[0]);
+        endVtx = new SEPointOnOneOrTwoDimensional(this.hitSEParametrics[0]);
         // Set the Location
-        vtx.locationVector = this.hitSEParametrics[0].closestVector(
+        endVtx.locationVector = this.hitSEParametrics[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel("point", vtx);
+        newSELabel = new SELabel("point", endVtx);
 
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
+            endVtx as SEPointOnOneOrTwoDimensional,
             this.hitSEParametrics[0],
             newSELabel
           )
         );
       } else if (this.hitSEPolygons.length > 0) {
         // The end of the line will be a point on a Ellipse
-        vtx = new SEPointOnOneOrTwoDimensional(this.hitSEPolygons[0]);
+        endVtx = new SEPointOnOneOrTwoDimensional(this.hitSEPolygons[0]);
         // Set the Location
-        vtx.locationVector = this.hitSEPolygons[0].closestVector(
+        endVtx.locationVector = this.hitSEPolygons[0].closestVector(
           this.currentSphereVector
         );
-        newSELabel = new SELabel("point", vtx);
+        newSELabel = new SELabel("point", endVtx);
 
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneOrTwoDimensional,
+            endVtx as SEPointOnOneOrTwoDimensional,
             this.hitSEPolygons[0],
             newSELabel
           )
         );
       } else {
         // The ending mouse release landed on an open space
-        vtx = new SEPoint();
+        endVtx = new SEPoint();
         // Set the Location
-        vtx.locationVector = this.currentSphereVector;
-        newSELabel = new SELabel("point", vtx);
-
-        segmentGroup.addCommand(new AddPointCommand(vtx, newSELabel));
+        endVtx.locationVector = this.currentSphereVector;
+        newSELabel = new SELabel("point", endVtx);
+        console.debug("SegmentHandler::makeSegment. endSEPoint", endVtx)
+        console.debug("SegmentHandler::makeSegment. endSELabel", newSELabel)
+        segmentGroup.addCommand(new AddPointCommand(endVtx, newSELabel));
       }
-      this.endSEPoint = vtx;
+      this.endSEPoint = endVtx;
       /////////////
-      // Create the antipode of the new point, vtx
+      // Create the antipode of the new point, endVtx
       const antipode = SegmentHandler.addCreateAntipodeCommand(
-        vtx,
+        endVtx,
         segmentGroup
       );
-      newlyCreatedSEPoints.push(vtx, antipode);
+      newlyCreatedSEPoints.push(endVtx, antipode);
       ///////////
       // Set the initial label location
       this.tmpVector
-        .copy(vtx.locationVector)
+        .copy(endVtx.locationVector)
         .add(
           new Vector3(
             2 * SETTINGS.segment.initialLabelOffset,
@@ -813,7 +816,7 @@ export default class SegmentHandler extends Highlighter {
         return false;
       }
       // Make a new segment from the temporary one and mark it removed from the scene,
-      this.isTemporarySegmentAdded = false;
+      // this.isTemporarySegmentAdded = false;
 
       const newSESegment = new SESegment(
         this.startSEPoint,
@@ -827,6 +830,9 @@ export default class SegmentHandler extends Highlighter {
         new Vector3(0, SETTINGS.segment.initialLabelOffset, 0)
       );
 
+      console.debug("SegmentHandler::makeSegment. SESegment", newSESegment)
+      console.debug("SegmentHandler::makeSegment. startSEPoint", this.startSEPoint)
+      console.debug("SegmentHandler::makeSegment. endSEPoint", this.endSEPoint)
       segmentGroup.addCommand(
         new AddSegmentCommand(
           newSESegment,

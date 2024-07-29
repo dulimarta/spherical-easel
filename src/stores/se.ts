@@ -473,7 +473,7 @@ export const useSEStore = defineStore("se", () => {
     layers = grp;
   }
   function setCanvas(c: HTMLDivElement | null): void {
-    console.debug("Set canvas in SE store")
+    // console.debug("Set canvas in SE store")
     svgCanvas.value = c;
   }
   function setCanvasDimension(w: number, h: number): void {

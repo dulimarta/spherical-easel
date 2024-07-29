@@ -12,7 +12,6 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { StyleCategory, StyleOptions } from "@/types/Styles";
 import { SEStoreType } from "@/stores/se";
-import { SEEarthPoint } from "./SEEarthPoint";
 import { SEPoint } from "./SEPoint";
 import { SELabel } from "./internal";
 

@@ -1,47 +1,52 @@
 <template>
-  <v-btn
-    elevation="2"
-    v-if="userRole && userRole === 'instructor'"
-    fab
-    size="small"
-    color="primary"
-    @click="toggleEditMode">
-    <v-icon v-if="inEditMode">mdi-check</v-icon>
-    <v-icon v-else>mdi-pencil</v-icon>
-  </v-btn>
-  <CurrentToolSelection />
+  <template v-if="activeStudioId === null">
+    <v-btn
+      elevation="2"
+      v-if="userRole && userRole === 'instructor'"
+      fab
+      size="small"
+      color="primary"
+      @click="toggleEditMode">
+      <v-icon v-if="inEditMode">mdi-check</v-icon>
+      <v-icon v-else>mdi-pencil</v-icon>
+    </v-btn>
+    <CurrentToolSelection />
+  </template>
+  <span v-else>Active Studio: {{ activeStudioTitle }}</span>
   <v-item-group
     v-model="selectedTool"
     @update:model-value="toolSelectionChanged">
     <v-expansion-panels class="pr-2" v-model="expandedPanel">
-      <v-expansion-panel
-        v-for="grp in buttonGroup"
-        :key="grp.group"
-        elevation="4"
-        :style="{
-          marginBottom: '4px'
-        }">
-        <template #title>
-          <span class="text-subtitle-1 font-weight-bold">
-            {{ t(grp.group) }}
-          </span>
-        </template>
-        <template #text>
-          <div class="button-group">
-            <v-item
-              v-slot="{ isSelected, toggle }"
-              v-for="btn in grp.children"
-              :value="btn.action">
-              <ToolButton
-                :button="btn"
-                :selected="isSelected!"
-                @click="toggle"
-                :editing="inEditMode"
-                :included="toolIncluded(btn.action)" />
-            </v-item>
-          </div>
-        </template>
-      </v-expansion-panel>
+      <template v-if="activeStudioId === null">
+        <v-expansion-panel
+          v-for="grp in buttonGroup"
+          :key="grp.group"
+          elevation="4"
+          :style="{
+            marginBottom: '4px'
+          }">
+          <template #title>
+            <span class="text-subtitle-1 font-weight-bold">
+              {{ t(grp.group) }}
+            </span>
+          </template>
+          <template #text>
+            <div class="button-group">
+              <v-item
+                v-slot="{ isSelected, toggle }"
+                v-for="btn in grp.children"
+                :value="btn.action">
+                <ToolButton
+                  :button="btn"
+                  :selected="isSelected!"
+                  @click="toggle"
+                  :editing="inEditMode"
+                  :included="toolIncluded(btn.action)" />
+              </v-item>
+            </div>
+          </template>
+        </v-expansion-panel>
+      </template>
       <v-expansion-panel
         v-if="developerButtonList.length > 0 && !inProductionMode">
         <template #title>
@@ -79,6 +84,7 @@ import { useAccountStore } from "@/stores/account";
 import { toolGroups } from "./toolgroups";
 import cloneDeep from "lodash.clonedeep";
 import { useSEStore } from "@/stores/se";
+import { useStudentStudioStore } from "@/stores/studio";
 import EventBus from "@/eventHandlers/EventBus";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
@@ -88,16 +94,17 @@ const acctStore = useAccountStore();
 const { userRole, includedTools } = storeToRefs(acctStore);
 const seStore = useSEStore();
 const { seExpressions, seTransformations, actionMode } = storeToRefs(seStore);
-
+const studioStore = useStudentStudioStore();
+const { activeStudioId, activeStudioTitle } = storeToRefs(studioStore);
 const inProductionMode = ref(false);
 const inEditMode = ref(false);
 const expandedPanel: Ref<number | undefined> = ref(undefined);
 const buttonGroup: Ref<Array<ToolButtonGroup>> = ref([]);
-let permissibleButtonGroup: Array<ToolButtonGroup> = []
+let permissibleButtonGroup: Array<ToolButtonGroup> = [];
 const currentToolset: Array<ActionMode> = [];
 const selectedTool: Ref<ActionMode | null> = ref("rotate");
 let lastSelectedTool: ActionMode | null = null;
-const appFeature = inject('features')
+const appFeature = inject("features");
 
 /* This is a variable that does NOT belong in the global settings but I don't know where else to
   put it. This is the list of tools that should be displayed*/
@@ -105,10 +112,12 @@ const appFeature = inject('features')
 
 onBeforeMount((): void => {
   inProductionMode.value = import.meta.env.MODE === "production";
-  if (appFeature !== 'beta') {
-    permissibleButtonGroup = toolGroups.filter(grp => grp.group.match(/^TransformationTool/) === null)
+  if (appFeature !== "beta") {
+    permissibleButtonGroup = toolGroups.filter(
+      grp => grp.group.match(/^TransformationTool/) === null
+    );
   } else {
-    permissibleButtonGroup = toolGroups.splice(0)
+    permissibleButtonGroup = toolGroups.splice(0);
   }
   buttonGroup.value.push(...permissibleButtonGroup);
   //sort the button list by id so that we don't have to reorder the list each item we add a new button
@@ -116,8 +125,7 @@ onBeforeMount((): void => {
   buttonGroup.value.forEach((gr: ToolButtonGroup) => {
     gr.children.sort((a: ToolButtonType, b: ToolButtonType) => a.id - b.id);
   });
-  if (appFeature !== 'beta') {
-
+  if (appFeature !== "beta") {
   }
   currentToolset.push(...includedTools.value);
 });
@@ -157,7 +165,7 @@ function doTransformationEffect(): void {
         EventBus.fire("expand-measurement-sheet", {});
       } else {
         EventBus.fire("show-alert", {
-          key: t("createMeasurementForTranslation",),
+          key: t("createMeasurementForTranslation"),
           type: "info"
         });
       }
