@@ -59,3 +59,27 @@ yarn docs:build    # do this AFTER `bun build`
 ```
 
 After a successful document build, you will find a new directory `dist/docs`.
+
+# Local Deployment With Docker Container
+
+1. Build a docker image from `Dockerfile`
+
+   ```
+   docker build --tag DDDDDDDD/easelgeo .
+   ```
+   In order to push the image to [Docker Hub](docker.io) `DDDDDDDD` must be your Docker Hub userid.
+
+2. (Optional) Push the image to Docker Hub
+
+   ```
+   docker login -u DDDDDDDD
+   # Then enter your password or Docker Personal Access Token
+   docker push DDDDDDDD/easelgo
+   ```
+
+3. Instantiate a container from the image and run locally
+
+   ```
+   docker run -it -p 9000:80 DDDDDDDD/easelgeo
+   ```
+   Then open the URL `localhost:9000` in your browser
