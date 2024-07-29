@@ -91,7 +91,7 @@
     :title="t('exportConstructionDialogTitle')"
     :yes-text="t('exportAction')"
     :no-text="t('cancelAction')"
-    :yes-action="doExport1"
+    :yes-action="doExport"
     max-width="60%">
     <v-row align="center" justify="space-between">
       <v-col cols="6" v-if="currentConstructionPreview">
@@ -99,39 +99,139 @@
       </v-col>
       <v-col cols="6">
         <v-row class="green">
-          <v-col cols="8" class="pr-4">
+          <v-col cols="12" class="pr-4">
             <p>
               {{
                 t("sliderFileDimensions", {
-                  widthHeight: `${svgExportHeight.toFixed(
-                    0
-                  )}x${svgExportHeight}`
+                  widthHeight: `${imageExportHeight}x${imageExportHeight}`
                 })
               }}
             </p>
             <v-slider
-              v-model="svgExportHeight"
+              v-model="imageExportHeight"
               class="align-center"
-              :max="1500"
-              :min="100"
-              :step="8"
-              hide-details></v-slider>
+              :max="2500"
+              :min="50"
+              :step="10"
+              hide-details>
+              <template v-slot:append>
+                <v-text-field
+                  type="number"
+                  :rules="[exportHeightRule]"
+                  v-model="imageExportHeight"
+                  class="mt-0 pt-0"
+                  style="width: 100px"
+                  outlined
+                  @change="checkExportHeight()"
+                  @keypress.stop></v-text-field>
+              </template>
+            </v-slider>
           </v-col>
-          <v-col cols="4">
-            <v-text-field
-              type="number"
-              v-model="svgExportHeight"
-              class="mt-0 pt-0"
-              hide-details
-              single-line
-              @keypress.stop></v-text-field>
+          <v-row>
+            <v-col class="d-flex" cols="12">
+              <v-select
+                style="width: 400px"
+                :items="exportFileTypeItems"
+                :label="t('exportFormat')"
+                v-model="selectedExportFormat"
+                solo></v-select>
+            </v-col>
+          </v-row>
+          <v-col class="d-flex" cols="8">
+            <v-checkbox
+              v-model="svgNonScaling"
+              value="stroke"
+              :label="t('nonScalingStroke')"
+              hide-details></v-checkbox>
           </v-col>
-          <v-col class="d-flex" cols="4">
-            <v-select
-              :items="['SVG', 'PNG', 'JPEG', 'GIF', 'BMP']"
-              :label="t('exportFormat')"
-              v-model="selectedExportFormat"
-              solo></v-select>
+          <v-col class="d-flex" cols="8">
+            <v-checkbox
+              v-model="svgNonScaling"
+              value="point"
+              :label="t('nonScalingPointRadius')"
+              hide-details></v-checkbox>
+          </v-col>
+          <v-col class="d-flex" cols="8">
+            <v-checkbox
+              v-model="svgNonScaling"
+              value="text"
+              :label="t('nonScalingText')"
+              hide-details></v-checkbox>
+          </v-col>
+
+          <v-col
+            v-if="
+              selectedExportFormat == 'Animated SVG' && axisId != undefined
+            ">
+            <p>
+              {{ t("animatedSVGOptions") }}
+            </p>
+            <v-divider></v-divider>
+            <v-col class="d-flex" cols="12">
+              <v-select
+                v-model="axisId"
+                :items="possibleAxisItems"
+                item-title="text"
+                item-value="value"
+                density="compact"
+                :label="t('svgAnimationAxis')"></v-select>
+            </v-col>
+            <v-col class="d-flex" cols="12">
+              <p>
+                {{ t("rotationAngle", { angle: rotationAngleString }) }}
+              </p>
+            </v-col>
+            <v-row>
+              <v-col cols="12" class="d-flex">
+                <v-slider
+                  v-model="svgAnimationAngle"
+                  class="align-center"
+                  :max="360"
+                  :min="5"
+                  :step="5"
+                  hide-details>
+                  <template v-slot:append>
+                    <v-text-field
+                      type="number"
+                      v-model="svgAnimationAngle"
+                      :rules="[animationRotationAngleRule]"
+                      style="width: 100px"
+                      class="mt-0 pt-0"
+                      @change="checkAnimationRotationAngle()"
+                      @keypress.stop></v-text-field>
+                  </template>
+                </v-slider>
+              </v-col>
+            </v-row>
+            <v-col cols="12" class="d-flex">
+              <v-text-field
+                type="number"
+                v-model="svgAnimationDuration"
+                :rules="[animationDurationRule]"
+                style="width: 100px"
+                class="mt-0 pt-0"
+                @change="checkAnimationDuration()"
+                :label="t('animationDuration')"
+                @keypress.stop></v-text-field>
+              <v-text-field
+                type="number"
+                v-model="svgAnimationFrames"
+                :rules="[animationNumberOfFramesRule]"
+                style="width: 100px"
+                class="mt-0 pt-0"
+                @change="checkAnimationNumberOfFrames()"
+                :label="t('animationFrames')"
+                @keypress.stop></v-text-field>
+              <v-text-field
+                type="number"
+                v-model="svgAnimationRepeat"
+                :rules="[animationRepeatRule]"
+                style="width: 100px"
+                @change="checkAnimationRepeatRule()"
+                class="mt-0 pt-0"
+                :label="t('animationRepeat')"
+                @keypress.stop></v-text-field>
+            </v-col>
           </v-col>
         </v-row>
       </v-col>
@@ -145,7 +245,7 @@
 }
 </style>
 <script setup lang="ts">
-import { Ref, ref, onMounted, onBeforeUnmount } from "vue";
+import { Ref, ref, onMounted, onBeforeMount, onUpdated } from "vue";
 import HintButton from "./HintButton.vue";
 import Dialog from "./Dialog.vue";
 import { storeToRefs } from "pinia";
@@ -162,7 +262,10 @@ import FileSaver from "file-saver";
 import { computed, watch } from "vue";
 import { mergeIntoImageUrl } from "@/utils/helpingfunctions";
 import { Command } from "@/commands/Command";
-import { Matrix4, Vector2, Vector3 } from "three";
+import { Vector3 } from "three";
+import SETTINGS from "@/global-settings";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 enum SecretKeyState {
   NONE,
   ACCEPT_S,
@@ -178,8 +281,15 @@ const {
   constructionDocId,
   firebaseUid
 } = storeToRefs(acctStore);
-const { hasObjects, svgCanvas, canvasHeight, canvasWidth } =
-  storeToRefs(seStore);
+const {
+  hasObjects,
+  svgCanvas,
+  canvasHeight,
+  canvasWidth,
+  sePoints,
+  seLines,
+  seSegments
+} = storeToRefs(seStore);
 const { t } = useI18n();
 
 const { privateConstructions, currentConstructionPreview } =
@@ -191,8 +301,40 @@ const saveConstructionDialog: Ref<DialogAction | null> = ref(null);
 const exportConstructionDialog: Ref<DialogAction | null> = ref(null);
 const isSavedAsPublicConstruction = ref(false);
 const shouldSaveOverwrite = ref(false);
-const selectedExportFormat = ref("SVG");
-const svgExportHeight = ref(Math.min(canvasHeight.value,canvasWidth.value));
+
+type possibleExportFileTypes =
+  | "SVG"
+  | "Animated SVG"
+  | "PNG"
+  | "JPEG"
+  | "GIF"
+  | "BMP";
+const exportFileTypeItems: Ref<possibleExportFileTypes[]> = ref([
+  "SVG",
+  "Animated SVG",
+  "PNG",
+  "JPEG",
+  "GIF",
+  "BMP"
+]);
+const selectedExportFormat: Ref<possibleExportFileTypes> = ref("SVG");
+const imageExportHeight = ref(Math.min(canvasHeight.value, canvasWidth.value));
+
+type nonScalingOptions = "stroke" | "point" | "text";
+const nonScalingArray: nonScalingOptions[] = [];
+const svgNonScaling = ref(nonScalingArray);
+
+const possibleAxisItems: Ref<Array<{ text: string; value: number }>> = ref([]);
+const axisId: Ref<number | undefined> = ref(undefined);
+const possibleAxis: Map<number, Vector3> = new Map<number, Vector3>(); // map from node id to vector
+
+const rotationAngleString = ref("360");
+const svgAnimationAngle = ref(360);
+
+const svgAnimationDuration = ref(1);
+const svgAnimationFrames = ref(30);
+const svgAnimationRepeat = ref(0); // 0 is indefinite
+
 // let authSubscription: Unsubscribe | null = null;
 let svgRoot: SVGElement;
 type ComponentProps = {
@@ -259,6 +401,21 @@ watch(
   }
 );
 
+watch(
+  () => svgAnimationAngle.value,
+  () => {
+    rotationAngleString.value = svgAnimationAngle.value + "\u{00B0}";
+  }
+);
+
+// onBeforeMount(() => {
+//   for (let angle = 0; angle <= 360; angle += 22.5) {
+//     rotationAngleSelectorThumbStrings.push(
+//       angle.toFixed(1).replace(/\.0$/, "") + "\u{00B0}"
+//     );
+//   }
+//   console.log(rotationAngleSelectorThumbStrings);
+// });
 onMounted(() => {
   // The svgCanvas was set by SphereFrame but this component may be mounted
   // before SphereCanvas, so it is possible that svgCanvas has not been
@@ -294,12 +451,67 @@ onMounted(() => {
   // });
 });
 
-// onBeforeUnmount(() => {
-//   if (authSubscription) {
-//     authSubscription();
-//     authSubscription = null;
-//   }
-// });
+onUpdated(() => {
+  // clear the old values
+  possibleAxis.clear();
+  possibleAxisItems.value = [];
+
+  sePoints.value.forEach(point => {
+    if (
+      point.exists &&
+      !(
+        (point instanceof SEAntipodalPoint ||
+          point instanceof SEIntersectionPoint) &&
+        !point.isUserCreated
+      )
+    ) {
+      if (point.label) {
+        possibleAxisItems.value.push({
+          text: t("point") + point.label.ref.shortUserName,
+          value: point.id
+        });
+        possibleAxis.set(point.id, point.locationVector);
+      }
+    }
+  });
+  seLines.value.forEach(line => {
+    if (line.exists && line.label) {
+
+      possibleAxisItems.value.push({
+        text: t("line") + line.label.ref.shortUserName,
+        value: line.id
+      });
+      possibleAxis.set(line.id, line.normalVector);
+    }
+  });
+  seSegments.value.forEach(segment => {
+    if (segment.exists && segment.label) {
+      possibleAxisItems.value.push({
+        text: t("segment") + segment.label.ref.shortUserName,
+        value: segment.id
+      });
+      possibleAxis.set(segment.id, segment.normalVector);
+    }
+  });
+  if (possibleAxisItems.value.length > 0) {
+    axisId.value = possibleAxisItems.value[0].value;
+  } else {
+    axisId.value = undefined;
+  }
+  if (axisId.value == undefined) {
+    exportFileTypeItems.value = ["SVG", "PNG", "JPEG", "GIF", "BMP"];
+  } else {
+    exportFileTypeItems.value = [
+      "SVG",
+      "Animated SVG",
+      "PNG",
+      "JPEG",
+      "GIF",
+      "BMP"
+    ];
+  }
+  // console.log(axisId.value,"AIDV");
+});
 
 async function doLoginOrLogout() {
   if (firebaseUid.value) {
@@ -341,57 +553,172 @@ async function doSave(): Promise<void> {
     });
 }
 
-function doExport1() {
-  // const m = new Matrix4();
-  // const axis = new Vector3(0,0,1)
-  // m.makeRotationAxis(axis,Math.PI/4)
-  // seStore.rotateSphere(m);
-  /* dump the command history into SVG */
-  const svgBlock = Command.dumpSVG(svgExportHeight.value);
+function exportHeightRule(value: number | undefined): boolean | string {
+  if (value != undefined && value != null) {
+    if (value < 50 || 2500 < value || value != Math.trunc(value)) {
+      return t("exportHeightErrorMessage");
+    }
+  }
+  return false;
+}
+function checkExportHeight(): void {
+  if (
+    imageExportHeight.value < 50 ||
+    imageExportHeight == undefined ||
+    imageExportHeight == null
+  ) {
+    imageExportHeight.value = 50;
+  } else if (2500 < imageExportHeight.value) {
+    imageExportHeight.value = 2500;
+  } else {
+    imageExportHeight.value = Math.trunc(imageExportHeight.value);
+  }
+}
+
+function animationRotationAngleRule(
+  value: number | undefined
+): boolean | string {
+  if (value != undefined && value != null) {
+    if (value < 5 || 360 < value) {
+      return t("rotationAngleErrorMessage");
+    }
+  }
+  return false;
+}
+function checkAnimationRotationAngle(): void {
+  if (
+    svgAnimationAngle.value == undefined ||
+    svgAnimationAngle.value == null ||
+    svgAnimationAngle.value < 5
+  ) {
+    svgAnimationAngle.value = 5;
+  } else if (360 < svgAnimationAngle.value) {
+    svgAnimationAngle.value = 360;
+  }
+}
+
+function animationDurationRule(value: number | undefined): boolean | string {
+  if (value != undefined && value != null) {
+    if (value < 0.5 || 10 < value) {
+      return t("animatedDurationErrorMessage");
+    }
+  }
+  return false;
+}
+
+function checkAnimationDuration(): void {
+  if (
+    svgAnimationDuration.value == undefined ||
+    svgAnimationDuration.value == null ||
+    svgAnimationDuration.value < 0.5
+  ) {
+    svgAnimationDuration.value = 0.5;
+  } else if (10 < svgAnimationDuration.value) {
+    svgAnimationDuration.value = 10;
+  }
+}
+
+function animationNumberOfFramesRule(
+  value: number | undefined
+): boolean | string {
+  if (
+    value == undefined ||
+    value == null ||
+    value < 2 ||
+    200 < value ||
+    value != Math.trunc(value)
+  ) {
+    return t("animatedFramesErrorMessage");
+  }
+  return true;
+}
+
+function checkAnimationNumberOfFrames(): void {
+  if (
+    svgAnimationFrames.value == undefined ||
+    svgAnimationFrames.value == null ||
+    svgAnimationFrames.value < 2
+  ) {
+    svgAnimationFrames.value = 2;
+  } else if (200 < svgAnimationFrames.value) {
+    svgAnimationFrames.value = 200;
+  } else {
+    svgAnimationFrames.value = Math.trunc(svgAnimationFrames.value);
+  }
+}
+
+function animationRepeatRule(value: number | undefined): boolean | string {
+  if (
+    value == undefined ||
+    value == null ||
+    value < 0 ||
+    200 < value ||
+    value != Math.trunc(value)
+  ) {
+    return t("animatedNumberOfFramesErrorMessage");
+  }
+  return false;
+}
+
+function checkAnimationRepeatRule(): void {
+  if (
+    svgAnimationRepeat.value == undefined ||
+    svgAnimationRepeat.value == null ||
+    svgAnimationRepeat.value < 0
+  ) {
+    svgAnimationRepeat.value = 0;
+  } else if (200 < svgAnimationRepeat.value) {
+    svgAnimationRepeat.value = 200;
+  } else {
+    svgAnimationRepeat.value = Math.trunc(svgAnimationRepeat.value);
+  }
+}
+function doExport() {
+  /* dump the command history into SVG using the nonScaling options and the animated SVG option */
+  let svgBlock = "";
+  const nonScalingOptions = {
+    stroke: svgNonScaling.value.includes("stroke"),
+    text: svgNonScaling.value.includes("text"),
+    pointRadius: svgNonScaling.value.includes("point"),
+    scaleFactor:
+      (imageExportHeight.value - 32) / (2 * SETTINGS.boundaryCircle.radius)
+  };
+  const axis =
+    axisId.value == undefined ? undefined : possibleAxis.get(axisId.value);
+  if (selectedExportFormat.value === "Animated SVG" && axis != undefined) {
+    const animateOptions = {
+      axis: axis,
+      degrees: svgAnimationAngle.value.toRadians(),
+      duration: svgAnimationDuration.value, // in seconds
+      frames: svgAnimationFrames.value,
+      repeat: svgAnimationRepeat.value
+    };
+    svgBlock = Command.dumpSVG(
+      imageExportHeight.value,
+      nonScalingOptions,
+      animateOptions
+    );
+  } else {
+    svgBlock = Command.dumpSVG(imageExportHeight.value, nonScalingOptions);
+  }
+
   let svgBlob = new Blob([svgBlock], { type: "image/svg+xml;charset=utf-8" });
   // var svgBlob = new Blob([svgBlock], {
   //   type: "text/plain;charset=utf-8"
   // });
   const svgURL = URL.createObjectURL(svgBlob);
-  console.log(svgURL);
-  if (selectedExportFormat.value === "SVG") {
+
+  if (
+    selectedExportFormat.value === "SVG" ||
+    selectedExportFormat.value === "Animated SVG"
+  ) {
     // await nextTick()
     FileSaver.saveAs(svgURL, "construction.svg");
   } else {
     mergeIntoImageUrl(
       [svgURL],
-      svgExportHeight.value,
-      svgExportHeight.value,
-      selectedExportFormat.value
-    ).then((imageUrl: string) => {
-      FileSaver.saveAs(imageUrl, "construction." + selectedExportFormat.value);
-    });
-  }
-}
-
-// OLD
-function doExport() {
-  if (svgRoot === undefined) {
-    // By the time doSave() is called svgCanvas must have been set
-    // to it is safe to non-null assert svgCanvas.value
-    svgRoot = svgCanvas.value!.querySelector("svg") as SVGElement;
-  }
-  const svgElement = svgRoot.cloneNode(true) as SVGElement;
-  svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-
-  const svgBlob = new Blob([svgElement.outerHTML], {
-    type: "image/svg+xml;charset=utf-8"
-  });
-  const svgURL = URL.createObjectURL(svgBlob);
-  console.log(svgURL);
-  if (selectedExportFormat.value === "SVG") {
-    // await nextTick()
-    FileSaver.saveAs(svgURL, "construction.svg");
-  } else {
-    mergeIntoImageUrl(
-      [svgURL],
-      canvasWidth.value,
-      canvasHeight.value,
+      imageExportHeight.value,
+      imageExportHeight.value,
       selectedExportFormat.value
     ).then((imageUrl: string) => {
       FileSaver.saveAs(imageUrl, "construction." + selectedExportFormat.value);
@@ -415,6 +742,27 @@ function doExport() {
     "firestoreSaveError": "Construction was not saved: {error}"
   },
   "sliderFileDimensions": "Exported file size {widthHeight}",
-  "exportFormat": "Image Format"
+  "exportFormat": "Image Format",
+  "nonScalingStroke": "Do not scale SVG stroke",
+  "nonScalingPointRadius": "Do not scale points",
+  "nonScalingText": "Do not scale text",
+
+  "svgAnimationAxis": "Select an object to rotate around or along",
+  "svgAnimationDuration": "Duration",
+  "svgAnimationFrames": "Number of frames",
+  "svgAnimationRepeat": "Repeat time",
+  "exportHeightErrorMessage": "Enter an integer between 50 and 2500",
+  "rotationAngle": "Rotation Angle {angle}",
+  "rotationAngleErrorMessage": "Enter an angle between 5 and 360",
+  "animationDuration": "Duration (Seconds)",
+  "animatedDurationErrorMessage": "Enter a duration between 0.1 and 10 seconds.",
+  "animationFrames": "Number of Frames",
+  "animatedFramesErrorMessage": "Enter an integer number of frames between 1 and 200 ",
+  "animationRepeat": "Repeat (0 is indefinite)",
+  "animatedNumberOfFramesErrorMessage": "Enter a number of times to repeat between 1 and 200 or 0 for Indefinite",
+  "animatedSVGOptions": "Animated SVG Options",
+  "line": "Line: ",
+  "segment": "Segment: ",
+  "point": "Point: "
 }
 </i18n>

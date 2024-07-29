@@ -522,7 +522,8 @@ export type plottableType =
   | "angleMarkerTick"
   | "angleMarkerDouble"
   | "angleMarkerEdge"
-  | "angleMarkerArrowHead";
+  | "angleMarkerArrowHead"
+  | "angleMarker";
 
 export type sides = "front" | "back" | "mid";
 

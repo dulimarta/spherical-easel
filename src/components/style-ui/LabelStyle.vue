@@ -99,7 +99,8 @@
             'labelTextRotation'
           ]" />
       </v-window-item>
-      <v-window-item> <!-- Second Tab -->
+      <v-window-item>
+        <!-- Second Tab -->
         <!-- Label Text Family Selections -->
         <v-select
           :disabled="

@@ -312,7 +312,7 @@ onBeforeMount((): void => {
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   EventBus.listen("export-svg", exportSVG); // TEMP REMOVE
   EventBus.listen("update-two-instance", updateTwoInstance);
-  EventBus.listen("update-fill-objects",updateObjectsWithFill)
+  EventBus.listen("update-fill-objects", updateObjectsWithFill);
 });
 
 onMounted((): void => {
@@ -414,7 +414,7 @@ onBeforeUnmount((): void => {
   EventBus.unlisten("delete-node");
   EventBus.unlisten("export-svg"); // TEMP REMOVE
   EventBus.unlisten("update-two-instance");
-  EventBus.unlisten("update-fill-objects")
+  EventBus.unlisten("update-fill-objects");
 });
 
 watch(
@@ -793,23 +793,27 @@ function updateTwoInstance() {
 
 // TEMP REMOVE
 function exportSVG(): void {
+  const size = 100//seStore.canvasWidth,
   console.log(
-    Command.dumpSVG(seStore.canvasWidth,
-    {
-    stroke: false,
-    text: false,
-    pointRadius: false,
-    scaleFactor: (seStore.canvasWidth - 32) / (2 * SETTINGS.boundaryCircle.radius)
-  }
-
-    // , {
-    //   axis: new Vector3(0, 1, 0),
-    //   degrees: 2*Math.PI ,
-    //   duration: 4, // in seconds
-    //   frames: 120,
-    //   repeat: 0
-    // })
-  ));
+    Command.dumpSVG(
+     size,
+      {
+        stroke: true,
+        text: true,
+        pointRadius: true,
+        scaleFactor:
+          (size - 32) / (2 * SETTINGS.boundaryCircle.radius)
+      }
+      ,
+      {
+        axis: new Vector3(0, 1, 0),
+        degrees: 2 * Math.PI,
+        duration: 2, // in seconds
+        frames: 5,
+        repeat: 0
+      }
+    )
+  );
 }
 
 function updateObjectsWithFill() {

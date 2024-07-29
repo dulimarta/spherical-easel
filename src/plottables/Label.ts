@@ -455,7 +455,7 @@ export default class Label extends Nodule {
         "<text " +
         Label.svgTransformMatrixString(
           this.backText.rotation,
-          this.backText.scale as number,
+          nonScaling?.text ? 1/nonScaling.scaleFactor : (this.backText.scale as number),
           this.backText.position.x,
           this.backText.position.y
         );
