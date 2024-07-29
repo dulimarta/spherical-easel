@@ -235,20 +235,6 @@ export default class Circle extends Nodule {
     this._backPart = new Arc(0, 0, 0, 0, 0, 0, SUBDIVISIONS);
     this._glowingBackPart = new Arc(0, 0, 0, 0, 0, 0, SUBDIVISIONS);
 
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this._frontPart.id), {
-      type: "circle",
-      side: "front",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._backPart.id), {
-      type: "circle",
-      side: "back",
-      fill: false,
-      part: ""
-    });
-
     // Set the styles that are always true
     // The front/back parts have no fill because that is handled by the front/back fill
     // The front/back fill have no stroke because that is handled by the front/back part
@@ -280,20 +266,6 @@ export default class Circle extends Nodule {
     //it doesn't matter that no anchors are assigned to the front/backFill because they will assigned from the fillStorageAnchors
     this._frontFill = new Path([], /* closed */ true, /* curve */ false);
     this._backFill = new Path([], /* closed */ true, /* curve */ false);
-
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this._frontFill.id), {
-      type: "circle",
-      side: "front",
-      fill: true,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._backFill.id), {
-      type: "circle",
-      side: "back",
-      fill: true,
-      part: ""
-    });
 
     // Set the styles that are always true
     // The front/back fill have no stroke because that is handled by the front/back part

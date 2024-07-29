@@ -86,20 +86,6 @@ export default class Point extends Nodule {
       SETTINGS.point.drawn.radius.back + SETTINGS.point.glowing.annularWidth
     );
 
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this.frontPoint.id), {
-      type: "point",
-      side: "front",
-      fill: true,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this.backPoint.id), {
-      type: "point",
-      side: "back",
-      fill: true,
-      part: ""
-    });
-
     // Set the location of the points front/back/glowing/drawn
     // The location of all points front/back/glowing/drawn is controlled by the
     //  Group that they are all members of. To translate the group is to translate all points

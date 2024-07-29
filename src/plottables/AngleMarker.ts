@@ -265,32 +265,6 @@ export default class AngleMarker extends Nodule {
     this._glowingFrontDouble = new Arc(0, 0, 0, 0, 0, 0, NUMCIRCLEVERTICES);
     this._glowingBackDouble = new Arc(0, 0, 0, 0, 0, 0, NUMCIRCLEVERTICES);
 
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this._frontCircle.id), {
-      type: "angleMarkerCircle",
-      side: "front",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._frontDouble.id), {
-      type: "angleMarkerDouble",
-      side: "front",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._backCircle.id), {
-      type: "angleMarkerCircle",
-      side: "back",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._backDouble.id), {
-      type: "angleMarkerDouble",
-      side: "back",
-      fill: false,
-      part: ""
-    });
-
     // Set the styles that never changes -- Fill & Cap
     this._frontCircle.noFill();
     this._frontDouble.noFill();
@@ -320,43 +294,6 @@ export default class AngleMarker extends Nodule {
     this._backStraightEndToVertex = new Line();
     this._glowingFrontStraightEndToVertex = new Line();
     this._glowingBackStraightEndToVertex = new Line();
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(
-      String(this._frontStraightVertexToStart.id),
-      {
-        type: "angleMarkerEdge",
-        side: "front",
-        fill: false,
-        part: "edge"
-      }
-    );
-    Nodule.idPlottableDescriptionMap.set(
-      String(this._backStraightVertexToStart.id),
-      {
-        type: "angleMarkerEdge",
-        side: "back",
-        fill: false,
-        part: "edge"
-      }
-    );
-    Nodule.idPlottableDescriptionMap.set(
-      String(this._frontStraightEndToVertex.id),
-      {
-        type: "angleMarkerEdge",
-        side: "front",
-        fill: false,
-        part: "edge"
-      }
-    );
-    Nodule.idPlottableDescriptionMap.set(
-      String(this._backStraightEndToVertex.id),
-      {
-        type: "angleMarkerEdge",
-        side: "back",
-        fill: false,
-        part: "edge"
-      }
-    );
 
     // Set the style that never changes -- Fill & Cap
     this._frontStraightVertexToStart.noFill();
@@ -415,20 +352,6 @@ export default class AngleMarker extends Nodule {
       /* curve */ false
     );
 
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this._frontArrowHeadPath.id), {
-      type: "angleMarkerArrowHead",
-      side: "front",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._backArrowHeadPath.id), {
-      type: "angleMarkerArrowHead",
-      side: "back",
-      fill: false,
-      part: ""
-    });
-
     // Set the style that never changes -- join & glowing fill
     this._frontArrowHeadPath.join = "miter";
     this._backArrowHeadPath.join = "miter";
@@ -460,21 +383,6 @@ export default class AngleMarker extends Nodule {
       /* curve */ false
     );
 
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this._frontFill.id), {
-      type: "angleMarkerFill",
-      side: "front",
-      fill: true,
-      part: ""
-    });
-
-    Nodule.idPlottableDescriptionMap.set(String(this._backFill.id), {
-      type: "angleMarkerFill",
-      side: "back",
-      fill: true,
-      part: ""
-    });
-
     // Set the style that never changes -- stroke
     this._frontFill.noStroke();
     this._backFill.noStroke();
@@ -498,21 +406,6 @@ export default class AngleMarker extends Nodule {
     this._glowingBackTick.noFill();
     // this._glowingFrontTickDouble.noFill();
     // this._glowingBackTickDouble.noFill();
-
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this._frontTick.id), {
-      type: "angleMarkerTick",
-      side: "front",
-      fill: true,
-      part: ""
-    });
-
-    Nodule.idPlottableDescriptionMap.set(String(this._backTick.id), {
-      type: "angleMarkerTick",
-      side: "back",
-      fill: true,
-      part: ""
-    });
 
     // Set the style that never changes -- cap
     this._frontTick.cap = "square";

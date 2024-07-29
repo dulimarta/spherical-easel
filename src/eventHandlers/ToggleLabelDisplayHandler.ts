@@ -232,8 +232,6 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     super.activate();
   }
   deactivate(): void {
-
-    EventBus.fire("export-svg",{}); // FOR TESTING SVG EXPORT ONLY REMOVE!!!!
     // Remove the listener
     window.removeEventListener("keydown", this.keyPressHandler);
     super.deactivate();

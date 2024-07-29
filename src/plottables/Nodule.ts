@@ -49,24 +49,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   /** Draw the fills using a gradient or not */
   static globalGradientFill = SETTINGS.style.fill.gradientFill;
 
-  /**
-   * A map that lets use look up the properties of a plottable object
-   * using only the TwoJS id. Useful in the creation of icons when processing the SVG
-   * in IconFactory
-   */
-  public static idPlottableDescriptionMap = new Map<
-    string,
-    plottableProperties
-  >();
-
   protected styleOptions: Map<StyleCategory, StyleOptions> = new Map();
-  /**
-   * Is this needed when we reset the sphere canvas? I'm not sure yet, so I commented out the calls to it
-   * when resetting/loading.
-   */
-  static resetIdPlottableDescriptionMap(): void {
-    Nodule.idPlottableDescriptionMap.clear();
-  }
 
   /**
    * Add various TwoJS (SVG) elements of this nodule to appropriate layers

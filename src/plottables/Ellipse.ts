@@ -267,20 +267,6 @@ export default class Ellipse extends Nodule {
       /*curve*/ false
     );
 
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this.frontPart.id), {
-      type: "ellipse",
-      side: "front",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this.backPart.id), {
-      type: "ellipse",
-      side: "back",
-      fill: false,
-      part: ""
-    });
-
     // Set the styles that are always true
     // The front/back parts have no fill because that is handled by the front/back fill
     // The front/back fill have no stroke because that is handled by the front/back part
@@ -319,20 +305,6 @@ export default class Ellipse extends Nodule {
       /* closed */ true,
       /* curve */ false
     );
-
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this.frontFill.id), {
-      type: "ellipse",
-      side: "front",
-      fill: true,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this.backFill.id), {
-      type: "ellipse",
-      side: "back",
-      fill: true,
-      part: ""
-    });
 
     // Set the styles that are always true
     // The front/back fill have no stroke because that is handled by the front/back part

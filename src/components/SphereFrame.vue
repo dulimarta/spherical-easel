@@ -79,7 +79,6 @@ import CoordinateHandler from "@/eventHandlers/PointCoordinateHandler";
 import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
 import PerpendicularLineThruPointHandler from "@/eventHandlers/PerpendicularLineThruPointHandler";
 import TangentLineThruPointHandler from "@/eventHandlers/TangentLineThruPointHandler";
-import IconFactoryHandler from "@/eventHandlers/IconFactoryHandler";
 import EllipseHandler from "@/eventHandlers/EllipseHandler";
 import PolygonHandler from "@/eventHandlers/PolygonHandler";
 import NSectSegmentHandler from "@/eventHandlers/NSectSegmentHandler";
@@ -194,7 +193,6 @@ let toggleLabelDisplayTool: ToggleLabelDisplayHandler | null = null;
 let perpendicularLineThruPointTool: PerpendicularLineThruPointHandler | null =
   null;
 let tangentLineThruPointTool: TangentLineThruPointHandler | null = null;
-let iconFactoryTool: IconFactoryHandler | null = null;
 let measureTriangleTool: PolygonHandler | null = null;
 let measurePolygonTool: PolygonHandler | null = null;
 let midpointTool: NSectSegmentHandler | null = null;
@@ -269,14 +267,6 @@ onBeforeMount((): void => {
   boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
   boundaryCircle.addTo(layers[Number(LAYER.midground)]);
 
-  //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-  Nodule.idPlottableDescriptionMap.set(String(boundaryCircle.id), {
-    type: "boundaryCircle",
-    side: "mid",
-    fill: false,
-    part: ""
-  });
-
   // Draw horizontal and vertical lines (just for debugging)
   // const R = SETTINGS.boundaryCircle.radius;
   // const hLine = new Line(-R, 0, R, 0);
@@ -300,7 +290,6 @@ onBeforeMount((): void => {
   // Add Event Bus (a Vue component) listeners to change the display of the sphere - rotate and Zoom/Pan
   EventBus.listen("sphere-rotate", handleSphereRotation);
   EventBus.listen("zoom-updated", updateView);
-  EventBus.listen("export-current-svg", getCurrentSVGForIcon);
   EventBus.listen("construction-loaded", animateCanvas);
   EventBus.listen(
     "measured-circle-set-temporary-radius",
@@ -310,7 +299,6 @@ onBeforeMount((): void => {
   EventBus.listen("set-transformation-for-tool", setTransformationForTool);
   EventBus.listen("delete-node", deleteNode);
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
-  EventBus.listen("export-svg", exportSVG); // TEMP REMOVE
   EventBus.listen("update-two-instance", updateTwoInstance);
   EventBus.listen("update-fill-objects", updateObjectsWithFill);
 });
@@ -406,13 +394,11 @@ onBeforeUnmount((): void => {
 
   EventBus.unlisten("sphere-rotate");
   EventBus.unlisten("zoom-updated");
-  EventBus.unlisten("export-current-svg");
   EventBus.unlisten("construction-loaded");
   EventBus.unlisten("measured-circle-set-temporary-radius");
   EventBus.unlisten("set-expression-for-tool");
   EventBus.unlisten("set-transformation-for-tool");
   EventBus.unlisten("delete-node");
-  EventBus.unlisten("export-svg"); // TEMP REMOVE
   EventBus.unlisten("update-two-instance");
   EventBus.unlisten("update-fill-objects");
 });
@@ -636,88 +622,6 @@ function handleSphereRotation(e: unknown): void {
 }
 //#endregion handleSphereRotation
 
-function getCurrentSVGForIcon(): void {
-  const svgRoot = canvas.value?.querySelector("svg") as SVGElement;
-  //Dump a copy of the Nodule.idPlottableDescriptionMap into the console to it tso.js object
-  console.log(
-    "Nodule.idPlottableDescriptionMap",
-    Nodule.idPlottableDescriptionMap
-  );
-
-  // Make a duplicate of the SVG tree
-  const svgElement = svgRoot.cloneNode(true) as SVGElement;
-  svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-  //remove all the text items
-  const textGroups = svgElement.querySelectorAll("text");
-  for (let i = 0; i < textGroups.length; i++) {
-    textGroups[i].remove();
-  }
-  // remove all the hidden paths or paths with no anchors
-  // Also remove the straight edge start/end front/back for the angle markers (they look horrible in the icon)
-  const allElements = svgElement.querySelectorAll("path");
-  for (let i = 0; i < allElements.length; i++) {
-    const element = allElements[i];
-    const description = Nodule.idPlottableDescriptionMap.get(
-      element.getAttribute("id") ?? ""
-    );
-
-    if (
-      element.getAttribute("visibility") === "hidden" ||
-      element.getAttribute("d") === "" ||
-      ((description?.type === "angleMarkerArrowHead" ||
-        description?.type === "angleMarkerCircle" ||
-        description?.type === "angleMarkerDouble" ||
-        description?.type === "angleMarkerEdge" ||
-        description?.type === "angleMarkerFill" ||
-        description?.type === "angleMarkerTick") &&
-        description.part === "edge")
-    ) {
-      element.remove();
-    }
-  }
-
-  // remove all SVG groups with no children (they are are result of empty groups)
-  const groups = svgElement.querySelectorAll("g");
-  for (let i = 0; i < groups.length; i++) {
-    const group = groups[i];
-    if (group.childElementCount === 0) {
-      group.remove();
-    }
-  }
-  const iconArray = [];
-  const defs = svgElement.querySelectorAll("defs");
-  for (let i = 0; i < defs.length; i++) {
-    iconArray.push(defs[i].outerHTML);
-  }
-
-  const paths = svgElement.querySelectorAll("path");
-  for (let i = 0; i < paths.length; i++) {
-    paths[i].setAttribute("vector-effect", "non-scaling-stroke");
-
-    // Into each path inject four new attributes, which will be removed later
-    const description = Nodule.idPlottableDescriptionMap.get(
-      paths[i].getAttribute("id") ?? ""
-    );
-    if (description === undefined) {
-      throw new Error(`IconBase - ${paths[i]} has no id.`);
-    }
-    paths[i].setAttribute("type", description.type);
-    paths[i].setAttribute("side", description.side);
-    paths[i].setAttribute("myfill", String(description.fill));
-    paths[i].setAttribute("part", description.part);
-
-    iconArray.push(paths[i].outerHTML);
-  }
-
-  // We are NOT actually saving an SVG content,
-  // but it is actually a plain text payload
-  // The ";" delimiter is required by IconBase.vue
-  var blob = new Blob([iconArray.join(";")], {
-    type: "text/plain;charset=utf-8"
-  });
-  FileSaver.saveAs(blob, "iconXXXPaths.svg");
-}
-
 function animateCanvas(): void {
   animateClass.value = "spin";
   setTimeout(() => {
@@ -789,31 +693,6 @@ function deleteNode(e: {
 // TEMP REMOVE
 function updateTwoInstance() {
   twoInstance.update();
-}
-
-// TEMP REMOVE
-function exportSVG(): void {
-  const size = 100//seStore.canvasWidth,
-  console.log(
-    Command.dumpSVG(
-     size,
-      {
-        stroke: true,
-        text: true,
-        pointRadius: true,
-        scaleFactor:
-          (size - 32) / (2 * SETTINGS.boundaryCircle.radius)
-      }
-      ,
-      {
-        axis: new Vector3(0, 1, 0),
-        degrees: 2 * Math.PI,
-        duration: 2, // in seconds
-        frames: 5,
-        repeat: 0
-      }
-    )
-  );
 }
 
 function updateObjectsWithFill() {
@@ -911,16 +790,6 @@ watch(
         zoomTool.deactivate(); // shut the tool down properly
         seStore.revertActionMode();
         break;
-
-      case "iconFactory":
-        // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the click (and the tool should be the same)
-        if (!iconFactoryTool) {
-          iconFactoryTool = new IconFactoryHandler();
-        }
-        iconFactoryTool.createIconPaths();
-        seStore.revertActionMode();
-        break;
-
       case "hide":
         if (!hideTool) {
           hideTool = new HideObjectHandler(layers);

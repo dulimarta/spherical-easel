@@ -105,20 +105,6 @@ export default class Line extends Nodule {
       SUBDIVS
     );
 
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this._frontHalf.id), {
-      type: "line",
-      side: "front",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._backHalf.id), {
-      type: "line",
-      side: "back",
-      fill: false,
-      part: ""
-    });
-
     // The line is not initially glowing but is visible for the temporary object
     this._frontHalf.visible = true;
     this._backHalf.visible = true;

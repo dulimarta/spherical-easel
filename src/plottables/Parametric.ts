@@ -188,20 +188,7 @@ export default class Parametric extends Nodule {
       // Don't use .clone() for back parts we intentionally want to keep them empty
       this.backParts.push(new Path([], false, false));
       this.glowingBackParts.push(new Path([], false, false));
-      // #region updatePlottableMap
-      Nodule.idPlottableDescriptionMap.set(String(this.frontParts[0].id), {
-        type: "parametric",
-        side: "front",
-        fill: false,
-        part: "0"
-      });
-      Nodule.idPlottableDescriptionMap.set(String(this.backParts[0].id), {
-        type: "parametric",
-        side: "back",
-        fill: false,
-        part: "0"
-      });
-      // #endregion updatePlottableMap
+
       // Set the styles that are always true
       // The front/back parts have no fill because that is handled by the front/back fill
       // The front/back fill have no stroke because that is handled by the front/back part
@@ -355,16 +342,6 @@ export default class Parametric extends Nodule {
             newGlowPath.noFill();
             newGlowPath.visible = false;
             if (this.glowingBgLayer) newGlowPath.addTo(this.glowingBgLayer);
-
-            Nodule.idPlottableDescriptionMap.set(
-              String(this.backParts[currentBackPartIndex - 1].id),
-              {
-                type: "parametric",
-                side: "back",
-                fill: false,
-                part: currentBackPartIndex.toString()
-              }
-            );
             // this.stylize(DisplayStyle.ApplyCurrentVariables);
             // this.adjustSize();
           }
@@ -415,16 +392,6 @@ export default class Parametric extends Nodule {
             newGlowPath.noFill();
             newGlowPath.visible = true;
             if (this.glowingFgLayer) newGlowPath.addTo(this.glowingFgLayer);
-
-            Nodule.idPlottableDescriptionMap.set(
-              String(this.frontParts[currentFrontPartIndex - 1].id),
-              {
-                type: "parametric",
-                side: "front",
-                fill: false,
-                part: currentFrontPartIndex.toString()
-              }
-            );
           }
         }
         firstFrontPart = false;

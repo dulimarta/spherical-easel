@@ -94,12 +94,16 @@
     :yes-action="doExport"
     max-width="60%">
     <v-row align="center" justify="space-between">
-      <v-col v-if="currentConstructionPreview" cols="6" width="400px" >
+      <v-col v-if="currentConstructionPreview" cols="6" width="400px">
         <v-img
           id="preview"
+          class="center"
+          display="flex"
+          justify-content="center"
+          align-items="center"
           :src="currentConstructionPreview"
-          :width="imageExportHeight*400/1500"
-          :height="imageExportHeight*400/1500"/>
+          :width="(imageExportHeight * 400) / 1500"
+          :height="(imageExportHeight * 400) / 1500" />
       </v-col>
       <v-col cols="6">
         <v-row class="green">
@@ -412,7 +416,8 @@ watch(
     () => svgAnimationFrames.value,
     () => svgAnimationRepeat.value,
     () => axisId.value,
-    () => svgNonScaling.value
+    () => svgNonScaling.value,
+    () => selectedExportFormat.value
   ],
   () => {
     rotationAngleString.value = svgAnimationAngle.value + "\u{00B0}";
@@ -522,10 +527,10 @@ onUpdated(() => {
       "BMP"
     ];
   }
-
+  selectedExportFormat.value = "SVG";
   updateExportPreview();
 
-  imageExportHeight.value = Math.min(canvasHeight.value, canvasWidth.value)
+  imageExportHeight.value = Math.min(canvasHeight.value, canvasWidth.value);
 });
 
 async function doLoginOrLogout() {

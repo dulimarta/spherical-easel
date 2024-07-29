@@ -200,32 +200,6 @@ export default class Segment extends Nodule {
       SUBDIVS
     );
 
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this._frontPart.id), {
-      type: "segment",
-      side: "front",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._frontExtra.id), {
-      type: "segment",
-      side: "front",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._backPart.id), {
-      type: "segment",
-      side: "back",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._backExtra.id), {
-      type: "segment",
-      side: "back",
-      fill: false,
-      part: ""
-    });
-
     // Set the style that never changes -- Fill
     this._frontPart.noFill();
     this._glowingFrontPart.noFill();

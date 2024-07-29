@@ -235,19 +235,6 @@ export default class Polygon extends Nodule {
         );
       }
       // i=0 fills were created before this loop
-      Nodule.idPlottableDescriptionMap.set(String(this.frontFills[i].id), {
-        type: "polygon",
-        side: "front",
-        fill: true,
-        part: ""
-      });
-
-      Nodule.idPlottableDescriptionMap.set(String(this.backFills[i].id), {
-        type: "polygon",
-        side: "back",
-        fill: true,
-        part: ""
-      });
 
       // The front/back fill have no stroke because that is handled by the front/back part
       this.frontFills[i].noStroke();
