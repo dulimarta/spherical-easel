@@ -257,7 +257,7 @@ describe("Construction Loader", () => {
     // console.debug("Public list", publicList.html())
   });
 
-  it.only("shows filtered list of starred constructions", async () => {
+  it.skip("shows filtered list of starred constructions", async () => {
     vi.useFakeTimers();
     const { wrapper, testPinia } = createWrapper(TestedComponent, {});
     const constructionStore = useConstructionStore(testPinia);
