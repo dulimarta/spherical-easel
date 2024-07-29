@@ -94,8 +94,12 @@
     :yes-action="doExport"
     max-width="60%">
     <v-row align="center" justify="space-between">
-      <v-col cols="6" v-if="currentConstructionPreview">
-        <img id="preview" :src="currentConstructionPreview" width="400" />
+      <v-col v-if="currentConstructionPreview" cols="6" width="400px" >
+        <v-img
+          id="preview"
+          :src="currentConstructionPreview"
+          :width="imageExportHeight*400/1500"
+          :height="imageExportHeight*400/1500"/>
       </v-col>
       <v-col cols="6">
         <v-row class="green">
@@ -110,7 +114,7 @@
             <v-slider
               v-model="imageExportHeight"
               class="align-center"
-              :max="2500"
+              :max="1500"
               :min="50"
               :step="10"
               hide-details>
@@ -292,8 +296,7 @@ const {
 } = storeToRefs(seStore);
 const { t } = useI18n();
 
-const { privateConstructions, currentConstructionPreview } =
-  storeToRefs(constructionStore);
+const { privateConstructions } = storeToRefs(constructionStore);
 const state: Ref<SecretKeyState> = ref(SecretKeyState.NONE);
 const router = useRouter();
 const constructionDescription = ref("");
@@ -331,10 +334,11 @@ const possibleAxis: Map<number, Vector3> = new Map<number, Vector3>(); // map fr
 const rotationAngleString = ref("360");
 const svgAnimationAngle = ref(360);
 
-const svgAnimationDuration = ref(1);
+const svgAnimationDuration = ref(4);
 const svgAnimationFrames = ref(30);
 const svgAnimationRepeat = ref(0); // 0 is indefinite
 
+const currentConstructionPreview = ref(""); // preview string
 // let authSubscription: Unsubscribe | null = null;
 let svgRoot: SVGElement;
 type ComponentProps = {
@@ -402,10 +406,19 @@ watch(
 );
 
 watch(
-  () => svgAnimationAngle.value,
+  [
+    () => svgAnimationAngle.value,
+    () => svgAnimationDuration.value,
+    () => svgAnimationFrames.value,
+    () => svgAnimationRepeat.value,
+    () => axisId.value,
+    () => svgNonScaling.value
+  ],
   () => {
     rotationAngleString.value = svgAnimationAngle.value + "\u{00B0}";
-  }
+    updateExportPreview();
+  },
+  { deep: true }
 );
 
 // onBeforeMount(() => {
@@ -476,7 +489,6 @@ onUpdated(() => {
   });
   seLines.value.forEach(line => {
     if (line.exists && line.label) {
-
       possibleAxisItems.value.push({
         text: t("line") + line.label.ref.shortUserName,
         value: line.id
@@ -510,7 +522,10 @@ onUpdated(() => {
       "BMP"
     ];
   }
-  // console.log(axisId.value,"AIDV");
+
+  updateExportPreview();
+
+  imageExportHeight.value = Math.min(canvasHeight.value, canvasWidth.value)
 });
 
 async function doLoginOrLogout() {
@@ -553,13 +568,51 @@ async function doSave(): Promise<void> {
     });
 }
 
+function updateExportPreview(): void {
+  // let svgBlock = Command.dumpSVG(imageExportHeight.value);
+  // let svgBlob = new Blob([svgBlock], { type: "image/svg+xml;charset=utf-8" });
+  // currentConstructionPreview.value = URL.createObjectURL(svgBlob);
+
+  let svgBlock = "";
+  const nonScalingOptions = {
+    stroke: svgNonScaling.value.includes("stroke"),
+    text: svgNonScaling.value.includes("text"),
+    pointRadius: svgNonScaling.value.includes("point"),
+    scaleFactor:
+      (imageExportHeight.value - 32) / (2 * SETTINGS.boundaryCircle.radius)
+  };
+  const axis =
+    axisId.value == undefined ? undefined : possibleAxis.get(axisId.value);
+  if (selectedExportFormat.value === "Animated SVG" && axis != undefined) {
+    const animateOptions = {
+      axis: axis,
+      degrees: svgAnimationAngle.value.toRadians(),
+      duration: svgAnimationDuration.value, // in seconds
+      frames: svgAnimationFrames.value,
+      repeat: svgAnimationRepeat.value
+    };
+    svgBlock = Command.dumpSVG(
+      imageExportHeight.value,
+      nonScalingOptions,
+      animateOptions
+    );
+  } else {
+    svgBlock = Command.dumpSVG(imageExportHeight.value, nonScalingOptions);
+  }
+
+  let svgBlob = new Blob([svgBlock], { type: "image/svg+xml;charset=utf-8" });
+  // var svgBlob = new Blob([svgBlock], {
+  //   type: "text/plain;charset=utf-8"
+  // });
+  currentConstructionPreview.value = URL.createObjectURL(svgBlob);
+}
 function exportHeightRule(value: number | undefined): boolean | string {
   if (value != undefined && value != null) {
-    if (value < 50 || 2500 < value || value != Math.trunc(value)) {
+    if (value < 50 || 1500 < value || value != Math.trunc(value)) {
       return t("exportHeightErrorMessage");
     }
   }
-  return false;
+  return true;
 }
 function checkExportHeight(): void {
   if (
@@ -568,8 +621,8 @@ function checkExportHeight(): void {
     imageExportHeight == null
   ) {
     imageExportHeight.value = 50;
-  } else if (2500 < imageExportHeight.value) {
-    imageExportHeight.value = 2500;
+  } else if (1500 < imageExportHeight.value) {
+    imageExportHeight.value = 1500;
   } else {
     imageExportHeight.value = Math.trunc(imageExportHeight.value);
   }
@@ -583,7 +636,7 @@ function animationRotationAngleRule(
       return t("rotationAngleErrorMessage");
     }
   }
-  return false;
+  return true;
 }
 function checkAnimationRotationAngle(): void {
   if (
@@ -603,7 +656,7 @@ function animationDurationRule(value: number | undefined): boolean | string {
       return t("animatedDurationErrorMessage");
     }
   }
-  return false;
+  return true;
 }
 
 function checkAnimationDuration(): void {
@@ -657,7 +710,7 @@ function animationRepeatRule(value: number | undefined): boolean | string {
   ) {
     return t("animatedNumberOfFramesErrorMessage");
   }
-  return false;
+  return true;
 }
 
 function checkAnimationRepeatRule(): void {
@@ -675,48 +728,17 @@ function checkAnimationRepeatRule(): void {
 }
 function doExport() {
   /* dump the command history into SVG using the nonScaling options and the animated SVG option */
-  let svgBlock = "";
-  const nonScalingOptions = {
-    stroke: svgNonScaling.value.includes("stroke"),
-    text: svgNonScaling.value.includes("text"),
-    pointRadius: svgNonScaling.value.includes("point"),
-    scaleFactor:
-      (imageExportHeight.value - 32) / (2 * SETTINGS.boundaryCircle.radius)
-  };
-  const axis =
-    axisId.value == undefined ? undefined : possibleAxis.get(axisId.value);
-  if (selectedExportFormat.value === "Animated SVG" && axis != undefined) {
-    const animateOptions = {
-      axis: axis,
-      degrees: svgAnimationAngle.value.toRadians(),
-      duration: svgAnimationDuration.value, // in seconds
-      frames: svgAnimationFrames.value,
-      repeat: svgAnimationRepeat.value
-    };
-    svgBlock = Command.dumpSVG(
-      imageExportHeight.value,
-      nonScalingOptions,
-      animateOptions
-    );
-  } else {
-    svgBlock = Command.dumpSVG(imageExportHeight.value, nonScalingOptions);
-  }
-
-  let svgBlob = new Blob([svgBlock], { type: "image/svg+xml;charset=utf-8" });
-  // var svgBlob = new Blob([svgBlock], {
-  //   type: "text/plain;charset=utf-8"
-  // });
-  const svgURL = URL.createObjectURL(svgBlob);
+  updateExportPreview();
 
   if (
     selectedExportFormat.value === "SVG" ||
     selectedExportFormat.value === "Animated SVG"
   ) {
     // await nextTick()
-    FileSaver.saveAs(svgURL, "construction.svg");
+    FileSaver.saveAs(currentConstructionPreview.value, "construction.svg");
   } else {
     mergeIntoImageUrl(
-      [svgURL],
+      [currentConstructionPreview.value],
       imageExportHeight.value,
       imageExportHeight.value,
       selectedExportFormat.value
@@ -724,6 +746,9 @@ function doExport() {
       FileSaver.saveAs(imageUrl, "construction." + selectedExportFormat.value);
     });
   }
+}
+function previewOrDefault(dataUrl: string | undefined): string {
+  return dataUrl ? dataUrl : "/logo.png";
 }
 </script>
 <i18n locale="en" lang="json">
@@ -751,7 +776,7 @@ function doExport() {
   "svgAnimationDuration": "Duration",
   "svgAnimationFrames": "Number of frames",
   "svgAnimationRepeat": "Repeat time",
-  "exportHeightErrorMessage": "Enter an integer between 50 and 2500",
+  "exportHeightErrorMessage": "Enter an integer between 50 and 1500",
   "rotationAngle": "Rotation Angle {angle}",
   "rotationAngleErrorMessage": "Enter an angle between 5 and 360",
   "animationDuration": "Duration (Seconds)",
