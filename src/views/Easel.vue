@@ -19,9 +19,7 @@
   background-color: transparent;">
   </!--v-navigation-drawer-->
   <div id="toolbox-and-sphere">
-    <div id="toolbox">
       <AppNavigation id="toolbox" ref="toolbox" />
-    </div>
 
     <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
@@ -36,46 +34,14 @@
           :available-width="availWidth"
           :available-height="availHeight"
           :is-earth-mode="localIsEarthMode" />
-        <!--v-switch
-          hide-details
-          color="primary"
-          :class="['earthToggler', 'bg-blue-lighten-2']"
-          density="compact"
-          variant="outlined"
-          v-model="localIsEarthMode"
-          @click="setEarthModeFunction()"
-          label="Earth Mode"
-        >
-          <template
-            #append
-            v-if="localIsEarthMode"
-          >
-            <v-icon id="placeBubble">$earthPoint</v-icon>
-            <v-menu
-              activator="#placeBubble"
-              location="right"
-              :offset="[24, 16]"
-              :close-on-content-click="false"
-            >
-              <Suspense>
-                <AddressInput />
-              </Suspense>
-            </v-menu>
-          </template>
-        <v-switch-->
       </div>
-      <div v-else :class="['justify-center', 'align-start', previewClass]">
-        <!--Aspect ratio {{ svgDataImageAspectRatio }} -->
-        <!--div class="previewText">
-          <p>{{ constructionInfo.count }} objects.</p>
-          <p>Created by: {{ constructionInfo.author }}</p>
-        </!--div-->
+      <!--div v-else :class="['justify-center', 'align-start', previewClass]">
         <img
           id="previewImage"
           :src="svgDataImage"
           :width="overlayHeight * svgDataImageAspectRatio"
           :height="overlayHeight" />
-      </div>
+      </!--div-->
       <div id="msghub">
         <ShortcutIcon
           class="mx-1"
@@ -86,38 +52,26 @@
           :disabled="!hasObjects"
           class="mx-1"
           :model="TOOL_DICTIONARY.get('resetAction')!" />
-        <MessageHub />
-        <div id="zoomPanel" class="pr-5">
-          <div style="display: flex">
-            <ShortcutIcon
-              :isShortcutTool="true"
-              class="mx-1"
-              :model="TOOL_DICTIONARY.get('zoomFit')!" />
-            <div class="horizontalLine"></div>
+          <div style="flex-grow:1">
+            <MessageHub />
           </div>
-          <div style="display: flex">
-            <ShortcutIcon
-              :isShortcutTool="true"
-              class="mx-1"
-              :model="TOOL_DICTIONARY.get('zoomOut')!" />
-            <div class="horizontalLine"></div>
+        <!-- <div id="zoomPanel" class="pr-5"> -->
+          <ShortcutIcon
+            :isShortcutTool="true"
+            class="mx-1"
+            :model="TOOL_DICTIONARY.get('zoomFit')!" />
+          <ShortcutIcon
+            :isShortcutTool="true"
+            class="mx-1"
+            :model="TOOL_DICTIONARY.get('zoomOut')!" />
+          <ShortcutIcon
+            :isShortcutTool="true"
+            class="mx-1"
+            :model="TOOL_DICTIONARY.get('zoomIn')!" />
+            <div>
+            {{ (100 * zoomMagnificationFactor).toFixed(0) }}%
           </div>
-          <div style="display: flex">
-            <ShortcutIcon
-              :isShortcutTool="true"
-              class="mx-1"
-              :model="TOOL_DICTIONARY.get('zoomIn')!" />
-            <div class="horizontalLine"></div>
-          </div>
-          <span style="padding-left: 15px">
-            {{ (100 * zoomMagnificationFactor).toFixed(2) }}
-          </span>
-          <!-- <v-slider
-              v-model="zoomMagnificationFactor"
-              :min="0.1"
-              :max="2"
-              style="min-width: 100px" /> -->
-        </div>
+        <!-- </div> -->
       </div>
     </div>
     <Dialog
@@ -188,7 +142,6 @@ import { useLayout, useDisplay } from "vuetify";
 import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
 
-const LEFT_PANE_PERCENTAGE = 25;
 const DELETE_DELAY = 5000; // in milliseconds
 /**
  * Split panel width distribution (percentages):
@@ -272,19 +225,11 @@ const showConstructionPreview = (s: SphericalConstruction | null) => {
 const availHeight = ref(100);
 const availWidth = ref(100);
 function adjustCanvasSize(): void {
-  // The MessageHub height is set to 80 pixels
-  availWidth.value =
-    display.width.value * (1 - LEFT_PANE_PERCENTAGE / 100) -
-    mainRect.value.left -
-    mainRect.value.right;
+  // Total navigation drawer width is 400 pixels
+  availWidth.value = display.width.value - 400
+  // The MessageHub height is set to 50 pixels
   availHeight.value =
-    display.height.value - mainRect.value.bottom - mainRect.value.top - 80; // quick hack (-24) to leave room at the bottom
-  // console.debug(
-  //   "adjustCanvasSize() available height is ",
-  //   window.innerHeight,
-  //   mainRect.value
-  // );
-  // currentCanvasSize.value = availHeight.value;
+    display.height.value - mainRect.value.bottom - mainRect.value.top - 60;
 }
 
 function loadDocument(docId: string): void {
@@ -459,51 +404,21 @@ onBeforeRouteLeave(
 </script>
 <style scoped lang="scss">
 #sphere-and-msghub {
-  // position: relative is required for the parent of v-overlay
-  position: relative;
-  // height 100% is also required to to keep message hub at the bottom
-  // during SVG preview
   height: 100%;
   display: flex;
   justify-content: flex-start;
-  background-color: white;
   // NOTE: DO NOT use column-reverse, otherwise the z-index of Vuetify
   // v-card will be below the TwoJS SVG layers
   flex-direction: column;
-  align-items: stretch;
 }
 
 #msghub {
-  align-self: center;
-  position: absolute;
-  bottom: 4px;
-  left: 0;
-  right: 0;
   display: flex;
   flex-direction: row;
-  justify-content: center;
-  align-items: stretch;
-  gap: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#toolbox {
-  // height: 100%;
-  // overflow: auto;
-  // display: flex;
-}
-
-.previewText {
-  position: absolute;
-  background-color: #fffd;
-  border: 2px solid grey;
-  border-radius: 0.5em;
-  transform: translateX(-50%);
-  z-index: 30;
-  padding: 0.25em;
-  margin: 0.5em;
-  width: 20em;
+  align-items: center;
+  height: 3em;
+  padding-left: 4px;
+  padding-right: 4px;
 }
 
 .previewImage {
@@ -546,39 +461,10 @@ onBeforeRouteLeave(
 /* Use class instead of id when applying to a vuetify builtin component.
  * Looks like IDs are not preserved after built */
 
-.earthToggler {
-  position: absolute;
-  bottom: 88px;
-  left: 12px;
-  margin: 0;
-  padding: 0 1em;
-  border-radius: 8px;
-  align-self: flex-start;
-}
-
-.displayEarthObject {
-  position: absolute;
-  bottom: 140px;
-  left: 12px;
-  margin: 0;
-  padding: 0 0em;
-  border-radius: 8px;
-  align-self: flex-start;
-}
-
 #earthAndCircle {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-#undoPanel {
-  border-radius: 8px;
-  border: solid white;
-  display: flex;
-  align-items: center;
-  background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 #zoomPanel {
@@ -588,14 +474,6 @@ onBeforeRouteLeave(
   border: solid white;
   background-color: white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-}
-
-.horizontalLine {
-  background-color: black;
-  width: 1px;
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
-  // height: 80%;
 }
 
 #toolbox-and-sphere {

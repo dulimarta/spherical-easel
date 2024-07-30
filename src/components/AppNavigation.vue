@@ -7,6 +7,7 @@
   <v-app>
     <v-navigation-drawer
       fixed
+      :mobile="false"
       :expand-on-hover="expandOnHover"
       :rail="rail"
       :rail-width="64"
@@ -69,7 +70,7 @@
       </template>
     </v-navigation-drawer>
     <v-navigation-drawer
-      width="320"
+      width="320" :mobile="false"
       :style="{
         backgroundColor: '#B9D9C1',
         border: show ? '' : '0px'
