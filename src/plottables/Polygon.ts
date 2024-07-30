@@ -197,7 +197,7 @@ export default class Polygon extends Nodule {
     for (
       let k = 0;
       k <
-      (this.seEdgeSegments.length - 2) * 2 * SETTINGS.segment.numPoints +
+      (this.seEdgeSegments.length - 2) * 3 * SETTINGS.segment.numPoints +
         2 * 3 * SETTINGS.segment.numPoints +
         2 * BOUNDARYSUBDIVISIONS;
       k++
@@ -730,7 +730,7 @@ export default class Polygon extends Nodule {
             angularWidth += 2 * Math.PI;
           }
           angularWidth = 2 * Math.PI - angularWidth;
-          // console.log("ang Width", angularWidth);
+          console.log("ang Width", angularWidth);
 
           // When tracing the boundary polygon we start from fromVector locationArray[previousIndex] (which is on the front)
           const size = Math.sqrt(
@@ -768,6 +768,7 @@ export default class Polygon extends Nodule {
               Math.sin(angularWidth) * toVector[1]
           ];
 
+          // set a minimum
           const object: svgArcObject = {
             startPt: { x: fromVector[0], y: fromVector[1] },
             radiiXYWithSpace:
@@ -1142,6 +1143,51 @@ export default class Polygon extends Nodule {
       backArcObjects.push(...seg.ref.svgArcObjectsBack);
     });
 
+    // Try to determine if one of the endpoints of the segment is very near the boundary and move it to agree with the boundary
+    frontArcObjects.forEach(frontObject => {
+      this.boundaryCircleArcObjectsBack.forEach(boundaryObject => {
+        const tol = 10 ** -1;
+        if (Polygon.same(frontObject.startPt, boundaryObject.startPt, tol)) {
+          console.log("Polygon Adjust");
+          frontObject.startPt = boundaryObject.startPt;
+        }
+        if (Polygon.same(frontObject.startPt, boundaryObject.endPt, tol)) {
+          console.log("Polygon Adjust");
+          frontObject.startPt = boundaryObject.endPt;
+        }
+        if (Polygon.same(frontObject.endPt, boundaryObject.startPt, tol)) {
+          console.log("Polygon Adjust");
+          frontObject.endPt = boundaryObject.startPt;
+        }
+        if (Polygon.same(frontObject.endPt, boundaryObject.endPt, tol)) {
+          console.log("Polygon Adjust");
+          frontObject.endPt = boundaryObject.endPt;
+        }
+      });
+    });
+
+    backArcObjects.forEach(backObject => {
+      this.boundaryCircleArcObjectsBack.forEach(boundaryObject => {
+        const tol = 10 ** -1;
+        if (Polygon.same(backObject.startPt, boundaryObject.startPt, tol)) {
+          console.log("Polygon Adjust");
+          backObject.startPt = boundaryObject.startPt;
+        }
+        if (Polygon.same(backObject.startPt, boundaryObject.endPt, tol)) {
+          console.log("Polygon Adjust");
+          backObject.startPt = boundaryObject.endPt;
+        }
+        if (Polygon.same(backObject.endPt, boundaryObject.startPt, tol)) {
+          console.log("Polygon Adjust");
+          backObject.endPt = boundaryObject.startPt;
+        }
+        if (Polygon.same(backObject.endPt, boundaryObject.endPt, tol)) {
+          console.log("Polygon Adjust");
+          backObject.endPt = boundaryObject.endPt;
+        }
+      });
+    });
+
     // frontArcObjects.forEach((obj, ind) =>
     //   console.log(
     //     "front" + ind + "\n",
@@ -1186,27 +1232,27 @@ export default class Polygon extends Nodule {
     //     "end " + obj.endPt.x.toFixed(2) + "," + obj.endPt.y.toFixed(2) + "\n"
     //   )
     // );
-    // Add the gradient to the gradient dictionary (if used)
-        // Add the gradient to the gradient dictionary (if used)
-        if (Nodule.getGradientFill()) {
-          if (this.frontFillInUse) {
-            returnSVGObject.frontGradientDictionary =
-              Nodule.createSVGGradientDictionary(
-                this.frontGradient,
-                this.frontGradientColorCenter,
-                this.frontGradientColor
-              );
-          }
 
-          if (this.backFillInUse) {
-            returnSVGObject.backGradientDictionary =
-              Nodule.createSVGGradientDictionary(
-                this.backGradient,
-                this.backGradientColorCenter,
-                this.backGradientColor
-              );
-          }
-        }
+    // Add the gradient to the gradient dictionary (if used)
+    if (Nodule.getGradientFill()) {
+      if (this.frontFillInUse) {
+        returnSVGObject.frontGradientDictionary =
+          Nodule.createSVGGradientDictionary(
+            this.frontGradient,
+            this.frontGradientColorCenter,
+            this.frontGradientColor
+          );
+      }
+
+      if (this.backFillInUse) {
+        returnSVGObject.backGradientDictionary =
+          Nodule.createSVGGradientDictionary(
+            this.backGradient,
+            this.backGradientColorCenter,
+            this.backGradientColor
+          );
+      }
+    }
 
     // collect the front style of the circle
     if (this.frontFillInUse) {
@@ -1225,6 +1271,7 @@ export default class Polygon extends Nodule {
     if (!this.allEdgesOnFront && !this.allEdgesOnBack) {
       // build the front strings and trace all the front fills
       // console.log("################### front Faces################");
+
       while (this.boundaryCircleArcObjectsFront.length != 0) {
         // get the first arc object and remove it from the boundary list.
         // The boundary arc objects are all correctly ordered from the startPt to
@@ -1294,10 +1341,10 @@ export default class Polygon extends Nodule {
         }
         // console.log("######## front face traced");
         svgFrontString += '"/>';
-            returnSVGObject.layerSVGArray.push([
-              LAYER.foregroundFills,
-              svgFrontString
-            ]);
+        returnSVGObject.layerSVGArray.push([
+          LAYER.foregroundFills,
+          svgFrontString
+        ]);
       }
       // console.log("################### Back Faces################");
       // build the back strings and trace all the back fills
@@ -1446,7 +1493,7 @@ export default class Polygon extends Nodule {
       // console.log("start", startPt);
       // console.log("next", nextPt);
       // if ind ==-1 then the start/end pts were not found in the arcObjects and we should not trace the face (and the last arcObjecgt was removed with .splice(-1,1))
-      while (arcObjects.length != 0 || ind ==-1) {
+      while (arcObjects.length != 0 || ind == -1) {
         let ind2 = arcObjects.findIndex(
           arcObject =>
             Polygon.same(arcObject.startPt, nextPt) ||

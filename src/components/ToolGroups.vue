@@ -256,7 +256,7 @@ function excludeTool(name: ActionMode): void {
 const developerButtonList: ToolButtonType[] = [
   {
     id: 0,
-    action: "iconFactory",
+    action: "iconFactory", // THIS TOOL DOESN'T EXIST ANYMORE I LEFT THIS HERE TO PREVENT THIS GROUP FROM BRING EMPTY
     displayedName: "buttons.CreateIconDisplayedName",
     toolTipMessage: "buttons.CreateIconToolTipMessage",
     toolUseMessage: "buttons.CreateIconToolUseMessage"

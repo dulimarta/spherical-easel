@@ -574,10 +574,7 @@ async function doSave(): Promise<void> {
 }
 
 function updateExportPreview(): void {
-  // let svgBlock = Command.dumpSVG(imageExportHeight.value);
-  // let svgBlob = new Blob([svgBlock], { type: "image/svg+xml;charset=utf-8" });
-  // currentConstructionPreview.value = URL.createObjectURL(svgBlob);
-
+  console.log("update export preview")
   let svgBlock = "";
   const nonScalingOptions = {
     stroke: svgNonScaling.value.includes("stroke"),
