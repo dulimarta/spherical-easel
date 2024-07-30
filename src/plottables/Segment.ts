@@ -812,15 +812,15 @@ export default class Segment extends Nodule {
       svgFrontString += '"/>'; // end point
 
       // now make the arcObject independent of the local matrix so it is useful outside of segment (in polygon)
-
-      this._svgArcObjectsFront.push(
-        Segment.applyMatrixToSVGArcString(
-          frontPartObject,
-          this._frontPart.matrix,
-          this._frontExtra.rotation.toDegrees()
-        )
-      );
-
+      if (Nodule.longEnoughToAdd(this._frontPart)) {
+        this._svgArcObjectsFront.push(
+          Segment.applyMatrixToSVGArcString(
+            frontPartObject,
+            this._frontPart.matrix,
+            this._frontExtra.rotation.toDegrees()
+          )
+        );
+      }
       returnSVGObject.layerSVGArray.push([LAYER.foreground, svgFrontString]);
     }
 
@@ -852,13 +852,15 @@ export default class Segment extends Nodule {
       svgFrontString += '"/>';
 
       // now make the arcObject independent of the matrix so it is useful outside of segment (in polygon)
-      this._svgArcObjectsFront.push(
-        Segment.applyMatrixToSVGArcString(
-          frontExtraObject,
-          this._frontPart.matrix,
-          this._frontExtra.rotation.toDegrees()
-        )
-      );
+      if (Nodule.longEnoughToAdd(this._frontExtra)) {
+        this._svgArcObjectsFront.push(
+          Segment.applyMatrixToSVGArcString(
+            frontExtraObject,
+            this._frontPart.matrix,
+            this._frontExtra.rotation.toDegrees()
+          )
+        );
+      }
 
       returnSVGObject.layerSVGArray.push([LAYER.foreground, svgFrontString]);
     }
@@ -918,14 +920,16 @@ export default class Segment extends Nodule {
       svgBackString += Segment.svgArcString(backPartObject, true);
       svgBackString += '"/>'; // end point
 
-      // now make the arcObject independent of the local matrix so it is useful outside of segment (in polygon)
-      this._svgArcObjectsBack.push(
-        Segment.applyMatrixToSVGArcString(
-          backPartObject,
-          this._backPart.matrix,
-          this._backExtra.rotation.toDegrees()
-        )
-      );
+      if (Nodule.longEnoughToAdd(this._backPart)) {
+        // now make the arcObject independent of the local matrix so it is useful outside of segment (in polygon)
+        this._svgArcObjectsBack.push(
+          Segment.applyMatrixToSVGArcString(
+            backPartObject,
+            this._backPart.matrix,
+            this._backExtra.rotation.toDegrees()
+          )
+        );
+      }
 
       returnSVGObject.layerSVGArray.push([LAYER.background, svgBackString]);
     }
@@ -959,13 +963,15 @@ export default class Segment extends Nodule {
       svgBackString += '"/>';
 
       // now make the arcObject independent of the matrix so it is useful outside of segment (in polygon)
-      this._svgArcObjectsBack.push(
-        Segment.applyMatrixToSVGArcString(
-          backExtraObject,
-          this._backPart.matrix,
-          this._backExtra.rotation.toDegrees()
-        )
-      );
+      if (Nodule.longEnoughToAdd(this._backExtra)) {
+        this._svgArcObjectsBack.push(
+          Segment.applyMatrixToSVGArcString(
+            backExtraObject,
+            this._backPart.matrix,
+            this._backExtra.rotation.toDegrees()
+          )
+        );
+      }
 
       returnSVGObject.layerSVGArray.push([LAYER.background, svgBackString]);
     }

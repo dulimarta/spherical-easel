@@ -137,6 +137,21 @@ export default abstract class Nodule implements Stylable, Resizeable {
     return returnArray;
   }
 
+  // some parts of each segment may not be long enough to add to the polygon or to the segment arc objects this function helps check that
+ static longEnoughToAdd(path: Path): boolean {
+  const matrix =path.matrix
+   var start = matrix.multiply(path.vertices[0].x, path.vertices[0].y, 1);
+   var end = matrix.multiply(
+     path.vertices[path.vertices.length - 1].x,
+     path.vertices[path.vertices.length - 1].y,
+     1
+   );
+   return (
+     (start[0] - end[0]) * (start[0] - end[0]) +
+       (start[1] - end[1]) * (start[1] - end[1]) >
+     1
+   );
+ }
   /**  The cotangent function used in Circle and Anglemarker*/
   static ctg(x: number): number {
     return 1 / Math.tan(x);

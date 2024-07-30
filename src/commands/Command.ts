@@ -425,9 +425,6 @@ export abstract class Command {
         m.makeRotationAxis(animate.axis, animate.degrees / numFrames);
 
         Command.store.rotateSphere(m);
-        for(let wait=0; wait< 10**5;wait++){
-          let f =0
-        }
 
         EventBus.fire("update-two-instance", {});
       }

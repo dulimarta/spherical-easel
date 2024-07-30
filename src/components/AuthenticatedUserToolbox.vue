@@ -668,8 +668,8 @@ function checkAnimationDuration(): void {
     svgAnimationDuration.value < 0.5
   ) {
     svgAnimationDuration.value = 0.5;
-  } else if (10 < svgAnimationDuration.value) {
-    svgAnimationDuration.value = 10;
+  } else if (1000 < svgAnimationDuration.value) {
+    svgAnimationDuration.value = 1000;
   }
 }
 
@@ -782,7 +782,7 @@ function previewOrDefault(dataUrl: string | undefined): string {
   "rotationAngle": "Rotation Angle {angle}",
   "rotationAngleErrorMessage": "Enter an angle between 5 and 360",
   "animationDuration": "Duration (Seconds)",
-  "animatedDurationErrorMessage": "Enter a duration between 0.1 and 10 seconds.",
+  "animatedDurationErrorMessage": "Enter a duration between 0.1 and 1000 seconds.",
   "animationFrames": "Number of Frames",
   "animatedFramesErrorMessage": "Enter an integer number of frames between 1 and 200 ",
   "animationRepeat": "Repeat (0 is indefinite)",

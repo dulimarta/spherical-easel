@@ -27,6 +27,7 @@ import { RadialGradient } from "two.js/src/effects/radial-gradient";
 import { Group } from "two.js/src/group";
 import { Vector } from "two.js/src/vector";
 import { set } from "@vueuse/core";
+import { Matrix } from "two.js/src/matrix";
 
 const BOUNDARYSUBDIVISIONS = SETTINGS.polygon.numPoints; // The number of points used to draw parts of the boundary circle when the polygon crosses it.
 
@@ -268,6 +269,7 @@ export default class Polygon extends Nodule {
     // console.log("pool size", this.pool.length);
     // Bring all the locations of the vertices in the correct order in one array
     const locationArray: location[] = [];
+
     this.seEdgeSegments
       .map(z => z.ref)
       .forEach((seg, index) => {
@@ -285,14 +287,14 @@ export default class Polygon extends Nodule {
         let numVerticesAdded = 0;
         if (seg.firstVertexIsOnFront) {
           // This seg starts with frontPart, then backPart, then frontExtra (the last two might not be in use)
-          if (seg.frontPartInUse) {
+          if (seg.frontPartInUse && Nodule.longEnoughToAdd(seg.frontPart)) {
             for (let i = 0; i < seg.frontPart.vertices.length; i++) {
               var coords = localMatrix.multiply(
                 seg.frontPart.vertices[i].x,
                 seg.frontPart.vertices[i].y,
                 1
               );
-              //console.log("coords", coords, "FP")
+              // console.log(index, "coords", coords, "FP");
               locationArray.push({
                 x: coords[0],
                 y: coords[1],
@@ -301,14 +303,17 @@ export default class Polygon extends Nodule {
               numVerticesAdded++;
             }
           }
-          if (seg.backPartInUse) {
+          if (
+            seg.backPartInUse &&
+            Nodule.longEnoughToAdd(seg.backPart)
+          ) {
             for (let i = 0; i < seg.backPart.vertices.length; i++) {
               var coords = localMatrix.multiply(
                 seg.backPart.vertices[i].x,
                 seg.backPart.vertices[i].y,
                 1
               );
-              //console.log("coords", coords, "BP")
+              // console.log(index, "coords", coords, "BP");
               locationArray.push({
                 x: coords[0],
                 y: coords[1],
@@ -317,14 +322,17 @@ export default class Polygon extends Nodule {
               numVerticesAdded++;
             }
           }
-          if (seg.frontExtraInUse) {
+          if (
+            seg.frontExtraInUse &&
+            Nodule.longEnoughToAdd(seg.frontExtra)
+          ) {
             for (let i = 0; i < seg.frontExtra.vertices.length; i++) {
               var coords = localMatrix.multiply(
                 seg.frontExtra.vertices[i].x,
                 seg.frontExtra.vertices[i].y,
                 1
               );
-              //console.log("coords", coords, "FE")
+              // console.log(index, "coords", coords, "FE");
               locationArray.push({
                 x: coords[0],
                 y: coords[1],
@@ -335,6 +343,7 @@ export default class Polygon extends Nodule {
           }
 
           if (this.segmentIsFlipped[index]) {
+            // console.log("Reverse!");
             // reverse the last numVerticesAdded in the locationArray
             const tempArray = locationArray.splice(
               locationArray.length - numVerticesAdded,
@@ -344,13 +353,17 @@ export default class Polygon extends Nodule {
           }
         } else {
           // This seg starts with backPart, then frontPart, then backExtra (the last two might not be in use)
-          if (seg.backPartInUse) {
+          if (
+            seg.backPartInUse &&
+            Nodule.longEnoughToAdd(seg.backPart)
+          ) {
             for (let i = 0; i < seg.backPart.vertices.length; i++) {
               var coords = localMatrix.multiply(
                 seg.backPart.vertices[i].x,
                 seg.backPart.vertices[i].y,
                 1
               );
+              // console.log(index, "coords", coords, "BP");
               locationArray.push({
                 x: coords[0],
                 y: coords[1],
@@ -359,13 +372,14 @@ export default class Polygon extends Nodule {
               numVerticesAdded++;
             }
           }
-          if (seg.frontPartInUse) {
+          if (seg.frontPartInUse && Nodule.longEnoughToAdd(seg.frontPart)) {
             for (let i = 0; i < seg.frontPart.vertices.length; i++) {
               var coords = localMatrix.multiply(
                 seg.frontPart.vertices[i].x,
                 seg.frontPart.vertices[i].y,
                 1
               );
+              // console.log(index, "coords", coords, "FP");
               locationArray.push({
                 x: coords[0],
                 y: coords[1],
@@ -374,13 +388,17 @@ export default class Polygon extends Nodule {
               numVerticesAdded++;
             }
           }
-          if (seg.backExtraInUse) {
+          if (
+            seg.backExtraInUse &&
+            Nodule.longEnoughToAdd(seg.backExtra)
+          ) {
             for (let i = 0; i < seg.backExtra.vertices.length; i++) {
               var coords = localMatrix.multiply(
                 seg.backExtra.vertices[i].x,
                 seg.backExtra.vertices[i].y,
                 1
               );
+              // console.log(index, "coords", coords, "BE");
               locationArray.push({
                 x: coords[0],
                 y: coords[1],
@@ -391,6 +409,7 @@ export default class Polygon extends Nodule {
           }
 
           if (this.segmentIsFlipped[index]) {
+            // console.log("Reverse!");
             // reverse the last numVerticesAdded in the locationArray
             const tempArray = locationArray.splice(
               locationArray.length - numVerticesAdded,
@@ -539,7 +558,12 @@ export default class Polygon extends Nodule {
           if (nextSmallestAngleIndex === -1) {
             nextSmallestAngleIndex = biggestAngleIndex;
           }
-          // console.log("start ang", startAngle);
+          // console.log(
+          //   "front start ang, index, location",
+          //   startAngle,
+          //   previousIndex,
+          //   locationArray[previousIndex]
+          // );
           // console.log(
           //   "next smallest ang",
           //   backToFrontIntersectionAngles[nextSmallestAngleIndex]
@@ -552,76 +576,94 @@ export default class Polygon extends Nodule {
             locationArray[nextIndex].y,
             locationArray[nextIndex].x
           );
+          // console.log(
+          //   "front end angle, index, location",
+          //   endAngle,
+          //   nextIndex,
+          //   locationArray[nextIndex]
+          // );
+
           // Compute the angular width of the section of the boundary polygon to add to the front/back fill
           // This can be positive if traced counterclockwise or negative if traced clockwise (add 2 Pi to make positive)
           let angularWidth = startAngle - endAngle;
           if (angularWidth < 0) {
             angularWidth += 2 * Math.PI;
           }
-          // console.log("ang Width", angularWidth);
+          // console.log("front ang Width", angularWidth, locationArray);
+          // if the locations on the edge are too close together skip adding a boundary component
+          if (
+            (locationArray[nextIndex].x - locationArray[previousIndex].x) ** 2 +
+              (locationArray[nextIndex].y - locationArray[previousIndex].y) **
+                2 >
+            0.0001
+          ) {
+            // When tracing the boundary polygon we start from fromVector locationArray[previousIndex] (which is on the front)
+            const size = Math.sqrt(
+              locationArray[previousIndex].x * locationArray[previousIndex].x +
+                locationArray[previousIndex].y * locationArray[previousIndex].y
+            );
+            const fromVector = [
+              (locationArray[previousIndex].x *
+                SETTINGS.boundaryCircle.radius) /
+                size,
+              (locationArray[previousIndex].y *
+                SETTINGS.boundaryCircle.radius) /
+                size
+            ];
 
-          // When tracing the boundary polygon we start from fromVector locationArray[previousIndex] (which is on the front)
-          const size = Math.sqrt(
-            locationArray[previousIndex].x * locationArray[previousIndex].x +
-              locationArray[previousIndex].y * locationArray[previousIndex].y
-          );
-          const fromVector = [
-            (locationArray[previousIndex].x * SETTINGS.boundaryCircle.radius) /
-              size,
-            (locationArray[previousIndex].y * SETTINGS.boundaryCircle.radius) /
-              size
-          ];
+            // then
+            // trace in the direction of a toVector that is perpendicular to locationArray[previousIndex]
+            // and is the next one CW from  locationArray[previousIndex]
+            const toVector = [fromVector[1], -fromVector[0]];
 
-          // then
-          // trace in the direction of a toVector that is perpendicular to locationArray[previousIndex]
-          // and is the next one CW from  locationArray[previousIndex]
-          const toVector = [fromVector[1], -fromVector[0]];
+            // add the boundary vertices from start to end in the direction of toVector
+            const boundaryPoints = Nodule.boundaryCircleCoordinates(
+              fromVector,
+              Math.floor((angularWidth * BOUNDARYSUBDIVISIONS) / (2 * Math.PI)),
+              toVector,
+              angularWidth
+            );
 
-          // add the boundary vertices from start to end in the direction of toVector
-          const boundaryPoints = Nodule.boundaryCircleCoordinates(
-            fromVector,
-            Math.floor((angularWidth * BOUNDARYSUBDIVISIONS) / (2 * Math.PI)),
-            toVector,
-            angularWidth
-          );
+            // Record this for SVG export
 
-          // Record this for SVG export
+            // The arc ends at
+            // cos(angleWidth)*from + sin(angleWidth)*to
+            const endPt = [
+              Math.cos(angularWidth) * fromVector[0] +
+                Math.sin(angularWidth) * toVector[0],
+              Math.cos(angularWidth) * fromVector[1] +
+                Math.sin(angularWidth) * toVector[1]
+            ];
 
-          // The arc ends at
-          // cos(angleWidth)*from + sin(angleWidth)*to
-          const endPt = [
-            Math.cos(angularWidth) * fromVector[0] +
-              Math.sin(angularWidth) * toVector[0],
-            Math.cos(angularWidth) * fromVector[1] +
-              Math.sin(angularWidth) * toVector[1]
-          ];
+            const object: svgArcObject = {
+              startPt: { x: fromVector[0], y: fromVector[1] },
+              radiiXYWithSpace:
+                String(SETTINGS.boundaryCircle.radius) +
+                " " +
+                String(SETTINGS.boundaryCircle.radius) +
+                " ",
+              rotationDegrees: 0,
+              displayShort0OrLong1: angularWidth > Math.PI ? 1 : 0,
+              displayCCW0OrCW1: 0,
+              endPt: { x: endPt[0], y: endPt[1] }
+            };
+            this.boundaryCircleArcObjectsFront.push(object);
 
-          const object: svgArcObject = {
-            startPt: { x: fromVector[0], y: fromVector[1] },
-            radiiXYWithSpace:
-              String(SETTINGS.boundaryCircle.radius) +
-              " " +
-              String(SETTINGS.boundaryCircle.radius) +
-              " ",
-            rotationDegrees: 0,
-            displayShort0OrLong1: angularWidth > Math.PI ? 1 : 0,
-            displayCCW0OrCW1: 0,
-            endPt: { x: endPt[0], y: endPt[1] }
-          };
-          this.boundaryCircleArcObjectsFront.push(object);
-
-          boundaryPoints.forEach(pt => {
-            const vertex = this.pool.pop();
-            if (vertex !== undefined) {
-              vertex.x = pt[0];
-              vertex.y = pt[1];
-              this.frontFills[currentFrontFillIndex].vertices.push(vertex);
-            } else {
-              throw new Error(
-                "Polygon: not enough anchors in the pool to trace a front boundary circle edge."
-              );
-            }
-          });
+            boundaryPoints.forEach(pt => {
+              const vertex = this.pool.pop();
+              if (vertex !== undefined) {
+                vertex.x = pt[0];
+                vertex.y = pt[1];
+                this.frontFills[currentFrontFillIndex].vertices.push(vertex);
+              } else {
+                throw new Error(
+                  "Polygon: not enough anchors in the pool to trace a front boundary circle edge."
+                );
+              }
+            });
+          } else {
+            // console.log("#########Front Piece Skipped");
+          }
           // go to the start of the while loop with the next index at the start of a backToFrontIntersection
           backToFrontIndex = nextSmallestAngleIndex;
         }
@@ -730,71 +772,81 @@ export default class Polygon extends Nodule {
             angularWidth += 2 * Math.PI;
           }
           angularWidth = 2 * Math.PI - angularWidth;
-          console.log("ang Width", angularWidth);
+          // console.log("back ang Width", angularWidth);
 
-          // When tracing the boundary polygon we start from fromVector locationArray[previousIndex] (which is on the front)
-          const size = Math.sqrt(
-            locationArray[previousIndex].x * locationArray[previousIndex].x +
-              locationArray[previousIndex].y * locationArray[previousIndex].y
-          );
-          const fromVector = [
-            (locationArray[previousIndex].x * SETTINGS.boundaryCircle.radius) /
-              size,
-            (locationArray[previousIndex].y * SETTINGS.boundaryCircle.radius) /
-              size
-          ];
+          // if the locations on the edge are too close together skip adding a boundary component
+          if (
+            (locationArray[nextIndex].x - locationArray[previousIndex].x) ** 2 +
+              (locationArray[nextIndex].y - locationArray[previousIndex].y) **
+                2 >
+            0.0001
+          ) {
+            // When tracing the boundary polygon we start from fromVector locationArray[previousIndex] (which is on the front)
+            const size = Math.sqrt(
+              locationArray[previousIndex].x * locationArray[previousIndex].x +
+                locationArray[previousIndex].y * locationArray[previousIndex].y
+            );
+            const fromVector = [
+              (locationArray[previousIndex].x *
+                SETTINGS.boundaryCircle.radius) /
+                size,
+              (locationArray[previousIndex].y *
+                SETTINGS.boundaryCircle.radius) /
+                size
+            ];
 
-          // then
-          // trace in the direction of a toVector that is perpendicular to locationArray[previousIndex]
-          // and is the next one CCW from  locationArray[previousIndex]
-          const toVector = [-fromVector[1], fromVector[0]];
+            // then
+            // trace in the direction of a toVector that is perpendicular to locationArray[previousIndex]
+            // and is the next one CCW from  locationArray[previousIndex]
+            const toVector = [-fromVector[1], fromVector[0]];
 
-          // add the boundary vertices from start to end in the direction of toVector
-          const boundaryPoints = Nodule.boundaryCircleCoordinates(
-            fromVector,
-            Math.floor((angularWidth * BOUNDARYSUBDIVISIONS) / (2 * Math.PI)),
-            toVector,
-            angularWidth
-          );
+            // add the boundary vertices from start to end in the direction of toVector
+            const boundaryPoints = Nodule.boundaryCircleCoordinates(
+              fromVector,
+              Math.floor((angularWidth * BOUNDARYSUBDIVISIONS) / (2 * Math.PI)),
+              toVector,
+              angularWidth
+            );
 
-          // Record this for SVG export
+            // Record this for SVG export
 
-          // The arc ends at
-          // cos(angleWidth)*from + sin(angleWidth)*to
-          const endPt = [
-            Math.cos(angularWidth) * fromVector[0] +
-              Math.sin(angularWidth) * toVector[0],
-            Math.cos(angularWidth) * fromVector[1] +
-              Math.sin(angularWidth) * toVector[1]
-          ];
+            // The arc ends at
+            // cos(angleWidth)*from + sin(angleWidth)*to
+            const endPt = [
+              Math.cos(angularWidth) * fromVector[0] +
+                Math.sin(angularWidth) * toVector[0],
+              Math.cos(angularWidth) * fromVector[1] +
+                Math.sin(angularWidth) * toVector[1]
+            ];
 
-          // set a minimum
-          const object: svgArcObject = {
-            startPt: { x: fromVector[0], y: fromVector[1] },
-            radiiXYWithSpace:
-              String(SETTINGS.boundaryCircle.radius) +
-              " " +
-              String(SETTINGS.boundaryCircle.radius) +
-              " ",
-            rotationDegrees: 0,
-            displayShort0OrLong1: angularWidth > Math.PI ? 1 : 0,
-            displayCCW0OrCW1: 1,
-            endPt: { x: endPt[0], y: endPt[1] }
-          };
-          this.boundaryCircleArcObjectsBack.push(object);
+            // set a minimum
+            const object: svgArcObject = {
+              startPt: { x: fromVector[0], y: fromVector[1] },
+              radiiXYWithSpace:
+                String(SETTINGS.boundaryCircle.radius) +
+                " " +
+                String(SETTINGS.boundaryCircle.radius) +
+                " ",
+              rotationDegrees: 0,
+              displayShort0OrLong1: angularWidth > Math.PI ? 1 : 0,
+              displayCCW0OrCW1: 1,
+              endPt: { x: endPt[0], y: endPt[1] }
+            };
+            this.boundaryCircleArcObjectsBack.push(object);
 
-          boundaryPoints.forEach(pt => {
-            const vertex = this.pool.pop();
-            if (vertex !== undefined) {
-              vertex.x = pt[0];
-              vertex.y = pt[1];
-              this.backFills[currentBackFillIndex].vertices.push(vertex);
-            } else {
-              throw new Error(
-                "Polygon: not enough anchors in the pool to trace a front boundary circle edge."
-              );
-            }
-          });
+            boundaryPoints.forEach(pt => {
+              const vertex = this.pool.pop();
+              if (vertex !== undefined) {
+                vertex.x = pt[0];
+                vertex.y = pt[1];
+                this.backFills[currentBackFillIndex].vertices.push(vertex);
+              } else {
+                throw new Error(
+                  "Polygon: not enough anchors in the pool to trace a front boundary circle edge."
+                );
+              }
+            });
+          }
           // go to the start of the while loop with the next index at the start of a frontToBackIntersection
           frontToBackIndex = nextBiggestAngleIndex;
         }
