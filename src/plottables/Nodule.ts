@@ -3,7 +3,6 @@ import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
 import { StyleOptions, StyleCategory } from "@/types/Styles";
 import {
-  plottableProperties,
   svgArcObject,
   svgGradientType,
   svgStopType,
@@ -242,22 +241,6 @@ export default abstract class Nodule implements Stylable, Resizeable {
     svgReturnString +=
       object.startPt.x.zeroOut() + " " + object.startPt.y.zeroOut() + " ";
     return svgReturnString;
-  }
-
-  //** Applies matrix to the start and end point and changes the rotation to rot */
-  static applyMatrixToSVGArcString(
-    object: svgArcObject,
-    mat: Matrix,
-    rot: number
-  ): svgArcObject {
-    let coords = mat.multiply(object.startPt.x, object.startPt.y, 1);
-    object.startPt.x = coords[0];
-    object.startPt.y = coords[1];
-    coords = mat.multiply(object.endPt.x, object.endPt.y, 1);
-    object.endPt.x = coords[0];
-    object.endPt.y = coords[1];
-    object.rotationDegrees = rot;
-    return object;
   }
 
   static svgTransformMatrixString(

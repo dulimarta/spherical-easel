@@ -17,9 +17,6 @@ import { Anchor } from "two.js/src/anchor";
 import { Path } from "two.js/src/path";
 import {
   svgArcObject,
-  svgGradientType,
-  svgStopType,
-  svgStyleType,
   toSVGType
 } from "@/types";
 

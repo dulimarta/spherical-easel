@@ -11,7 +11,7 @@ import {
 } from "@/types/Styles";
 import { Arc } from "two.js/extras/jsm/arc";
 import { Group } from "two.js/src/group";
-import { svgArcObject, svgStyleType, toSVGType } from "@/types";
+import { svgArcObject, toSVGType } from "@/types";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
@@ -93,9 +93,6 @@ export default class Segment extends Nodule {
   private toVector = new Vector3(); // The segment starts at _startVector and goes toward toVector, toVector is always 90 degrees from the _startVector
   private tempVector = new Vector3(); // Temp vector for figuring out end/mid Vectors
 
-  /** A list of the up to three arc objects that describe the parts of the segment */
-  private _svgArcObjectsFront: svgArcObject[] = [];
-  private _svgArcObjectsBack: svgArcObject[] = [];
   /**
    * The styling variables for the drawn segment. The user can modify these.
    */
@@ -593,12 +590,6 @@ export default class Segment extends Nodule {
   get endParameter(): number {
     return this._endParameter;
   }
-  get svgArcObjectsFront(): svgArcObject[] {
-    return this._svgArcObjectsFront;
-  }
-  get svgArcObjectsBack(): svgArcObject[] {
-    return this._svgArcObjectsBack;
-  }
 
   normalDisplay(): void {
     if (this._frontPartInUse) {
@@ -722,9 +713,6 @@ export default class Segment extends Nodule {
     pointRadius: boolean;
     scaleFactor: number;
   }): toSVGType[] {
-    // reset the list of svgArcObjects
-    this._svgArcObjectsFront = [];
-    this._svgArcObjectsBack = [];
 
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
@@ -811,16 +799,6 @@ export default class Segment extends Nodule {
       svgFrontString += Segment.svgArcString(frontPartObject, true);
       svgFrontString += '"/>'; // end point
 
-      // now make the arcObject independent of the local matrix so it is useful outside of segment (in polygon)
-      if (Nodule.longEnoughToAdd(this._frontPart)) {
-        this._svgArcObjectsFront.push(
-          Segment.applyMatrixToSVGArcString(
-            frontPartObject,
-            this._frontPart.matrix,
-            this._frontExtra.rotation.toDegrees()
-          )
-        );
-      }
       returnSVGObject.layerSVGArray.push([LAYER.foreground, svgFrontString]);
     }
 
@@ -850,17 +828,6 @@ export default class Segment extends Nodule {
         'd="'; // matrix does the rotation, scaling, and translation
       svgFrontString += Segment.svgArcString(frontExtraObject, true);
       svgFrontString += '"/>';
-
-      // now make the arcObject independent of the matrix so it is useful outside of segment (in polygon)
-      if (Nodule.longEnoughToAdd(this._frontExtra)) {
-        this._svgArcObjectsFront.push(
-          Segment.applyMatrixToSVGArcString(
-            frontExtraObject,
-            this._frontPart.matrix,
-            this._frontExtra.rotation.toDegrees()
-          )
-        );
-      }
 
       returnSVGObject.layerSVGArray.push([LAYER.foreground, svgFrontString]);
     }
@@ -920,17 +887,6 @@ export default class Segment extends Nodule {
       svgBackString += Segment.svgArcString(backPartObject, true);
       svgBackString += '"/>'; // end point
 
-      if (Nodule.longEnoughToAdd(this._backPart)) {
-        // now make the arcObject independent of the local matrix so it is useful outside of segment (in polygon)
-        this._svgArcObjectsBack.push(
-          Segment.applyMatrixToSVGArcString(
-            backPartObject,
-            this._backPart.matrix,
-            this._backExtra.rotation.toDegrees()
-          )
-        );
-      }
-
       returnSVGObject.layerSVGArray.push([LAYER.background, svgBackString]);
     }
 
@@ -961,17 +917,6 @@ export default class Segment extends Nodule {
         'd="'; // matrix does the rotation, scaling, and translation
       svgBackString += Segment.svgArcString(backExtraObject, true);
       svgBackString += '"/>';
-
-      // now make the arcObject independent of the matrix so it is useful outside of segment (in polygon)
-      if (Nodule.longEnoughToAdd(this._backExtra)) {
-        this._svgArcObjectsBack.push(
-          Segment.applyMatrixToSVGArcString(
-            backExtraObject,
-            this._backPart.matrix,
-            this._backExtra.rotation.toDegrees()
-          )
-        );
-      }
 
       returnSVGObject.layerSVGArray.push([LAYER.background, svgBackString]);
     }

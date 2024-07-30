@@ -17,9 +17,6 @@ import { Anchor } from "two.js/src/anchor";
 import { Group } from "two.js/src/group";
 import {
   svgArcObject,
-  svgGradientType,
-  svgStopType,
-  svgStyleType,
   toSVGType
 } from "@/types";
 import Settings from "@/views/Settings.vue";
