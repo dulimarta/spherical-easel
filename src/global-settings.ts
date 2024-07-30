@@ -732,7 +732,7 @@ export const SETTINGS = {
   },
   icons: {
     defaultIconSize: 32,
-    defaultInlineIconSize: 25,
+    defaultInlineIconSize: 25, // controls the size of the md
     boundaryCircle: {
       strokeWidth: 1.5,
       color: "#000000FF"

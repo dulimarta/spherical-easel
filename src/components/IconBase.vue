@@ -45,6 +45,7 @@ onMounted((): void => {
   } else {
     iconSizeValue.value = props.iconSize ?? SETTINGS.icons.defaultIconSize;
   }
+  // console.log(iconSizeValue.value)
   const zIcons = SETTINGS.icons as Record<string,any>
   svgFileName = zIcons[props.iconName].props.svgFileName;
   filePath = "../../icons/"+ svgFileName
@@ -889,7 +890,7 @@ svg {
   margin-bottom: -2px;
 }
 .customIcon {
-  width: 1.2em;
+  width: 1.2em;   /* controls the size of the custom icons*/
   height: 1.2em;
 }
 </style>
