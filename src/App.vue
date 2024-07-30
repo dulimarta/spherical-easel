@@ -53,7 +53,6 @@
       The router controls this background and it can be Easel or settings or...
     -->
     <v-main>
-      <!-- <MessageHub></MessageHub> -->
       <router-view />
       <!-- this is the spot where the views controlled by Vue Router will be rendered -->
     </v-main>

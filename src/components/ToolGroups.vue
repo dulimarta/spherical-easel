@@ -1,15 +1,22 @@
 <template>
-  <v-btn
-    elevation="2"
-    v-if="userRole && userRole === 'instructor'"
-    fab
-    size="small"
-    color="primary"
-    @click="toggleEditMode">
-    <v-icon v-if="inEditMode">mdi-check</v-icon>
-    <v-icon v-else>mdi-pencil</v-icon>
-  </v-btn>
-  <CurrentToolSelection />
+  <div
+    :style="{
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingBottom: '4px'
+    }">
+    <CurrentToolSelection />
+    <v-btn
+      icon
+      v-if="userRole && userRole === 'instructor'"
+      size="x-small" class="mr-1"
+      color="green-darken-1"
+      @click="toggleEditMode">
+      <v-icon v-if="inEditMode">mdi-check</v-icon>
+      <v-icon v-else>mdi-pencil</v-icon>
+    </v-btn>
+  </div>
   <v-item-group
     v-model="selectedTool"
     @update:model-value="toolSelectionChanged">
@@ -93,11 +100,11 @@ const inProductionMode = ref(false);
 const inEditMode = ref(false);
 const expandedPanel: Ref<number | undefined> = ref(undefined);
 const buttonGroup: Ref<Array<ToolButtonGroup>> = ref([]);
-let permissibleButtonGroup: Array<ToolButtonGroup> = []
+let permissibleButtonGroup: Array<ToolButtonGroup> = [];
 const currentToolset: Array<ActionMode> = [];
 const selectedTool: Ref<ActionMode | null> = ref("rotate");
 let lastSelectedTool: ActionMode | null = null;
-const appFeature = inject('features')
+const appFeature = inject("features");
 
 /* This is a variable that does NOT belong in the global settings but I don't know where else to
   put it. This is the list of tools that should be displayed*/
@@ -105,10 +112,12 @@ const appFeature = inject('features')
 
 onBeforeMount((): void => {
   inProductionMode.value = import.meta.env.MODE === "production";
-  if (appFeature !== 'beta') {
-    permissibleButtonGroup = toolGroups.filter(grp => grp.group.match(/^TransformationTool/) === null)
+  if (appFeature !== "beta") {
+    permissibleButtonGroup = toolGroups.filter(
+      grp => grp.group.match(/^TransformationTool/) === null
+    );
   } else {
-    permissibleButtonGroup = toolGroups.splice(0)
+    permissibleButtonGroup = toolGroups.splice(0);
   }
   buttonGroup.value.push(...permissibleButtonGroup);
   //sort the button list by id so that we don't have to reorder the list each item we add a new button
@@ -116,8 +125,7 @@ onBeforeMount((): void => {
   buttonGroup.value.forEach((gr: ToolButtonGroup) => {
     gr.children.sort((a: ToolButtonType, b: ToolButtonType) => a.id - b.id);
   });
-  if (appFeature !== 'beta') {
-
+  if (appFeature !== "beta") {
   }
   currentToolset.push(...includedTools.value);
 });
@@ -157,7 +165,7 @@ function doTransformationEffect(): void {
         EventBus.fire("expand-measurement-sheet", {});
       } else {
         EventBus.fire("show-alert", {
-          key: t("createMeasurementForTranslation",),
+          key: t("createMeasurementForTranslation"),
           type: "info"
         });
       }
