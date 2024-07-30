@@ -8,11 +8,10 @@
     }">
     <CurrentToolSelection />
     <v-btn
-      elevation="2"
+      icon
       v-if="userRole && userRole === 'instructor'"
-      fab
-      size="small"
-      color="primary"
+      size="x-small" class="mr-1"
+      color="green-darken-1"
       @click="toggleEditMode">
       <v-icon v-if="inEditMode">mdi-check</v-icon>
       <v-icon v-else>mdi-pencil</v-icon>

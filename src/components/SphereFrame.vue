@@ -418,7 +418,7 @@ onBeforeUnmount((): void => {
 watch(
   [() => props.availableWidth, () => props.availableHeight],
   ([width, height]): void => {
-    console.debug(`Available rectangle WxH ${width}x${height}`)
+    // console.debug(`Available rectangle WxH ${width}x${height}`)
     twoInstance.width = width;
     twoInstance.height = height;
     // groups.forEach(z => {
@@ -1149,7 +1149,7 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
   justify-content: center;
 }
 .anchored {
-  margin: 0px;
+  margin: 8px;
   position: absolute;
 }
 .left {

@@ -19,7 +19,7 @@
   background-color: transparent;">
   </!--v-navigation-drawer-->
   <div id="toolbox-and-sphere">
-      <AppNavigation id="toolbox" ref="toolbox" />
+    <AppNavigation @drawer-width-changed="(w) => {navDrawerWidth = w}"/>
 
     <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
@@ -172,17 +172,8 @@ const leftShortcutGroup = computed(() => [
   TOOL_DICTIONARY.get("undoAction")!,
   TOOL_DICTIONARY.get("redoAction")!
 ]);
-// const rightShortcutGroup = computed(() => [
-//   TOOL_DICTIONARY.get("zoomOut")!,
-//   TOOL_DICTIONARY.get("zoomIn")!,
-//   TOOL_DICTIONARY.get("zoomFit")!
-// ]);
 
-// const leftPane: Ref<HTMLElement | null> = ref(null);
-// const currentCanvasSize = ref(0); // Result of height calculation will be passed to <v-responsive> via this variable
-
-// function buttonList = buttonList;
-// const toolboxMinified = ref(false);
+const navDrawerWidth = ref(320)
 const previewClass = ref("");
 const constructionInfo = ref<any>({});
 const localIsEarthMode = ref(false);
@@ -226,7 +217,7 @@ const availHeight = ref(100);
 const availWidth = ref(100);
 function adjustCanvasSize(): void {
   // Total navigation drawer width is 400 pixels
-  availWidth.value = display.width.value - 400
+  availWidth.value = display.width.value - navDrawerWidth.value - 80
   // The MessageHub height is set to 50 pixels
   availHeight.value =
     display.height.value - mainRect.value.bottom - mainRect.value.top - 60;
@@ -398,9 +389,6 @@ onBeforeRouteLeave(
   }
 );
 
-// function handleToolboxMinify(state: boolean) {
-//   toolboxMinified.value = state;
-// }
 </script>
 <style scoped lang="scss">
 #sphere-and-msghub {

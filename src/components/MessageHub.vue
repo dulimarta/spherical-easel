@@ -102,7 +102,7 @@
         <v-card-text>
           <v-alert
             class="my-1 py-0"
-            border="end"
+            border="start"
             variant="outlined"
             :border-color="alertType(msg)"
             v-for="(msg, index) in filteredMessages"
@@ -208,7 +208,7 @@ function shortMessage(m: MessageType): string {
 function iconType(m: MessageType): string {
   return m.type === "directive" ? "mdi-lightbulb" : (m.type as AlertType);
 }
-function alertType(m: MessageType): AlertType {
+function alertType(m: MessageType): AlertType{
   return m.type === "directive" ? "info" : (m.type as AlertType);
 }
 function pretty(m: MessageType): string {

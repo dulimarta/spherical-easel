@@ -9,6 +9,7 @@
       fixed
       :mobile="false"
       :expand-on-hover="expandOnHover"
+      disable-resize-watcher
       :rail="rail"
       :rail-width="64"
       @mouseover="onNavigationHover"
@@ -21,25 +22,31 @@
       </v-list>
       <v-divider color="#BDF3CB"></v-divider>
 
-      <v-list density="compact" nav active-class="active">
+      <v-list v-if="bigDrawerVisible"
+        density="compact"
+        v-model:selected="activeItem"
+        open-strategy="single"
+        nav
+        active-class="active">
         <v-list-item
-          @click="setHover(0)"
-          prepend-icon=$toolsTab
+          @click="setHover"
+          prepend-icon="$toolsTab"
           title="Tools"
           value="tools"></v-list-item>
         <v-list-item
-          @click="setHover(1)"
-          prepend-icon=$objectsTab
+          @click="setHover"
+          prepend-icon="$objectsTab"
           title="Objects"
-          value="object"></v-list-item>
+          value="objects"></v-list-item>
         <v-list-item
-          @click="setHover(2)"
-          prepend-icon=$constructionsTab
+          @click="setHover"
+          prepend-icon="$constructionsTab"
           title="Construction"
-          value="construction"></v-list-item>
-        <v-list-item v-if="appFeature === 'beta'"
-          @click="setHover(3)"
-          prepend-icon=$earthTab
+          value="constructions"></v-list-item>
+        <v-list-item
+          v-if="appFeature === 'beta'"
+          @click="setHover"
+          prepend-icon="$earthTab"
           title="Earth"
           value="earth"></v-list-item>
       </v-list>
@@ -70,27 +77,32 @@
       </template>
     </v-navigation-drawer>
     <v-navigation-drawer
-      width="320" :mobile="false"
+      width="320"
+      @update:model-value="navigationMonitor"
       :style="{
         backgroundColor: '#B9D9C1',
         border: show ? '' : '0px'
       }"
       style="padding-left: 8px; padding-top: 8px">
       <!-- <span>{{headerItem[activeItem[0]]  }}</span> -->
-      <ToolGroups v-if="activeItem === 0" />
-      <ObjectTree v-if="activeItem === 1" />
-      <ConstructionLoader v-if="activeItem === 2" />
-      <EarthToolVue v-if="activeItem === 3" />
-      <!-- <v-list>
-          <v-list-item :title="headerItem[activeItem[0]]" :value="headerItem[activeItem[0]]"></v-list-item>
-        </v-list> -->
+      <ToolGroups v-if="activeItem[0] === 'tools'" />
+      <ObjectTree v-if="activeItem[0] === 'objects'" />
+      <ConstructionLoader v-if="activeItem[0] === 'constructions'" />
+      <EarthToolVue v-if="activeItem[0] === 'earth'" />
     </v-navigation-drawer>
     <v-main :style="{ height: height + 'px' }"></v-main>
   </v-app>
 </template>
 
 <script lang="ts" setup>
-import { onBeforeMount, onBeforeUnmount, onMounted, ref, computed, inject } from "vue";
+import {
+  onBeforeMount,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  computed,
+  inject
+} from "vue";
 import ToolGroups from "@/components/ToolGroups.vue";
 import EventBus from "@/eventHandlers/EventBus";
 import ObjectTree from "./ObjectTree.vue";
@@ -105,50 +117,39 @@ import { useLayout } from "vuetify";
 import { useDisplay } from "vuetify";
 // import { computed } from "vue";
 // import { set } from "@vueuse/core";
-const appFeature = inject('features')
+const appFeature = inject("features");
 
 const seStore = useSEStore();
 const acctStore = useAccountStore();
 const { actionMode } = storeToRefs(seStore);
 // const props = defineProps<{ minified: boolean }>();
+const announce = defineEmits<{
+  drawerWidthChanged: [width:number]
+}>()
 const { height, width, name } = useDisplay();
 // eslint-disable-next-line no-unused-vars
 // const temp = ref("0px");
 const rail = ref(true);
 const show = ref(false);
+const bigDrawerVisible = ref(true)
 const mouseOnDrawer = ref(false);
-const activeItem = ref(0);
+const activeItem = ref(["tools"]);
 // eslint-disable-next-line no-unused-vars
 // const headerItem = ["Tools", "Objects", "Construction", "Earth"];
 const expandOnHover = ref(true);
-// const screenStyle = computed(() => {
-//   return {
-//     height: height.value + "px"
-//   };
-// });
-// ('layers')')
 const inProductionMode = computed((): boolean => {
   return import.meta.env.MODE === "production";
 });
 
-function setHover(newActive: number): void {
-  rail.value = true;
+function navigationMonitor(shown: boolean) {
+  bigDrawerVisible.value = shown
+  announce('drawerWidthChanged', shown ? 320 : 0)
+}
+
+function setHover() {
+  rail.value = true; // shrink the leftmost navigation drawer
+  // Disable expand-on-hover for 1 second
   expandOnHover.value = false;
-  activeItem.value = newActive;
-  // if (newActive === activeItem.value) {
-  // activeItem.value.pop();
-  // setTimeout(() => {
-  //   show.value = !show.value;
-  // }, 100);
-  // } else if (activeItem.value.length === 0) {
-  // activeItem.value.push(newActive);
-  // setTimeout(() => {
-  //   show.value = !show.value;
-  // }, 100);
-  // } else {
-  // activeItem.value.pop();
-  // activeItem.value.push(newActive);
-  // }
   setTimeout(() => {
     expandOnHover.value = true;
   }, 1000);
