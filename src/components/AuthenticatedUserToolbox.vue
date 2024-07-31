@@ -296,6 +296,7 @@ const {
   canvasWidth,
   sePoints,
   seLines,
+  seCircles,
   seSegments
 } = storeToRefs(seStore);
 const { t } = useI18n();
@@ -510,14 +511,18 @@ onUpdated(() => {
       possibleAxis.set(segment.id, segment.normalVector);
     }
   });
+  seCircles.value.forEach(circle => {
+    if (circle.exists && circle.label) {
+      possibleAxisItems.value.push({
+        text: t("circle") + circle.label.ref.shortUserName,
+        value: circle.id
+      });
+      possibleAxis.set(circle.id, circle.centerSEPoint.locationVector);
+    }
+  });
+
   if (possibleAxisItems.value.length > 0) {
     axisId.value = possibleAxisItems.value[0].value;
-  } else {
-    axisId.value = undefined;
-  }
-  if (axisId.value == undefined) {
-    exportFileTypeItems.value = ["SVG", "PNG", "JPEG", "GIF", "BMP"];
-  } else {
     exportFileTypeItems.value = [
       "SVG",
       "Animated SVG",
@@ -526,7 +531,11 @@ onUpdated(() => {
       "GIF",
       "BMP"
     ];
+  } else {
+    axisId.value = undefined;
+    exportFileTypeItems.value = ["SVG", "PNG", "JPEG", "GIF", "BMP"];
   }
+
   selectedExportFormat.value = "SVG";
   updateExportPreview();
 
@@ -768,7 +777,7 @@ function previewOrDefault(dataUrl: string | undefined): string {
     "makePublic": "Make construction publicly available",
     "firestoreSaveError": "Construction was not saved: {error}"
   },
-  "sliderFileDimensions": "Exported file size {widthHeight}",
+  "sliderFileDimensions": "Exported file size {widthHeight} in pixels",
   "exportFormat": "Image Format",
   "nonScalingStroke": "Do not scale SVG stroke",
   "nonScalingPointRadius": "Do not scale points",
@@ -790,6 +799,7 @@ function previewOrDefault(dataUrl: string | undefined): string {
   "animatedSVGOptions": "Animated SVG Options",
   "line": "Line: ",
   "segment": "Segment: ",
-  "point": "Point: "
+  "point": "Point: ",
+  "circle": "Circle: "
 }
 </i18n>
