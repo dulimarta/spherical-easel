@@ -80,6 +80,7 @@ import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler
 import PerpendicularLineThruPointHandler from "@/eventHandlers/PerpendicularLineThruPointHandler";
 import TangentLineThruPointHandler from "@/eventHandlers/TangentLineThruPointHandler";
 import EllipseHandler from "@/eventHandlers/EllipseHandler";
+import IconFactoryHandler from "@/eventHandlers/IconFactoryHandler";
 import PolygonHandler from "@/eventHandlers/PolygonHandler";
 import NSectSegmentHandler from "@/eventHandlers/NSectSegmentHandler";
 import NSectAngleHandler from "@/eventHandlers/NSectAngleHandler";
@@ -192,6 +193,7 @@ let coordinateTool: CoordinateHandler | null = null;
 let toggleLabelDisplayTool: ToggleLabelDisplayHandler | null = null;
 let perpendicularLineThruPointTool: PerpendicularLineThruPointHandler | null =
   null;
+  let iconFactoryTool: IconFactoryHandler | null = null;
 let tangentLineThruPointTool: TangentLineThruPointHandler | null = null;
 let measureTriangleTool: PolygonHandler | null = null;
 let measurePolygonTool: PolygonHandler | null = null;
@@ -863,7 +865,14 @@ watch(
         }
         currentTool = pointOnOneDimensionalTool;
         break;
-
+        case "iconFactory":
+        // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the click (and the tool should be the same)
+        if (!iconFactoryTool) {
+          iconFactoryTool = new IconFactoryHandler();
+        }
+        iconFactoryTool.createIconPaths();
+        seStore.revertActionMode();
+        break;
       case "segmentLength":
         if (!segmentLengthTool) {
           segmentLengthTool = new SegmentLengthHandler(layers);
