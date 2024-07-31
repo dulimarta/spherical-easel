@@ -30,6 +30,7 @@ export default class IconFactoryHandler implements ToolStrategy {
     // No code
   }
   createIconPaths(): void {
-    EventBus.fire("export-current-svg", {});
+    console.log("her")
+    EventBus.fire("export-current-svg-for-icon", {});
   }
 }

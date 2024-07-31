@@ -193,7 +193,7 @@ let coordinateTool: CoordinateHandler | null = null;
 let toggleLabelDisplayTool: ToggleLabelDisplayHandler | null = null;
 let perpendicularLineThruPointTool: PerpendicularLineThruPointHandler | null =
   null;
-  let iconFactoryTool: IconFactoryHandler | null = null;
+let iconFactoryTool: IconFactoryHandler | null = null;
 let tangentLineThruPointTool: TangentLineThruPointHandler | null = null;
 let measureTriangleTool: PolygonHandler | null = null;
 let measurePolygonTool: PolygonHandler | null = null;
@@ -303,6 +303,7 @@ onBeforeMount((): void => {
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   EventBus.listen("update-two-instance", updateTwoInstance);
   EventBus.listen("update-fill-objects", updateObjectsWithFill);
+  EventBus.listen("export-current-svg-for-icon", getCurrentSVGForIcon);
 });
 
 onMounted((): void => {
@@ -403,6 +404,7 @@ onBeforeUnmount((): void => {
   EventBus.unlisten("delete-node");
   EventBus.unlisten("update-two-instance");
   EventBus.unlisten("update-fill-objects");
+  EventBus.unlisten("export-current-svg-for-icon");
 });
 
 watch(
@@ -708,6 +710,82 @@ function updateObjectsWithFill() {
     p.update();
   }
 }
+
+// function getCurrentSVGForIcon(): void {
+//   const svgRoot = canvas.value?.querySelector("svg") as SVGElement;
+//   //Dump a copy of the Nodule.idPlottableDescriptionMap into the console to it tso.js object
+//   console.log(
+//     "Nodule.idPlottableDescriptionMap",
+//     Nodule.idPlottableDescriptionMap
+//   );
+
+//   // Make a duplicate of the SVG tree
+//   const svgElement = svgRoot.cloneNode(true) as SVGElement;
+//   svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+//   //remove all the text items
+//   const textGroups = svgElement.querySelectorAll("text");
+//   for (let i = 0; i < textGroups.length; i++) {
+//     textGroups[i].remove();
+//   }
+//   // remove all the hidden paths or paths with no anchors
+//   // Also remove the straight edge start/end front/back for the angle markers (they look horrible in the icon)
+//   const allElements = svgElement.querySelectorAll("path");
+//   for (let i = 0; i < allElements.length; i++) {
+//     const element = allElements[i];
+//     const description = Nodule.idPlottableDescriptionMap.get(
+//       element.getAttribute("id") ?? ""
+//     );
+
+//     if (
+//       element.getAttribute("visibility") === "hidden" ||
+//       element.getAttribute("d") === "" ||
+//       (description?.type === "angleMarker" && description.part === "edge")
+//     ) {
+//       element.remove();
+//     }
+//   }
+
+//   // remove all SVG groups with no children (they are are result of empty groups)
+//   const groups = svgElement.querySelectorAll("g");
+//   for (let i = 0; i < groups.length; i++) {
+//     const group = groups[i];
+//     if (group.childElementCount === 0) {
+//       group.remove();
+//     }
+//   }
+//   const iconArray = [];
+//   const defs = svgElement.querySelectorAll("defs");
+//   for (let i = 0; i < defs.length; i++) {
+//     iconArray.push(defs[i].outerHTML);
+//   }
+
+//   const paths = svgElement.querySelectorAll("path");
+//   for (let i = 0; i < paths.length; i++) {
+//     paths[i].setAttribute("vector-effect", "non-scaling-stroke");
+
+//     // Into each path inject four new attributes, which will be removed later
+//     const description = Nodule.idPlottableDescriptionMap.get(
+//       paths[i].getAttribute("id") ?? ""
+//     );
+//     if (description === undefined) {
+//       throw new Error(`IconBase - ${paths[i]} has no id.`);
+//     }
+//     paths[i].setAttribute("type", description.type);
+//     paths[i].setAttribute("side", description.side);
+//     paths[i].setAttribute("myfill", String(description.fill));
+//     paths[i].setAttribute("part", description.part);
+
+//     iconArray.push(paths[i].outerHTML);
+//   }
+
+//   // We are NOT actually saving an SVG content,
+//   // but it is actually a plain text payload
+//   // The ";" delimiter is required by IconBase.vue
+//   var blob = new Blob([iconArray.join(";")], {
+//     type: "text/plain;charset=utf-8"
+//   });
+//   FileSaver.saveAs(blob, "iconXXXPaths.svg");
+// }
 // dialogBoxIsActive(e: { active: boolean }): void {
 //   // console.debug(`dialog box is active is ${e.active}`);
 //   if (hideTool) {
@@ -729,6 +807,33 @@ function updateObjectsWithFill() {
 //     toggleLabelDisplayTool.disableKeyHandler = e.active;
 //   }
 // }
+
+function getCurrentSVGForIcon(): void {
+  let iconSize = 40;
+  let svgBlock = "";
+  const nonScalingOptions = {
+    stroke: true,
+    text: true,
+    pointRadius: true,
+    scaleFactor: 1
+  };
+
+  const animateOptions = undefined
+  // {
+  //   axis: new Vector3(),
+  //   degrees: Math.PI / 8,
+  //   duration: 0.25, // in seconds
+  //   frames: 30,
+  //   repeat: 1
+  // };
+
+  svgBlock = Command.dumpSVG(iconSize, nonScalingOptions, animateOptions);
+
+  let svgBlob = new Blob([svgBlock], { type: "image/svg+xml;charset=utf-8" });
+
+  const urlObject = URL.createObjectURL(svgBlob);
+  FileSaver.saveAs(urlObject, "iconXXXPaths.svg");
+}
 /**
  * Watch the actionMode in the store. This is the two-way binding of variables in the Pinia Store.  Notice that this
  * is a vue component so we are able to Watch for changes in variables in the store. If this was not a vue component
@@ -865,7 +970,7 @@ watch(
         }
         currentTool = pointOnOneDimensionalTool;
         break;
-        case "iconFactory":
+      case "iconFactory":
         // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the click (and the tool should be the same)
         if (!iconFactoryTool) {
           iconFactoryTool = new IconFactoryHandler();

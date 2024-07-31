@@ -583,7 +583,7 @@ async function doSave(): Promise<void> {
 }
 
 function updateExportPreview(): void {
-  console.log("update export preview")
+  // console.log("update export preview")
   let svgBlock = "";
   const nonScalingOptions = {
     stroke: svgNonScaling.value.includes("stroke"),
@@ -660,7 +660,6 @@ function checkAnimationRotationAngle(): void {
     svgAnimationAngle.value = 360;
   }
 }
-
 function animationDurationRule(value: number | undefined): boolean | string {
   if (value != undefined && value != null) {
     if (value < 0.5 || 10 < value) {
@@ -669,7 +668,6 @@ function animationDurationRule(value: number | undefined): boolean | string {
   }
   return true;
 }
-
 function checkAnimationDuration(): void {
   if (
     svgAnimationDuration.value == undefined ||
@@ -681,7 +679,6 @@ function checkAnimationDuration(): void {
     svgAnimationDuration.value = 1000;
   }
 }
-
 function animationNumberOfFramesRule(
   value: number | undefined
 ): boolean | string {
@@ -696,7 +693,6 @@ function animationNumberOfFramesRule(
   }
   return true;
 }
-
 function checkAnimationNumberOfFrames(): void {
   if (
     svgAnimationFrames.value == undefined ||
@@ -710,7 +706,6 @@ function checkAnimationNumberOfFrames(): void {
     svgAnimationFrames.value = Math.trunc(svgAnimationFrames.value);
   }
 }
-
 function animationRepeatRule(value: number | undefined): boolean | string {
   if (
     value == undefined ||
@@ -723,7 +718,6 @@ function animationRepeatRule(value: number | undefined): boolean | string {
   }
   return true;
 }
-
 function checkAnimationRepeatRule(): void {
   if (
     svgAnimationRepeat.value == undefined ||
