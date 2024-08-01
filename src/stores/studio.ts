@@ -12,14 +12,12 @@ export type StudioDetails = {
   participants: Array<string>;
 };
 
-const serverAddr =
-import.meta.env.VITE_APP_SERVER_BASEURL +
-":" +
-import.meta.env.VITE_APP_SERVER_PORT;
+// Notice: The Socket IO server shares the same PORT as the HTTP server
+const serverAddr = import.meta.env.VITE_APP_SERVER_BASEURL
 
 export const useTeacherStudioStore = defineStore("studio-teacher", () => {
   const socket: Socket = io(serverAddr, {
-    autoConnect: false
+    autoConnect: true
   });
   console.debug("Teacher studio attempt to connect to", serverAddr, socket)
   const myStudio: Ref<StudioDetails | null> = ref(null);
