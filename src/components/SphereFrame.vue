@@ -80,7 +80,7 @@ import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler
 import PerpendicularLineThruPointHandler from "@/eventHandlers/PerpendicularLineThruPointHandler";
 import TangentLineThruPointHandler from "@/eventHandlers/TangentLineThruPointHandler";
 import EllipseHandler from "@/eventHandlers/EllipseHandler";
-import IconFactoryHandler from "@/eventHandlers/IconFactoryHandler";
+import IconFactoryHandler from "../eventHandlers/IconFactoryHandler";
 import PolygonHandler from "@/eventHandlers/PolygonHandler";
 import NSectSegmentHandler from "@/eventHandlers/NSectSegmentHandler";
 import NSectAngleHandler from "@/eventHandlers/NSectAngleHandler";
