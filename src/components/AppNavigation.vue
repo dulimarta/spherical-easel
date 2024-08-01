@@ -7,7 +7,9 @@
   <v-app>
     <v-navigation-drawer
       fixed
+      :mobile="false"
       :expand-on-hover="expandOnHover"
+      disable-resize-watcher
       :rail="rail"
       :rail-width="64"
       @mouseover="onNavigationHover"
@@ -19,23 +21,31 @@
           title="Spherical Easel"></v-list-item>
       </v-list>
       <v-divider color="#BDF3CB"></v-divider>
-      <v-list density="compact" v-model:selected="activeItem"
-      open-strategy="single"
-      nav active-class="active">
+
+      <v-list v-if="bigDrawerVisible"
+        density="compact"
+        v-model:selected="activeItem"
+        open-strategy="single"
+        nav
+        active-class="active">
         <v-list-item
+          @click="setHover"
           prepend-icon="$toolsTab"
           title="Tools"
           value="tools"></v-list-item>
         <v-list-item
+          @click="setHover"
           prepend-icon="$objectsTab"
           title="Objects"
           value="objects"></v-list-item>
         <v-list-item
+          @click="setHover"
           prepend-icon="$constructionsTab"
           title="Construction"
           value="constructions"></v-list-item>
         <v-list-item
           v-if="appFeature === 'beta'"
+          @click="setHover"
           prepend-icon="$earthTab"
           title="Earth"
           value="earth"></v-list-item>
@@ -78,6 +88,7 @@
     </v-navigation-drawer>
     <v-navigation-drawer
       width="320"
+      @update:model-value="navigationMonitor"
       :style="{
         backgroundColor: '#B9D9C1',
         border: show ? '' : '0px'
@@ -88,9 +99,6 @@
       <ObjectTree v-if="activeItem[0] === 'objects'" />
       <ConstructionLoader v-if="activeItem[0] === 'constructions'" />
       <EarthToolVue v-if="activeItem[0] === 'earth'" />
-      <!-- <v-list>
-          <v-list-item :title="headerItem[activeItem[0]]" :value="headerItem[activeItem[0]]"></v-list-item>
-        </v-list> -->
     </v-navigation-drawer>
     <v-main :style="{ height: height + 'px' }"></v-main>
   </v-app>
@@ -101,7 +109,7 @@ import {
   onBeforeMount,
   onBeforeUnmount,
   onMounted,
-  ref, Ref,
+  ref,
   computed,
   inject
 } from "vue";
@@ -120,21 +128,40 @@ const appFeature = inject("features");
 
 const seStore = useSEStore();
 const { actionMode } = storeToRefs(seStore);
+// const props = defineProps<{ minified: boolean }>();
+const announce = defineEmits<{
+  drawerWidthChanged: [width:number]
+}>()
 const { height, width, name } = useDisplay();
 // eslint-disable-next-line no-unused-vars
 // const temp = ref("0px");
 const rail = ref(true);
 const show = ref(false);
+const bigDrawerVisible = ref(true)
 const mouseOnDrawer = ref(false);
-const activeItem:Ref<Array<"tools"|"objects"|"constructions"|"earth">> = ref(["tools"]);
+const activeItem = ref(["tools"]);
 // eslint-disable-next-line no-unused-vars
 // const headerItem = ["Tools", "Objects", "Construction", "Earth"];
 const expandOnHover = ref(true);
-
 const inProductionMode = computed((): boolean => {
   return import.meta.env.MODE === "production";
 });
 
+function navigationMonitor(shown: boolean) {
+  bigDrawerVisible.value = shown
+  announce('drawerWidthChanged', shown ? 320 : 0)
+}
+
+function setHover() {
+  rail.value = true; // shrink the leftmost navigation drawer
+  // Disable expand-on-hover for 1 second
+  expandOnHover.value = false;
+  setTimeout(() => {
+    expandOnHover.value = true;
+  }, 1000);
+}
+// const minified = ref(false);
+// const emit = defineEmits(["minifyToggled"]);
 /* Copy global setting to local variable */
 const activeLeftDrawerTab = ref(0);
 onBeforeMount((): void => {

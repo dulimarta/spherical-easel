@@ -1148,7 +1148,7 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
   justify-content: center;
 }
 .anchored {
-  margin: 0px;
+  margin: 8px;
   position: absolute;
 }
 .left {

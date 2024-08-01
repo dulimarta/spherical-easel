@@ -1,19 +1,25 @@
 <template>
-  <template v-if="activeStudioId === null">
+  <div
+    :style="{
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingBottom: '4px'
+    }">
+    <CurrentToolSelection />
     <v-btn
-      elevation="2"
+      icon
       v-if="userRole && userRole === 'instructor'"
-      fab
-      size="small"
-      color="primary"
+      size="x-small"
+      class="mr-1"
+      color="green-darken-1"
       @click="toggleEditMode">
       <v-icon v-if="inEditMode">mdi-check</v-icon>
       <v-icon v-else>mdi-pencil</v-icon>
     </v-btn>
-    <CurrentToolSelection />
-  </template>
-  <span v-else>Active Studio: {{ activeStudioTitle }}</span>
+  </div>
   <v-item-group
+    v-if="activeStudioId === null"
     v-model="selectedTool"
     @update:model-value="toolSelectionChanged">
     <v-expansion-panels class="pr-2" v-model="expandedPanel">
@@ -72,6 +78,7 @@
       </v-expansion-panel>
     </v-expansion-panels>
   </v-item-group>
+  <span v-else>Active Studio: {{ activeStudioTitle }}</span>
 </template>
 
 <script lang="ts" setup>

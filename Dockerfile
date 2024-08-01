@@ -2,8 +2,9 @@
 # Reference: https://vuejs.org/v2/cookbook/dockerize-vuejs-app.html
 # Use Alpine NodeJS as the base image for both dev and production
 
-# Run the following docker command to build the image
-#     docker build -t dulimarta/easelgeo
+# Run the following docker command to build the image (notice the DOT at the end)
+#     docker build -t dulimarta/easelgeo .
+
 FROM node:18-alpine AS build-stage
 
 

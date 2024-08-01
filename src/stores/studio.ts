@@ -21,6 +21,7 @@ export const useTeacherStudioStore = defineStore("studio-teacher", () => {
   const socket: Socket = io(serverAddr, {
     autoConnect: false
   });
+  console.debug("Teacher studio attempt to connect to", serverAddr, socket)
   const myStudio: Ref<StudioDetails | null> = ref(null);
 
   const socketID = computed(() => socket.id)
@@ -35,6 +36,7 @@ export const useTeacherStudioStore = defineStore("studio-teacher", () => {
     studioName: string,
     who: string
   ): Promise<string> {
+    console.debug("Attempt to create studio", studioName, "on", socket)
     if (!socket.connected) {
       socket.connect();
     }
