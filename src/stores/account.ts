@@ -195,6 +195,7 @@ export const useAccountStore = defineStore("acct", () => {
     starredConstructionIDs.value.splice(0)
     userEmail.value = undefined
     userDisplayedName.value = undefined
+    favoriteTools.value = []
     await signOut(appAuth);
   }
 

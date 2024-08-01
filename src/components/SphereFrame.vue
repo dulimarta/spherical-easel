@@ -126,7 +126,6 @@ const {
   zoomMagnificationFactor,
   zoomTranslation,
   seLabels,
-  // twojsLayers: layers,
   isEarthMode
 } = storeToRefs(seStore);
 const acctStore = useAccountStore();

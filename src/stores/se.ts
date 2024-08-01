@@ -551,13 +551,20 @@ export const useSEStore = defineStore("se", () => {
       });
   }
   //#region magnificationUpdate
-  function setZoomMagnificationFactor(mag: number): void {
-    //console.debug(`setZoomMagFactor ${mag}`);
-    EventBus.fire("magnification-updated", {
-      factor: zoomMagnificationFactor.value / mag
-    });
-    // this.previousZoomMagnificationFactor = ;
-    zoomMagnificationFactor.value = mag;
+  function setZoomMagnificationFactor(magOrRatio: number, ratio: boolean = false): void {
+    if (!ratio) {
+      const newFactor = zoomMagnificationFactor.value / magOrRatio
+      EventBus.fire("magnification-updated", {
+        factor: zoomMagnificationFactor.value / magOrRatio
+      });
+      // this.previousZoomMagnificationFactor = ;
+      zoomMagnificationFactor.value = magOrRatio;
+    } else {
+      EventBus.fire("magnification-updated", {
+        factor: magOrRatio
+      });
+      zoomMagnificationFactor.value /= magOrRatio;
+    }
   }
   //#endregion magnificationUpdate
   function setZoomTranslation(vec: number[]): void {
