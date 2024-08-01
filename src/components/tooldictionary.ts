@@ -344,4 +344,12 @@ TOOL_DICTIONARY.set("select", {
     toolGroup: "MeasuredObjectTools",
     toolTipMessage: "buttons.CreateMeasuredCircleToolTipMessage",
     toolUseMessage: "buttons.CreateMeasuredCircleToolUseMessage"
+  })
+  .set("iconFactory", {
+    id: 0,
+    action: "iconFactory",
+    displayedName: "buttons.CreateIconDisplayedName",
+    toolGroup: "DeveloperOnlyTools",
+    toolTipMessage: "buttons.CreateIconToolTipMessage",
+    toolUseMessage: "buttons.CreateIconToolUseMessage"
   });

@@ -71,6 +71,10 @@ const toolGroupInternal: Array<ToolGroup> = [
   {
     group: "MeasuredObjectTools",
     tools: ["measuredCircle"]
+  },
+  {
+    group: "DeveloperOnlyTools",
+    tools: ["iconFactory"]
   }
 ];
 

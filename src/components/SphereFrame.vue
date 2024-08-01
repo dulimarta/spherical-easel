@@ -786,6 +786,7 @@ function updateObjectsWithFill() {
 //   });
 //   FileSaver.saveAs(blob, "iconXXXPaths.svg");
 // }
+
 // dialogBoxIsActive(e: { active: boolean }): void {
 //   // console.debug(`dialog box is active is ${e.active}`);
 //   if (hideTool) {
