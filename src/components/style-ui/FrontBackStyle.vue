@@ -449,7 +449,7 @@ onBeforeMount((): void => {
 
   for (
     let s = SETTINGS.style.minAngleMarkerRadiusPercent;
-    s < SETTINGS.style.maxAngleMarkerRadiusPercent;
+    s <= SETTINGS.style.maxAngleMarkerRadiusPercent;
     s += 20
   )
     angleMarkerRadiusSelectorThumbStrings.push(s.toFixed(0) + "%")
