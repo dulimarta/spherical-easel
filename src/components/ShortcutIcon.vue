@@ -7,8 +7,8 @@
     @click="invokeAction">
     <v-icon>{{ model.icon ?? "$" + model.action }}</v-icon>
     <v-tooltip activator="parent" location="bottom">
-    {{ t(model.toolTipMessage) }}
-  </v-tooltip>
+      {{ t(model.toolTipMessage) }}
+    </v-tooltip>
   </v-btn>
 </template>
 
@@ -20,14 +20,14 @@ import { ref, onMounted, onBeforeUnmount } from "vue"
 import { Command } from "@/commands/Command"
 import { useI18n } from "vue-i18n"
 const seStore = useSEStore()
-const {t} = useI18n()
+const { t } = useI18n()
 const props = defineProps<{
   model: ToolButtonType
 }>()
 let disabled = ref(false)
 /** mounted() is part of VueJS lifecycle hooks */
 onMounted((): void => {
-  console.debug("Incoming model is ", props.model)
+  // console.debug("Incoming model is ", props.model)
   if (props.model.action === "undoAction") {
     EventBus.listen("undo-enabled", setEnabled)
     disabled.value = Command.commandHistory.length == 0 // initially value
@@ -52,6 +52,5 @@ function invokeAction(): void {
   if (typeof props.model.clickFunc === "function") {
     props.model.clickFunc!()
   } else if (props.model.action) seStore.setActionMode(props.model.action)
-
 }
 </script>

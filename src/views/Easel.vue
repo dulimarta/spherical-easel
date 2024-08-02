@@ -2,8 +2,12 @@
   <div
     style="
       position: fixed;
+      /* Use the following background-color for debugging purposes */
+      /* background-color: #77acddc4; */
       right: 8px;
       width: 80px;
+      margin-top: 120px;
+      margin-bottom: 180px;
       top: 0;
       bottom: 0;
       display: flex;
@@ -11,9 +15,8 @@
       justify-content: center;
       z-index: 1;
     ">
-    <!-- <div style="height: 60%; background: white; border: 1px solid black; border-radius: 0.5em;"> -->
+
     <StyleDrawer></StyleDrawer>
-    <!-- </div> -->
   </div>
   <!--v-navigation-drawer location="end" width="80" permanent floating style="height: 70vh; margin: auto;
   background-color: transparent;">
@@ -406,6 +409,7 @@ onBeforeRouteLeave(
 
 .previewImage {
   position: absolute;
+  background-color: violet;
   z-index: 20;
   aspect-ratio: 1/1;
   transform: translateX(-50%);
