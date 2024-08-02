@@ -54,15 +54,19 @@ export default class IconFactoryHandler implements ToolStrategy {
     // const scaleFactor = (width - 32) / (2 * SETTINGS.boundaryCircle.radius); // scale so that there is a 16 pixel boundary from
     // is 1
     const inverseScaleFactorWidth = 2 * SETTINGS.boundaryCircle.radius + 32;
-    let  svgBlock = Command.dumpSVG(
+    let svgBlock = Command.dumpSVG(
       inverseScaleFactorWidth,
       nonScalingOptions,
       animateOptions
     );
     // Now set the properties of the elements
     // Adjust the point radius
-    const pointRadiusRegex = /<circle class="pointFront.*r="(\d+\.\d+)/g
-    svgBlock = svgBlock.replaceAll(pointRadiusRegex, function (match,x) {return match.replace(/r="\d+\.\d+/g,'r="20')+x.replace(/\d+\.\d+/g,"")})
+    const pointRadiusRegex = /<circle class="pointFront.*r="/g;
+    const numberRegex = /(\d+\.\d+)|\d+/g;
+    const iconPointRadius = "3.0";
+    svgBlock = svgBlock.replaceAll(pointRadiusRegex, function (match:string, x:string) {
+      return match + x.replace(numberRegex, iconPointRadius);
+    });
 
     // const paragraph = '\<circle class=\"pointFrontStyle0\" cx="-95.55427251732101" cy="-39.11662817551963" r="2.020785219399538" />'
 
@@ -70,8 +74,6 @@ export default class IconFactoryHandler implements ToolStrategy {
     //
 
     // console.log(paragraph.replaceAll(regex, function (match,x) {return match.replace(/r="\d+\.\d+/g,'r="20')+x.replace(/\d+\.\d+/g,"")}));
-
-
 
     let svgBlob = new Blob([svgBlock], { type: "image/svg+xml;charset=utf-8" });
 

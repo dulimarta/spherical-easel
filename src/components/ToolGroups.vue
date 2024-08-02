@@ -10,7 +10,8 @@
     <v-btn
       icon
       v-if="userRole && userRole === 'instructor'"
-      size="x-small" class="mr-1"
+      size="x-small"
+      class="mr-1"
       color="green-darken-1"
       @click="toggleEditMode">
       <v-icon v-if="inEditMode">mdi-check</v-icon>
@@ -37,7 +38,17 @@
           <div class="button-group">
             <v-item
               v-slot="{ isSelected, toggle }"
-              v-for="btn in grp.children"
+              v-for="btn in grp.children.filter(btn => {
+                if (btn.action == 'iconFactory') {
+                  if (!inProductionMode) {
+                    return true;
+                  } else {
+                    return false;
+                  }
+                } else {
+                  return true;
+                }
+              })"
               :value="btn.action">
               <ToolButton
                 :button="btn"
@@ -49,7 +60,7 @@
           </div>
         </template>
       </v-expansion-panel>
-      <v-expansion-panel
+      <!-- <v-expansion-panel
         v-if="developerButtonList.length > 0 && !inProductionMode">
         <template #title>
           <span class="text-subtitle-1 font-weight-bold">
@@ -71,7 +82,7 @@
             </v-item>
           </div>
         </template>
-      </v-expansion-panel>
+      </v-expansion-panel> -->
     </v-expansion-panels>
   </v-item-group>
 </template>
@@ -261,16 +272,16 @@ function excludeTool(name: ActionMode): void {
   acctStore.excludeToolName(name);
 }
 
-const developerButtonList: ToolButtonType[] = [
-  {
-    id: 0,
-    action: "iconFactory",
-    displayedName: "buttons.CreateIconDisplayedName",
-    toolGroup: "DeveloperOnlyTools",
-    toolTipMessage: "buttons.CreateIconToolTipMessage",
-    toolUseMessage: "buttons.CreateIconToolUseMessage"
-  }
-];
+// const developerButtonList: ToolButtonType[] = [
+//   {
+//     id: 0,
+//     action: "iconFactory",
+//     displayedName: "buttons.CreateIconDisplayedName",
+//     toolGroup: "DeveloperOnlyTools",
+//     toolTipMessage: "buttons.CreateIconToolTipMessage",
+//     toolUseMessage: "buttons.CreateIconToolUseMessage"
+//   }
+// ];
 </script>
 
 <style scoped>
