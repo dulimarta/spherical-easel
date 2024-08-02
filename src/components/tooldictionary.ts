@@ -99,7 +99,7 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.PanZoomInToolUseMessage",
     clickFunc: () => {
       // The second arg is true when the first arg is a ratio
-      MouseHandler.store.setZoomMagnificationFactor(0.9, true)
+      MouseHandler.store.scaleZoomMagnificationFactorBy(0.9)
       EventBus.fire('zoom-updated', {})
     }
   })
@@ -112,7 +112,7 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.PanZoomOutToolUseMessage",
     clickFunc: () => {
       // The second arg is true when the first arg is a ratio
-      MouseHandler.store.setZoomMagnificationFactor(1.1, true)
+      MouseHandler.store.scaleZoomMagnificationFactorBy(1.1)
       EventBus.fire('zoom-updated', {})
     }
   })
@@ -124,8 +124,8 @@ TOOL_DICTIONARY.set("select", {
     toolTipMessage: "buttons.ZoomFitToolTipMessage",
     toolUseMessage: "buttons.ZoomFitToolUseMessage",
     clickFunc: () => {
-      // TODO
-      // Requires access to the current browser width & height
+      MouseHandler.store.fitZoomMagnificationFactor()
+      EventBus.fire('zoom-updated', {})
     }
   })
   .set("point", {

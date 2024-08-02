@@ -64,10 +64,10 @@
           <MessageHub />
         </div>
         <!-- <div id="zoomPanel" class="pr-5"> -->
-        <!-- <ShortcutIcon class="mx-1" :model="TOOL_DICTIONARY.get('zoomFit')!" /> -->
+        <ShortcutIcon class="mx-1" :model="TOOL_DICTIONARY.get('zoomFit')!" />
         <ShortcutIcon class="mx-1" :model="TOOL_DICTIONARY.get('zoomIn')!" />
-        <ShortcutIcon class="mr-3" :model="TOOL_DICTIONARY.get('zoomOut')!" />
-        <div class="mr-3">
+        <ShortcutIcon class="mr-2" :model="TOOL_DICTIONARY.get('zoomOut')!" />
+        <div class="mr-1">
           {{ (100 * zoomMagnificationFactor).toFixed(0) }}%
         </div>
       </div>
