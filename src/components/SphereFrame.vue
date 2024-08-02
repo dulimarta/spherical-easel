@@ -11,7 +11,7 @@
     <div class="anchored top left">
       <div
         v-for="(shortcut, index) in shortCutIcons[0]"
-        :key="index"
+        :key="`${shortcut.action}-L`"
         :style="listItemStyle(index, 'left', 'top')">
         <ShortcutIcon :model="shortcut" />
       </div>
