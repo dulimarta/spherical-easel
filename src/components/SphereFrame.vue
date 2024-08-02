@@ -303,7 +303,7 @@ onBeforeMount((): void => {
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   EventBus.listen("update-two-instance", updateTwoInstance);
   EventBus.listen("update-fill-objects", updateObjectsWithFill);
-  EventBus.listen("export-current-svg-for-icon", getCurrentSVGForIcon);
+  // EventBus.listen("export-current-svg-for-icon", getCurrentSVGForIcon);
 });
 
 onMounted((): void => {
@@ -404,7 +404,7 @@ onBeforeUnmount((): void => {
   EventBus.unlisten("delete-node");
   EventBus.unlisten("update-two-instance");
   EventBus.unlisten("update-fill-objects");
-  EventBus.unlisten("export-current-svg-for-icon");
+  //EventBus.unlisten("export-current-svg-for-icon");
 });
 
 watch(
@@ -809,32 +809,7 @@ function updateObjectsWithFill() {
 //   }
 // }
 
-function getCurrentSVGForIcon(): void {
-  let iconSize = 40;
-  let svgBlock = "";
-  const nonScalingOptions = {
-    stroke: true,
-    text: true,
-    pointRadius: true,
-    scaleFactor: 1
-  };
 
-  const animateOptions = undefined
-  // {
-  //   axis: new Vector3(),
-  //   degrees: Math.PI / 8,
-  //   duration: 0.25, // in seconds
-  //   frames: 30,
-  //   repeat: 1
-  // };
-
-  svgBlock = Command.dumpSVG(iconSize, nonScalingOptions, animateOptions);
-
-  let svgBlob = new Blob([svgBlock], { type: "image/svg+xml;charset=utf-8" });
-
-  const urlObject = URL.createObjectURL(svgBlob);
-  FileSaver.saveAs(urlObject, "iconXXXPaths.svg");
-}
 /**
  * Watch the actionMode in the store. This is the two-way binding of variables in the Pinia Store.  Notice that this
  * is a vue component so we are able to Watch for changes in variables in the store. If this was not a vue component

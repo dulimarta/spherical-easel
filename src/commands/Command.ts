@@ -13,11 +13,9 @@ import EventBus from "@/eventHandlers/EventBus";
 import { Matrix4, Vector3 } from "three";
 import { SEStoreType } from "@/stores/se";
 import {
-  plottableType,
   svgGradientType,
   svgStopType,
   svgStyleType as svgStyleType,
-  toSVGReturnType,
   toSVGType
 } from "@/types/index";
 import SETTINGS, { LAYER } from "@/global-settings";
@@ -343,7 +341,7 @@ export abstract class Command {
       'height="' +
       width +
       'px" ' +
-      'xmlns="http://www.w3.org/2000/svg" style="background-color:white" overflow="visible" >\n';
+      'xmlns="http://www.w3.org/2000/svg" style="background-color:transparent" overflow="visible" >\n';
 
     // Record the gradients (which will be radial gradients for us) for the SVG in a dictionary
     // key: names like circleFrontGradient1 and polygonBackGradient2, etc.
@@ -462,11 +460,6 @@ export abstract class Command {
             const backStyleDictionary = information.backStyleDictionary;
             const layerSVGInformation = information.layerSVGArray;
             const typeName = information.type;
-            // console.log("type", typeName)
-            // console.log("fgd",frontGradientDictionary)
-            // console.log("bgd",backGradientDictionary)
-            // console.log("fsd", frontStyleDictionary)
-            // console.log("bsd",backStyleDictionary)
 
             // Incorporate the new gradient dictionaries into gradientDictionary
             //  Note: For a single object, there is only one front gradient and one back gradient applied to all front/back object fills
