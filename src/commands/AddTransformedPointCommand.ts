@@ -151,7 +151,7 @@ export class AddTransformedPointCommand extends Command {
       const transformedSEPointLabel = new SELabel("point", transformedSEPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
-      transformedSEPointLabel.locationVector.copy(seLabelLocation);
+      transformedSEPointLabel.locationVector = seLabelLocation;
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)

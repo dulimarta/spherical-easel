@@ -236,7 +236,7 @@ export class AddParametricCommand extends Command {
       const seLabel = new SELabel("parametric", seParametric);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
-      seLabel.locationVector.copy(seLabelLocation);
+      seLabel.locationVector = seLabelLocation;
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)

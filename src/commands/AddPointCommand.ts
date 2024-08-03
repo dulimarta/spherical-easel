@@ -104,7 +104,7 @@ export class AddPointCommand extends Command {
     const pointFrontStyleString = propMap.get("objectFrontStyle");
     const pointBackStyleString = propMap.get("objectBackStyle");
     const sePoint = new SEPoint();
-    sePoint.locationVector.copy(sePointLocation);
+    sePoint.locationVector = sePointLocation;
     // console.debug(`Point front style string ${pointFrontStyleString}`);
     if (pointFrontStyleString !== undefined) {
       sePoint.updatePlottableStyle(
@@ -124,7 +124,7 @@ export class AddPointCommand extends Command {
     const seLabel = new SELabel("point", sePoint);
     const seLabelLocation = new Vector3();
     seLabelLocation.from(propMap.get("labelVector")); // convert to Number
-    seLabel.locationVector.copy(seLabelLocation);
+    seLabel.locationVector = seLabelLocation;
     const labelStyleString = propMap.get("labelStyle");
     // console.debug(`Point label style string ${labelStyleString}`);
     if (labelStyleString !== undefined) {

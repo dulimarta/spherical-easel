@@ -17,7 +17,7 @@ export function createLabel(
   // else if (typeof position === "object") {
   //   seLabelLocation.copy(position);
   // }
-  seLabel.locationVector.copy(seLabelLocation);
+  seLabel.locationVector = seLabelLocation;
   if (styles)
     seLabel.updatePlottableStyle(StyleCategory.Label, styles);
   return seLabel;

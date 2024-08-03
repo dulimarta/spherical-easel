@@ -128,6 +128,7 @@ import { ConstructionScript } from "@/types"
 import Dialog, { DialogAction } from "@/components/Dialog.vue"
 import { useSEStore } from "@/stores/se"
 import { useConstructionStore } from "@/stores/construction"
+import { useAccountStore } from "@/stores/account"
 import Parametric from "@/plottables/Parametric"
 import { storeToRefs } from "pinia"
 import { useI18n } from "vue-i18n"
@@ -139,6 +140,7 @@ import {
 import { useLayout, useDisplay } from "vuetify"
 import StyleDrawer from "@/components/style-ui/StyleDrawer.vue"
 import { TOOL_DICTIONARY } from "@/components/tooldictionary"
+import { DisplayStyle } from "@/plottables/Nodule"
 
 const DELETE_DELAY = 5000 // in milliseconds
 /**
@@ -150,6 +152,7 @@ const DELETE_DELAY = 5000 // in milliseconds
 const { t } = useI18n()
 const seStore = useSEStore()
 const constructionStore = useConstructionStore()
+const acctStore = useAccountStore()
 const router = useRouter()
 const {
   seNodules,
@@ -158,6 +161,7 @@ const {
   zoomMagnificationFactor,
   isEarthMode
 } = storeToRefs(seStore)
+const {constructionDocId} = storeToRefs(acctStore)
 const props = defineProps<{
   documentId?: string
 }>()
@@ -293,6 +297,7 @@ function handleResetSphere(): void {
     Command.commandHistory.splice(0)
     Command.redoHistory.splice(0)
     SENodule.resetAllCounters()
+    constructionDocId.value = null
     EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 })
     EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 })
     // Nodule.resetIdPlottableDescriptionMap(); // Needed?
@@ -348,6 +353,7 @@ function resizePlottables(e: { factor: number }): void {
   // Apply the new size in each nodule in the store
   seNodules.value.forEach(p => {
     p.ref?.adjustSize()
+    // p.ref?.stylize(DisplayStyle.ApplyCurrentVariables)
   })
   // The temporary plottables need to be resized too
   temporaryNodules.value.forEach(p => {

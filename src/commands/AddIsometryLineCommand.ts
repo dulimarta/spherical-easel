@@ -150,7 +150,7 @@ export class AddIsometryLineCommand extends Command {
       const isometrySELineLabel = new SELabel("line", isometrySELine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
-      isometrySELineLabel.locationVector.copy(seLabelLocation);
+      isometrySELineLabel.locationVector = seLabelLocation;
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
