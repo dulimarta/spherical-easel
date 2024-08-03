@@ -150,7 +150,7 @@ export class AddIsometryCircleCommand extends Command {
       const isometrySECircleLabel = new SELabel("circle", isometrySECircle);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
-      isometrySECircleLabel.locationVector = seLabelLocation;
+      isometrySECircleLabel.locationVector = seLabelLocation; // Don't use copy() on a prop
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)

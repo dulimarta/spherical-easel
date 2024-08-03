@@ -124,7 +124,7 @@ export class AddPointCommand extends Command {
     const seLabel = new SELabel("point", sePoint);
     const seLabelLocation = new Vector3();
     seLabelLocation.from(propMap.get("labelVector")); // convert to Number
-    seLabel.locationVector = seLabelLocation;
+    seLabel.locationVector = seLabelLocation; // Don't use copy() on a prop
     const labelStyleString = propMap.get("labelStyle");
     // console.debug(`Point label style string ${labelStyleString}`);
     if (labelStyleString !== undefined) {

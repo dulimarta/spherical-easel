@@ -124,7 +124,7 @@ export class AddAntipodalPointCommand extends Command {
       const seLabel = new SELabel("point", sePoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector"));
-      seLabel.locationVector = seLabelLocation;
+      seLabel.locationVector = seLabelLocation; // Don't use copy() on a prop
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         seLabel.updatePlottableStyle(

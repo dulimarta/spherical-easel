@@ -127,9 +127,7 @@ export class AddLineCommand extends Command {
       const seLabel = new SELabel("line", seLine);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
-      // Since locationVector is a property with a custom setter function,
-      // we have to use assignment (do not use copy)
-      seLabel.locationVector = seLabelLocation;
+      seLabel.locationVector = seLabelLocation; // Don't use copy() on a prop
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
