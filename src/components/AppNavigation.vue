@@ -162,13 +162,13 @@ onBeforeMount((): void => {
   EventBus.listen("left-panel-set-active-tab", setActiveTab);
 });
 
-onMounted((): void => {
-  const { mainRect } = useLayout();
-  console.log("Layout details", mainRect);
-  console.log("Display details", height.value, width.value, name.value);
-  // activeItem.value = [];
-  // this.scene = this.layers[LAYER.midground];
-});
+// onMounted((): void => {
+//   // const { mainRect } = useLayout();
+//   // console.log("Layout details", mainRect);
+//   // console.log("Display details", height.value, width.value, name.value);
+//   // activeItem.value = [];
+//   // this.scene = this.layers[LAYER.midground];
+// });
 
 function switchTab(): void {
   // console.log("this.activeLeftDrawerTab", this.activeLeftDrawerTab);

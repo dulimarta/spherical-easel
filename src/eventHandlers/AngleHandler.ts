@@ -993,26 +993,12 @@ export default class AngleHandler extends Highlighter {
         );
 
         // Create an SELabel and link it to the plottable object
-        // const newSELabel = new SELabel("point", vtx);
-
         vtx.locationVector = this.pointLocations[i];
         const newSELabel = vtx.attachLabelWithOffset(new Vector3(
           2 * SETTINGS.point.initialLabelOffset,
           SETTINGS.point.initialLabelOffset,
           0
         ))
-        // Set the initial label location
-        // this.tmpVector
-        //   .copy(vtx.locationVector)
-        //   .add(
-        //     new Vector3(
-        //       2 * SETTINGS.point.initialLabelOffset,
-        //       SETTINGS.point.initialLabelOffset,
-        //       0
-        //     )
-        //   )
-        //   .normalize();
-        // newSELabel.locationVector = this.tmpVector;
         angleMarkerCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -1044,18 +1030,6 @@ export default class AngleHandler extends Highlighter {
           new AddPointCommand(vtx, newSELabel)
         );
         vtx.locationVector = this.pointLocations[i];
-        // Set the initial label location
-        // this.tmpVector
-        //   .copy(vtx.locationVector)
-        //   .add(
-        //     new Vector3(
-        //       2 * SETTINGS.point.initialLabelOffset,
-        //       SETTINGS.point.initialLabelOffset,
-        //       0
-        //     )
-        //   )
-        //   .normalize();
-        // newSELabel.locationVector = this.tmpVector;
 
         // Create the antipode of the new point, vtx
         AngleHandler.addCreateAntipodeCommand(vtx, angleMarkerCommandGroup);

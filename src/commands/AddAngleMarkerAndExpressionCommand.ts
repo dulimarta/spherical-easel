@@ -183,7 +183,8 @@ export class AddAngleMarkerCommand extends Command {
       const seLabel = new SELabel("angleMarker", seAngleMarker);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
-      seLabel.locationVector = seLabelLocation;
+      console.debug("SEAngleMarker label location", seLabelLocation.toFixed(2))
+      seLabel.locationVector = seLabelLocation; // Don't use copy() on a prop
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
@@ -193,6 +194,10 @@ export class AddAngleMarkerCommand extends Command {
         );
       // Must be done after the SELabel is created and linked
       seAngleMarker.valueDisplayMode = valueDisplayMode;
+
+      // These calls are needed so angle measurement value is updated
+      seAngleMarker.shallowUpdate()
+      seLabel.shallowUpdate()
       //put the angleMarker in the object map
       if (propMap.get("objectName") !== undefined) {
         seAngleMarker.name = propMap.get("objectName") ?? "";

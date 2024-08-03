@@ -319,12 +319,6 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
     // console.debug("Styling ", obj.name)
     // obj.ref?.stylize(DisplayStyle.ApplyCurrentVariables)
     // })
-    // update all
-    // setTimeout(() => {
-    //   seStore.updateDisplay();
-
-    //   // set the mode to move because chances are high that the user wants this mode after loading.
-    // }, 250);
   }
 }
 
