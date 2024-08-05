@@ -5,5 +5,6 @@ arrowParens: "avoid"
 bracketSpacing: true
 bracketSameLine: true
 trailingComma: "none"
+semi: true
 singleQuote: false
 htmlWhitespaceSensitivity: "ignore" # prevent dangling right angle bracket

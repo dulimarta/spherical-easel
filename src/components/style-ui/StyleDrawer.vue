@@ -1,4 +1,5 @@
 <template>
+  <div  v-bind="$attrs">
   <v-btn
     id="style-icon"
     icon
@@ -25,7 +26,6 @@
   </v-btn>
   <transition>
     <div v-if="!minified" class="vertical-nav-drawer">
-      SE={{ styleSelection }}
       <v-item-group
         v-model="styleSelection"
         :style="{
@@ -200,6 +200,7 @@
       </v-btn>
     </div>
   </transition>
+</div>
 </template>
 
 <style scoped>

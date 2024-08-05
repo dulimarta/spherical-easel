@@ -112,7 +112,7 @@ export class AddAntipodalPointCommand extends Command {
       const sePoint = new SEAntipodalPoint(parentPoint, isUserCreated);
       const sePointLocation = new Vector3();
       sePointLocation.from(propMap.get("pointVector"));
-      sePoint.locationVector.copy(sePointLocation);
+      sePoint.locationVector = sePointLocation;
       const pointFrontStyleString = propMap.get("objectFrontStyle");
       if (pointFrontStyleString !== undefined)
         sePoint.updatePlottableStyle(
@@ -130,7 +130,7 @@ export class AddAntipodalPointCommand extends Command {
       const seLabel = new SELabel("point", sePoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector"));
-      seLabel.locationVector.copy(seLabelLocation);
+      seLabel.locationVector = seLabelLocation; // Don't use copy() on a prop
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
         seLabel.updatePlottableStyle(

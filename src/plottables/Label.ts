@@ -495,7 +495,7 @@ export default class Label extends Nodule {
     //   const polygon = this.seLabel.parent;
     //   this._shortUserName = `Po${polygon.polygonNumber}`;
     // }
-    // overide any update to the names of the angleMarkers and polygons. why?
+    // override any update to the names of the angleMarkers and polygons. why?
     // if (this.seLabelParentType === "angleMarker") {
     //   this._shortUserName = this._defaultName; //`Am${this._seLabelParentID}`;
     // } else if (this.seLabelParentType === "polygon") {
@@ -703,6 +703,7 @@ export default class Label extends Nodule {
             break;
           }
         }
+        console.debug(`Label text is ${labelText}, Value array is`, this.value)
         this.frontText.value = labelText;
         this.backText.value = labelText;
         this.glowingFrontText.value = labelText;

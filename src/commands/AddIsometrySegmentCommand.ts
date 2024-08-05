@@ -162,7 +162,7 @@ export class AddIsometrySegmentCommand extends Command {
       const isometrySESegmentLabel = new SELabel("segment", isometrySESegment);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
-      isometrySESegmentLabel.locationVector.copy(seLabelLocation);
+      isometrySESegmentLabel.locationVector = seLabelLocation; // Don't use copy() on a prop
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)

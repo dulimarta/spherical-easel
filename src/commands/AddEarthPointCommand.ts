@@ -118,7 +118,7 @@ export class AddEarthPointCommand extends Command {
     const longitude = Number(propMap.get("earthLongitude"));
     if (latitude !== undefined && longitude !== undefined) {
       const seEarthPoint = new SEEarthPoint(longitude, latitude);
-      seEarthPoint.locationVector.copy(seEarthPointLocation);
+      seEarthPoint.locationVector = seEarthPointLocation;
       // console.debug(`Point front style string ${pointFrontStyleString}`);
       if (pointFrontStyleString !== undefined) {
         seEarthPoint.updatePlottableStyle(
@@ -137,8 +137,8 @@ export class AddEarthPointCommand extends Command {
       //make the label
       const seLabel = new SELabel("point", seEarthPoint);
       const seLabelLocation = new Vector3();
-      seLabelLocation.from(propMap.get("labelVector")); // convert to Number
-      seLabel.locationVector.copy(seLabelLocation);
+      seLabelLocation.from(propMap.get("labelVector"));
+      seLabel.locationVector = seLabelLocation; // Don't use copy() on a prop
       const labelStyleString = propMap.get("labelStyle");
       // console.debug(`Point label style string ${labelStyleString}`);
       if (labelStyleString !== undefined) {

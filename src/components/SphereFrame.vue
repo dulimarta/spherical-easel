@@ -11,7 +11,7 @@
     <div class="anchored top left">
       <div
         v-for="(shortcut, index) in shortCutIcons[0]"
-        :key="index"
+        :key="`${shortcut.action}-L`"
         :style="listItemStyle(index, 'left', 'top')">
         <ShortcutIcon :model="shortcut" />
       </div>
@@ -19,7 +19,7 @@
     <div class="anchored top right">
       <div
         v-for="(shortcut, index) in shortCutIcons[1]"
-        :key="index"
+        :key="`${shortcut.action}-R`"
         :style="listItemStyle(index, 'right', 'top')">
         <ShortcutIcon :model="shortcut" />
       </div>
@@ -1145,6 +1145,7 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
   justify-content: center;
 }
 .anchored {
+  background-color: red;
   margin: 8px;
   position: absolute;
 }
@@ -1153,14 +1154,6 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
 }
 
 .right {
-  right: 0;
-}
-
-.top {
-  top: 0;
-}
-
-.bottom {
-  bottom: 0;
+  right: 0px;
 }
 </style>
