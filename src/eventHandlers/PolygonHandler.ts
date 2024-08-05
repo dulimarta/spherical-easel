@@ -286,10 +286,10 @@ export default class PolygonHandler extends Highlighter {
         // makes sure that this polygon has not been measured before
         let measuredBefore = false;
         let token = "";
-        PolygonHandler.store.sePolygons.forEach(poly => {
+        PolygonHandler.store.sePolygons.some(poly => {
           // if they have different lengths they are different
           if (poly.seEdgeSegments.length !== this.seEdgeSegments.length) {
-            return;
+            return true; // Skip checking the remaining polygons
           }
           // find the name of the first segment of the proposed polygon (this), in the existing one (poly)
           // we are searching cyclically
@@ -316,6 +316,7 @@ export default class PolygonHandler extends Highlighter {
               });
               if (measuredBefore) {
                 token = poly.label?.ref.shortUserName ?? "";
+                return true // skip checking the remaining polygons
               }
             }
           }

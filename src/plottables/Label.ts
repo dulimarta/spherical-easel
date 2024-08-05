@@ -623,7 +623,7 @@ export default class Label extends Nodule {
             break;
           }
         }
-        console.debug(`Label text is ${labelText}, Value array is`, this.value)
+        // console.debug(`Label text is ${labelText}, Value array is`, this.value)
         this.frontText.value = labelText;
         this.backText.value = labelText;
         this.glowingFrontText.value = labelText;

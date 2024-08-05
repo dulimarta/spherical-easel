@@ -483,7 +483,6 @@ export default class SegmentHandler extends Highlighter {
   }
 
   mouseLeave(event: MouseEvent): void {
-    console.debug(`SegmentHandler::Leave() (${event.clientX},${event.clientY})`)
     super.mouseLeave(event);
     this.prepareForNextSegment();
   }

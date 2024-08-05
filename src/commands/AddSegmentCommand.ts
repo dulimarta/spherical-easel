@@ -136,6 +136,9 @@ export class AddSegmentCommand extends Command {
           JSON.parse(segmentBackStyleString)
         );
 
+      // SESegment requires a call to its shallowUpdate
+      // so its plottable is initialized properly
+      seSegment.shallowUpdate()
       //make the label and set its location
       const seLabel = new SELabel("segment", seSegment);
       const seLabelLocation = new Vector3();
