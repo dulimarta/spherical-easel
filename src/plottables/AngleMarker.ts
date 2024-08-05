@@ -16,6 +16,7 @@ import { Path } from "two.js/src/path";
 import { Line } from "two.js/src/shapes/line";
 import { Vector } from "two.js/src/vector";
 import { svgStyleType, toSVGType } from "@/types";
+import EventBus from "@/eventHandlers/EventBus";
 
 const NUMCIRCLEVERTICES = SETTINGS.angleMarker.numCirclePoints;
 const radius = SETTINGS.boundaryCircle.radius;
@@ -1554,16 +1555,49 @@ export default class AngleMarker extends Nodule {
     // this._glowingBackTickDouble.remove();
   }
 
-  toSVG( nonScaling?: {
-    stroke: boolean;
-    text: boolean;
-    pointRadius: boolean;
-    scaleFactor: number;
-  }): toSVGType[] {
+  toSVG(
+    nonScaling?: {
+      stroke: boolean;
+      text: boolean;
+      pointRadius: boolean;
+      scaleFactor: number;
+    },
+    svgForIcon?: boolean
+  ): toSVGType[] {
     // Create an empty return type and then fill in the non-null parts
     // Always return angleMarkerCircle, angleMarkerFill, angleMarkerEdge
     // If user selected return: angleMarkerDouble (no fill, edge only), angleMarkerTick, angleMarkerArrowHead
 
+    // first check if this is an export for icon. If so make the angle marker much larger. Record the radius and double radius for resetting the marker after export
+    const radius = this._radius;
+    const doubleRadius = this._radiusDouble;
+    if (svgForIcon) {
+      console.log("angle marker", radius, doubleRadius);
+      const sizeIncreaseFactor = 8; // 8 is too big for angles bigger than 180
+      this._radius = this._radius * sizeIncreaseFactor;
+      this._radiusDouble = this._radiusDouble * sizeIncreaseFactor;
+
+      // recompute the three vectors that determine the angle marker with the new angle marker radius
+      this.setAngleMarkerFromThreeVectors(
+        this._startVector,
+        this._vertexVector,
+        this._endVector,
+        this._radius
+      );
+      this.updateDisplay();
+
+      // function sleep(ms: number) {
+      //   let start = new Date().getTime();
+      //   for (let i = 0; i < 1e7; i++) {
+      //     if (new Date().getTime() - start > ms) {
+      //       break;
+      //     }
+      //   }
+      // }
+      // sleep(2000);
+      EventBus.fire("update-two-instance", {});
+
+    }
     ////////////////////////////////////////////////Circle Edge Object//////////////////////////////////////
     // Create the always return objects
     const angleMarkerCircleSVGObject: toSVGType = {
@@ -1576,10 +1610,11 @@ export default class AngleMarker extends Nodule {
     };
 
     if (this._angleMarkerOnFront) {
-      angleMarkerCircleSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject:this._frontCircle})
-
+      angleMarkerCircleSVGObject.frontStyleDictionary =
+        Nodule.createSVGStyleDictionary({ strokeObject: this._frontCircle });
     } else {
-      angleMarkerCircleSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject:this._backCircle})
+      angleMarkerCircleSVGObject.backStyleDictionary =
+        Nodule.createSVGStyleDictionary({ strokeObject: this._backCircle });
     }
 
     // now collect the geometric information for this part
@@ -1642,10 +1677,11 @@ export default class AngleMarker extends Nodule {
     };
 
     if (this._angleMarkerOnFront) {
-      angleMarkerFillSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({fillObject:this._frontFill})
-
+      angleMarkerFillSVGObject.frontStyleDictionary =
+        Nodule.createSVGStyleDictionary({ fillObject: this._frontFill });
     } else {
-      angleMarkerFillSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({fillObject:this._backFill})
+      angleMarkerFillSVGObject.backStyleDictionary =
+        Nodule.createSVGStyleDictionary({ fillObject: this._backFill });
     }
     // now collect the geometric information for this part
 
@@ -1700,55 +1736,62 @@ export default class AngleMarker extends Nodule {
       ]);
     }
 
-    ////////////////////////////////////////////////Straight Edge Object//////////////////////////////////////
-    const angleMarkerEdgeSVGObject: toSVGType = {
-      frontGradientDictionary: null,
-      backGradientDictionary: null,
-      frontStyleDictionary: null,
-      backStyleDictionary: null,
-      layerSVGArray: [],
-      type: "angleMarkerEdge"
-    };
-
-    if (this._angleMarkerOnFront) {
-      angleMarkerEdgeSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject: this._frontStraightEndToVertex})
-    } else {
-      angleMarkerEdgeSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject: this._backStraightEndToVertex})
-    }
-
-    // now collect the geometric information for this part
-    let amEdgeSVGString =
-      '<polyline points="' +
-      this._frontStraightEndToVertex.vertices[0].x +
-      " " +
-      this._frontStraightEndToVertex.vertices[0].y +
-      ", " +
-      this._frontStraightEndToVertex.vertices[1].x +
-      " " +
-      this._frontStraightEndToVertex.vertices[1].y +
-      ", " +
-      this._frontStraightVertexToStart.vertices[1].x +
-      " " +
-      this._frontStraightVertexToStart.vertices[1].y +
-      '"/>';
-    if (this._angleMarkerOnFront) {
-      angleMarkerEdgeSVGObject.layerSVGArray.push([
-        LAYER.foregroundAngleMarkers,
-        amEdgeSVGString
-      ]);
-    } else {
-      angleMarkerEdgeSVGObject.layerSVGArray.push([
-        LAYER.backgroundAngleMarkers,
-        amEdgeSVGString
-      ]);
-    }
-
     // form the return object array
     const returnSVGObjects: toSVGType[] = [
       angleMarkerCircleSVGObject,
-      angleMarkerFillSVGObject,
-      angleMarkerEdgeSVGObject
+      angleMarkerFillSVGObject
     ];
+    ////////////////////////////////////////////////Straight Edge Object//////////////////////////////////////
+    if (!svgForIcon) {
+      const angleMarkerEdgeSVGObject: toSVGType = {
+        frontGradientDictionary: null,
+        backGradientDictionary: null,
+        frontStyleDictionary: null,
+        backStyleDictionary: null,
+        layerSVGArray: [],
+        type: "angleMarkerEdge"
+      };
+
+      if (this._angleMarkerOnFront) {
+        angleMarkerEdgeSVGObject.frontStyleDictionary =
+          Nodule.createSVGStyleDictionary({
+            strokeObject: this._frontStraightEndToVertex
+          });
+      } else {
+        angleMarkerEdgeSVGObject.backStyleDictionary =
+          Nodule.createSVGStyleDictionary({
+            strokeObject: this._backStraightEndToVertex
+          });
+      }
+
+      // now collect the geometric information for this part
+      let amEdgeSVGString =
+        '<polyline points="' +
+        this._frontStraightEndToVertex.vertices[0].x +
+        " " +
+        this._frontStraightEndToVertex.vertices[0].y +
+        ", " +
+        this._frontStraightEndToVertex.vertices[1].x +
+        " " +
+        this._frontStraightEndToVertex.vertices[1].y +
+        ", " +
+        this._frontStraightVertexToStart.vertices[1].x +
+        " " +
+        this._frontStraightVertexToStart.vertices[1].y +
+        '"/>';
+      if (this._angleMarkerOnFront) {
+        angleMarkerEdgeSVGObject.layerSVGArray.push([
+          LAYER.foregroundAngleMarkers,
+          amEdgeSVGString
+        ]);
+      } else {
+        angleMarkerEdgeSVGObject.layerSVGArray.push([
+          LAYER.backgroundAngleMarkers,
+          amEdgeSVGString
+        ]);
+      }
+      returnSVGObjects.push(angleMarkerEdgeSVGObject);
+    }
 
     // Now add the optional returned objects
     ////////////////////////////////////////////////Double Object//////////////////////////////////////
@@ -1763,9 +1806,11 @@ export default class AngleMarker extends Nodule {
       };
 
       if (this._angleMarkerOnFront) {
-        angleMarkerDoubleSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject: this._frontDouble})
+        angleMarkerDoubleSVGObject.frontStyleDictionary =
+          Nodule.createSVGStyleDictionary({ strokeObject: this._frontDouble });
       } else {
-        angleMarkerDoubleSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject: this._backDouble})
+        angleMarkerDoubleSVGObject.backStyleDictionary =
+          Nodule.createSVGStyleDictionary({ strokeObject: this._backDouble });
       }
 
       // now collect the geometric information for this part
@@ -1830,9 +1875,15 @@ export default class AngleMarker extends Nodule {
         type: "angleMarkerArrowHead"
       };
       if (this._angleMarkerOnFront) {
-        angleMarkerArrowHeadSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject: this._frontArrowHeadPath})
+        angleMarkerArrowHeadSVGObject.frontStyleDictionary =
+          Nodule.createSVGStyleDictionary({
+            strokeObject: this._frontArrowHeadPath
+          });
       } else {
-        angleMarkerArrowHeadSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject: this._backArrowHeadPath})
+        angleMarkerArrowHeadSVGObject.backStyleDictionary =
+          Nodule.createSVGStyleDictionary({
+            strokeObject: this._backArrowHeadPath
+          });
       }
       const amArrowHeadStyleDictionary = new Map<svgStyleType, string>();
 
@@ -1886,9 +1937,11 @@ export default class AngleMarker extends Nodule {
       };
 
       if (this._angleMarkerOnFront) {
-        angleMarkerTickSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject: this._frontTick})
+        angleMarkerTickSVGObject.frontStyleDictionary =
+          Nodule.createSVGStyleDictionary({ strokeObject: this._frontTick });
       } else {
-        angleMarkerTickSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({strokeObject: this._backTick})
+        angleMarkerTickSVGObject.backStyleDictionary =
+          Nodule.createSVGStyleDictionary({ strokeObject: this._backTick });
       }
 
       // now collect the geometric information for this part
@@ -1915,6 +1968,23 @@ export default class AngleMarker extends Nodule {
       }
 
       returnSVGObjects.push(angleMarkerTickSVGObject);
+    }
+
+    // final return the display back to normal if export was for icon
+    if (svgForIcon) {
+      this._radius = radius;
+      this._radiusDouble = doubleRadius;
+
+      // recompute the three vectors that determine the angle marker with the new angle marker radius
+      this.setAngleMarkerFromThreeVectors(
+        this._startVector,
+        this._vertexVector,
+        this._endVector,
+        this._radius
+      );
+      // finally update the display
+      this.updateDisplay();
+      EventBus.fire("update-two-instance",{})
     }
     return returnSVGObjects;
   }

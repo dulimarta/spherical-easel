@@ -7,18 +7,31 @@
     elevation="2"
     rounded="lg"
     width="80px"
-    :style="{backgroundColor: selected ? '#002108' : '#8CCD8F'}"
+    :style="{ backgroundColor: selected ? '#002108' : '#8CCD8F' }"
     height="100px">
     <div class="toolbutton" v-bind="props">
-      <v-icon class="toolicon" :icon="vuetifyIconAlias" :style="{filter: selected? 'invert(100%) sepia(17%) saturate(0%) hue-rotate(91deg) brightness(104%) contrast(104%)':''}" ></v-icon>
-      <span class="tooltext" :style="[myTextStyle,{color:selected ? 'white' : 'black'}]" >
+      <v-icon
+        class="toolIconClass"
+        :icon="vuetifyIconAlias"
+        :size="mdiIconSize"
+        :style="{
+          filter: selected
+            ? 'invert(100%) sepia(17%) saturate(0%) hue-rotate(91deg) brightness(104%) contrast(104%)'
+            : ''
+        }"></v-icon>
+      <span
+        class="tooltext"
+        :style="[myTextStyle, { color: selected ? 'white' : 'black' }]">
         {{ t(button.displayedName) }}
       </span>
     </div>
     <v-overlay
       contained
       v-model="isEditing"
-      :style="{backgroundColor: selected ? '#002108' : '#8CCD8F', color: selected ? 'white' : 'black'}"
+      :style="{
+        backgroundColor: selected ? '#002108' : '#8CCD8F',
+        color: selected ? 'white' : 'black'
+      }"
       :scrim="props.included ? '#00F' : '#000'">
       <v-icon v-if="props.included" size="x-large" class="overlayicon">
         mdi-minus-circle
@@ -36,6 +49,9 @@ import { Ref, ref, computed, onUpdated } from "vue";
 import { ToolButtonType } from "@/types";
 import { useI18n } from "vue-i18n";
 import { StyleValue } from "vue";
+import SETTINGS from "@/global-settings";
+import { onMounted, watch } from "vue";
+import { onBeforeMount } from "vue";
 type ToolButtonProps = {
   button: ToolButtonType;
   selected: boolean;
@@ -52,6 +68,10 @@ const props = defineProps<ToolButtonProps>();
 const elev = ref(5);
 const weight: Ref<"bold" | "normal"> = ref("normal");
 const isEditing = ref(props.editing);
+const mdiIconSize = ref("")
+const iconClass = ref({
+  size: SETTINGS.icons.buttonIconSize + "px"
+});
 
 const myTextStyle = computed((): StyleValue => {
   return {
@@ -64,6 +84,14 @@ const vuetifyIconAlias = computed(
     // otherwise use the action name as the Vuetify icon alias
     props.button.icon ?? "$" + props.button.action
 );
+
+
+onMounted(() => {
+  const zIcons = SETTINGS.icons as Record<string, any>;
+  if (zIcons[props.button.action] && typeof zIcons[props.button.action].props.mdiIcon == "string") {
+    mdiIconSize.value = SETTINGS.icons.shortcutIconSize * 0.6 + "px" // mdiIcons are smaller
+  }
+});
 
 onUpdated(() => {
   isEditing.value = props.editing;
@@ -80,10 +108,6 @@ onUpdated(() => {
   width: 80px;
 }
 
-.toolicon {
-  min-width: 64px;
-  min-height: 64px;
-}
 .tooltext {
   // border: 1px solid orange;
   padding-top: 0px;
@@ -99,6 +123,10 @@ onUpdated(() => {
   padding: 0.5em;
   border: 1px solid grey;
   border-radius: 0.5em;
+}
+.toolIconClass {
+  min-height: 64px;
+  width: v-bind("iconClass.size");
 }
 .overlayicon {
   position: absolute;

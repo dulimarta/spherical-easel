@@ -360,7 +360,7 @@ export default class PolarObjectHandler extends Highlighter {
         }
         // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
         this.temporaryPolarLineMarker.normalVector =
-          this.temporaryPoint._locationVector;
+          this.temporaryPoint.positionVector;
 
         //update the display
         this.temporaryPolarLineMarker.updateDisplay();

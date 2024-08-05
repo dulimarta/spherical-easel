@@ -20,7 +20,7 @@ import {
 } from "@/types/index";
 import SETTINGS, { LAYER } from "@/global-settings";
 import { SELabel, SENodule } from "@/models/internal";
-import { aN } from "vitest/dist/reporters-yx5ZTtEV";
+//import { aN } from "vitest/dist/reporters-yx5ZTtEV";
 import { nextTick } from "vue";
 
 export abstract class Command {
@@ -263,7 +263,8 @@ export abstract class Command {
       duration: number;
       frames: number;
       repeat: number; // 0 is indefinite
-    }
+    },
+    svgForIcon?: boolean
   ): string {
     function gradientDictionariesEqual(
       d1: Map<svgGradientType, string | Map<svgStopType, string>[]>,
@@ -328,6 +329,9 @@ export abstract class Command {
       }
       return true;
     }
+    if (svgForIcon == undefined) {
+      svgForIcon = false;
+    }
 
     function sleep(ms: number) {
       return new Promise(resolve => setTimeout(resolve, ms));
@@ -336,10 +340,10 @@ export abstract class Command {
     // Build the header string for the SVG
     let svgHeaderReturnString =
       '<svg width="' +
-      width +
+      (svgForIcon ? 2 * SETTINGS.boundaryCircle.radius : width) +
       'px" ' +
       'height="' +
-      width +
+      (svgForIcon ? 2 * SETTINGS.boundaryCircle.radius : width) +
       'px" ' +
       'xmlns="http://www.w3.org/2000/svg" style="background-color:transparent" overflow="visible" >\n';
 
@@ -442,7 +446,7 @@ export abstract class Command {
         objectPairs.forEach(pair => {
           if (pair[0].exists && pair[0].showing) {
             if (pair[0].ref != undefined) {
-              svgTypeArray.push(...pair[0].ref.toSVG(nonScaling));
+              svgTypeArray.push(...pair[0].ref.toSVG(nonScaling,svgForIcon));
             }
             // now check the label (if the point is deleted the label is also so check this inside the first conditional statement)
             // labels are never deleted only hidden
@@ -652,18 +656,21 @@ export abstract class Command {
     // Create the CSS style part of the SVG return string
     var styleSVGReturnString = '\t<style type="text/css">\n'; //<![CDATA[\n';
     for (let [name, styleDict] of styleDictionary.entries()) {
-      styleSVGReturnString += "\t\t\t." + name + " { ";
-      //Add the list of attributes, but make sure it is not the default
-      for (let [attribute, value] of styleDict) {
-        if (Command.includeStyleOption(name, attribute, value)) {
-          styleSVGReturnString += attribute + ":" + value + "; ";
+      if (!(svgForIcon && name.toLowerCase().includes("label"))) {
+        // no text/label in icon SVG
+        styleSVGReturnString += "\t\t\t." + name + " { ";
+        //Add the list of attributes, but make sure it is not the default
+        for (let [attribute, value] of styleDict) {
+          if (Command.includeStyleOption(name, attribute, value)) {
+            styleSVGReturnString += attribute + ":" + value + "; ";
+          }
         }
+        if (nonScaling?.stroke) {
+          styleSVGReturnString += "vector-effect: non-scaling-stroke;";
+        }
+        // Close the CSS style
+        styleSVGReturnString += "}\n";
       }
-      if (nonScaling?.stroke) {
-        styleSVGReturnString += 'vector-effect: non-scaling-stroke;';
-      }
-      // Close the CSS style
-      styleSVGReturnString += "}\n";
     }
     //add the close of the style string
     if (styleSVGReturnString.includes("label")) {
@@ -689,7 +696,9 @@ export abstract class Command {
       }
     }
     const sceneSVGReturnStringArray: string[] = [];
-    const scaleFactor = (width - 32) / (2 * SETTINGS.boundaryCircle.radius); // scale so that there is a 16 pixel boundary from edges
+    const scaleFactor = svgForIcon
+      ? 1
+      : (width - 32) / (2 * SETTINGS.boundaryCircle.radius); // scale so that there is a 16 pixel boundary from edges
     for (let frameNum = 0; frameNum < numFrames; frameNum++) {
       const layerDictionary = layerDictionaryArray[frameNum];
       // Start with the scene grouping that set the scale
@@ -706,9 +715,9 @@ export abstract class Command {
         "," +
         String(-1 * scaleFactor) + // make sure that up is the positive y-axis, so this is negative
         "," +
-        String(width / 2) +
+        (svgForIcon ? 0 : String(width / 2)) +
         "," +
-        String(width / 2) +
+        (svgForIcon ? 0 : String(width / 2)) +
         ')">\n';
       const sceneLayerEnd = "\t\t</g>\n";
 
@@ -717,37 +726,41 @@ export abstract class Command {
       myLayers.forEach(layerNumber => {
         const itemList = layerDictionary.get(Number(layerNumber));
         if (itemList != undefined) {
-          // This layer is not empty
-          // Flip the orientation for text layers
-          if (LAYER[layerNumber].toLowerCase().includes("text")) {
-            layerSVGReturnString +=
-              '\t\t\t<g id="' +
-              LAYER[layerNumber].replace("ground", "") +
-              '" transform="scale(1,-1)">\n';
-          } else {
-            layerSVGReturnString +=
-              '\t\t\t<g id="' +
-              LAYER[layerNumber].replace("ground", "") +
-              '">\n';
-          }
-          for (let [styleID, svgString] of itemList) {
-            // insert the style ID class into the svgString using the first space
-            if (svgString.toLowerCase().includes("text")) {
+          if (
+            !(svgForIcon && LAYER[layerNumber].toLowerCase().includes("text")) // there is no text in icon SVG){
+          ) {
+            // This layer is not empty
+            // Flip the orientation for text layers
+            if (LAYER[layerNumber].toLowerCase().includes("text")) {
               layerSVGReturnString +=
-                "\t\t\t\t" +
-                svgString.replace(
-                  " ",
-                  ' class="' + styleID + ' text" ' // add the styling that applies to all text items
-                ) +
-                "\n";
+                '\t\t\t<g id="' +
+                LAYER[layerNumber].replace("ground", "") +
+                '" transform="scale(1,-1)">\n';
             } else {
               layerSVGReturnString +=
-                "\t\t\t\t" +
-                svgString.replace(" ", ' class="' + styleID + '" ') +
-                "\n";
+                '\t\t\t<g id="' +
+                LAYER[layerNumber].replace("ground", "") +
+                '">\n';
             }
+            for (let [styleID, svgString] of itemList) {
+              // insert the style ID class into the svgString using the first space
+              if (svgString.toLowerCase().includes("text")) {
+                layerSVGReturnString +=
+                  "\t\t\t\t" +
+                  svgString.replace(
+                    " ",
+                    ' class="' + styleID + ' text" ' // add the styling that applies to all text items
+                  ) +
+                  "\n";
+              } else {
+                layerSVGReturnString +=
+                  "\t\t\t\t" +
+                  svgString.replace(" ", ' class="' + styleID + '" ') +
+                  "\n";
+              }
+            }
+            layerSVGReturnString += "\t\t\t</g>\n";
           }
-          layerSVGReturnString += "\t\t\t</g>\n";
         }
       });
 
@@ -811,7 +824,7 @@ export abstract class Command {
     // return the sphere to its original position
     if (animate) {
       const m = new Matrix4();
-      m.makeRotationAxis(animate.axis, -animate.degrees)// + 1 / animate.degrees);
+      m.makeRotationAxis(animate.axis, -animate.degrees); // + 1 / animate.degrees);
       Command.store.rotateSphere(m);
       // We need to update the two-instance so that the fills can be correctly calculated
       EventBus.fire("update-two-instance", {});

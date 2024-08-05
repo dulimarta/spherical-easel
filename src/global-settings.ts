@@ -731,181 +731,23 @@ export const SETTINGS = {
     }
   },
   icons: {
-    defaultIconSize: 32,
-    defaultInlineIconSize: 25, // controls the size of the md
-    boundaryCircle: {
-      strokeWidth: 1.5,
-      color: "#000000FF"
-    },
-    // These are the detail of how the icon parts (points, lines, circles, etc.) are drawn when emphasized
-    emphasize: {
-      angleMarker: {
-        strokeWidth: {
-          front: 2.5,
-          back: 2.5
-        },
-        edgeColor: {
-          front: "#000000FF",
-          back: "#0000004d"
-        },
-        fillColor: {
-          front: "#d8ccffff",
-          back: "#ff2b00ff"
-        }
-      },
-      circle: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: { front: "#000000FF", back: "#000000FF" },
-        fillColor: {
-          front: "#ff8080FF",
-          back: "#ff8080FF"
-        }
-      },
-      ellipse: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: { front: "#000000FF", back: "#000000FF" },
-        fillColor: {
-          front: "#ff8080FF",
-          back: "#ff8080FF"
-        }
-      },
-      point: {
-        strokeWidth: {
-          front: 0.7,
-          back: 0.7
-        },
-        edgeColor: { front: "#000000FF", back: "#000000FF" },
-        fillColor: {
-          front: "#ff8080FF",
-          back: "#ff8080FF"
-        }
-      },
-      line: {
-        strokeWidth: {
-          front: 1.5,
-          back: 1.5
-        },
-        edgeColor: {
-          front: "#4287f5ff",
-          back: "#9ec1faff"
-        }
-      },
-      segment: {
-        strokeWidth: {
-          front: 1.5,
-          back: 1.5
-        },
-        edgeColor: {
-          front: "#4287f5ff",
-          back: "#9ec1faff"
-        }
-      }
-    },
-    // These are the detail of how the icon parts (points, lines, circles, etc.) are drawn when not emphasized
-    normal: {
-      angle: {
-        scale: {
-          front: 7,
-          back: 5
-        },
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: {
-          front: "#666666ff",
-          back: "#999999ff"
-        },
-        fillColor: {
-          front: "#e6e6e666",
-          back: "#ffffff33"
-        }
-      },
-      circle: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: {
-          front: "#666666ff",
-          back: "#999999ff"
-        },
-        fillColor: {
-          front: "#e6e6e666",
-          back: "#ffffff33"
-        }
-      },
-      ellipse: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: {
-          front: "#666666ff",
-          back: "#999999ff"
-        },
-        fillColor: {
-          front: "#e6e6e666",
-          back: "#ffffff33"
-        }
-      },
-      point: {
-        scale: {
-          front: 7,
-          back: 9
-        },
-        strokeWidth: {
-          front: 0.8,
-          back: 0.7
-        },
-        edgeColor: {
-          front: "#666666ff",
-          back: "#999999ff"
-        },
-        fillColor: {
-          front: "#e6e6e6ff",
-          back: "#ffffffff"
-        }
-      },
-      line: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: {
-          front: "#666666ff",
-          back: "#999999ff"
-        }
-      },
-      segment: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: {
-          front: "#666666ff",
-          back: "#999999ff"
-        }
-      }
-    },
+    buttonIconSize: 50, // in pixels for the buttons in the left tool panel ToolButton.vue
+    shortcutIconSize: 45 , // in pixels for the icon inside the ShortcutIcon.vue
+    shortcutButtonSize: 55, // in pixels the size of the button in ShortcutIcon.vue
+    currentToolSectionIconSize: 30,  // icon in the CurrentToolSelection.vue
+
+    defaultInlineIconSize: 25, // controls the size of the markdown icons included in documentation
+
     // These are the properties of the icons (mdiIcon, file path to SVG, emphasize types), These must be stored here and
     // and not in vuetify.ts because these must be accessible to both the src code and VitePress.
     blank: {
       props: {
-        emphasizeTypes: [[]],
         mdiIcon: "mdi-progress-question",
         svgFileName: "iconBlankPaths.svg"
       }
     },
     point: {
       props: {
-        emphasizeTypes: [["point", "front", "back"]],
         mdiIcon: false,
         svgFileName: "iconPointPaths.svg"
       }
@@ -913,108 +755,77 @@ export const SETTINGS = {
     line: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["line", "front", "back"],
-          ["point", "front", "back"]
-        ],
         svgFileName: "iconLinePaths.svg"
       }
     },
     segment: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["segment", "front", "back"],
-          ["point", "front", "back"]
-        ],
         svgFileName: "iconSegmentPaths.svg"
       }
     },
     earthLongitude: {
       props: {
         mdiIcon: "mdi-longitude",
-        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     circle: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["circle", "front", "back"],
-          ["point", "front", "back"]
-        ],
         svgFileName: "iconCirclePaths.svg"
       }
     },
     earthLatitude: {
       props: {
         mdiIcon: "mdi-latitude",
-        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     antipodalPoint: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [["point", "front"]],
         svgFileName: "iconAntipodalPointPaths.svg"
       }
     },
     earthPoint: {
       props: {
         mdiIcon: "mdi-map-marker",
-        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     polar: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["point", "front"],
-          ["line", "front"]
-        ],
         svgFileName: "iconPolarPaths.svg"
       }
     },
     perpendicular: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["point", "front"],
-          ["line", "front", "back"]
-        ],
         svgFileName: "iconPerpendicularPaths.svg"
       }
     },
     tangent: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["point", "front"],
-          ["line", "front", "back"]
-        ],
         svgFileName: "iconTangentPaths.svg"
       }
     },
     intersect: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [["point", "front"]],
         svgFileName: "iconIntersectPaths.svg"
       }
     },
     pointOnObject: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [["point", "front"]],
         svgFileName: "iconPointOnObjectPaths.svg"
       }
     },
     angle: {
       props: {
-        emphasizeTypes: [["angleMarker", "back", "front"]],
         mdiIcon: false,
         svgFileName: "iconAnglePaths.svg"
       }
@@ -1022,393 +833,317 @@ export const SETTINGS = {
     segmentLength: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [["segment", "back", "front"]],
         svgFileName: "iconSegmentLengthPaths.svg"
       }
     },
     pointDistance: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [["point", "front", "back"]],
         svgFileName: "iconPointDistancePaths.svg"
       }
     },
     ellipse: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [["point", "front", "back"]],
         svgFileName: "iconEllipsePaths.svg"
       }
     },
     parametric: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["point", "front"],
-          ["parametric", "front"]
-        ],
         svgFileName: "iconParametricPaths.svg"
       }
     },
     measureTriangle: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["point", "front"],
-          ["angleMarker", "back", "front"]
-        ],
         svgFileName: "iconMeasureTrianglePaths.svg"
       }
     },
     measurePolygon: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["point", "front"],
-          ["angleMarker", "back", "front"]
-        ],
         svgFileName: "iconMeasurePolygonPaths.svg"
       }
     },
     midpoint: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["segment", "front"],
-          ["point", "front"]
-        ],
         svgFileName: "iconMidpointPaths.svg"
       }
     },
     nSectPoint: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["segment", "front"],
-          ["point", "front"]
-        ],
         svgFileName: "iconNSectPointPaths.svg"
       }
     },
     threePointCircle: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [["point", "front"]],
         svgFileName: "iconThreePointCirclePaths.svg"
       }
     },
     measuredCircle: {
       props: {
         mdiIcon: "mdi-swap-horizontal-circle-outline",
-        emphasizeTypes: [["point", "front"]],
         filePath: ""
       }
     },
     angleBisector: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["line", "front", "back"],
-          ["angleMarker", "front"]
-        ],
         svgFileName: "iconAngleBisectorPaths.svg"
       }
     },
     nSectLine: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["line", "front", "back"],
-          ["angleMarker", "front"]
-        ],
         svgFileName: "iconNSectLinePaths.svg"
       }
     },
     coordinate: {
       props: {
         mdiIcon: "mdi-axis-arrow-info",
-        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     delete: {
       props: {
         mdiIcon: "mdi-delete",
-        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     hide: {
       props: {
         mdiIcon: "mdi-file-hidden",
-        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     iconFactory: {
       props: {
         mdiIcon: "mdi-plus",
-        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     move: {
       props: {
         mdiIcon: "mdi-cursor-move",
-        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     rotate: {
       props: {
         mdiIcon: "mdi-rotate-3d-variant",
-        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     select: {
       props: {
         mdiIcon: "mdi-cursor-pointer",
-        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     toggleLabelDisplay: {
       props: {
         mdiIcon: "mdi-toggle-switch-off-outline",
-        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     zoomFit: {
       props: {
         mdiIcon: "mdi-magnify-scan",
-        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     zoomIn: {
       props: {
         mdiIcon: "mdi-magnify-plus-outline",
-        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     zoomOut: {
       props: {
         mdiIcon: "mdi-magnify-minus-outline",
-        emphasizeTypes: [[]] as string[][],
         filePath: ""
       }
     },
     toolsTab: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-tools",
         filePath: ""
       }
     },
     objectsTab: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-format-list-bulleted",
         filePath: ""
       }
     },
     constructionsTab: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-database",
         filePath: ""
       }
     },
     earthTab: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-earth",
         filePath: ""
       }
     },
     calculationObject: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-calculator-variant",
         filePath: ""
       }
     },
     measurementObject: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-math-compass",
         filePath: ""
       }
     },
     slider: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-slide",
         filePath: ""
       }
     },
     labelPopOverTab:{
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-tag-edit",
         filePath: ""
       }
     },
     labelTextEditTab:{
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-pencil",
         filePath: ""
       }
     },
     labelTextFamilyTab:{
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-format-text",
         filePath: ""
       }
     },
     labelColorFamilyTab:{
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-palette",
         filePath: ""
       }
     },
     closePanelRight: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-chevron-double-right",
         filePath: ""
       }
     },
     styleDrawer: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-palette",
         filePath: ""
       }
     },
     downloadConstruction: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-download",
         filePath: ""
       }
     },
     shareConstruction: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-share-variant",
         filePath: ""
       }
     },
     starConstruction: {
-      //new starconstruction button
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-star-outline",
         filePath: ""
       }
     },
     privateConstruction: {
-      //new starconstruction button
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-eye-off",
         filePath: ""
       }
     },
     unstarConstruction: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-star-off-outline",
         filePath: ""
       }
     },
     deleteConstruction: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-trash-can",
         filePath: ""
       }
     },
     cycleNodeValueDisplayMode: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-autorenew", // "mdi-recycle-variant",
         filePath: ""
       }
     },
     showNode: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-eye",
         filePath: ""
       }
     },
     hideNode: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-eye-off",
         filePath: ""
       }
     },
     showNodeLabel: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-label-outline",
         filePath: ""
       }
     },
     hideNodeLabel: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-label-off-outline",
         filePath: ""
       }
     },
     deleteNode: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-trash-can-outline",
         filePath: ""
       }
     },
     appSettings: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-cog",
         filePath: ""
       }
     },
     clearConstruction: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-broom",
         filePath: ""
       }
     },
     undo: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-undo",
         filePath: ""
       }
     },
     redo: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-redo",
         filePath: ""
       }
     },
     copyToClipboard: {
       props: {
-        emphasizeTypes: [[]],
         mdiIcon: "mdi-content-copy",
         filePath: ""
       }
@@ -1416,84 +1151,72 @@ export const SETTINGS = {
     translation: {
       props: {
         mdiIcon: "mdi-call-made",
-        emphasizeTypes: [[]],
         filePath: ""
       }
     },
     rotation: {
       props: {
         mdiIcon: "mdi-screen-rotation",
-        emphasizeTypes: [[]],
         filePath: ""
       }
     },
     pointReflection: {
       props: {
         mdiIcon: "mdi-ferris-wheel",
-        emphasizeTypes: [[]],
         filePath: ""
       }
     },
     inversion: {
       props: {
         mdiIcon: "mdi-yeast",
-        emphasizeTypes: [[]],
         filePath: ""
       }
     },
     reflection: {
       props: {
         mdiIcon: "mdi-mirror",
-        emphasizeTypes: [[]],
         filePath: ""
       }
     },
     transformedPoint: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        emphasizeTypes: [[]],
         filePath: ""
       }
     },
     transformedCircle: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        emphasizeTypes: [[]],
         filePath: ""
       }
     },
     transformedLine: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        emphasizeTypes: [[]],
         filePath: ""
       }
     },
     transformedSegment: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        emphasizeTypes: [[]],
         filePath: ""
       }
     },
     transformedEllipse: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        emphasizeTypes: [[]],
         filePath: ""
       }
     },
     applyTransformation: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        emphasizeTypes: [[]],
         filePath: ""
       }
     },
     notifications: {
       props: {
         mdiIcon: "mdi-bell",
-        emphasizeTypes: [[]],
         filePath: ""
       }
     }

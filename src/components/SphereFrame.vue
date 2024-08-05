@@ -1120,8 +1120,9 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
   }
 
   style.position = "absolute";
-  style[xLoc] = `${c * 36}px`;
-  style[yLoc] = `${r * 36}px`;
+  // add in 3 px padding around the icons and 2 px between containers.
+  style[xLoc] = `${c * (SETTINGS.icons.shortcutButtonSize+3)+(c-1)*2}px`;
+  style[yLoc] = `${r * (SETTINGS.icons.shortcutButtonSize+3)+(r-1)*2}px`;
   return style;
 }
 </script>

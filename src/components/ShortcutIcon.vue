@@ -2,11 +2,13 @@
   <v-btn
     v-bind="$attrs"
     icon
-    size="x-small"
+    :size="shortCutButtonSize"
     tile
     :disabled="disabled"
     @click="invokeAction">
-    <v-icon v-bind="$attrs">{{ model.icon ?? "$" + model.action }}</v-icon>
+    <v-icon v-bind="$attrs" :size="iconSize">
+      {{ model.icon ?? "$" + model.action }}
+    </v-icon>
     <v-tooltip activator="parent" location="bottom">
       {{ $t(model.toolTipMessage) }}
     </v-tooltip>
@@ -19,7 +21,10 @@ import { useSEStore } from "@/stores/se";
 import { ToolButtonType } from "@/types";
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { Command } from "@/commands/Command";
+import SETTINGS from "@/global-settings";
 const seStore = useSEStore();
+const iconSize = ref(SETTINGS.icons.shortcutIconSize);
+const shortCutButtonSize = ref(SETTINGS.icons.shortcutButtonSize);
 
 const props = defineProps<{
   model: ToolButtonType;
@@ -33,6 +38,10 @@ onMounted((): void => {
   } else if (props.model.action === "redoAction") {
     EventBus.listen("redo-enabled", setEnabled);
     disabled.value = Command.redoHistory.length == 0; // initially value
+  }
+  const zIcons = SETTINGS.icons as Record<string, any>;
+  if (zIcons[props.model.action] && typeof zIcons[props.model.action].props.mdiIcon == "string") {
+    iconSize.value = SETTINGS.icons.shortcutIconSize * 0.6; // mdiIcons are smaller
   }
 });
 
