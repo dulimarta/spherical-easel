@@ -67,10 +67,14 @@ export default class IconFactoryHandler implements ToolStrategy {
     let svgBlob = new Blob([svgBlock], { type: "image/svg+xml;charset=utf-8" });
 
     const urlObject = URL.createObjectURL(svgBlob);
-    // this.updateIconPaths();
+    // this.updateIconPaths(); <--------------------------- uncomment for updating
     FileSaver.saveAs(urlObject, "iconXXXPaths.svg");
   }
 
+  /**
+   * Use this when you want to change an icon Attribute in all icon files. This will load a file, run it through
+   *  modifySVGBlockForIcon, and then ask you to save it over the right file.
+   */
   updateIconPaths(): void {
     const zIcons = SETTINGS.icons as Record<string, any>;
     for (let entry in zIcons) {
@@ -212,167 +216,168 @@ export default class IconFactoryHandler implements ToolStrategy {
 
     return svgBlock;
   }
-  static icons = {
-    boundaryCircle: {
-      strokeWidth: 1.5,
-      color: "#000000FF"
-    },
-    // These are the detail of how the icon parts (points, lines, circles, etc.) are drawn when emphasized
-    emphasize: {
-      angleMarker: {
-        strokeWidth: {
-          front: 2.5,
-          back: 2.5
-        },
-        edgeColor: {
-          front: "#000000FF",
-          back: "#0000004d"
-        },
-        fillColor: {
-          front: "#d8ccffff",
-          back: "#ff2b00ff"
-        }
-      },
-      circle: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: { front: "#000000FF", back: "#000000FF" },
-        fillColor: {
-          front: "#ff8080FF",
-          back: "#ff8080FF"
-        }
-      },
-      ellipse: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: { front: "#000000FF", back: "#000000FF" },
-        fillColor: {
-          front: "#ff8080FF",
-          back: "#ff8080FF"
-        }
-      },
-      point: {
-        strokeWidth: {
-          front: 0.7,
-          back: 0.7
-        },
-        edgeColor: { front: "#000000FF", back: "#000000FF" },
-        fillColor: {
-          front: "#ff8080FF",
-          back: "#ff8080FF"
-        }
-      },
-      line: {
-        strokeWidth: {
-          front: 1.5,
-          back: 1.5
-        },
-        edgeColor: {
-          front: "#4287f5ff",
-          back: "#9ec1faff"
-        }
-      },
-      segment: {
-        strokeWidth: {
-          front: 1.5,
-          back: 1.5
-        },
-        edgeColor: {
-          front: "#4287f5ff",
-          back: "#9ec1faff"
-        }
-      }
-    },
-    // These are the detail of how the icon parts (points, lines, circles, etc.) are drawn when not emphasized
-    normal: {
-      angle: {
-        scale: {
-          front: 7,
-          back: 5
-        },
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: {
-          front: "#666666ff",
-          back: "#999999ff"
-        },
-        fillColor: {
-          front: "#e6e6e666",
-          back: "#ffffff33"
-        }
-      },
-      circle: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: {
-          front: "#666666ff",
-          back: "#999999ff"
-        },
-        fillColor: {
-          front: "#e6e6e666",
-          back: "#ffffff33"
-        }
-      },
-      ellipse: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: {
-          front: "#666666ff",
-          back: "#999999ff"
-        },
-        fillColor: {
-          front: "#e6e6e666",
-          back: "#ffffff33"
-        }
-      },
-      point: {
-        scale: {
-          front: 7,
-          back: 9
-        },
-        strokeWidth: {
-          front: 0.8,
-          back: 0.7
-        },
-        edgeColor: {
-          front: "#666666ff",
-          back: "#999999ff"
-        },
-        fillColor: {
-          front: "#e6e6e6ff",
-          back: "#ffffffff"
-        }
-      },
-      line: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: {
-          front: "#666666ff",
-          back: "#999999ff"
-        }
-      },
-      segment: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: {
-          front: "#666666ff",
-          back: "#999999ff"
-        }
-      }
-    }
-  };
+  // THESE ARE THE OLD ATTRIBUTES
+  // static icons = {
+  //   boundaryCircle: {
+  //     strokeWidth: 1.5,
+  //     color: "#000000FF"
+  //   },
+  //   // These are the detail of how the icon parts (points, lines, circles, etc.) are drawn when emphasized
+  //   emphasize: {
+  //     angleMarker: {
+  //       strokeWidth: {
+  //         front: 2.5,
+  //         back: 2.5
+  //       },
+  //       edgeColor: {
+  //         front: "#000000FF",
+  //         back: "#0000004d"
+  //       },
+  //       fillColor: {
+  //         front: "#d8ccffff",
+  //         back: "#ff2b00ff"
+  //       }
+  //     },
+  //     circle: {
+  //       strokeWidth: {
+  //         front: 1,
+  //         back: 1
+  //       },
+  //       edgeColor: { front: "#000000FF", back: "#000000FF" },
+  //       fillColor: {
+  //         front: "#ff8080FF",
+  //         back: "#ff8080FF"
+  //       }
+  //     },
+  //     ellipse: {
+  //       strokeWidth: {
+  //         front: 1,
+  //         back: 1
+  //       },
+  //       edgeColor: { front: "#000000FF", back: "#000000FF" },
+  //       fillColor: {
+  //         front: "#ff8080FF",
+  //         back: "#ff8080FF"
+  //       }
+  //     },
+  //     point: {
+  //       strokeWidth: {
+  //         front: 0.7,
+  //         back: 0.7
+  //       },
+  //       edgeColor: { front: "#000000FF", back: "#000000FF" },
+  //       fillColor: {
+  //         front: "#ff8080FF",
+  //         back: "#ff8080FF"
+  //       }
+  //     },
+  //     line: {
+  //       strokeWidth: {
+  //         front: 1.5,
+  //         back: 1.5
+  //       },
+  //       edgeColor: {
+  //         front: "#4287f5ff",
+  //         back: "#9ec1faff"
+  //       }
+  //     },
+  //     segment: {
+  //       strokeWidth: {
+  //         front: 1.5,
+  //         back: 1.5
+  //       },
+  //       edgeColor: {
+  //         front: "#4287f5ff",
+  //         back: "#9ec1faff"
+  //       }
+  //     }
+  //   },
+  //   // These are the detail of how the icon parts (points, lines, circles, etc.) are drawn when not emphasized
+  //   normal: {
+  //     angle: {
+  //       scale: {
+  //         front: 7,
+  //         back: 5
+  //       },
+  //       strokeWidth: {
+  //         front: 1,
+  //         back: 1
+  //       },
+  //       edgeColor: {
+  //         front: "#666666ff",
+  //         back: "#999999ff"
+  //       },
+  //       fillColor: {
+  //         front: "#e6e6e666",
+  //         back: "#ffffff33"
+  //       }
+  //     },
+  //     circle: {
+  //       strokeWidth: {
+  //         front: 1,
+  //         back: 1
+  //       },
+  //       edgeColor: {
+  //         front: "#666666ff",
+  //         back: "#999999ff"
+  //       },
+  //       fillColor: {
+  //         front: "#e6e6e666",
+  //         back: "#ffffff33"
+  //       }
+  //     },
+  //     ellipse: {
+  //       strokeWidth: {
+  //         front: 1,
+  //         back: 1
+  //       },
+  //       edgeColor: {
+  //         front: "#666666ff",
+  //         back: "#999999ff"
+  //       },
+  //       fillColor: {
+  //         front: "#e6e6e666",
+  //         back: "#ffffff33"
+  //       }
+  //     },
+  //     point: {
+  //       scale: {
+  //         front: 7,
+  //         back: 9
+  //       },
+  //       strokeWidth: {
+  //         front: 0.8,
+  //         back: 0.7
+  //       },
+  //       edgeColor: {
+  //         front: "#666666ff",
+  //         back: "#999999ff"
+  //       },
+  //       fillColor: {
+  //         front: "#e6e6e6ff",
+  //         back: "#ffffffff"
+  //       }
+  //     },
+  //     line: {
+  //       strokeWidth: {
+  //         front: 1,
+  //         back: 1
+  //       },
+  //       edgeColor: {
+  //         front: "#666666ff",
+  //         back: "#999999ff"
+  //       }
+  //     },
+  //     segment: {
+  //       strokeWidth: {
+  //         front: 1,
+  //         back: 1
+  //       },
+  //       edgeColor: {
+  //         front: "#666666ff",
+  //         back: "#999999ff"
+  //       }
+  //     }
+  //   }
+  // };
 }

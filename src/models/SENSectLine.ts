@@ -63,15 +63,8 @@ export class SENSectLine extends SELine {
     return this._index;
   }
 
-  public update(
-    objectState?: Map<number, ObjectState>,
-    orderedSENoduleList?: number[]
-  ): void {
+  public shallowUpdate(): void {
     // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) return;
-
-    this.setOutOfDate(false);
-
     this._exists = this._seAngleParent.exists;
 
     if (this._exists) {
@@ -115,14 +108,23 @@ export class SENSectLine extends SELine {
       // Set the normal vector in the plottable object (the setter also calls the updateDisplay() method)
       this.ref.normalVector = this._normalVector;
     }
-
-    // Update visibility
     if (this.showing && this._exists) {
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);
     }
+  }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
 
+    this.setOutOfDate(false);
+    // BEGIN CUT
+    this.shallowUpdate();
+    // END CUT
     // These n sect lines are completely determined by their line/segment/point parents and an update on the parents
     // will cause this line to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
