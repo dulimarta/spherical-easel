@@ -1,0 +1,27 @@
+<svg width="500px" height="500px" xmlns="http://www.w3.org/2000/svg" style="background-color:transparent" overflow="visible" >
+   <style type="text/css">
+         .boundaryCircleStyle { fill:none; stroke:#000000FF; stroke-width:1.5; vector-effect: non-scaling-stroke;}
+         .pointFrontStyle0 { fill:#ff8080; stroke:#4d4dcb; stroke-width:1.5; vector-effect: non-scaling-stroke;}
+         .labelFrontStyle1 { font-family:sans-serif; font-weight:500; vector-effect: non-scaling-stroke;}
+         .lineFrontStyle2 { fill:none; stroke:#4287f5FF; stroke-width:2.5; vector-effect: non-scaling-stroke;}
+         .lineBackStyle0 { fill:none; stroke:#4287f580; stroke-width:2.5; stroke-dasharray:10 5 ; vector-effect: non-scaling-stroke;}
+         .text { font-size:15px; text-anchor:middle; line-height:middle; dominant-baseline:middle; }
+   </style>
+   <g id="sphereScene" >
+      <g id="frame0" transform = "matrix(1,0,0,-1,0,0)">
+         <g id="back">
+            <path class="lineBackStyle0" transform="matrix(0.5946447679273985,0.8039885571179296,-0.8039885571179296,0.5946447679273985,0,0)"  d="M 250,0 A250,125.384145921168 0 1 0 -250,0"/>
+         </g>
+         <g id="mid">
+            <circle class="boundaryCircleStyle" cx="0" cy="0" r="250"/>
+         </g>
+         <g id="fore">
+            <path class="lineFrontStyle2" transform="matrix(0.5946447679273985,0.8039885571179296,-0.8039885571179296,0.5946447679273985,0,0)"  d="M 250,0 A250,125.384145921168 0 0 1 -250,0"/>
+         </g>
+         <g id="forePoints">
+            <circle class="pointFrontStyle0" cx="-151.55889145496536" cy="-11.403002309468823" r="20.0" />
+            <circle class="pointFrontStyle0" cx="-47.63279445727483" cy="135.24826789838338" r="20.0" />
+         </g>
+      </g>
+   </g>
+</svg>
