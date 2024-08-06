@@ -446,7 +446,7 @@ export abstract class Command {
         objectPairs.forEach(pair => {
           if (pair[0].exists && pair[0].showing) {
             if (pair[0].ref != undefined) {
-              svgTypeArray.push(...pair[0].ref.toSVG(nonScaling,svgForIcon));
+              svgTypeArray.push(...pair[0].ref.toSVG(nonScaling, svgForIcon));
             }
             // now check the label (if the point is deleted the label is also so check this inside the first conditional statement)
             // labels are never deleted only hidden
@@ -791,7 +791,11 @@ export abstract class Command {
         animationSVGString += keyTimeString + '"\n';
         animationSVGString += '\t\t\tdur="' + animate.duration + 's" ';
         animationSVGString += 'begin="0s" ';
-        animationSVGString += 'repeatCount="' + repeat + '"/>\n';
+        animationSVGString += 'repeatCount="' + repeat + '" ';
+        animationSVGString +=
+          frameNum == 0
+            ? 'fill="remove" />\n'
+            : 'fill="freeze" />\n'; // set the animation to display the first frame when it is done
 
         // add the animation string only if there are more than 1 frame
         if (numFrames > 0) {

@@ -16,6 +16,7 @@ export class CommandGroup extends Command {
 
   restoreState(): void {
     // Restore state should be done in REVERSE order
+    // console.log("CG UNDO", this.subCommands.length, this.subCommands[0])
     for (let kIdx = this.subCommands.length - 1; kIdx >= 0; kIdx--) {
       this.subCommands[kIdx].restoreState();
     }
@@ -28,6 +29,7 @@ export class CommandGroup extends Command {
   }
 
   do(): void {
+    // console.log("CG DO", this.subCommands.length, this.subCommands[0])
     this.subCommands.forEach(x => {
       x.do();
     });

@@ -110,7 +110,7 @@ export class SEParametricEndPoint extends SEPoint {
     // Record the location on the unit ideal sphere of this SEPoint
     this._locationVector.copy(pos).normalize();
     // Set the position of the associated displayed plottable Point
-    this.ref.positionVector = this._locationVector;
+    this.ref.positionVectorAndDisplay = this._locationVector;
   }
 
   get parametricParent(): SEParametric {
@@ -138,7 +138,7 @@ export class SEParametricEndPoint extends SEPoint {
       // Update the current location with the closest point on the parent to the old location
       this._locationVector.copy(possibleVec).normalize();
       // Set the position of the associated displayed plottable Point
-      this.ref.positionVector = this._locationVector;
+      this.ref.positionVectorAndDisplay = this._locationVector;
     } else {
       this._exists = false;
     }

@@ -767,7 +767,7 @@ export const SETTINGS = {
     earthLongitude: {
       props: {
         mdiIcon: "mdi-longitude",
-        filePath: ""
+        svgFileName: ""
       }
     },
     circle: {
@@ -779,7 +779,7 @@ export const SETTINGS = {
     earthLatitude: {
       props: {
         mdiIcon: "mdi-latitude",
-        filePath: ""
+        svgFileName: ""
       }
     },
     antipodalPoint: {
@@ -791,7 +791,7 @@ export const SETTINGS = {
     earthPoint: {
       props: {
         mdiIcon: "mdi-map-marker",
-        filePath: ""
+        svgFileName: ""
       }
     },
     polar: {
@@ -887,7 +887,7 @@ export const SETTINGS = {
     measuredCircle: {
       props: {
         mdiIcon: "mdi-swap-horizontal-circle-outline",
-        filePath: ""
+        svgFileName: ""
       }
     },
     angleBisector: {
@@ -905,319 +905,319 @@ export const SETTINGS = {
     coordinate: {
       props: {
         mdiIcon: "mdi-axis-arrow-info",
-        filePath: ""
+        svgFileName: ""
       }
     },
     delete: {
       props: {
         mdiIcon: "mdi-delete",
-        filePath: ""
+        svgFileName: ""
       }
     },
     hide: {
       props: {
         mdiIcon: "mdi-file-hidden",
-        filePath: ""
+        svgFileName: ""
       }
     },
     iconFactory: {
       props: {
-        mdiIcon: "mdi-plus",
-        filePath: ""
+        mdiIcon: false,
+        svgFileName: "iconFactoryPaths.svg"
       }
     },
     move: {
       props: {
         mdiIcon: "mdi-cursor-move",
-        filePath: ""
+        svgFileName: ""
       }
     },
     rotate: {
       props: {
         mdiIcon: "mdi-rotate-3d-variant",
-        filePath: ""
+        svgFileName: ""
       }
     },
     select: {
       props: {
         mdiIcon: "mdi-cursor-pointer",
-        filePath: ""
+        svgFileName: ""
       }
     },
     toggleLabelDisplay: {
       props: {
         mdiIcon: "mdi-toggle-switch-off-outline",
-        filePath: ""
+        svgFileName: ""
       }
     },
     zoomFit: {
       props: {
         mdiIcon: "mdi-magnify-scan",
-        filePath: ""
+        svgFileName: ""
       }
     },
     zoomIn: {
       props: {
         mdiIcon: "mdi-magnify-plus-outline",
-        filePath: ""
+        svgFileName: ""
       }
     },
     zoomOut: {
       props: {
         mdiIcon: "mdi-magnify-minus-outline",
-        filePath: ""
+        svgFileName: ""
       }
     },
     toolsTab: {
       props: {
         mdiIcon: "mdi-tools",
-        filePath: ""
+        svgFileName: ""
       }
     },
     objectsTab: {
       props: {
         mdiIcon: "mdi-format-list-bulleted",
-        filePath: ""
+        svgFileName: ""
       }
     },
     constructionsTab: {
       props: {
         mdiIcon: "mdi-database",
-        filePath: ""
+        svgFileName: ""
       }
     },
     earthTab: {
       props: {
         mdiIcon: "mdi-earth",
-        filePath: ""
+        svgFileName: ""
       }
     },
     calculationObject: {
       props: {
         mdiIcon: "mdi-calculator-variant",
-        filePath: ""
+        svgFileName: ""
       }
     },
     measurementObject: {
       props: {
         mdiIcon: "mdi-math-compass",
-        filePath: ""
+        svgFileName: ""
       }
     },
     slider: {
       props: {
         mdiIcon: "mdi-slide",
-        filePath: ""
+        svgFileName: ""
       }
     },
     labelPopOverTab:{
       props: {
         mdiIcon: "mdi-tag-edit",
-        filePath: ""
+        svgFileName: ""
       }
     },
     labelTextEditTab:{
       props: {
         mdiIcon: "mdi-pencil",
-        filePath: ""
+        svgFileName: ""
       }
     },
     labelTextFamilyTab:{
       props: {
         mdiIcon: "mdi-format-text",
-        filePath: ""
+        svgFileName: ""
       }
     },
     labelColorFamilyTab:{
       props: {
         mdiIcon: "mdi-palette",
-        filePath: ""
+        svgFileName: ""
       }
     },
     closePanelRight: {
       props: {
         mdiIcon: "mdi-chevron-double-right",
-        filePath: ""
+        svgFileName: ""
       }
     },
     styleDrawer: {
       props: {
         mdiIcon: "mdi-palette",
-        filePath: ""
+        svgFileName: ""
       }
     },
     downloadConstruction: {
       props: {
         mdiIcon: "mdi-download",
-        filePath: ""
+        svgFileName: ""
       }
     },
     shareConstruction: {
       props: {
         mdiIcon: "mdi-share-variant",
-        filePath: ""
+        svgFileName: ""
       }
     },
     starConstruction: {
       props: {
         mdiIcon: "mdi-star-outline",
-        filePath: ""
+        svgFileName: ""
       }
     },
     privateConstruction: {
       props: {
         mdiIcon: "mdi-eye-off",
-        filePath: ""
+        svgFileName: ""
       }
     },
     unstarConstruction: {
       props: {
         mdiIcon: "mdi-star-off-outline",
-        filePath: ""
+        svgFileName: ""
       }
     },
     deleteConstruction: {
       props: {
         mdiIcon: "mdi-trash-can",
-        filePath: ""
+        svgFileName: ""
       }
     },
     cycleNodeValueDisplayMode: {
       props: {
         mdiIcon: "mdi-autorenew", // "mdi-recycle-variant",
-        filePath: ""
+        svgFileName: ""
       }
     },
     showNode: {
       props: {
         mdiIcon: "mdi-eye",
-        filePath: ""
+        svgFileName: ""
       }
     },
     hideNode: {
       props: {
         mdiIcon: "mdi-eye-off",
-        filePath: ""
+        svgFileName: ""
       }
     },
     showNodeLabel: {
       props: {
         mdiIcon: "mdi-label-outline",
-        filePath: ""
+        svgFileName: ""
       }
     },
     hideNodeLabel: {
       props: {
         mdiIcon: "mdi-label-off-outline",
-        filePath: ""
+        svgFileName: ""
       }
     },
     deleteNode: {
       props: {
         mdiIcon: "mdi-trash-can-outline",
-        filePath: ""
+        svgFileName: ""
       }
     },
     appSettings: {
       props: {
         mdiIcon: "mdi-cog",
-        filePath: ""
+        svgFileName: ""
       }
     },
     clearConstruction: {
       props: {
         mdiIcon: "mdi-broom",
-        filePath: ""
+        svgFileName: ""
       }
     },
     undo: {
       props: {
         mdiIcon: "mdi-undo",
-        filePath: ""
+        svgFileName: ""
       }
     },
     redo: {
       props: {
         mdiIcon: "mdi-redo",
-        filePath: ""
+        svgFileName: ""
       }
     },
     copyToClipboard: {
       props: {
         mdiIcon: "mdi-content-copy",
-        filePath: ""
+        svgFileName: ""
       }
     },
     translation: {
       props: {
         mdiIcon: "mdi-call-made",
-        filePath: ""
+        svgFileName: ""
       }
     },
     rotation: {
       props: {
         mdiIcon: "mdi-screen-rotation",
-        filePath: ""
+        svgFileName: ""
       }
     },
     pointReflection: {
       props: {
         mdiIcon: "mdi-ferris-wheel",
-        filePath: ""
+        svgFileName: ""
       }
     },
     inversion: {
       props: {
         mdiIcon: "mdi-yeast",
-        filePath: ""
+        svgFileName: ""
       }
     },
     reflection: {
       props: {
         mdiIcon: "mdi-mirror",
-        filePath: ""
+        svgFileName: ""
       }
     },
     transformedPoint: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        filePath: ""
+        svgFileName: ""
       }
     },
     transformedCircle: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        filePath: ""
+        svgFileName: ""
       }
     },
     transformedLine: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        filePath: ""
+        svgFileName: ""
       }
     },
     transformedSegment: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        filePath: ""
+        svgFileName: ""
       }
     },
     transformedEllipse: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        filePath: ""
+        svgFileName: ""
       }
     },
     applyTransformation: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        filePath: ""
+        svgFileName: ""
       }
     },
     notifications: {
       props: {
         mdiIcon: "mdi-bell",
-        filePath: ""
+        svgFileName: ""
       }
     }
   },

@@ -144,7 +144,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.sePoint instanceof SEAntipodalPoint) &&
             !this.sePoint.isUserCreated
           ) {
-            this.temporaryPointMarker.positionVector = this.sePointVector;
+            this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
             this.temporaryPointMarker.addToLayers(this.layers);
             this.temporaryPointAdded = true;
           }
@@ -157,7 +157,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVector = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -170,7 +170,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVector = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -183,7 +183,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVector = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -196,7 +196,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVector = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -209,7 +209,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVector = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -218,7 +218,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           //  Eventually, we will create a new SEPointOneDimensional and Point
           this.sePointOneDimensionalParent = this.hitSEPolygons[0];
           this.sePointVector.copy(this.currentSphereVector);
-          this.temporaryPointMarker.positionVector = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -226,7 +226,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           // The mouse press is not near an existing point or one dimensional object.
           //  Record the location in a temporary point (tempPointMarker found in MouseHandler).
           //  Eventually, we will create a new SEPoint and Point
-          this.temporaryPointMarker.positionVector = this.currentSphereVector;
+          this.temporaryPointMarker.positionVectorAndDisplay = this.currentSphereVector;
           this.sePointVector.copy(this.currentSphereVector);
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
@@ -481,7 +481,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
         }
-        this.temporaryPointMarker.positionVector = this.currentSphereVector;
+        this.temporaryPointMarker.positionVectorAndDisplay = this.currentSphereVector;
       }
 
       if (
@@ -513,7 +513,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             this.snapToTemporaryPoint instanceof SEIntersectionPoint &&
             !this.snapToTemporaryPoint.isUserCreated
           ) {
-            this.temporaryPointMarker.positionVector =
+            this.temporaryPointMarker.positionVectorAndDisplay =
               this.snapToTemporaryPoint.locationVector;
           } else {
             this.temporaryPointMarker.removeFromLayers();
@@ -522,12 +522,12 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         }
         // Set the location of the temporary startMarker by snapping to appropriate object (if any)
         if (this.snapToTemporaryOneDimensional !== null) {
-          this.temporaryPointMarker.positionVector =
+          this.temporaryPointMarker.positionVectorAndDisplay =
             this.snapToTemporaryOneDimensional.closestVector(
               this.currentSphereVector
             );
         } else if (this.snapToTemporaryPoint == null) {
-          this.temporaryPointMarker.positionVector = this.currentSphereVector;
+          this.temporaryPointMarker.positionVectorAndDisplay = this.currentSphereVector;
         }
       }
       if (this.oneDimensional !== null) {
@@ -574,7 +574,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           tmpPlot.line.normalVector = z.normal;
           tmpPlot.line.addToLayers(this.layers);
           tmpPlot.point.addToLayers(this.layers);
-          tmpPlot.point.positionVector = z.normalAt;
+          tmpPlot.point.positionVectorAndDisplay = z.normalAt;
 
           // TODO: update point location?
         });

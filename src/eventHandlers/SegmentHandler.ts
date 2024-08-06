@@ -139,7 +139,7 @@ export default class SegmentHandler extends Highlighter {
         this.startVector.copy(selected.locationVector);
         this.startSEPoint = this.hitSEPoints[0];
         // Set the start of the temp segment and the startMarker at the location of the selected point
-        this.temporaryStartMarker.positionVector = selected.locationVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = selected.locationVector;
         this.temporarySegment.startVector = selected.locationVector;
         // Glow the selected point and select it so the highlighter.ts doesn't unglow it with the mouseMoved method
         this.startSEPoint.glowing = true;
@@ -154,7 +154,7 @@ export default class SegmentHandler extends Highlighter {
           )
         );
         this.temporarySegment.startVector = this.startVector;
-        this.temporaryStartMarker.positionVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
         this.startSEPoint = null;
       } else if (this.hitSELines.length > 0) {
         // The start of the line will be a point on a line
@@ -166,7 +166,7 @@ export default class SegmentHandler extends Highlighter {
           )
         );
         this.temporarySegment.startVector = this.startVector;
-        this.temporaryStartMarker.positionVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
         this.startSEPoint = null;
       } else if (this.hitSECircles.length > 0) {
         // The start of the line will be a point on a circle
@@ -178,7 +178,7 @@ export default class SegmentHandler extends Highlighter {
           )
         );
         this.temporarySegment.startVector = this.startVector;
-        this.temporaryStartMarker.positionVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
         this.startSEPoint = null;
       } else if (this.hitSEEllipses.length > 0) {
         // The start of the line will be a point on a Ellipse
@@ -190,7 +190,7 @@ export default class SegmentHandler extends Highlighter {
           )
         );
         this.temporarySegment.startVector = this.startVector;
-        this.temporaryStartMarker.positionVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
         this.startSEPoint = null;
       } else if (this.hitSEParametrics.length > 0) {
         // The start of the line will be a point on a Ellipse
@@ -202,7 +202,7 @@ export default class SegmentHandler extends Highlighter {
           )
         );
         this.temporarySegment.startVector = this.startVector;
-        this.temporaryStartMarker.positionVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
         this.startSEPoint = null;
       } else if (this.hitSEPolygons.length > 0) {
         // The start of the line will be a point on a Ellipse
@@ -214,7 +214,7 @@ export default class SegmentHandler extends Highlighter {
           )
         );
         this.temporarySegment.startVector = this.startVector;
-        this.temporaryStartMarker.positionVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
         this.startSEPoint = null;
       } else {
         // The mouse press is not near an existing point or one dimensional object.
@@ -224,11 +224,11 @@ export default class SegmentHandler extends Highlighter {
         // The start vector of the temporary segment and the start marker are
         //  also the the current location on the sphere
         this.temporarySegment.startVector = this.currentSphereVector;
-        this.temporaryStartMarker.positionVector = this.currentSphereVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.currentSphereVector;
         this.startVector.copy(this.currentSphereVector);
         this.startSEPoint = null;
       }
-      this.temporaryEndMarker.positionVector = this.currentSphereVector;
+      this.temporaryEndMarker.positionVectorAndDisplay = this.currentSphereVector;
 
       // Set the booleans for describing the segment
       this.nearlyAntipodal = false;
@@ -363,7 +363,7 @@ export default class SegmentHandler extends Highlighter {
               SEIntersectionPoint &&
             !this.snapStartMarkerToTemporaryPoint.isUserCreated
           ) {
-            this.temporaryStartMarker.positionVector =
+            this.temporaryStartMarker.positionVectorAndDisplay =
               this.snapStartMarkerToTemporaryPoint.locationVector;
           } else {
             this.temporaryStartMarker.removeFromLayers();
@@ -372,12 +372,12 @@ export default class SegmentHandler extends Highlighter {
         }
         // Set the location of the temporary startMarker by snapping to appropriate object (if any)
         if (this.snapStartMarkerToTemporaryOneDimensional !== null) {
-          this.temporaryStartMarker.positionVector =
+          this.temporaryStartMarker.positionVectorAndDisplay =
             this.snapStartMarkerToTemporaryOneDimensional.closestVector(
               this.currentSphereVector
             );
         } else if (this.snapStartMarkerToTemporaryPoint == null) {
-          this.temporaryStartMarker.positionVector = this.currentSphereVector;
+          this.temporaryStartMarker.positionVectorAndDisplay = this.currentSphereVector;
         }
       } else {
         // If the temporary end/StartMarker has *not* been added to the scene do so now
@@ -396,12 +396,12 @@ export default class SegmentHandler extends Highlighter {
         }
         // Set the location of the temporary endMarker by snapping to appropriate object (if any)
         if (this.snapEndMarkerToTemporaryOneDimensional !== null) {
-          this.temporaryEndMarker.positionVector =
+          this.temporaryEndMarker.positionVectorAndDisplay =
             this.snapEndMarkerToTemporaryOneDimensional.closestVector(
               this.currentSphereVector
             );
         } else {
-          this.temporaryEndMarker.positionVector = this.currentSphereVector;
+          this.temporaryEndMarker.positionVectorAndDisplay = this.currentSphereVector;
         }
 
         // If the temporary segment has *not* been added to the scene do so now (only once)
@@ -760,7 +760,7 @@ export default class SegmentHandler extends Highlighter {
       } //There are some situations in which the mouse actions (hard to duplicate) lead to an undefined normal vector and I'm hoping this will prevent the program from entering an error state.
 
       // update the location of the endMarker
-      this.temporaryEndMarker.positionVector = this.endSEPoint.locationVector;
+      this.temporaryEndMarker.positionVectorAndDisplay = this.endSEPoint.locationVector;
 
       // Finally set the values for the unit vectors defining the segment and update the display
       this.temporarySegment.arcLength = this.arcLength;

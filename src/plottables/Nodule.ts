@@ -31,7 +31,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   // public static NODULE_COUNT = 0; // useful for export to SVG to identify arc objects
   // public id = 0;
   /* If the object is not visible then showing = true (The user can hide objects)*/
-  protected _showing = true;
+  private _showing = true;
   readonly name: string = "<noname-nodule>";
 
   constructor(noduleName: string) {
@@ -490,6 +490,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   }
 
   set showing(b: boolean) {
+    // console.log("Set showing in Nodule to ", b)
     this._showing = b;
     this.setVisible(b);
   }

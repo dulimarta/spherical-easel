@@ -120,7 +120,7 @@ export default class NSectSegmentHandler extends Highlighter {
           this.tmpVector.addVectors(startVector, toAxis).normalize();
 
           // Update the current location in the plottable (also updates display)
-          tempPt.positionVector = this.tmpVector;
+          tempPt.positionVectorAndDisplay = this.tmpVector;
         }
       }
     });

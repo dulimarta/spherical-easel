@@ -1144,41 +1144,45 @@ export default class Polygon extends Nodule {
     }
     // now collect the geometric information by copying all the front fills and backfills
     this.frontFills.forEach(fill => {
-      let svgFrontString = '<path d="';
-      const localMatrix = fill.matrix;
-      fill.vertices.forEach((v: Anchor, index: number) => {
-        var coords = localMatrix.multiply(v.x, v.y, 1);
-        if (index == 0) {
-          svgFrontString += "M" + coords[0] + " " + coords[1] + " ";
-        } else {
-          svgFrontString += "L" + coords[0] + " " + coords[1] + " ";
-        }
-      });
-      svgFrontString += 'Z"/>';
+      if (fill.vertices.length != 0) {
+        let svgFrontString = '<path d="';
+        const localMatrix = fill.matrix;
+        fill.vertices.forEach((v: Anchor, index: number) => {
+          var coords = localMatrix.multiply(v.x, v.y, 1);
+          if (index == 0) {
+            svgFrontString += "M" + coords[0] + " " + coords[1] + " ";
+          } else {
+            svgFrontString += "L" + coords[0] + " " + coords[1] + " ";
+          }
+        });
+        svgFrontString += 'Z"/>';
 
-      returnSVGObject.layerSVGArray.push([
-        LAYER.foregroundFills,
-        svgFrontString
-      ]);
+        returnSVGObject.layerSVGArray.push([
+          LAYER.foregroundFills,
+          svgFrontString
+        ]);
+      }
     });
 
     this.backFills.forEach(fill => {
-      let svgBackString = '<path d="';
-      const localMatrix = fill.matrix;
-      fill.vertices.forEach((v: Anchor, index: number) => {
-        var coords = localMatrix.multiply(v.x, v.y, 1);
-        if (index == 0) {
-          svgBackString += "M" + coords[0] + " " + coords[1] + " ";
-        } else {
-          svgBackString += "L" + coords[0] + " " + coords[1] + " ";
-        }
-      });
-      svgBackString += 'Z"/>';
+      if (fill.vertices.length != 0) {
+        let svgBackString = '<path d="';
+        const localMatrix = fill.matrix;
+        fill.vertices.forEach((v: Anchor, index: number) => {
+          var coords = localMatrix.multiply(v.x, v.y, 1);
+          if (index == 0) {
+            svgBackString += "M" + coords[0] + " " + coords[1] + " ";
+          } else {
+            svgBackString += "L" + coords[0] + " " + coords[1] + " ";
+          }
+        });
+        svgBackString += 'Z"/>';
 
-      returnSVGObject.layerSVGArray.push([
-        LAYER.backgroundFills,
-        svgBackString
-      ]);
+        returnSVGObject.layerSVGArray.push([
+          LAYER.backgroundFills,
+          svgBackString
+        ]);
+      }
     });
 
     return [returnSVGObject];

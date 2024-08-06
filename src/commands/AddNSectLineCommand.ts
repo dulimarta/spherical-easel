@@ -35,8 +35,6 @@ export class AddNSectLineCommand extends Command {
     }
     Command.store.addLine(this.seNSectLine);
     Command.store.addLabel(this.seLabel);
-    // this.seNSectLine.markKidsOutOfDate();
-    // this.seNSectLine.update();
   }
 
   saveState(): void {
@@ -97,7 +95,6 @@ export class AddNSectLineCommand extends Command {
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
-    // console.log(command);
     const tokens = command.split("&");
     const propMap = new Map<SavedNames, string>();
     // load the tokens into the map

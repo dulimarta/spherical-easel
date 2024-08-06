@@ -95,11 +95,12 @@ export default class Point extends Nodule {
     this.glowingBackPoint.translation = this.defaultScreenVectorLocation;
     this.backPoint.translation = this.defaultScreenVectorLocation;
 
-    // The points are not initially glowing but are visible for the temporary object
-    // this.frontPoint.visible = true;
-    // this.glowingFrontPoint.visible = false;
-    // this.backPoint.visible = true;
-    // this.glowingBackPoint.visible = false;
+    // The points are not visible initially
+    this.frontPoint.visible = false;
+    this.glowingFrontPoint.visible = false;
+    this.backPoint.visible = false;
+    this.glowingBackPoint.visible = false;
+
 
     // Set the properties of the points that never change - stroke width and glowing options
     this.frontPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.front;
@@ -110,6 +111,11 @@ export default class Point extends Nodule {
       SETTINGS.point.drawn.pointStrokeWidth.back;
     this.styleOptions.set(StyleCategory.Front, DEFAULT_POINT_FRONT_STYLE);
     this.styleOptions.set(StyleCategory.Back, DEFAULT_POINT_BACK_STYLE);
+  }
+
+  set positionVectorAndDisplay(idealUnitSphereVectorLocation: Vector3){
+    this.positionVector = idealUnitSphereVectorLocation
+    this.updateDisplay()
   }
 
   /**
@@ -124,7 +130,15 @@ export default class Point extends Nodule {
       this._locationVector.x,
       this._locationVector.y
     );
-    this.updateDisplay();
+    //this.updateDisplay();  //<--- do not do this! disconnect the setting of position with the display, if you leave this in
+    //then this turns on the display of the vertex point of the angle marker in a bad way. It turns on the
+    //     // the display so that the following problem occurs.
+    //     //   1. Create/Measure an angle from three new points
+    //     //   2. Hide the point at the vertex
+    //     //   3. Create an angle bisector
+    //     //   4. Notice that the vertex point appears but is now not selectable (because the this.showing is false, but the
+    //     //    actual display is showing, so it is not found in the Highligher.ts handler subclass )
+    //     // I spent at least 8 hours looking for how this occurs ... :-()
   }
   get positionVector(): Vector3 {
     return this._locationVector;
@@ -171,6 +185,8 @@ export default class Point extends Nodule {
   }
 
   frontNormalDisplay(): void {
+    // if (!this.showing){
+    // console.log("Turned point display on when showing is ", this.showing, this._locationVector.toFixed(2),this)}
     this.frontPoint.visible = true;
     this.glowingFrontPoint.visible = false;
     this.backPoint.visible = false;
@@ -207,11 +223,15 @@ export default class Point extends Nodule {
   }
 
   updateDisplay(): void {
+    // console.log("update point display")
     this.normalDisplay();
   }
 
   setVisible(flag: boolean): void {
+    // console.log("Set point visible method")
     if (!flag) {
+      // if (this._locationVector.z>0){
+      // console.log("Turn off point display when showing is ", this.showing,this._locationVector.toFixed(2))}
       this.frontPoint.visible = false;
       this.glowingFrontPoint.visible = false;
       this.backPoint.visible = false;

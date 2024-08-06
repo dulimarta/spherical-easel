@@ -807,7 +807,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                 this.temporaryPoint1.addToLayers(this.layers);
                 this.temporaryPoint1Added = true;
               }
-              this.temporaryPoint1.positionVector =
+              this.temporaryPoint1.positionVectorAndDisplay =
                 this.transformationSEParent.f(
                   this.possiblyGlowing.locationVector
                 );
@@ -889,7 +889,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   this.temporaryPoint1.addToLayers(this.layers);
                   this.temporaryPoint1Added = true;
                 }
-                this.temporaryPoint1.positionVector =
+                this.temporaryPoint1.positionVectorAndDisplay =
                   this.transformationSEParent.f(
                     this.possiblyGlowing.startSEPoint.locationVector
                   );
@@ -899,7 +899,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   this.temporaryPoint2.addToLayers(this.layers);
                   this.temporaryPoint2Added = true;
                 }
-                this.temporaryPoint2.positionVector =
+                this.temporaryPoint2.positionVectorAndDisplay =
                   this.transformationSEParent.f(
                     this.possiblyGlowing.endSEPoint.locationVector
                   );
@@ -983,7 +983,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   this.temporaryPoint1.addToLayers(this.layers);
                   this.temporaryPoint1Added = true;
                 }
-                this.temporaryPoint1.positionVector =
+                this.temporaryPoint1.positionVectorAndDisplay =
                   this.transformationSEParent.f(
                     this.possiblyGlowing.startSEPoint.locationVector
                   );
@@ -993,7 +993,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   this.temporaryPoint2.addToLayers(this.layers);
                   this.temporaryPoint2Added = true;
                 }
-                this.temporaryPoint2.positionVector =
+                this.temporaryPoint2.positionVectorAndDisplay =
                   this.transformationSEParent.f(
                     this.possiblyGlowing.endSEPoint.locationVector
                   );
@@ -1043,7 +1043,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   this.temporaryPoint1.addToLayers(this.layers);
                   this.temporaryPoint1Added = true;
                 }
-                this.temporaryPoint1.positionVector =
+                this.temporaryPoint1.positionVectorAndDisplay =
                   this.transformationSEParent.f(
                     this.possiblyGlowing.startSEPoint.locationVector
                   );
@@ -1053,7 +1053,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   this.temporaryPoint2.addToLayers(this.layers);
                   this.temporaryPoint2Added = true;
                 }
-                this.temporaryPoint2.positionVector = centerOfInvertedCircle;
+                this.temporaryPoint2.positionVectorAndDisplay = centerOfInvertedCircle;
 
                 // add a temporary Circle and set the normal, start and arc length
                 if (!this.temporaryCircleAdded) {
@@ -1111,7 +1111,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   this.temporaryPoint1.addToLayers(this.layers);
                   this.temporaryPoint1Added = true;
                 }
-                this.temporaryPoint1.positionVector =
+                this.temporaryPoint1.positionVectorAndDisplay =
                   this.transformationSEParent.f(
                     this.possiblyGlowing.centerSEPoint.locationVector
                   );
@@ -1121,7 +1121,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   this.temporaryPoint2.addToLayers(this.layers);
                   this.temporaryPoint2Added = true;
                 }
-                this.temporaryPoint2.positionVector =
+                this.temporaryPoint2.positionVectorAndDisplay =
                   this.transformationSEParent.f(
                     this.possiblyGlowing.circleSEPoint.locationVector
                   );
@@ -1196,7 +1196,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   this.temporaryPoint1.addToLayers(this.layers);
                   this.temporaryPoint1Added = true;
                 }
-                this.temporaryPoint1.positionVector =
+                this.temporaryPoint1.positionVectorAndDisplay =
                   this.transformationSEParent.f(
                     this.possiblyGlowing.circleSEPoint.locationVector
                   );
@@ -1206,7 +1206,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   this.temporaryPoint2.addToLayers(this.layers);
                   this.temporaryPoint2Added = true;
                 }
-                this.temporaryPoint2.positionVector = centerOfInvertedCircle;
+                this.temporaryPoint2.positionVectorAndDisplay = centerOfInvertedCircle;
 
                 // add a temporary Circle and set the normal, start and arc length
                 if (!this.temporaryCircleAdded) {
@@ -1289,7 +1289,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   this.temporaryPoint1.addToLayers(this.layers);
                   this.temporaryPoint1Added = true;
                 }
-                this.temporaryPoint1.positionVector =
+                this.temporaryPoint1.positionVectorAndDisplay =
                   this.transformationSEParent.f(
                     this.possiblyGlowing.focus1SEPoint.locationVector
                   );
@@ -1299,7 +1299,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   this.temporaryPoint2.addToLayers(this.layers);
                   this.temporaryPoint2Added = true;
                 }
-                this.temporaryPoint2.positionVector =
+                this.temporaryPoint2.positionVectorAndDisplay =
                   this.transformationSEParent.f(
                     this.possiblyGlowing.focus2SEPoint.locationVector
                   );
@@ -1309,7 +1309,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                   this.temporaryPoint3.addToLayers(this.layers);
                   this.temporaryPoint3Added = true;
                 }
-                this.temporaryPoint3.positionVector =
+                this.temporaryPoint3.positionVectorAndDisplay =
                   this.transformationSEParent.f(
                     this.possiblyGlowing.ellipseSEPoint.locationVector
                   );

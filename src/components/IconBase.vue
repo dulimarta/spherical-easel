@@ -27,7 +27,6 @@ const props = defineProps<{
   notInLine?: boolean;
 }>();
 
-let emphasizeTypes: string[][] = [[]];
 const mdiIcon: Ref<boolean | string> = ref(false);
 let filePath: string | undefined = undefined;
 let svgFileName: string | undefined = undefined;
@@ -43,8 +42,6 @@ onMounted((): void => {
   const zIcons = SETTINGS.icons as Record<string, any>;
   svgFileName = zIcons[props.iconName].props.svgFileName;
   filePath = "../../icons/" + svgFileName;
-
-  emphasizeTypes = zIcons[props.iconName].props.emphasizeTypes;
   mdiIcon.value = zIcons[props.iconName].props.mdiIcon;
   if (typeof mdiIcon.value !== "string") {
     //This means we are working with an SVG icon and not a mdi icon
@@ -52,7 +49,7 @@ onMounted((): void => {
     // By default, axios assumes a JSON response and the input will be parsed as JSON.
     // We want to override it to "text"
     axios.get(filePath, { responseType: "text" }).then(r => {
-      let completeSVGString = r.data;
+      let completeSVGString:string = r.data;
       //strip off the first and last lines of the svg code
       completeSVGString=completeSVGString.replace(/.*\n/, '')
       completeSVGString=completeSVGString.replace(/\n.*$/, '')

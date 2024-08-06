@@ -110,7 +110,7 @@ export default class LineHandler extends Highlighter {
         const selected = this.hitSEPoints[0];
         this.startVector.copy(selected.locationVector);
         this.startSEPoint = this.hitSEPoints[0];
-        this.temporaryStartMarker.positionVector = selected.locationVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = selected.locationVector;
         // Glow the selected point and select it so the highlighter.ts doesn't unglow it with the mouseMoved method
         this.startSEPoint.glowing = true;
         this.startSEPoint.selected = true;
@@ -123,7 +123,7 @@ export default class LineHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryStartMarker.positionVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
         this.startSEPoint = null;
       } else if (this.hitSELines.length > 0) {
         // The start of the line will be a point on a line
@@ -134,7 +134,7 @@ export default class LineHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryStartMarker.positionVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
         this.startSEPoint = null;
       } else if (this.hitSECircles.length > 0) {
         // The start of the line will be a point on a circle
@@ -145,7 +145,7 @@ export default class LineHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryStartMarker.positionVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
         this.startSEPoint = null;
       } else if (this.hitSEEllipses.length > 0) {
         // The start of the line will be a point on a ellipse
@@ -156,7 +156,7 @@ export default class LineHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryStartMarker.positionVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
         this.startSEPoint = null;
       } else if (this.hitSEParametrics.length > 0) {
         // The start of the line will be a point on a ellipse
@@ -167,7 +167,7 @@ export default class LineHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryStartMarker.positionVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
         this.startSEPoint = null;
       } else if (this.hitSEPolygons.length > 0) {
         // The start of the line will be a point on a ellipse
@@ -178,17 +178,17 @@ export default class LineHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryStartMarker.positionVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
         this.startSEPoint = null;
       } else {
         // The mouse press is not near an existing point or one dimensional object.
         //  Record the location in a temporary point (startMarker found in MouseHandler).
         //  Eventually, we will create a new SEPoint and Point
-        this.temporaryStartMarker.positionVector = this.currentSphereVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.currentSphereVector;
         this.startVector.copy(this.currentSphereVector);
         this.startSEPoint = null;
       }
-      this.temporaryEndMarker.positionVector = this.currentSphereVector;
+      this.temporaryEndMarker.positionVectorAndDisplay = this.currentSphereVector;
     }
   }
   mouseMoved(event: MouseEvent): void {
@@ -316,7 +316,7 @@ export default class LineHandler extends Highlighter {
               SEIntersectionPoint &&
             !this.snapStartMarkerToTemporaryPoint.isUserCreated
           ) {
-            this.temporaryStartMarker.positionVector =
+            this.temporaryStartMarker.positionVectorAndDisplay =
               this.snapStartMarkerToTemporaryPoint.locationVector;
           } else {
             this.temporaryStartMarker.removeFromLayers();
@@ -325,12 +325,12 @@ export default class LineHandler extends Highlighter {
         }
         // Set the location of the temporary startMarker by snapping to appropriate object (if any)
         if (this.snapStartMarkerToTemporaryOneDimensional !== null) {
-          this.temporaryStartMarker.positionVector =
+          this.temporaryStartMarker.positionVectorAndDisplay =
             this.snapStartMarkerToTemporaryOneDimensional.closestVector(
               this.currentSphereVector
             );
         } else if (this.snapStartMarkerToTemporaryPoint == null) {
-          this.temporaryStartMarker.positionVector = this.currentSphereVector;
+          this.temporaryStartMarker.positionVectorAndDisplay = this.currentSphereVector;
         }
       } else {
         // If the temporary startMarker has *not* been added to the scene do so now (it might have
@@ -351,12 +351,12 @@ export default class LineHandler extends Highlighter {
         }
         // Set the location of the temporary endMarker by snapping to appropriate object (if any)
         if (this.snapEndMarkerToTemporaryOneDimensional !== null) {
-          this.temporaryEndMarker.positionVector =
+          this.temporaryEndMarker.positionVectorAndDisplay =
             this.snapEndMarkerToTemporaryOneDimensional.closestVector(
               this.currentSphereVector
             );
         } else {
-          this.temporaryEndMarker.positionVector = this.currentSphereVector;
+          this.temporaryEndMarker.positionVectorAndDisplay = this.currentSphereVector;
         }
 
         // If the temporary line has *not* been added to the scene do so now (only once)
