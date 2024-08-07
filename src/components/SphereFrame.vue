@@ -24,6 +24,19 @@
         <ShortcutIcon :model="shortcut" />
       </div>
     </div>
+    <div
+      v-if="showMousePos"
+      :style="{
+        position: 'absolute',
+        bottom: '8px',
+        left: '8px',
+        border: '2px solid gray',
+        borderRadius: '0.5em',
+        padding: '0.25em',
+        fontSize: '11pt'
+      }">
+      {{ mousePos }}
+    </div>
     <!--div class="anchored bottom left">
       <div
         v-for="(shortcut, index) in shortCutIcons[2]"
@@ -113,7 +126,8 @@ import { ToolButtonType } from "@/types";
 import Two from "two.js";
 import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
-
+import { useMagicKeys } from "@vueuse/core";
+import { watchEffect } from "vue";
 type ComponentProps = {
   availableHeight: number;
   availableWidth: number;
@@ -134,12 +148,11 @@ const { t } = useI18n();
 
 const props = withDefaults(defineProps<ComponentProps>(), {
   availableHeight: 240,
-  availableWidth: 240,
+  availableWidth: 240
 });
 
-
 const canvas: Ref<HTMLDivElement | null> = ref(null);
-  const animateClass = ref("")
+const animateClass = ref("");
 
 const shortCutIcons = computed((): Array<Array<ToolButtonType>> => {
   // console.debug("Updating shortcut icons");
@@ -148,7 +161,9 @@ const shortCutIcons = computed((): Array<Array<ToolButtonType>> => {
       corner.map((act: ActionMode): ToolButtonType => TOOL_DICTIONARY.get(act)!)
   );
 });
-
+const mousePos = ref("");
+const showMousePos = ref(false)
+const { shift, alt, d, ctrl } = useMagicKeys();
 /**
  * The main (the only one) TwoJS object that contains the groups (each a Group) making up the screen graph
  * First groups  (Groups) are added to the twoInstance (index by the enum LAYER from
@@ -208,6 +223,11 @@ let applyTransformationTool: ApplyTransformationHandler | null = null;
 
 let layers: Array<Group> = [];
 
+watchEffect(() => {
+  if (ctrl.value && alt.value && d.value) {
+    showMousePos.value = !showMousePos.value
+  }
+});
 onBeforeMount((): void => {
   twoInstance = new Two({
     width: props.availableWidth,
@@ -306,7 +326,12 @@ onBeforeMount((): void => {
   EventBus.listen("set-expression-for-tool", setExpressionForTool);
   EventBus.listen("set-transformation-for-tool", setTransformationForTool);
   EventBus.listen("delete-node", deleteNode);
-  EventBus.listen("update-two-instance",updateTwoJsInstance) //IS THERE A BETTER WAY?
+  EventBus.listen("update-two-instance", updateTwoJsInstance); //IS THERE A BETTER WAY?
+  EventBus.listen("cursor-position", (arg: any) => {
+    const rawPos = arg.raw.map((s: number) => s.toFixed(2)).join(",");
+    const normPos = arg.normalized.map((s: number) => s.toFixed(2)).join(",");
+    mousePos.value = `(${normPos}) (${rawPos})`;
+  });
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   // EventBus.listen(
   //   "set-point-visibility-and-label",
@@ -315,24 +340,24 @@ onBeforeMount((): void => {
 });
 
 onMounted((): void => {
-  console.debug("SphereFrame::onMounted")
+  console.debug("SphereFrame::onMounted");
   // Put the main js instance into the canvas
   twoInstance.appendTo(canvas.value!);
   // Set up the listeners
-  canvas.value?.addEventListener("mouseenter", (ev) => {
+  canvas.value?.addEventListener("mouseenter", ev => {
     // console.debug(`SphereFrame.vue: Mouse entered the canvas (${ev.clientX},${ev.clientY})`)
-  })
-  canvas.value!.addEventListener("mousemove", (ev) => {
+  });
+  canvas.value!.addEventListener("mousemove", ev => {
     // console.debug(`SphereFrame.vue: Mouse moved in canvas (${ev.clientX},${ev.clientY})`)
-    handleMouseMoved(ev)
+    handleMouseMoved(ev);
   });
-  canvas.value?.addEventListener("mousedown", (ev) => {
+  canvas.value?.addEventListener("mousedown", ev => {
     // console.debug(`SphereFrame.vue: Mouse down in canvas (${ev.clientX},${ev.clientY})`)
-    handleMousePressed(ev)
+    handleMousePressed(ev);
   });
-  canvas.value?.addEventListener("mouseup", (ev) => {
+  canvas.value?.addEventListener("mouseup", ev => {
     // console.debug(`SphereFrame.vue: Mouse up in canvas (${ev.clientX},${ev.clientY})`)
-    handleMouseReleased(ev)
+    handleMouseReleased(ev);
   });
   canvas.value?.addEventListener("mouseleave", handleMouseLeave);
   // Add the passive option to avoid Chrome warning
@@ -390,7 +415,6 @@ watch(
       }, 100);
     }
   }
-
 );
 
 onBeforeUnmount((): void => {
@@ -468,7 +492,7 @@ function updateView() {
   //Now update the display of the arrangement (i.e. make sure the labels are not too far from their associated objects)
   for (let l of seLabels.value) {
     l.update();
-  };
+  }
 }
 //#endregion updateView
 
@@ -711,9 +735,9 @@ function getCurrentSVGForIcon(): void {
 }
 
 function animateCanvas(): void {
-  animateClass.value = "spin"
+  animateClass.value = "spin";
   setTimeout(() => {
-    animateClass.value = ""
+    animateClass.value = "";
   }, 1200);
 }
 
@@ -779,8 +803,8 @@ function deleteNode(e: {
 }
 
 //IS THERE A BETTER WAY?
-function updateTwoJsInstance():void {
-  twoInstance.update()
+function updateTwoJsInstance(): void {
+  twoInstance.update();
 }
 
 // dialogBoxIsActive(e: { active: boolean }): void {
@@ -946,9 +970,7 @@ watch(
         break;
       case "pointOnObject":
         if (!pointOnOneDimensionalTool) {
-          pointOnOneDimensionalTool = new PointOnOneDimensionalHandler(
-            layers
-          );
+          pointOnOneDimensionalTool = new PointOnOneDimensionalHandler(layers);
         }
         currentTool = pointOnOneDimensionalTool;
         break;
@@ -993,9 +1015,7 @@ watch(
         break;
       case "tangent":
         if (!tangentLineThruPointTool) {
-          tangentLineThruPointTool = new TangentLineThruPointHandler(
-            layers
-          );
+          tangentLineThruPointTool = new TangentLineThruPointHandler(layers);
         }
         currentTool = tangentLineThruPointTool;
         break;
@@ -1081,16 +1101,13 @@ watch(
         break;
       case "applyTransformation":
         if (!applyTransformationTool) {
-          applyTransformationTool = new ApplyTransformationHandler(
-            layers
-          );
+          applyTransformationTool = new ApplyTransformationHandler(layers);
         }
         currentTool = applyTransformationTool;
         break;
       default:
         currentTool = null;
-        if (import.meta.env.MODE === 'test')
-        assertNever(mode)
+        if (import.meta.env.MODE === "test") assertNever(mode);
     }
     if (currentTool && directiveMsg) {
       EventBus.fire("show-alert", directiveMsg);
@@ -1100,7 +1117,7 @@ watch(
 );
 
 function assertNever(x: any): never {
-  throw Error("This should not happen", x)
+  throw Error("This should not happen", x);
 }
 
 function listItemStyle(idx: number, xLoc: string, yLoc: string) {
@@ -1148,7 +1165,6 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
   justify-content: center;
 }
 .anchored {
-  background-color: red;
   margin: 8px;
   position: absolute;
 }

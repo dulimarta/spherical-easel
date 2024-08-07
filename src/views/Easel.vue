@@ -340,7 +340,7 @@ function handleKeyDown(keyEvent: KeyboardEvent): void {
 //#region resizePlottables
 function resizePlottables(e: { factor: number }): void {
   // Update the current stroke widths/radius in each plottable class
-  console.debug(`Responding to magnification-updated ${e.factor}`)
+  // console.debug(`Responding to magnification-updated ${e.factor}`)
   Line.updateCurrentStrokeWidthForZoom(e.factor)
   Segment.updateCurrentStrokeWidthForZoom(e.factor)
   Circle.updateCurrentStrokeWidthForZoom(e.factor)
