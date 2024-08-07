@@ -138,7 +138,10 @@ export class AddSegmentCommand extends Command {
 
       // SESegment requires a call to its shallowUpdate
       // so its plottable is initialized properly
-      seSegment.shallowUpdate()
+      // Update: the shallowUpdate call is not needed anymore after
+      // adding updateDisplay() call in SESegment constructor
+      // seSegment.shallowUpdate()
+
       //make the label and set its location
       const seLabel = new SELabel("segment", seSegment);
       const seLabelLocation = new Vector3();

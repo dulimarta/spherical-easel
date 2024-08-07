@@ -98,12 +98,14 @@ export class SESegment
     this.ref._startVector.copy(segmentStartSEPoint.locationVector);
     this.ref._normalVector.copy(segmentNormalVector);
     this.ref.arcLength = segmentArcLength;
-    this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
-    this.ref.adjustSize();
     this._startSEPoint = segmentStartSEPoint;
     this._normalVector.copy(segmentNormalVector);
     this._arcLength = segmentArcLength;
     this._endSEPoint = segmentEndSEPoint;
+    // The following line(s) are needed to have the path
+    // show correctly upon constructor call
+    // this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.ref.updateDisplay()
   }
 
   customStyles(): Set<string> {
