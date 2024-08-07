@@ -15,10 +15,9 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SEStoreType } from "@/stores/se";
-//import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { Vector } from "two.js/src/vector";
-
+import EventBus from "./EventBus";
 export default abstract class MouseHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
   protected readonly Y_AXIS = new Vector3(0, 1, 0);
@@ -152,9 +151,11 @@ export default abstract class MouseHandler implements ToolStrategy {
         Math.sqrt(R * R - (mx * mx + my * my)) * (event.shiftKey ? -1 : +1);
       this.previousSphereVector.copy(this.currentSphereVector);
       this.currentSphereVector.set(mx, my, zCoordinate).normalize();
-      // TODO: remove the following console.debug
-      if (event.ctrlKey)
-        console.debug("Mouse at", this.currentSphereVector.toFixed(4));
+      // We use this for debugging, but decided to keep it
+      EventBus.fire("cursor-position", {
+        raw: [mx, my, zCoordinate],
+        normalized: this.currentSphereVector.toArray()
+      });
       this.isOnSphere = true;
     } else {
       // The mouse event was not on the orthographic projection of the default sphere

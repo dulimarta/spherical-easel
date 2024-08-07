@@ -1,5 +1,5 @@
 import { SENodule } from "./SENodule";
-import { Vector3, Matrix4, UniformsLib } from "three";
+import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import SETTINGS from "@/global-settings";
@@ -12,8 +12,6 @@ import { Labelable } from "@/types";
 import { SELabel, SESegment, SEExpression, SEAngleMarker } from "./internal";
 import i18n from "@/i18n";
 import Polygon from "@/plottables/Polygon";
-import { DisplayStyle } from "@/plottables/Nodule";
-import EventBus from "@/eventHandlers/EventBus";
 const { t } = i18n.global;
 
 const styleSet = new Set([
@@ -70,14 +68,11 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   private _area = 0;
   /**
    * Create a model SEPolygon using:
-   * @param poly The plottable TwoJS Object associated to this object
    * @param edges
-   * @param orderBooleans
-   * @param interiorDirectionMultipliers
+   * @param flippedBooleans
    * @param angleMarkers
    */
   constructor(
-    // poly: Polygon,
     edges: SESegment[],
     flippedBooleans: boolean[],
     angleMarkers: SEAngleMarker[]
@@ -87,9 +82,6 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     this._polygonNumber = SENodule.POLYGON_COUNT;
     this.name = `Poly-${this._polygonNumber}`
     this.ref = new Polygon(this.name, edges, flippedBooleans);
-    this.ref.updateDisplay();
-    this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
-    this.ref.adjustSize();
     this._seEdgeSegments.push(...edges);
     this._segmentIsFlipped.push(...flippedBooleans);
     this._angleMarkers.push(...angleMarkers);

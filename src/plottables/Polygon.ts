@@ -1,6 +1,6 @@
 /** @format */
 
-import { Vector3, Matrix4 } from "three";
+import { Vector3 } from "three";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
@@ -17,7 +17,6 @@ import { Anchor } from "two.js/src/anchor";
 import { Stop } from "two.js/src/effects/stop";
 import { RadialGradient } from "two.js/src/effects/radial-gradient";
 import { Group } from "two.js/src/group";
-import { Vector } from "two.js/src/vector";
 
 const BOUNDARYSUBDIVISIONS = SETTINGS.polygon.numPoints; // The number of points used to draw parts of the boundary circle when the polygon crosses it.
 
@@ -749,7 +748,7 @@ export default class Polygon extends Nodule {
           this.frontFills[0].vertices.push(vertex);
         } else {
           throw new Error(
-            "Ploygon: Not enough vertices from the fills in the pool!"
+            "Polygon: Not enough vertices from the fills in the pool!"
           );
         }
       });
@@ -764,7 +763,7 @@ export default class Polygon extends Nodule {
           this.backFills[0].vertices.push(vertex);
         } else {
           throw new Error(
-            "Ploygon: Not enough vertices from the fills in the pool!"
+            "Polygon: Not enough vertices from the fills in the pool!"
           );
         }
       });
@@ -800,7 +799,7 @@ export default class Polygon extends Nodule {
           this.frontFills[0].vertices.push(vertex);
         } else {
           throw new Error(
-            "Ploygon: Not enough vertices from the fills in the pool!"
+            "Polygon: Not enough vertices from the fills in the pool!"
           );
         }
       });
@@ -813,7 +812,7 @@ export default class Polygon extends Nodule {
           this.backFills[0].vertices.push(vertex);
         } else {
           throw new Error(
-            "Ploygon: Not enough vertices from the fills in the pool!"
+            "Polygon: Not enough vertices from the fills in the pool!"
           );
         }
       });
@@ -877,7 +876,7 @@ export default class Polygon extends Nodule {
           this.backFills[0].vertices.push(vertex);
         } else {
           throw new Error(
-            "Ploygon: Not enough vertices from the fills in the pool!"
+            "Polygon: Not enough vertices from the fills in the pool!"
           );
         }
       });
@@ -890,7 +889,7 @@ export default class Polygon extends Nodule {
           this.frontFills[0].vertices.push(vertex);
         } else {
           throw new Error(
-            "Ploygon: Not enough vertices from the fills in the pool!"
+            "Polygon: Not enough vertices from the fills in the pool!"
           );
         }
       });
@@ -902,7 +901,7 @@ export default class Polygon extends Nodule {
         this.frontFills[0].vertices.push(vert1);
       } else {
         throw new Error(
-          "Ploygon: Not enough vertices from the fills in the pool!"
+          "Polygon: Not enough vertices from the fills in the pool!"
         );
       }
       // now add the location vertices
@@ -914,7 +913,7 @@ export default class Polygon extends Nodule {
           this.frontFills[0].vertices.push(vertex);
         } else {
           throw new Error(
-            "Ploygon: Not enough vertices from the fills in the pool!"
+            "Polygon: Not enough vertices from the fills in the pool!"
           );
         }
       });

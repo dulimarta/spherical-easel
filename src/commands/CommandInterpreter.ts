@@ -50,6 +50,7 @@ import { SetValueDisplayModeCommand } from "./SetValueDisplayModeCommand";
 import { SetEarthModeCommand } from "./SetEarthModeCommand";
 import { AddLatitudeCommand } from "./AddLatitudeCommand";
 import { AddLongitudeCommand } from "./AddLongitudeCommand";
+import { UpdateTwoJSCommand } from "./UpdateTwoJSCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -202,11 +203,17 @@ function interpret(command: string | Array<string>): void {
   } else {
     // This is a CommandGroup, interpret each command individually
     const group = new CommandGroup();
+    const updateTwoJS = new UpdateTwoJSCommand()
     command
       // Remove leading and training quotes
       .map((s: string) => s.replace(/^"/, "").replace(/"$/, ""))
       .forEach((c: string /*, gPos: number*/) => {
         group.addCommand(executeIndividual(c));
+        // There are commands which depend on the correct rendering
+        // state of TwoJS.
+        // The following "no-op" command allows TwoJS to update
+        // its internal states
+        group.addCommand(updateTwoJS)
       });
     // Then execute as a group
     group.execute();

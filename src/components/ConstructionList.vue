@@ -316,7 +316,6 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
     // parse() functions, the following call to updateDisplay
     // becomes unnecessary
     // seNodules.value.forEach(obj => {
-    // console.debug("Styling ", obj.name)
     // obj.ref?.stylize(DisplayStyle.ApplyCurrentVariables)
     // })
   }
