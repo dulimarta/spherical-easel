@@ -638,7 +638,6 @@ function checkExportHeight(): void {
     imageExportHeight.value = Math.trunc(imageExportHeight.value);
   }
 }
-
 function animationRotationAngleRule(
   value: number | undefined
 ): boolean | string {

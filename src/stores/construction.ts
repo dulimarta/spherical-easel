@@ -237,6 +237,17 @@ export const useConstructionStore = defineStore("construction", () => {
     // By the time doSave() is called, svgCanvas must have been set
     // to it is safe to non-null assert svgCanvas.value
     const svgRoot = svgCanvas.value!.querySelector("svg") as SVGElement;
+    // Make a duplicate of the SVG tree
+    const svgElement = svgRoot.cloneNode(true) as SVGElement;
+    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+    // Remove the top-level transformation matrix
+    // We have to save the preview in its "natural" pose
+    svgElement.style.removeProperty("transform");
+
+    const svgBlob = new Blob([svgElement.outerHTML], {
+      type: "image/svg+xml;charset=utf-8"
+    });
 
     /* TODO: move the following constant to global-settings? */
     const FIELD_SIZE_LIMIT = 50 * 1024; /* in bytes */
@@ -266,17 +277,6 @@ export const useConstructionStore = defineStore("construction", () => {
     // the top-level construction will be created
     const collectionPath = `users/${userUid}/constructions`;
 
-    // Make a duplicate of the SVG tree
-    const svgElement = svgRoot.cloneNode(true) as SVGElement;
-    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-
-    // Remove the top-level transformation matrix
-    // We have to save the preview in its "natural" pose
-    svgElement.style.removeProperty("transform");
-
-    const svgBlob = new Blob([svgElement.outerHTML], {
-      type: "image/svg+xml;charset=utf-8"
-    });
     const svgDataUrl = await toBase64(svgBlob);
     let previewData: string;
 
