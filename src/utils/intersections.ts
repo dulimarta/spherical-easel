@@ -1509,7 +1509,7 @@ export function intersectParametricWithParametric(
 
   const sIntersects: Array<number> = [];
   while (distanceHeap.size() > 0) {
-    const { sPart, sIndex, tPart, tIndex, distance } = distanceHeap.pop();
+    const { sPart, sIndex, tPart, tIndex, distance } = distanceHeap.pop()!;
     const sVal = sCurve.tRanges[sPart][sIndex];
     const tVal = tCurve.tRanges[tPart][tIndex];
     console.debug(
@@ -1552,11 +1552,11 @@ export function intersectTwoObjects(
   two: SENodule,
   inverseTotalRotationMatrix: Matrix4
 ): IntersectionReturnType[] {
-  console.debug(
-    `Intersect two objects ${one.name} and ${two.name}. order ${
-      one.name < two.name
-    }`
-  );
+  // console.debug(
+  //   `Intersect two objects ${one.name} and ${two.name}. order ${
+  //     one.name < two.name
+  //   }`
+  // );
   if (one instanceof SELine) {
     if (two instanceof SELine) return intersectLineWithLine(one, two);
     else if (two instanceof SESegment)

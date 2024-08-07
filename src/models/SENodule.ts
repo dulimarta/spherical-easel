@@ -126,7 +126,6 @@ export abstract class SENodule implements Visitable {
     styleData: StyleOptions
   ): void {
     // TODO: Why do we have to pass the Label, Front, and Back here?
-    // console.debug(`updatePlottableStyle of ${this.name} ==> ${this.ref}`);
     this.ref?.updateStyle(updateMode, styleData);
   }
   /**

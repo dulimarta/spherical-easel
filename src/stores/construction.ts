@@ -61,8 +61,11 @@ async function parseDocument(
       .then((url: string) => axios.get(url))
       .then((r: AxiosResponse) => r.data)
       .catch((err: any) => {
-        console.debug("Firebase Storage error in fetching construction script", err)
-        return []
+        console.debug(
+          "Firebase Storage error in fetching construction script",
+          err
+        );
+        return [];
       });
 
     parsedScript = scriptText as ConstructionScript;
@@ -78,8 +81,8 @@ async function parseDocument(
       .then((url: string) => axios.get(url))
       .then((r: AxiosResponse) => r.data)
       .catch((err: any) => {
-        console.debug("Firebase Storage error in fetching SVG preview", err)
-        return ""
+        console.debug("Firebase Storage error in fetching SVG preview", err);
+        return "";
       });
 
     // console.debug(
@@ -90,15 +93,19 @@ async function parseDocument(
     svgData = remoteDoc.preview;
     // console.debug("SVG preview from Firestore ", svgData?.substring(0, 70));
   }
-  let objectCount = 0
+  let objectCount = 0;
   if (Array.isArray(parsedScript) && parsedScript.length > 0) {
     objectCount = parsedScript
       // A simple command contributes 1 object
       // A CommandGroup contributes N objects (as many elements in its subcommands)
-      .map((z: string | Array<string>) => (typeof z === "string" ? 1 : z.length))
-      .reduce((prev: number, curr: number) => prev + curr, /* initial value */0);
-  } else
-    parsedScript = []
+      .map((z: string | Array<string>) =>
+        typeof z === "string" ? 1 : z.length
+      )
+      .reduce(
+        (prev: number, curr: number) => prev + curr,
+        /* initial value */ 0
+      );
+  } else parsedScript = [];
 
   if (remoteDoc.rotationMatrix) {
     const matrixData = JSON.parse(remoteDoc.rotationMatrix);
@@ -142,43 +149,43 @@ export const useConstructionStore = defineStore("construction", () => {
     canvasWidth,
     canvasHeight
   } = storeToRefs(seStore);
-  const {
-    firebaseUid,
-    starredConstructionIDs,
-    userEmail,
-    includedTools
-  } = storeToRefs(acctStore);
+  const { firebaseUid, starredConstructionIDs, userEmail, includedTools } =
+    storeToRefs(acctStore);
   let currentUID: string | undefined = undefined;
 
-  watchDebounced(firebaseUid, async uid => {
-    console.debug("Firebase UID watcher", uid);
-    if (uid) {
-      await parsePrivateCollection(uid, privateConstructions.value);
-      // Identify published owned constructions
-      const myPublicSet: Set<string> = new Set();
-      privateConstructions.value.forEach(s => {
-        if (s.publicDocId) myPublicSet.add(s.publicDocId);
-      });
+  watchDebounced(
+    firebaseUid,
+    async uid => {
+      console.debug("Firebase UID watcher", uid);
+      if (uid) {
+        await parsePrivateCollection(uid, privateConstructions.value);
+        // Identify published owned constructions
+        const myPublicSet: Set<string> = new Set();
+        privateConstructions.value.forEach(s => {
+          if (s.publicDocId) myPublicSet.add(s.publicDocId);
+        });
 
-      // Partition private list into mine and theirs
-      const [theirs, _mine] = allPublicConstructions.partition(s => {
-        const myOwnPublic = myPublicSet.has(s.publicDocId!);
-        const inMyStarList = starredConstructionIDs.value.some(
-          star => star === s.publicDocId
-        );
-        return !myOwnPublic && !inMyStarList;
-      });
-      publicConstructions.value = theirs;
-    } else {
-      privateConstructions.value.splice(0);
-      publicConstructions.value = allPublicConstructions.slice(0);
-    }
-  }, {debounce: 500 /* milliseconds */});
+        // Partition private list into mine and theirs
+        const [theirs, _mine] = allPublicConstructions.partition(s => {
+          const myOwnPublic = myPublicSet.has(s.publicDocId!);
+          const inMyStarList = starredConstructionIDs.value.some(
+            star => star === s.publicDocId
+          );
+          return !myOwnPublic && !inMyStarList;
+        });
+        publicConstructions.value = theirs;
+      } else {
+        privateConstructions.value.splice(0);
+        publicConstructions.value = allPublicConstructions.slice(0);
+      }
+    },
+    { debounce: 500 /* milliseconds */ }
+  );
 
   watch(
     () => starredConstructionIDs.value,
     async favorites => {
-      console.debug("Starred watcher", favorites)
+      console.debug("Starred watcher", favorites);
       if (favorites.length > 0) {
         console.debug("List of favorite items", favorites);
         const [star, unstar] = allPublicConstructions.partition(s => {
@@ -188,15 +195,17 @@ export const useConstructionStore = defineStore("construction", () => {
         starredConstructions.value = star;
         publicConstructions.value = unstar;
         if (star.length !== favorites.length) {
-          EventBus.fire('show-alert', {
-            type: 'info',
-            key: 'Some of your starred constructions are not available anymore'
-          })
-          const cleanStarred = favorites.filter(fav => {
-            const pos = allPublicConstructions.findIndex(z => fav === z.publicDocId);
-            return pos >= 0
+          EventBus.fire("show-alert", {
+            type: "info",
+            key: "Some of your starred constructions are not available anymore"
           });
-          await updateStarredArrayInFirebase(cleanStarred)
+          const cleanStarred = favorites.filter(fav => {
+            const pos = allPublicConstructions.findIndex(
+              z => fav === z.publicDocId
+            );
+            return pos >= 0;
+          });
+          await updateStarredArrayInFirebase(cleanStarred);
         }
       } else {
         publicConstructions.value = allPublicConstructions;
@@ -363,6 +372,17 @@ export const useConstructionStore = defineStore("construction", () => {
       .then(async ([docId, scriptData, svgData]) => {
         const constructionDoc = doc(appDB, collectionPath, docId);
         // Pass on the document ID to be included in the alert message
+        const parsedScript = JSON.parse(scriptData) as ConstructionScript;
+        const objectCount = parsedScript.flatMap(s =>
+          Array.isArray(s) ? s : [s]
+        ).length;
+        const localCopy: SphericalConstruction = {
+          id: docId,
+          parsedScript,
+          sphereRotationMatrix: rotationMat.clone(),
+          objectCount,
+          ...constructionDetails
+        };
         if (saveAsPublic) {
           const publicConstructionDoc = await addDoc(
             collection(appDB, "/constructions/"),
@@ -376,11 +396,16 @@ export const useConstructionStore = defineStore("construction", () => {
             preview: svgData,
             publicDocId: publicConstructionDoc.id
           });
+          privateConstructions.value.push({
+            ...localCopy,
+            publicDocId: publicConstructionDoc.id
+          });
         } else {
           await updateDoc(constructionDoc, {
             script: scriptData,
             preview: svgData
           });
+          privateConstructions.value.push(localCopy);
         }
         return docId;
       });
@@ -537,22 +562,28 @@ export const useConstructionStore = defineStore("construction", () => {
       try {
         await deleteDoc(doc(appDB, "constructions", victimDetails.publicDocId));
       } catch (err: any) {
-        console.debug("Unable to delete public construction", victimDetails.publicDocId)
+        console.debug(
+          "Unable to delete public construction",
+          victimDetails.publicDocId
+        );
       }
     }
     if (victimDetails.script.startsWith("https://")) {
       try {
         await deleteObject(storageRef(appStorage, `/scripts/${docId}`));
       } catch (err: any) {
-        console.debug(`Unable to delete script ${docId} in Firebase storage`)
+        console.debug(`Unable to delete script ${docId} in Firebase storage`);
       }
     }
     if (victimDetails.preview.startsWith("https://"))
       try {
-        await deleteObject(storageRef(appStorage, `/construction-svg/${docId}`));
+        await deleteObject(
+          storageRef(appStorage, `/construction-svg/${docId}`)
+        );
       } catch (err: any) {
-        console.debug(`Unable to delete SVG preview ${docId} in Firebase storage`)
-
+        console.debug(
+          `Unable to delete SVG preview ${docId} in Firebase storage`
+        );
       }
     await deleteDoc(doc(appDB, "users", uid, "constructions", docId));
     privateConstructions.value.splice(pos, 1);
@@ -651,7 +682,7 @@ export const useConstructionStore = defineStore("construction", () => {
       publicConstructions.value[pos].starCount++;
       const inPublic = publicConstructions.value.splice(pos, 1);
       starredConstructions.value.push(...inPublic);
-      starredConstructionIDs.value.push(...inPublic.map(z => z.publicDocId!))
+      starredConstructionIDs.value.push(...inPublic.map(z => z.publicDocId!));
       updateStarredArrayInFirebase(starredConstructionIDs.value);
       updateStarCountInFirebase(pubConstructionId, +1);
     }

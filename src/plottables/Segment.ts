@@ -1,6 +1,4 @@
-import { Vector3, Matrix4 } from "three";
-//import Two from "two.js";
-import { Path } from "two.js/src/path";
+import { Vector3 } from "three";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
@@ -60,7 +58,7 @@ export default class Segment extends Nodule {
   private _glowingBackExtra: Arc;
 
   /** The normal vector determines the rotation and minor axis length of the displayed ellipse */
-  private _rotation: number;
+  // private _rotation: number;
   private _halfMinorAxis: number;
 
   //Export to SVG we need to know the ending point of the segment and the intermediate point(s) where the segment crosses sides of the sphere.
@@ -250,11 +248,12 @@ export default class Segment extends Nodule {
     //  _normalVector.z = NP._normalVector = |NP||_normalVector|cos(\[Beta])= cos(\[Beta])
     this._halfMinorAxis = this._normalVector.z;
 
-    this._rotation = 0; //Initially the normal vector is <0,0,1> so the rotation is 0 in general the rotation angle is
+    // this._rotation = 0; //Initially the normal vector is <0,0,1> so the rotation is 0 in general the rotation angle is
     //Let \[Theta] be the angle between the vector <0,1> and <n_x,n_y>, then \[Theta] is the angle of rotation. Note that \[Theta] = -ATan2(n_x,n_y) (measured counterclockwise)
 
     this.styleOptions.set(StyleCategory.Front, DEFAULT_SEGMENT_FRONT_STYLE);
     this.styleOptions.set(StyleCategory.Back, DEFAULT_SEGMENT_BACK_STYLE);
+    this.updateDisplay()
   }
 
   /**
@@ -263,7 +262,7 @@ export default class Segment extends Nodule {
    */
   public updateDisplay(): void {
     this._halfMinorAxis = this._normalVector.z;
-    this._rotation = -Math.atan2(this._normalVector.x, this._normalVector.y); // not a typo because we are measuring off of the positive y axis in the screen plane counterclockwise (the negative sign)
+    const rotation = -Math.atan2(this._normalVector.x, this._normalVector.y); // not a typo because we are measuring off of the positive y axis in the screen plane counterclockwise (the negative sign)
 
     //Now set the start and end parameters/angles for each of the pieces of the segment
     // Start by setting the mid- and end-Vectors
@@ -294,18 +293,18 @@ export default class Segment extends Nodule {
     // [Cos(theta)  -Sin(theta)] [vx]
     // [Sin(theta) cos(theta)] [vy]
     const unRotatedStartVecX =
-      Math.cos(-this._rotation) * this._startVector.x -
-      Math.sin(-this._rotation) * this._startVector.y;
+      Math.cos(-rotation) * this._startVector.x -
+      Math.sin(-rotation) * this._startVector.y;
     const unRotatedStartVecY =
-      Math.sin(-this._rotation) * this._startVector.x +
-      Math.cos(-this._rotation) * this._startVector.y;
+      Math.sin(-rotation) * this._startVector.x +
+      Math.cos(-rotation) * this._startVector.y;
 
     const unRotatedEndVecX =
-      Math.cos(-this._rotation) * this._endVector.x -
-      Math.sin(-this._rotation) * this._endVector.y;
+      Math.cos(-rotation) * this._endVector.x -
+      Math.sin(-rotation) * this._endVector.y;
     const unRotatedEndVecY =
-      Math.sin(-this._rotation) * this._endVector.x +
-      Math.cos(-this._rotation) * this._endVector.y;
+      Math.sin(-rotation) * this._endVector.x +
+      Math.cos(-rotation) * this._endVector.y;
 
     // console.log("un rot start x,y", unRotatedStartVecX, unRotatedStartVecY )
     // console.log("angle NC", Math.atan2(
@@ -508,14 +507,15 @@ export default class Segment extends Nodule {
     this._backExtra.endAngle = this._backExtraEndAngle;
     this._glowingBackExtra.endAngle = this._backExtraEndAngle;
 
-    this._frontPart.rotation = this._rotation;
-    this._glowingFrontPart.rotation = this._rotation;
-    this._backPart.rotation = this._rotation;
-    this._glowingBackPart.rotation = this._rotation;
-    this._frontExtra.rotation = this._rotation;
-    this._glowingFrontExtra.rotation = this._rotation;
-    this._backExtra.rotation = this._rotation;
-    this._glowingBackExtra.rotation = this._rotation;
+    // this._rotationMatrix.identity().rotate(rotation)
+    this._frontPart.rotation = rotation;
+    this._glowingFrontPart.rotation = rotation;
+    this._backPart.rotation = rotation;
+    this._glowingBackPart.rotation = rotation;
+    this._frontExtra.rotation = rotation;
+    this._glowingFrontExtra.rotation = rotation;
+    this._backExtra.rotation = rotation;
+    this._glowingBackExtra.rotation = rotation;
 
     // scale to display on the screen and set the heights (widths are all 2*radius)
     this._frontPart.height = 2 * radius * this._halfMinorAxis;

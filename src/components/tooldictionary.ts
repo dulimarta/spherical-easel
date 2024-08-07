@@ -1,6 +1,7 @@
 import { ActionMode, ToolButtonType } from "@/types";
 import { Command } from "@/commands/Command";
 import EventBus from "@/eventHandlers/EventBus";
+import MouseHandler from "@/eventHandlers/MouseHandler";
 
 // Note: when adding a new tool, will also need to add a new case in SphereFrame.vue switchActionMode()
 export const TOOL_DICTIONARY: Map<ActionMode, ToolButtonType> = new Map();
@@ -95,7 +96,12 @@ TOOL_DICTIONARY.set("select", {
     displayedName: "buttons.PanZoomInDisplayedName",
     toolGroup: "DisplayTools",
     toolTipMessage: "buttons.PanZoomInToolTipMessage",
-    toolUseMessage: "buttons.PanZoomInToolUseMessage"
+    toolUseMessage: "buttons.PanZoomInToolUseMessage",
+    clickFunc: () => {
+      // The second arg is true when the first arg is a ratio
+      MouseHandler.store.scaleZoomMagnificationFactorBy(0.9)
+      EventBus.fire('zoom-updated', {})
+    }
   })
   .set("zoomOut", {
     id: 30,
@@ -103,7 +109,12 @@ TOOL_DICTIONARY.set("select", {
     displayedName: "buttons.PanZoomOutDisplayedName",
     toolGroup: "DisplayTools",
     toolTipMessage: "buttons.PanZoomOutToolTipMessage",
-    toolUseMessage: "buttons.PanZoomOutToolUseMessage"
+    toolUseMessage: "buttons.PanZoomOutToolUseMessage",
+    clickFunc: () => {
+      // The second arg is true when the first arg is a ratio
+      MouseHandler.store.scaleZoomMagnificationFactorBy(1.1)
+      EventBus.fire('zoom-updated', {})
+    }
   })
   .set("zoomFit", {
     id: 35,
@@ -111,7 +122,11 @@ TOOL_DICTIONARY.set("select", {
     displayedName: "buttons.ZoomFitDisplayedName",
     toolGroup: "DisplayTools",
     toolTipMessage: "buttons.ZoomFitToolTipMessage",
-    toolUseMessage: "buttons.ZoomFitToolUseMessage"
+    toolUseMessage: "buttons.ZoomFitToolUseMessage",
+    clickFunc: () => {
+      MouseHandler.store.fitZoomMagnificationFactor()
+      EventBus.fire('zoom-updated', {})
+    }
   })
   .set("point", {
     id: 0,

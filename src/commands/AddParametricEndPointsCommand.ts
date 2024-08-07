@@ -299,7 +299,7 @@ export class AddParametricEndPointsCommand extends Command {
       ); // convert to vector
       console.debug("Loaded min point at", seStartEndPointLocation.toFixed(4));
 
-      seStartEndPoint.locationVector.copy(seStartEndPointLocation);
+      seStartEndPoint.locationVector = seStartEndPointLocation;
       let pointFrontStyleString = propMap.get(
         "parametricEndPointseStartEndPointFrontStyle"
       );
@@ -323,7 +323,7 @@ export class AddParametricEndPointsCommand extends Command {
       seStartEndPointLabelLocation.from(
         propMap.get("parametricEndPointseStartLabelLocationVector")
       ); // convert to vector
-      seStartEndPointLabel.locationVector.copy(seStartEndPointLabelLocation);
+      seStartEndPointLabel.locationVector = seStartEndPointLabelLocation; // Don't use copy on a prop
       let labelStyleString = propMap.get(
         "parametricEndPointseStartLabelLabelStyle"
       );
@@ -374,7 +374,7 @@ export class AddParametricEndPointsCommand extends Command {
         propMap.get("parametricEndPointseEndEndPointLocationVector")
       ); // convert to vector
       console.debug("Loaded max point at", seEndEndPointLocation.toFixed(4));
-      seEndEndPoint.locationVector.copy(seEndEndPointLocation);
+      seEndEndPoint.locationVector = seEndEndPointLocation; // property setter function
       pointFrontStyleString = propMap.get(
         "parametricEndPointseEndEndPointFrontStyle"
       );
@@ -398,7 +398,7 @@ export class AddParametricEndPointsCommand extends Command {
       seLabelLocation.from(
         propMap.get("parametricEndPointseEndLabelLocationVector")
       ); // convert to vector
-      seEndEndPointLabel.locationVector.copy(seLabelLocation);
+      seEndEndPointLabel.locationVector = seLabelLocation; // Don't use copy() on a prop
       labelStyleString = propMap.get("parametricEndPointseEndLabelLabelStyle");
       if (labelStyleString !== undefined) {
         seEndEndPointLabel.updatePlottableStyle(
@@ -444,7 +444,8 @@ export class AddParametricEndPointsCommand extends Command {
       seTracePointLocation.from(
         propMap.get("parametricEndPointseTracePointLocationVector")
       ); // convert to vector
-      seTracePoint.locationVector.copy(seTracePointLocation);
+      // prop setter func
+      seTracePoint.locationVector = seTracePointLocation;
       pointFrontStyleString = propMap.get(
         "parametricEndPointseTracePointFrontStyle"
       );
@@ -468,7 +469,8 @@ export class AddParametricEndPointsCommand extends Command {
       seLabelLocation.from(
         propMap.get("parametricEndPointseTraceLabelLocationVector")
       ); // convert to vector
-      seTracePointLabel.locationVector.copy(seTracePointLabelLocation);
+
+      seTracePointLabel.locationVector = seTracePointLabelLocation; // Don't use copy() on a prop
       labelStyleString = propMap.get(
         "parametricEndPointseTraceLabelLabelStyle"
       );

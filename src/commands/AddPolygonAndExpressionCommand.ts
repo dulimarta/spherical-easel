@@ -147,8 +147,12 @@ export class AddPolygonCommand extends Command {
     if (tempPolygonSegmentParents) {
       tempPolygonSegmentParents
         .split("@")
-        .forEach(name =>
-          polygonSegmentParents.push(objMap.get(name) as SESegment | undefined)
+        .forEach(name => {
+          const parentSegment = objMap.get(name) as SESegment
+          if (parentSegment) {
+            polygonSegmentParents.push(parentSegment)
+          }
+        }
         );
     }
 
@@ -200,7 +204,7 @@ export class AddPolygonCommand extends Command {
       const seLabel = new SELabel("polygon", sePolygon);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
-      seLabel.locationVector.copy(seLabelLocation);
+      seLabel.locationVector = seLabelLocation; // Don't use copy() on a prop
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
@@ -210,6 +214,7 @@ export class AddPolygonCommand extends Command {
         );
       // Must be done after the SELabel is created and linked
       sePolygon.valueDisplayMode = valueDisplayMode;
+      sePolygon.ref.updateDisplay()
 
       //put the Polygon in the object map
       if (propMap.get("objectName") !== undefined) {

@@ -88,7 +88,8 @@
               color="black"
               @click="handleMakePublic(r.id)"></v-btn>
             <!-- show delete button only for its owner -->
-            <v-btn data-testid="delete_btn"
+            <v-btn
+              data-testid="delete_btn"
               v-if="r.author === userEmail"
               id="delete_btn"
               class="ml-1"
@@ -97,7 +98,8 @@
               color="red"
               @click="handleDeleteConstruction(r.id)"></v-btn>
             <!-- show star button only for public constructs and not mine -->
-            <v-btn data-testid="star_btn"
+            <v-btn
+              data-testid="star_btn"
               v-if="
                 firebaseUid &&
                 r.author !== userEmail &&
@@ -109,7 +111,8 @@
               color="black"
               icon="mdi-star"
               @click="handleUpdateStarred(r.publicDocId)"></v-btn>
-            <v-btn data-testid="unstar_btn"
+            <v-btn
+              data-testid="unstar_btn"
               v-if="inMyStarredList(r.publicDocId)"
               id="unstar_btn"
               class="ml-1"
@@ -119,18 +122,9 @@
               @click="handleUpdateUnstarred(r.publicDocId)"></v-btn>
             <v-tooltip text="Load" activator="#load_btn" location="top" />
             <v-tooltip text="Share" activator="#share_btn" location="top" />
-            <v-tooltip
-              text="Delete"
-              activator="#delete_btn"
-              location="top" />
-            <v-tooltip
-              text="Star"
-              location="top"
-              activator="#star_btn" />
-            <v-tooltip
-              text="Unstar"
-              location="top"
-              activator="#unstar_btn" />
+            <v-tooltip text="Delete" activator="#delete_btn" location="top" />
+            <v-tooltip text="Star" location="top" activator="#star_btn" />
+            <v-tooltip text="Unstar" location="top" activator="#unstar_btn" />
             <v-tooltip
               text="Make Private"
               location="top"
@@ -213,7 +207,6 @@ import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
 import { useConstructionStore } from "@/stores/construction";
 import { useClipboard, usePermission } from "@vueuse/core";
-import { isHeritageClause } from "typescript";
 const props = defineProps<{
   items: Array<SphericalConstruction>;
   allowSharing: boolean;
@@ -228,8 +221,9 @@ const sharedDocId = ref("");
 const showDeleteWarning = ref(false);
 const showPrivateWarning = ref(false);
 const showPublicWarning = ref(false);
-const { constructionDocId, userEmail, firebaseUid, starredConstructionIDs } = storeToRefs(acctStore);
-const { hasUnsavedNodules } = storeToRefs(seStore);
+const { constructionDocId, userEmail, firebaseUid, starredConstructionIDs } =
+  storeToRefs(acctStore);
+const { hasUnsavedNodules, seNodules } = storeToRefs(seStore);
 const { t } = useI18n({ useScope: "local" });
 
 const clipboardAPI = useClipboard();
@@ -247,8 +241,7 @@ function previewOrDefault(dataUrl: string | undefined): string {
 function inMyStarredList(docId: string | undefined): boolean {
   // console.debug(`Starred? ${docId}`, starredConstructions.value.map(s => `ID ${s.id} PUB ${s.publicDocId}`).join(" ") )
   if (!docId) return false;
-  return starredConstructionIDs.value.some(z => z === docId)
-
+  return starredConstructionIDs.value.some(z => z === docId);
 }
 // TODO: the onXXXX functions below are not bug-free yet
 // There is a potential race-condition when the mouse moves too fast
@@ -317,11 +310,14 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
     //seStore.rotateSphere(rotationMatrix!.invert());
     seStore.clearUnsavedFlag();
     EventBus.fire("construction-loaded", {});
-    // update all
-    seStore.updateDisplay();
-
-    // set the mode to move because chances are high that the user wants this mode after loading.
     seStore.setActionMode("move");
+    console.debug("# of objects", seNodules.value.length);
+    // After fixing the locationVector.copy() bug in the
+    // parse() functions, the following call to updateDisplay
+    // becomes unnecessary
+    // seNodules.value.forEach(obj => {
+    // obj.ref?.stylize(DisplayStyle.ApplyCurrentVariables)
+    // })
   }
 }
 

@@ -141,7 +141,7 @@ export class AddParametricTracePointCommand extends Command {
       seTracePointLocation.from(
         propMap.get("parametricEndPointseTracePointLocationVector")
       ); // convert to vector
-      seTracePoint.locationVector.copy(seTracePointLocation);
+      seTracePoint.locationVector = seTracePointLocation;
       const pointFrontStyleString = propMap.get(
         "parametricEndPointseTracePointFrontStyle"
       );
@@ -165,7 +165,7 @@ export class AddParametricTracePointCommand extends Command {
       seTracePointLabelLocation.from(
         propMap.get("parametricEndPointseTraceLabelLocationVector")
       ); // convert to vector
-      seTracePointLabel.locationVector.copy(seTracePointLabelLocation);
+      seTracePointLabel.locationVector = seTracePointLabelLocation; // Don't use copy on a prop
       const labelStyleString = propMap.get(
         "parametricEndPointseTraceLabelLabelStyle"
       );

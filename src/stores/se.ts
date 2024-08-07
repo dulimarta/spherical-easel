@@ -17,7 +17,6 @@ import { SESegment } from "@/models/SESegment";
 import { SETransformation } from "@/models/SETransformation";
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 import { ActionMode, plottableType, SEIntersectionReturnType } from "@/types";
-import { StyleCategory, StyleOptions } from "@/types/Styles";
 import {
   intersectCircles,
   intersectCircleWithEllipse,
@@ -44,10 +43,10 @@ import { Ref, ref } from "vue";
 import { defineStore } from "pinia";
 import { Matrix4, Vector3 } from "three";
 //import Two from "two.js";
-import { Group } from "two.js/src/group"
+import { Group } from "two.js/src/group";
 import { computed } from "vue";
 import { Vector } from "two.js/src/vector";
-
+import SETTINGS from "@/global-settings";
 const sePencils: Array<SEPencil> = [];
 const oldSelectedSENodules: Map<number, SENodule> = new Map();
 const tmpMatrix = new Matrix4();
@@ -344,11 +343,11 @@ const seCircleMap: Map<number, SECircle> = new Map();
 const seEllipseMap: Map<number, SEEllipse> = new Map();
 const seLabelMap: Map<number, SELabel> = new Map();
 const seLineMap: Map<number, SELine> = new Map();
-const seParametricMap: Map<number,SEParametric> = new Map()
+const seParametricMap: Map<number, SEParametric> = new Map();
 const sePointMap: Map<number, SEPoint> = new Map();
-const sePolygonMap: Map<number,SEPolygon> = new Map()
+const sePolygonMap: Map<number, SEPolygon> = new Map();
 const seSegmentMap: Map<number, SESegment> = new Map();
-const seExpressionMap: Map<number, SEExpression> = new Map()
+const seExpressionMap: Map<number, SEExpression> = new Map();
 const seTransformationMap: Map<number, SETransformation> = new Map();
 
 /* END Non-Reactive variables */
@@ -390,21 +389,33 @@ export const useSEStore = defineStore("se", () => {
     seEllipseIds.value.map(id => seEllipseMap.get(id)!)
   );
   const seParametricIds: Ref<Array<number>> = ref([]);
-  const seParametrics = computed((): SEParametric[] => seParametricIds.value.map(id => seParametricMap.get(id)!))
+  const seParametrics = computed((): SEParametric[] =>
+    seParametricIds.value.map(id => seParametricMap.get(id)!)
+  );
 
   const sePolygonIds: Ref<Array<number>> = ref([]);
-  const sePolygons = computed((): SEPolygon[] => sePolygonIds.value.map(id => sePolygonMap.get(id)!))
+  const sePolygons = computed((): SEPolygon[] =>
+    sePolygonIds.value.map(id => sePolygonMap.get(id)!)
+  );
 
-  const seLabelIds: Ref<Array<number>> = ref([])
-  const seLabels = computed((): SELabel[] => seLabelIds.value.map(id => seLabelMap.get(id)!))
+  const seLabelIds: Ref<Array<number>> = ref([]);
+  const seLabels = computed((): SELabel[] =>
+    seLabelIds.value.map(id => seLabelMap.get(id)!)
+  );
 
   const seExpressionIds: Ref<Array<number>> = ref([]);
-  const seExpressions = computed((): SEExpression[] => seExpressionIds.value.map(id => seExpressionMap.get(id)!) )
+  const seExpressions = computed((): SEExpression[] =>
+    seExpressionIds.value.map(id => seExpressionMap.get(id)!)
+  );
 
   const seAngleMarkerIds: Ref<Array<number>> = ref([]);
-  const seAngleMarkers = computed((): SEAngleMarker[] => seAngleMarkerIds.value.map (id => seAngleMarkerMap.get(id)!))
+  const seAngleMarkers = computed((): SEAngleMarker[] =>
+    seAngleMarkerIds.value.map(id => seAngleMarkerMap.get(id)!)
+  );
   const seTransformationIds: Ref<Array<number>> = ref([]);
-  const seTransformations = computed((): SETransformation[] => seTransformationIds.value.map(id => seTransformationMap.get(id)!))
+  const seTransformations = computed((): SETransformation[] =>
+    seTransformationIds.value.map(id => seTransformationMap.get(id)!)
+  );
   const selectedSENodules: Ref<Array<SENodule>> = ref([]);
   const oldSelectedSENoduleIds: Ref<Array<number>> = ref([]);
   // const styleSavedFromPanel: Ref<StyleCategory> = ref(StyleCategory.Label)
@@ -432,28 +443,28 @@ export const useSEStore = defineStore("se", () => {
     seCircleMap.clear();
     seEllipseIds.value.splice(0);
     seEllipseMap.clear();
-    seLabelIds.value.splice(0)
+    seLabelIds.value.splice(0);
     seLabelMap.clear();
     selectedSENodules.value.splice(0);
     seLineIds.value.splice(0);
     seLineMap.clear();
     seNodules.value.splice(0);
     seParametricIds.value.splice(0);
-    seParametricMap.clear()
+    seParametricMap.clear();
     sePencils.splice(0);
     sePointIds.value.splice(0);
     sePointMap.clear();
     sePolygonIds.value.splice(0);
-    sePolygonMap.clear()
+    sePolygonMap.clear();
     seSegmentMap.clear();
     seSegments.value.splice(0);
     seTransformationIds.value.splice(0);
-    seTransformationMap.clear()
+    seTransformationMap.clear();
     oldSelectedSENodules.clear();
     oldSelectedSENoduleIds.value.splice(0);
     // intersections.splice(0);
     seExpressionIds.value.splice(0);
-    seExpressionMap.clear()
+    seExpressionMap.clear();
     // initialStyleStates.splice(0);
     // defaultStyleStates.splice(0);
     hasUnsavedNodules.value = false;
@@ -492,7 +503,7 @@ export const useSEStore = defineStore("se", () => {
   // },
 
   function setActionMode(mode: ActionMode): void {
-    console.debug("Changing action mode in SE store to", mode)
+    console.debug("Changing action mode in SE store to", mode);
     // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
     if (
       !(actionMode.value === "zoomFit" || actionMode.value === "iconFactory")
@@ -551,12 +562,27 @@ export const useSEStore = defineStore("se", () => {
       });
   }
   //#region magnificationUpdate
+  function fitZoomMagnificationFactor() {
+    const smallestDimension = Math.min(
+      canvasHeight.value - 32,
+      canvasHeight.value
+    );
+    const desiredFactor =
+      smallestDimension / (2 * SETTINGS.boundaryCircle.radius);
+    setZoomMagnificationFactor(desiredFactor);
+  }
+
+  function scaleZoomMagnificationFactorBy(factor: number) {
+    EventBus.fire("magnification-updated", {
+      factor
+    });
+    zoomMagnificationFactor.value /= factor;
+  }
+
   function setZoomMagnificationFactor(mag: number): void {
-    //console.debug(`setZoomMagFactor ${mag}`);
     EventBus.fire("magnification-updated", {
       factor: zoomMagnificationFactor.value / mag
     });
-    // this.previousZoomMagnificationFactor = ;
     zoomMagnificationFactor.value = mag;
   }
   //#endregion magnificationUpdate
@@ -641,7 +667,7 @@ export const useSEStore = defineStore("se", () => {
   }
   function addTransformation(transformation: SETransformation): void {
     seTransformationIds.value.push(transformation.id);
-    seTransformationMap.set(transformation.id, transformation)
+    seTransformationMap.set(transformation.id, transformation);
     seNodules.value.push(transformation);
     hasUnsavedNodules.value = true;
     updateDisabledTools("transformation");
@@ -654,7 +680,7 @@ export const useSEStore = defineStore("se", () => {
       /* victim line is found */
       const pos = seNodules.value.findIndex(x => x.id === transformationId);
       seTransformationIds.value.splice(transformationPos, 1); // Remove the transformation from the list
-      seTransformationMap.delete(transformationId)
+      seTransformationMap.delete(transformationId);
       seNodules.value.splice(pos, 1);
       hasUnsavedNodules.value = true;
       updateDisabledTools("transformation");
@@ -704,7 +730,7 @@ export const useSEStore = defineStore("se", () => {
     }
   }
   function addLabel(label: SELabel): void {
-    seLabelIds.value.push(label.id)
+    seLabelIds.value.push(label.id);
     seLabelMap.set(label.id, label);
     seNodules.value.push(label);
     label.ref.addToLayers(layers);
@@ -717,10 +743,10 @@ export const useSEStore = defineStore("se", () => {
     if (victimLabel) {
       // Remove the associated plottable (Nodule) object from being rendered
       victimLabel.ref.removeFromLayers(twojsLayers.value);
-      const pos = seLabelIds.value.findIndex(x => x === labelId)
+      const pos = seLabelIds.value.findIndex(x => x === labelId);
       const pos2 = seNodules.value.findIndex((x: SENodule) => x.id === labelId);
       seLabelMap.delete(labelId);
-      seLabelIds.value.splice(pos,1)
+      seLabelIds.value.splice(pos, 1);
       seNodules.value.splice(pos2, 1);
       hasUnsavedNodules.value = true;
       //this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
@@ -734,7 +760,7 @@ export const useSEStore = defineStore("se", () => {
   }
   function addAngleMarkerAndExpression(angleMarker: SEAngleMarker): void {
     seExpressionIds.value.push(angleMarker.id);
-    seExpressionMap.set(angleMarker.id, angleMarker)
+    seExpressionMap.set(angleMarker.id, angleMarker);
     seAngleMarkerIds.value.push(angleMarker.id);
     seAngleMarkerMap.set(angleMarker.id, angleMarker);
     seNodules.value.push(angleMarker);
@@ -760,15 +786,15 @@ export const useSEStore = defineStore("se", () => {
       seAngleMarkerIds.value.splice(angleMarkerPos, 1); // Remove the angleMarker from the list
       seNodules.value.splice(pos2, 1);
       seExpressionIds.value.splice(pos3, 1);
-      seExpressionMap.delete(angleMarkerId)
-      seAngleMarkerMap.delete(angleMarkerId)
+      seExpressionMap.delete(angleMarkerId);
+      seAngleMarkerMap.delete(angleMarkerId);
       hasUnsavedNodules.value = true;
       updateDisabledTools("angleMarker");
     }
   }
   function addParametric(parametric: SEParametric): void {
     seParametricIds.value.push(parametric.id);
-    seParametricMap.set(parametric.id, parametric)
+    seParametricMap.set(parametric.id, parametric);
     seNodules.value.push(parametric);
     parametric.ref?.addToLayers(layers);
     // let ptr: Parametric | null = parametric.ref;
@@ -781,14 +807,14 @@ export const useSEStore = defineStore("se", () => {
   }
 
   function removeParametric(parametricId: number): void {
-    const victim = seParametricMap.get(parametricId)
+    const victim = seParametricMap.get(parametricId);
     if (victim) {
       /* victim line is found */
       const pos2 = seNodules.value.findIndex(x => x.id === parametricId);
       const parametricPos = seParametricIds.value.findIndex(
         z => z === parametricId
       );
-        victim.ref?.removeFromLayers();
+      victim.ref?.removeFromLayers();
       // let ptr: Parametric | null = victimParametric.ref;
       // while (ptr !== null) {
       //   ptr.removeFromLayers();
@@ -797,7 +823,7 @@ export const useSEStore = defineStore("se", () => {
       // victimParametric.removeSelfSafely();
       seParametricIds.value.splice(parametricPos, 1); // Remove the parametric from the list
       seNodules.value.splice(pos2, 1);
-      seParametricMap.delete(parametricId)
+      seParametricMap.delete(parametricId);
       hasUnsavedNodules.value = true;
       updateDisabledTools("parametric");
     }
@@ -805,9 +831,9 @@ export const useSEStore = defineStore("se", () => {
   function addPolygonAndExpression(polygon: SEPolygon): void {
     // console.debug(`add polygon with id ${polygon.id}`);
     seExpressionIds.value.push(polygon.id);
-    seExpressionMap.set(polygon.id, polygon)
+    seExpressionMap.set(polygon.id, polygon);
     sePolygonIds.value.push(polygon.id);
-    sePolygonMap.set(polygon.id, polygon)
+    sePolygonMap.set(polygon.id, polygon);
     seNodules.value.push(polygon);
     polygon.ref.addToLayers(layers);
     hasUnsavedNodules.value = true;
@@ -815,7 +841,7 @@ export const useSEStore = defineStore("se", () => {
   }
   function removePolygonAndExpression(polygonId: number): void {
     // console.debug(`Remove polygon with id ${polygonId}`);
-    const victimPolygon = sePolygonMap.get(polygonId)
+    const victimPolygon = sePolygonMap.get(polygonId);
     if (victimPolygon) {
       const polygonPos = sePolygonIds.value.findIndex(z => z === polygonId);
       // console.debug(`Polygon found`);
@@ -830,15 +856,15 @@ export const useSEStore = defineStore("se", () => {
       sePolygonIds.value.splice(polygonPos, 1); // Remove the polygon from the list
       seNodules.value.splice(pos2, 1);
       seExpressionIds.value.splice(pos3, 1);
-      seExpressionMap.delete(polygonId)
-      sePolygonMap.delete(polygonId)
+      seExpressionMap.delete(polygonId);
+      sePolygonMap.delete(polygonId);
       hasUnsavedNodules.value = true;
       updateDisabledTools("polygon");
     }
   }
   function addExpression(measurement: SEExpression): void {
     seExpressionIds.value.push(measurement.id);
-    seExpressionMap.set(measurement.id, measurement)
+    seExpressionMap.set(measurement.id, measurement);
     seNodules.value.push(measurement);
     hasUnsavedNodules.value = true;
     updateDisabledTools("expression");
@@ -848,7 +874,7 @@ export const useSEStore = defineStore("se", () => {
     if (pos >= 0) {
       const pos2 = seNodules.value.findIndex(x => x.id === measId);
       seExpressionIds.value.splice(pos, 1);
-      seExpressionMap.delete(measId)
+      seExpressionMap.delete(measId);
       seNodules.value.splice(pos2, 1);
       hasUnsavedNodules.value = true;
       updateDisabledTools("expression");
@@ -1080,12 +1106,12 @@ export const useSEStore = defineStore("se", () => {
       case "ellipse":
       case "parametric":
       case "expression": {
-        const numCircles = seCircleMap.size
-        const numSegments = seSegmentMap.size
-        const numLines = seLineMap.size
-        const numEllipses = seEllipseMap.size
-        const numParametrics = seParametricMap.size
-        const numExpressions = seExpressionMap.size
+        const numCircles = seCircleMap.size;
+        const numSegments = seSegmentMap.size;
+        const numLines = seLineMap.size;
+        const numEllipses = seEllipseMap.size;
+        const numParametrics = seParametricMap.size;
+        const numExpressions = seExpressionMap.size;
 
         // "inversion", // need a circle
         if (numCircles > 0) {
@@ -3952,6 +3978,7 @@ export const useSEStore = defineStore("se", () => {
     findIntersectionPointsByParent,
     findNearbySENodules,
     findSENoduleById,
+    fitZoomMagnificationFactor,
     moveLabel,
     movePoint,
     hasObjects,
@@ -3976,6 +4003,7 @@ export const useSEStore = defineStore("se", () => {
     setLayers,
     setRotationMatrix,
     updateSelectedSENodules,
+    scaleZoomMagnificationFactorBy,
     setZoomMagnificationFactor,
     setZoomTranslation,
     unglowAllSENodules,

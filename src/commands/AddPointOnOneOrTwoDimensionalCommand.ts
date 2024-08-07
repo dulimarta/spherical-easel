@@ -162,7 +162,7 @@ export class AddPointOnOneDimensionalCommand extends Command {
       const seLabel = new SELabel("point", sePointOnOneOrTwoDimensional);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
-      seLabel.locationVector.copy(seLabelLocation);
+      seLabel.locationVector = seLabelLocation; // Don't use copy() on a prop
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)

@@ -124,7 +124,7 @@ onBeforeMount((): void => {
       grp => grp.group.match(/^TransformationTool/) === null
     );
   } else {
-    permissibleButtonGroup = toolGroups.splice(0);
+    permissibleButtonGroup = toolGroups.slice(0);
   }
   buttonGroup.value.push(...permissibleButtonGroup);
   //sort the button list by id so that we don't have to reorder the list each item we add a new button

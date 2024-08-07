@@ -60,11 +60,11 @@
           height="3em"
           v-if="currentMsg"
           :key="currentMsg.key"
-          class="my-1 py-0"
+          class="my-1 py-0 text-caption"
           border="start"
           variant="outlined"
           :border-color="alertType(currentMsg)"
-          :type="alertType(currentMsg)"
+          :color="alertType(currentMsg)"
           density="compact"
           closable
           :text="pretty(currentMsg)"
