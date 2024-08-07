@@ -1,9 +1,8 @@
 import { Command } from "./Command";
-import EventBus from "@/eventHandlers/EventBus";
 
 export class UpdateTwoJSCommand extends Command {
   do(): void {
-    EventBus.fire("update-two-instance", {});
+    Command.store.updateTwoJS()
   }
 
   saveState(): void {}

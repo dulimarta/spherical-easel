@@ -756,7 +756,7 @@ export default class CircleHandler extends Highlighter {
 
       circleCommandGroup.execute();
 
-      EventBus.fire("update-two-instance", {}); //IS THERE A BETTER WAY?
+      CircleHandler.store.updateTwoJS()
       newSECircle.ref.updateDisplay(); // The newly created circle will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
     }
     return true;

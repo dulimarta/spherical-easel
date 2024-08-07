@@ -47,6 +47,8 @@ import { Group } from "two.js/src/group";
 import { computed } from "vue";
 import { Vector } from "two.js/src/vector";
 import SETTINGS from "@/global-settings";
+import Two from "two.js";
+
 const sePencils: Array<SEPencil> = [];
 const oldSelectedSENodules: Map<number, SENodule> = new Map();
 const tmpMatrix = new Matrix4();
@@ -353,6 +355,7 @@ const seTransformationMap: Map<number, SETransformation> = new Map();
 /* END Non-Reactive variables */
 
 export const useSEStore = defineStore("se", () => {
+  const twoInstance: Ref<Two|null> = ref(null)
   const isEarthMode = ref(false);
   const actionMode: Ref<ActionMode> = ref<ActionMode>("rotate");
   const previousActionMode: Ref<ActionMode> = ref("rotate");
@@ -478,11 +481,16 @@ export const useSEStore = defineStore("se", () => {
     // because the constructors of the tools (handlers) place the temporary Nodules
     // in this array *before* the this.init is called in App.vue mount.
   }
-  function setLayers(grp: Array<Group>): void {
+  function setLayers(two: Two, grp: Array<Group>): void {
+    twoInstance.value = two
     // layers.splice(0);
     // layers.push(...grp);
     layers = grp;
   }
+  function updateTwoJS() {
+    twoInstance.value!.update()
+  }
+
   function setCanvas(c: HTMLDivElement | null): void {
     console.debug("Set canvas in SE store");
     svgCanvas.value = c;
@@ -4007,7 +4015,8 @@ export const useSEStore = defineStore("se", () => {
     setZoomMagnificationFactor,
     setZoomTranslation,
     unglowAllSENodules,
-    updateDisplay
+    updateDisplay,
+    updateTwoJS
   };
 });
 

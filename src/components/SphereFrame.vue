@@ -275,7 +275,7 @@ onBeforeMount((): void => {
   // The midground is where the temporary objects and the boundary circle were drawn TODO: Needed?
   // Add the groups to the store
   seStore.init();
-  seStore.setLayers(layers);
+  seStore.setLayers(twoInstance, layers);
 
   // Draw the boundary circle in the default radius
   // and scale it later to fit the canvas
@@ -326,7 +326,7 @@ onBeforeMount((): void => {
   EventBus.listen("set-expression-for-tool", setExpressionForTool);
   EventBus.listen("set-transformation-for-tool", setTransformationForTool);
   EventBus.listen("delete-node", deleteNode);
-  EventBus.listen("update-two-instance", updateTwoJsInstance); //IS THERE A BETTER WAY?
+  // EventBus.listen("update-two-instance", updateTwoJsInstance); //IS THERE A BETTER WAY?
   EventBus.listen("cursor-position", (arg: any) => {
     const rawPos = arg.raw.map((s: number) => s.toFixed(2)).join(",");
     const normPos = arg.normalized.map((s: number) => s.toFixed(2)).join(",");
@@ -803,9 +803,9 @@ function deleteNode(e: {
 }
 
 //IS THERE A BETTER WAY?
-function updateTwoJsInstance(): void {
-  twoInstance.update();
-}
+// function updateTwoJsInstance(): void {
+//   twoInstance.update();
+// }
 
 // dialogBoxIsActive(e: { active: boolean }): void {
 //   // console.debug(`dialog box is active is ${e.active}`);
