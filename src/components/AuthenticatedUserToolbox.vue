@@ -751,9 +751,9 @@ function doExport() {
     });
   }
 }
-function previewOrDefault(dataUrl: string | undefined): string {
-  return dataUrl ? dataUrl : "/logo.png";
-}
+// function previewOrDefault(dataUrl: string | undefined): string {
+//   return dataUrl ? dataUrl : "/logo.png";
+// }
 </script>
 <i18n locale="en" lang="json">
 {

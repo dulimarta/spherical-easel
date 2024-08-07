@@ -17,12 +17,25 @@
       style="background-color: #002108; color: white">
       <v-list>
         <v-list-item
-          prepend-avatar="@/assets/SphericalEaselLogo.gif"
-          title="Spherical Easel"></v-list-item>
+          prepend-avatar="@/assets/LogoAnimatedSmallerV3.svg"
+          title="Spherical Easel">
+          <!-- <template v-slot:prepend>
+              <v-icon>
+                <svg
+                  transform="matrix(8,0,0,8,-20,-25)"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="-250 -250 500 500"
+                  overflow="invisible">
+                  <g v-html="svgSnippetAmended"></g>
+                </svg>
+              </v-icon>
+          </template> -->
+        </v-list-item>
       </v-list>
       <v-divider color="#BDF3CB"></v-divider>
 
-      <v-list v-if="bigDrawerVisible"
+      <v-list
+        v-if="bigDrawerVisible"
         density="compact"
         v-model:selected="activeItem"
         open-strategy="single"
@@ -115,6 +128,7 @@ import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 import { useLayout } from "vuetify";
 import { useDisplay } from "vuetify";
+import axios from "axios";
 // import { computed } from "vue";
 // import { set } from "@vueuse/core";
 const appFeature = inject("features");
@@ -124,14 +138,14 @@ const acctStore = useAccountStore();
 const { actionMode } = storeToRefs(seStore);
 // const props = defineProps<{ minified: boolean }>();
 const announce = defineEmits<{
-  drawerWidthChanged: [width:number]
-}>()
+  drawerWidthChanged: [width: number];
+}>();
 const { height, width, name } = useDisplay();
 // eslint-disable-next-line no-unused-vars
 // const temp = ref("0px");
 const rail = ref(true);
 const show = ref(false);
-const bigDrawerVisible = ref(true)
+const bigDrawerVisible = ref(true);
 const mouseOnDrawer = ref(false);
 const activeItem = ref(["tools"]);
 // eslint-disable-next-line no-unused-vars
@@ -140,10 +154,11 @@ const expandOnHover = ref(true);
 const inProductionMode = computed((): boolean => {
   return import.meta.env.MODE === "production";
 });
+const svgSnippetAmended = ref("");
 
 function navigationMonitor(shown: boolean) {
-  bigDrawerVisible.value = shown
-  announce('drawerWidthChanged', shown ? 320 : 0)
+  bigDrawerVisible.value = shown;
+  announce("drawerWidthChanged", shown ? 320 : 0);
 }
 
 function setHover() {
@@ -160,6 +175,17 @@ function setHover() {
 const activeLeftDrawerTab = ref(0);
 onBeforeMount((): void => {
   EventBus.listen("left-panel-set-active-tab", setActiveTab);
+  // I tried to make the logo bigger but there is a problem with the svg blurring if you uncomment the axios file getter and the template above
+  // axios
+  //   .get("../../icons/LogoAnimatedSmallerV3.svg", { responseType: "text" })
+  //   .then(r => {
+  //     let completeSVGString: string = r.data;
+  //     //strip off the first and last lines of the svg code
+  //     completeSVGString = completeSVGString.replace(/.*\n/, "");
+  //     completeSVGString = completeSVGString.replace(/\n.*$/, "");
+  //     svgSnippetAmended.value = completeSVGString;
+  //     console.log(svgSnippetAmended.value);
+  //   });
 });
 
 // onMounted((): void => {

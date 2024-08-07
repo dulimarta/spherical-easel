@@ -1219,7 +1219,13 @@ export const SETTINGS = {
         mdiIcon: "mdi-bell",
         svgFileName: ""
       }
-    }
+    },
+    animatedSVGLogo: {
+      props: {
+        mdiIcon: false,
+        svgFileName: "LogoAnimatedSmallerV3.svg"
+      }
+    },
   },
   /* Controls the length of time (in ms) the tool tip are displayed */
   /* Set the default tooltip delay in createVuetify() */
