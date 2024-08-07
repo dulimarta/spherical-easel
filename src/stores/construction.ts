@@ -236,18 +236,36 @@ export const useConstructionStore = defineStore("construction", () => {
   ): Promise<string> {
     // By the time doSave() is called, svgCanvas must have been set
     // to it is safe to non-null assert svgCanvas.value
-    const svgRoot = svgCanvas.value!.querySelector("svg") as SVGElement;
-    // Make a duplicate of the SVG tree
-    const svgElement = svgRoot.cloneNode(true) as SVGElement;
-    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
 
-    // Remove the top-level transformation matrix
-    // We have to save the preview in its "natural" pose
-    svgElement.style.removeProperty("transform");
+    ///// SVG Grab
+    // const svgRoot = svgCanvas.value!.querySelector("svg") as SVGElement;
+    // // Make a duplicate of the SVG tree
+    // const svgElement = svgRoot.cloneNode(true) as SVGElement;
+    // svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
 
-    const svgBlob = new Blob([svgElement.outerHTML], {
-      type: "image/svg+xml;charset=utf-8"
-    });
+    // // Remove the top-level transformation matrix
+    // // We have to save the preview in its "natural" pose
+    // svgElement.style.removeProperty("transform");
+
+    // const svgBlob = new Blob([svgElement.outerHTML], {
+    //   type: "image/svg+xml;charset=utf-8"
+    // });
+    //// End SVG Grab
+
+    let svgBlock = "";
+    const nonScalingOptions = {
+      stroke: false,
+      text: false,
+      pointRadius: false,
+      scaleFactor: 1
+    };
+    const animateOptions = undefined;
+    svgBlock = Command.dumpSVG(
+      Math.min(canvasWidth.value,canvasHeight.value),
+      nonScalingOptions,
+      animateOptions
+    );
+    let svgBlob = new Blob([svgBlock], { type: "image/svg+xml;charset=utf-8" });
 
     /* TODO: move the following constant to global-settings? */
     const FIELD_SIZE_LIMIT = 50 * 1024; /* in bytes */

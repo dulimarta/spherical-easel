@@ -953,7 +953,7 @@ export const useSEStore = defineStore("se", () => {
     //   updateCandidates.map((n: SENodule) => n.name).join(", ")
     // );
     //}
-    console.debug("<<<<< End rotate sphere update");
+    // console.debug("<<<<< End rotate sphere update");
   }
   //#endregion rotateSphere
   function clearUnsavedFlag(): void {
