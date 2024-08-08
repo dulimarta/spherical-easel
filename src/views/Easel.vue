@@ -54,12 +54,33 @@
           width: `${availWidth}px`,
           height: `${availHeight + 6}px`
         }">
-        <span>
-          Creator {{ constructionInfo.author }} ({{
-            constructionInfo.count
-          }}
-          objects)
-        </span>
+        <div
+          v-if="constructionInfo !== null"
+          :style="{
+            // border: '2px solid gray',
+            borderRadius: '0.5em',
+            padding: '0.25em',
+            color: constructionInfo.publicDocId ? 'white': 'black',
+            backgroundColor: constructionInfo.publicDocId
+              ? colors.green.darken1
+              : colors.green.lighten1
+          }">
+          <div>
+            {{ constructionInfo.description }} ({{
+              constructionInfo.objectCount
+            }}
+            objects)
+          </div>
+          <div style="font-size: 10pt">
+            By {{ constructionInfo.author }} ({{
+              constructionInfo.id.substring(0, 6).toUpperCase()
+            }}
+            <span v-if="constructionInfo.publicDocId">
+              Public ID: {{ constructionInfo.publicDocId?.substring(0, 6).toUpperCase() }}
+            </span>
+            )
+          </div>
+        </div>
         <img
           id="previewImage"
           :src="svgDataImage"
@@ -118,6 +139,7 @@ import {
   ref,
   watch
 } from "vue";
+import colors from "vuetify/util/colors";
 import AppNavigation from "@/components/AppNavigation.vue";
 import SphereFrame from "@/components/SphereFrame.vue";
 import EarthLayer from "@/components/EarthLayer.vue";
@@ -156,7 +178,6 @@ import {
 import { useLayout, useDisplay } from "vuetify";
 import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
-import { DisplayStyle } from "@/plottables/Nodule";
 
 const DELETE_DELAY = 5000; // in milliseconds
 /**
@@ -193,7 +214,7 @@ const leftShortcutGroup = computed(() => [
 
 const navDrawerWidth = ref(320);
 const previewClass = ref("");
-const constructionInfo = ref<any>({});
+const constructionInfo = ref<SphericalConstruction | null>(null);
 const localIsEarthMode = ref(false);
 
 let confirmedLeaving = false;
@@ -223,8 +244,7 @@ const showConstructionPreview = (s: SphericalConstruction | null) => {
     previewClass.value = "preview-fadein";
     svgDataImage.value = s.preview;
     svgDataImageAspectRatio.value = s.aspectRatio ?? 1;
-    constructionInfo.value.author = s.author;
-    constructionInfo.value.count = s.objectCount;
+    constructionInfo.value = s;
   } else {
     previewClass.value = "preview-fadeout";
     svgDataImage.value = "";
