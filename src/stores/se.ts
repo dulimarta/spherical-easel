@@ -446,6 +446,8 @@ export const useSEStore = defineStore("se", () => {
     seCircleMap.clear();
     seEllipseIds.value.splice(0);
     seEllipseMap.clear();
+    seExpressionIds.value.splice(0);
+    seExpressionMap.clear();
     seLabelIds.value.splice(0);
     seLabelMap.clear();
     selectedSENodules.value.splice(0);
@@ -459,15 +461,13 @@ export const useSEStore = defineStore("se", () => {
     sePointMap.clear();
     sePolygonIds.value.splice(0);
     sePolygonMap.clear();
+    seSegmentIds.value.splice(0);
     seSegmentMap.clear();
-    seSegments.value.splice(0);
     seTransformationIds.value.splice(0);
     seTransformationMap.clear();
     oldSelectedSENodules.clear();
     oldSelectedSENoduleIds.value.splice(0);
     // intersections.splice(0);
-    seExpressionIds.value.splice(0);
-    seExpressionMap.clear();
     // initialStyleStates.splice(0);
     // defaultStyleStates.splice(0);
     hasUnsavedNodules.value = false;
@@ -511,7 +511,7 @@ export const useSEStore = defineStore("se", () => {
   // },
 
   function setActionMode(mode: ActionMode): void {
-    console.debug("Changing action mode in SE store to", mode);
+    // console.debug("Changing action mode in SE store to", mode);
     // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
     if (
       !(actionMode.value === "zoomFit" || actionMode.value === "iconFactory")
@@ -532,16 +532,8 @@ export const useSEStore = defineStore("se", () => {
     );
     seCircles.value.forEach((x: SECircle) => x.ref.removeFromLayers());
     seEllipses.value.forEach((x: SEEllipse) => x.ref.removeFromLayers());
-    for (let lab of seLabels.value) {
-      lab.ref.removeFromLayers(layers);
-    }
     seLines.value.forEach((x: SELine) => x.ref.removeFromLayers());
-    for (let pt of sePoints.value) {
-      pt!.ref.removeFromLayers();
-    }
-    // sePoints.value.forEach((pt: SEPoint) => {
-    //   pt.ref.removeFromLayers();
-    // });
+    sePoints.value.forEach((x:SEPoint) => x.ref.removeFromLayers())
     seSegments.value.forEach((x: SESegment) => x.ref.removeFromLayers());
     sePolygons.value.forEach((x: SEPolygon) => x.ref.removeFromLayers());
     seParametrics.value.forEach((x: SEParametric) => {
@@ -557,6 +549,7 @@ export const useSEStore = defineStore("se", () => {
         l.ref.removeFromLayers();
       });
     });
+    seLabels.value.forEach((x:SELabel) => x.ref.removeFromLayers(layers));
   }
   // Update the display of all free SEPoints to update the entire display
   function updateDisplay(): void {

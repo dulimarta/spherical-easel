@@ -49,13 +49,13 @@ export default class Segment extends Nodule {
    * extra parts. There are glowing counterparts for each part.
    */
   private _frontPart: Arc;
-  private _frontExtra: Arc;
+  protected _frontExtra: Arc;
   private _backPart: Arc;
-  private _backExtra: Arc;
-  private _glowingFrontPart: Arc;
-  private _glowingFrontExtra: Arc;
-  private _glowingBackPart: Arc;
-  private _glowingBackExtra: Arc;
+  protected _backExtra: Arc;
+  protected _glowingFrontPart: Arc;
+  protected _glowingFrontExtra: Arc;
+  protected _glowingBackPart: Arc;
+  protected _glowingBackExtra: Arc;
 
   /** The normal vector determines the rotation and minor axis length of the displayed ellipse */
   // private _rotation: number;

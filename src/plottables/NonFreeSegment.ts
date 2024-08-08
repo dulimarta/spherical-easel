@@ -74,13 +74,13 @@ export default class NonFreeSegment extends Segment {
         100) *
         this.nonFreeSegmentScalePercent) /
       100;
-    this.glowingFrontPart.linewidth =
+    this._glowingFrontPart.linewidth =
       (((Segment.currentGlowingSegmentStrokeWidthFront *
         frontStrokeWidthPercent) /
         100) *
         this.nonFreeSegmentScalePercent) /
       100;
-    this.glowingBackPart.linewidth =
+    this._glowingBackPart.linewidth =
       (((Segment.currentGlowingSegmentStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
@@ -102,13 +102,13 @@ export default class NonFreeSegment extends Segment {
         100) *
         this.nonFreeSegmentScalePercent) /
       100;
-    this.glowingFrontExtra.linewidth =
+    this._glowingFrontExtra.linewidth =
       (((Segment.currentGlowingSegmentStrokeWidthFront *
         frontStrokeWidthPercent) /
         100) *
         this.nonFreeSegmentScalePercent) /
       100;
-    this.glowingBackExtra.linewidth =
+    this._glowingBackExtra.linewidth =
       (((Segment.currentGlowingSegmentStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
