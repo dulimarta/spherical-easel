@@ -246,10 +246,10 @@ function inMyStarredList(docId: string | undefined): boolean {
 // or when the mouse moves while a new construction is being loaded
 function onItemHover(s: SphericalConstruction): void {
   if (lastDocId === s.id) {
-    console.debug(`Existing hover on ${s.id}`);
+    // console.debug(`Existing hover on ${s.id}`);
     return; // Prevent double hovers?
   }
-  console.debug(`Last hover docID ${lastDocId} hovered on ${s.id}`);
+  // console.debug(`Last hover docID ${lastDocId} hovered on ${s.id}`);
   lastDocId = s.id;
   EventBus.fire("preview-construction", s);
 }

@@ -2,7 +2,7 @@
   <!-- Displays the current tool in the left panel by the collapsible arrow -->
   <span v-if="actionMode">
     <v-container>
-      <v-row align="center" :style = "rowHeight">
+      <v-row align="center" :style="rowHeight">
         <!-- Vuetify custom icons require a '$' prefix -->
         <v-icon class="mx-3" :icon="'$' + actionMode" :size="iconSize"></v-icon>
         <!-- Checks if ApplyTransformation is selected and changes the display accordingly. -->
@@ -19,6 +19,16 @@
             {{ t("objects.selectTransformation") }}
           </div>
         </template>
+      </v-row>
+      <v-row>
+        <span
+          :style="{
+            maxWidth: '24em',
+            height: '4em'
+          }"
+          class="text-caption font-italic">
+          {{ toolHint }}
+        </span>
       </v-row>
     </v-container>
   </span>
@@ -43,6 +53,7 @@ import { useI18n } from "vue-i18n";
 import { ActionMode } from "@/types";
 import { storeToRefs } from "pinia";
 import SETTINGS from "@/global-settings";
+import EventBus from "@/eventHandlers/EventBus";
 
 // Associate each ActionMode with the corresponding I18N key
 
@@ -91,9 +102,11 @@ const ACTION_MODE_MAP: Map<ActionMode, string> = new Map([
 const seStore = useSEStore();
 const { actionMode } = storeToRefs(seStore);
 const { t } = useI18n();
-const applyTransformationText = ref("");
+const toolHint = ref("");
 const iconSize = ref(SETTINGS.icons.currentToolSectionIconSize);
-const rowHeight = ref("min-height:"+SETTINGS.icons.currentToolSectionIconSize+"px")
+const rowHeight = ref(
+  "min-height:" + SETTINGS.icons.currentToolSectionIconSize + "px"
+);
 // applyTransformationText.value = i18n
 //   .t(`objects.selectTransformation`)
 //   .toString();
@@ -103,8 +116,25 @@ const activeToolName = computed((): string => {
   return i18nKey ? i18nKey : `Unmapped actionMode ${actionMode.value}`;
 });
 
+type MessageType = {
+  key: string;
+  keyOptions?: any;
+  secondaryMsg: string;
+  secondaryMsgKeyOptions: string;
+  type: string;
+  timestamp: number;
+};
 onMounted((): void => {
   setIconSize();
+  EventBus.listen("show-alert", (m: MessageType) => {
+    console.debug("Incoming message", m);
+    if (m.type === "directive") {
+      toolHint.value = "";
+      setTimeout(() => {
+        toolHint.value = t(m.secondaryMsg);
+      }, 300);
+    }
+  });
 });
 
 watch(

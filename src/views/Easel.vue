@@ -60,10 +60,10 @@
             // border: '2px solid gray',
             borderRadius: '0.5em',
             padding: '0.25em',
-            color: constructionInfo.publicDocId ? 'white': 'black',
+            color: 'white',
             backgroundColor: constructionInfo.publicDocId
               ? colors.green.darken1
-              : colors.green.lighten1
+              : colors.grey.base
           }">
           <div>
             {{ constructionInfo.description }} ({{

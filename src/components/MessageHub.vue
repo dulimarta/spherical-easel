@@ -227,8 +227,10 @@ const filteredMessages = computed(
 );
 
 function addMessage(m: MessageType): void {
-  m.timestamp = Date.now(); // Get the timestamp that the message occurred at so it can be deleted if needed.
-  messages.value.unshift(m); // Add the new message to the beginning of the array
+  if (m.type !== 'directive') {
+    m.timestamp = Date.now(); // Get the timestamp that the message occurred at so it can be deleted if needed.
+    messages.value.unshift(m); // Add the new message to the beginning of the array
+  }
 }
 
 function deleteMessageByIndex(pos: number) {

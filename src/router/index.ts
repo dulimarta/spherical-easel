@@ -5,7 +5,7 @@ import PhotoCropper from "@/views/PhotoCropper.vue"
 import ProfilePicture from "@/views/ProfilePicture.vue"
 let routes: Array<RouteRecordRaw> = [
   {
-    path: "/",
+    path: "",
     name: "Home",
     component: Easel
   },
