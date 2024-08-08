@@ -1,6 +1,7 @@
 import { Command } from "./Command";
 import { SELine } from "@/models/SELine";
 import { Vector3 } from "three";
+import { toSVGType } from "@/types";
 
 export class MoveLineCommand extends Command {
   private seLine: SELine;

@@ -6,6 +6,7 @@ import { Vector3 } from "three";
 import { SEEllipse } from "@/models/SEEllipse";
 import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddEllipseCommand extends Command {
   private seEllipse: SEEllipse;
@@ -48,6 +49,10 @@ export class AddEllipseCommand extends Command {
     this.ellipseSEPoint.unregisterChild(this.seEllipse);
     this.focus2SEPoint.unregisterChild(this.seEllipse);
     this.focus1SEPoint.unregisterChild(this.seEllipse);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seEllipse, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

@@ -5,6 +5,7 @@ import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleCategory } from "@/types/Styles";
 import { SELatitude } from "@/models/SELatitude";
+import { toSVGType } from "@/types";
 
 export class AddLatitudeCommand extends Command {
   private seLatitude: SELatitude;
@@ -32,6 +33,10 @@ export class AddLatitudeCommand extends Command {
     Command.store.removeCircle(this.lastState);
     this.seLatitude.unregisterChild(this.seLabel);
     Command.store.removeLabel(this.seLabel.id);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seLatitude, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

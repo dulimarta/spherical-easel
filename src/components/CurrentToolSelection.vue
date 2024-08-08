@@ -2,9 +2,9 @@
   <!-- Displays the current tool in the left panel by the collapsible arrow -->
   <span v-if="actionMode">
     <v-container>
-      <v-row align="center">
+      <v-row align="center" :style = "rowHeight">
         <!-- Vuetify custom icons require a '$' prefix -->
-        <v-icon class="mx-3" :icon="'$' + actionMode"></v-icon>
+        <v-icon class="mx-3" :icon="'$' + actionMode" :size="iconSize"></v-icon>
         <!-- Checks if ApplyTransformation is selected and changes the display accordingly. -->
         <span
           class="text-body-1 ml-1"
@@ -28,12 +28,21 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onBeforeMount, computed, onBeforeUnmount, onMounted } from "vue";
+import {
+  ref,
+  onBeforeMount,
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  onBeforeUpdate,
+  watch
+} from "vue";
 import { useSEStore } from "@/stores/se";
 import { useI18n } from "vue-i18n";
 // import EventBus from "@/eventHandlers/EventBus";
 import { ActionMode } from "@/types";
 import { storeToRefs } from "pinia";
+import SETTINGS from "@/global-settings";
 
 // Associate each ActionMode with the corresponding I18N key
 
@@ -70,7 +79,7 @@ const ACTION_MODE_MAP: Map<ActionMode, string> = new Map([
   ["angleBisector", "CreateAngleBisectorDisplayedName"],
   ["nSectLine", "CreateNSectAngleDisplayedName"],
   ["threePointCircle", "CreateThreePointCircleDisplayedName"],
-  ["measuredCircle", "MeasureCircleDisplayedName"],
+  ["measuredCircle", "CreateMeasuredCircleDisplayedName"],
   ["translation", "CreateTranslationDisplayedName"],
   ["rotation", "CreateRotationDisplayedName"],
   ["reflection", "CreateReflectionDisplayedName"],
@@ -83,6 +92,8 @@ const seStore = useSEStore();
 const { actionMode } = storeToRefs(seStore);
 const { t } = useI18n();
 const applyTransformationText = ref("");
+const iconSize = ref(SETTINGS.icons.currentToolSectionIconSize);
+const rowHeight = ref("min-height:"+SETTINGS.icons.currentToolSectionIconSize+"px")
 // applyTransformationText.value = i18n
 //   .t(`objects.selectTransformation`)
 //   .toString();
@@ -92,6 +103,34 @@ const activeToolName = computed((): string => {
   return i18nKey ? i18nKey : `Unmapped actionMode ${actionMode.value}`;
 });
 
+onMounted((): void => {
+  setIconSize();
+});
+
+watch(
+  () => actionMode.value,
+  (): void => {
+    setIconSize();
+  }
+);
+
+function setIconSize(): void {
+  const zIcons = SETTINGS.icons as Record<string, any>;
+  // console.log(
+  //   actionMode.value,
+  //   zIcons[actionMode.value].props,
+  //   typeof zIcons[actionMode.value].props.mdiIcon == "string"
+  // );
+  if (
+    zIcons[actionMode.value] &&
+    zIcons[actionMode.value].props &&
+    typeof zIcons[actionMode.value].props.mdiIcon == "string"
+  ) {
+    iconSize.value = SETTINGS.icons.currentToolSectionIconSize * 0.75; // mdiIcons are smaller
+  } else {
+    iconSize.value = SETTINGS.icons.currentToolSectionIconSize;
+  }
+}
 //The next 3 functions are for the text for the applied transformation.
 // onBeforeMount((): void => {
 //   console.debug("CurrentToolSelection: setting up event bus listener");

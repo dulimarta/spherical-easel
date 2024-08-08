@@ -3,6 +3,7 @@ import { SEPencil } from "@/models/SEPencil";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 import { Command } from "./Command";
 import { CommandGroup } from "./CommandGroup";
+import { toSVGType } from "@/types";
 
 export class AddPencilCommand extends Command {
   private pencil: SEPencil;

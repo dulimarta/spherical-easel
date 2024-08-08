@@ -70,9 +70,8 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
 
   public shallowUpdate(): void {
     //These points always exist - they have no parents to depend on
-    //Update the location of the associate plottable Point (setter also updates the display)
+    //Update the location of the associate plottable Point
     this.ref.positionVector = this._locationVector;
-
     if (this.showing) {
       this.ref.setVisible(true);
     } else {
@@ -124,7 +123,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   set locationVector(pos: Vector3) {
     // Record the location on the unit ideal sphere of this SEPoint
     this._locationVector.copy(pos).normalize();
-    // Set the position of the associated displayed plottable Point
+    // Set the position of the associated displayed plottable Point // THIS DOESN'T ALSO TURN on the display
     this.ref.positionVector = this._locationVector;
   }
   get locationVector(): Vector3 {

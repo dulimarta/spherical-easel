@@ -6,6 +6,8 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
+import { toSVGType } from "@/types";
+
 
 export class AddCircleCommand extends Command {
   private seCircle: SECircle;
@@ -43,6 +45,10 @@ export class AddCircleCommand extends Command {
     this.seCircle.unregisterChild(this.seLabel);
     this.centerSEPoint.unregisterChild(this.seCircle);
     this.circleSEPoint.unregisterChild(this.seCircle);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seCircle, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

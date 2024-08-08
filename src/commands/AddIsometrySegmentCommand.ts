@@ -8,6 +8,7 @@ import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SEIsometrySegment } from "@/models/SEIsometrySegment";
 import { SEReflection } from "@/models/SEReflection";
 import { SESegment } from "@/models/SESegment";
+import { toSVGType } from "@/types";
 
 export class AddIsometrySegmentCommand extends Command {
   private preimageSESegment: SESegment;
@@ -46,6 +47,10 @@ export class AddIsometrySegmentCommand extends Command {
     this.isometrySESegment.unregisterChild(this.isometrySESegmentLabel);
     this.parentIsometry.unregisterChild(this.isometrySESegment);
     this.preimageSESegment.unregisterChild(this.isometrySESegment);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.isometrySESegment, this.isometrySESegmentLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

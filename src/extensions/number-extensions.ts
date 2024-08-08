@@ -18,3 +18,14 @@ Number.prototype.modTwoPi = function (): number {
 Number.prototype.modPi = function (): number {
   return ((Number(this) % Math.PI) + Math.PI) % Math.PI;
 };
+/**
+ * If the absolute value of the number is near zero, return zero otherwise don't do anything
+ */
+Number.prototype.zeroOut = function (tol?: number): number {
+  if (tol == undefined) {
+    tol = 10 ** -10;
+  }
+  if (Math.abs(Number(this)) < tol) {
+    return 0;
+  } else return Number(this);
+};

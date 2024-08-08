@@ -6,6 +6,8 @@ import { SavedNames, SEOneDimensionalNotStraight } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGType } from "@/types";
+
 export class AddTangentLineThruPointCommand extends Command {
   private seTangentLineThruPoint: SETangentLineThruPoint;
   private parentSEPoint: SEPoint;
@@ -43,6 +45,10 @@ export class AddTangentLineThruPointCommand extends Command {
     this.seTangentLineThruPoint.unregisterChild(this.seLabel);
     this.parentOneDimensional.unregisterChild(this.seTangentLineThruPoint);
     this.parentSEPoint.unregisterChild(this.seTangentLineThruPoint);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seTangentLineThruPoint, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

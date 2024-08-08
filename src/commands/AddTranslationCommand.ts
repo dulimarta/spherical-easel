@@ -5,6 +5,7 @@ import { SESegment } from "@/models/SESegment";
 import { SavedNames } from "@/types";
 import { SELine } from "@/models/SELine";
 import { SEExpression } from "@/models/SEExpression";
+import { toSVGType } from "@/types";
 
 export class AddTranslationCommand extends Command {
   private seTranslation: SETranslation;

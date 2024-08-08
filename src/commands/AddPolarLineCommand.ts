@@ -6,6 +6,7 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SEPolarLine } from "@/models/SEPolarLine";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGType } from "@/types";
 
 export class AddPolarLineCommand extends Command {
   private sePolarLine: SEPolarLine;
@@ -51,6 +52,11 @@ export class AddPolarLineCommand extends Command {
   //     /* arg-9 */ this.parentSEPoint.name
   //   ].join("/");
   // }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.sePolarLine, this.seLabel]];
+  }
+
   toOpcode(): null | string | Array<string> {
     return [
       "AddPolarLine",

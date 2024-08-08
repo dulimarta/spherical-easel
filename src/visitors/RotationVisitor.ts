@@ -173,7 +173,8 @@ export class RotationVisitor implements Visitor {
   }
   actionOnPolygon(p: SEPolygon): boolean {
     // update the display of the plottable object. update gets the new rotation matrix directly from the store.
-    p.ref.updateDisplay();
+    p.ref.updateDisplay(); // sets the location of the vertices for the front/back fills
+    p.ref.normalDisplay() // displays the correct fills depending on where the polygon is
     return true;
   }
 }

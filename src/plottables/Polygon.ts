@@ -9,7 +9,7 @@ import {
   DEFAULT_POLYGON_FRONT_STYLE,
   DEFAULT_POLYGON_BACK_STYLE
 } from "@/types/Styles";
-import { location, visitedIndex } from "@/types";
+import { location, toSVGType, visitedIndex } from "@/types";
 import { SESegment } from "@/models/SESegment";
 //import Two from "two.js";
 import { Path } from "two.js/src/path";
@@ -53,34 +53,55 @@ export default class Polygon extends Nodule {
 
   private pool: Anchor[] = []; //The pool of vertices, initially empty
 
+  private allEdgesOnFront = true;
+  private allEdgesOnBack = false;
+
+  //Export to SVG booleans
+  // private frontFillIsWholeHemisphere = false;
+  // private backFillIsWholeHemisphere = false;
+  private frontFillInUse = false;
+  private backFillInUse = false;
+
   /**
    * The stops and gradient for front/back fill
    */
-  private frontGradientColorCenter = new Stop(0, SETTINGS.fill.frontWhite, 1);
+  private frontGradientColorCenter = new Stop(
+    0,
+    SETTINGS.style.fill.frontWhite,
+    1
+  );
   private frontGradientColor = new Stop(
-    2 * SETTINGS.boundaryCircle.radius,
+    SETTINGS.style.fill.gradientPercent,
     SETTINGS.polygon.drawn.fillColor.front,
     1
   );
 
   private frontGradient = new RadialGradient(
-    SETTINGS.fill.lightSource.x,
-    SETTINGS.fill.lightSource.y,
-    1 * SETTINGS.boundaryCircle.radius,
-    [this.frontGradientColorCenter, this.frontGradientColor]
+    SETTINGS.style.fill.center.x,
+    SETTINGS.style.fill.center.y,
+    SETTINGS.boundaryCircle.radius,
+    [this.frontGradientColorCenter, this.frontGradientColor],
+    SETTINGS.style.fill.lightSource.x,
+    SETTINGS.style.fill.lightSource.y
   );
 
-  private backGradientColorCenter = new Stop(0, SETTINGS.fill.backGray, 1);
+  private backGradientColorCenter = new Stop(
+    0,
+    SETTINGS.style.fill.backGray,
+    1
+  );
   private backGradientColor = new Stop(
-    1 * SETTINGS.boundaryCircle.radius,
+    SETTINGS.style.fill.gradientPercent,
     SETTINGS.polygon.drawn.fillColor.back,
     1
   );
   private backGradient = new RadialGradient(
-    -SETTINGS.fill.lightSource.x,
-    -SETTINGS.fill.lightSource.y,
-    2 * SETTINGS.boundaryCircle.radius,
-    [this.backGradientColorCenter, this.backGradientColor]
+    -SETTINGS.style.fill.center.x,
+    -SETTINGS.style.fill.center.y,
+    SETTINGS.boundaryCircle.radius,
+    [this.backGradientColorCenter, this.backGradientColor],
+    -SETTINGS.style.fill.lightSource.x,
+    -SETTINGS.style.fill.lightSource.y
   );
 
   /**
@@ -94,6 +115,10 @@ export default class Polygon extends Nodule {
     segmentFlippedList: boolean[]
   ) {
     super(noduleName);
+
+    this.frontGradient.units = "userSpaceOnUse"; // this means that the gradient uses the coordinates of the layer (but centered on the projection of the circle)
+    this.backGradient.units = "userSpaceOnUse";
+
     this.seEdgeSegments.push(...segmentList);
     this.segmentIsFlipped.push(...segmentFlippedList);
 
@@ -160,9 +185,9 @@ export default class Polygon extends Nodule {
     for (
       let k = 0;
       k <
-      (this.seEdgeSegments.length - 2) * 2 * SETTINGS.segment.numPoints +
+      (this.seEdgeSegments.length - 2) * 3 * SETTINGS.segment.numPoints +
         2 * 3 * SETTINGS.segment.numPoints +
-        2*BOUNDARYSUBDIVISIONS;
+        2 * BOUNDARYSUBDIVISIONS;
       k++
     ) {
       frontVerticesFill.push(new Anchor(0, 0));
@@ -198,19 +223,6 @@ export default class Polygon extends Nodule {
         );
       }
       // i=0 fills were created before this loop
-      Nodule.idPlottableDescriptionMap.set(String(this.frontFills[i].id), {
-        type: "polygon",
-        side: "front",
-        fill: true,
-        part: ""
-      });
-
-      Nodule.idPlottableDescriptionMap.set(String(this.backFills[i].id), {
-        type: "polygon",
-        side: "back",
-        fill: true,
-        part: ""
-      });
 
       // The front/back fill have no stroke because that is handled by the front/back part
       this.frontFills[i].noStroke();
@@ -241,6 +253,7 @@ export default class Polygon extends Nodule {
     // console.log("pool size", this.pool.length);
     // Bring all the locations of the vertices in the correct order in one array
     const locationArray: location[] = [];
+
     this.seEdgeSegments
       .map(z => z.ref)
       .forEach((seg, index) => {
@@ -258,14 +271,14 @@ export default class Polygon extends Nodule {
         let numVerticesAdded = 0;
         if (seg.firstVertexIsOnFront) {
           // This seg starts with frontPart, then backPart, then frontExtra (the last two might not be in use)
-          if (seg.frontPartInUse) {
+          if (seg.frontPartInUse && Nodule.longEnoughToAdd(seg.frontPart)) {
             for (let i = 0; i < seg.frontPart.vertices.length; i++) {
               var coords = localMatrix.multiply(
                 seg.frontPart.vertices[i].x,
                 seg.frontPart.vertices[i].y,
                 1
               );
-              //console.log("coords", coords, "FP")
+              // console.log(index, "coords", coords, "FP");
               locationArray.push({
                 x: coords[0],
                 y: coords[1],
@@ -274,14 +287,14 @@ export default class Polygon extends Nodule {
               numVerticesAdded++;
             }
           }
-          if (seg.backPartInUse) {
+          if (seg.backPartInUse && Nodule.longEnoughToAdd(seg.backPart)) {
             for (let i = 0; i < seg.backPart.vertices.length; i++) {
               var coords = localMatrix.multiply(
                 seg.backPart.vertices[i].x,
                 seg.backPart.vertices[i].y,
                 1
               );
-              //console.log("coords", coords, "BP")
+              // console.log(index, "coords", coords, "BP");
               locationArray.push({
                 x: coords[0],
                 y: coords[1],
@@ -290,14 +303,14 @@ export default class Polygon extends Nodule {
               numVerticesAdded++;
             }
           }
-          if (seg.frontExtraInUse) {
+          if (seg.frontExtraInUse && Nodule.longEnoughToAdd(seg.frontExtra)) {
             for (let i = 0; i < seg.frontExtra.vertices.length; i++) {
               var coords = localMatrix.multiply(
                 seg.frontExtra.vertices[i].x,
                 seg.frontExtra.vertices[i].y,
                 1
               );
-              //console.log("coords", coords, "FE")
+              // console.log(index, "coords", coords, "FE");
               locationArray.push({
                 x: coords[0],
                 y: coords[1],
@@ -308,6 +321,7 @@ export default class Polygon extends Nodule {
           }
 
           if (this.segmentIsFlipped[index]) {
+            // console.log("Reverse!");
             // reverse the last numVerticesAdded in the locationArray
             const tempArray = locationArray.splice(
               locationArray.length - numVerticesAdded,
@@ -317,13 +331,14 @@ export default class Polygon extends Nodule {
           }
         } else {
           // This seg starts with backPart, then frontPart, then backExtra (the last two might not be in use)
-          if (seg.backPartInUse) {
+          if (seg.backPartInUse && Nodule.longEnoughToAdd(seg.backPart)) {
             for (let i = 0; i < seg.backPart.vertices.length; i++) {
               var coords = localMatrix.multiply(
                 seg.backPart.vertices[i].x,
                 seg.backPart.vertices[i].y,
                 1
               );
+              // console.log(index, "coords", coords, "BP");
               locationArray.push({
                 x: coords[0],
                 y: coords[1],
@@ -332,13 +347,14 @@ export default class Polygon extends Nodule {
               numVerticesAdded++;
             }
           }
-          if (seg.frontPartInUse) {
+          if (seg.frontPartInUse && Nodule.longEnoughToAdd(seg.frontPart)) {
             for (let i = 0; i < seg.frontPart.vertices.length; i++) {
               var coords = localMatrix.multiply(
                 seg.frontPart.vertices[i].x,
                 seg.frontPart.vertices[i].y,
                 1
               );
+              // console.log(index, "coords", coords, "FP");
               locationArray.push({
                 x: coords[0],
                 y: coords[1],
@@ -347,13 +363,14 @@ export default class Polygon extends Nodule {
               numVerticesAdded++;
             }
           }
-          if (seg.backExtraInUse) {
+          if (seg.backExtraInUse && Nodule.longEnoughToAdd(seg.backExtra)) {
             for (let i = 0; i < seg.backExtra.vertices.length; i++) {
               var coords = localMatrix.multiply(
                 seg.backExtra.vertices[i].x,
                 seg.backExtra.vertices[i].y,
                 1
               );
+              // console.log(index, "coords", coords, "BE");
               locationArray.push({
                 x: coords[0],
                 y: coords[1],
@@ -364,6 +381,7 @@ export default class Polygon extends Nodule {
           }
 
           if (this.segmentIsFlipped[index]) {
+            // console.log("Reverse!");
             // reverse the last numVerticesAdded in the locationArray
             const tempArray = locationArray.splice(
               locationArray.length - numVerticesAdded,
@@ -375,12 +393,17 @@ export default class Polygon extends Nodule {
       });
 
     // console.log("number in location Array", locationArray.length);
-    const allEdgesOnFront = locationArray.every(loc => loc.front === true);
-    const allEdgesOnBack = locationArray.every(loc => loc.front === false);
+    this.allEdgesOnFront = locationArray.every(loc => loc.front === true);
+    this.allEdgesOnBack = locationArray.every(loc => loc.front === false);
     // console.log("#############DUM############")
     // locationArray.forEach((loc,ind) => {console.log("@vec ", ind, "\n", loc.x, "\n", loc.y, "\n", loc.front)})
     // The polygon interior is split between front and back
-    if (!allEdgesOnFront && !allEdgesOnBack) {
+    if (!this.allEdgesOnFront && !this.allEdgesOnBack) {
+      // this.frontFillIsWholeHemisphere = false;
+      // this.backFillIsWholeHemisphere = false;
+      this.frontFillInUse = true;
+      this.backFillInUse = true;
+
       // Count and record the indices of intersections with the boundary circle
       const frontToBackIntersectionIndices: visitedIndex[] = []; // i is on this list if location[i-1] is on front and location[i] is on back
       const backToFrontIntersectionIndices: visitedIndex[] = []; // i is on this list if location[i-1] is on back and location[i] is on front
@@ -507,7 +530,12 @@ export default class Polygon extends Nodule {
           if (nextSmallestAngleIndex === -1) {
             nextSmallestAngleIndex = biggestAngleIndex;
           }
-          // console.log("start ang", startAngle);
+          // console.log(
+          //   "front start ang, index, location",
+          //   startAngle,
+          //   previousIndex,
+          //   locationArray[previousIndex]
+          // );
           // console.log(
           //   "next smallest ang",
           //   backToFrontIntersectionAngles[nextSmallestAngleIndex]
@@ -520,54 +548,69 @@ export default class Polygon extends Nodule {
             locationArray[nextIndex].y,
             locationArray[nextIndex].x
           );
+          // console.log(
+          //   "front end angle, index, location",
+          //   endAngle,
+          //   nextIndex,
+          //   locationArray[nextIndex]
+          // );
+
           // Compute the angular width of the section of the boundary polygon to add to the front/back fill
           // This can be positive if traced counterclockwise or negative if traced clockwise (add 2 Pi to make positive)
           let angularWidth = startAngle - endAngle;
           if (angularWidth < 0) {
             angularWidth += 2 * Math.PI;
           }
-          // console.log("ang Width", angularWidth);
-
-          // When tracing the boundary polygon we start from fromVector locationArray[previousIndex] (which is on the front)
-          const size = Math.sqrt(
-            locationArray[previousIndex].x * locationArray[previousIndex].x +
-              locationArray[previousIndex].y * locationArray[previousIndex].y
-          );
-          const fromVector = [
-            (SETTINGS.boundaryCircle.radius *
+          // console.log("front ang Width", angularWidth, locationArray);
+          // if the locations on the edge are too close together skip adding a boundary component
+          if (
+            (locationArray[nextIndex].x - locationArray[previousIndex].x) ** 2 +
+              (locationArray[nextIndex].y - locationArray[previousIndex].y) **
+                2 >
+            0.0001
+          ) {
+            // When tracing the boundary polygon we start from fromVector locationArray[previousIndex] (which is on the front)
+            const size = Math.sqrt(
+              locationArray[previousIndex].x * locationArray[previousIndex].x +
+                locationArray[previousIndex].y * locationArray[previousIndex].y
+            );
+            const fromVector = [
               (locationArray[previousIndex].x *
-                SETTINGS.boundaryCircle.radius)) /
-              size,
-            (SETTINGS.boundaryCircle.radius *
+                SETTINGS.boundaryCircle.radius) /
+                size,
               (locationArray[previousIndex].y *
-                SETTINGS.boundaryCircle.radius)) /
-              size
-          ];
+                SETTINGS.boundaryCircle.radius) /
+                size
+            ];
 
-          // then
-          // trace in the direction of a toVector that is perpendicular to locationArray[previousIndex]
-          // and is the next one CW from  locationArray[previousIndex]
-          const toVector = [fromVector[1], -fromVector[0]];
+            // then
+            // trace in the direction of a toVector that is perpendicular to locationArray[previousIndex]
+            // and is the next one CW from  locationArray[previousIndex]
+            const toVector = [fromVector[1], -fromVector[0]];
 
-          // add the boundary vertices from start to end in the direction of toVector
-          const boundaryPoints = Nodule.boundaryCircleCoordinates(
-            fromVector,
-            Math.floor(angularWidth*BOUNDARYSUBDIVISIONS / (2*Math.PI)),
-            toVector,
-            angularWidth
-          );
-          boundaryPoints.forEach(pt => {
-            const vertex = this.pool.pop();
-            if (vertex !== undefined) {
-              vertex.x = pt[0];
-              vertex.y = pt[1];
-              this.frontFills[currentFrontFillIndex].vertices.push(vertex);
-            } else {
-              throw new Error(
-                "Polygon: not enough anchors in the pool to trace a front boundary circle edge."
-              );
-            }
-          });
+            // add the boundary vertices from start to end in the direction of toVector
+            const boundaryPoints = Nodule.boundaryCircleCoordinates(
+              fromVector,
+              Math.floor((angularWidth * BOUNDARYSUBDIVISIONS) / (2 * Math.PI)),
+              toVector,
+              angularWidth
+            );
+
+            boundaryPoints.forEach(pt => {
+              const vertex = this.pool.pop();
+              if (vertex !== undefined) {
+                vertex.x = pt[0];
+                vertex.y = pt[1];
+                this.frontFills[currentFrontFillIndex].vertices.push(vertex);
+              } else {
+                throw new Error(
+                  "Polygon: not enough anchors in the pool to trace a front boundary circle edge."
+                );
+              }
+            });
+          } else {
+            // console.log("#########Front Piece Skipped");
+          }
           // go to the start of the while loop with the next index at the start of a backToFrontIntersection
           backToFrontIndex = nextSmallestAngleIndex;
         }
@@ -676,48 +719,55 @@ export default class Polygon extends Nodule {
             angularWidth += 2 * Math.PI;
           }
           angularWidth = 2 * Math.PI - angularWidth;
-          // console.log("ang Width", angularWidth);
+          // console.log("back ang Width", angularWidth);
 
-          // When tracing the boundary polygon we start from fromVector locationArray[previousIndex] (which is on the front)
-          const size = Math.sqrt(
-            locationArray[previousIndex].x * locationArray[previousIndex].x +
-              locationArray[previousIndex].y * locationArray[previousIndex].y
-          );
-          const fromVector = [
-            (SETTINGS.boundaryCircle.radius *
+          // if the locations on the edge are too close together skip adding a boundary component
+          if (
+            (locationArray[nextIndex].x - locationArray[previousIndex].x) ** 2 +
+              (locationArray[nextIndex].y - locationArray[previousIndex].y) **
+                2 >
+            0.0001
+          ) {
+            // When tracing the boundary polygon we start from fromVector locationArray[previousIndex] (which is on the front)
+            const size = Math.sqrt(
+              locationArray[previousIndex].x * locationArray[previousIndex].x +
+                locationArray[previousIndex].y * locationArray[previousIndex].y
+            );
+            const fromVector = [
               (locationArray[previousIndex].x *
-                SETTINGS.boundaryCircle.radius)) /
-              size,
-            (SETTINGS.boundaryCircle.radius *
+                SETTINGS.boundaryCircle.radius) /
+                size,
               (locationArray[previousIndex].y *
-                SETTINGS.boundaryCircle.radius)) /
-              size
-          ];
+                SETTINGS.boundaryCircle.radius) /
+                size
+            ];
 
-          // then
-          // trace in the direction of a toVector that is perpendicular to locationArray[previousIndex]
-          // and is the next one CCW from  locationArray[previousIndex]
-          const toVector = [-fromVector[1], fromVector[0]];
+            // then
+            // trace in the direction of a toVector that is perpendicular to locationArray[previousIndex]
+            // and is the next one CCW from  locationArray[previousIndex]
+            const toVector = [-fromVector[1], fromVector[0]];
 
-          // add the boundary vertices from start to end in the direction of toVector
-          const boundaryPoints = Nodule.boundaryCircleCoordinates(
-            fromVector,
-            Math.floor(angularWidth*BOUNDARYSUBDIVISIONS / (2*Math.PI)),
-            toVector,
-            angularWidth
-          );
-          boundaryPoints.forEach(pt => {
-            const vertex = this.pool.pop();
-            if (vertex !== undefined) {
-              vertex.x = pt[0];
-              vertex.y = pt[1];
-              this.backFills[currentBackFillIndex].vertices.push(vertex);
-            } else {
-              throw new Error(
-                "Polygon: not enough anchors in the pool to trace a front boundary circle edge."
-              );
-            }
-          });
+            // add the boundary vertices from start to end in the direction of toVector
+            const boundaryPoints = Nodule.boundaryCircleCoordinates(
+              fromVector,
+              Math.floor((angularWidth * BOUNDARYSUBDIVISIONS) / (2 * Math.PI)),
+              toVector,
+              angularWidth
+            );
+
+            boundaryPoints.forEach(pt => {
+              const vertex = this.pool.pop();
+              if (vertex !== undefined) {
+                vertex.x = pt[0];
+                vertex.y = pt[1];
+                this.backFills[currentBackFillIndex].vertices.push(vertex);
+              } else {
+                throw new Error(
+                  "Polygon: not enough anchors in the pool to trace a front boundary circle edge."
+                );
+              }
+            });
+          }
           // go to the start of the while loop with the next index at the start of a frontToBackIntersection
           frontToBackIndex = nextBiggestAngleIndex;
         }
@@ -739,7 +789,11 @@ export default class Polygon extends Nodule {
       // });
     }
     // The polygon interior is only on the front of the sphere
-    else if (allEdgesOnFront && this._area < 2 * Math.PI) {
+    else if (this.allEdgesOnFront && this._area < 2 * Math.PI) {
+      // this.frontFillIsWholeHemisphere = false;
+      // this.backFillIsWholeHemisphere = false;
+      this.frontFillInUse = true;
+      this.backFillInUse = false;
       locationArray.forEach(loc => {
         const vertex = this.pool.pop();
         if (vertex !== undefined) {
@@ -754,7 +808,12 @@ export default class Polygon extends Nodule {
       });
     }
     // The polygon interior is only on the back of the sphere
-    else if (allEdgesOnBack && this._area < 2 * Math.PI) {
+    else if (this.allEdgesOnBack && this._area < 2 * Math.PI) {
+      // this.frontFillIsWholeHemisphere = false;
+      // this.backFillIsWholeHemisphere = false;
+      this.frontFillInUse = false;
+      this.backFillInUse = true;
+
       locationArray.forEach(loc => {
         const vertex = this.pool.pop();
         if (vertex !== undefined) {
@@ -769,7 +828,11 @@ export default class Polygon extends Nodule {
       });
     }
     // The polygon interior covers the entire front half of the sphere and is a 'hole' on the back
-    else if (allEdgesOnBack && this._area > 2 * Math.PI) {
+    else if (this.allEdgesOnBack && this._area > 2 * Math.PI) {
+      // this.frontFillIsWholeHemisphere = true;
+      // this.backFillIsWholeHemisphere = false;
+      this.frontFillInUse = true;
+      this.backFillInUse = true;
       // location[0] is a point *not* necessarily on the boundary circle, we project to the boundary circle so that when
       // tracing the boundary we start close to this point
       const size = Math.sqrt(
@@ -777,12 +840,8 @@ export default class Polygon extends Nodule {
           locationArray[0].y * locationArray[0].y
       );
       const startPoint = [
-        (SETTINGS.boundaryCircle.radius *
-          (locationArray[0].x * SETTINGS.boundaryCircle.radius)) /
-          size,
-        (SETTINGS.boundaryCircle.radius *
-          (locationArray[0].y * SETTINGS.boundaryCircle.radius)) /
-          size
+        (locationArray[0].x * SETTINGS.boundaryCircle.radius) / size,
+        (locationArray[0].y * SETTINGS.boundaryCircle.radius) / size
       ];
       const boundary = Nodule.boundaryCircleCoordinates(
         startPoint,
@@ -846,7 +905,11 @@ export default class Polygon extends Nodule {
       }
     }
     // // The polygon interior covers the entire back half of the sphere and is a 'hole' on the front
-    else if (allEdgesOnFront && this._area > 2 * Math.PI) {
+    else if (this.allEdgesOnFront && this._area > 2 * Math.PI) {
+      // this.frontFillIsWholeHemisphere = false;
+      // this.backFillIsWholeHemisphere = true;
+      this.frontFillInUse = true;
+      this.backFillInUse = true;
       // location[0] is a point *not* on the boundary circle, we project to the boundary circle so that when
       // tracing the boundary we start close to this point
       const size = Math.sqrt(
@@ -854,12 +917,8 @@ export default class Polygon extends Nodule {
           locationArray[0].y * locationArray[0].y
       );
       const startPoint = [
-        (SETTINGS.boundaryCircle.radius *
-          (locationArray[0].x * SETTINGS.boundaryCircle.radius)) /
-          size,
-        (SETTINGS.boundaryCircle.radius *
-          (locationArray[0].y * SETTINGS.boundaryCircle.radius)) /
-          size
+        (locationArray[0].x * SETTINGS.boundaryCircle.radius) / size,
+        (locationArray[0].y * SETTINGS.boundaryCircle.radius) / size
       ];
       const boundary = Nodule.boundaryCircleCoordinates(
         startPoint,
@@ -948,27 +1007,7 @@ export default class Polygon extends Nodule {
   set area(newArea: number) {
     this._area = newArea;
   }
-  // set SEPolygon(sePolygon: SEPolygon) {
-  // this._sePolgon = sePolygon;
-  // }
 
-  // frontGlowingDisplay(): void {
-  //   this.frontFills.forEach(part => (part.visible = true));
-  //   this.seEdgeSegments.forEach(seg => {
-  //     if (!seg.selected) {
-  //       seg.ref.frontGlowingDisplay();
-  //     }
-  //   });
-  // }
-
-  // backGlowingDisplay(): void {
-  //   this.backFills.forEach(part => (part.visible = true));
-  //   this.seEdgeSegments.forEach(seg => {
-  //     if (!seg.selected) {
-  //       seg.ref.backGlowingDisplay();
-  //     }
-  //   });
-  // }
   glowingDisplay(): void {
     this.frontFills.forEach(part => {
       if (part.vertices.length !== 0) {
@@ -990,22 +1029,7 @@ export default class Polygon extends Nodule {
       }
     });
   }
-  // frontNormalDisplay(): void {
-  //   this.frontFills.forEach(part => (part.visible = true));
-  //   this.seEdgeSegments.forEach(seg => {
-  //     if (!seg.selected) {
-  //       seg.ref.frontNormalDisplay();
-  //     }
-  //   });
-  // }
-  // backNormalDisplay(): void {
-  //   this.backFills.forEach(part => (part.visible = true));
-  //   this.seEdgeSegments.forEach(seg => {
-  //     if (!seg.selected) {
-  //       seg.ref.backNormalDisplay();
-  //     }
-  //   });
-  // }
+
   normalDisplay(): void {
     this.frontFills.forEach((part, ind) => {
       if (part.vertices.length !== 0) {
@@ -1067,6 +1091,103 @@ export default class Polygon extends Nodule {
     this.backFills.forEach(part => part.remove());
   }
 
+  toSVG(nonScaling?: {
+    stroke: boolean;
+    text: boolean;
+    pointRadius: boolean;
+    scaleFactor: number;
+  }): toSVGType[] {
+    //make sure that everything is upto date
+    this.updateDisplay();
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGObject: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyleDictionary: null,
+      layerSVGArray: [],
+      type: "polygon"
+    };
+
+    // Add the gradient to the gradient dictionary (if used)
+    if (Nodule.getGradientFill()) {
+      if (this.frontFillInUse) {
+        returnSVGObject.frontGradientDictionary =
+          Nodule.createSVGGradientDictionary(
+            this.frontGradient,
+            this.frontGradientColorCenter,
+            this.frontGradientColor
+          );
+      }
+
+      if (this.backFillInUse) {
+        returnSVGObject.backGradientDictionary =
+          Nodule.createSVGGradientDictionary(
+            this.backGradient,
+            this.backGradientColorCenter,
+            this.backGradientColor
+          );
+      }
+    }
+
+    // collect the front style of the circle
+    if (this.frontFillInUse) {
+      returnSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({
+        fillObject: this.frontFills[0]
+      });
+    }
+    // collect the front style of the circle
+    if (this.backFillInUse) {
+      returnSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({
+        fillObject: this.backFills[0]
+      });
+    }
+    // now collect the geometric information by copying all the front fills and backfills
+    this.frontFills.forEach(fill => {
+      if (fill.vertices.length != 0) {
+        let svgFrontString = '<path d="';
+        const localMatrix = fill.matrix;
+        fill.vertices.forEach((v: Anchor, index: number) => {
+          var coords = localMatrix.multiply(v.x, v.y, 1);
+          if (index == 0) {
+            svgFrontString += "M" + coords[0] + " " + coords[1] + " ";
+          } else {
+            svgFrontString += "L" + coords[0] + " " + coords[1] + " ";
+          }
+        });
+        svgFrontString += 'Z"/>';
+
+        returnSVGObject.layerSVGArray.push([
+          LAYER.foregroundFills,
+          svgFrontString
+        ]);
+      }
+    });
+
+    this.backFills.forEach(fill => {
+      if (fill.vertices.length != 0) {
+        let svgBackString = '<path d="';
+        const localMatrix = fill.matrix;
+        fill.vertices.forEach((v: Anchor, index: number) => {
+          var coords = localMatrix.multiply(v.x, v.y, 1);
+          if (index == 0) {
+            svgBackString += "M" + coords[0] + " " + coords[1] + " ";
+          } else {
+            svgBackString += "L" + coords[0] + " " + coords[1] + " ";
+          }
+        });
+        svgBackString += 'Z"/>';
+
+        returnSVGObject.layerSVGArray.push([
+          LAYER.backgroundFills,
+          svgBackString
+        ]);
+      }
+    });
+
+    return [returnSVGObject];
+  }
+
   /**
    * Return the default style state
    */
@@ -1104,7 +1225,7 @@ export default class Polygon extends Nodule {
   stylize(flag: DisplayStyle): void {
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
-        // This should never be executed
+        // This should never be executed there are no temporary polygons
         break;
       }
 
@@ -1114,41 +1235,61 @@ export default class Polygon extends Nodule {
         // FRONT
         const frontStyle = this.styleOptions.get(StyleCategory.Front);
 
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFills.forEach(fill => fill.noFill());
         } else {
-          this.frontGradientColor.color = frontStyle?.fillColor ?? "black";
-          this.frontFills.forEach(fill => {
-            fill.fill = this.frontGradient;
-          });
+          if (Nodule.globalGradientFill) {
+            this.frontGradientColor.color = frontStyle?.fillColor ?? "black";
+            this.frontFills.forEach(fill => {
+              fill.fill = this.frontGradient;
+            });
+          } else {
+            this.frontFills.forEach(fill => {
+              fill.fill = frontStyle?.fillColor ?? "black";
+            });
+          }
         }
 
         // BACK
         const backStyle = this.styleOptions.get(StyleCategory.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontStyle?.fillColor)
             )
           ) {
             this.backFills.forEach(fill => fill.noFill());
           } else {
-            this.backGradientColor.color = Nodule.contrastFillColor(
-              frontStyle?.fillColor ?? "black"
-            );
+            if (Nodule.globalGradientFill) {
+              this.backGradientColor.color = Nodule.contrastFillColor(
+                frontStyle?.fillColor ?? "black"
+              );
 
-            this.backFills.forEach(fill => {
-              fill.fill = this.backGradient;
-            });
+              this.backFills.forEach(fill => {
+                fill.fill = this.backGradient;
+              });
+            } else {
+              this.backFills.forEach(fill => {
+                fill.fill = Nodule.contrastFillColor(
+                  frontStyle?.fillColor ?? "black"
+                );
+              });
+            }
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this.backFills.forEach(fill => fill.noFill());
           } else {
-            this.backGradientColor.color = backStyle?.fillColor ?? "black";
-            this.backFills.forEach(fill => {
-              fill.fill = this.backGradient;
-            });
+            if (Nodule.globalGradientFill) {
+              this.backGradientColor.color = backStyle?.fillColor ?? "black";
+              this.backFills.forEach(fill => {
+                fill.fill = this.backGradient;
+              });
+            } else {
+              this.backFills.forEach(fill => {
+                fill.fill = backStyle?.fillColor ?? "black";
+              });
+            }
           }
         }
         break;

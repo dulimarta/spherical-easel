@@ -1,6 +1,7 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SavedNames } from "@/types";
+import { toSVGType } from "@/types";
 
 export class SetEarthModeCommand extends Command {
   private showing: boolean;

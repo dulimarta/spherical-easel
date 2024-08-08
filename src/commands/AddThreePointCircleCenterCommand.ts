@@ -6,6 +6,7 @@ import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
 import { SEThreePointCircleCenter } from "@/models/SEThreePointCircleCenter";
+import { toSVGType } from "@/types";
 
 export class AddThreePointCircleCenterCommand extends Command {
   private seThreePointCircleCenter: SEThreePointCircleCenter;
@@ -70,6 +71,10 @@ export class AddThreePointCircleCenterCommand extends Command {
     this.thirdSEPoint.unregisterChild(this.seThreePointCircleCenter);
     this.secondSEPoint.unregisterChild(this.seThreePointCircleCenter);
     this.firstSEPoint.unregisterChild(this.seThreePointCircleCenter);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seThreePointCircleCenter, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

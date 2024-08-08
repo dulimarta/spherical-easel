@@ -19,6 +19,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEExpression } from "@/models/SEExpression";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { LAYER } from "@/global-settings";
 import { contains } from "two.js/src/utils/shape";
 // import "@types/google.maps"
 
@@ -445,18 +446,87 @@ export type MinMaxNumber = {
 /**
  * The properties of a plottable object needed when creating icons
  */
+export type toSVGType = {
+  frontGradientDictionary: Map<
+    svgGradientType,
+    string | Map<svgStopType, string>[]
+  > | null; // front gradient gradient dictionary (if any)
+  backGradientDictionary: Map<
+    svgGradientType,
+    string | Map<svgStopType, string>[]
+  > | null; // back gradient gradient dictionary (if any)
+  frontStyleDictionary: Map<svgStyleType, string> | null; // front style dictionary (if any)
+  backStyleDictionary: Map<svgStyleType, string> | null; // back style dictionary (if any)
+  layerSVGArray: Array<[LAYER, string]>; // layer, SVG string array
+  type: plottableType;
+};
+
+export type toSVGReturnType = null | toSVGType;
+
+export type svgArcObject = {
+  startPt: { x: number; y: number };
+  radiiXYWithSpace: string;
+  rotationDegrees: number;
+  displayShort0OrLong1: 0 | 1;
+  displayCCW0OrCW1: 0 | 1;
+  endPt: { x: number; y: number };
+};
+
+export type svgStyleType =
+  | "fill"
+  | "fill-opacity"
+  | "stroke"
+  | "stroke-width"
+  | "stroke-opacity"
+  | "stroke-linecap"
+  | "stroke-linejoin"
+  | "stroke-miterlimit"
+  | "stroke-dasharray"
+  | "stroke-dashoffset"
+  | "font-family"
+  | "font-size"
+  | "line-height"
+  | "text-anchor"
+  | "dominant-baseline"
+  | "font-style"
+  | "font-weight"
+  | "text-decoration"
+  | "direction"
+  | "vector-effect";
+
+export type svgGradientType =
+  | "cx"
+  | "cy"
+  | "fx"
+  | "fy"
+  | "radius"
+  | "gradientUnits"
+  | "spreadMethod"
+  | "r"
+  | "stops";
+
+export type svgStopType = "offset" | "stop-color" | "stop-opacity";
+
 export type plottableType =
   | "boundaryCircle"
   | "point"
   | "line"
+  | "label"
   | "segment"
   | "circle"
-  | "angleMarker"
   | "ellipse"
   | "parametric"
-  | "polygon";
+  | "polygon"
+  | "angleMarkerFill"
+  | "angleMarkerCircle"
+  | "angleMarkerTick"
+  | "angleMarkerDouble"
+  | "angleMarkerEdge"
+  | "angleMarkerArrowHead"
+  | "angleMarker";
 
 export type sides = "front" | "back" | "mid";
+
 export type plottableProperties = {
   type: plottableType;
   side: sides;
@@ -489,13 +559,6 @@ export type SEMeasurable =
   | SEExpression;
 
 export type SEOneDimensionalNotStraight = SECircle | SEEllipse | SEParametric;
-
-export type hslaColorType = {
-  h: number;
-  s: number;
-  l: number;
-  a: number;
-};
 
 /**
  * There are three modes for displaying a value of a measurement.

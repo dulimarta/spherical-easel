@@ -141,9 +141,27 @@ export const SETTINGS = {
       ]
     ],
     selectedColor: {
-      front: "hsla(0, 100%, 50%, 0.5)",
-      back: "hsla(0, 100%, 50%, 0.3)"
-    }
+      front: "#ff000080",
+      back: "#ff00004d"
+    },
+    fill: {
+      // offset for the color fill. At this percent of the radius (boundaryCircle) the fill becomes all the fill color and not a bleed from the center color.
+      gradientPercent: 0.8,
+      // Initially Draw the fills using a gradient or not
+      gradientFill: true,
+      //The location of the light source when shading using a gradient fill (also called the focal point) relative to the center of the boundary circle. This must be in the radius of the gradient fill (which is the boundary circle radius)
+      lightSource: {
+        x: -250 / 3, // 250 is the radius of the boundary circle
+        y: 250 / 3
+      },
+      // The location of the center of the radial fill relative to the center of the boundary circle
+      center: {
+        x:0,
+        y:0
+      },
+      frontWhite: "#e6e6e633", // The light source location on the front is this shade of gray (white)
+      backGray: "#d9d9d933" // The antipode of the light source on the back is this shade of gray
+    },
   },
   zoom: {
     maxMagnification: 10, // The greatest zoom in magnification factor
@@ -159,19 +177,10 @@ export const SETTINGS = {
       pauseTimeToTemporarilyDisableMomentum: 0.25 // if you hold the mousepress this long (in seconds) while dragging the momentum doesn't activate
     }
   },
-  fill: {
-    //The location of the light source when shading
-    lightSource: {
-      x: -250 / 3,
-      y: 250 / 3
-    },
-    frontWhite: "hsla(0, 0%, 90%, 0.2)", // The light source location on the front is this shade of gray (white)
-    backGray: "hsla(0, 0%, 85%, 0.2)" // The antipode of the light source on the back is this shade of gray
-  },
   // #region boundarycircle
   boundaryCircle: {
     radius: 250 /* default radius */,
-    color: "hsla(0, 0%, 0%, 1)",
+    color: "#000000FF",
     lineWidth: 3
   },
   // #endregion boundarycircle
@@ -198,14 +207,12 @@ export const SETTINGS = {
         back: 3 // The default radius of the point drawn on the back,
       },
       fillColor: {
-        front: "hsla(0, 100%, 75%, 1)",
-        frontHSLA: { h: 0, s: 100, l: 75, a: 1 },
-        back: "hsla(0, 100%, 75%, 1)",
-        backHSLA: { h: 0, s: 100, l: 75, a: 1 }
+        front: "#ff8080FF",
+        back: "#ff8080FF",
       },
       strokeColor: {
-        front: "hsla(240, 55%, 55%, 1)",
-        back: "hsla(240, 55%, 75%, 1)"
+        front: "#4d4dcbFF",
+        back: "#9c9ce2ff"
       },
       pointStrokeWidth: { front: 2, back: 2 } // The thickness of the edge of the point when drawn
       // No dashing for points
@@ -214,13 +221,13 @@ export const SETTINGS = {
     glowing: {
       annularWidth: 3, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
       fillColor: {
-        front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.71)"
+        front: "#ff0000ff",
+        back: "#ff8080b5"
       },
       strokeColor: {
         // is this ever used?
-        front: "hsla(0, 100%, 35%, 1)",
-        back: "hsla(0, 100%, 45%, 0.7)"
+        front: "#b30000ff",
+        back: "#e60000b3"
       }
       // No dashing - this is highlighting the object
     },
@@ -228,12 +235,12 @@ export const SETTINGS = {
     temp: {
       // The radius is the same as the default for drawn points
       fillColor: {
-        front: "hsla(0, 0%, 50%, 1)",
-        back: "hsla(0, 0%, 75%, 1)"
+        front: "#808080ff",
+        back: "#bfbfbfff"
       },
       strokeColor: {
-        front: "hsla(0, 0%, 0%, 1)",
-        back: "hsla(0, 0%, 50%, 1)"
+        front: "#000000FF",
+        back: "#808080ff"
       }
       // The temp stroke width is the same as the default drawn stroke width
       // No dashing for points
@@ -241,13 +248,12 @@ export const SETTINGS = {
     nonFree: {
       scalePercent: 90, // The percent that the size of the (free) points are scaled by to get the size of the nonFreePoint
       fillColor: {
-        front: "hsla(0, 50%, 75%, 1)",
-        frontHSLA: { h: 0, s: 50, l: 75, a: 1 },
-        back: "hsla(0, 25%, 75%, 1)"
+        front: "#df9f9fff",
+        back: "#cfafafff"
       },
       strokeColor: {
-        front: "hsla(240, 30%, 55%, 1)",
-        back: "hsla(240, 35%, 75%, 1)"
+        front: "#6a6aafff",
+        back: "#a9a9d6ff"
       },
       pointStrokeWidth: { front: 2, back: 2 } // The thickness of the edge of the point when drawn
       // No dashing for points
@@ -269,8 +275,8 @@ export const SETTINGS = {
     drawn: {
       // No fill for line segments
       strokeColor: {
-        front: "hsla(217, 90%, 61%, 1)",
-        back: "hsla(217, 90%, 80%, 1)"
+        front: "#4287f5ff",
+        back: "#9ec1faff"
       },
       strokeWidth: {
         front: 2.5,
@@ -287,8 +293,8 @@ export const SETTINGS = {
     glowing: {
       // No fill for line segments
       strokeColor: {
-        front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.72)"
+        front: "#ff0000ff",
+        back: "#ff8080b8"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the segment that shows the glow
       // the dashing pattern is copied from the drawn version
@@ -297,8 +303,8 @@ export const SETTINGS = {
     temp: {
       // No fill for line segments
       strokeColor: {
-        front: "hsla(0, 0%, 42%, 1)",
-        back: "hsla(0, 0%, 71%, 1)"
+        front: "#6b6b6bff",
+        back: "#b5b5b5ff"
       }
       // The width is the same as the default drawn version
       // The dashing pattern is copied from the default drawn version
@@ -306,8 +312,8 @@ export const SETTINGS = {
     nonFree: {
       // No fill for lines
       strokeColor: {
-        front: "hsla(200, 90%, 61%, 1)",
-        back: "hsla(200, 90%, 80%, 1)"
+        front: "#42b9f5ff",
+        back: "#9edbfaff"
       },
       // The thickness reduction of the nonFree line when drawn
       scalePercent: 85, // The percent that the size of the (free) lines are scaled by to get the thickness of the nonFreeLine
@@ -334,8 +340,8 @@ export const SETTINGS = {
     drawn: {
       // No fill for lines
       strokeColor: {
-        front: "hsla(217, 90%, 61%, 1)",
-        back: "hsla(217, 90%, 80%, 1)"
+        front: "#4287f5ff",
+        back: "#9ec1faff"
       },
       // The thickness of the line when drawn
       strokeWidth: {
@@ -353,8 +359,8 @@ export const SETTINGS = {
     glowing: {
       // No fill for lines
       strokeColor: {
-        front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.73)"
+        front: "#ff0000ff",
+        back: "#ff8080ba"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the line that shows the glow
       // Dashing is the same as the drawn version
@@ -363,8 +369,8 @@ export const SETTINGS = {
     temp: {
       // No fill for lines
       strokeColor: {
-        front: "hsla(0, 0%, 42%, 1)",
-        back: "hsla(0, 0%, 71%, 1)"
+        front: "#6b6b6bff",
+        back: "#b5b5b5ff"
       }
       // The width is the same as the default drawn version
       // Dashing is the same as the default drawn version
@@ -372,8 +378,8 @@ export const SETTINGS = {
     nonFree: {
       // No fill for lines
       strokeColor: {
-        front: "hsla(200, 90%, 61%, 1)",
-        back: "hsla(200, 90%, 80%, 1)"
+        front: "#42b9f5ff",
+        back: "#9edbfaff"
       },
       // The thickness reduction of the nonFree line when drawn
       scalePercent: 85, // The percent that the size of the (free) lines are scaled by to get the thickness of the nonFreeLine
@@ -399,14 +405,12 @@ export const SETTINGS = {
     //The properties of the circle when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)"
-        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
-        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
-        backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
+        front: "#d8ccff33",
+        back: "#ff2b0026",
       },
       strokeColor: {
-        front: "hsla(217, 90%, 61%, 1)",
-        back: "hsla(217, 90%, 80%, 1)"
+        front: "#4287f5ff",
+        back: "#9ec1faff"
       },
       strokeWidth: {
         // The thickness of the circle when drawn front/back
@@ -424,8 +428,8 @@ export const SETTINGS = {
     glowing: {
       // There is no fill for highlighting objects
       strokeColor: {
-        front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.74)"
+        front: "#ff0000ff",
+        back: "#ff8080bd"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the circle (on each side) that shows the glow
       // The dash pattern will always be the same as the drawn version
@@ -433,26 +437,24 @@ export const SETTINGS = {
     //The properties of the circle when it is temporarily shown by the circle tool while drawing
     temp: {
       fillColor: {
-        front: "hsla(0, 0%, 90%, 0.3)", //"noFill" is "hsla(0,0%,0%,0)",
-        back: "hsla(0, 0%, 50%, 0.3)" //"noFill" is "hsla(0,0%,0%,0)"
+        front: "#e6e6e64d",
+        back: "#8080804d"
       },
       strokeColor: {
-        front: "hsla(0, 0%, 0%, 1.0)",
-        back: "hsla(0, 0%, 0%, 0.1)"
+        front: "#000000FF",
+        back: "#0000001a"
       }
       // The width is the same as the default drawn version
       // The dash pattern will always be the same as the default drawn version
     },
     nonFree: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)"
-        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
-        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
-        backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
+        front: "#d8ccff33",
+        back: "#ff2b001a",
       },
       strokeColor: {
-        front: "hsla(200, 90%, 61%, 1)",
-        back: "hsla(200, 90%, 80%, 1)"
+        front: "#42b9f5ff",
+        back: "#9edbfaff"
       },
       // The thickness reduction of the nonFree circles when drawn
       scalePercent: 85, // The percent that the size of the (free) circles are scaled by to get the thickness of the nonFreeCircle
@@ -478,14 +480,12 @@ export const SETTINGS = {
     //The properties of the ellipse when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)",
-        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
-        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
-        backHSLA: { h: 254, s: 100, l: 50, a: 0.1 }
+        front: "#d8ccff33",
+        back: "#ff2b001a",
       },
       strokeColor: {
-        front: "hsla(217, 90%, 61%, 1)",
-        back: "hsla(217, 90%, 80%, 1)"
+        front: "#4287f5ff",
+        back: "#9ec1faff"
       },
       strokeWidth: {
         // The thickness of the ellipse when drawn front/back
@@ -503,8 +503,8 @@ export const SETTINGS = {
     glowing: {
       // There is no fill for highlighting objects
       strokeColor: {
-        front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.74)"
+        front: "#ff0000ff",
+        back: "#ff8080bd"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the ellipse (on each side) that shows the glow
       // The dash pattern will always be the same as the drawn version
@@ -512,26 +512,24 @@ export const SETTINGS = {
     //The properties of the ellipse when it is temporarily shown by the ellipse tool while drawing
     temp: {
       fillColor: {
-        front: "hsla(0, 0%, 90%, 0.3)", //"noFill" is "hsla(0,0%,0%,0)",
-        back: "hsla(0, 0%, 50%, 0.3)" //"noFill" is "hsla(0,0%,0%,0)"
+        front: "#e6e6e64d",
+        back: "#8080804d"
       },
       strokeColor: {
-        front: "hsla(0, 0%, 0%, 1.0)",
-        back: "hsla(0, 0%, 0%, 0.1)"
+        front: "#000000FF",
+        back: "#0000001a"
       }
       // The width is the same as the default drawn version
       // The dash pattern will always be the same as the default drawn version
     },
     nonFree: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)"
-        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
-        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
-        backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
+        front: "#d8ccff33",
+        back: "#ff2b001a",
       },
       strokeColor: {
-        front: "hsla(200, 90%, 61%, 1)",
-        back: "hsla(200, 90%, 80%, 1)"
+        front: "#42b9f5ff",
+        back: "#9edbfaff"
       },
       // The thickness reduction of the nonFree circles when drawn
       scalePercent: 85, // The percent that the size of the (free) circles are scaled by to get the thickness of the nonFreeCircle
@@ -558,12 +556,12 @@ export const SETTINGS = {
     //The properties of the parametric curve when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)",
-        back: "hsla(10, 100%, 50%, 0.1)" //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
+        front: "#d8ccff33",
+        back: "#ff2b001a"
       },
       strokeColor: {
-        front: "hsla(217, 90%, 61%, 1)",
-        back: "hsla(217, 90%, 80%, 1)"
+        front: "#4287f5ff",
+        back: "#9ec1faff"
       },
       strokeWidth: {
         // The thickness of the parametric curve when drawn front/back
@@ -581,8 +579,8 @@ export const SETTINGS = {
     glowing: {
       // There is no fill for highlighting objects
       strokeColor: {
-        front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.74)"
+        front: "#ff0000ff",
+        back: "#ff8080bd"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the parametric curve (on each side) that shows the glow
       // The dash pattern will always be the same as the drawn version
@@ -590,12 +588,12 @@ export const SETTINGS = {
     //The properties of the parametric curve when it is temporarily shown by the parametric curve tool while drawing
     temp: {
       fillColor: {
-        front: "hsla(0, 0%, 90%, 0.3)", //"noFill" is "hsla(0,0%,0%,0)",
-        back: "hsla(0, 0%, 50%, 0.3)" //"noFill" is "hsla(0,0%,0%,0)"
+        front: "#e6e6e64d",
+        back: "#8080804d"
       },
       strokeColor: {
-        front: "hsla(0, 0%, 0%, 1.0)",
-        back: "hsla(0, 0%, 0%, 0.1)"
+        front: "#000000FF",
+        back: "#0000001a"
       }
       // The width is the same as the default drawn version
       // The dash pattern will always be the same as the default drawn version
@@ -616,10 +614,8 @@ export const SETTINGS = {
     //The properties of the polygon when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.6)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)",
-        frontHSLA: { h: 254, s: 100, l: 90, a: 0.6 },
-        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
-        backHSLA: { h: 10, s: 100, l: 50, a: 0.2 }
+        front: "#d8ccff99",
+        back: "#ff2b001a",
       }
       //  strokeColor is determined by each edge
       // strokeWidth is determined by each edge
@@ -634,19 +630,17 @@ export const SETTINGS = {
     dynamicBackStyle: true,
     fontSize: 15,
     fillColor: {
-      front: "hsla(0, 0%, 0%, 1.0)", //"noFill" is "hsla(0,0%,0%,0)",
-      frontHSLA: { h: 0, s: 0, l: 0, a: 1 },
-      back: "hsla(0, 0%, 0%, 0.1)", //"noFill" is "hsla(0,0%,0%,0)"
-      backHSLA: { h: 0, s: 0, l: 0, a: 1 }
+      front: "#000000FF",
+      back: "#0000001a",
     },
     style: "normal",
-    family: "sans/-serif",
+    family: "sans-serif",
     decoration: "none",
     rotation: 0,
     glowingStrokeWidth: { front: 3, back: 3 },
     glowingStrokeColor: {
-      front: "hsla(0, 0%, 70%, 1)",
-      back: "hsla(0, 0%, 85%, 1)"
+      front: "#b3b3b3ff",
+      back: "#d9d9d9ff"
     }
   },
   angleMarker: {
@@ -682,14 +676,12 @@ export const SETTINGS = {
     //The properties of the angleMarker when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.5)", //"noFill" is "hsla(0,0%,0%,0)",0.001
-        frontHSLA: { h: 254, s: 100, l: 90, a: 0.5 },
-        back: "hsla(10, 100%, 50%, 0.4)", //"hsla(0, 0%, 0%, 1)" //"noFill" is "hsla(0,0%,0%,0)"
-        backHSLA: { h: 10, s: 100, l: 50, a: 0.4 }
+        front: "#d8ccff99",
+        back: "#ff2b0066",
       },
       strokeColor: {
-        front: "hsla(0, 0%, 0%, 1)",
-        back: "hsla(0, 0%, 0%, 0.3)"
+        front: "#00000080",
+        back: "#0000004d"
       },
       strokeWidth: {
         circular: {
@@ -716,8 +708,8 @@ export const SETTINGS = {
     glowing: {
       // There is no fill for highlighting objects
       strokeColor: {
-        front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.75)"
+        front: "#ff0000ff",
+        back: "#ff8080bf"
       },
       circular: { edgeWidth: 5 }, // edgeWidth/2 is the width of the region around the angle (on all sides) that shows the glow
       straight: { edgeWidth: 2 },
@@ -727,193 +719,35 @@ export const SETTINGS = {
     //The properties of the angle marker when it is temporarily shown by the angle measuring tool while drawing
     temp: {
       fillColor: {
-        front: "hsla(340, 0%, 50%, 0.4)", //front: "hsla(0, 0%, 90%, 0.3)", //"noFill" is "hsla(0,0%,0%,0)",
-        back: "hsla(0, 0%, 50%, 0.3)" //"noFill" is "hsla(0,0%,0%,0)"
+        front: "#80808066",
+        back: "#8080804d"
       },
       strokeColor: {
-        front: "hsla(0, 0%, 0%, 0.6)",
-        back: "hsla(0, 0%, 0%, 0.4)"
+        front: "#00000099",
+        back: "#00000066"
       }
       // The width is the same as the default drawn version
       // The dash pattern will always be the same as the default drawn version
     }
   },
   icons: {
-    defaultIconSize: 32,
-    defaultInlineIconSize: 25,
-    boundaryCircle: {
-      strokeWidth: 1.5,
-      color: "hsla(0, 0%, 0%, 1)"
-    },
-    // These are the detail of how the icon parts (points, lines, circles, etc.) are drawn when emphasized
-    emphasize: {
-      angleMarker: {
-        strokeWidth: {
-          front: 2.5,
-          back: 2.5
-        },
-        edgeColor: {
-          front: "hsla(0, 0%, 0%, 1)",
-          back: "hsla(0, 0%, 0%, 0.3)"
-        },
-        fillColor: {
-          front: "hsla(254, 100%, 90%, 1)",
-          back: "hsla(10,100%, 50%, 1)"
-        }
-      },
-      circle: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: { front: "hsla(0, 0%, 0%, 1)", back: "hsla(0, 0%, 0%, 1)" },
-        fillColor: {
-          front: "hsla(0, 100%, 75%, 1)",
-          back: "hsla(0, 100%, 75%, 1)"
-        }
-      },
-      ellipse: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: { front: "hsla(0, 0%, 0%, 1)", back: "hsla(0, 0%, 0%, 1)" },
-        fillColor: {
-          front: "hsla(0, 100%, 75%, 1)",
-          back: "hsla(0, 100%, 75%, 1)"
-        }
-      },
-      point: {
-        strokeWidth: {
-          front: 0.7,
-          back: 0.7
-        },
-        edgeColor: { front: "hsla(0, 0%, 0%, 1)", back: "hsla(0, 0%, 0%, 1)" },
-        fillColor: {
-          front: "hsla(0, 100%, 75%, 1)",
-          back: "hsla(0, 100%, 75%, 1)"
-        }
-      },
-      line: {
-        strokeWidth: {
-          front: 1.5,
-          back: 1.5
-        },
-        edgeColor: {
-          front: "hsla(217, 90%, 61%, 1)",
-          back: "hsla(217, 90%, 80%, 1)"
-        }
-      },
-      segment: {
-        strokeWidth: {
-          front: 1.5,
-          back: 1.5
-        },
-        edgeColor: {
-          front: "hsla(217, 90%, 61%, 1)",
-          back: "hsla(217, 90%, 80%, 1)"
-        }
-      }
-    },
-    // These are the detail of how the icon parts (points, lines, circles, etc.) are drawn when not emphasized
-    normal: {
-      angle: {
-        scale: {
-          front: 7,
-          back: 5
-        },
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: {
-          front: "hsla(0, 0%, 40%, 1)",
-          back: "hsla(0, 0%, 60%, 1)"
-        },
-        fillColor: {
-          front: "hsla(0, 0%, 90%, 0.4)",
-          back: "hsla(0, 0%, 100%, 0.2)"
-        }
-      },
-      circle: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: {
-          front: "hsla(0, 0%, 40%, 1)",
-          back: "hsla(0, 0%, 60%, 1)"
-        },
-        fillColor: {
-          front: "hsla(0, 0%, 90%, 0.4)",
-          back: "hsla(0, 0%, 100%, 0.2)"
-        }
-      },
-      ellipse: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: {
-          front: "hsla(0, 0%, 40%, 1)",
-          back: "hsla(0, 0%, 60%, 1)"
-        },
-        fillColor: {
-          front: "hsla(0, 0%, 90%, 0.4)",
-          back: "hsla(0, 0%, 100%, 0.2)"
-        }
-      },
-      point: {
-        scale: {
-          front: 7,
-          back: 9
-        },
-        strokeWidth: {
-          front: 0.8,
-          back: 0.7
-        },
-        edgeColor: {
-          front: "hsla(0, 0%, 40%, 1)",
-          back: "hsla(0, 0%, 60%, 1)"
-        },
-        fillColor: {
-          front: "hsla(0, 0%, 90%, 1)",
-          back: "hsla(0, 0%, 100%, 1)"
-        }
-      },
-      line: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: {
-          front: "hsla(0, 0%, 40%, 1)",
-          back: "hsla(0, 0%, 60%, 1)"
-        }
-      },
-      segment: {
-        strokeWidth: {
-          front: 1,
-          back: 1
-        },
-        edgeColor: {
-          front: "hsla(0, 0%, 40%, 1)",
-          back: "hsla(0, 0%, 60%, 1)"
-        }
-      }
-    },
+    buttonIconSize: 50, // in pixels for the buttons in the left tool panel ToolButton.vue
+    shortcutIconSize: 45 , // in pixels for the icon inside the ShortcutIcon.vue
+    shortcutButtonSize: 55, // in pixels the size of the button in ShortcutIcon.vue
+    currentToolSectionIconSize: 30,  // icon in the CurrentToolSelection.vue
+
+    defaultInlineIconSize: 25, // controls the size of the markdown icons included in documentation
+
     // These are the properties of the icons (mdiIcon, file path to SVG, emphasize types), These must be stored here and
     // and not in vuetify.ts because these must be accessible to both the src code and VitePress.
     blank: {
       props: {
-        emphasizeTypes: [[]],
         mdiIcon: "mdi-progress-question",
         svgFileName: "iconBlankPaths.svg"
       }
     },
     point: {
       props: {
-        emphasizeTypes: [["point", "front", "back"]],
         mdiIcon: false,
         svgFileName: "iconPointPaths.svg"
       }
@@ -921,108 +755,77 @@ export const SETTINGS = {
     line: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["line", "front", "back"],
-          ["point", "front", "back"]
-        ],
         svgFileName: "iconLinePaths.svg"
       }
     },
     segment: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["segment", "front", "back"],
-          ["point", "front", "back"]
-        ],
         svgFileName: "iconSegmentPaths.svg"
       }
     },
     earthLongitude: {
       props: {
         mdiIcon: "mdi-longitude",
-        emphasizeTypes: [[]] as string[][],
-        filePath: ""
+        svgFileName: ""
       }
     },
     circle: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["circle", "front", "back"],
-          ["point", "front", "back"]
-        ],
         svgFileName: "iconCirclePaths.svg"
       }
     },
     earthLatitude: {
       props: {
         mdiIcon: "mdi-latitude",
-        emphasizeTypes: [[]] as string[][],
-        filePath: ""
+        svgFileName: ""
       }
     },
     antipodalPoint: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [["point", "front"]],
         svgFileName: "iconAntipodalPointPaths.svg"
       }
     },
     earthPoint: {
       props: {
         mdiIcon: "mdi-map-marker",
-        emphasizeTypes: [[]] as string[][],
-        filePath: ""
+        svgFileName: ""
       }
     },
     polar: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["point", "front"],
-          ["line", "front"]
-        ],
         svgFileName: "iconPolarPaths.svg"
       }
     },
     perpendicular: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["point", "front"],
-          ["line", "front", "back"]
-        ],
         svgFileName: "iconPerpendicularPaths.svg"
       }
     },
     tangent: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["point", "front"],
-          ["line", "front", "back"]
-        ],
         svgFileName: "iconTangentPaths.svg"
       }
     },
     intersect: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [["point", "front"]],
         svgFileName: "iconIntersectPaths.svg"
       }
     },
     pointOnObject: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [["point", "front"]],
         svgFileName: "iconPointOnObjectPaths.svg"
       }
     },
     angle: {
       props: {
-        emphasizeTypes: [["angleMarker", "back", "front"]],
         mdiIcon: false,
         svgFileName: "iconAnglePaths.svg"
       }
@@ -1030,481 +833,399 @@ export const SETTINGS = {
     segmentLength: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [["segment", "back", "front"]],
         svgFileName: "iconSegmentLengthPaths.svg"
       }
     },
     pointDistance: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [["point", "front", "back"]],
         svgFileName: "iconPointDistancePaths.svg"
       }
     },
     ellipse: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [["point", "front", "back"]],
         svgFileName: "iconEllipsePaths.svg"
       }
     },
     parametric: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["point", "front"],
-          ["parametric", "front"]
-        ],
         svgFileName: "iconParametricPaths.svg"
       }
     },
     measureTriangle: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["point", "front"],
-          ["angleMarker", "back", "front"]
-        ],
         svgFileName: "iconMeasureTrianglePaths.svg"
       }
     },
     measurePolygon: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["point", "front"],
-          ["angleMarker", "back", "front"]
-        ],
         svgFileName: "iconMeasurePolygonPaths.svg"
       }
     },
     midpoint: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["segment", "front"],
-          ["point", "front"]
-        ],
         svgFileName: "iconMidpointPaths.svg"
       }
     },
     nSectPoint: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["segment", "front"],
-          ["point", "front"]
-        ],
         svgFileName: "iconNSectPointPaths.svg"
       }
     },
     threePointCircle: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [["point", "front"]],
         svgFileName: "iconThreePointCirclePaths.svg"
       }
     },
     measuredCircle: {
       props: {
         mdiIcon: "mdi-swap-horizontal-circle-outline",
-        emphasizeTypes: [["point", "front"]],
-        filePath: ""
+        svgFileName: ""
       }
     },
     angleBisector: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["line", "front", "back"],
-          ["angleMarker", "front"]
-        ],
         svgFileName: "iconAngleBisectorPaths.svg"
       }
     },
     nSectLine: {
       props: {
         mdiIcon: false,
-        emphasizeTypes: [
-          ["line", "front", "back"],
-          ["angleMarker", "front"]
-        ],
         svgFileName: "iconNSectLinePaths.svg"
       }
     },
     coordinate: {
       props: {
         mdiIcon: "mdi-axis-arrow-info",
-        emphasizeTypes: [[]] as string[][],
-        filePath: ""
+        svgFileName: ""
       }
     },
     delete: {
       props: {
         mdiIcon: "mdi-delete",
-        emphasizeTypes: [[]] as string[][],
-        filePath: ""
+        svgFileName: ""
       }
     },
     hide: {
       props: {
         mdiIcon: "mdi-file-hidden",
-        emphasizeTypes: [[]] as string[][],
-        filePath: ""
+        svgFileName: ""
       }
     },
     iconFactory: {
       props: {
-        mdiIcon: "mdi-plus",
-        emphasizeTypes: [[]] as string[][],
-        filePath: ""
+        mdiIcon: false,
+        svgFileName: "iconFactoryPaths.svg"
       }
     },
     move: {
       props: {
         mdiIcon: "mdi-cursor-move",
-        emphasizeTypes: [[]] as string[][],
-        filePath: ""
+        svgFileName: ""
       }
     },
     rotate: {
       props: {
         mdiIcon: "mdi-rotate-3d-variant",
-        emphasizeTypes: [[]] as string[][],
-        filePath: ""
+        svgFileName: ""
       }
     },
     select: {
       props: {
         mdiIcon: "mdi-cursor-pointer",
-        emphasizeTypes: [[]] as string[][],
-        filePath: ""
+        svgFileName: ""
       }
     },
     toggleLabelDisplay: {
       props: {
         mdiIcon: "mdi-toggle-switch-off-outline",
-        emphasizeTypes: [[]] as string[][],
-        filePath: ""
+        svgFileName: ""
       }
     },
     zoomFit: {
       props: {
         mdiIcon: "mdi-magnify-scan",
-        emphasizeTypes: [[]] as string[][],
-        filePath: ""
+        svgFileName: ""
       }
     },
     zoomIn: {
       props: {
         mdiIcon: "mdi-magnify-plus-outline",
-        emphasizeTypes: [[]] as string[][],
-        filePath: ""
+        svgFileName: ""
       }
     },
     zoomOut: {
       props: {
         mdiIcon: "mdi-magnify-minus-outline",
-        emphasizeTypes: [[]] as string[][],
-        filePath: ""
+        svgFileName: ""
       }
     },
     toolsTab: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-tools",
-        filePath: ""
+        svgFileName: ""
       }
     },
     objectsTab: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-format-list-bulleted",
-        filePath: ""
+        svgFileName: ""
       }
     },
     constructionsTab: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-database",
-        filePath: ""
+        svgFileName: ""
       }
     },
     earthTab: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-earth",
-        filePath: ""
+        svgFileName: ""
       }
     },
     calculationObject: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-calculator-variant",
-        filePath: ""
+        svgFileName: ""
       }
     },
     measurementObject: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-math-compass",
-        filePath: ""
+        svgFileName: ""
       }
     },
     slider: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-slide",
-        filePath: ""
+        svgFileName: ""
       }
     },
     labelPopOverTab:{
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-tag-edit",
-        filePath: ""
+        svgFileName: ""
       }
     },
     labelTextEditTab:{
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-pencil",
-        filePath: ""
+        svgFileName: ""
       }
     },
     labelTextFamilyTab:{
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-format-text",
-        filePath: ""
+        svgFileName: ""
       }
     },
     labelColorFamilyTab:{
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-palette",
-        filePath: ""
+        svgFileName: ""
       }
     },
     closePanelRight: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-chevron-double-right",
-        filePath: ""
+        svgFileName: ""
       }
     },
     styleDrawer: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-palette",
-        filePath: ""
+        svgFileName: ""
       }
     },
     downloadConstruction: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-download",
-        filePath: ""
+        svgFileName: ""
       }
     },
     shareConstruction: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-share-variant",
-        filePath: ""
+        svgFileName: ""
       }
     },
     starConstruction: {
-      //new starconstruction button
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-star-outline",
-        filePath: ""
+        svgFileName: ""
       }
     },
     privateConstruction: {
-      //new starconstruction button
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-eye-off",
-        filePath: ""
+        svgFileName: ""
       }
     },
     unstarConstruction: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-star-off-outline",
-        filePath: ""
+        svgFileName: ""
       }
     },
     deleteConstruction: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-trash-can",
-        filePath: ""
+        svgFileName: ""
       }
     },
     cycleNodeValueDisplayMode: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-autorenew", // "mdi-recycle-variant",
-        filePath: ""
+        svgFileName: ""
       }
     },
     showNode: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-eye",
-        filePath: ""
+        svgFileName: ""
       }
     },
     hideNode: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-eye-off",
-        filePath: ""
+        svgFileName: ""
       }
     },
     showNodeLabel: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-label-outline",
-        filePath: ""
+        svgFileName: ""
       }
     },
     hideNodeLabel: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-label-off-outline",
-        filePath: ""
+        svgFileName: ""
       }
     },
     deleteNode: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-trash-can-outline",
-        filePath: ""
+        svgFileName: ""
       }
     },
     appSettings: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-cog",
-        filePath: ""
+        svgFileName: ""
       }
     },
     clearConstruction: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-broom",
-        filePath: ""
+        svgFileName: ""
       }
     },
     undo: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-undo",
-        filePath: ""
+        svgFileName: ""
       }
     },
     redo: {
       props: {
-        emphasizeTypes: [[]] as string[][],
         mdiIcon: "mdi-redo",
-        filePath: ""
+        svgFileName: ""
       }
     },
     copyToClipboard: {
       props: {
-        emphasizeTypes: [[]],
         mdiIcon: "mdi-content-copy",
-        filePath: ""
+        svgFileName: ""
       }
     },
     translation: {
       props: {
         mdiIcon: "mdi-call-made",
-        emphasizeTypes: [[]],
-        filePath: ""
+        svgFileName: ""
       }
     },
     rotation: {
       props: {
         mdiIcon: "mdi-screen-rotation",
-        emphasizeTypes: [[]],
-        filePath: ""
+        svgFileName: ""
       }
     },
     pointReflection: {
       props: {
         mdiIcon: "mdi-ferris-wheel",
-        emphasizeTypes: [[]],
-        filePath: ""
+        svgFileName: ""
       }
     },
     inversion: {
       props: {
         mdiIcon: "mdi-yeast",
-        emphasizeTypes: [[]],
-        filePath: ""
+        svgFileName: ""
       }
     },
     reflection: {
       props: {
         mdiIcon: "mdi-mirror",
-        emphasizeTypes: [[]],
-        filePath: ""
+        svgFileName: ""
       }
     },
     transformedPoint: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        emphasizeTypes: [[]],
-        filePath: ""
+        svgFileName: ""
       }
     },
     transformedCircle: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        emphasizeTypes: [[]],
-        filePath: ""
+        svgFileName: ""
       }
     },
     transformedLine: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        emphasizeTypes: [[]],
-        filePath: ""
+        svgFileName: ""
       }
     },
     transformedSegment: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        emphasizeTypes: [[]],
-        filePath: ""
+        svgFileName: ""
       }
     },
     transformedEllipse: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        emphasizeTypes: [[]],
-        filePath: ""
+        svgFileName: ""
       }
     },
     applyTransformation: {
       props: {
         mdiIcon: "mdi-movie-roll",
-        emphasizeTypes: [[]],
-        filePath: ""
+        svgFileName: ""
       }
     },
     notifications: {
       props: {
         mdiIcon: "mdi-bell",
-        emphasizeTypes: [[]],
-        filePath: ""
+        svgFileName: ""
       }
-    }
+    },
+    animatedSVGLogo: {
+      props: {
+        mdiIcon: false,
+        svgFileName: "LogoAnimatedSmallerV3.svg"
+      }
+    },
   },
   /* Controls the length of time (in ms) the tool tip are displayed */
   /* Set the default tooltip delay in createVuetify() */
@@ -1531,7 +1252,6 @@ export const SETTINGS = {
     maxNumberOfIterationArcLength: 5, // maximum number of times it will iterate over the curve to find the arcLength (i.e. the curve is divided into at most subdivisions*maxNumberOfIterationArcLength subdivisions while looking for the arcLength)
     maxChangeInArcLength: 0.0001 // If the change in arcLength is less than this, return the value
   },
-
   supportedLanguages: [
     { locale: "en", name: "English" },
     { locale: "id", name: "Bahasa Indonesia" }
@@ -1540,21 +1260,21 @@ export const SETTINGS = {
 
 //#region layers
 export enum LAYER {
-  backgroundAngleMarkersGlowing,
-  backgroundAngleMarkers,
   backgroundGlowing,
   backgroundFills,
   background,
+  backgroundAngleMarkersGlowing,
+  backgroundAngleMarkers,
   backgroundPointsGlowing,
   backgroundPoints,
   backgroundTextGlowing,
   backgroundText,
   midground,
-  foregroundAngleMarkersGlowing,
-  foregroundAngleMarkers,
   foregroundGlowing,
   foregroundFills,
   foreground,
+  foregroundAngleMarkersGlowing,
+  foregroundAngleMarkers,
   foregroundPointsGlowing,
   foregroundPoints,
   foregroundTextGlowing,

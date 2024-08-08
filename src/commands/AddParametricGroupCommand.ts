@@ -11,6 +11,7 @@ import { SEParametricGroup } from "@/models/SEParametricGroup";
 // } from "@/types";
 // import { StyleCategory } from "@/types/Styles";
 // import { CommandGroup } from "./CommandGroup";
+import { toSVGType } from "@/types";
 
 export class AddParametricGroupCommand extends Command {
   private group: SEParametricGroup;

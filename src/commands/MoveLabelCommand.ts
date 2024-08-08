@@ -1,6 +1,7 @@
 import { Command } from "./Command";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
+import { toSVGType } from "@/types";
 
 export class MoveLabelCommand extends Command {
   private seLabel: SELabel;

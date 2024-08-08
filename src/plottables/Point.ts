@@ -13,6 +13,7 @@ import {
 import { Vector } from "two.js/src/vector";
 import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
+import { svgStyleType, toSVGType } from "@/types";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -27,7 +28,7 @@ export default class Point extends Nodule {
    * It will always be the case the x and y coordinates of these two vectors are the same.
    * The sign of the z coordinate indicates if the Point is on the back of the sphere
    */
-  public _locationVector = new Vector3(1, 0, 0);
+  private _locationVector = new Vector3(1, 0, 0);
   public defaultScreenVectorLocation = new Vector(1, 0);
 
   /**
@@ -85,20 +86,6 @@ export default class Point extends Nodule {
       SETTINGS.point.drawn.radius.back + SETTINGS.point.glowing.annularWidth
     );
 
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this.frontPoint.id), {
-      type: "point",
-      side: "front",
-      fill: true,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this.backPoint.id), {
-      type: "point",
-      side: "back",
-      fill: true,
-      part: ""
-    });
-
     // Set the location of the points front/back/glowing/drawn
     // The location of all points front/back/glowing/drawn is controlled by the
     //  Group that they are all members of. To translate the group is to translate all points
@@ -108,11 +95,12 @@ export default class Point extends Nodule {
     this.glowingBackPoint.translation = this.defaultScreenVectorLocation;
     this.backPoint.translation = this.defaultScreenVectorLocation;
 
-    // The points are not initially glowing but are visible for the temporary object
-    // this.frontPoint.visible = true;
-    // this.glowingFrontPoint.visible = false;
-    // this.backPoint.visible = true;
-    // this.glowingBackPoint.visible = false;
+    // The points are not visible initially
+    this.frontPoint.visible = false;
+    this.glowingFrontPoint.visible = false;
+    this.backPoint.visible = false;
+    this.glowingBackPoint.visible = false;
+
 
     // Set the properties of the points that never change - stroke width and glowing options
     this.frontPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.front;
@@ -123,6 +111,11 @@ export default class Point extends Nodule {
       SETTINGS.point.drawn.pointStrokeWidth.back;
     this.styleOptions.set(StyleCategory.Front, DEFAULT_POINT_FRONT_STYLE);
     this.styleOptions.set(StyleCategory.Back, DEFAULT_POINT_BACK_STYLE);
+  }
+
+  set positionVectorAndDisplay(idealUnitSphereVectorLocation: Vector3){
+    this.positionVector = idealUnitSphereVectorLocation
+    this.updateDisplay()
   }
 
   /**
@@ -137,7 +130,15 @@ export default class Point extends Nodule {
       this._locationVector.x,
       this._locationVector.y
     );
-    this.updateDisplay();
+    //this.updateDisplay();  //<--- do not do this! disconnect the setting of position with the display, if you leave this in
+    //then this turns on the display of the vertex point of the angle marker in a bad way. It turns on the
+    //     // the display so that the following problem occurs.
+    //     //   1. Create/Measure an angle from three new points
+    //     //   2. Hide the point at the vertex
+    //     //   3. Create an angle bisector
+    //     //   4. Notice that the vertex point appears but is now not selectable (because the this.showing is false, but the
+    //     //    actual display is showing, so it is not found in the Highligher.ts handler subclass )
+    //     // I spent at least 8 hours looking for how this occurs ... :-()
   }
   get positionVector(): Vector3 {
     return this._locationVector;
@@ -184,7 +185,8 @@ export default class Point extends Nodule {
   }
 
   frontNormalDisplay(): void {
-    //console.log("frt normal disp point front id:", this.frontPoint.id);
+    // if (!this.showing){
+    // console.log("Turned point display on when showing is ", this.showing, this._locationVector.toFixed(2),this)}
     this.frontPoint.visible = true;
     this.glowingFrontPoint.visible = false;
     this.backPoint.visible = false;
@@ -221,11 +223,15 @@ export default class Point extends Nodule {
   }
 
   updateDisplay(): void {
+    // console.log("update point display")
     this.normalDisplay();
   }
 
   setVisible(flag: boolean): void {
+    // console.log("Set point visible method")
     if (!flag) {
+      // if (this._locationVector.z>0){
+      // console.log("Turn off point display when showing is ", this.showing,this._locationVector.toFixed(2))}
       this.frontPoint.visible = false;
       this.glowingFrontPoint.visible = false;
       this.backPoint.visible = false;
@@ -250,6 +256,64 @@ export default class Point extends Nodule {
     }
     // apply the new color variables to the object
     this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
+
+  toSVG(nonScaling?: {
+    stroke: boolean;
+    text: boolean;
+    pointRadius: boolean;
+    scaleFactor: number;
+  }): toSVGType[] {
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGObject: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyleDictionary: null,
+      layerSVGArray: [],
+      type: "point"
+    };
+    if (this._locationVector.z > 0) {
+      // the point is on the front
+
+      returnSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({
+        strokeObject: this.frontPoint,
+        fillObject: this.frontPoint,
+        strokeScale: this.frontPoint.scale as number
+      });
+      // Collect the geometric information: radius, center
+      let svgString =
+        '<circle cx="' +
+        String(this.frontPoint.position.x) +
+        '" cy="' +
+        String(this.frontPoint.position.y) +
+        '" r="' +
+        String(
+          nonScaling?.pointRadius
+            ? (this.frontPoint.radius / nonScaling.scaleFactor) *
+                (this.frontPoint.scale as number)
+            : (this.frontPoint.scale as number) * this.frontPoint.radius
+        ) +
+        '" />';
+      returnSVGObject.layerSVGArray.push([LAYER.foregroundPoints, svgString]);
+    } else {
+      // the point is on the back
+      returnSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({
+        strokeObject: this.backPoint,
+        fillObject: this.backPoint
+      });
+      // Collect the geometric information: radius, center
+      let svgString =
+        '<circle cx="' +
+        String(this.backPoint.position.x) +
+        '" cy="' +
+        String(this.backPoint.position.y) +
+        '" r="' +
+        String((this.backPoint.scale as number) * this.backPoint.radius) +
+        '" />';
+      returnSVGObject.layerSVGArray.push([LAYER.backgroundPoints, svgString]);
+    }
+    return [returnSVGObject];
   }
 
   /**
@@ -318,15 +382,12 @@ export default class Point extends Nodule {
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
-    // console.log("before point fill frt: ", this.frontPoint.fill);
-    // console.log("before point glowing fill frt: ", this.glowingFrontPoint.fill);
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
-        // console.log("temp front id ", this.frontPoint.id);
         // Use the SETTINGS temporary options to directly modify the js objects.
         // FRONT
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.point.temp.fillColor.front)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.point.temp.fillColor.front)
         ) {
           this.frontPoint.noFill();
         } else {
@@ -337,7 +398,7 @@ export default class Point extends Nodule {
         // front pointRadiusPercent applied by adjustSize(); (accounts for zoom)
 
         // BACK
-        if (Nodule.hslaIsNoFillOrNoStroke(SETTINGS.point.temp.fillColor.back)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.point.temp.fillColor.back)) {
           this.backPoint.noFill();
         } else {
           this.backPoint.fill = SETTINGS.point.temp.fillColor.back;
@@ -350,19 +411,16 @@ export default class Point extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
-        // console.log("NONtemp front id ", this.frontPoint.id);
         // Use the current variables to directly modify the js objects.
         // FRONT
         const frontStyle = this.styleOptions.get(StyleCategory.Front)!;
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle.fillColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle.fillColor)) {
           this.frontPoint.noFill();
         } else {
-          //console.log("Point Fill color before: ", frontStyle.fillColor);
           this.frontPoint.fill =
             frontStyle.fillColor ?? SETTINGS.point.drawn.fillColor.front;
-          //console.log("Point Fill color after: ", this.frontPoint.fill);
         }
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle.strokeColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle.strokeColor)) {
           this.frontPoint.noStroke();
         } else {
           this.frontPoint.stroke =
@@ -375,7 +433,7 @@ export default class Point extends Nodule {
         const backStyle = this.styleOptions.get(StyleCategory.Back)!;
         if (backStyle.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontStyle.fillColor)
             )
           ) {
@@ -386,7 +444,7 @@ export default class Point extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle.fillColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle.fillColor)) {
             this.backPoint.noFill();
           } else {
             this.backPoint.fill =
@@ -395,7 +453,7 @@ export default class Point extends Nodule {
         }
         if (backStyle.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle.strokeColor)
             )
           ) {
@@ -406,7 +464,7 @@ export default class Point extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle.strokeColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle.strokeColor)) {
             this.backPoint.noStroke();
           } else {
             this.backPoint.stroke =
@@ -417,12 +475,12 @@ export default class Point extends Nodule {
         // pointRadiusPercent applied by adjustSize();
 
         // FRONT Glowing
-        if (Nodule.hslaIsNoFillOrNoStroke(this.glowingFillColorFront)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(this.glowingFillColorFront)) {
           this.glowingFrontPoint.noFill();
         } else {
           this.glowingFrontPoint.fill = this.glowingFillColorFront;
         }
-        if (Nodule.hslaIsNoFillOrNoStroke(this.glowingStrokeColorBack)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(this.glowingStrokeColorBack)) {
           this.glowingFrontPoint.noStroke();
         } else {
           this.glowingFrontPoint.stroke = this.glowingStrokeColorBack;
@@ -432,13 +490,13 @@ export default class Point extends Nodule {
 
         // Back Glowing
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.point.glowing.fillColor.back)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.point.glowing.fillColor.back)
         ) {
           this.glowingBackPoint.noFill();
         } else {
           this.glowingBackPoint.fill = this.glowingFillColorBack;
         }
-        if (Nodule.hslaIsNoFillOrNoStroke(this.glowingStrokeColorBack)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(this.glowingStrokeColorBack)) {
           this.glowingBackPoint.noStroke();
         } else {
           this.glowingBackPoint.stroke = this.glowingStrokeColorBack;
@@ -449,7 +507,5 @@ export default class Point extends Nodule {
         break;
       }
     }
-    // console.log("after point fill frt: ", this.frontPoint.fill);
-    // console.log("after point glowing fill frt: ", this.glowingFrontPoint.fill);
   }
 }

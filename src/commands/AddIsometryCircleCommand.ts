@@ -7,6 +7,7 @@ import { SavedNames, SEIsometry } from "@/types";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SECircle } from "@/models/SECircle";
 import { SEIsometryCircle } from "@/models/SEIsometryCircle";
+import { toSVGType } from "@/types";
 
 export class AddIsometryCircleCommand extends Command {
   private preimageSECircle: SECircle;
@@ -45,6 +46,10 @@ export class AddIsometryCircleCommand extends Command {
     this.isometrySECircle.unregisterChild(this.isometrySECircleLabel);
     this.parentIsometry.unregisterChild(this.isometrySECircle);
     this.preimageSECircle.unregisterChild(this.isometrySECircle);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.isometrySECircle, this.isometrySECircleLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

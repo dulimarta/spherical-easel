@@ -109,7 +109,7 @@ export default class RotationTransformationHandler extends Highlighter {
         // Record the model object as the center of the circle
         this.rotationSEPoint = selected;
         // Move the startMarker to the current selected point
-        this.temporaryRotationPointMarker.positionVector =
+        this.temporaryRotationPointMarker.positionVectorAndDisplay =
           selected.locationVector;
         // Glow the selected point and select it so the highlighter.ts doesn't unglow it with the mouseMoved method
         this.rotationSEPoint.glowing = true;
@@ -123,7 +123,7 @@ export default class RotationTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVector = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
         this.rotationSEPoint = null;
       } else if (this.hitSELines.length > 0) {
         // The center of the rotation will be a point on a line
@@ -134,7 +134,7 @@ export default class RotationTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVector = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
         this.rotationSEPoint = null;
       } else if (this.hitSECircles.length > 0) {
         // The center of the rotation will be a point on a circle
@@ -145,7 +145,7 @@ export default class RotationTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVector = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
         this.rotationSEPoint = null;
       } else if (this.hitSEEllipses.length > 0) {
         // The center of the rotation will be a point on a ellipse
@@ -156,7 +156,7 @@ export default class RotationTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVector = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
         this.rotationSEPoint = null;
       } else if (this.hitSEParametrics.length > 0) {
         // The center of the rotation will be a point on a parametric
@@ -167,7 +167,7 @@ export default class RotationTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVector = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
         this.rotationSEPoint = null;
       } else if (this.hitSEPolygons.length > 0) {
         // The center of the rotation will be a point on a polygon
@@ -178,14 +178,14 @@ export default class RotationTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVector = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
         this.rotationSEPoint = null;
       } else {
         // The mouse press is not near an existing point or one dimensional object.
         //  Eventually, we will create a new SEPoint and Point
 
         // Move the startMarker to the current mouse location
-        this.temporaryRotationPointMarker.positionVector =
+        this.temporaryRotationPointMarker.positionVectorAndDisplay =
           this.currentSphereVector;
         // Record the center vector of the circle so it can be past to the non-temporary circle
         this.rotationVector.copy(this.currentSphereVector);
@@ -261,7 +261,7 @@ export default class RotationTransformationHandler extends Highlighter {
             SEIntersectionPoint &&
           !this.snapTemporaryRotationPointMarkerToPoint.isUserCreated
         ) {
-          this.temporaryRotationPointMarker.positionVector =
+          this.temporaryRotationPointMarker.positionVectorAndDisplay =
             this.snapTemporaryRotationPointMarkerToPoint.locationVector;
         } else {
           this.temporaryRotationPointMarker.removeFromLayers();
@@ -270,12 +270,12 @@ export default class RotationTransformationHandler extends Highlighter {
       }
       // Set the location of the temporary startMarker by snapping to appropriate object (if any)
       if (this.snapTemporaryRotationPointMarkerToOneDimensional !== null) {
-        this.temporaryRotationPointMarker.positionVector =
+        this.temporaryRotationPointMarker.positionVectorAndDisplay =
           this.snapTemporaryRotationPointMarkerToOneDimensional.closestVector(
             this.currentSphereVector
           );
       } else if (this.snapTemporaryRotationPointMarkerToPoint == null) {
-        this.temporaryRotationPointMarker.positionVector =
+        this.temporaryRotationPointMarker.positionVectorAndDisplay =
           this.currentSphereVector;
       }
     }

@@ -11,4 +11,5 @@ interface Number {
    */
   modTwoPi(): number; // Compute the number modulo 2*Pi
   modPi(): number; // Compute the number modulo Pi
+  zeroOut():number; // if the absolute value of the number is near zero, return zero otherwise don't do anything
 }

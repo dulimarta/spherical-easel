@@ -1,5 +1,6 @@
 import { Command } from "./Command";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { toSVGType } from "@/types";
 // import { Labelable } from "@/types";
 // import { SEPoint } from "@/models/SEPoint";
 //import SETTINGS from "@/global-settings";
@@ -67,6 +68,7 @@ export class ConvertIntersectionPointToAntipodalMode extends Command {
     // // set back to automatically created
     // this.seIntersectionPoint.isUserCreated = false;
   }
+
 
   toOpcode(): null | string | Array<string> {
     return null; // Exclude this command from interpretation

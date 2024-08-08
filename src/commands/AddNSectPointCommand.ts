@@ -7,6 +7,7 @@ import { Vector3 } from "three";
 import { SESegment } from "@/models/SESegment";
 import { SENSectPoint } from "@/models/SENSectPoint";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGType } from "@/types";
 
 export class AddNSectPointCommand extends Command {
   private seNSectPoint: SENSectPoint;
@@ -64,6 +65,10 @@ export class AddNSectPointCommand extends Command {
     Command.store.removePoint(this.lastState);
     this.seNSectPoint.unregisterChild(this.seLabel);
     this.parentSegment.unregisterChild(this.seNSectPoint);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seNSectPoint, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

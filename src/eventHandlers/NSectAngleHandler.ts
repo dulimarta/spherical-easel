@@ -14,6 +14,9 @@ import { SEPoint } from "@/models/SEPoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddNSectLineCommand } from "@/commands/AddNSectLineCommand";
 import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
 export default class NSectAngleHandler extends Highlighter {
   private selectedNValue = 2;
@@ -272,6 +275,22 @@ export default class NSectAngleHandler extends Highlighter {
           .isZero()
       );
 
+    // startSEPoint is an existing point (in which case nothing needs to be created)
+    // or an intersection point that need to be converted to isUserCreated
+    if (
+      (startSEPoint instanceof SEIntersectionPoint ||
+        startSEPoint instanceof SEAntipodalPoint) &&
+      !startSEPoint.isUserCreated
+    ) {
+      //Make it user created and turn on the display
+      nSectingLinesCommandGroup.addCommand(
+        new SetPointUserCreatedValueCommand(
+          startSEPoint as SEIntersectionPoint,
+          true
+        )
+      );
+    }
+
     // create the orthonormal frame with the z -axis as startSEPoint.locationVector
     const fromVector = new Vector3();
     fromVector.copy(candidateAngle.startVector);
@@ -321,8 +340,8 @@ export default class NSectAngleHandler extends Highlighter {
           endSEPoint.showing = false; // this never changes
           endSEPoint.exists = true; // this never changes
           endSEPoint.locationVector = endPointVector; // this gets updated
+          console.log("endpoint name", endSEPoint.name)
 
-          // create the plottable line
 
           // Create the model object for the new point and link them
           const nSectingLine = new SENSectLine(
@@ -333,7 +352,7 @@ export default class NSectAngleHandler extends Highlighter {
             i,
             this.selectedNValue
           );
-
+          console.log("endpoint coords", endPointVector.multiplyScalar(SETTINGS.boundaryCircle.radius).toFixed(2))
           // Create plottable for the Label
           const newSELabel2 = new SELabel("line", nSectingLine);
           // Set the initial label location
@@ -376,7 +395,7 @@ export default class NSectAngleHandler extends Highlighter {
                       SETTINGS.point.initialLabelOffset,
                       0
                     )
-                  )
+                  );
 
                 nSectingLinesCommandGroup.addCommand(
                   new AddIntersectionPointCommand(
@@ -402,9 +421,11 @@ export default class NSectAngleHandler extends Highlighter {
       }
     }
     nSectingLinesCommandGroup.execute();
-    nSectingLineArray.forEach(nSectingPoint => {
-      nSectingPoint.markKidsOutOfDate();
-      nSectingPoint.update();
+
+    nSectingLineArray.forEach(nSectingLine => {
+      nSectingLine.markKidsOutOfDate();
+      nSectingLine.update();
     });
+
   }
 }

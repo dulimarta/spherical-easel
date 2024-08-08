@@ -2,6 +2,7 @@ import { Command } from "./Command";
 import { SavedNames, SEOneDimensional } from "@/types";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SENodule } from "@/models/SENodule";
+import { toSVGType } from "@/types";
 
 export class ChangeIntersectionPointPrincipleParent extends Command {
   private oldPrincipleParent: SEOneDimensional;
@@ -64,6 +65,7 @@ export class ChangeIntersectionPointPrincipleParent extends Command {
       );
     }
   }
+
   toOpcode(): null | string | Array<string> {
     return [
       "ChangeIntersectionPointPrinciplePoint",

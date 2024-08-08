@@ -8,6 +8,7 @@ import { Vector3 } from "three";
 import { SENSectLine } from "@/models/SENSectLine";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGType } from "@/types";
 
 export class AddNSectLineCommand extends Command {
   private seNSectLine: SENSectLine;
@@ -34,8 +35,6 @@ export class AddNSectLineCommand extends Command {
     }
     Command.store.addLine(this.seNSectLine);
     Command.store.addLabel(this.seLabel);
-    // this.seNSectLine.markKidsOutOfDate();
-    // this.seNSectLine.update();
   }
 
   saveState(): void {
@@ -47,6 +46,10 @@ export class AddNSectLineCommand extends Command {
     Command.store.removeLine(this.lastState);
     this.seNSectLine.unregisterChild(this.seLabel);
     this.parentAngle.unregisterChild(this.seNSectLine);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seNSectLine, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {
@@ -92,7 +95,6 @@ export class AddNSectLineCommand extends Command {
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
-    // console.log(command);
     const tokens = command.split("&");
     const propMap = new Map<SavedNames, string>();
     // load the tokens into the map

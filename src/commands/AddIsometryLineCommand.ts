@@ -7,6 +7,7 @@ import { SavedNames, SEIsometry } from "@/types";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SELine } from "@/models/SELine";
 import { SEIsometryLine } from "@/models/SEIsometryLine";
+import { toSVGType } from "@/types";
 
 export class AddIsometryLineCommand extends Command {
   private preimageSELine: SELine;
@@ -45,6 +46,10 @@ export class AddIsometryLineCommand extends Command {
     this.isometrySELine.unregisterChild(this.isometrySELineLabel);
     this.parentIsometry.unregisterChild(this.isometrySELine);
     this.preimageSELine.unregisterChild(this.isometrySELine);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.isometrySELine, this.isometrySELineLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

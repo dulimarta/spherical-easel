@@ -15,8 +15,11 @@ import { Anchor } from "two.js/src/anchor";
 import { Path } from "two.js/src/path";
 import { Line } from "two.js/src/shapes/line";
 import { Vector } from "two.js/src/vector";
+import { svgStyleType, toSVGType } from "@/types";
+import EventBus from "@/eventHandlers/EventBus";
 
 const NUMCIRCLEVERTICES = SETTINGS.angleMarker.numCirclePoints;
+const radius = SETTINGS.boundaryCircle.radius;
 
 export default class AngleMarker extends Nodule {
   /**
@@ -48,6 +51,11 @@ export default class AngleMarker extends Nodule {
    * _angleMarkerOnFront controls if the all front or all back parts are displayed
    */
   private _angleMarkerOnFront = true;
+
+  /**
+   * The measure of the angle that the angleMarker measures
+   */
+  private _angleMarkerValue = 0;
 
   /**
    * The radius of the angle marker. This get scaled by angleMarkerRadiusPercent
@@ -87,13 +95,11 @@ export default class AngleMarker extends Nodule {
   private _circleCenter = new Anchor(0, 0); // equal to  (boundary circle radius)* < (Sin[_beta + r] + Sin[_beta - r])/2, 0 >,  and then rotated by Math.atan2(this._vertexVector.y, this._vertexVector.x)). r= this._radius
   private _circleHalfMinorAxis = 0; // equal to (Sin[_beta + r] - Sin[_beta - r])/2 r = this._radius
   private _circleHalfMajorAxis = 0; // // equal to Sqrt[2 - Cos[r]^2]/Sqrt[Cot[r]^2 + 2] r = this._radius
-  private _circleWidth = 0; // equal to Sqrt[2 - Cos[r]^2]/Sqrt[Cot[r]^2 + 2] r = this._radius
 
   //Data for the the double circular arc
   private _doubleCenter = new Anchor(0, 0); // equal to  (boundary circle radius)* < (Sin[_beta + r] + Sin[_beta - r])/2, 0 >,  and then rotated by Math.atan2(this._vertexVector.y, this._vertexVector.x)). r= this._radiusDouble
   private _doubleHalfMinorAxis = 0; // equal to (Sin[_beta + r] - Sin[_beta - r])/2 r = this._radiusDouble
   private _doubleHalfMajorAxis = 0; // // equal to Sqrt[2 - Cos[r]^2]/Sqrt[Cot[r]^2 + 2] r = this._radiusDouble
-  private _doubleWidth = 0; // equal to Sqrt[2 - Cos[r]^2]/Sqrt[Cot[r]^2 + 2] r = this._radiusDouble
 
   /**
    * The TwoJS objects to display the straight front/back parts and their glowing counterparts.
@@ -118,10 +124,10 @@ export default class AngleMarker extends Nodule {
   private _backTick: Line;
   private _glowingFrontTick: Line;
   private _glowingBackTick: Line;
-  private _frontTickDouble: Line;
-  private _backTickDouble: Line;
-  private _glowingFrontTickDouble: Line;
-  private _glowingBackTickDouble: Line;
+  // private _frontTickDouble: Line;
+  // private _backTickDouble: Line;
+  // private _glowingFrontTickDouble: Line;
+  // private _glowingBackTickDouble: Line;
 
   /**
    * The TwoJS object to display the arrow head for beginners.
@@ -260,32 +266,6 @@ export default class AngleMarker extends Nodule {
     this._glowingFrontDouble = new Arc(0, 0, 0, 0, 0, 0, NUMCIRCLEVERTICES);
     this._glowingBackDouble = new Arc(0, 0, 0, 0, 0, 0, NUMCIRCLEVERTICES);
 
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this._frontCircle.id), {
-      type: "angleMarker",
-      side: "front",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._frontDouble.id), {
-      type: "angleMarker",
-      side: "front",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._backCircle.id), {
-      type: "angleMarker",
-      side: "back",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._backDouble.id), {
-      type: "angleMarker",
-      side: "back",
-      fill: false,
-      part: ""
-    });
-
     // Set the styles that never changes -- Fill & Cap
     this._frontCircle.noFill();
     this._frontDouble.noFill();
@@ -315,43 +295,6 @@ export default class AngleMarker extends Nodule {
     this._backStraightEndToVertex = new Line();
     this._glowingFrontStraightEndToVertex = new Line();
     this._glowingBackStraightEndToVertex = new Line();
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(
-      String(this._frontStraightVertexToStart.id),
-      {
-        type: "angleMarker",
-        side: "front",
-        fill: false,
-        part: "edge"
-      }
-    );
-    Nodule.idPlottableDescriptionMap.set(
-      String(this._backStraightVertexToStart.id),
-      {
-        type: "angleMarker",
-        side: "back",
-        fill: false,
-        part: "edge"
-      }
-    );
-    Nodule.idPlottableDescriptionMap.set(
-      String(this._frontStraightEndToVertex.id),
-      {
-        type: "angleMarker",
-        side: "front",
-        fill: false,
-        part: "edge"
-      }
-    );
-    Nodule.idPlottableDescriptionMap.set(
-      String(this._backStraightEndToVertex.id),
-      {
-        type: "angleMarker",
-        side: "back",
-        fill: false,
-        part: "edge"
-      }
-    );
 
     // Set the style that never changes -- Fill & Cap
     this._frontStraightVertexToStart.noFill();
@@ -410,20 +353,6 @@ export default class AngleMarker extends Nodule {
       /* curve */ false
     );
 
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this._frontArrowHeadPath.id), {
-      type: "angleMarker",
-      side: "front",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._backArrowHeadPath.id), {
-      type: "angleMarker",
-      side: "back",
-      fill: false,
-      part: ""
-    });
-
     // Set the style that never changes -- join & glowing fill
     this._frontArrowHeadPath.join = "miter";
     this._backArrowHeadPath.join = "miter";
@@ -455,21 +384,6 @@ export default class AngleMarker extends Nodule {
       /* curve */ false
     );
 
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this._frontFill.id), {
-      type: "angleMarker",
-      side: "front",
-      fill: true,
-      part: ""
-    });
-
-    Nodule.idPlottableDescriptionMap.set(String(this._backFill.id), {
-      type: "angleMarker",
-      side: "back",
-      fill: true,
-      part: ""
-    });
-
     // Set the style that never changes -- stroke
     this._frontFill.noStroke();
     this._backFill.noStroke();
@@ -479,45 +393,30 @@ export default class AngleMarker extends Nodule {
     this._backTick = new Line();
     this._glowingFrontTick = new Line();
     this._glowingBackTick = new Line();
-    this._frontTickDouble = new Line();
-    this._backTickDouble = new Line();
-    this._glowingFrontTickDouble = new Line();
-    this._glowingBackTickDouble = new Line();
+    // this._frontTickDouble = new Line();
+    // this._backTickDouble = new Line();
+    // this._glowingFrontTickDouble = new Line();
+    // this._glowingBackTickDouble = new Line();
 
     // Set the style that never changes -- fill
     this._frontTick.noFill();
     this._backTick.noFill();
-    this._frontTickDouble.noFill();
-    this._backTickDouble.noFill();
+    // this._frontTickDouble.noFill();
+    // this._backTickDouble.noFill();
     this._glowingFrontTick.noFill();
     this._glowingBackTick.noFill();
-    this._glowingFrontTickDouble.noFill();
-    this._glowingBackTickDouble.noFill();
-
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this._frontTick.id), {
-      type: "angleMarker",
-      side: "front",
-      fill: true,
-      part: ""
-    });
-
-    Nodule.idPlottableDescriptionMap.set(String(this._backTick.id), {
-      type: "angleMarker",
-      side: "back",
-      fill: true,
-      part: ""
-    });
+    // this._glowingFrontTickDouble.noFill();
+    // this._glowingBackTickDouble.noFill();
 
     // Set the style that never changes -- cap
     this._frontTick.cap = "square";
     this._backTick.cap = "square";
     this._glowingFrontTick.cap = "square";
     this._glowingBackTick.cap = "square";
-    this._frontTickDouble.cap = "square";
-    this._backTickDouble.cap = "square";
-    this._glowingFrontTickDouble.cap = "square";
-    this._glowingBackTickDouble.cap = "square";
+    // this._frontTickDouble.cap = "square";
+    // this._backTickDouble.cap = "square";
+    // this._glowingFrontTickDouble.cap = "square";
+    // this._glowingBackTickDouble.cap = "square";
 
     this.styleOptions.set(
       StyleCategory.Front,
@@ -582,59 +481,61 @@ export default class AngleMarker extends Nodule {
     ); //DO NOT Rotate the center vector at the same time you set it equal to this._frontPart.position, this causes unexpected results
 
     //Copy the updated information into the glowing/not front/back circle/double parts
-    this._frontCircle.height =
-      2 * this._circleHalfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._frontCircle.width =
-      2 * this._circleHalfMajorAxis * SETTINGS.boundaryCircle.radius;
+    // make sure that the height and width of the projections are not zero
+    const tempHalfMinorAxis =
+      Math.abs(this._circleHalfMinorAxis) < SETTINGS.tolerance
+        ? 0.00001
+        : 2 * radius * this._circleHalfMinorAxis;
+    const tempHalfMajorAxis =
+      Math.abs(this._circleHalfMajorAxis) < SETTINGS.tolerance
+        ? 0.00001
+        : 2 * radius * this._circleHalfMajorAxis;
+    const tempDoubleHalfMinorAxis =
+      Math.abs(this._doubleHalfMinorAxis) < SETTINGS.tolerance
+        ? 0.00001
+        : 2 * radius * this._doubleHalfMinorAxis;
+    const tempDoubleHalfMajorAxis =
+      Math.abs(this._doubleHalfMajorAxis) < SETTINGS.tolerance
+        ? 0.00001
+        : 2 * radius * this._doubleHalfMajorAxis;
+
+    this._frontCircle.height = tempHalfMinorAxis;
+    this._frontCircle.width = tempHalfMajorAxis;
     this._frontCircle.rotation = this._rotation;
     this._frontCircle.position = this._circleCenter;
 
-    this._backCircle.height =
-      2 * this._circleHalfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._backCircle.width =
-      2 * this._circleHalfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._backCircle.height = tempHalfMinorAxis;
+    this._backCircle.width = tempHalfMajorAxis;
     this._backCircle.position = this._circleCenter;
     this._backCircle.rotation = this._rotation;
 
-    this._glowingFrontCircle.height =
-      2 * this._circleHalfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontCircle.width =
-      2 * this._circleHalfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontCircle.height = tempHalfMinorAxis;
+    this._glowingFrontCircle.width = tempHalfMajorAxis;
     this._glowingFrontCircle.position = this._circleCenter;
     this._glowingFrontCircle.rotation = this._rotation;
 
-    this._glowingBackCircle.height =
-      2 * this._circleHalfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._glowingBackCircle.width =
-      2 * this._circleHalfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._glowingBackCircle.height = tempHalfMinorAxis;
+    this._glowingBackCircle.width = tempHalfMajorAxis;
     this._glowingBackCircle.position = this._circleCenter;
     this._glowingBackCircle.rotation = this._rotation;
 
-    this._frontDouble.height =
-      2 * this._doubleHalfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._frontDouble.width =
-      2 * this._doubleHalfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._frontDouble.height = tempDoubleHalfMinorAxis;
+    this._frontDouble.width = tempDoubleHalfMajorAxis;
     this._frontDouble.rotation = this._rotation;
     this._frontDouble.position = this._doubleCenter;
 
-    this._backDouble.height =
-      2 * this._doubleHalfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._backDouble.width =
-      2 * this._doubleHalfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._backDouble.height = tempDoubleHalfMinorAxis;
+    this._backDouble.width = tempDoubleHalfMajorAxis;
     this._backDouble.position = this._doubleCenter;
     this._backDouble.rotation = this._rotation;
 
-    this._glowingFrontDouble.height =
-      2 * this._doubleHalfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontDouble.width =
-      2 * this._doubleHalfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontDouble.height = tempDoubleHalfMinorAxis;
+    this._glowingFrontDouble.width = tempDoubleHalfMajorAxis;
     this._glowingFrontDouble.position = this._doubleCenter;
     this._glowingFrontDouble.rotation = this._rotation;
 
-    this._glowingBackDouble.height =
-      2 * this._doubleHalfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._glowingBackDouble.width =
-      2 * this._doubleHalfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._glowingBackDouble.height = tempDoubleHalfMinorAxis;
+    this._glowingBackDouble.width = tempDoubleHalfMajorAxis;
     this._glowingBackDouble.position = this._doubleCenter;
     this._glowingBackDouble.rotation = this._rotation;
 
@@ -784,64 +685,111 @@ export default class AngleMarker extends Nodule {
     );
 
     // Now set the first vertex of the glowing/not glowing, front/back, not double/double tick marks
-    this._frontTick.vertices[0].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._frontTick.vertices[0].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._frontTickDouble.vertices[0].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._frontTickDouble.vertices[0].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
+    this._frontTick.vertices[0].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._frontTick.vertices[0].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    // this._frontTickDouble.vertices[0].x =
+    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    // this._frontTickDouble.vertices[0].y =
+    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
-    this._backTick.vertices[0].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._backTick.vertices[0].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._backTickDouble.vertices[0].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._backTickDouble.vertices[0].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
+    this._backTick.vertices[0].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._backTick.vertices[0].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    // this._backTickDouble.vertices[0].x =
+    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    // this._backTickDouble.vertices[0].y =
+    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
-    this._glowingFrontTick.vertices[0].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTick.vertices[0].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTickDouble.vertices[0].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTickDouble.vertices[0].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
+    this._glowingFrontTick.vertices[0].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontTick.vertices[0].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    // this._glowingFrontTickDouble.vertices[0].x =
+    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    // this._glowingFrontTickDouble.vertices[0].y =
+    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
-    this._glowingBackTick.vertices[0].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._glowingBackTick.vertices[0].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._glowingBackTickDouble.vertices[0].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._glowingBackTickDouble.vertices[0].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-
-    // Now compute the end of the glowing/not glowing, front/back, not double tick marks
-    this.tmpVector1.set(0, 0, 0);
-    this.tmpVector1.addScaledVector(
-      this.desiredZAxis,
-      Math.cos(this._radius + SETTINGS.angleMarker.defaultTickMarkLength / 2)
-    );
-    this.tmpVector1.addScaledVector(
-      this.tmpVector,
-      Math.sin(this._radius + SETTINGS.angleMarker.defaultTickMarkLength / 2)
-    );
-
-    this._frontTick.vertices[1].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._frontTick.vertices[1].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._backTick.vertices[1].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._backTick.vertices[1].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTick.vertices[1].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTick.vertices[1].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._glowingBackTick.vertices[1].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._glowingBackTick.vertices[1].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
+    this._glowingBackTick.vertices[0].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._glowingBackTick.vertices[0].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    // this._glowingBackTickDouble.vertices[0].x =
+    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    // this._glowingBackTickDouble.vertices[0].y =
+    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
     // Now compute the end of the glowing/not glowing, front/back, not double tick marks
-    this.tmpVector1.set(0, 0, 0);
-    this.tmpVector1.addScaledVector(
-      this.desiredZAxis,
-      Math.cos(this._radiusDouble + this._tickMarkLength / 2)
-    );
-    this.tmpVector1.addScaledVector(
-      this.tmpVector,
-      Math.sin(this._radiusDouble + 3*this._tickMarkLength / 4)
-    );
-    this._frontTickDouble.vertices[1].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._frontTickDouble.vertices[1].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._backTickDouble.vertices[1].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._backTickDouble.vertices[1].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTickDouble.vertices[1].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._glowingFrontTickDouble.vertices[1].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
-    this._glowingBackTickDouble.vertices[1].x = this.tmpVector1.x*SETTINGS.boundaryCircle.radius;
-    this._glowingBackTickDouble.vertices[1].y = this.tmpVector1.y*SETTINGS.boundaryCircle.radius;
+    if (
+      frontStyle?.angleMarkerDoubleArc &&
+      frontStyle.angleMarkerDoubleArc === true
+    ) {
+      this.tmpVector1.set(0, 0, 0);
+      this.tmpVector1.addScaledVector(
+        this.desiredZAxis,
+        Math.cos(this._radiusDouble + this._tickMarkLength / 2)
+      );
+      this.tmpVector1.addScaledVector(
+        this.tmpVector,
+        Math.sin(this._radiusDouble + (3 * this._tickMarkLength) / 4)
+      );
+    } else {
+      this.tmpVector1.set(0, 0, 0);
+      this.tmpVector1.addScaledVector(
+        this.desiredZAxis,
+        Math.cos(this._radius + SETTINGS.angleMarker.defaultTickMarkLength / 2)
+      );
+      this.tmpVector1.addScaledVector(
+        this.tmpVector,
+        Math.sin(this._radius + SETTINGS.angleMarker.defaultTickMarkLength / 2)
+      );
+    }
+
+    this._frontTick.vertices[1].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._frontTick.vertices[1].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    this._backTick.vertices[1].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._backTick.vertices[1].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontTick.vertices[1].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontTick.vertices[1].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    this._glowingBackTick.vertices[1].x =
+      this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    this._glowingBackTick.vertices[1].y =
+      this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+
+    // // Now compute the end of the glowing/not glowing, front/back, not double tick marks
+    // this.tmpVector1.set(0, 0, 0);
+    // this.tmpVector1.addScaledVector(
+    //   this.desiredZAxis,
+    //   Math.cos(this._radiusDouble + this._tickMarkLength / 2)
+    // );
+    // this.tmpVector1.addScaledVector(
+    //   this.tmpVector,
+    //   Math.sin(this._radiusDouble + (3 * this._tickMarkLength) / 4)
+    // );
+    // this._frontTickDouble.vertices[1].x =
+    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    // this._frontTickDouble.vertices[1].y =
+    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    // this._backTickDouble.vertices[1].x =
+    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    // this._backTickDouble.vertices[1].y =
+    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    // this._glowingFrontTickDouble.vertices[1].x =
+    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    // this._glowingFrontTickDouble.vertices[1].y =
+    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
+    // this._glowingBackTickDouble.vertices[1].x =
+    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
+    // this._glowingBackTickDouble.vertices[1].y =
+    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
     // Compute the arrow head vertices.
     // The arrow head is a non-convex non-crossed quadrilateral (almost a kite whose diagonals don't intersect)
@@ -1048,79 +996,77 @@ export default class AngleMarker extends Nodule {
 
     //  Now build the straight edge from vertex to start
 
-    this._frontStraightVertexToStart.vertices[0].x =
-      this.vertexVector.x * SETTINGS.boundaryCircle.radius;
-    this._frontStraightVertexToStart.vertices[0].y =
-      this.vertexVector.y * SETTINGS.boundaryCircle.radius;
-    this._frontStraightVertexToStart.vertices[1].x =
-      this.startVector.x * SETTINGS.boundaryCircle.radius;
-    this._frontStraightVertexToStart.vertices[1].y =
-      this.startVector.y * SETTINGS.boundaryCircle.radius;
+    const vertexX = this.vertexVector.x * SETTINGS.boundaryCircle.radius;
+    const vertexY = this.vertexVector.y * SETTINGS.boundaryCircle.radius;
+    let startX = this.startVector.x * SETTINGS.boundaryCircle.radius;
+    let startY = this.startVector.y * SETTINGS.boundaryCircle.radius;
+    let endX = this.endVector.x * SETTINGS.boundaryCircle.radius;
+    let endY = this.endVector.y * SETTINGS.boundaryCircle.radius;
 
-    this._backStraightVertexToStart.vertices[0].x =
-      this.vertexVector.x * SETTINGS.boundaryCircle.radius;
-    this._backStraightVertexToStart.vertices[0].y =
-      this.vertexVector.y * SETTINGS.boundaryCircle.radius;
-    this._backStraightVertexToStart.vertices[1].x =
-      this.startVector.x * SETTINGS.boundaryCircle.radius;
-    this._backStraightVertexToStart.vertices[1].y =
-      this.startVector.y * SETTINGS.boundaryCircle.radius;
+    // if the double is visible these are a bit longer
+    if (
+      frontStyle?.angleMarkerDoubleArc &&
+      frontStyle.angleMarkerDoubleArc === true
+    ) {
+      const localMatrix = this._frontDouble.matrix;
+      const startCoords = localMatrix.multiply(
+        this._frontDouble.vertices[0].x,
+        this._frontDouble.vertices[0].y,
+        1
+      );
 
-    this._glowingFrontStraightVertexToStart.vertices[0].x =
-      this.vertexVector.x * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontStraightVertexToStart.vertices[0].y =
-      this.vertexVector.y * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontStraightVertexToStart.vertices[1].x =
-      this.startVector.x * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontStraightVertexToStart.vertices[1].y =
-      this.startVector.y * SETTINGS.boundaryCircle.radius;
+      const endCoords = localMatrix.multiply(
+        this._frontDouble.vertices[this._frontDouble.vertices.length - 1].x,
+        this._frontDouble.vertices[this._frontDouble.vertices.length - 1].y,
+        1
+      );
+      startX = startCoords[0]; //* SETTINGS.boundaryCircle.radius;
+      startY = startCoords[1]; //* SETTINGS.boundaryCircle.radius;
+      endX = endCoords[0]; // doubleEnd[0] * SETTINGS.boundaryCircle.radius;
+      endY = endCoords[1]; //doubleEnd[1] * SETTINGS.boundaryCircle.radius;
+    }
 
-    this._glowingBackStraightVertexToStart.vertices[0].x =
-      this.vertexVector.x * SETTINGS.boundaryCircle.radius;
-    this._glowingBackStraightVertexToStart.vertices[0].y =
-      this.vertexVector.y * SETTINGS.boundaryCircle.radius;
-    this._glowingBackStraightVertexToStart.vertices[1].x =
-      this.startVector.x * SETTINGS.boundaryCircle.radius;
-    this._glowingBackStraightVertexToStart.vertices[1].y =
-      this.startVector.y * SETTINGS.boundaryCircle.radius;
+    this._frontStraightVertexToStart.vertices[0].x = vertexX;
+    this._frontStraightVertexToStart.vertices[0].y = vertexY;
+    this._frontStraightVertexToStart.vertices[1].x = startX;
+    this._frontStraightVertexToStart.vertices[1].y = startY;
+
+    this._backStraightVertexToStart.vertices[0].x = vertexX;
+    this._backStraightVertexToStart.vertices[0].y = vertexY;
+    this._backStraightVertexToStart.vertices[1].x = startX;
+    this._backStraightVertexToStart.vertices[1].y = startY;
+
+    this._glowingFrontStraightVertexToStart.vertices[0].x = vertexX;
+    this._glowingFrontStraightVertexToStart.vertices[0].y = vertexY;
+    this._glowingFrontStraightVertexToStart.vertices[1].x = startX;
+    this._glowingFrontStraightVertexToStart.vertices[1].y = startY;
+
+    this._glowingBackStraightVertexToStart.vertices[0].x = vertexX;
+    this._glowingBackStraightVertexToStart.vertices[0].y = vertexY;
+    this._glowingBackStraightVertexToStart.vertices[1].x = startX;
+    this._glowingBackStraightVertexToStart.vertices[1].y = startY;
 
     // //  Now build the straight edge from end to vertex (so that the angle marker is traces vertex -> start -> end -> vertex in order)
 
-    this._frontStraightEndToVertex.vertices[0].x =
-      this.endVector.x * SETTINGS.boundaryCircle.radius;
-    this._frontStraightEndToVertex.vertices[0].y =
-      this.endVector.y * SETTINGS.boundaryCircle.radius;
-    this._frontStraightEndToVertex.vertices[1].x =
-      this.vertexVector.x * SETTINGS.boundaryCircle.radius;
-    this._frontStraightEndToVertex.vertices[1].y =
-      this.vertexVector.y * SETTINGS.boundaryCircle.radius;
+    this._frontStraightEndToVertex.vertices[0].x = endX;
+    this._frontStraightEndToVertex.vertices[0].y = endY;
+    this._frontStraightEndToVertex.vertices[1].x = vertexX;
+    this._frontStraightEndToVertex.vertices[1].y = vertexY;
 
-    this._backStraightEndToVertex.vertices[0].x =
-      this.endVector.x * SETTINGS.boundaryCircle.radius;
-    this._backStraightEndToVertex.vertices[0].y =
-      this.endVector.y * SETTINGS.boundaryCircle.radius;
-    this._backStraightEndToVertex.vertices[1].x =
-      this.vertexVector.x * SETTINGS.boundaryCircle.radius;
-    this._backStraightEndToVertex.vertices[1].y =
-      this.vertexVector.y * SETTINGS.boundaryCircle.radius;
+    this._backStraightEndToVertex.vertices[0].x = endX;
+    this._backStraightEndToVertex.vertices[0].y = endY;
+    this._backStraightEndToVertex.vertices[1].x = vertexX;
+    this._backStraightEndToVertex.vertices[1].y = vertexY;
 
-    this._glowingFrontStraightEndToVertex.vertices[0].x =
-      this.endVector.x * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontStraightEndToVertex.vertices[0].y =
-      this.endVector.y * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontStraightEndToVertex.vertices[1].x =
-      this.vertexVector.x * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontStraightEndToVertex.vertices[1].y =
-      this.vertexVector.y * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontStraightEndToVertex.vertices[0].x = endX;
+    this._glowingFrontStraightEndToVertex.vertices[0].y = endY;
+    this._glowingFrontStraightEndToVertex.vertices[1].x = vertexX;
+    this._glowingFrontStraightEndToVertex.vertices[1].y = vertexY;
 
-    this._glowingBackStraightEndToVertex.vertices[0].x =
-      this.endVector.x * SETTINGS.boundaryCircle.radius;
-    this._glowingBackStraightEndToVertex.vertices[0].y =
-      this.endVector.y * SETTINGS.boundaryCircle.radius;
-    this._glowingBackStraightEndToVertex.vertices[1].x =
-      this.vertexVector.x * SETTINGS.boundaryCircle.radius;
-    this._glowingBackStraightEndToVertex.vertices[1].y =
-      this.vertexVector.y * SETTINGS.boundaryCircle.radius;
+    this._glowingBackStraightEndToVertex.vertices[0].x = endX;
+    this._glowingBackStraightEndToVertex.vertices[0].y = endY;
+    this._glowingBackStraightEndToVertex.vertices[1].x = vertexX;
+    this._glowingBackStraightEndToVertex.vertices[1].y = vertexY;
 
     //Now build the front/back fill objects based on the front/back straight and circular parts
     // get the local matrix for the frontCircle vertices
@@ -1173,6 +1119,9 @@ export default class AngleMarker extends Nodule {
     return this._radius;
   }
 
+  set angleMarkerValue(value: number) {
+    this._angleMarkerValue = value;
+  }
   /**
    * Use this method to set the display of the angle marker using three vectors. The angle from vertex to start is *not* necessary the
    * the same as the angle form vertex to end. This method sets the _vertex, _start, _end vectors (all non-zero and unit) so that
@@ -1258,16 +1207,16 @@ export default class AngleMarker extends Nodule {
       frontStyle?.angleMarkerTickMark &&
       frontStyle.angleMarkerTickMark === true
     ) {
-      if (
-        frontStyle?.angleMarkerDoubleArc &&
-        frontStyle.angleMarkerDoubleArc === true
-      ) {
-        this._frontTickDouble.visible = true;
-        this._glowingFrontTickDouble.visible = true;
-      } else {
-        this._frontTick.visible = true;
-        this._glowingFrontTick.visible = true;
-      }
+      // if (
+      //   frontStyle?.angleMarkerDoubleArc &&
+      //   frontStyle.angleMarkerDoubleArc === true
+      // ) {
+      //   this._frontTickDouble.visible = true;
+      //   this._glowingFrontTickDouble.visible = true;
+      // } else {
+      this._frontTick.visible = true;
+      this._glowingFrontTick.visible = true;
+      // }
     }
   }
   backGlowingDisplay(): void {
@@ -1305,16 +1254,16 @@ export default class AngleMarker extends Nodule {
       frontStyle?.angleMarkerTickMark &&
       frontStyle.angleMarkerTickMark === true
     ) {
-      if (
-        frontStyle?.angleMarkerDoubleArc &&
-        frontStyle.angleMarkerDoubleArc === true
-      ) {
-        this._backTickDouble.visible = true;
-        this._glowingBackTickDouble.visible = true;
-      } else {
-        this._backTick.visible = true;
-        this._glowingBackTick.visible = true;
-      }
+      // if (
+      //   frontStyle?.angleMarkerDoubleArc &&
+      //   frontStyle.angleMarkerDoubleArc === true
+      // ) {
+      //   this._backTickDouble.visible = true;
+      //   this._glowingBackTickDouble.visible = true;
+      // } else {
+      this._backTick.visible = true;
+      this._glowingBackTick.visible = true;
+      // }
     }
   }
   glowingDisplay(): void {
@@ -1350,14 +1299,14 @@ export default class AngleMarker extends Nodule {
       frontStyle?.angleMarkerTickMark &&
       frontStyle.angleMarkerTickMark === true
     ) {
-      if (
-        frontStyle?.angleMarkerDoubleArc &&
-        frontStyle.angleMarkerDoubleArc === true
-      ) {
-        this._frontTickDouble.visible = true;
-      } else {
-        this._frontTick.visible = true;
-      }
+      // if (
+      //   frontStyle?.angleMarkerDoubleArc &&
+      //   frontStyle.angleMarkerDoubleArc === true
+      // ) {
+      //   this._frontTickDouble.visible = true;
+      // } else {
+      this._frontTick.visible = true;
+      // }
     }
   }
   backNormalDisplay(): void {
@@ -1391,14 +1340,14 @@ export default class AngleMarker extends Nodule {
       frontStyle?.angleMarkerTickMark &&
       frontStyle.angleMarkerTickMark === true
     ) {
-      if (
-        frontStyle?.angleMarkerDoubleArc &&
-        frontStyle.angleMarkerDoubleArc === true
-      ) {
-        this._backTickDouble.visible = true;
-      } else {
-        this._backTick.visible = true;
-      }
+      // if (
+      //   frontStyle?.angleMarkerDoubleArc &&
+      //   frontStyle.angleMarkerDoubleArc === true
+      // ) {
+      //   this._backTickDouble.visible = true;
+      // } else {
+      this._backTick.visible = true;
+      // }
     }
   }
   normalDisplay(): void {
@@ -1432,8 +1381,8 @@ export default class AngleMarker extends Nodule {
       this._frontTick.visible = false;
       this._glowingFrontTick.visible = false;
 
-      this._frontTickDouble.visible = false;
-      this._glowingFrontTickDouble.visible = false;
+      // this._frontTickDouble.visible = false;
+      // this._glowingFrontTickDouble.visible = false;
 
       //back
       this._backStraightVertexToStart.visible = false;
@@ -1457,8 +1406,8 @@ export default class AngleMarker extends Nodule {
       this._backTick.visible = false;
       this._glowingBackTick.visible = false;
 
-      this._backTickDouble.visible = false;
-      this._glowingBackTickDouble.visible = false;
+      // this._backTickDouble.visible = false;
+      // this._glowingBackTickDouble.visible = false;
     } else {
       this.normalDisplay();
     }
@@ -1513,10 +1462,10 @@ export default class AngleMarker extends Nodule {
     this._frontTick.addTo(layers[LAYER.foregroundAngleMarkers]);
     this._glowingFrontTick.addTo(layers[LAYER.foregroundAngleMarkersGlowing]);
 
-    this._frontTickDouble.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this._glowingFrontTickDouble.addTo(
-      layers[LAYER.foregroundAngleMarkersGlowing]
-    );
+    // this._frontTickDouble.addTo(layers[LAYER.foregroundAngleMarkers]);
+    // this._glowingFrontTickDouble.addTo(
+    //   layers[LAYER.foregroundAngleMarkersGlowing]
+    // );
 
     // back
     this._backFill.addTo(layers[LAYER.backgroundAngleMarkers]);
@@ -1547,10 +1496,10 @@ export default class AngleMarker extends Nodule {
     this._backTick.addTo(layers[LAYER.backgroundAngleMarkers]);
     this._glowingBackTick.addTo(layers[LAYER.backgroundAngleMarkersGlowing]);
 
-    this._backTickDouble.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this._glowingBackTickDouble.addTo(
-      layers[LAYER.backgroundAngleMarkersGlowing]
-    );
+    // this._backTickDouble.addTo(layers[LAYER.backgroundAngleMarkers]);
+    // this._glowingBackTickDouble.addTo(
+    //   layers[LAYER.backgroundAngleMarkersGlowing]
+    // );
   }
 
   removeFromLayers(): void {
@@ -1577,8 +1526,8 @@ export default class AngleMarker extends Nodule {
     this._frontTick.remove();
     this._glowingFrontTick.remove();
 
-    this._frontTickDouble.remove();
-    this._glowingFrontTickDouble.remove();
+    // this._frontTickDouble.remove();
+    // this._glowingFrontTickDouble.remove();
 
     //back
     this._backStraightVertexToStart.remove();
@@ -1602,8 +1551,442 @@ export default class AngleMarker extends Nodule {
     this._backTick.remove();
     this._glowingBackTick.remove();
 
-    this._backTickDouble.remove();
-    this._glowingBackTickDouble.remove();
+    // this._backTickDouble.remove();
+    // this._glowingBackTickDouble.remove();
+  }
+
+  toSVG(
+    nonScaling?: {
+      stroke: boolean;
+      text: boolean;
+      pointRadius: boolean;
+      scaleFactor: number;
+    },
+    svgForIcon?: boolean
+  ): toSVGType[] {
+    // Create an empty return type and then fill in the non-null parts
+    // Always return angleMarkerCircle, angleMarkerFill, angleMarkerEdge
+    // If user selected return: angleMarkerDouble (no fill, edge only), angleMarkerTick, angleMarkerArrowHead
+
+    // first check if this is an export for icon. If so make the angle marker much larger. Record the radius and double radius for resetting the marker after export
+    const radius = this._radius;
+    const doubleRadius = this._radiusDouble;
+    if (svgForIcon) {
+      console.log("angle marker", radius, doubleRadius);
+      const sizeIncreaseFactor = 8; // 8 is too big for angles bigger than 180
+      this._radius = this._radius * sizeIncreaseFactor;
+      this._radiusDouble = this._radiusDouble * sizeIncreaseFactor;
+
+      // recompute the three vectors that determine the angle marker with the new angle marker radius
+      this.setAngleMarkerFromThreeVectors(
+        this._startVector,
+        this._vertexVector,
+        this._endVector,
+        this._radius
+      );
+      this.updateDisplay();
+
+      // function sleep(ms: number) {
+      //   let start = new Date().getTime();
+      //   for (let i = 0; i < 1e7; i++) {
+      //     if (new Date().getTime() - start > ms) {
+      //       break;
+      //     }
+      //   }
+      // }
+      // sleep(2000);
+      EventBus.fire("update-two-instance", {});
+
+    }
+    ////////////////////////////////////////////////Circle Edge Object//////////////////////////////////////
+    // Create the always return objects
+    const angleMarkerCircleSVGObject: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyleDictionary: null,
+      layerSVGArray: [],
+      type: "angleMarkerCircle"
+    };
+
+    if (this._angleMarkerOnFront) {
+      angleMarkerCircleSVGObject.frontStyleDictionary =
+        Nodule.createSVGStyleDictionary({ strokeObject: this._frontCircle });
+    } else {
+      angleMarkerCircleSVGObject.backStyleDictionary =
+        Nodule.createSVGStyleDictionary({ strokeObject: this._backCircle });
+    }
+
+    // now collect the geometric information for this part
+
+    // set the flag for which part of the ellipse to draw
+    let displayFlagsCircle = "";
+    if (this._angleMarkerOnFront) {
+      displayFlagsCircle = this._angleMarkerValue > Math.PI ? "1 1 " : "0 1 ";
+    } else {
+      displayFlagsCircle = this._angleMarkerValue > Math.PI ? "1 0 " : "0 0 ";
+    }
+    let amCircleSVGString =
+      "<path " +
+      Nodule.svgTransformMatrixString(
+        this._frontCircle.rotation,
+        1,
+        this._frontCircle.position.x,
+        this._frontCircle.position.y
+      );
+    amCircleSVGString +=
+      'd="M ' +
+      this._frontCircle.vertices[0].x +
+      " " +
+      this._frontCircle.vertices[0].y +
+      " "; // move to the start of the circle
+    amCircleSVGString +=
+      "A" +
+      Math.abs(this._circleHalfMajorAxis) * SETTINGS.boundaryCircle.radius +
+      "," +
+      Math.abs(this._circleHalfMinorAxis) * SETTINGS.boundaryCircle.radius +
+      " ";
+    amCircleSVGString += "0 "; // the rotation of the ellipse
+    amCircleSVGString += displayFlagsCircle; // flag to control which part of the ellipse is drawn
+    amCircleSVGString +=
+      this._frontCircle.vertices[this._frontCircle.vertices.length - 1].x +
+      "," +
+      this._frontCircle.vertices[this._frontCircle.vertices.length - 1].y +
+      '"/>'; // The ellipse part is done
+
+    if (this._angleMarkerOnFront) {
+      angleMarkerCircleSVGObject.layerSVGArray.push([
+        LAYER.foregroundAngleMarkers,
+        amCircleSVGString
+      ]);
+    } else {
+      angleMarkerCircleSVGObject.layerSVGArray.push([
+        LAYER.backgroundAngleMarkers,
+        amCircleSVGString
+      ]);
+    }
+    ////////////////////////////////////////////////Fill Object//////////////////////////////////////
+    // Create the always return objects
+    const angleMarkerFillSVGObject: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyleDictionary: null,
+      layerSVGArray: [],
+      type: "angleMarkerFill"
+    };
+
+    if (this._angleMarkerOnFront) {
+      angleMarkerFillSVGObject.frontStyleDictionary =
+        Nodule.createSVGStyleDictionary({ fillObject: this._frontFill });
+    } else {
+      angleMarkerFillSVGObject.backStyleDictionary =
+        Nodule.createSVGStyleDictionary({ fillObject: this._backFill });
+    }
+    // now collect the geometric information for this part
+
+    // set the flag for which part of the ellipse to draw
+    let displayFlags = "";
+    if (this._angleMarkerOnFront) {
+      displayFlags = this._angleMarkerValue > Math.PI ? "1 1 " : "0 1 ";
+    } else {
+      displayFlags = this._angleMarkerValue > Math.PI ? "1 0 " : "0 0 ";
+    }
+    let amSVGString =
+      "<path " +
+      Nodule.svgTransformMatrixString(
+        this._frontCircle.rotation,
+        1,
+        this._frontCircle.position.x,
+        this._frontCircle.position.y
+      );
+    amSVGString +=
+      'd="M ' + this._vertexVector.x + " " + this._vertexVector.y + " "; // move to the vertex
+    amSVGString +=
+      "L " +
+      this._frontCircle.vertices[0].x +
+      " " +
+      this._frontCircle.vertices[0].y +
+      " "; // move to the start of the ellipse
+    amSVGString +=
+      "A" +
+      Math.abs(this._circleHalfMajorAxis) * SETTINGS.boundaryCircle.radius +
+      "," +
+      Math.abs(this._circleHalfMinorAxis) * SETTINGS.boundaryCircle.radius +
+      " ";
+    amSVGString += "0 "; // the rotation of the ellipse
+    amSVGString += displayFlags; // flag to control which part of the ellipse is drawn
+    amSVGString +=
+      this._frontCircle.vertices[this._frontCircle.vertices.length - 1].x +
+      "," +
+      this._frontCircle.vertices[this._frontCircle.vertices.length - 1].y +
+      "  "; // The ellipse part is done
+    amSVGString +=
+      "L " + this._vertexVector.x + " " + this._vertexVector.y + '"/>'; // move back to the vertex
+
+    if (this._angleMarkerOnFront) {
+      angleMarkerFillSVGObject.layerSVGArray.push([
+        LAYER.foregroundAngleMarkersGlowing,
+        amSVGString
+      ]);
+    } else {
+      angleMarkerFillSVGObject.layerSVGArray.push([
+        LAYER.backgroundAngleMarkersGlowing,
+        amSVGString
+      ]);
+    }
+
+    // form the return object array
+    const returnSVGObjects: toSVGType[] = [
+      angleMarkerCircleSVGObject,
+      angleMarkerFillSVGObject
+    ];
+    ////////////////////////////////////////////////Straight Edge Object//////////////////////////////////////
+    if (!svgForIcon) {
+      const angleMarkerEdgeSVGObject: toSVGType = {
+        frontGradientDictionary: null,
+        backGradientDictionary: null,
+        frontStyleDictionary: null,
+        backStyleDictionary: null,
+        layerSVGArray: [],
+        type: "angleMarkerEdge"
+      };
+
+      if (this._angleMarkerOnFront) {
+        angleMarkerEdgeSVGObject.frontStyleDictionary =
+          Nodule.createSVGStyleDictionary({
+            strokeObject: this._frontStraightEndToVertex
+          });
+      } else {
+        angleMarkerEdgeSVGObject.backStyleDictionary =
+          Nodule.createSVGStyleDictionary({
+            strokeObject: this._backStraightEndToVertex
+          });
+      }
+
+      // now collect the geometric information for this part
+      let amEdgeSVGString =
+        '<polyline points="' +
+        this._frontStraightEndToVertex.vertices[0].x +
+        " " +
+        this._frontStraightEndToVertex.vertices[0].y +
+        ", " +
+        this._frontStraightEndToVertex.vertices[1].x +
+        " " +
+        this._frontStraightEndToVertex.vertices[1].y +
+        ", " +
+        this._frontStraightVertexToStart.vertices[1].x +
+        " " +
+        this._frontStraightVertexToStart.vertices[1].y +
+        '"/>';
+      if (this._angleMarkerOnFront) {
+        angleMarkerEdgeSVGObject.layerSVGArray.push([
+          LAYER.foregroundAngleMarkers,
+          amEdgeSVGString
+        ]);
+      } else {
+        angleMarkerEdgeSVGObject.layerSVGArray.push([
+          LAYER.backgroundAngleMarkers,
+          amEdgeSVGString
+        ]);
+      }
+      returnSVGObjects.push(angleMarkerEdgeSVGObject);
+    }
+
+    // Now add the optional returned objects
+    ////////////////////////////////////////////////Double Object//////////////////////////////////////
+    if (this._frontDouble.visible || this._backDouble.visible) {
+      const angleMarkerDoubleSVGObject: toSVGType = {
+        frontGradientDictionary: null,
+        backGradientDictionary: null,
+        frontStyleDictionary: null,
+        backStyleDictionary: null,
+        layerSVGArray: [],
+        type: "angleMarkerDouble"
+      };
+
+      if (this._angleMarkerOnFront) {
+        angleMarkerDoubleSVGObject.frontStyleDictionary =
+          Nodule.createSVGStyleDictionary({ strokeObject: this._frontDouble });
+      } else {
+        angleMarkerDoubleSVGObject.backStyleDictionary =
+          Nodule.createSVGStyleDictionary({ strokeObject: this._backDouble });
+      }
+
+      // now collect the geometric information for this part
+
+      // set the flag for which part of the ellipse to draw
+      let displayFlagsCircle = "";
+      if (this._angleMarkerOnFront) {
+        displayFlagsCircle = this._angleMarkerValue > Math.PI ? "1 1 " : "0 1 ";
+      } else {
+        displayFlagsCircle = this._angleMarkerValue > Math.PI ? "1 0 " : "0 0 ";
+      }
+      let amDoubleSVGString =
+        "<path " +
+        Nodule.svgTransformMatrixString(
+          this._frontDouble.rotation,
+          1,
+          this._frontDouble.position.x,
+          this._frontDouble.position.y
+        );
+      amDoubleSVGString +=
+        'd="M ' +
+        this._frontDouble.vertices[0].x +
+        " " +
+        this._frontDouble.vertices[0].y +
+        " "; // move to the start of the circle
+      amDoubleSVGString +=
+        "A" +
+        Math.abs(this._doubleHalfMajorAxis) * SETTINGS.boundaryCircle.radius +
+        "," +
+        Math.abs(this._doubleHalfMinorAxis) * SETTINGS.boundaryCircle.radius +
+        " ";
+      amDoubleSVGString += "0 "; // the rotation of the ellipse
+      amDoubleSVGString += displayFlagsCircle; // flag to control which part of the ellipse is drawn
+      amDoubleSVGString +=
+        this._frontDouble.vertices[this._frontDouble.vertices.length - 1].x +
+        "," +
+        this._frontDouble.vertices[this._frontDouble.vertices.length - 1].y +
+        '"/>'; // The ellipse part is done
+
+      if (this._angleMarkerOnFront) {
+        angleMarkerDoubleSVGObject.layerSVGArray.push([
+          LAYER.foregroundAngleMarkers,
+          amDoubleSVGString
+        ]);
+      } else {
+        angleMarkerDoubleSVGObject.layerSVGArray.push([
+          LAYER.backgroundAngleMarkers,
+          amDoubleSVGString
+        ]);
+      }
+
+      returnSVGObjects.push(angleMarkerDoubleSVGObject);
+    }
+    ////////////////////////////////////////////////Arrow Head Object//////////////////////////////////////
+    if (this._frontArrowHeadPath.visible || this._backArrowHeadPath.visible) {
+      const angleMarkerArrowHeadSVGObject: toSVGType = {
+        frontGradientDictionary: null,
+        backGradientDictionary: null,
+        frontStyleDictionary: null,
+        backStyleDictionary: null,
+        layerSVGArray: [],
+        type: "angleMarkerArrowHead"
+      };
+      if (this._angleMarkerOnFront) {
+        angleMarkerArrowHeadSVGObject.frontStyleDictionary =
+          Nodule.createSVGStyleDictionary({
+            strokeObject: this._frontArrowHeadPath
+          });
+      } else {
+        angleMarkerArrowHeadSVGObject.backStyleDictionary =
+          Nodule.createSVGStyleDictionary({
+            strokeObject: this._backArrowHeadPath
+          });
+      }
+      const amArrowHeadStyleDictionary = new Map<svgStyleType, string>();
+
+      // now collect the geometric information for this part
+      let amArrowHeadSVGString =
+        '<polyline points="' +
+        this._frontArrowHeadPath.vertices[0].x +
+        " " +
+        this._frontArrowHeadPath.vertices[0].y +
+        ", " +
+        this._frontArrowHeadPath.vertices[1].x +
+        " " +
+        this._frontArrowHeadPath.vertices[1].y +
+        ", " +
+        this._frontArrowHeadPath.vertices[2].x +
+        " " +
+        this._frontArrowHeadPath.vertices[2].y +
+        "," +
+        this._frontArrowHeadPath.vertices[3].x +
+        " " +
+        this._frontArrowHeadPath.vertices[3].y +
+        "," + // no close the arrow head path
+        this._frontArrowHeadPath.vertices[0].x +
+        " " +
+        this._frontArrowHeadPath.vertices[0].y +
+        '"/>';
+      if (this._angleMarkerOnFront) {
+        angleMarkerArrowHeadSVGObject.layerSVGArray.push([
+          LAYER.foregroundAngleMarkers,
+          amArrowHeadSVGString
+        ]);
+      } else {
+        angleMarkerArrowHeadSVGObject.layerSVGArray.push([
+          LAYER.backgroundAngleMarkers,
+          amArrowHeadSVGString
+        ]);
+      }
+
+      returnSVGObjects.push(angleMarkerArrowHeadSVGObject);
+    }
+
+    ////////////////////////////////////////////////Tick Object//////////////////////////////////////
+    if (this._frontTick.visible || this._backTick.visible) {
+      const angleMarkerTickSVGObject: toSVGType = {
+        frontGradientDictionary: null,
+        backGradientDictionary: null,
+        frontStyleDictionary: null,
+        backStyleDictionary: null,
+        layerSVGArray: [],
+        type: "angleMarkerTick"
+      };
+
+      if (this._angleMarkerOnFront) {
+        angleMarkerTickSVGObject.frontStyleDictionary =
+          Nodule.createSVGStyleDictionary({ strokeObject: this._frontTick });
+      } else {
+        angleMarkerTickSVGObject.backStyleDictionary =
+          Nodule.createSVGStyleDictionary({ strokeObject: this._backTick });
+      }
+
+      // now collect the geometric information for this part
+      let amTickSVGString =
+        '<polyline points="' +
+        this._frontTick.vertices[0].x +
+        " " +
+        this._frontTick.vertices[0].y +
+        ", " +
+        this._frontTick.vertices[1].x +
+        " " +
+        this._frontTick.vertices[1].y +
+        '"/>';
+      if (this._angleMarkerOnFront) {
+        angleMarkerTickSVGObject.layerSVGArray.push([
+          LAYER.foregroundAngleMarkers,
+          amTickSVGString
+        ]);
+      } else {
+        angleMarkerTickSVGObject.layerSVGArray.push([
+          LAYER.backgroundAngleMarkers,
+          amTickSVGString
+        ]);
+      }
+
+      returnSVGObjects.push(angleMarkerTickSVGObject);
+    }
+
+    // final return the display back to normal if export was for icon
+    if (svgForIcon) {
+      this._radius = radius;
+      this._radiusDouble = doubleRadius;
+
+      // recompute the three vectors that determine the angle marker with the new angle marker radius
+      this.setAngleMarkerFromThreeVectors(
+        this._startVector,
+        this._vertexVector,
+        this._endVector,
+        this._radius
+      );
+      // finally update the display
+      this.updateDisplay();
+      EventBus.fire("update-two-instance",{})
+    }
+    return returnSVGObjects;
   }
 
   /**
@@ -1693,13 +2076,13 @@ export default class AngleMarker extends Nodule {
         frontStrokeWidthPercent) /
       100;
 
-    this._frontTickDouble.linewidth =
-      (AngleMarker.currentTickStrokeWidthFront * frontStrokeWidthPercent) / 100;
+    // this._frontTickDouble.linewidth =
+    //   (AngleMarker.currentTickStrokeWidthFront * frontStrokeWidthPercent) / 100;
 
-    this._glowingFrontTickDouble.linewidth =
-      (AngleMarker.currentGlowingTickStrokeWidthFront *
-        frontStrokeWidthPercent) /
-      100;
+    // this._glowingFrontTickDouble.linewidth =
+    //   (AngleMarker.currentGlowingTickStrokeWidthFront *
+    //     frontStrokeWidthPercent) /
+    //   100;
 
     this._frontDouble.linewidth =
       (AngleMarker.currentCircularStrokeWidthFront * frontStrokeWidthPercent) /
@@ -1777,19 +2160,19 @@ export default class AngleMarker extends Nodule {
           : backStrokeWidthPercent)) /
       100;
 
-    this._backTickDouble.linewidth =
-      (AngleMarker.currentTickStrokeWidthBack *
-        (backStyle?.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
-          : backStrokeWidthPercent)) /
-      100;
+    // this._backTickDouble.linewidth =
+    //   (AngleMarker.currentTickStrokeWidthBack *
+    //     (backStyle?.dynamicBackStyle
+    //       ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+    //       : backStrokeWidthPercent)) /
+    //   100;
 
-    this._glowingBackTickDouble.linewidth =
-      (AngleMarker.currentGlowingTickStrokeWidthBack *
-        (backStyle?.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
-          : backStrokeWidthPercent)) /
-      100;
+    // this._glowingBackTickDouble.linewidth =
+    //   (AngleMarker.currentGlowingTickStrokeWidthBack *
+    //     (backStyle?.dynamicBackStyle
+    //       ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+    //       : backStrokeWidthPercent)) /
+    //   100;
 
     this._backDouble.linewidth =
       (AngleMarker.currentCircularStrokeWidthBack *
@@ -1847,7 +2230,7 @@ export default class AngleMarker extends Nodule {
 
         //FRONT
         if (
-          Nodule.hslaIsNoFillOrNoStroke(
+          Nodule.rgbaIsNoFillOrNoStroke(
             SETTINGS.angleMarker.temp.fillColor.front
           )
         ) {
@@ -1857,7 +2240,7 @@ export default class AngleMarker extends Nodule {
           this._frontFill.fill = SETTINGS.angleMarker.temp.fillColor.front;
         }
         if (
-          Nodule.hslaIsNoFillOrNoStroke(
+          Nodule.rgbaIsNoFillOrNoStroke(
             SETTINGS.angleMarker.temp.strokeColor.front
           )
         ) {
@@ -1914,7 +2297,7 @@ export default class AngleMarker extends Nodule {
         }
         //BACK
         if (
-          Nodule.hslaIsNoFillOrNoStroke(
+          Nodule.rgbaIsNoFillOrNoStroke(
             SETTINGS.angleMarker.temp.fillColor.back
           )
         ) {
@@ -1923,7 +2306,7 @@ export default class AngleMarker extends Nodule {
           this._backFill.fill = SETTINGS.angleMarker.temp.fillColor.back;
         }
         if (
-          Nodule.hslaIsNoFillOrNoStroke(
+          Nodule.rgbaIsNoFillOrNoStroke(
             SETTINGS.angleMarker.temp.strokeColor.back
           )
         ) {
@@ -2011,21 +2394,21 @@ export default class AngleMarker extends Nodule {
 
         // FRONT
         const frontStyle = this.styleOptions.get(StyleCategory.Front);
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this._frontFill.noFill();
         } else {
           this._frontFill.fill =
             frontStyle?.fillColor ?? SETTINGS.angleMarker.drawn.fillColor.front;
         }
 
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontStraightVertexToStart.noStroke();
           this._frontCircle.noStroke();
           this._frontStraightEndToVertex.noStroke();
 
           this._frontDouble.noStroke();
           this._frontTick.noStroke();
-          this._frontTickDouble.noStroke();
+          // this._frontTickDouble.noStroke();
           this._frontArrowHeadPath.noStroke();
           this._frontArrowHeadPath.noFill(); // arrow head fill is the same as the stroke of the circle path
         } else {
@@ -2037,7 +2420,7 @@ export default class AngleMarker extends Nodule {
 
           this._frontDouble.stroke = frontStyle?.strokeColor ?? "black";
           this._frontTick.stroke = frontStyle?.strokeColor ?? "black";
-          this._frontTickDouble.stroke = frontStyle?.strokeColor ?? "black";
+          // this._frontTickDouble.stroke = frontStyle?.strokeColor ?? "black";
           this._frontArrowHeadPath.stroke = frontStyle?.strokeColor ?? "black";
           this._frontArrowHeadPath.fill = frontStyle?.strokeColor ?? "black"; // arrow head fill is the same as the stroke of the circle path
         }
@@ -2071,7 +2454,7 @@ export default class AngleMarker extends Nodule {
         const backStyle = this.styleOptions.get(StyleCategory.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontStyle?.fillColor)
             )
           ) {
@@ -2082,7 +2465,7 @@ export default class AngleMarker extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this._backFill.noFill();
           } else {
             this._backFill.fill = backStyle?.fillColor ?? "black";
@@ -2091,7 +2474,7 @@ export default class AngleMarker extends Nodule {
 
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
@@ -2101,7 +2484,7 @@ export default class AngleMarker extends Nodule {
 
             this._backDouble.noStroke();
             this._backTick.noStroke();
-            this._backTickDouble.noStroke();
+            // this._backTickDouble.noStroke();
             this._backArrowHeadPath.noStroke();
             this._backArrowHeadPath.noFill(); // arrow head fill is the same as the stroke of the circle path
           } else {
@@ -2121,9 +2504,9 @@ export default class AngleMarker extends Nodule {
             this._backTick.stroke = Nodule.contrastStrokeColor(
               frontStyle?.strokeColor ?? "black"
             );
-            this._backTickDouble.stroke = Nodule.contrastStrokeColor(
-              frontStyle?.strokeColor ?? "black"
-            );
+            // this._backTickDouble.stroke = Nodule.contrastStrokeColor(
+            //   frontStyle?.strokeColor ?? "black"
+            // );
             this._backArrowHeadPath.stroke = Nodule.contrastStrokeColor(
               frontStyle?.strokeColor ?? "black"
             );
@@ -2132,7 +2515,7 @@ export default class AngleMarker extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this._backStraightVertexToStart.noStroke();
             this._backCircle.noStroke();
             this._backStraightEndToVertex.noStroke();
@@ -2192,7 +2575,7 @@ export default class AngleMarker extends Nodule {
 
         this._glowingFrontDouble.stroke = this.glowingStrokeColorFront;
         this._glowingFrontTick.stroke = this.glowingStrokeColorFront;
-        this._glowingFrontTickDouble.stroke = this.glowingStrokeColorFront;
+        // this._glowingFrontTickDouble.stroke = this.glowingStrokeColorFront;
         this._glowingFrontArrowHeadPath.stroke = this.glowingStrokeColorFront;
 
         // strokeWidthPercent applied by adjustSize()
@@ -2225,7 +2608,7 @@ export default class AngleMarker extends Nodule {
 
         this._glowingBackDouble.stroke = this.glowingStrokeColorBack;
         this._glowingBackTick.stroke = this.glowingStrokeColorBack;
-        this._glowingBackTickDouble.stroke = this.glowingStrokeColorBack;
+        // this._glowingBackTickDouble.stroke = this.glowingStrokeColorBack;
         this._glowingBackArrowHeadPath.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
         // Copy the back dash properties to the glowing object

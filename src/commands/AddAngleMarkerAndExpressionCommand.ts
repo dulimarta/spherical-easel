@@ -8,6 +8,7 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { AngleMode, SavedNames, ValueDisplayMode } from "@/types";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGType } from "@/types";
 
 export class AddAngleMarkerCommand extends Command {
   /**
@@ -78,6 +79,10 @@ export class AddAngleMarkerCommand extends Command {
     }
     this._secondSEParent.unregisterChild(this.seAngleMarker);
     this._firstSEParent.unregisterChild(this.seAngleMarker);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seAngleMarker, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

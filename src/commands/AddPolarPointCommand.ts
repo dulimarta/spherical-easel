@@ -8,6 +8,7 @@ import { SESegment } from "@/models/SESegment";
 import { SELine } from "@/models/SELine";
 import { SEPolarPoint } from "@/models/SEPolarPoint";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGType } from "@/types";
 
 export class AddPolarPointCommand extends Command {
   private sePolarPoint: SEPolarPoint;
@@ -68,6 +69,10 @@ export class AddPolarPointCommand extends Command {
     Command.store.removePoint(this.lastState);
     this.sePolarPoint.unregisterChild(this.seLabel);
     this.parent.unregisterChild(this.sePolarPoint);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.sePolarPoint, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

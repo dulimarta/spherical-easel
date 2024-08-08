@@ -1,1 +1,12 @@
-<defs></defs>;<path transform="matrix(1 0 0 1 0 0)" id="two-21" d="M 250 0 C 250 138.071187 138.071187 250 0 250 C -138.071188 250 -250 138.071187 -250 0 C -250.000001 -138.071188 -138.071188 -250 -0.000001 -250 C 138.071187 -250.000001 250 -138.071188 250 0 Z " fill="transparent" stroke="#000" stroke-width="3" stroke-opacity="1" fill-opacity="1" visibility="visible" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4" vector-effect="non-scaling-stroke" type="boundaryCircle" side="mid" myfill="false" part=""></path>
+<svg width="500px" height="500px" xmlns="http://www.w3.org/2000/svg" style="background-color:transparent" overflow="visible" >
+   <style type="text/css">
+         .boundaryCircleStyle { fill:none; stroke:#000000FF; stroke-width:1.5; vector-effect: non-scaling-stroke;}
+   </style>
+   <g id="sphereScene" >
+      <g id="frame0" transform = "matrix(1,0,0,-1,0,0)">
+         <g id="mid">
+            <circle class="boundaryCircleStyle" cx="0" cy="0" r="250"/>
+         </g>
+      </g>
+   </g>
+</svg>

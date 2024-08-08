@@ -332,7 +332,7 @@ export default class PolarObjectHandler extends Highlighter {
             (this.snapToTemporaryPoint instanceof SEAntipodalPoint &&
               !this.snapToTemporaryPoint.isUserCreated)
           ) {
-            this.temporaryPoint.positionVector =
+            this.temporaryPoint.positionVectorAndDisplay =
               this.snapToTemporaryPoint.locationVector;
           } else {
             this.temporaryPoint.removeFromLayers();
@@ -343,14 +343,14 @@ export default class PolarObjectHandler extends Highlighter {
         else if (
           this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon !== null
         ) {
-          this.temporaryPoint.positionVector =
+          this.temporaryPoint.positionVectorAndDisplay =
             this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon.closestVector(
               this.currentSphereVector
             );
         }
         // the user is not near anything
         else {
-          this.temporaryPoint.positionVector = this.currentSphereVector;
+          this.temporaryPoint.positionVectorAndDisplay = this.currentSphereVector;
         }
 
         // add the temporary line if it hasn't already been added
@@ -360,7 +360,7 @@ export default class PolarObjectHandler extends Highlighter {
         }
         // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
         this.temporaryPolarLineMarker.normalVector =
-          this.temporaryPoint._locationVector;
+          this.temporaryPoint.positionVector;
 
         //update the display
         this.temporaryPolarLineMarker.updateDisplay();
@@ -391,9 +391,9 @@ export default class PolarObjectHandler extends Highlighter {
         } else {
           normal = this.tmpVector.set(0, 0, 0); // should never execute
         }
-        this.temporaryPolarPointMarker1.positionVector = normal;
+        this.temporaryPolarPointMarker1.positionVectorAndDisplay = normal;
         this.tmpVector.copy(normal).multiplyScalar(-1);
-        this.temporaryPolarPointMarker2.positionVector = this.tmpVector;
+        this.temporaryPolarPointMarker2.positionVectorAndDisplay = this.tmpVector;
       }
     }
     // else {

@@ -8,6 +8,7 @@ import {
   SEPointCoordinate
 } from "@/models/SEPointCoordinate";
 import { SavedNames } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddPointCoordinateMeasurementCommand extends AddExpressionCommand {
   selector: CoordinateSelection;

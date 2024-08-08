@@ -6,6 +6,9 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
+import { toSVGType } from "@/types";
+
+
 export class AddLineCommand extends Command {
   private seLine: SELine;
   private startSEPoint: SEPoint;
@@ -43,6 +46,10 @@ export class AddLineCommand extends Command {
     this.seLabel.unregisterChild(this.seLabel);
     this.startSEPoint.unregisterChild(this.seLine);
     this.endSEPoint.unregisterChild(this.seLine);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seLine, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

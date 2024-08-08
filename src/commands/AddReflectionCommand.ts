@@ -6,6 +6,7 @@ import { SavedNames } from "@/types";
 import { AddTranslationCommand } from "./AddTranslationCommand";
 import { SEReflection } from "@/models/SEReflection";
 import { SELine } from "@/models/SELine";
+import { toSVGType } from "@/types";
 
 export class AddReflectionCommand extends Command {
   private seReflection: SEReflection;

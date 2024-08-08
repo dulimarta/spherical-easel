@@ -7,6 +7,7 @@ import {
   DEFAULT_NONFREE_SEGMENT_BACK_STYLE
 } from "@/types/Styles";
 import Segment from "./Segment";
+import { toSVGType } from "@/types";
 
 export default class NonFreeSegment extends Segment {
   /**

@@ -4,6 +4,7 @@ import { AddExpressionCommand } from "./AddExpressionCommand";
 import { SEPoint } from "@/models/SEPoint";
 import { SEPointDistance } from "@/models/SEPointDistance";
 import { SavedNames, ValueDisplayMode } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddPointDistanceMeasurementCommand extends AddExpressionCommand {
   // /**
@@ -18,6 +19,7 @@ export class AddPointDistanceMeasurementCommand extends AddExpressionCommand {
   // ) {
   //   super(seExpression, parent);
   // }
+
   toOpcode(): null | string | Array<string> {
     return [
       "AddPointDistanceMeasurement",

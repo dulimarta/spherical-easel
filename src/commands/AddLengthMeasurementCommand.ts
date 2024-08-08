@@ -5,6 +5,7 @@ import { AddExpressionCommand } from "./AddExpressionCommand";
 import { SESegment } from "@/models/SESegment";
 import { SESegmentLength } from "@/models/SESegmentLength";
 import { SavedNames, ValueDisplayMode } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddLengthMeasurementCommand extends AddExpressionCommand {
   /**

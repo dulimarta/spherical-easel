@@ -7,6 +7,7 @@ import { SavedNames, SEIsometry } from "@/types";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEIsometryEllipse } from "@/models/SEIsometryEllipse";
+import { toSVGType } from "@/types";
 
 export class AddIsometryEllipseCommand extends Command {
   private preimageSEEllipse: SEEllipse;
@@ -46,6 +47,11 @@ export class AddIsometryEllipseCommand extends Command {
     this.parentIsometry.unregisterChild(this.isometrySEEllipse);
     this.preimageSEEllipse.unregisterChild(this.isometrySEEllipse);
   }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.isometrySEEllipse, this.isometrySEEllipseLabel]];
+  }
+
 
   toOpcode(): null | string | Array<string> {
     return [

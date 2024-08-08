@@ -7,6 +7,7 @@ import { Vector3 } from "three";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 import { SEParametric } from "@/models/SEParametric";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGType } from "@/types";
 
 export class AddParametricTracePointCommand extends Command {
   private seTracePoint: SEParametricTracePoint;
@@ -64,6 +65,10 @@ export class AddParametricTracePointCommand extends Command {
     Command.store.removePoint(this.seTracePoint.id);
     this.seTracePoint.unregisterChild(this.seTraceLabel);
     this.parametricParent.unregisterChild(this.seTracePoint);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seTracePoint, this.seTraceLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

@@ -1,6 +1,7 @@
 import { Command } from "./Command";
 import { Vector3 } from "three";
 import { SESegment } from "@/models/SESegment";
+import { toSVGType } from "@/types";
 
 export class MoveSegmentCommand extends Command {
   private seSegment: SESegment;

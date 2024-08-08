@@ -2,6 +2,7 @@ import { Command } from "./Command";
 import { SavedNames, SEOneDimensional } from "@/types";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SENodule } from "@/models/SENodule";
+import { toSVGType } from "@/types";
 
 export class RemoveIntersectionPointOtherParent extends Command {
   private seOtherParent: SEOneDimensional;

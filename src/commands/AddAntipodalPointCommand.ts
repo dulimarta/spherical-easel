@@ -6,6 +6,8 @@ import { Vector3 } from "three";
 import { SavedNames } from "@/types";
 import { StyleCategory } from "@/types/Styles";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { toSVGType } from "@/types";
+
 
 export class AddAntipodalPointCommand extends Command {
   private seAntipodalPoint: SEAntipodalPoint;
@@ -46,6 +48,10 @@ export class AddAntipodalPointCommand extends Command {
     Command.store.removePoint(this.lastState);
     this.seAntipodalPoint.unregisterChild(this.seLabel);
     this.parentSEPoint.unregisterChild(this.seAntipodalPoint);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seAntipodalPoint, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

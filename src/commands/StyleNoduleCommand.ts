@@ -1,6 +1,7 @@
 import { Command } from "./Command";
 import Nodule from "@/plottables/Nodule";
 import { StyleOptions, StyleCategory } from "../types/Styles";
+import { toSVGType } from "@/types";
 
 export class StyleNoduleCommand extends Command {
   private nodules: Nodule[] = [];

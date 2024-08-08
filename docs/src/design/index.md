@@ -279,7 +279,7 @@ We record each change in the application using a <span class="class">Command</sp
 
 The <span class="class">Command</span> class contains several static variables including
 
-<<< @../../../src/commands/Command.ts#commmandArrays
+<<< @../../../src/commands/Command.ts#commandArrays
 
 The <span class="variable">commandHistory</span> array stores a stack of commands that are used to get from the initial application state to the current state of the application. The <span class="variable">redoHistory</span> stores a stack of the latest commands that have been redone. These arrays are managed by two static methods:
 

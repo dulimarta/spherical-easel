@@ -8,6 +8,7 @@ import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 import { SEParametric } from "@/models/SEParametric";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGType } from "@/types";
 
 export class AddParametricEndPointsCommand extends Command {
   private seStartEndPoint: SEParametricEndPoint;
@@ -127,6 +128,14 @@ export class AddParametricEndPointsCommand extends Command {
     this.parametricParent.unregisterChild(this.seEndEndPoint);
     this.parametricParent.unregisterChild(this.seStartEndPoint);
     this.parametricParent.unregisterChild(this.seTracePoint);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [
+      [this.seEndEndPoint, this.seEndLabel],
+      [this.seStartEndPoint, this.seStartLabel],
+      [this.seTracePoint, this.seTraceLabel]
+    ];
   }
 
   toOpcode(): null | string | Array<string> {

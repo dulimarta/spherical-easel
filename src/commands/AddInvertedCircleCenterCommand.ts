@@ -8,6 +8,7 @@ import { SECircle } from "@/models/SECircle";
 import { SELine } from "@/models/SELine";
 import { SEInversion } from "@/models/SEInversion";
 import { SEInversionCircleCenter } from "@/models/SEInversionCircleCenter";
+import { toSVGType } from "@/types";
 
 export class AddInvertedCircleCenterCommand extends Command {
   private preimageSECircleOrLine: SECircle | SELine;
@@ -73,6 +74,11 @@ export class AddInvertedCircleCenterCommand extends Command {
     this.parentInversion.unregisterChild(this.invertedSECircleCenter);
     this.preimageSECircleOrLine.unregisterChild(this.invertedSECircleCenter);
   }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.invertedSECircleCenter, this.invertedSECircleCenterLabel]];
+  }
+
 
   toOpcode(): null | string | Array<string> {
     return [

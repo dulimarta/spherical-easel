@@ -8,6 +8,7 @@ import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { SEMeasuredCircle } from "@/models/SEMeasuredCircle";
+import { toSVGType } from "@/types";
 
 export class AddMeasuredCircleCommand extends Command {
   private seCircle: SECircle;
@@ -46,6 +47,10 @@ export class AddMeasuredCircleCommand extends Command {
     this.seCircle.unregisterChild(this.seLabel);
     this.centerSEPoint.unregisterChild(this.seCircle);
     this.measurementSEExpression.unregisterChild(this.seCircle);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seCircle, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

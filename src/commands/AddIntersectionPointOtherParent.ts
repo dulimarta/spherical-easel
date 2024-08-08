@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import { SavedNames, SEOneDimensional } from "@/types";
+import { SavedNames, SEOneDimensional, toSVGType } from "@/types";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SENodule } from "@/models/SENodule";
 

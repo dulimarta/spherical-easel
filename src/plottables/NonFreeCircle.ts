@@ -7,6 +7,7 @@ import {
   DEFAULT_NONFREE_CIRCLE_BACK_STYLE
 } from "@/types/Styles";
 import Circle from "./Circle";
+import { toSVGType } from "@/types";
 
 export default class NonFreeCircle extends Circle {
   /**

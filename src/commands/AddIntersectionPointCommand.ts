@@ -5,6 +5,9 @@ import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGType } from "@/types";
+
+
 export class AddIntersectionPointCommand extends Command {
   private seIntersectionPoint: SEIntersectionPoint;
   private principleParent1: SEOneDimensional;
@@ -49,6 +52,10 @@ export class AddIntersectionPointCommand extends Command {
     this.seIntersectionPoint.unregisterChild(this.seLabel);
     this.principleParent1.unregisterChild(this.seIntersectionPoint);
     this.principleParent2.unregisterChild(this.seIntersectionPoint);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seIntersectionPoint, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

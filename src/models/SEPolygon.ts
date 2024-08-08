@@ -487,9 +487,8 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
       });
       this._area = sumOfAngles - (this._n - 2) * Math.PI;
 
-      //update the display
+      //update the area
       this.ref.area = this._area;
-      this.ref.updateDisplay();
     }
 
     if (this.showing && this._exists) {
@@ -497,6 +496,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
       if (this.label) {
         this.label.ref.value = [this.value];
       }
+      this.ref.updateDisplay();
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);

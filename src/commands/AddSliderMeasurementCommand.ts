@@ -3,6 +3,7 @@ import { SENodule } from "@/models/SENodule";
 import { SESlider } from "@/models/SESlider";
 import { AddExpressionCommand } from "./AddExpressionCommand";
 import { SavedNames } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddSliderMeasurementCommand extends AddExpressionCommand {
   /**
@@ -12,6 +13,8 @@ export class AddSliderMeasurementCommand extends AddExpressionCommand {
   constructor(seSlider: SESlider) {
     super(seSlider, []);
   }
+
+
 
   toOpcode(): null | string | Array<string> {
     return [

@@ -14,6 +14,7 @@ import { Path } from "two.js/src/path";
 import { Anchor } from "two.js/src/anchor";
 import { Group } from "two.js/src/group";
 import { Circle } from "two.js/src/shapes/circle";
+import { toSVGType } from "@/types";
 
 // const desiredXAxis = new Vector3();
 // const desiredYAxis = new Vector3();
@@ -187,20 +188,7 @@ export default class Parametric extends Nodule {
       // Don't use .clone() for back parts we intentionally want to keep them empty
       this.backParts.push(new Path([], false, false));
       this.glowingBackParts.push(new Path([], false, false));
-      // #region updatePlottableMap
-      Nodule.idPlottableDescriptionMap.set(String(this.frontParts[0].id), {
-        type: "parametric",
-        side: "front",
-        fill: false,
-        part: "0"
-      });
-      Nodule.idPlottableDescriptionMap.set(String(this.backParts[0].id), {
-        type: "parametric",
-        side: "back",
-        fill: false,
-        part: "0"
-      });
-      // #endregion updatePlottableMap
+
       // Set the styles that are always true
       // The front/back parts have no fill because that is handled by the front/back fill
       // The front/back fill have no stroke because that is handled by the front/back part
@@ -354,16 +342,6 @@ export default class Parametric extends Nodule {
             newGlowPath.noFill();
             newGlowPath.visible = false;
             if (this.glowingBgLayer) newGlowPath.addTo(this.glowingBgLayer);
-
-            Nodule.idPlottableDescriptionMap.set(
-              String(this.backParts[currentBackPartIndex - 1].id),
-              {
-                type: "parametric",
-                side: "back",
-                fill: false,
-                part: currentBackPartIndex.toString()
-              }
-            );
             // this.stylize(DisplayStyle.ApplyCurrentVariables);
             // this.adjustSize();
           }
@@ -414,16 +392,6 @@ export default class Parametric extends Nodule {
             newGlowPath.noFill();
             newGlowPath.visible = true;
             if (this.glowingFgLayer) newGlowPath.addTo(this.glowingFgLayer);
-
-            Nodule.idPlottableDescriptionMap.set(
-              String(this.frontParts[currentFrontPartIndex - 1].id),
-              {
-                type: "parametric",
-                side: "front",
-                fill: false,
-                part: currentFrontPartIndex.toString()
-              }
-            );
           }
         }
         firstFrontPart = false;
@@ -611,6 +579,19 @@ export default class Parametric extends Nodule {
     this.glowingBackParts.forEach(part => part.remove());
   }
 
+  toSVG():toSVGType[]{
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGObject: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyleDictionary: null,
+      layerSVGArray: [],
+      type: "parametric"
+    }
+    return [returnSVGObject]
+  }
+
   /**
    * Return the default style state
    */
@@ -695,7 +676,7 @@ export default class Parametric extends Nodule {
         // THIS SHOULD NEVER BE EXECUTED
         //FRONT
         if (
-          Nodule.hslaIsNoFillOrNoStroke(
+          Nodule.rgbaIsNoFillOrNoStroke(
             SETTINGS.parametric.temp.strokeColor.front
           )
         ) {
@@ -722,7 +703,7 @@ export default class Parametric extends Nodule {
         }
         //BACK
         if (
-          Nodule.hslaIsNoFillOrNoStroke(
+          Nodule.rgbaIsNoFillOrNoStroke(
             SETTINGS.parametric.temp.strokeColor.back
           )
         ) {
@@ -760,7 +741,7 @@ export default class Parametric extends Nodule {
         const frontStyle = this.styleOptions.get(StyleCategory.Front);
         const strokeColorFront = frontStyle?.strokeColor ?? "black";
 
-        if (Nodule.hslaIsNoFillOrNoStroke(strokeColorFront)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(strokeColorFront)) {
           this.frontParts.forEach(part => part.noStroke());
         } else {
           this.frontParts.forEach(part => (part.stroke = strokeColorFront));
@@ -789,7 +770,7 @@ export default class Parametric extends Nodule {
         const strokeColorBack = backStyle?.strokeColor ?? "black";
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(strokeColorFront)
             )
           ) {
@@ -801,7 +782,7 @@ export default class Parametric extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(strokeColorBack)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(strokeColorBack)) {
             this.backParts.forEach(part => part.noStroke());
           } else {
             this.backParts.forEach(part => (part.stroke = strokeColorBack));

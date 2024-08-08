@@ -3,6 +3,7 @@ import { SENodule } from "@/models/SENodule";
 import { SECircle } from "@/models/SECircle";
 import { SavedNames } from "@/types";
 import { SEInversion } from "@/models/SEInversion";
+import { toSVGType } from "@/types";
 
 export class AddInversionCommand extends Command {
   private seInversion: SEInversion;

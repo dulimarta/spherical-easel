@@ -76,7 +76,7 @@
           :class="{ shake: animatedInput.labelTextScalePercent }"
           :min="minLabelTextScalePercent"
           :max="maxLabelTextScalePercent"
-          :step="20"
+          :step="22.5"
           :thumb-string-values="textScaleSelectorThumbStrings" />
         <PropertySlider
           :numSelected="selectedLabels.size"
@@ -99,7 +99,8 @@
             'labelTextRotation'
           ]" />
       </v-window-item>
-      <v-window-item> <!-- Second Tab -->
+      <v-window-item>
+        <!-- Second Tab -->
         <!-- Label Text Family Selections -->
         <v-select
           :disabled="
@@ -404,7 +405,7 @@ onBeforeMount((): void => {
   }
   // console.log(
   //   "rotation angle thumb labels",
-  //   this.textRotationSelectorThumbStrings
+  //   textRotationSelectorThumbStrings
   // );
 });
 
@@ -611,7 +612,7 @@ const labelDisplayModeItems: LabelDisplayModeItem[] = [
 const labelTextFamilyItems = [
   {
     text: t("fonts.genericSanSerif"),
-    value: "sans/-serif"
+    value: "sans-serif"
   },
   {
     text: t("fonts.genericSerif"),
@@ -657,7 +658,7 @@ const labelTextDecorationItems = [
   },
   {
     text: t("textDecoration.strikethrough"),
-    value: "strikethrough"
+    value: "line-through" //strikethrough doesn't work, but line-through does
   },
   {
     text: t("textDecoration.overline"),
@@ -765,7 +766,7 @@ const conflictItems: ConflictItems = {
   "labelStyle": "Label Style",
   "labelTextDecoration": "Label Text Decoration",
   "labelTextFamily": "Label Text Family",
-  "labelTextRotation": "Label Rotation ()",
+  "labelTextRotation": "Label Rotation (°)",
   "labelTextScale": "Label Scale (%)",
   "labelTextStyle": "Label Text Style",
   "makeLabelsVisible": "Make Labels Visible",

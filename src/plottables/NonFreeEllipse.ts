@@ -7,6 +7,7 @@ import {
   DEFAULT_NONFREE_ELLIPSE_BACK_STYLE
 } from "@/types/Styles";
 import Ellipse from "./Ellipse";
+import { toSVGType } from "@/types";
 
 export default class NonFreeEllipse extends Ellipse {
   /**

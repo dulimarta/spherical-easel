@@ -7,6 +7,7 @@ import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
 import { SETransformation } from "@/models/SETransformation";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
+import { toSVGType } from "@/types";
 
 export class AddTransformedPointCommand extends Command {
   private preimageSEPoint: SEPoint;
@@ -63,6 +64,10 @@ export class AddTransformedPointCommand extends Command {
     this.transformedSEPoint.unregisterChild(this.transformedSEPointLabel);
     this.parentTransformation.unregisterChild(this.transformedSEPoint);
     this.preimageSEPoint.unregisterChild(this.transformedSEPoint);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.transformedSEPoint, this.transformedSEPointLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

@@ -15,6 +15,10 @@ import { Stop } from "two.js/src/effects/stop";
 import { RadialGradient } from "two.js/src/effects/radial-gradient";
 import { Anchor } from "two.js/src/anchor";
 import { Path } from "two.js/src/path";
+import {
+  svgArcObject,
+  toSVGType
+} from "@/types";
 
 // The number of vertices used to draw an arc of a projected circle
 const SUBDIVISIONS = SETTINGS.circle.numPoints;
@@ -120,23 +124,48 @@ export default class Circle extends Nodule {
   /**
    * The stops and gradient for front/back fill
    */
-  private frontGradientColorCenter = new Stop(0, SETTINGS.fill.frontWhite, 1);
+
+  private frontGradientColorCenter = new Stop(
+    0,
+    SETTINGS.style.fill.frontWhite,
+    1
+  );
   private frontGradientColor = new Stop(
-    2 * SETTINGS.boundaryCircle.radius,
+    SETTINGS.style.fill.gradientPercent,
     SETTINGS.circle.drawn.fillColor.front,
     1
   );
 
   private frontGradient = new RadialGradient(
-    SETTINGS.fill.lightSource.x,
-    SETTINGS.fill.lightSource.y,
-    1 * SETTINGS.boundaryCircle.radius,
-    [this.frontGradientColorCenter, this.frontGradientColor]
+    SETTINGS.style.fill.center.x,
+    SETTINGS.style.fill.center.y,
+    SETTINGS.boundaryCircle.radius,
+    [this.frontGradientColorCenter, this.frontGradientColor],
+    SETTINGS.style.fill.lightSource.x,
+    SETTINGS.style.fill.lightSource.y
+  );
+
+  private backGradientColorCenter = new Stop(
+    0,
+    SETTINGS.style.fill.backGray,
+    1
+  );
+  private backGradientColor = new Stop(
+    SETTINGS.style.fill.gradientPercent,
+    SETTINGS.circle.drawn.fillColor.back,
+    1
+  );
+  private backGradient = new RadialGradient(
+    -SETTINGS.style.fill.center.x,
+    -SETTINGS.style.fill.center.y,
+    SETTINGS.boundaryCircle.radius,
+    [this.backGradientColorCenter, this.backGradientColor],
+    -SETTINGS.style.fill.lightSource.x,
+    -SETTINGS.style.fill.lightSource.y
   );
 
   //////////////////// Temp to explore gradients
   // private frontGradientColor = new Stop(0.6, "black", 1);
-
 
   // private frontGradientColorCenter0 = new Stop(0.25, "green", 1);
   // private frontGradientColorCenter = new Stop(0.5, "red", 1);
@@ -150,19 +179,6 @@ export default class Circle extends Nodule {
   // );
 
   ////////////////////
-
-  private backGradientColorCenter = new Stop(0, SETTINGS.fill.backGray, 1);
-  private backGradientColor = new Stop(
-    1 * SETTINGS.boundaryCircle.radius,
-    SETTINGS.circle.drawn.fillColor.back,
-    1
-  );
-  private backGradient = new RadialGradient(
-    -SETTINGS.fill.lightSource.x,
-    -SETTINGS.fill.lightSource.y,
-    2 * SETTINGS.boundaryCircle.radius,
-    [this.backGradientColorCenter, this.backGradientColor]
-  );
 
   // SUBDIVISIONS number of equally spaced coordinates on the boundary circle
   static boundaryVertices: [number[]] = [[]];
@@ -207,27 +223,14 @@ export default class Circle extends Nodule {
     // Set the boundary vertices (only populates Circle.boundaryVertices once)
     Circle.setBoundaryVertices();
 
-    this.frontGradient.units = 'userSpaceOnUse'
+    this.frontGradient.units = "userSpaceOnUse"; // this means that the gradient uses the coordinates of the layer (but centered on the projection of the circle)
+    this.backGradient.units = "userSpaceOnUse";
 
     // Create the glowing/back/fill parts.
     this._frontPart = new Arc(0, 0, 0, 0, 0, 0, SUBDIVISIONS);
     this._glowingFrontPart = new Arc(0, 0, 0, 0, 0, 0, SUBDIVISIONS);
     this._backPart = new Arc(0, 0, 0, 0, 0, 0, SUBDIVISIONS);
     this._glowingBackPart = new Arc(0, 0, 0, 0, 0, 0, SUBDIVISIONS);
-
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this._frontPart.id), {
-      type: "circle",
-      side: "front",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._backPart.id), {
-      type: "circle",
-      side: "back",
-      fill: false,
-      part: ""
-    });
 
     // Set the styles that are always true
     // The front/back parts have no fill because that is handled by the front/back fill
@@ -260,20 +263,6 @@ export default class Circle extends Nodule {
     //it doesn't matter that no anchors are assigned to the front/backFill because they will assigned from the fillStorageAnchors
     this._frontFill = new Path([], /* closed */ true, /* curve */ false);
     this._backFill = new Path([], /* closed */ true, /* curve */ false);
-
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this._frontFill.id), {
-      type: "circle",
-      side: "front",
-      fill: true,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._backFill.id), {
-      type: "circle",
-      side: "back",
-      fill: true,
-      part: ""
-    });
 
     // Set the styles that are always true
     // The front/back fill have no stroke because that is handled by the front/back part
@@ -320,31 +309,33 @@ export default class Circle extends Nodule {
     this._center.rotate(Math.atan2(this._centerVector.y, this._centerVector.x)); //DO NOT Rotate the center vector at the same time you set it equal to this._frontPart.position, this causes unexpected results
 
     //Copy the updated information into the glowing/not front/back parts
-    this._frontPart.height =
-      2 * this._halfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._frontPart.width =
-      2 * this._halfMajorAxis * SETTINGS.boundaryCircle.radius;
+
+    // make sure the height and width are never zero, otherwise you get an SVG error about a NaN
+    const tempHalfMinorAxis =
+      Math.abs(this._halfMinorAxis) < SETTINGS.tolerance
+        ? 0.00001
+        : 2 * radius * this._halfMinorAxis;
+    const tempHalfMajorAxis =
+      Math.abs(this._halfMajorAxis) < SETTINGS.tolerance
+        ? 0.00001
+        : 2 * radius * this._halfMajorAxis;
+    this._frontPart.height = tempHalfMinorAxis;
+    this._frontPart.width = tempHalfMajorAxis;
     this._frontPart.rotation = this._rotation;
     this._frontPart.position = this._center;
 
-    this._backPart.height =
-      2 * this._halfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._backPart.width =
-      2 * this._halfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._backPart.height = tempHalfMinorAxis;
+    this._backPart.width = tempHalfMajorAxis;
     this._backPart.position = this._center;
     this._backPart.rotation = this._rotation;
 
-    this._glowingFrontPart.height =
-      2 * this._halfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._glowingFrontPart.width =
-      2 * this._halfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._glowingFrontPart.height = tempHalfMinorAxis;
+    this._glowingFrontPart.width = tempHalfMajorAxis;
     this._glowingFrontPart.position = this._center;
     this._glowingFrontPart.rotation = this._rotation;
 
-    this._glowingBackPart.height =
-      2 * this._halfMinorAxis * SETTINGS.boundaryCircle.radius;
-    this._glowingBackPart.width =
-      2 * this._halfMajorAxis * SETTINGS.boundaryCircle.radius;
+    this._glowingBackPart.height = tempHalfMinorAxis;
+    this._glowingBackPart.width = tempHalfMajorAxis;
     this._glowingBackPart.position = this._center;
     this._glowingBackPart.rotation = this._rotation;
 
@@ -360,7 +351,7 @@ export default class Circle extends Nodule {
       my_diff < Math.PI / 2 &&
       !(Math.PI / 2 < my_sum && my_sum < (3 * Math.PI) / 2)
     ) {
-      //console.log("the circle edge is entirely on the front")
+      // the circle edge is entirely on the front")
       this._frontPart.startAngle = 0;
       this._frontPart.endAngle = 2 * Math.PI;
       this._frontPart.closed = true;
@@ -400,7 +391,7 @@ export default class Circle extends Nodule {
       });
 
       if (this.centerVector.z > 0) {
-        //console.log("The interior of the circle is entirely contained on the front")
+        // The interior of the circle is entirely contained on the front")
         // Nothing needs to be added to the frontFill
 
         // backFill
@@ -408,7 +399,7 @@ export default class Circle extends Nodule {
         this._backFillIsEntireBack = false;
         this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
       } else {
-        // console.log("the circle is a hole on the front, the back is entirely covered")
+        //  the circle is a hole on the front, the back is entirely covered")
 
         // Finish setting the frontFill
         // We need 2*SUBDIVISION +2 anchors for the annular region on the front. Currently there are SUBDIVISION in the front fill
@@ -497,7 +488,7 @@ export default class Circle extends Nodule {
       Math.PI / 2 < my_sum &&
       my_sum < (3 * Math.PI) / 2
     ) {
-      // console.log("the circle edge is entirely on the back")
+      //  the circle edge is entirely on the back")
       this._backPart.startAngle = 0;
       this._backPart.endAngle = 2 * Math.PI;
       this._backPart.closed = true;
@@ -645,7 +636,7 @@ export default class Circle extends Nodule {
       Math.PI / 2 < my_sum &&
       my_sum < (3 * Math.PI) / 2
     ) {
-      //console.log("the circle edge intersects the boundary circle");
+      // the circle edge intersects the boundary circle");
       this._frontPartInUse = true;
       this._backPartInUse = true;
       this._frontFillInUse = true;
@@ -675,13 +666,21 @@ export default class Circle extends Nodule {
       this._backPart.endAngle = Math.PI / 2 + this._boundaryParameter;
       this._glowingBackPart.endAngle = Math.PI / 2 + this._boundaryParameter;
 
-      const startPoint = this.pointOnProjectedEllipse(this._boundaryParameter);
+      const startPoint = Circle.pointOnProjectedEllipse(
+        this._centerVector,
+        this._circleRadius,
+        this._boundaryParameter
+      );
       //find the angular width of the part of the boundary circle to be copied
       // Compute the angle from the positive x axis to the last frontPartVertex
       //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
       const startAngle = Math.atan2(startPoint[1], startPoint[0]);
 
-      const endPoint = this.pointOnProjectedEllipse(-this._boundaryParameter);
+      const endPoint = Circle.pointOnProjectedEllipse(
+        this._centerVector,
+        this._circleRadius,
+        -this._boundaryParameter
+      );
       // Compute the angle from the positive x axis to the first frontPartVertex
       //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
       const endAngle = Math.atan2(endPoint[1], endPoint[0]);
@@ -693,7 +692,7 @@ export default class Circle extends Nodule {
         angularWidth += 2 * Math.PI;
       }
 
-      // Start by creating the boundary points
+      //eEnd by creating the boundary points
       const boundaryPoints = Nodule.boundaryCircleCoordinates(
         startPoint,
         SUBDIVISIONS,
@@ -765,7 +764,7 @@ export default class Circle extends Nodule {
    * Set or Get the center of the circle vector. (Used by circle handler to set these values for the temporary circle)
    */
   set centerVector(position: Vector3) {
-    this._centerVector.copy(position);
+    this._centerVector.copy(position).normalize(); // must be on the unit sphere
   }
   get centerVector(): Vector3 {
     return this._centerVector;
@@ -779,34 +778,6 @@ export default class Circle extends Nodule {
   }
   get circleRadius(): number {
     return this._circleRadius;
-  }
-
-  /**
-   * For the ellipse which is the projection of the circle onto the view plane (in the unit circle)
-   * @param t
-   * @returns Return the coordinates of a point with parameter value t
-   */
-  pointOnProjectedEllipse(t: number): Array<number> {
-    return [
-      (Math.sqrt(2 - Math.cos(this._circleRadius) ** 2) *
-        Math.cos(this._rotation) *
-        Math.sin(t)) /
-        Math.sqrt(2 + Nodule.ctg(this._circleRadius) ** 2) -
-        (Math.cos(t) * Math.cos(this._beta) * Math.sin(this._circleRadius) +
-          Math.cos(this._circleRadius) * Math.sin(this._beta)) *
-          Math.sin(this._rotation),
-      Math.cos(t) *
-        Math.cos(this._beta) *
-        Math.cos(this._rotation) *
-        Math.sin(this._circleRadius) +
-        Math.cos(this._circleRadius) *
-          Math.cos(this._rotation) *
-          Math.sin(this._beta) +
-        (Math.sqrt(2 - Math.cos(this._circleRadius) ** 2) *
-          Math.sin(t) *
-          Math.sin(this._rotation)) /
-          Math.sqrt(2 + Nodule.ctg(this._circleRadius) ** 2)
-    ];
   }
 
   glowingDisplay(): void {
@@ -917,6 +888,344 @@ export default class Circle extends Nodule {
     this._glowingBackPart.remove();
   }
 
+  toSVG( nonScaling?: {
+    stroke: boolean;
+    text: boolean;
+    pointRadius: boolean;
+    scaleFactor: number;
+  }): toSVGType[] {
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGObject: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyleDictionary: null,
+      layerSVGArray: [],
+      type: "circle"
+    };
+    // Add the gradient to the gradient dictionary (if used)
+    if (Nodule.getGradientFill()) {
+      if (this._frontFillInUse) {
+        returnSVGObject.frontGradientDictionary =
+          Nodule.createSVGGradientDictionary(
+            this.frontGradient,
+            this.frontGradientColorCenter,
+            this.frontGradientColor
+          );
+      }
+
+      if (this._backFillInUse) {
+        returnSVGObject.backGradientDictionary =
+          Nodule.createSVGGradientDictionary(
+            this.backGradient,
+            this.backGradientColorCenter,
+            this.backGradientColor
+          );
+      }
+    }
+
+    // collect the front style of the circle
+    if (this._frontFillInUse) {
+      returnSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({
+        fillObject: this._frontFill,
+        strokeObject: this._frontPart
+      });
+    }
+    // collect the front style of the circle
+    if (this._backFillInUse) {
+      returnSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({
+        fillObject: this._backFill,
+        strokeObject: this._backPart
+      });
+    }
+
+    // variables that indicate where the extremes of the circle are
+    const my_diff = this._beta - this._circleRadius; // my_diff is the angular distance from the north pole to the closest point on the circle
+    const my_sum = this._beta + this._circleRadius; // my_sum is the angular distance from the north pole to the furthest point on the circle
+    // get the local transformation matrix of the circle (should be the same for all parts glowing/not front/back)
+    const localMatrix = this._frontPart.matrix; //local matrix works for just the position, rotation, and scale of that object in its local frame (The front and back matrices are the same)
+
+    if (
+      -Math.PI / 2 < my_diff &&
+      my_diff < Math.PI / 2 &&
+      Math.PI / 2 < my_sum &&
+      my_sum < (3 * Math.PI) / 2
+    ) {
+      // the circle edge intersects the boundary circle
+      // This is the parameter of the intersection point
+      this._boundaryParameter = Math.acos(
+        Nodule.ctg(this._circleRadius) * Nodule.ctg(this._beta)
+      );
+
+      const startPoint = Circle.pointOnProjectedEllipse(
+        this._centerVector,
+        this._circleRadius,
+        this._boundaryParameter
+      ).map(num => num * SETTINGS.boundaryCircle.radius);
+
+      const endPoint = Circle.pointOnProjectedEllipse(
+        this._centerVector,
+        this._circleRadius,
+        -this._boundaryParameter
+      ).map(num => num * SETTINGS.boundaryCircle.radius);
+
+      // to decide which part of the ellipse to draw when the angle from the centerVector to the startPoint is PI/2
+      // the part drawn changes.
+      const ang = this._centerVector.angleTo(
+        new Vector3(startPoint[0], startPoint[1], 0)
+      );
+
+      const frontEllipseDisplayFlags: [0 | 1, 0 | 1] =
+        ang > Math.PI / 2 ? [0, 0] : [1, 0];
+      const frontCircleDisplayFlags: [0 | 1, 0 | 1] =
+        ang > Math.PI / 2 ? [1, 0] : [0, 0];
+      const backEllipseDisplayFlags: [0 | 1, 0 | 1] =
+        ang > Math.PI / 2 ? [1, 1] : [0, 1];
+      const backCircleDisplayFlags: [0 | 1, 0 | 1] =
+        ang > Math.PI / 2 ? [1, 0] : [0, 0];
+
+      // form  svg arc objects
+      const ellipseArc: svgArcObject = {
+        startPt: { x: startPoint[0], y: startPoint[1] },
+        radiiXYWithSpace:
+          Math.abs(this._halfMajorAxis) * SETTINGS.boundaryCircle.radius +
+          "," +
+          Math.abs(this._halfMinorAxis) * SETTINGS.boundaryCircle.radius +
+          " ",
+        rotationDegrees: this._frontPart.rotation.toDegrees(),
+        displayShort0OrLong1: frontEllipseDisplayFlags[0],
+        displayCCW0OrCW1: frontEllipseDisplayFlags[1],
+        endPt: { x: endPoint[0], y: endPoint[1] }
+      };
+      const circleArc: svgArcObject = {
+        startPt: { x: endPoint[0], y: endPoint[1] },
+        radiiXYWithSpace:
+          SETTINGS.boundaryCircle.radius +
+          "," +
+          SETTINGS.boundaryCircle.radius +
+          " ",
+        rotationDegrees: 0,
+        displayShort0OrLong1: frontCircleDisplayFlags[0],
+        displayCCW0OrCW1: frontCircleDisplayFlags[1],
+        endPt: { x: startPoint[0], y: startPoint[1] }
+      };
+      let svgFrontString = '<path d="';
+      svgFrontString += Nodule.svgArcString(ellipseArc, true);
+      svgFrontString += Nodule.svgArcString(circleArc);
+      svgFrontString += ' Z"/>';
+
+      returnSVGObject.layerSVGArray.push([
+        LAYER.foregroundFills,
+        svgFrontString
+      ]);
+
+      // update the flags for the back
+      ellipseArc.displayShort0OrLong1 = backEllipseDisplayFlags[0];
+      ellipseArc.displayCCW0OrCW1 = backEllipseDisplayFlags[1];
+      circleArc.displayShort0OrLong1 = backCircleDisplayFlags[0];
+      circleArc.displayCCW0OrCW1 = backCircleDisplayFlags[1];
+
+      let svgBackString = '<path d="';
+      svgBackString += Nodule.svgArcString(ellipseArc, true);
+      svgBackString += Nodule.svgArcString(circleArc);
+      svgBackString += ' Z"/>';
+
+      returnSVGObject.layerSVGArray.push([
+        LAYER.backgroundFills,
+        svgBackString
+      ]);
+
+      // let svgFrontString =
+      //   '<path d="M ' + startPoint[0] + "," + startPoint[1] + " A";
+      // svgFrontString +=
+      //   Math.abs(this._halfMajorAxis) * SETTINGS.boundaryCircle.radius +
+      //   "," +
+      //   Math.abs(this._halfMinorAxis) * SETTINGS.boundaryCircle.radius +
+      //   " ";
+      // svgFrontString += this._frontPart.rotation.toDegrees() + " "; //rotate the ellipse part
+      // svgFrontString += frontEllipseDisplayFlags; // Control the part of the ellipse drawn
+      // svgFrontString += endPoint[0] + "," + endPoint[1] + " A"; // The ellipse part is done
+      // svgFrontString +=
+      //   SETTINGS.boundaryCircle.radius +
+      //   "," +
+      //   SETTINGS.boundaryCircle.radius +
+      //   " ";
+      // svgFrontString += 0 + " "; // no rotation
+      // svgFrontString += frontCircleDisplayFlags; // Control the part of the boundary circle drawn
+      // svgFrontString += startPoint[0] + "," + startPoint[1] + " "; // The circle part is done
+      // svgFrontString += ' Z"/>';
+
+      // let svgBackString =
+      //   '<path d="M ' + startPoint[0] + "," + startPoint[1] + " A";
+      // svgBackString +=
+      //   Math.abs(this._halfMajorAxis) * SETTINGS.boundaryCircle.radius +
+      //   "," +
+      //   Math.abs(this._halfMinorAxis) * SETTINGS.boundaryCircle.radius +
+      //   " ";
+      // svgBackString += this._frontPart.rotation.toDegrees() + " "; //rotate the ellipse part
+      // svgBackString += backEllipseDisplayFlags; // Control the part of the ellipse drawn
+      // svgBackString += endPoint[0] + "," + endPoint[1] + " A"; // The ellipse part is done
+      // svgBackString +=
+      //   SETTINGS.boundaryCircle.radius +
+      //   "," +
+      //   SETTINGS.boundaryCircle.radius +
+      //   " ";
+      // svgBackString += 0 + " "; // no rotation
+      // svgBackString += backCircleDisplayFlags; // Control the part of the boundary circle drawn
+      // svgBackString += startPoint[0] + "," + startPoint[1] + " "; // The circle part is done
+      // svgBackString += ' Z"/>';
+
+      // returnSVGObject.layerSVGArray.push([
+      //   LAYER.backgroundFills,
+      //   svgBackString
+      // ]);
+      return [returnSVGObject];
+    } else {
+      // the circle edge is entirely on the front or the circle edge is entirely on the back")
+      let fillLayer = LAYER.foregroundFills;
+      let edgeLayer = LAYER.foreground;
+      if (
+        !(-Math.PI / 2 < my_diff && my_diff < Math.PI / 2) &&
+        Math.PI / 2 < my_sum &&
+        my_sum < (3 * Math.PI) / 2
+      ) {
+        fillLayer = LAYER.backgroundFills;
+        edgeLayer = LAYER.background;
+      }
+      if (
+        (this._centerVector.z > 0 && edgeLayer == LAYER.foreground) ||
+        (this._centerVector.z < 0 && edgeLayer == LAYER.background)
+      ) {
+        // The interior of the circle is entirely contained on the front or back
+        let svgString =
+          '<ellipse cx="0" cy="0" rx="' +
+          Math.abs(this._halfMajorAxis) * SETTINGS.boundaryCircle.radius +
+          '" ry="' +
+          Math.abs(this._halfMinorAxis) * SETTINGS.boundaryCircle.radius +
+          '" ';
+        svgString +=
+          Circle.svgTransformMatrixString(
+            this._rotation,
+            1,
+            edgeLayer == LAYER.background
+              ? this._backPart.position.x
+              : this._frontPart.position.x,
+            edgeLayer == LAYER.background
+              ? this._backPart.position.y
+              : this._frontPart.position.y
+          ) + " />";
+
+        returnSVGObject.layerSVGArray.push([edgeLayer, svgString]);
+      } else {
+        // console.log("HOLE");
+        //  the circle is a hole on the front or back, the back/front is entirely covered
+
+        // Find two points on the ellipse that are close but not the same, draw the long ellipse between them
+        const untransformedEllipseStartPoint =
+          edgeLayer == LAYER.background
+            ? this._backPart.vertices[this._backPart.vertices.length - 2]
+            : this._frontPart.vertices[this._frontPart.vertices.length - 2];
+        const ellipseStartPoint = localMatrix.multiply(
+          untransformedEllipseStartPoint.x,
+          untransformedEllipseStartPoint.y,
+          1
+        );
+
+        const untransformedEllipseEndPoint =
+          edgeLayer == LAYER.background
+            ? this._backPart.vertices[0]
+            : this._frontPart.vertices[0];
+        const ellipseEndPoint = localMatrix.multiply(
+          untransformedEllipseEndPoint.x,
+          untransformedEllipseEndPoint.y,
+          1
+        );
+
+        // Find two point on the boundary circle that are across from the start of the ellipse
+        // two points not the same, but close
+        // Do some trig, law of sines to figure out an angle and then pick the angle at the center (0,0)
+        const ellipseAng = Math.atan2(
+          ellipseStartPoint[1] - this._center.y,
+          ellipseStartPoint[0] - this._center.x
+        );
+        const distCircleCenterToEllipseCenter = Math.sqrt(
+          this._center.x ** 2 + this._center.y ** 2
+        );
+
+        const circleStartAngle =
+          ellipseAng -
+          Math.asin(
+            (distCircleCenterToEllipseCenter * Math.sin(Math.PI - ellipseAng)) /
+              SETTINGS.boundaryCircle.radius
+          );
+
+        const deltaAng = 1 / SUBDIVISIONS;
+
+        const circleStartPoint = [
+          Math.cos(circleStartAngle),
+          Math.sin(circleStartAngle)
+        ].map(num => num * SETTINGS.boundaryCircle.radius);
+        const deltaAdjustAngle =
+          fillLayer == LAYER.backgroundFills
+            ? circleStartAngle - deltaAng
+            : circleStartAngle + deltaAng;
+        const circleEndPoint = [
+          Math.cos(deltaAdjustAngle),
+          Math.sin(deltaAdjustAngle)
+        ].map(num => num * SETTINGS.boundaryCircle.radius);
+
+        //create an svgArcObject
+        const svgEllipseObject: svgArcObject = {
+          startPt: { x: ellipseStartPoint[0], y: ellipseStartPoint[1] },
+          radiiXYWithSpace:
+            Math.abs(this._halfMajorAxis) * SETTINGS.boundaryCircle.radius +
+            "," +
+            Math.abs(this._halfMinorAxis) * SETTINGS.boundaryCircle.radius +
+            " ",
+          rotationDegrees: this._frontPart.rotation.toDegrees(),
+          displayShort0OrLong1: 1,
+          displayCCW0OrCW1: fillLayer == LAYER.backgroundFills ? 0 : 1,
+          endPt: { x: ellipseEndPoint[0], y: ellipseEndPoint[1] }
+        };
+        const svgCircleObject: svgArcObject = {
+          startPt: { x: circleStartPoint[0], y: circleStartPoint[1] },
+          radiiXYWithSpace:
+            SETTINGS.boundaryCircle.radius +
+            "," +
+            SETTINGS.boundaryCircle.radius +
+            " ",
+          rotationDegrees: 0,
+          displayShort0OrLong1: 1,
+          displayCCW0OrCW1: fillLayer == LAYER.backgroundFills ? 1 : 0,
+          endPt: { x: circleEndPoint[0], y: circleEndPoint[1] }
+        };
+        let svgString = '<path d="';
+        svgString += Nodule.svgArcString(svgEllipseObject, true);
+        svgString +=
+          "L" + ellipseStartPoint[0] + "," + ellipseStartPoint[1] + " "; // close the ellipse, with a line to the start
+        svgString += Nodule.svgArcString(svgCircleObject, true);
+        svgString +=
+          "L" + circleStartPoint[0] + "," + circleStartPoint[1] + " "; // close the circle, with a line to the start
+        svgString +=
+          "M" + ellipseStartPoint[0] + "," + ellipseStartPoint[1] + " "; // move (not line) to the start ellipse
+        svgString += '"/>';
+
+        returnSVGObject.layerSVGArray.push([fillLayer, svgString]);
+
+        // now add the back/foreground fill which is a circle of radius boundary circle
+        let svgEntireCircleString =
+          '<circle cx="0" cy="0" r="' + SETTINGS.boundaryCircle.radius + '" />';
+        returnSVGObject.layerSVGArray.push([
+          fillLayer == LAYER.backgroundFills
+            ? LAYER.foregroundFills
+            : LAYER.backgroundFills,
+          svgEntireCircleString
+        ]);
+      }
+    }
+    return [returnSVGObject];
+  }
+
   defaultStyleState(panel: StyleCategory): StyleOptions {
     switch (panel) {
       case StyleCategory.Front:
@@ -983,15 +1292,20 @@ export default class Circle extends Nodule {
 
         //FRONT
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.front)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.front)
         ) {
           this._frontFill.noFill();
         } else {
-          this.frontGradientColor.color = SETTINGS.circle.temp.fillColor.front;
-          this._frontFill.fill = this.frontGradient;
+          if (Nodule.globalGradientFill) {
+            this.frontGradientColor.color =
+              SETTINGS.circle.temp.fillColor.front;
+            this._frontFill.fill = this.frontGradient;
+          } else {
+            this._frontFill.fill = SETTINGS.circle.temp.fillColor.front;
+          }
         }
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.front)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.front)
         ) {
           this._frontPart.noStroke();
         } else {
@@ -1011,15 +1325,19 @@ export default class Circle extends Nodule {
         }
         //BACK
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.back)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.back)
         ) {
           this._backFill.noFill();
         } else {
-          this.backGradientColor.color = SETTINGS.circle.temp.fillColor.back;
-          this._backFill.fill = this.backGradient;
+          if (Nodule.globalGradientFill) {
+            this.backGradientColor.color = SETTINGS.circle.temp.fillColor.back;
+            this._backFill.fill = this.backGradient;
+          } else {
+            this._backFill.fill = SETTINGS.circle.temp.fillColor.back;
+          }
         }
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.back)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.circle.temp.strokeColor.back)
         ) {
           this._backPart.noStroke();
         } else {
@@ -1048,15 +1366,20 @@ export default class Circle extends Nodule {
 
         // FRONT
         const frontStyle = this.styleOptions.get(StyleCategory.Front);
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this._frontFill.noFill();
         } else {
-          this.frontGradientColor.color =
-            frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.front;
-          this._frontFill.fill = this.frontGradient;
+          if (Nodule.globalGradientFill) {
+            this.frontGradientColor.color =
+              frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.front;
+            this._frontFill.fill = this.frontGradient;
+          } else {
+            this._frontFill.fill =
+              frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.front;
+          }
         }
 
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontPart.noStroke();
         } else {
           this._frontPart.stroke =
@@ -1076,31 +1399,42 @@ export default class Circle extends Nodule {
         const backStyle = this.styleOptions.get(StyleCategory.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontStyle?.fillColor)
             )
           ) {
             this._backFill.noFill();
           } else {
-            this.backGradientColor.color = Nodule.contrastFillColor(
-              frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back
-            );
-
-            this._backFill.fill = this.backGradient;
+            if (Nodule.globalGradientFill) {
+              this.backGradientColor.color = Nodule.contrastFillColor(
+                frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back
+              );
+              this._backFill.fill = this.backGradient;
+            } else {
+              this._backFill.fill = Nodule.contrastFillColor(
+                frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back
+              );
+            }
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.fillColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this._backFill.noFill();
           } else {
-            this.backGradientColor.color =
-              backStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back;
-            this._backFill.fill = this.backGradient;
+            if (Nodule.globalGradientFill) {
+              this.backGradientColor.color =
+                backStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back;
+              this._backFill.fill = this.backGradient;
+            } else {
+              this._backFill.fill = Nodule.contrastFillColor(
+                backStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back
+              );
+            }
           }
         }
 
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
@@ -1111,7 +1445,7 @@ export default class Circle extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this._backPart.noStroke();
           } else {
             this._backPart.stroke =

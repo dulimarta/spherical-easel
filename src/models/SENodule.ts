@@ -409,6 +409,7 @@ export abstract class SENodule implements Visitable {
   set showing(b: boolean) {
     // Set the showing variable
     if (this.ref) {
+      // console.log("set showing in SENodule to ", b, " in ", this.name)
       this.ref.showing = b; // internally this invokes setVisible()
       // Set the display for the corresponding plottable object
       // this.ref?.setVisible(b);

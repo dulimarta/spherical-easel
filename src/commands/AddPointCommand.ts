@@ -2,9 +2,10 @@ import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
-import { SavedNames } from "@/types";
+import { SavedNames, toSVGType } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleCategory } from "@/types/Styles";
+
 
 //#region addPointCommand
 export class AddPointCommand extends Command {
@@ -53,6 +54,10 @@ export class AddPointCommand extends Command {
     Command.store.removePoint(this.lastState);
   }
 
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.sePoint, this.seLabel]];
+  }
+
   toOpcode(): null | string | Array<string> {
     return [
       "AddPoint",
@@ -69,9 +74,7 @@ export class AddPointCommand extends Command {
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
-          JSON.stringify(
-            this.sePoint.ref.currentStyleState(StyleCategory.Back)
-          )
+          JSON.stringify(this.sePoint.ref.currentStyleState(StyleCategory.Back))
         ),
       // All labels have these attributes
       "labelName=" + Command.symbolToASCIIDec(this.seLabel.name),

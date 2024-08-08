@@ -10,6 +10,7 @@ import {
   DEFAULT_NONFREEPOINT_BACK_STYLE
 } from "@/types/Styles";
 import Point from "@/plottables/Point";
+import { toSVGType } from "@/types";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.

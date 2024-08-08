@@ -121,8 +121,8 @@ export class SELongitude extends SESegment {
     //turn off the fill of the ref circle
     this.ref.updateStyle(StyleCategory.Front,
        {
-        strokeColor: "hsla(0, 0%, 0%, 1)",
-        fillColor: "hsla(0, 0%, 0%, 0)"
+        strokeColor: "#000000ff",
+        fillColor: "#00000000"
       }
     )
     this.update();

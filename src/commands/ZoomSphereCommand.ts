@@ -1,5 +1,6 @@
 import { Command } from "./Command";
 import EventBus from "@/eventHandlers/EventBus";
+import { toSVGReturnType, toSVGType } from "@/types";
 
 export class ZoomSphereCommand extends Command {
   private magnificationFactor: number;

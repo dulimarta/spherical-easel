@@ -7,6 +7,7 @@ import {
   DEFAULT_NONFREE_LINE_BACK_STYLE
 } from "@/types/Styles";
 import Line from "./Line";
+import { toSVGType } from "@/types";
 
 export default class NonFreeLine extends Line {
   /**

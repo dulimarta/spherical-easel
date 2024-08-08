@@ -6,6 +6,7 @@ import { SavedNames } from "@/types";
 import { AddTranslationCommand } from "./AddTranslationCommand";
 import { SEPointReflection } from "@/models/SEPointReflection";
 import { SEPoint } from "@/models/SEPoint";
+import { toSVGType } from "@/types";
 
 export class AddPointReflectionCommand extends Command {
   private sePointReflection: SEPointReflection;

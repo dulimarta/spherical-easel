@@ -46,7 +46,7 @@ export class SEParametricTracePoint extends SEPoint {
   //     this._locationVector.copy(pos);
   //   }
   //   // Set the position of the associated displayed plottable Point
-  //   this.ref.positionVector = this._locationVector;
+  //   this.ref.positionVectorAndDisplay = this._locationVector;
   // }
 
   // get locationVector(): Vector3 {
@@ -82,7 +82,7 @@ export class SEParametricTracePoint extends SEPoint {
     // Record the location on the unit ideal sphere of this SEPoint
     this._locationVector.copy(pos).normalize();
     // Set the position of the associated displayed plottable Point
-    this.ref.positionVector = this._locationVector;
+    this.ref.positionVectorAndDisplay = this._locationVector;
   }
 
   public setLocationByTime(tVal: number): void {
@@ -107,7 +107,7 @@ export class SEParametricTracePoint extends SEPoint {
       // this._locationVector.applyMatrix4(this.tmpMatrix);
 
       // Set the position of the associated displayed plottable Point
-      this.ref.positionVector = this._locationVector;
+      this.ref.positionVectorAndDisplay = this._locationVector;
     } else {
       this._exists = false;
     }

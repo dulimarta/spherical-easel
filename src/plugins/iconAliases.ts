@@ -81,7 +81,8 @@ const iconNames = [
   "zoomOut",
   "starConstruction",
   "unstarConstruction",
-  "privateConstruction"
+  "privateConstruction",
+  "animatedSVGLogo"
 ];
 
 const toRecord = (n: Array<string>): Record<string, any> => {

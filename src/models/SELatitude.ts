@@ -70,8 +70,8 @@ export class SELatitude extends SECircle {
     this.ref.updateStyle(
       StyleCategory.Front,
        {
-        strokeColor: "hsla(0, 0%, 0%, 1)",
-        fillColor: "hsla(0, 0%, 0%, 0)"
+        strokeColor: "#000000ff",
+        fillColor: "#00000000"
       }
     );
   }

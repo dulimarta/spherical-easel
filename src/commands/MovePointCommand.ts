@@ -1,6 +1,7 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { Vector3 } from "three";
+import { toSVGType } from "@/types";
 
 export class MovePointCommand extends Command {
   private sePoint: SEPoint;

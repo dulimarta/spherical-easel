@@ -6,6 +6,7 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGType } from "@/types";
 
 export class AddPointOnOneDimensionalCommand extends Command {
   private sePointOnOneOrTwoDimensional: SEPointOnOneOrTwoDimensional;
@@ -69,6 +70,10 @@ export class AddPointOnOneDimensionalCommand extends Command {
     Command.store.removePoint(this.lastState);
     this.sePointOnOneOrTwoDimensional.unregisterChild(this.seLabel);
     this.parent.unregisterChild(this.sePointOnOneOrTwoDimensional);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.sePointOnOneOrTwoDimensional, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

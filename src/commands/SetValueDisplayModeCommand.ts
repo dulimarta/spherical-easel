@@ -3,6 +3,7 @@ import { SEExpression } from "../models/SEExpression";
 
 import { SavedNames, ValueDisplayMode } from "../types";
 import { SENodule } from "@/models/SENodule";
+import { toSVGType } from "@/types";
 
 export class SetValueDisplayModeCommand extends Command {
   private seExpression: SEExpression;
@@ -32,9 +33,6 @@ export class SetValueDisplayModeCommand extends Command {
     this.seExpression.valueDisplayMode = this.oldValueDisplayMode;
   }
 
-  // toOpcode(): null | string | Array<string> {
-  //   return null; // Exclude this command from interpretation
-  // }
   toOpcode(): null | string | Array<string> {
     return [
       "SetValueDisplayMode",

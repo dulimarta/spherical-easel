@@ -9,6 +9,7 @@ import {
 } from "@/types/Styles";
 import { Arc } from "two.js/extras/jsm/arc";
 import { Group } from "two.js/src/group";
+import { svgArcObject, toSVGType } from "@/types";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
@@ -48,9 +49,9 @@ export default class Segment extends Nodule {
    * can have two front parts or two back parts. The frontExtra and backExtra are variables to represent those
    * extra parts. There are glowing counterparts for each part.
    */
-  private _frontPart: Arc;
+  protected _frontPart: Arc;
   protected _frontExtra: Arc;
-  private _backPart: Arc;
+  protected _backPart: Arc;
   protected _backExtra: Arc;
   protected _glowingFrontPart: Arc;
   protected _glowingFrontExtra: Arc;
@@ -193,32 +194,6 @@ export default class Segment extends Nodule {
       Math.PI,
       SUBDIVS
     );
-
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this._frontPart.id), {
-      type: "segment",
-      side: "front",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._frontExtra.id), {
-      type: "segment",
-      side: "front",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._backPart.id), {
-      type: "segment",
-      side: "back",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._backExtra.id), {
-      type: "segment",
-      side: "back",
-      fill: false,
-      part: ""
-    });
 
     // Set the style that never changes -- Fill
     this._frontPart.noFill();
@@ -518,14 +493,20 @@ export default class Segment extends Nodule {
     this._glowingBackExtra.rotation = rotation;
 
     // scale to display on the screen and set the heights (widths are all 2*radius)
-    this._frontPart.height = 2 * radius * this._halfMinorAxis;
-    this._glowingFrontPart.height = 2 * radius * this._halfMinorAxis;
-    this._backPart.height = 2 * radius * this._halfMinorAxis;
-    this._glowingBackPart.height = 2 * radius * this._halfMinorAxis;
-    this._frontExtra.height = 2 * radius * this._halfMinorAxis;
-    this._glowingFrontExtra.height = 2 * radius * this._halfMinorAxis;
-    this._backExtra.height = 2 * radius * this._halfMinorAxis;
-    this._glowingBackExtra.height = 2 * radius * this._halfMinorAxis;
+    // make sure the height is never zero, otherwise you get an SVG error about a NaN
+    const tempHalfMinorAxis =
+      Math.abs(this._halfMinorAxis) < SETTINGS.tolerance
+        ? 0.00001
+        : 2 * radius * this._halfMinorAxis;
+
+    this._frontPart.height = tempHalfMinorAxis;
+    this._glowingFrontPart.height = tempHalfMinorAxis;
+    this._backPart.height = tempHalfMinorAxis;
+    this._glowingBackPart.height = tempHalfMinorAxis;
+    this._frontExtra.height = tempHalfMinorAxis;
+    this._glowingFrontExtra.height = tempHalfMinorAxis;
+    this._backExtra.height = tempHalfMinorAxis;
+    this._glowingBackExtra.height = tempHalfMinorAxis;
 
     //for checking to see if the segment is drawn from start to end VERY important for polygon to work correctly
     // this._frontPart.ending = 0.75
@@ -726,6 +707,222 @@ export default class Segment extends Nodule {
     this._glowingBackExtra.remove();
   }
 
+  toSVG(nonScaling?: {
+    stroke: boolean;
+    text: boolean;
+    pointRadius: boolean;
+    scaleFactor: number;
+  }): toSVGType[] {
+
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGObject: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyleDictionary: null,
+      layerSVGArray: [],
+      type: "segment"
+    };
+    // collect the front style of the line
+    if (this._frontPartInUse) {
+      returnSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({
+        strokeObject: this._frontPart
+      });
+    }
+
+    if (this._backPartInUse) {
+      returnSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({
+        strokeObject: this._backPart
+      });
+    }
+
+    // Collect geometric information on the front.
+    let startIndex = this._frontExtraInUse
+      ? this._frontPart.vertices.length - 1
+      : 0;
+    let endIndex = this._frontExtraInUse
+      ? 0
+      : this._frontPart.vertices.length - 1;
+
+    if (this._frontPartInUse) {
+      let frontDisplayFlags: [0 | 1, 0 | 1] = [0, 0]; // flags to control which portion of the ellipse is displayed
+      if (!this._backExtraInUse && !this._frontExtraInUse) {
+        // the segment goes from front to back or back to front or is contained entirely on the front
+        if (this._normalVector.z > 0) {
+          frontDisplayFlags = [0, 1];
+        } else {
+          frontDisplayFlags = [0, 0];
+        }
+      } else if (this._backExtraInUse) {
+        // the front is the entire front (half ellipse)
+        if (this._normalVector.z > 0) {
+          frontDisplayFlags = [1, 0];
+        } else {
+          frontDisplayFlags = [0, 1];
+        }
+      } else if (this._frontExtraInUse) {
+        // the back is the entire back (half ellipse) and the frontPart and frontExtra are partial segments
+        if (this._normalVector.z > 0) {
+          frontDisplayFlags = [0, 1];
+        } else {
+          frontDisplayFlags = [0, 0];
+        }
+      }
+      // form an ArcObject
+      const frontPartObject: svgArcObject = {
+        startPt: this._backExtraInUse
+          ? { x: 250, y: 0 } // this front is the entire front
+          : {
+              x: this._frontPart.vertices[startIndex].x,
+              y: this._frontPart.vertices[startIndex].y
+            },
+        radiiXYWithSpace:
+          SETTINGS.boundaryCircle.radius + // x radius
+          "," +
+          Math.abs(this._frontExtra.height) / 2 + // y radius
+          " ",
+        rotationDegrees: 0,
+        displayShort0OrLong1: frontDisplayFlags[0],
+        displayCCW0OrCW1: frontDisplayFlags[1],
+        endPt: this._backExtraInUse
+          ? { x: -250, y: 0 } // this front is the entire front
+          : {
+              x: this._frontPart.vertices[endIndex].x,
+              y: this._frontPart.vertices[endIndex].y
+            }
+      };
+
+      let svgFrontString =
+        "<path " +
+        Segment.svgTransformMatrixString(this._frontExtra.rotation, 1, 0, 0) + // matrix does the rotation, scaling,...
+        'd="';
+      svgFrontString += Segment.svgArcString(frontPartObject, true);
+      svgFrontString += '"/>'; // end point
+
+      returnSVGObject.layerSVGArray.push([LAYER.foreground, svgFrontString]);
+    }
+
+    if (this._frontExtraInUse) {
+      // form an ArcObject
+      const frontExtraObject: svgArcObject = {
+        startPt: {
+          x: this._frontExtra.vertices[0].x,
+          y: this._frontExtra.vertices[0].y
+        },
+        radiiXYWithSpace:
+          SETTINGS.boundaryCircle.radius + // x radius
+          "," +
+          Math.abs(this._frontExtra.height) / 2 + // y radius
+          " ",
+        rotationDegrees: 0,
+        displayShort0OrLong1: this._normalVector.z > 0 ? 0 : 0,
+        displayCCW0OrCW1: this._normalVector.z > 0 ? 0 : 1,
+        endPt: {
+          x: this._frontExtra.vertices[this._frontExtra.vertices.length - 1].x,
+          y: this._frontExtra.vertices[this._frontExtra.vertices.length - 1].y
+        }
+      };
+      let svgFrontString =
+        "<path " +
+        Segment.svgTransformMatrixString(this._frontExtra.rotation, 1, 0, 0) +
+        'd="'; // matrix does the rotation, scaling, and translation
+      svgFrontString += Segment.svgArcString(frontExtraObject, true);
+      svgFrontString += '"/>';
+
+      returnSVGObject.layerSVGArray.push([LAYER.foreground, svgFrontString]);
+    }
+
+    // Collect the geometric information for the back
+    if (this._backPartInUse) {
+      let backDisplayFlags: [0 | 1, 0 | 1] = [0, 0]; // flags to control which portion of the ellipse is displayed
+      if (!this._backExtraInUse && !this._frontExtraInUse) {
+        // the segment goes from front to back or back to front or is entirely contained on the back
+        if (this._normalVector.z > 0) {
+          backDisplayFlags = [0, 1];
+        } else {
+          backDisplayFlags = [0, 0];
+        }
+      } else if (this._frontExtraInUse) {
+        // the back is the entire back (half ellipse)
+        if (this._normalVector.z > 0) {
+          backDisplayFlags = [0, 0];
+        } else {
+          backDisplayFlags = [1, 1];
+        }
+      } else if (this._backExtraInUse) {
+        if (this._normalVector.z > 0) {
+          backDisplayFlags = [0, 0];
+        } else {
+          backDisplayFlags = [0, 1];
+        }
+      }
+
+      // form an ArcObject
+      const backPartObject: svgArcObject = {
+        startPt: this._frontExtraInUse
+          ? { x: -250, y: 0 }
+          : {
+              x: this._backPart.vertices[startIndex].x,
+              y: this._backPart.vertices[startIndex].y
+            },
+        radiiXYWithSpace:
+          SETTINGS.boundaryCircle.radius + // x radius
+          "," +
+          Math.abs(this._backExtra.height) / 2 + // y radius
+          " ",
+        rotationDegrees: 0,
+        displayShort0OrLong1: backDisplayFlags[0],
+        displayCCW0OrCW1: backDisplayFlags[1],
+        endPt: this._frontExtraInUse
+          ? { x: 250, y: 0 }
+          : {
+              x: this._backPart.vertices[endIndex].x,
+              y: this._backPart.vertices[endIndex].y
+            }
+      };
+      let svgBackString =
+        "<path " +
+        Segment.svgTransformMatrixString(this._backExtra.rotation, 1, 0, 0) + // matrix does the rotation, scaling,...
+        'd="';
+      svgBackString += Segment.svgArcString(backPartObject, true);
+      svgBackString += '"/>'; // end point
+
+      returnSVGObject.layerSVGArray.push([LAYER.background, svgBackString]);
+    }
+
+    if (this._backExtraInUse) {
+      // form an ArcObject
+      const backExtraObject: svgArcObject = {
+        startPt: {
+          x: this._backExtra.vertices[this._backExtra.vertices.length - 1].x,
+          y: this._backExtra.vertices[this._backExtra.vertices.length - 1].y
+        },
+        radiiXYWithSpace:
+          SETTINGS.boundaryCircle.radius + // x radius
+          "," +
+          Math.abs(this._backExtra.height) / 2 + // y radius
+          " ",
+        rotationDegrees: 0,
+        displayShort0OrLong1: this._normalVector.z > 0 ? 0 : 0,
+        displayCCW0OrCW1: this._normalVector.z > 0 ? 1 : 0,
+
+        endPt: {
+          x: this._backExtra.vertices[0].x,
+          y: this._backExtra.vertices[0].y
+        }
+      };
+      let svgBackString =
+        "<path " +
+        Segment.svgTransformMatrixString(this._backExtra.rotation, 1, 0, 0) +
+        'd="'; // matrix does the rotation, scaling, and translation
+      svgBackString += Segment.svgArcString(backExtraObject, true);
+      svgBackString += '"/>';
+
+      returnSVGObject.layerSVGArray.push([LAYER.background, svgBackString]);
+    }
+    return [returnSVGObject];
+  }
+
   /**
    * Return the default style state
    */
@@ -881,7 +1078,7 @@ export default class Segment extends Nodule {
         // FRONT PART
         const frontStyle = this.styleOptions.get(StyleCategory.Front);
         // no fillColor
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontPart.noStroke();
         } else {
           this._frontPart.stroke =
@@ -906,7 +1103,7 @@ export default class Segment extends Nodule {
         }
         // FRONT EXTRA
         // no fillColor
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontExtra.noStroke();
         } else {
           this._frontExtra.stroke =
@@ -936,7 +1133,7 @@ export default class Segment extends Nodule {
 
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
@@ -947,7 +1144,7 @@ export default class Segment extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this._backPart.noStroke();
           } else {
             this._backPart.stroke =
@@ -975,7 +1172,7 @@ export default class Segment extends Nodule {
         // no fillColor
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
@@ -986,7 +1183,7 @@ export default class Segment extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this._backExtra.noStroke();
           } else {
             this._backExtra.stroke =

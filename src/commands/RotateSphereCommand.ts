@@ -1,5 +1,6 @@
 import { Command } from "./Command";
 import { Matrix4 } from "three";
+import { toSVGType } from "@/types";
 
 export class RotateSphereCommand extends Command {
   private rotationMat: Matrix4;
@@ -12,6 +13,7 @@ export class RotateSphereCommand extends Command {
   }
 
   do(): void {
+    console.log(this.rotationMat.toArray())
     Command.store.rotateSphere(this.rotationMat);
   }
 

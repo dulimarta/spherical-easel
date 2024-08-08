@@ -594,6 +594,7 @@ export const useSEStore = defineStore("se", () => {
   }
   //#region addPoint
   function addPoint(point: SEPoint): void {
+    // console.log("Point Added ", point.name)
     sePointIds.value.push(point.id);
     sePointMap.set(point.id, point);
     seNodules.value.push(point);
@@ -688,6 +689,7 @@ export const useSEStore = defineStore("se", () => {
     }
   }
   function addSegment(segment: SESegment): void {
+    // console.log("seg id", segment.id)
     seSegmentIds.value.push(segment.id);
     seSegmentMap.set(segment.id, segment);
     seNodules.value.push(segment);
@@ -926,16 +928,16 @@ export const useSEStore = defineStore("se", () => {
     updateCandidates.push(
       ...seNodules.value.filter((p: SENodule) => p.parents.length === 0)
     );
-    // console.debug(
+    // console.log(
     //   "Update candidates",
     //   updateCandidates.map(z => z.name).join(", ")
     // );
     while (updateCandidates.length > 0) {
       const target = updateCandidates.shift()!;
       const accepted = target.accept(rotationVisitor);
-      // console.debug(`What's going on with ${target.name}?`, accepted);
+      // console.log(`What's going on with ${target.name}?`, accepted);
       if (!accepted) {
-        // console.debug(
+        // console.log(
         //   target.name,
         //   "does not accept rotation visitor, try its shallowUpdate"
         // );
@@ -965,6 +967,14 @@ export const useSEStore = defineStore("se", () => {
       n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
     });
   }
+
+  function changeGradientFill(useGradientFill: boolean) {
+    Nodule.setGradientFill(useGradientFill);
+    seNodules.value.forEach(n => {
+      n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
+    });
+  }
+
   function changeSegmentNormalVectorArcLength(change: {
     segmentId: number;
     normal: Vector3;
@@ -3968,6 +3978,7 @@ export const useSEStore = defineStore("se", () => {
     addTemporaryNodule,
     addTransformation,
     changeBackContrast,
+    changeGradientFill,
     changeLineNormalVector,
     changeSegmentNormalVectorArcLength,
     clearUnsavedFlag,

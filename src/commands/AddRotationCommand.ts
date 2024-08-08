@@ -8,6 +8,7 @@ import { SERotation } from "@/models/SERotation";
 import { SEPoint } from "@/models/SEPoint";
 import { SEExpression } from "@/models/SEExpression";
 import { SEEllipse } from "@/models/SEEllipse";
+import { toSVGType } from "@/types";
 
 export class AddRotationCommand extends Command {
   private seRotation: SERotation;

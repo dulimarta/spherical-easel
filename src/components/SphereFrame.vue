@@ -92,8 +92,8 @@ import CoordinateHandler from "@/eventHandlers/PointCoordinateHandler";
 import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
 import PerpendicularLineThruPointHandler from "@/eventHandlers/PerpendicularLineThruPointHandler";
 import TangentLineThruPointHandler from "@/eventHandlers/TangentLineThruPointHandler";
-import IconFactoryHandler from "@/eventHandlers/IconFactoryHandler";
 import EllipseHandler from "@/eventHandlers/EllipseHandler";
+import IconFactoryHandler from "../eventHandlers/IconFactoryHandler";
 import PolygonHandler from "@/eventHandlers/PolygonHandler";
 import NSectSegmentHandler from "@/eventHandlers/NSectSegmentHandler";
 import NSectAngleHandler from "@/eventHandlers/NSectAngleHandler";
@@ -106,9 +106,6 @@ import MoveHandler from "../eventHandlers/MoveHandler";
 import { ActionMode } from "@/types";
 
 // import colors from "vuetify/lib/util/colors";
-import { SELabel } from "@/models/SELabel";
-import FileSaver from "file-saver";
-import Nodule from "@/plottables/Nodule";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { useAccountStore } from "@/stores/account";
@@ -128,6 +125,7 @@ import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
 import { useMagicKeys } from "@vueuse/core";
 import { watchEffect } from "vue";
+
 type ComponentProps = {
   availableHeight: number;
   availableWidth: number;
@@ -140,6 +138,10 @@ const {
   zoomMagnificationFactor,
   zoomTranslation,
   seLabels,
+  seEllipses,
+  sePolygons,
+  seCircles,
+  // twojsLayers: layers,
   isEarthMode
 } = storeToRefs(seStore);
 const acctStore = useAccountStore();
@@ -204,8 +206,8 @@ let coordinateTool: CoordinateHandler | null = null;
 let toggleLabelDisplayTool: ToggleLabelDisplayHandler | null = null;
 let perpendicularLineThruPointTool: PerpendicularLineThruPointHandler | null =
   null;
-let tangentLineThruPointTool: TangentLineThruPointHandler | null = null;
 let iconFactoryTool: IconFactoryHandler | null = null;
+let tangentLineThruPointTool: TangentLineThruPointHandler | null = null;
 let measureTriangleTool: PolygonHandler | null = null;
 let measurePolygonTool: PolygonHandler | null = null;
 let midpointTool: NSectSegmentHandler | null = null;
@@ -281,18 +283,9 @@ onBeforeMount((): void => {
   // and scale it later to fit the canvas
   boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
   boundaryCircle.noFill();
-  // boundaryCircle.stroke = "rgba(255, 0, 0, 0.2)";
-
+  boundaryCircle.stroke = SETTINGS.boundaryCircle.color;
   boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
   boundaryCircle.addTo(layers[Number(LAYER.midground)]);
-
-  //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-  Nodule.idPlottableDescriptionMap.set(String(boundaryCircle.id), {
-    type: "boundaryCircle",
-    side: "mid",
-    fill: false,
-    part: ""
-  });
 
   // Draw horizontal and vertical lines (just for debugging)
   // const R = SETTINGS.boundaryCircle.radius;
@@ -317,7 +310,6 @@ onBeforeMount((): void => {
   // Add Event Bus (a Vue component) listeners to change the display of the sphere - rotate and Zoom/Pan
   EventBus.listen("sphere-rotate", handleSphereRotation);
   EventBus.listen("zoom-updated", updateView);
-  EventBus.listen("export-current-svg", getCurrentSVGForIcon);
   EventBus.listen("construction-loaded", animateCanvas);
   EventBus.listen(
     "measured-circle-set-temporary-radius",
@@ -333,10 +325,9 @@ onBeforeMount((): void => {
     mousePos.value = `(${normPos}) (${rawPos})`;
   });
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
-  // EventBus.listen(
-  //   "set-point-visibility-and-label",
-  //   setPointInitialVisibilityAndLabel
-  // );
+  EventBus.listen("update-two-instance", updateTwoInstance);
+  EventBus.listen("update-fill-objects", updateObjectsWithFill);
+  // EventBus.listen("export-current-svg-for-icon", getCurrentSVGForIcon);
 });
 
 onMounted((): void => {
@@ -430,18 +421,20 @@ onBeforeUnmount((): void => {
 
   EventBus.unlisten("sphere-rotate");
   EventBus.unlisten("zoom-updated");
-  EventBus.unlisten("export-current-svg");
   EventBus.unlisten("construction-loaded");
   EventBus.unlisten("measured-circle-set-temporary-radius");
   EventBus.unlisten("set-expression-for-tool");
   EventBus.unlisten("set-transformation-for-tool");
   EventBus.unlisten("delete-node");
+  EventBus.unlisten("update-two-instance");
+  EventBus.unlisten("update-fill-objects");
+  //EventBus.unlisten("export-current-svg-for-icon");
 });
 
 watch(
   [() => props.availableWidth, () => props.availableHeight],
   ([width, height]): void => {
-    // console.debug(`Available rectangle WxH ${width}x${height}`)
+    console.debug(`Available rectangle WxH ${width}x${height}`);
     twoInstance.width = width;
     twoInstance.height = height;
     // groups.forEach(z => {
@@ -449,7 +442,6 @@ watch(
     // });
 
     const radius = Math.min(width, height) / 2 - 16; // 16-pixel gap
-    // setSphereRadius(radius);
 
     const ratio = radius / SETTINGS.boundaryCircle.radius;
     //zoomMagnificationFactor = ratio;
@@ -658,82 +650,6 @@ function handleSphereRotation(e: unknown): void {
 }
 //#endregion handleSphereRotation
 
-function getCurrentSVGForIcon(): void {
-  const svgRoot = canvas.value?.querySelector("svg") as SVGElement;
-  //Dump a copy of the Nodule.idPlottableDescriptionMap into the console to it tso.js object
-  console.log(
-    "Nodule.idPlottableDescriptionMap",
-    Nodule.idPlottableDescriptionMap
-  );
-
-  // Make a duplicate of the SVG tree
-  const svgElement = svgRoot.cloneNode(true) as SVGElement;
-  svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-  //remove all the text items
-  const textGroups = svgElement.querySelectorAll("text");
-  for (let i = 0; i < textGroups.length; i++) {
-    textGroups[i].remove();
-  }
-  // remove all the hidden paths or paths with no anchors
-  // Also remove the straight edge start/end front/back for the angle markers (they look horrible in the icon)
-  const allElements = svgElement.querySelectorAll("path");
-  for (let i = 0; i < allElements.length; i++) {
-    const element = allElements[i];
-    const description = Nodule.idPlottableDescriptionMap.get(
-      element.getAttribute("id") ?? ""
-    );
-
-    if (
-      element.getAttribute("visibility") === "hidden" ||
-      element.getAttribute("d") === "" ||
-      (description?.type === "angleMarker" && description.part === "edge")
-    ) {
-      element.remove();
-    }
-  }
-
-  // remove all SVG groups with no children (they are are result of empty groups)
-  const groups = svgElement.querySelectorAll("g");
-  for (let i = 0; i < groups.length; i++) {
-    const group = groups[i];
-    if (group.childElementCount === 0) {
-      group.remove();
-    }
-  }
-  const iconArray = [];
-  const defs = svgElement.querySelectorAll("defs");
-  for (let i = 0; i < defs.length; i++) {
-    iconArray.push(defs[i].outerHTML);
-  }
-
-  const paths = svgElement.querySelectorAll("path");
-  for (let i = 0; i < paths.length; i++) {
-    paths[i].setAttribute("vector-effect", "non-scaling-stroke");
-
-    // Into each path inject four new attributes, which will be removed later
-    const description = Nodule.idPlottableDescriptionMap.get(
-      paths[i].getAttribute("id") ?? ""
-    );
-    if (description === undefined) {
-      throw new Error(`IconBase - ${paths[i]} has no id.`);
-    }
-    paths[i].setAttribute("type", description.type);
-    paths[i].setAttribute("side", description.side);
-    paths[i].setAttribute("myfill", String(description.fill));
-    paths[i].setAttribute("part", description.part);
-
-    iconArray.push(paths[i].outerHTML);
-  }
-
-  // We are NOT actually saving an SVG content,
-  // but it is actually a plain text payload
-  // The ";" delimiter is required by IconBase.vue
-  var blob = new Blob([iconArray.join(";")], {
-    type: "text/plain;charset=utf-8"
-  });
-  FileSaver.saveAs(blob, "iconXXXPaths.svg");
-}
-
 function animateCanvas(): void {
   animateClass.value = "spin";
   setTimeout(() => {
@@ -802,9 +718,97 @@ function deleteNode(e: {
   });
 }
 
-//IS THERE A BETTER WAY?
-// function updateTwoJsInstance(): void {
-//   twoInstance.update();
+// TEMP REMOVE
+function updateTwoInstance() {
+  twoInstance.update();
+}
+
+function updateObjectsWithFill() {
+  for (let e of seEllipses.value) {
+    e.update();
+  }
+  for (let c of seCircles.value) {
+    c.update();
+  }
+  for (let p of sePolygons.value) {
+    p.update();
+  }
+}
+
+// function getCurrentSVGForIcon(): void {
+//   const svgRoot = canvas.value?.querySelector("svg") as SVGElement;
+//   //Dump a copy of the Nodule.idPlottableDescriptionMap into the console to it tso.js object
+//   console.log(
+//     "Nodule.idPlottableDescriptionMap",
+//     Nodule.idPlottableDescriptionMap
+//   );
+
+//   // Make a duplicate of the SVG tree
+//   const svgElement = svgRoot.cloneNode(true) as SVGElement;
+//   svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+//   //remove all the text items
+//   const textGroups = svgElement.querySelectorAll("text");
+//   for (let i = 0; i < textGroups.length; i++) {
+//     textGroups[i].remove();
+//   }
+//   // remove all the hidden paths or paths with no anchors
+//   // Also remove the straight edge start/end front/back for the angle markers (they look horrible in the icon)
+//   const allElements = svgElement.querySelectorAll("path");
+//   for (let i = 0; i < allElements.length; i++) {
+//     const element = allElements[i];
+//     const description = Nodule.idPlottableDescriptionMap.get(
+//       element.getAttribute("id") ?? ""
+//     );
+
+//     if (
+//       element.getAttribute("visibility") === "hidden" ||
+//       element.getAttribute("d") === "" ||
+//       (description?.type === "angleMarker" && description.part === "edge")
+//     ) {
+//       element.remove();
+//     }
+//   }
+
+//   // remove all SVG groups with no children (they are are result of empty groups)
+//   const groups = svgElement.querySelectorAll("g");
+//   for (let i = 0; i < groups.length; i++) {
+//     const group = groups[i];
+//     if (group.childElementCount === 0) {
+//       group.remove();
+//     }
+//   }
+//   const iconArray = [];
+//   const defs = svgElement.querySelectorAll("defs");
+//   for (let i = 0; i < defs.length; i++) {
+//     iconArray.push(defs[i].outerHTML);
+//   }
+
+//   const paths = svgElement.querySelectorAll("path");
+//   for (let i = 0; i < paths.length; i++) {
+//     paths[i].setAttribute("vector-effect", "non-scaling-stroke");
+
+//     // Into each path inject four new attributes, which will be removed later
+//     const description = Nodule.idPlottableDescriptionMap.get(
+//       paths[i].getAttribute("id") ?? ""
+//     );
+//     if (description === undefined) {
+//       throw new Error(`IconBase - ${paths[i]} has no id.`);
+//     }
+//     paths[i].setAttribute("type", description.type);
+//     paths[i].setAttribute("side", description.side);
+//     paths[i].setAttribute("myfill", String(description.fill));
+//     paths[i].setAttribute("part", description.part);
+
+//     iconArray.push(paths[i].outerHTML);
+//   }
+
+//   // We are NOT actually saving an SVG content,
+//   // but it is actually a plain text payload
+//   // The ";" delimiter is required by IconBase.vue
+//   var blob = new Blob([iconArray.join(";")], {
+//     type: "text/plain;charset=utf-8"
+//   });
+//   FileSaver.saveAs(blob, "iconXXXPaths.svg");
 // }
 
 // dialogBoxIsActive(e: { active: boolean }): void {
@@ -828,6 +832,8 @@ function deleteNode(e: {
 //     toggleLabelDisplayTool.disableKeyHandler = e.active;
 //   }
 // }
+
+
 /**
  * Watch the actionMode in the store. This is the two-way binding of variables in the Pinia Store.  Notice that this
  * is a vue component so we are able to Watch for changes in variables in the store. If this was not a vue component
@@ -891,16 +897,6 @@ watch(
         zoomTool.deactivate(); // shut the tool down properly
         seStore.revertActionMode();
         break;
-
-      case "iconFactory":
-        // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the click (and the tool should be the same)
-        if (!iconFactoryTool) {
-          iconFactoryTool = new IconFactoryHandler();
-        }
-        iconFactoryTool.createIconPaths();
-        seStore.revertActionMode();
-        break;
-
       case "hide":
         if (!hideTool) {
           hideTool = new HideObjectHandler(layers);
@@ -974,7 +970,14 @@ watch(
         }
         currentTool = pointOnOneDimensionalTool;
         break;
-
+      case "iconFactory":
+        // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the click (and the tool should be the same)
+        if (!iconFactoryTool) {
+          iconFactoryTool = new IconFactoryHandler();
+        }
+        iconFactoryTool.createIconPaths();
+        seStore.revertActionMode();
+        break;
       case "segmentLength":
         if (!segmentLengthTool) {
           segmentLengthTool = new SegmentLengthHandler(layers);
@@ -1141,8 +1144,9 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
   }
 
   style.position = "absolute";
-  style[xLoc] = `${c * 36}px`;
-  style[yLoc] = `${r * 36}px`;
+  // add in 3 px padding around the icons and 2 px between containers.
+  style[xLoc] = `${c * (SETTINGS.icons.shortcutButtonSize+3)+(c-1)*2}px`;
+  style[yLoc] = `${r * (SETTINGS.icons.shortcutButtonSize+3)+(r-1)*2}px`;
   return style;
 }
 </script>

@@ -13,7 +13,7 @@ export class TextBox extends Group {
     this._text = new Text(msg, 0, 0);
     const bbox = this._text.getBoundingClientRect();
     this.box = new RoundedRectangle(0, 0, bbox.width, bbox.height, 4);
-    this.box.fill = "hsl(20,50%,80%)";
+    this.box.fill = "#e6c4b3";
     this.box.opacity = 0.7;
     // this.box.addTo(this);
     // this._text.addTo(this);

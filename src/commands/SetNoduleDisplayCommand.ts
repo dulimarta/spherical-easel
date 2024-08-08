@@ -2,6 +2,7 @@ import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { Labelable, SavedNames } from "@/types";
 import SETTINGS from "@/global-settings";
+import { toSVGType } from "@/types";
 
 export class SetNoduleDisplayCommand extends Command {
   private seNodule: SENodule;

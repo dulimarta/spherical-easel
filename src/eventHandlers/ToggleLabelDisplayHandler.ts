@@ -9,6 +9,9 @@ import { Labelable } from "@/types";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
+import { Command } from "@/commands/Command";
+import { randInt } from "three/src/math/MathUtils";
+import EventBus from "./EventBus";
 
 export default class ToggleLabelDisplayHandler extends Highlighter {
   /**

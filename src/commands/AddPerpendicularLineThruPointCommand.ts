@@ -6,6 +6,8 @@ import { SavedNames, SEOneDimensional } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGType } from "@/types";
+
 export class AddPerpendicularLineThruPointCommand extends Command {
   private sePerpendicularLineThruPoint: SEPerpendicularLineThruPoint;
   private parentSEPoint: SEPoint;
@@ -45,6 +47,10 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       this.sePerpendicularLineThruPoint
     );
     this.parentSEPoint.unregisterChild(this.sePerpendicularLineThruPoint);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.sePerpendicularLineThruPoint, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

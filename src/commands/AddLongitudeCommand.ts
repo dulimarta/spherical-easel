@@ -5,6 +5,7 @@ import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleCategory } from "@/types/Styles";
 import { SELongitude } from "@/models/SELongitude";
+import { toSVGType } from "@/types";
 
 export class AddLongitudeCommand extends Command {
   private seLongitude: SELongitude;
@@ -32,6 +33,10 @@ export class AddLongitudeCommand extends Command {
     Command.store.removeSegment(this.lastState);
     this.seLongitude.unregisterChild(this.seLabel);
     Command.store.removeLabel(this.seLabel.id);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seLongitude, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

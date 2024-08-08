@@ -9,6 +9,7 @@ import {
 } from "@/types/Styles";
 import { Arc } from "two.js/extras/jsm/arc";
 import { Group } from "two.js/src/group";
+import { svgStyleType, toSVGType } from "@/types";
 
 // The number of vectors used to render the front half (and the same number in the back half)
 const SUBDIVS = SETTINGS.line.numPoints;
@@ -104,20 +105,6 @@ export default class Line extends Nodule {
       SUBDIVS
     );
 
-    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this._frontHalf.id), {
-      type: "line",
-      side: "front",
-      fill: false,
-      part: ""
-    });
-    Nodule.idPlottableDescriptionMap.set(String(this._backHalf.id), {
-      type: "line",
-      side: "back",
-      fill: false,
-      part: ""
-    });
-
     // The line is not initially glowing but is visible for the temporary object
     this._frontHalf.visible = true;
     this._backHalf.visible = true;
@@ -193,7 +180,7 @@ export default class Line extends Nodule {
   /**
    * Update the display of line
    * This method updates the TwoJS objects (frontHalf, backHalf, ...) for display
-   * This is only accurate if the normal vector is correct so only
+   * This is only accurate if the normal vector is correct and set using the set method in this plottable has been  so only
    * call this method once that vector is updated.
    */
   public updateDisplay(): void {
@@ -202,10 +189,15 @@ export default class Line extends Nodule {
     this._backHalf.rotation = this._rotation;
     this._glowingBackHalf.rotation = this._rotation;
 
-    this._frontHalf.height = 2 * radius * this._halfMinorAxis;
-    this._glowingFrontHalf.height = 2 * radius * this._halfMinorAxis;
-    this._backHalf.height = 2 * radius * this._halfMinorAxis;
-    this._glowingBackHalf.height = 2 * radius * this._halfMinorAxis;
+    // make sure the height is never zero, otherwise you get an SVG error about a NaN
+    const tempHalfMinorAxis =
+      Math.abs(this._halfMinorAxis) < SETTINGS.tolerance
+        ? 0.00001
+        : 2 * radius * this._halfMinorAxis;
+    this._frontHalf.height = tempHalfMinorAxis;
+    this._glowingFrontHalf.height = tempHalfMinorAxis;
+    this._backHalf.height = tempHalfMinorAxis;
+    this._glowingBackHalf.height = tempHalfMinorAxis;
   }
 
   setSelectedColoring(flag: boolean): void {
@@ -221,7 +213,7 @@ export default class Line extends Nodule {
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
 
-   addToLayers(layers: Group[]): void {
+  addToLayers(layers: Group[]): void {
     this._frontHalf.addTo(layers[LAYER.foreground]);
     this._glowingFrontHalf.addTo(layers[LAYER.foregroundGlowing]);
     this._backHalf.addTo(layers[LAYER.background]);
@@ -233,6 +225,68 @@ export default class Line extends Nodule {
     this._backHalf.remove();
     this._glowingFrontHalf.remove();
     this._glowingBackHalf.remove();
+  }
+
+  toSVG(nonScaling?: {
+    stroke?: boolean;
+    text?: boolean;
+    point?: boolean;
+    scaleFactor?: number;
+  }): toSVGType[] {
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGObject: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyleDictionary: null,
+      layerSVGArray: [],
+      type: "line"
+    };
+
+    // collect the front style
+    returnSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary(
+      {strokeObject:this._frontHalf}
+    );
+
+    // collect the back style
+    returnSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary(
+      {strokeObject:this._backHalf}
+    );
+
+    // Collect the geometric information for the front
+    // x-radius y-radius rotation large-arc-flag sweep-flag ending-x ending-y
+    let svgFrontString =
+      "<path " +
+      Line.svgTransformMatrixString(this._frontHalf.rotation, 1, 0, 0) + // matrix does the rotation, scaling, and translation
+      ' d="M 250,0 A'; //Start point (250,0)
+    svgFrontString +=
+      SETTINGS.boundaryCircle.radius + // x radius
+      "," +
+      Math.abs(this._frontHalf.height) / 2 + // y radius
+      " ";
+    svgFrontString += "0 "; // rotation
+    svgFrontString += this._normalVector.z > 0 ? "1 0 " : "0 1 "; // flags to control which portion of the ellipse is displayed
+    svgFrontString += '-250,0"/>'; // end point
+
+    returnSVGObject.layerSVGArray.push([LAYER.foreground, svgFrontString]);
+
+    // Collect the geometric information for the back
+    let svgBackString =
+      "<path " +
+      Line.svgTransformMatrixString(this._backHalf.rotation, 1, 0, 0) + // matrix does the rotation, scaling, and translation
+      ' d="M 250,0 A'; //Start point (250,0)
+    svgBackString +=
+      SETTINGS.boundaryCircle.radius + // x radius
+      "," +
+      Math.abs(this._backHalf.height) / 2 + // y radius
+      " ";
+    svgBackString += "0 "; // rotation
+    svgBackString += this._normalVector.z > 0 ? "0 1 " : "1 0 "; // flags to control which portion of the ellipse is displayed
+    svgBackString += '-250,0"/>'; // end point
+
+    returnSVGObject.layerSVGArray.push([LAYER.background, svgBackString]);
+
+    return [returnSVGObject];
   }
 
   /**
@@ -300,7 +354,7 @@ export default class Line extends Nodule {
         // Front
         // no fillColor
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.front)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.front)
         ) {
           this._frontHalf.noStroke();
         } else {
@@ -322,7 +376,7 @@ export default class Line extends Nodule {
         // Back
         // no fill color
         if (
-          Nodule.hslaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.back)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.line.temp.strokeColor.back)
         ) {
           this._backHalf.noStroke();
         } else {
@@ -354,7 +408,7 @@ export default class Line extends Nodule {
         // Front
         const frontStyle = this.styleOptions.get(StyleCategory.Front);
         // no fillColor
-        if (Nodule.hslaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontHalf.noStroke();
         } else {
           this._frontHalf.stroke = frontStyle?.strokeColor ?? "black";
@@ -382,7 +436,7 @@ export default class Line extends Nodule {
         // no fillColor
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.hslaIsNoFillOrNoStroke(
+            Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastStrokeColor(frontStyle?.strokeColor)
             )
           ) {
@@ -393,7 +447,7 @@ export default class Line extends Nodule {
             );
           }
         } else {
-          if (Nodule.hslaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
+          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this._backHalf.noStroke();
           } else {
             this._backHalf.stroke = backStyle?.strokeColor ?? "black";

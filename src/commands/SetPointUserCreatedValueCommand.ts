@@ -8,6 +8,7 @@ import SETTINGS from "@/global-settings";
 // import { SavedNames } from "@/types";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import EventBus from "@/eventHandlers/EventBus";
+import { toSVGType } from "@/types";
 
 /**
  * This is used when an intersection point was automatically created and the user
@@ -126,6 +127,7 @@ export class SetPointUserCreatedValueCommand extends Command {
     this.seIntersectionOrAntipodePoint.update();
     EventBus.fire("update-points-user-created", {});
   }
+
   toOpcode(): null | string | Array<string> {
     return null; // Exclude this command from interpretation
     // return [

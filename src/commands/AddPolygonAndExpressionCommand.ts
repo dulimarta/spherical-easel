@@ -7,6 +7,7 @@ import { Vector3 } from "three";
 import { SavedNames, ValueDisplayMode } from "@/types";
 import { SEPolygon } from "@/models/SEPolygon";
 import { StyleCategory } from "@/types/Styles";
+import { toSVGType } from "@/types";
 
 export class AddPolygonCommand extends Command {
   /**
@@ -67,6 +68,10 @@ export class AddPolygonCommand extends Command {
     this.seAngleMarkerParents.forEach(angMar =>
       angMar.unregisterChild(this.sePolygon)
     );
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.sePolygon, this.seLabel]];
   }
 
   toOpcode(): null | string | Array<string> {

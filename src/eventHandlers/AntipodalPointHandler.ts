@@ -355,12 +355,12 @@ export default class AntipodalPointHandler extends Highlighter {
         this.snapToTemporaryOneDimensional === null &&
         this.snapToTemporaryPoint === null
       ) {
-        this.temporaryAntipodeMarker.positionVector = this.tmpVector
+        this.temporaryAntipodeMarker.positionVectorAndDisplay = this.tmpVector
           .copy(this.currentSphereVector)
           .multiplyScalar(-1);
         if (this.hitSEPoints.length === 0) {
           //no nearby points that can be antipode_ed, so display the pointMarker
-          this.temporaryPointMarker.positionVector = this.tmpVector.copy(
+          this.temporaryPointMarker.positionVectorAndDisplay = this.tmpVector.copy(
             this.currentSphereVector
           );
         } else {
@@ -380,7 +380,7 @@ export default class AntipodalPointHandler extends Highlighter {
         this.snapToTemporaryPoint === null
       ) {
         //console.debug(`Here antipode`);
-        this.temporaryAntipodeMarker.positionVector = this.tmpVector
+        this.temporaryAntipodeMarker.positionVectorAndDisplay = this.tmpVector
           .copy(
             this.snapToTemporaryOneDimensional.closestVector(
               this.currentSphereVector
@@ -389,7 +389,7 @@ export default class AntipodalPointHandler extends Highlighter {
           .multiplyScalar(-1);
         if (this.hitSEPoints.length === 0) {
           //no nearby points, so display the pointMarker
-          this.temporaryPointMarker.positionVector = this.tmpVector.copy(
+          this.temporaryPointMarker.positionVectorAndDisplay = this.tmpVector.copy(
             this.snapToTemporaryOneDimensional.closestVector(
               this.currentSphereVector
             )
@@ -410,12 +410,12 @@ export default class AntipodalPointHandler extends Highlighter {
         this.snapToTemporaryOneDimensional === null &&
         this.snapToTemporaryPoint !== null
       ) {
-        this.temporaryAntipodeMarker.positionVector = this.tmpVector
+        this.temporaryAntipodeMarker.positionVectorAndDisplay = this.tmpVector
           .copy(this.snapToTemporaryPoint.locationVector)
           .multiplyScalar(-1);
         if (this.hitSEPoints.length === 0) {
           //no nearby points, so display the pointMarker
-          this.temporaryPointMarker.positionVector = this.tmpVector.copy(
+          this.temporaryPointMarker.positionVectorAndDisplay = this.tmpVector.copy(
             this.snapToTemporaryPoint.locationVector
           );
         } else {
