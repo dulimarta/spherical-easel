@@ -1585,18 +1585,6 @@ export default class AngleMarker extends Nodule {
         this._radius
       );
       this.updateDisplay();
-
-      // function sleep(ms: number) {
-      //   let start = new Date().getTime();
-      //   for (let i = 0; i < 1e7; i++) {
-      //     if (new Date().getTime() - start > ms) {
-      //       break;
-      //     }
-      //   }
-      // }
-      // sleep(2000);
-      EventBus.fire("update-two-instance", {});
-
     }
     ////////////////////////////////////////////////Circle Edge Object//////////////////////////////////////
     // Create the always return objects
@@ -1984,7 +1972,6 @@ export default class AngleMarker extends Nodule {
       );
       // finally update the display
       this.updateDisplay();
-      EventBus.fire("update-two-instance",{})
     }
     return returnSVGObjects;
   }

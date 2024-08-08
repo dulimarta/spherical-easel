@@ -427,8 +427,7 @@ export abstract class Command {
         m.makeRotationAxis(animate.axis, animate.degrees / numFrames);
 
         Command.store.rotateSphere(m);
-
-        EventBus.fire("update-two-instance", {});
+        Command.store.updateTwoJS()
       }
       // wait 1/60 of a second so that the two-instance updates
       // sleep(1000 / 60).then(() => {
@@ -831,7 +830,7 @@ export abstract class Command {
       m.makeRotationAxis(animate.axis, -animate.degrees); // + 1 / animate.degrees);
       Command.store.rotateSphere(m);
       // We need to update the two-instance so that the fills can be correctly calculated
-      EventBus.fire("update-two-instance", {});
+      Command.store.updateTwoJS()
       //sleep(1000 / 60).then(() => {}); // wait 1/60 of a second so that the two-instance updates then update the
       EventBus.fire("update-fill-objects", {});
     }

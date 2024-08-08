@@ -3,7 +3,6 @@
     v-bind="$attrs"
     icon
     :size="shortCutButtonSize"
-    tile
     :disabled="disabled"
     @click="invokeAction">
     <v-icon :size="iconSize">

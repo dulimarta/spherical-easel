@@ -732,8 +732,8 @@ export const SETTINGS = {
   },
   icons: {
     buttonIconSize: 50, // in pixels for the buttons in the left tool panel ToolButton.vue
-    shortcutIconSize: 45 , // in pixels for the icon inside the ShortcutIcon.vue
-    shortcutButtonSize: 55, // in pixels the size of the button in ShortcutIcon.vue
+    shortcutIconSize: 32 , // in pixels for the icon inside the ShortcutIcon.vue
+    shortcutButtonSize: 44, // in pixels the size of the button in ShortcutIcon.vue
     currentToolSectionIconSize: 30,  // icon in the CurrentToolSelection.vue
 
     defaultInlineIconSize: 25, // controls the size of the markdown icons included in documentation

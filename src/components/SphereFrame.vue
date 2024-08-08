@@ -318,14 +318,12 @@ onBeforeMount((): void => {
   EventBus.listen("set-expression-for-tool", setExpressionForTool);
   EventBus.listen("set-transformation-for-tool", setTransformationForTool);
   EventBus.listen("delete-node", deleteNode);
-  // EventBus.listen("update-two-instance", updateTwoJsInstance); //IS THERE A BETTER WAY?
   EventBus.listen("cursor-position", (arg: any) => {
     const rawPos = arg.raw.map((s: number) => s.toFixed(2)).join(",");
     const normPos = arg.normalized.map((s: number) => s.toFixed(2)).join(",");
     mousePos.value = `(${normPos}) (${rawPos})`;
   });
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
-  EventBus.listen("update-two-instance", updateTwoInstance);
   EventBus.listen("update-fill-objects", updateObjectsWithFill);
   // EventBus.listen("export-current-svg-for-icon", getCurrentSVGForIcon);
 });
@@ -426,7 +424,7 @@ onBeforeUnmount((): void => {
   EventBus.unlisten("set-expression-for-tool");
   EventBus.unlisten("set-transformation-for-tool");
   EventBus.unlisten("delete-node");
-  EventBus.unlisten("update-two-instance");
+  // EventBus.unlisten("update-two-instance");
   EventBus.unlisten("update-fill-objects");
   //EventBus.unlisten("export-current-svg-for-icon");
 });
