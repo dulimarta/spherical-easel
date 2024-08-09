@@ -82,7 +82,10 @@ const iconNames = [
   "starConstruction",
   "unstarConstruction",
   "privateConstruction",
-  "animatedSVGLogo"
+  "animatedSVGLogo",
+  // Use the following 'dummy' entry as a starter for
+  // creating a new icon for a new tool
+  "dummy"
 ];
 
 const toRecord = (n: Array<string>): Record<string, any> => {

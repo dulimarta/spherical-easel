@@ -367,4 +367,16 @@ TOOL_DICTIONARY.set("select", {
     toolGroup: "DeveloperOnlyTools",
     toolTipMessage: "buttons.CreateIconToolTipMessage",
     toolUseMessage: "buttons.CreateIconToolUseMessage"
+  })
+
+  // Use this entry a a starter for a new tool
+  TOOL_DICTIONARY.set("dummy", {
+    id: 0,
+    icon: "mdi-alphabetical",
+    action: "dummy",
+    displayedName: "buttons.DummyDisplayName",
+    toolGroup: "EditTools",
+    toolUseMessage: "buttons.DummyToolUseMessage",
+    toolTipMessage: "buttons.DummyToolTipMessage"
+
   });

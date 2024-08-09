@@ -278,7 +278,9 @@ export type ActionMode =
   | "applyTransformation"
   | "undoAction"
   | "redoAction"
-  | "resetAction";
+  | "resetAction"
+  | "dummy" /* Use this entry to create a new actionMode for a new tool */
+  ;
 
 export type IconNames =
   | ActionMode

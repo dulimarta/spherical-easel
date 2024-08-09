@@ -115,6 +115,8 @@ import RotationTransformationHandler from "@/eventHandlers/RotationTransformatio
 import ReflectionTransformationHandler from "@/eventHandlers/ReflectionTransformationHandler";
 import PointReflectionTransformationHandler from "@/eventHandlers/PointReflectionTransformationHandler";
 import InversionTransformationHandler from "@/eventHandlers/InversionTransformationHandler";
+// Use the DummyHandler example as a starter for a new handler
+import DummyHandler from "@/eventHandlers/DummyHandler";
 import { SETransformation } from "@/models/SETransformation";
 import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandler";
 import { SENodule } from "@/models/SENodule";
@@ -222,6 +224,9 @@ let reflectionTool: ReflectionTransformationHandler | null = null;
 let pointReflectionTool: PointReflectionTransformationHandler | null = null;
 let inversionTool: InversionTransformationHandler | null = null;
 let applyTransformationTool: ApplyTransformationHandler | null = null;
+
+// Use the following line as a starter for a new handler
+let dummyTool: DummyHandler|null = null
 
 let layers: Array<Group> = [];
 
@@ -1105,6 +1110,12 @@ watch(
           applyTransformationTool = new ApplyTransformationHandler(layers);
         }
         currentTool = applyTransformationTool;
+        break;
+      // Use the following switch case to activate a new handler
+      case "dummy":
+        if (!dummyTool)
+          dummyTool = new DummyHandler(layers)
+        currentTool = dummyTool
         break;
       default:
         currentTool = null;

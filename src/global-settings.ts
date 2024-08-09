@@ -1226,6 +1226,13 @@ export const SETTINGS = {
         svgFileName: "LogoAnimatedSmallerV3.svg"
       }
     },
+    /* Use this entry as a starter for a new tool icon */
+    dummy: {
+      props: {
+        mdiIcon: "mdi-alphabetical",
+        svgFileName: ""
+      }
+    }
   },
   /* Controls the length of time (in ms) the tool tip are displayed */
   /* Set the default tooltip delay in createVuetify() */
