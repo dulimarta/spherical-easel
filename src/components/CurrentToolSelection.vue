@@ -24,7 +24,7 @@
         <span
           :style="{
             maxWidth: '24em',
-            height: '4em'
+            height: '4.1em'
           }"
           class="text-caption font-italic">
           {{ toolHint }}

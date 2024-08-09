@@ -48,7 +48,6 @@ export type ToolButtonGroup = {
 };
 
 export type ToolButtonType = {
-  id: number;
   action: ActionMode;
   // Shortcut icons (undo, redo, clear) buttons will use this, other buttons will not use this
   clickFunc?: () => void;

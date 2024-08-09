@@ -166,7 +166,7 @@ const shortCutIcons = computed((): Array<Array<ToolButtonType>> => {
   );
 });
 const mousePos = ref("");
-const showMousePos = ref(false)
+const showMousePos = ref(false);
 const { shift, alt, d, ctrl } = useMagicKeys();
 /**
  * The main (the only one) TwoJS object that contains the groups (each a Group) making up the screen graph
@@ -226,13 +226,13 @@ let inversionTool: InversionTransformationHandler | null = null;
 let applyTransformationTool: ApplyTransformationHandler | null = null;
 
 // Use the following line as a starter for a new handler
-let dummyTool: DummyHandler|null = null
+let dummyTool: DummyHandler | null = null;
 
 let layers: Array<Group> = [];
 
 watchEffect(() => {
   if (ctrl.value && alt.value && d.value) {
-    showMousePos.value = !showMousePos.value
+    showMousePos.value = !showMousePos.value;
   }
 });
 onBeforeMount((): void => {
@@ -721,11 +721,6 @@ function deleteNode(e: {
   });
 }
 
-// TEMP REMOVE
-function updateTwoInstance() {
-  twoInstance.update();
-}
-
 function updateObjectsWithFill() {
   for (let e of seEllipses.value) {
     e.update();
@@ -737,105 +732,6 @@ function updateObjectsWithFill() {
     p.update();
   }
 }
-
-// function getCurrentSVGForIcon(): void {
-//   const svgRoot = canvas.value?.querySelector("svg") as SVGElement;
-//   //Dump a copy of the Nodule.idPlottableDescriptionMap into the console to it tso.js object
-//   console.log(
-//     "Nodule.idPlottableDescriptionMap",
-//     Nodule.idPlottableDescriptionMap
-//   );
-
-//   // Make a duplicate of the SVG tree
-//   const svgElement = svgRoot.cloneNode(true) as SVGElement;
-//   svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-//   //remove all the text items
-//   const textGroups = svgElement.querySelectorAll("text");
-//   for (let i = 0; i < textGroups.length; i++) {
-//     textGroups[i].remove();
-//   }
-//   // remove all the hidden paths or paths with no anchors
-//   // Also remove the straight edge start/end front/back for the angle markers (they look horrible in the icon)
-//   const allElements = svgElement.querySelectorAll("path");
-//   for (let i = 0; i < allElements.length; i++) {
-//     const element = allElements[i];
-//     const description = Nodule.idPlottableDescriptionMap.get(
-//       element.getAttribute("id") ?? ""
-//     );
-
-//     if (
-//       element.getAttribute("visibility") === "hidden" ||
-//       element.getAttribute("d") === "" ||
-//       (description?.type === "angleMarker" && description.part === "edge")
-//     ) {
-//       element.remove();
-//     }
-//   }
-
-//   // remove all SVG groups with no children (they are are result of empty groups)
-//   const groups = svgElement.querySelectorAll("g");
-//   for (let i = 0; i < groups.length; i++) {
-//     const group = groups[i];
-//     if (group.childElementCount === 0) {
-//       group.remove();
-//     }
-//   }
-//   const iconArray = [];
-//   const defs = svgElement.querySelectorAll("defs");
-//   for (let i = 0; i < defs.length; i++) {
-//     iconArray.push(defs[i].outerHTML);
-//   }
-
-//   const paths = svgElement.querySelectorAll("path");
-//   for (let i = 0; i < paths.length; i++) {
-//     paths[i].setAttribute("vector-effect", "non-scaling-stroke");
-
-//     // Into each path inject four new attributes, which will be removed later
-//     const description = Nodule.idPlottableDescriptionMap.get(
-//       paths[i].getAttribute("id") ?? ""
-//     );
-//     if (description === undefined) {
-//       throw new Error(`IconBase - ${paths[i]} has no id.`);
-//     }
-//     paths[i].setAttribute("type", description.type);
-//     paths[i].setAttribute("side", description.side);
-//     paths[i].setAttribute("myfill", String(description.fill));
-//     paths[i].setAttribute("part", description.part);
-
-//     iconArray.push(paths[i].outerHTML);
-//   }
-
-//   // We are NOT actually saving an SVG content,
-//   // but it is actually a plain text payload
-//   // The ";" delimiter is required by IconBase.vue
-//   var blob = new Blob([iconArray.join(";")], {
-//     type: "text/plain;charset=utf-8"
-//   });
-//   FileSaver.saveAs(blob, "iconXXXPaths.svg");
-// }
-
-// dialogBoxIsActive(e: { active: boolean }): void {
-//   // console.debug(`dialog box is active is ${e.active}`);
-//   if (hideTool) {
-//     hideTool.disableKeyHandler = e.active;
-//   }
-//   if (nSectAngleTool) {
-//     nSectAngleTool.disableKeyHandler = e.active;
-//   }
-//   if (nSectSegmentTool) {
-//     nSectSegmentTool.disableKeyHandler = e.active;
-//   }
-//   if (rotateTool) {
-//     rotateTool.disableKeyHandler = e.active;
-//   }
-//   if (selectTool) {
-//     selectTool.disableKeyHandler = e.active;
-//   }
-//   if (toggleLabelDisplayTool) {
-//     toggleLabelDisplayTool.disableKeyHandler = e.active;
-//   }
-// }
-
 
 /**
  * Watch the actionMode in the store. This is the two-way binding of variables in the Pinia Store.  Notice that this
@@ -1113,9 +1009,10 @@ watch(
         break;
       // Use the following switch case to activate a new handler
       case "dummy":
-        if (!dummyTool)
-          dummyTool = new DummyHandler(layers)
-        currentTool = dummyTool
+        if (!dummyTool) {
+          dummyTool = new DummyHandler(layers);
+        }
+        currentTool = dummyTool;
         break;
       default:
         currentTool = null;
@@ -1154,8 +1051,12 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
 
   style.position = "absolute";
   // add in 3 px padding around the icons and 2 px between containers.
-  style[xLoc] = `${c * (SETTINGS.icons.shortcutButtonSize+3)+(c-1)*2}px`;
-  style[yLoc] = `${r * (SETTINGS.icons.shortcutButtonSize+3)+(r-1)*2}px`;
+  style[xLoc] = `${
+    c * (SETTINGS.icons.shortcutButtonSize + 3) + (c - 1) * 2
+  }px`;
+  style[yLoc] = `${
+    r * (SETTINGS.icons.shortcutButtonSize + 3) + (r - 1) * 2
+  }px`;
   return style;
 }
 </script>
