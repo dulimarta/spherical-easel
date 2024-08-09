@@ -64,6 +64,7 @@ export class SEThreePointCircleCenter extends SEPoint {
     return this._sePointParent3;
   }
   //#region shallowupdateview
+
   public shallowUpdate(): void {
     // The parent points must exist
     this._exists =
