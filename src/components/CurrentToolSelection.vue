@@ -20,13 +20,13 @@
           </div>
         </template>
       </v-row>
-      <v-row>
+      <v-row v-if="toolHint !== null">
         <span
           :style="{
-            maxWidth: '24em',
+            maxWidth: '25em',
             height: '4em'
           }"
-          class="text-caption font-italic">
+          class="text-caption font-italic mb-2">
           {{ toolHint }}
         </span>
       </v-row>
@@ -102,7 +102,7 @@ const ACTION_MODE_MAP: Map<ActionMode, string> = new Map([
 const seStore = useSEStore();
 const { actionMode } = storeToRefs(seStore);
 const { t } = useI18n();
-const toolHint = ref("");
+const toolHint = ref<string|null>(null);
 const iconSize = ref(SETTINGS.icons.currentToolSectionIconSize);
 const rowHeight = ref(
   "min-height:" + SETTINGS.icons.currentToolSectionIconSize + "px"

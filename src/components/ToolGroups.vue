@@ -6,8 +6,8 @@
       justifyContent: 'space-between',
       paddingBottom: '4px'
     }">
-    <CurrentToolSelection />
-    <v-btn
+    <CurrentToolSelection/>
+    <v-btn :style="{position: 'absolute', right: '16px'}"
       icon
       v-if="userRole && userRole === 'instructor'"
       size="x-small"
