@@ -374,7 +374,7 @@ TOOL_DICTIONARY.set("select", {
     id: 0,
     icon: "mdi-alphabetical",
     action: "dummy",
-    displayedName: "buttons.DummyDisplayName",
+    displayedName: "buttons.DummyDisplayedName",
     toolGroup: "EditTools",
     toolUseMessage: "buttons.DummyToolUseMessage",
     toolTipMessage: "buttons.DummyToolTipMessage"

@@ -144,6 +144,9 @@
     "ResetSphereActionDisplayedName": "Clear Canvas",
     "ResetSphereActionToolTipMessage": "Clear the canvas",
     "ResetSphereActionToolUseMessage": "Click to clear the canvas of all drawings",
+    "DummyDisplayedName": "A dummy tool",
+    "DummyToolUseMessage": "Use instructions for the dummy tool",
+    "DummyToolTipMessage": "Tooltip for the dummy tool",
     "": ""
   },
   "settings": {
