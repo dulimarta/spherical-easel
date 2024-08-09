@@ -98,8 +98,6 @@ export class DeleteNoduleCommand extends Command {
     } else if (this.seNodule instanceof SETransformation) {
       Command.store.removeTransformation(this.seNodule.id);
     }
-    // Add the id to the list of deleted Ids so that toSVG command will work properly
-    Command.deletedNoduleIds.push(this.seNodule.id)
   }
 
   saveState(): void {
@@ -107,10 +105,6 @@ export class DeleteNoduleCommand extends Command {
   }
 
   restoreState(): void {
-    // Remove the id to the list of deleted Ids so that toSVG command will work properly
-    const ind = Command.deletedNoduleIds.findIndex(id => id ==this.seNodule.id)
-    Command.deletedNoduleIds.splice(ind)
-
     // Add the object to the store and turn on display
     if (this.seNodule instanceof SETransformation) {
       Command.store.addTransformation(this.seNodule);
