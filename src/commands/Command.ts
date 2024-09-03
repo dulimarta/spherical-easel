@@ -333,10 +333,6 @@ export abstract class Command {
       svgForIcon = false;
     }
 
-    function sleep(ms: number) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
     // Build the header string for the SVG
     let svgHeaderReturnString =
       '<svg width="' +
@@ -831,7 +827,6 @@ export abstract class Command {
       Command.store.rotateSphere(m);
       // We need to update the two-instance so that the fills can be correctly calculated
       Command.store.updateTwoJS()
-      //sleep(1000 / 60).then(() => {}); // wait 1/60 of a second so that the two-instance updates then update the
       EventBus.fire("update-fill-objects", {});
     }
     return returnString.replace(/[\t]/gm, "   ");

@@ -24,7 +24,7 @@
         <span
           :style="{
             maxWidth: '24em',
-            height: '4em'
+            height: '4.1em'
           }"
           class="text-caption font-italic">
           {{ toolHint }}
@@ -96,7 +96,9 @@ const ACTION_MODE_MAP: Map<ActionMode, string> = new Map([
   ["reflection", "CreateReflectionDisplayedName"],
   ["pointReflection", "CreatePointReflectionDisplayedName"],
   ["inversion", "CreateInversionDisplayedName"],
-  ["applyTransformation", "ApplyTransformationDisplayedName"]
+  ["applyTransformation", "ApplyTransformationDisplayedName"],
+  // Use the following entry to define a new tool
+  ["dummy", "DummyDisplayedName"]
 ]);
 
 const seStore = useSEStore();

@@ -29,8 +29,8 @@ export class DeleteNoduleCommand extends Command {
     });
   }
 
-  deletedNoduleId():number{
-    return 1//this.seNodule.id
+  deletedNoduleId(): number {
+    return 1; //this.seNodule.id
   }
 
   do(): void {
@@ -105,7 +105,6 @@ export class DeleteNoduleCommand extends Command {
   }
 
   restoreState(): void {
-
     // Add the object to the store and turn on display
     if (this.seNodule instanceof SETransformation) {
       Command.store.addTransformation(this.seNodule);

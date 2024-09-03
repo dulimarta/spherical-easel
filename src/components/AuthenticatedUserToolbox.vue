@@ -174,6 +174,9 @@
             <p>
               {{ t("animatedSVGOptions") }}
             </p>
+            <p>
+              {{ t("animatedSVGBestViewed") }}
+            </p>
             <v-divider></v-divider>
             <v-col class="d-flex" cols="12">
               <v-select
@@ -790,6 +793,7 @@ function doExport() {
   "animationRepeat": "Repeat (0 is indefinite)",
   "animatedNumberOfFramesErrorMessage": "Enter a number of times to repeat between 1 and 200 or 0 for Indefinite",
   "animatedSVGOptions": "Animated SVG Options",
+  "animatedSVGBestViewed":"The exported files are best viewed in the Chrome browser.",
   "line": "Line: ",
   "segment": "Segment: ",
   "point": "Point: ",
