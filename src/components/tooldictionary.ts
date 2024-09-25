@@ -338,7 +338,6 @@ TOOL_DICTIONARY.set("dummy", {
   toolTipMessage: "buttons.DummyToolTipMessage"
 })
 .set("text", {
-  icon: "mdi-alphabetical",
   action: "text",
   displayedName: "buttons.TextDisplayedName",
   toolGroup: "EditTools",

@@ -1232,6 +1232,12 @@ export const SETTINGS = {
         mdiIcon: "mdi-alphabetical",
         svgFileName: ""
       }
+    },
+    text: {
+      props: {
+        mdiIcon: "mdi-format-text",
+        svgFileName: ""
+      }
     }
   },
   /* Controls the length of time (in ms) the tool tip are displayed */
