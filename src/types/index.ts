@@ -278,6 +278,7 @@ export type ActionMode =
   | "undoAction"
   | "redoAction"
   | "resetAction"
+  | "text"
   | "dummy" /* Use this entry to create a new actionMode for a new tool */;
 
 export type IconNames =

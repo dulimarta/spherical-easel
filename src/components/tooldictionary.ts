@@ -336,4 +336,12 @@ TOOL_DICTIONARY.set("dummy", {
   toolGroup: "EditTools",
   toolUseMessage: "buttons.DummyToolUseMessage",
   toolTipMessage: "buttons.DummyToolTipMessage"
+})
+.set("text", {
+  icon: "mdi-alphabetical",
+  action: "text",
+  displayedName: "buttons.TextDisplayedName",
+  toolGroup: "EditTools",
+  toolUseMessage: "buttons.TextToolUseMessage",
+  toolTipMessage: "buttons.TextToolTipMessage"
 });

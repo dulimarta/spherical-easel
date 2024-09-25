@@ -98,7 +98,8 @@ const ACTION_MODE_MAP: Map<ActionMode, string> = new Map([
   ["inversion", "CreateInversionDisplayedName"],
   ["applyTransformation", "ApplyTransformationDisplayedName"],
   // Use the following entry to define a new tool
-  ["dummy", "DummyDisplayedName"]
+  ["dummy", "DummyDisplayedName"],
+  ["text", "TextDisplayedName"]
 ]);
 
 const seStore = useSEStore();
