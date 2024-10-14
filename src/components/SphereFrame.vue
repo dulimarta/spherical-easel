@@ -252,10 +252,10 @@ onBeforeMount((): void => {
   //#region addlayers
   // Record the text layer number so that the y axis is not flipped for them
   const textLayers = [
-    LAYER.foregroundText,
-    LAYER.backgroundText,
-    LAYER.foregroundTextGlowing,
-    LAYER.backgroundTextGlowing
+    LAYER.foregroundLabel,
+    LAYER.backgroundLabel,
+    LAYER.foregroundLabelGlowing,
+    LAYER.backgroundLabelGlowing
   ].map(Number); // shortcut for .map(x => Number(x))
 
   // Create a detached group to prevent duplicate group ID
