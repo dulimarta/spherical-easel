@@ -132,7 +132,7 @@ export default abstract class Highlighter extends MouseHandler {
     if (text.length > 0) {
       this.infoText.hide(); // hide the old box
       // Show the names temporarily
-      this.infoText.showWithDelay(this.layers[LAYER.foregroundText], 300);
+      this.infoText.showWithDelay(this.layers[LAYER.foregroundLabel], 300);
       // Textbox is set to handle a ???? How does this work????
       this.infoText.text = text;
       this.infoText.translation.set(

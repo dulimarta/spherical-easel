@@ -54,7 +54,7 @@ export default class SelectionHandler extends Highlighter {
   constructor(layers: Group[]) {
     super(layers);
     this.selectionRectangle = new SelectionRectangle(
-      layers[LAYER.foregroundText]
+      layers[LAYER.foregroundLabel]
     );
     // this.selectionRectangle.hide();
   }

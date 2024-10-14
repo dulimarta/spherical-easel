@@ -1274,8 +1274,8 @@ export enum LAYER {
   backgroundAngleMarkers,
   backgroundPointsGlowing,
   backgroundPoints,
-  backgroundTextGlowing,
-  backgroundText,
+  backgroundLabelGlowing,
+  backgroundLabel,
   midground,
   foregroundGlowing,
   foregroundFills,
@@ -1284,7 +1284,8 @@ export enum LAYER {
   foregroundAngleMarkers,
   foregroundPointsGlowing,
   foregroundPoints,
-  foregroundTextGlowing,
+  foregroundLabelGlowing,
+  foregroundLabel,
   foregroundText
 }
 //#endregion layers
