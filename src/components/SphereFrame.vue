@@ -117,6 +117,7 @@ import PointReflectionTransformationHandler from "@/eventHandlers/PointReflectio
 import InversionTransformationHandler from "@/eventHandlers/InversionTransformationHandler";
 // Use the DummyHandler example as a starter for a new handler
 import DummyHandler from "@/eventHandlers/DummyHandler";
+import TextHandler from "@/eventHandlers/TextHandler";
 import { SETransformation } from "@/models/SETransformation";
 import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandler";
 import { SENodule } from "@/models/SENodule";
@@ -224,6 +225,7 @@ let reflectionTool: ReflectionTransformationHandler | null = null;
 let pointReflectionTool: PointReflectionTransformationHandler | null = null;
 let inversionTool: InversionTransformationHandler | null = null;
 let applyTransformationTool: ApplyTransformationHandler | null = null;
+let textTool: TextHandler | null = null;
 
 // Use the following line as a starter for a new handler
 let dummyTool: DummyHandler | null = null;
@@ -1006,6 +1008,12 @@ watch(
           applyTransformationTool = new ApplyTransformationHandler(layers);
         }
         currentTool = applyTransformationTool;
+        break;
+      case "text":
+        if (!textTool) {
+          textTool = new TextHandler(layers);
+        }
+        currentTool = textTool;
         break;
       // Use the following switch case to activate a new handler
       case "dummy":
