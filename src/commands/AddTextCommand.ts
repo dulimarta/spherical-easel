@@ -1,10 +1,9 @@
 // Use the following template as a starter for a new Command
 import { Command } from "./Command";
 
-//#region AddTextCommand
-export class TextCommand extends Command {
+export class AddTextCommand extends Command {
   constructor(a: string, x: number, y: number) {
-    console.debug("TextCommand:TextCommand()");
+    console.debug("AddTextCommand:AddTextCommand()");
     super();
   }
   restoreState(): void {
@@ -14,7 +13,7 @@ export class TextCommand extends Command {
     // throw new Error("Method not implemented.");
   }
   do(): void {
-    console.debug("TextCommand:do()");
+    console.debug("AddTextCommand:do()");
     // throw new Error("Method not implemented.");
   }
   toOpcode(): null | string | Array<string> {
