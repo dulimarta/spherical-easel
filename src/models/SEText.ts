@@ -5,6 +5,10 @@ import SETTINGS from "@/global-settings";
 const { t } = i18n.global;
 
 export class SEText extends SENodule {
+	// public declare ref: Text <- plottable Text
+	// x, y coordinates
+	// string text
+	
 	public shallowUpdate(): void {
 		//Something goes here
 	}
