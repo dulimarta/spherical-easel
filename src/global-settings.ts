@@ -1272,6 +1272,7 @@ export const SETTINGS = {
 };
 
 //#region layers
+
 export enum LAYER {
   backgroundGlowing,
   backgroundFills,
@@ -1292,7 +1293,8 @@ export enum LAYER {
   foregroundPoints,
   foregroundLabelGlowing,
   foregroundLabel,
-  foregroundText
+  foregroundText,
+  glassLayer
 }
 //#endregion layers
 

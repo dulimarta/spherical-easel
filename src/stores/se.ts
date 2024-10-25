@@ -48,6 +48,7 @@ import { computed } from "vue";
 import { Vector } from "two.js/src/vector";
 import SETTINGS from "@/global-settings";
 import Two from "two.js";
+import { SEText } from "@/models/SEText";
 
 const sePencils: Array<SEPencil> = [];
 const oldSelectedSENodules: Map<number, SENodule> = new Map();
@@ -351,6 +352,7 @@ const sePolygonMap: Map<number, SEPolygon> = new Map();
 const seSegmentMap: Map<number, SESegment> = new Map();
 const seExpressionMap: Map<number, SEExpression> = new Map();
 const seTransformationMap: Map<number, SETransformation> = new Map();
+const seTextMap: Map<number, SEText> = new Map();
 
 /* END Non-Reactive variables */
 
@@ -419,6 +421,12 @@ export const useSEStore = defineStore("se", () => {
   const seTransformations = computed((): SETransformation[] =>
     seTransformationIds.value.map(id => seTransformationMap.get(id)!)
   );
+
+  const seTextIds: Ref<Array<number>> = ref([]);
+  const seText = computed((): SEText[] =>
+        seTextIds.value.map(id => seTextMap.get(id)!)
+  );
+
   const selectedSENodules: Ref<Array<SENodule>> = ref([]);
   const oldSelectedSENoduleIds: Ref<Array<number>> = ref([]);
   // const styleSavedFromPanel: Ref<StyleCategory> = ref(StyleCategory.Label)
@@ -465,6 +473,8 @@ export const useSEStore = defineStore("se", () => {
     seSegmentMap.clear();
     seTransformationIds.value.splice(0);
     seTransformationMap.clear();
+    seTextIds.value.splice(0);
+    seTextMap.clear();
     oldSelectedSENodules.clear();
     oldSelectedSENoduleIds.value.splice(0);
     // intersections.splice(0);
@@ -760,6 +770,29 @@ export const useSEStore = defineStore("se", () => {
     labelMoverVisitor.setNewLocation(move.location);
     const aLabel = seLabelMap.get(move.labelId);
     if (aLabel) aLabel.accept(labelMoverVisitor);
+  }
+  function addText(text: SEText): void {
+    seLabelIds.value.push(text.id);
+    seTextMap.set(text.id, text);
+    seNodules.value.push(text);
+    text.ref.addToLayers(layers);
+    hasUnsavedNodules.value = true;
+    // this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
+  }
+  function removeText(labelId: number): void {
+    const victimLabel = seLabelMap.get(labelId);
+
+    if (victimLabel) {
+      // Remove the associated plottable (Nodule) object from being rendered
+      victimLabel.ref.removeFromLayers(twojsLayers.value);
+      const pos = seLabelIds.value.findIndex(x => x === labelId);
+      const pos2 = seNodules.value.findIndex((x: SENodule) => x.id === labelId);
+      seLabelMap.delete(labelId);
+      seLabelIds.value.splice(pos, 1);
+      seNodules.value.splice(pos2, 1);
+      hasUnsavedNodules.value = true;
+      //this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
+    }
   }
   function addAngleMarkerAndExpression(angleMarker: SEAngleMarker): void {
     seExpressionIds.value.push(angleMarker.id);
@@ -3977,6 +4010,7 @@ export const useSEStore = defineStore("se", () => {
     addSegment,
     addTemporaryNodule,
     addTransformation,
+    addText,
     changeBackContrast,
     changeGradientFill,
     changeLineNormalVector,
@@ -4007,6 +4041,7 @@ export const useSEStore = defineStore("se", () => {
     removePolygonAndExpression,
     removeSegment,
     removeTransformation,
+    removeText,
     revertActionMode,
     rotateSphere,
     setActionMode,

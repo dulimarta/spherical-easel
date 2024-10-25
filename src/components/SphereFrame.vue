@@ -252,6 +252,7 @@ onBeforeMount((): void => {
   //#region addlayers
   // Record the text layer number so that the y axis is not flipped for them
   const textLayers = [
+    LAYER.glassLayer,
     LAYER.foregroundLabel,
     LAYER.backgroundLabel,
     LAYER.foregroundLabelGlowing,
