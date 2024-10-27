@@ -9,8 +9,9 @@ export default class TextHandler extends Highlighter {
   }
   mouseReleased(event: MouseEvent): void {
     // throw new Error("Method not implemented.");
-    const twojsText = new SEText("Hello World!", 0, 0);
-    const TextCmd = new AddTextCommand(twojsText);
+    console.debug("TextHandler::mouseReleased()");
+    const testText = new SEText("Hello World!", 0, 0);
+    const TextCmd = new AddTextCommand(testText);
     TextCmd.execute()
   }
 
