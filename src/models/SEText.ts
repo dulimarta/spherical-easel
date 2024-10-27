@@ -19,6 +19,8 @@ export class SEText extends SENodule {
 		this.text = txt;
 		this.x = x;
 		this.y = y;
+    const textTool = new TextTool(this.name);
+    this.ref = textTool;
 	}
 
 	public shallowUpdate(): void {
