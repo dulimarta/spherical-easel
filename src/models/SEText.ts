@@ -18,8 +18,9 @@ export class SEText extends SENodule {
 		super();
 		this.text = txt;
 		this.x = x;
-		this.y = y;
-    const textTool = new TextTool(this.name);
+		this.y = -y;
+    console.log(`SEText.x = ${this.x}, SEText.y = ${this.y}`);
+    const textTool = new TextTool(this.text, this.x, this.y, this.name);
     this.ref = textTool;
 	}
 

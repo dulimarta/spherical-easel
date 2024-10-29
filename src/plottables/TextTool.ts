@@ -21,6 +21,11 @@ import { Group } from "two.js/src/group";
 
 //had to name file TextTool so that it does not conflict wit two.js/src/text
 export default class TextTool extends Nodule {
+  private _text: Text;
+  constructor(txt: string, x: number, y: number, noduleName: string = "None") {
+    super(noduleName);
+    this._text = new Text(txt, x, y);
+  }
   /**
    * The vector location of the Label on the default unit sphere
    * The location vector in the Default Screen Plane
@@ -29,15 +34,6 @@ export default class TextTool extends Nodule {
    */
   public _locationVector = new Vector3(1, 0, 0);
   public defaultScreenVectorLocation = new Vector(1, 0);
-
-  /**
-   * The TwoJS objects that are used to display the label.
-   * One is for the front, the other for the back. Only one is displayed at a time
-   */
-  protected Text = new Text("Test", 1, 0, {
-    size: SETTINGS.label.fontSize
-  });
-
 
   //private _defaultName = "";
 
@@ -62,11 +58,11 @@ export default class TextTool extends Nodule {
 
 
   addToLayers(layers: Group[]): void {
-    layers[LAYER.glassLayer].add(this.Text);
+    layers[LAYER.glassLayer].add(this._text);
     throw new Error("Method not implemented.");
   }
   removeFromLayers(layers: Group[]): void {
-    layers[LAYER.glassLayer].remove(this.Text);
+    layers[LAYER.glassLayer].remove(this._text);
     throw new Error("Method not implemented.");
   }
   adjustSize(): void {

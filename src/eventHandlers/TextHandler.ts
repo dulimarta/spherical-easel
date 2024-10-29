@@ -5,9 +5,15 @@ import { SEText } from "@/models/SEText";
 export default class TextHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     console.debug("TextHandler::mousePressed()")
-    const testText = new SEText("Hello World!", 0, 0);
+    console.debug(`TextHandler: this.currentScreenVector.x = ${this.currentScreenVector.x}`);
+    console.debug(`TextHandler: this.currentScreenVector.y = ${this.currentScreenVector.x}`);
+    const testText = new SEText("Hello World!",
+      this.currentScreenVector.x,
+      this.currentScreenVector.y
+    );
     const TextCmd = new AddTextCommand(testText);
-    TextCmd.execute()
+    console.debug("Executing AddTextCommand...");
+    TextCmd.execute();
   }
   mouseReleased(event: MouseEvent): void {
     /* None */
