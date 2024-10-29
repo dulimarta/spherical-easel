@@ -4,15 +4,13 @@ import Highlighter from "./Highlighter";
 import { SEText } from "@/models/SEText";
 export default class TextHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
-    console.debug("TextHandler::mousePressed")
-
-  }
-  mouseReleased(event: MouseEvent): void {
-    // throw new Error("Method not implemented.");
-    console.debug("TextHandler::mouseReleased()");
+    console.debug("TextHandler::mousePressed()")
     const testText = new SEText("Hello World!", 0, 0);
     const TextCmd = new AddTextCommand(testText);
     TextCmd.execute()
+  }
+  mouseReleased(event: MouseEvent): void {
+    /* None */
   }
 
 }
