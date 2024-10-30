@@ -1293,8 +1293,7 @@ export enum LAYER {
   foregroundPoints,
   foregroundLabelGlowing,
   foregroundLabel,
-  foregroundText,
-  glassLayer
+  foregroundText
 }
 //#endregion layers
 
