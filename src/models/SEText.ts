@@ -35,20 +35,25 @@ export class SEText extends SENodule {
     	//Something goes here
 	}
 
+  // implement for MOVE tool
 	public isHitAt(unitIdealVector: Vector3, currentMagnificationFactor: number): boolean {
-		throw new Error("Method not implemented.");
+    return false;
 	}
 	public customStyles(): Set<string> {
-		throw new Error("Method not implemented.");
+		/**None**/
+    return new Set();
 	}
 	public accept(v: Visitor): boolean {
-		throw new Error("Method not implemented.");
+		/**None**/
+    return false;
 	}
 	public get noduleItemText(): string {
-		throw new Error("Method not implemented.");
+		/**None**/
+    return "";
 	}
 	public get noduleDescription(): string {
-		throw new Error("Method not implemented.");
+		/**None**/
+    return "";
 	}
 
 }
