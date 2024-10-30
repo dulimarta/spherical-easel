@@ -54,6 +54,7 @@
       </div>
     </div-->
   </div>
+  <!-- Dialog here -->
 </template>
 
 <script lang="ts" setup>
@@ -252,7 +253,7 @@ onBeforeMount((): void => {
   //#region addlayers
   // Record the text layer number so that the y axis is not flipped for them
   const textLayers = [
-    LAYER.glassLayer,
+    LAYER.foregroundText,
     LAYER.foregroundLabel,
     LAYER.backgroundLabel,
     LAYER.foregroundLabelGlowing,
