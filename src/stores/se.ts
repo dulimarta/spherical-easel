@@ -772,7 +772,7 @@ export const useSEStore = defineStore("se", () => {
     if (aLabel) aLabel.accept(labelMoverVisitor);
   }
   function addText(text: SEText): void {
-    seLabelIds.value.push(text.id);
+    seTextIds.value.push(text.id);
     seTextMap.set(text.id, text);
     seNodules.value.push(text);
     text.ref.addToLayers(layers);
