@@ -58,39 +58,39 @@ export default class TextTool extends Nodule {
 
 
   addToLayers(layers: Group[]): void {
-    layers[LAYER.glassLayer].add(this._text);
-    throw new Error("Method not implemented.");
+    layers[LAYER.foregroundText].add(this._text);
   }
   removeFromLayers(layers: Group[]): void {
-    layers[LAYER.glassLayer].remove(this._text);
-    throw new Error("Method not implemented.");
+    layers[LAYER.foregroundText].remove(this._text);
   }
   adjustSize(): void {
-    throw new Error("Method not implemented.");
   }
   normalDisplay(): void {
-    throw new Error("Method not implemented.");
+    /** None **/
   }
   glowingDisplay(): void {
-    throw new Error("Method not implemented.");
+    /**None**/
   }
   setSelectedColoring(flag: boolean): void {
-    throw new Error("Method not implemented.");
+    /**None**/
   }
   defaultStyleState(mode: StyleCategory): StyleOptions {
-    throw new Error("Method not implemented.");
+    /**None**/
   }
   stylize(flag: DisplayStyle): void {
-    throw new Error("Method not implemented.");
+    /**None**/
   }
   setVisible(flag: boolean): void {
-    throw new Error("Method not implemented.");
+    /**None**/
   }
   updateDisplay(): void {
     this.normalDisplay();
-    throw new Error("Method not implemented.");
+    console.debug("Calling TextTool.normalDisplay();");
+    /**None**/
   }
   toSVG(nonScaling?: { stroke: boolean; text: boolean; pointRadius: boolean; scaleFactor: number; }, svgForIcon?: boolean): toSVGType[] {
-    throw new Error("Method not implemented.");
+    // Possibly don't need this.
+    /**None**/
+    return [];
   }
 }
