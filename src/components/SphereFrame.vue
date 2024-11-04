@@ -55,6 +55,25 @@
     </div-->
   </div>
   <!-- Dialog here -->
+  <Dialog
+      ref="inputDialog"
+      title="dialogTitle"
+      yes-text="yesText"
+      no-text="noText"
+      :yes-action="handleSubmit"
+      max-width="40%"
+    >
+      <v-text-field
+        type="text"
+        density="compact"
+        clearable
+        counter
+        persistent-hint
+        label="inputLabel"
+        required
+        v-model="userInput"
+      ></v-text-field>
+    </Dialog>
 </template>
 
 <script lang="ts" setup>
@@ -170,6 +189,19 @@ const shortCutIcons = computed((): Array<Array<ToolButtonType>> => {
 const mousePos = ref("");
 const showMousePos = ref(false);
 const { shift, alt, d, ctrl } = useMagicKeys();
+
+const inputDialog = ref<any>(null);
+const userInput = ref('');
+const handleSubmit = () => {
+  // Emit the text back to the handler
+  EventBus.fire("text-data-submitted", { text: userInput.value });
+  inputDialog.value?.close();
+  userInput.value = ''; // Clear input after submission
+};
+const showDialog = () => {
+  inputDialog.value?.open();
+};
+
 /**
  * The main (the only one) TwoJS object that contains the groups (each a Group) making up the screen graph
  * First groups  (Groups) are added to the twoInstance (index by the enum LAYER from
@@ -381,6 +413,8 @@ onMounted((): void => {
   seStore.setCanvas(canvas.value!);
   // updateShortcutTools();
   updateView();
+  //Listen For text dialog box
+  EventBus.listen("show-text-dialog", showDialog);
 });
 watch(
   () => props.isEarthMode,
@@ -436,6 +470,7 @@ onBeforeUnmount((): void => {
   // EventBus.unlisten("update-two-instance");
   EventBus.unlisten("update-fill-objects");
   //EventBus.unlisten("export-current-svg-for-icon");
+  EventBus.unlisten("show-text-dialog");
 });
 
 watch(
