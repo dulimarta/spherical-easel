@@ -21,10 +21,10 @@ import { Group } from "two.js/src/group";
 
 //had to name file TextTool so that it does not conflict wit two.js/src/text
 export default class TextTool extends Nodule {
-  private _text: Text;
+  public text: Text;
   constructor(txt: string, x: number, y: number, noduleName: string = "None") {
     super(noduleName);
-    this._text = new Text(txt, x, y);
+    this.text = new Text(txt, x, y);
   }
   /**
    * The vector location of the Label on the default unit sphere
@@ -58,10 +58,10 @@ export default class TextTool extends Nodule {
 
 
   addToLayers(layers: Group[]): void {
-    layers[LAYER.foregroundText].add(this._text);
+    layers[LAYER.foregroundText].add(this.text);
   }
   removeFromLayers(layers: Group[]): void {
-    layers[LAYER.foregroundText].remove(this._text);
+    layers[LAYER.foregroundText].remove(this.text);
   }
   adjustSize(): void {
   }
@@ -93,4 +93,6 @@ export default class TextTool extends Nodule {
     /**None**/
     return [];
   }
+
+  // setup getter for boundingRectangle -> getBoundingClientRect(); reference Label.ts in this dir.
 }

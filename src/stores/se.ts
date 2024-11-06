@@ -779,16 +779,16 @@ export const useSEStore = defineStore("se", () => {
     hasUnsavedNodules.value = true;
     // this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
   }
-  function removeText(labelId: number): void {
-    const victimLabel = seLabelMap.get(labelId);
+  function removeText(textId: number): void {
+    const victimText = seTextMap.get(textId);
 
-    if (victimLabel) {
+    if (victimText) {
       // Remove the associated plottable (Nodule) object from being rendered
-      victimLabel.ref.removeFromLayers(twojsLayers.value);
-      const pos = seLabelIds.value.findIndex(x => x === labelId);
-      const pos2 = seNodules.value.findIndex((x: SENodule) => x.id === labelId);
-      seLabelMap.delete(labelId);
-      seLabelIds.value.splice(pos, 1);
+      victimText.ref.removeFromLayers(twojsLayers.value);
+      const pos = seTextIds.value.findIndex(x => x === textId);
+      const pos2 = seNodules.value.findIndex((x: SENodule) => x.id === textId);
+      seTextMap.delete(textId);
+      seTextIds.value.splice(pos, 1);
       seNodules.value.splice(pos2, 1);
       hasUnsavedNodules.value = true;
       //this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects

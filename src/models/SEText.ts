@@ -4,6 +4,7 @@ import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
+// NOTE: Need refactor (rename to "Text") 
 import TextTool from "@/plottables/TextTool";
 const { t } = i18n.global;
 
@@ -20,8 +21,8 @@ export class SEText extends SENodule {
 		this.x = x;
 		this.y = -y;
     console.log(`SEText.x = ${this.x}, SEText.y = ${this.y}`);
-    const textTool = new TextTool(this.text, this.x, this.y, this.name);
-    this.ref = textTool;
+    const text = new TextTool(this.text, this.x, this.y, this.name);
+    this.ref = text;
 	}
 
 	public shallowUpdate(): void {
@@ -36,7 +37,12 @@ export class SEText extends SENodule {
 	}
 
   // implement for MOVE tool
+  // Coordinates: how to pass? Normalize screen coords -> unit vector
 	public isHitAt(unitIdealVector: Vector3, currentMagnificationFactor: number): boolean {
+    // Get bounding box from reference object;
+    // getboundingbox -> twojs or plottable
+    // TODO: implement boundingRect (TextTool -> Text.ts)
+    //this.ref.boundingRect;
     return false;
 	}
 	public customStyles(): Set<string> {

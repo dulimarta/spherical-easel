@@ -12,7 +12,7 @@ export default class TextHandler extends Highlighter {
     EventBus.fire("show-text-dialog", {}); // Empty data if not required for the dialog
     console.debug("Event 'show-text-dialog' fired");
 
-    this.activate(); // Setup event listener for text submission
+    //this.activate(); // Setup event listener for text submission
   }
 
   activate(): void {
@@ -24,7 +24,7 @@ export default class TextHandler extends Highlighter {
 
   deactivate(): void {
     EventBus.unlisten("text-data-submitted");
-    console.debug("TextHandler deactivated");
+   console.debug("TextHandler deactivated");
   }
 
   // Method to receive text input
@@ -48,7 +48,7 @@ export default class TextHandler extends Highlighter {
     TextCmd.execute();
 
     // Deactivate the listener once the text is handled
-    this.deactivate();
+    //this.deactivate();
   }
 
   mouseReleased(event: MouseEvent): void {
