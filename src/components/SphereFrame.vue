@@ -57,9 +57,9 @@
   <!-- Dialog here -->
   <Dialog
       ref="inputDialog"
-      title="dialogTitle"
-      yes-text="yesText"
-      no-text="noText"
+      title="Text Tool"
+      yes-text="Submit"
+      no-text="Cancel"
       :yes-action="handleSubmit"
       max-width="40%"
     >
@@ -69,7 +69,7 @@
         clearable
         counter
         persistent-hint
-        label="inputLabel"
+        label="Input Text"
         required
         v-model="userInput"
       ></v-text-field>
@@ -120,6 +120,7 @@ import NSectAngleHandler from "@/eventHandlers/NSectAngleHandler";
 import ThreePointCircleHandler from "@/eventHandlers/ThreePointCircleHandler";
 import MeasuredCircleHandler from "@/eventHandlers/MeasuredCircleHandler";
 import TranslationTransformationHandler from "@/eventHandlers/TranslationTransformationHandler";
+import Dialog, { DialogAction } from "@/components/Dialog.vue";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
@@ -190,16 +191,19 @@ const mousePos = ref("");
 const showMousePos = ref(false);
 const { shift, alt, d, ctrl } = useMagicKeys();
 
-const inputDialog = ref<any>(null);
+const inputDialog: Ref<DialogAction | null> = ref(null);
 const userInput = ref('');
 const handleSubmit = () => {
   // Emit the text back to the handler
   EventBus.fire("text-data-submitted", { text: userInput.value });
-  inputDialog.value?.close();
+  inputDialog.value?.hide();
   userInput.value = ''; // Clear input after submission
 };
 const showDialog = () => {
-  inputDialog.value?.open();
+  console.debug("Attempting to open dialog...");
+  console.debug(inputDialog.value);
+  inputDialog.value?.show();
+  console.debug("Dialog open maybe");
 };
 
 /**
@@ -367,6 +371,7 @@ onBeforeMount((): void => {
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   EventBus.listen("update-fill-objects", updateObjectsWithFill);
   // EventBus.listen("export-current-svg-for-icon", getCurrentSVGForIcon);
+  EventBus.listen("show-text-dialog", showDialog);
 });
 
 onMounted((): void => {
@@ -414,7 +419,6 @@ onMounted((): void => {
   // updateShortcutTools();
   updateView();
   //Listen For text dialog box
-  EventBus.listen("show-text-dialog", showDialog);
 });
 watch(
   () => props.isEarthMode,
