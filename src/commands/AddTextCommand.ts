@@ -10,10 +10,12 @@ export class AddTextCommand extends Command {
     this.seText = txt;
   }
   restoreState(): void {
+    Command.store.removeText(this.seText.id);
     // for undo.
     // throw new Error("Method not implemented.");
   }
   saveState(): void {
+    this.lastState = this.seText.id;
     // throw new Error("Method not implemented.");
   }
   do(): void {
