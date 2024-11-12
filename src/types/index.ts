@@ -617,6 +617,7 @@ export type SEIsometry =
   | "tangentLineThruPoint"
   | "threePointCircleCenter"
   | "translation"
+  | "text"
   | "rotation"
   | "reflection"
   | "inversion"

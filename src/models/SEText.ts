@@ -4,8 +4,7 @@ import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
-// NOTE: Need refactor (rename to "Text") 
-import TextTool from "@/plottables/TextTool";
+import TextTool from "@/plottables/Text";
 const { t } = i18n.global;
 
 export class SEText extends SENodule {
@@ -14,6 +13,7 @@ export class SEText extends SENodule {
 	private x: number;// x, y coordinates
 	private y: number;
 	private text: string;// string text
+	protected _locationVector = new Vector3();
 
 	constructor(txt:string, x:number, y:number) {
 		super();
@@ -31,7 +31,7 @@ export class SEText extends SENodule {
       		this.ref.setVisible(true);
     	} else {
       		this.ref.setVisible(false);
-    	}	
+    	}
 	}
 
 	public update(
