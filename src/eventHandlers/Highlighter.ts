@@ -15,6 +15,7 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { Vector3 } from "three";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { SEText } from "@/models/SEText";
 
 // const tmpVector = new Vector3();
 
@@ -102,6 +103,10 @@ export default abstract class Highlighter extends MouseHandler {
     this.hitSELabels = this.hitSENodules
       .filter(obj => obj instanceof SELabel)
       .map(obj => obj as SELabel);
+
+    this.hitSETexts = this.hitSENodules
+      .filter(obj => obj instanceof SEText)
+      .map(obj => obj as SEText);
 
     this.hitSEAngleMarkers = this.hitSENodules
       .filter(obj => obj instanceof SEAngleMarker)

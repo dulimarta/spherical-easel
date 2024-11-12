@@ -94,5 +94,22 @@ export default class TextTool extends Nodule {
     return [];
   }
 
-  // setup getter for boundingRectangle -> getBoundingClientRect(); reference Label.ts in this dir.
+  get boundingRectangle(): {
+    bottom: number;
+    height: number;
+    left: number;
+    right: number;
+    top: number;
+    width: number;
+  } {
+    const rect = this.text.getBoundingClientRect();
+    return {
+      bottom: rect.bottom,
+      height: rect.height,
+      left: rect.left,
+      right: rect.right,
+      top: rect.top,
+      width: rect.width
+    };
+  }
 }

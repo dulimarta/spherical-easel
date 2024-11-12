@@ -26,24 +26,73 @@ export class SEText extends SENodule {
 	}
 
 	public shallowUpdate(): void {
-		//Something goes here
+		this.ref.positionVector = this._locationVector;
+    	if (this.showing) {
+      		this.ref.setVisible(true);
+    	} else {
+      		this.ref.setVisible(false);
+    	}	
 	}
 
 	public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]
     ): void {
-    	//Something goes here
+
+    	this.setOutOfDate(false);
+    	this.shallowUpdate();
+
+    	if (objectState && orderedSENoduleList) {
+      		if (objectState.has(this.id)) {
+        		console.log(
+          `		Text with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        	);
+        	return;
+      	}
+      	orderedSENoduleList.push(this.id);
+      	const location = new Vector3();
+      	location.copy(this._locationVector);
+      	objectState.set(this.id, {
+        	kind: "text",
+        	object: this,
+        	locationVector: location
+      	});
+		}
 	}
 
   // implement for MOVE tool
   // Coordinates: how to pass? Normalize screen coords -> unit vector
 	public isHitAt(unitIdealVector: Vector3, currentMagnificationFactor: number): boolean {
-    // Get bounding box from reference object;
-    // getboundingbox -> twojs or plottable
-    // TODO: implement boundingRect (TextTool -> Text.ts)
-    //this.ref.boundingRect;
-    return false;
+
+    // Get the bounding box of the text
+    const boundingBox = this.ref.boundingRectangle;
+    // Get the canvas size so the bounding box can be corrected
+    const canvasWidth = SENodule.store.canvasWidth;
+    const canvasHeight = SENodule.store.canvasHeight;
+    const zoomTranslation = SENodule.store.zoomTranslation;
+
+    return (
+      boundingBox.left - canvasWidth / 2 <
+        unitIdealVector.x *
+          SETTINGS.boundaryCircle.radius *
+          currentMagnificationFactor +
+          zoomTranslation[0] &&
+      unitIdealVector.x *
+        SETTINGS.boundaryCircle.radius *
+        currentMagnificationFactor +
+        zoomTranslation[0] <
+        boundingBox.right - canvasWidth / 2 &&
+      boundingBox.top - canvasHeight / 2 <
+        -unitIdealVector.y *
+          SETTINGS.boundaryCircle.radius *
+          currentMagnificationFactor +
+          zoomTranslation[1] && // minus sign because text layers are not y flipped
+      -unitIdealVector.y *
+        SETTINGS.boundaryCircle.radius *
+        currentMagnificationFactor +
+        zoomTranslation[1] < // minus sign because text layers are not y flipped
+        boundingBox.bottom - canvasHeight / 2
+    );
 	}
 	public customStyles(): Set<string> {
 		/**None**/

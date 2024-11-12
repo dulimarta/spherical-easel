@@ -25,6 +25,8 @@ import { SetNoduleExistCommand } from "@/commands/SetNoduleExistCommand";
 import { SESlider } from "@/models/SESlider";
 import { ChangeSliderCommand } from "@/commands/ChangeSliderCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEText} from "@/models/SEText";
+
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 const tmpVector1 = new Vector3();
@@ -128,6 +130,21 @@ export default class MoveHandler extends Highlighter {
         this.movingSomething = true;
         return;
       }
+
+      const texts = this.hitSETexts.filter(
+        n => n.isFreeToMove() && n.showing
+      );
+      if (texts.length > 0) {
+        this.moveTarget = texts[0];
+        // Store the state of the freePoints, segments and lines before the move
+        this.moveTarget.update(
+          this.beforeMoveStateMap,
+          this.beforeMoveSENoduleIDList
+        );
+        this.movingSomething = true;
+        return;
+      }
+      
       //If the user tries to move a nonFree point or object, nothing should happen -- this communicates
       //to the user they are trying to move something that can't be moved
       if (this.hitSEPoints.length == 0) {
