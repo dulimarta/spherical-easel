@@ -13,7 +13,7 @@
             shakeTransformationDisplay
           ]">
           <span class="text-truncate ml-1" :key="displayCycleValueUpdateKey">
-            {{ node.noduleItemText }}
+              {{ node.noduleItemText }}
           </span>
         </div>
       </template>
@@ -346,6 +346,7 @@ onBeforeMount(() => {
   //TextTool Attempt
   else if (props.node instanceof SEText) {
     iconName.value = "$text";
+    nodeName = "Text Item";
     nodeType = t(`objects.texts`, 3)
   }
 });
@@ -366,6 +367,7 @@ onMounted((): void => {
   );
 });
 
+// noduleItemText is abstract, need to override it. (SEText.ts)
 watch(() => props.node.noduleItemText, updateVisibilityKeys);
 // Without this, the display/label icon doesn't change between the two showing and not showing variants and the display cycle mode doesn't update
 function updateVisibilityKeys() {
@@ -661,8 +663,8 @@ const isPlottable = computed((): boolean => {
     props.node instanceof SEEllipse ||
     props.node instanceof SEAngleMarker ||
     props.node instanceof SEParametric ||
-    props.node instanceof SEPolygon 
-    //props.node instanceof SEText
+    props.node instanceof SEPolygon ||
+    props.node instanceof SEText
   );
 });
 

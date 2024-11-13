@@ -17,6 +17,7 @@ export class SEText extends SENodule {
 
 	constructor(txt:string, x:number, y:number) {
 		super();
+    // TODO: Getter for text
 		this.text = txt;
 		this.x = x;
 		this.y = -y;
@@ -104,7 +105,7 @@ export class SEText extends SENodule {
 	}
 	public get noduleItemText(): string {
 		/**None**/
-    return "";
+    return this.text;
 	}
 	public get noduleDescription(): string {
 		/**None**/

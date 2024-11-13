@@ -37,6 +37,7 @@ export class SetNoduleDisplayCommand extends Command {
       ) {
         (this.seNodule as unknown as Labelable).label!.showing = true;
       }
+      // Add case for SEtext
     }
   }
 
