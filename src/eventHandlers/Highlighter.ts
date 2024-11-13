@@ -41,7 +41,7 @@ export default abstract class Highlighter extends MouseHandler {
     // Set the isOnSphere boolean and location vectors correctly
     super.mouseMoved(event);
 
-    if (!this.isOnSphere) return;
+    //if (!this.isOnSphere) return;
 
     // Set the display to normal for all previously nearby objects
     this.hitSENodules.forEach((n: SENodule) => {
@@ -58,6 +58,7 @@ export default abstract class Highlighter extends MouseHandler {
     this.hitSEAngleMarkers.clear();
     this.hitSEParametrics.clear();
     this.hitSEPolygons.clear();
+    this.hitSETexts.clear();
     this.infoText.hide();
 
     // Create an array of SENodules of all nearby objects by querying the store
@@ -129,7 +130,8 @@ export default abstract class Highlighter extends MouseHandler {
       ...this.hitSEEllipses,
       ...this.hitSEAngleMarkers,
       ...this.hitSEParametrics,
-      ...this.hitSEPolygons
+      ...this.hitSEPolygons,
+      ...this.hitSETexts
     ]
       .map(n => n.label?.ref.shortUserName)
       .join(", ");
