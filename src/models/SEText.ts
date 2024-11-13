@@ -2,6 +2,7 @@ import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
+import { Vector } from "two.js/src/vector";
 import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
 import TextTool from "@/plottables/Text";
@@ -62,8 +63,11 @@ export class SEText extends SENodule {
 
   // implement for MOVE tool
   // Coordinates: how to pass? Normalize screen coords -> unit vector
-	public isHitAt(unitIdealVector: Vector3, currentMagnificationFactor: number): boolean {
-
+	public isHitAt(
+    unitIdealVector: Vector3,
+    currentMagnificationFactor: number,
+    screenPosition: Vector = new Vector()
+  ): boolean {
     // Get the bounding box of the text
     const boundingBox = this.ref.boundingRectangle;
     // Get the canvas size so the bounding box can be corrected
@@ -71,26 +75,17 @@ export class SEText extends SENodule {
     const canvasHeight = SENodule.store.canvasHeight;
     const zoomTranslation = SENodule.store.zoomTranslation;
 
+    console.log(`scrPos.x: ${screenPosition.x * currentMagnificationFactor + zoomTranslation[0]}\n\
+scrPos.y: ${-screenPosition.y * currentMagnificationFactor + zoomTranslation[0]}`);
+
     return (
       boundingBox.left - canvasWidth / 2 <
-        unitIdealVector.x *
-          SETTINGS.boundaryCircle.radius *
-          currentMagnificationFactor +
-          zoomTranslation[0] &&
-      unitIdealVector.x *
-        SETTINGS.boundaryCircle.radius *
-        currentMagnificationFactor +
-        zoomTranslation[0] <
+        screenPosition.x * currentMagnificationFactor + zoomTranslation[0] &&
+      screenPosition.x * currentMagnificationFactor + zoomTranslation[0] <
         boundingBox.right - canvasWidth / 2 &&
       boundingBox.top - canvasHeight / 2 <
-        -unitIdealVector.y *
-          SETTINGS.boundaryCircle.radius *
-          currentMagnificationFactor +
-          zoomTranslation[1] && // minus sign because text layers are not y flipped
-      -unitIdealVector.y *
-        SETTINGS.boundaryCircle.radius *
-        currentMagnificationFactor +
-        zoomTranslation[1] < // minus sign because text layers are not y flipped
+        -screenPosition.y * currentMagnificationFactor + zoomTranslation[0] &&
+      -screenPosition.y * currentMagnificationFactor + zoomTranslation[0] <
         boundingBox.bottom - canvasHeight / 2
     );
 	}
