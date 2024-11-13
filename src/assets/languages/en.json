@@ -148,7 +148,7 @@
     "DummyToolUseMessage": "Use instructions for the dummy tool.",
     "DummyToolTipMessage": "Tooltip for the dummy tool",
     "TextDisplayedName": "Text",
-    "TextToolUseMessage": "Click on canvas to place text allows for LaTeX input aswell",
+    "TextToolUseMessage": "Click on canvas to place text",
     "ToolToolTipMessage": "Places text on canvas",
     "": ""
   },

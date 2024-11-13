@@ -3996,6 +3996,7 @@ export const useSEStore = defineStore("se", () => {
     seSegments,
     seTransformations,
     twojsLayers,
+    seText,
 
     /* functions */
     addAngleMarkerAndExpression,

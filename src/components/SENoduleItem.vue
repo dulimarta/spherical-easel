@@ -155,6 +155,7 @@ import { Poles } from "@/types";
 import { SELatitude } from "@/models/SELatitude";
 import { SELongitude } from "@/models/SELongitude";
 import { Vector3 } from "three";
+import { SEText } from "@/models/SEText";
 const seStore = useSEStore();
 const { actionMode, isEarthMode, inverseTotalRotationMatrix } =
   storeToRefs(seStore);
@@ -341,6 +342,11 @@ onBeforeMount(() => {
     iconName.value = "$measurementObject";
     nodeName = props.node.name;
     nodeType = t(`objects.measurements`, 3);
+  }
+  //TextTool Attempt
+  else if (props.node instanceof SEText) {
+    iconName.value = "$text";
+    nodeType = t(`objects.texts`, 3)
   }
 });
 
@@ -655,7 +661,8 @@ const isPlottable = computed((): boolean => {
     props.node instanceof SEEllipse ||
     props.node instanceof SEAngleMarker ||
     props.node instanceof SEParametric ||
-    props.node instanceof SEPolygon
+    props.node instanceof SEPolygon 
+    //props.node instanceof SEText
   );
 });
 
