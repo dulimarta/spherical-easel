@@ -1,4 +1,5 @@
 import { Vector3 } from "three";
+import { Vector } from "two.js/src/vector";
 import Nodule from "@/plottables/Nodule";
 import {
   NormalAndPerpendicularPoint,
@@ -135,7 +136,8 @@ export abstract class SENodule implements Visitable {
    */
   public abstract isHitAt(
     unitIdealVector: Vector3,
-    currentMagnificationFactor: number
+    currentMagnificationFactor: number,
+    screenPosition?: Vector
   ): boolean;
 
   /**

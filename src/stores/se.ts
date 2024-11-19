@@ -1330,7 +1330,7 @@ export const useSEStore = defineStore("se", () => {
     screenPosition: Vector
   ): SENodule[] {
     return seNodules.value.filter((obj: SENodule) => {
-      return obj.isHitAt(unitIdealVector, zoomMagnificationFactor.value);
+      return obj.isHitAt(unitIdealVector, zoomMagnificationFactor.value, screenPosition);
     });
     // return []
   }
