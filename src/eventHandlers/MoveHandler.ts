@@ -304,6 +304,8 @@ export default class MoveHandler extends Highlighter {
         this.hitSEPoints[0].glowing = true;
       } else if (this.hitSELabels.filter(n => n.isFreeToMove()).length > 0) {
         this.hitSELabels[0].glowing = true;
+      } else if (this.hitSETexts.filter(n => n.isFreeToMove()).length > 0) {
+        this.hitSETexts[0].glowing = true;
       } else if (this.hitSEPoints.length == 0) {
         if (this.hitSESegments.filter(n => n.isFreeToMove()).length > 0) {
           this.hitSESegments[0].glowing = true;
@@ -409,6 +411,11 @@ export default class MoveHandler extends Highlighter {
       } else if (this.moveTarget instanceof SELabel) {
         // First mark all children of the target's point parents out of date so that the update method does a topological sort
         this.moveTarget.markKidsOutOfDate();
+        this.moveTarget.update(
+          this.afterMoveStateMap,
+          this.afterMoveSENoduleIDList
+        );
+      } else if (this.moveTarget instanceof SEText) {
         this.moveTarget.update(
           this.afterMoveStateMap,
           this.afterMoveSENoduleIDList
