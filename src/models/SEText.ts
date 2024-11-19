@@ -76,8 +76,8 @@ export class SEText extends SENodule {
     const canvasHeight = SENodule.store.canvasHeight;
     const zoomTranslation = SENodule.store.zoomTranslation;
 
-    console.log(`scrPos.x: ${screenPosition.x * currentMagnificationFactor + zoomTranslation[0]}\n\
-scrPos.y: ${-screenPosition.y * currentMagnificationFactor + zoomTranslation[0]}`);
+//     console.log(`scrPos.x: ${screenPosition.x * currentMagnificationFactor + zoomTranslation[0]}\n\
+// scrPos.y: ${-screenPosition.y * currentMagnificationFactor + zoomTranslation[0]}`);
 
     return (
       boundingBox.left - canvasWidth / 2 <
@@ -106,5 +106,7 @@ scrPos.y: ${-screenPosition.y * currentMagnificationFactor + zoomTranslation[0]}
 		/**None**/
     return "";
 	}
+
+
 
 }

@@ -19,6 +19,7 @@ import { SEParametric } from "@/models/SEParametric";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { M } from "vite/dist/node/types.d-aGj9QkWt";
 
 export default class DeleteHandler extends Highlighter {
   /**
@@ -42,8 +43,8 @@ export default class DeleteHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     // console.log("DeleteHandler::mousePressed");
     //Select an object to delete
-    if (this.isOnSphere) {
-      // In the case of multiple selections prioritize points > lines > segments > circles > labels
+    //if (this.isOnSphere) {           //Commented Out For now 
+      // In the case of multiple selections prioritize points > lines > segments > circles > texts > labels
       // Deleting an object deletes all objects that depend on that object including the label
       if (this.hitSEPoints.length > 0) {
         if (
@@ -76,7 +77,13 @@ export default class DeleteHandler extends Highlighter {
         this.victim = this.hitSEParametrics[0];
         this.victimName = this.hitSEParametrics[0].label?.ref.shortUserName;
         this.victimType = i18n.global.t(`objects.parametrics`, 3);
-      } else if (this.hitSELabels.length > 0) {
+      } else if (this.hitSETexts.length > 0) {
+        this.victim = this.hitSETexts[0];
+        this.victimName = this.hitSETexts[0].ref.name; //need to put actual name here instead of .name
+        this.victimType = i18n.global.t(`objects.texts`, 3)
+      }
+
+      else if (this.hitSELabels.length > 0) {
         // Do not allow deletion of labels - if a user selects a label with this tool, merely hide the label.
         new SetNoduleDisplayCommand(this.hitSELabels[0], false).execute();
       } else if (this.hitSEAngleMarkers.length > 0) {
@@ -111,7 +118,7 @@ export default class DeleteHandler extends Highlighter {
       } else {
         console.debug("No candidate to delete")
       }
-    }
+    //}
   }
 
   mouseMoved(event: MouseEvent): void {
