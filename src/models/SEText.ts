@@ -5,11 +5,11 @@ import { Vector3 } from "three";
 import { Vector } from "two.js/src/vector";
 import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
-import TextTool from "@/plottables/Text";
+import Text from "@/plottables/Text";
 const { t } = i18n.global;
 
 export class SEText extends SENodule {
-	public declare ref: TextTool //<- plottable Text
+	public declare ref: Text //<- plottable Text
 
 	private x: number;// x, y coordinates
 	private y: number;
@@ -22,7 +22,7 @@ export class SEText extends SENodule {
 		this.x = x;
 		this.y = -y;
     console.log(`SEText.x = ${this.x}, SEText.y = ${this.y}`);
-    const text = new TextTool(this.text, this.x, this.y, this.name);
+    const text = new Text(this.text, this.x, this.y, this.name);
     this.ref = text;
 	}
 
@@ -39,7 +39,7 @@ export class SEText extends SENodule {
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]
     ): void {
-
+      console.log(`SEText.update(${objectState}, ${orderedSENoduleList})`);
     	this.setOutOfDate(false);
     	this.shallowUpdate();
 
@@ -62,7 +62,6 @@ export class SEText extends SENodule {
 	}
 
   // implement for MOVE tool
-  // Coordinates: how to pass? Normalize screen coords -> unit vector
 	public isHitAt(
     unitIdealVector: Vector3,
     currentMagnificationFactor: number,
@@ -75,8 +74,8 @@ export class SEText extends SENodule {
     const canvasHeight = SENodule.store.canvasHeight;
     const zoomTranslation = SENodule.store.zoomTranslation;
 
-    console.log(`scrPos.x: ${screenPosition.x * currentMagnificationFactor + zoomTranslation[0]}\n\
-scrPos.y: ${-screenPosition.y * currentMagnificationFactor + zoomTranslation[0]}`);
+    /*console.log(`scrPos.x: ${screenPosition.x * currentMagnificationFactor + zoomTranslation[0]}\n\
+scrPos.y: ${-screenPosition.y * currentMagnificationFactor + zoomTranslation[0]}`);*/
 
     return (
       boundingBox.left - canvasWidth / 2 <
@@ -89,6 +88,16 @@ scrPos.y: ${-screenPosition.y * currentMagnificationFactor + zoomTranslation[0]}
         boundingBox.bottom - canvasHeight / 2
     );
 	}
+
+  set locationVector(pos: Vector3) {
+    this._locationVector.copy(pos).normalize();
+    this.ref.positionVector = this._locationVector;
+  }
+
+  get locationVector(): Vector3 {
+    return this._locationVector;
+  }
+
 	public customStyles(): Set<string> {
 		/**None**/
     return new Set();
