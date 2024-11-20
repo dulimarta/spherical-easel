@@ -135,6 +135,7 @@ export default class MoveHandler extends Highlighter {
         n => n.isFreeToMove() && n.showing
       );
       if (texts.length > 0) {
+        console.log("Found a Text to move");
         this.moveTarget = texts[0];
         // Store the state of the freePoints, segments and lines before the move
         this.moveTarget.update(
@@ -304,6 +305,9 @@ export default class MoveHandler extends Highlighter {
         this.hitSEPoints[0].glowing = true;
       } else if (this.hitSELabels.filter(n => n.isFreeToMove()).length > 0) {
         this.hitSELabels[0].glowing = true;
+      } else if (this.hitSETexts.filter(n => n.isFreeToMove()).length > 0) {
+        console.log("Hovering over SEText");
+        this.hitSETexts[0].glowing = true;
       } else if (this.hitSEPoints.length == 0) {
         if (this.hitSESegments.filter(n => n.isFreeToMove()).length > 0) {
           this.hitSESegments[0].glowing = true;
@@ -359,6 +363,10 @@ export default class MoveHandler extends Highlighter {
           this.previousSphereVector,
           this.currentSphereVector
         );
+      } else if (this.moveTarget instanceof SEText) {
+        console.log("Trying to move an SEText.");
+        console.log(`SEText.locationVector = ${this.moveTarget.locationVector}`);
+        this.moveTarget.locationVector = this.currentSphereVector;
       } else if (this.moveTarget == null && this.rotateSphere) {
         // Rotate the sphere, updates the display after moving all the points.
         this.doRotateSphere();
@@ -463,6 +471,13 @@ export default class MoveHandler extends Highlighter {
           this.afterMoveSENoduleIDList
         );
         this.moveTarget.ellipseSEPoint.update(
+          this.afterMoveStateMap,
+          this.afterMoveSENoduleIDList
+        );
+      } else if (this.moveTarget instanceof SEText) {
+        console.log("Placeing Text at new position.");
+        console.log(`location: ${this.moveTarget.locationVector}`);
+        this.moveTarget.update(
           this.afterMoveStateMap,
           this.afterMoveSENoduleIDList
         );
