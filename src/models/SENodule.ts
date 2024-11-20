@@ -37,6 +37,7 @@ export abstract class SENodule implements Visitable {
   public static INVERSION_COUNT = 0;
   public static POINT_REFLECTION_COUNT = 0;
   public static VISIBLE_POINT_COUNT = 0;
+  public static TEXT_COUNT = 0;
   static store: SEStoreType;
 
   static resetAllCounters(): void {
@@ -58,6 +59,7 @@ export abstract class SENodule implements Visitable {
     SENodule.INVERSION_COUNT = 0;
     SENodule.POINT_REFLECTION_COUNT = 0;
     SENodule.VISIBLE_POINT_COUNT = 0;
+    SENodule.TEXT_COUNT = 0;
   }
 
   static setGlobalStore(store: SEStoreType): void {

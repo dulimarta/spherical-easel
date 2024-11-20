@@ -34,17 +34,13 @@ export default class TextHandler extends Highlighter {
     // Ensure the text content is accessed correctly from the event payload
     const submittedText = data.text || ""; // Adjust if data is structured differently
 
-    console.debug(`Received text: "${submittedText}"`);
-    console.debug(`Rendering text at x: ${this.currentScreenVector.x}, y: ${this.currentScreenVector.y}`);
-
-    const testText = new SEText(
+    const text = new SEText(
       submittedText,
       this.currentScreenVector.x,
       this.currentScreenVector.y
     );
 
-    const TextCmd = new AddTextCommand(testText);
-    console.debug("Executing AddTextCommand to display the text on canvas...");
+    const TextCmd = new AddTextCommand(text);
     TextCmd.execute();
 
     // Deactivate the listener once the text is handled

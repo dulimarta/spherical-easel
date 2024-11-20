@@ -38,6 +38,7 @@ import { LabelMoverVisitor } from "@/visitors/LabelMoverVisitor";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { PointMoverVisitor } from "@/visitors/PointMoverVisitor";
 import { RotationVisitor } from "@/visitors/RotationVisitor";
+import { TextMoverVisitor } from "@/visitors/TextMoverVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
 import { Ref, ref } from "vue";
 import { defineStore } from "pinia";
@@ -779,6 +780,12 @@ export const useSEStore = defineStore("se", () => {
     hasUnsavedNodules.value = true;
     // this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
   }
+  function moveText(move: { textId: number; location: Vector3 }): void {
+    const textMoverVisitor = new TextMoverVisitor();
+    textMoverVisitor.setNewLocation(move.location);
+    const aText = seTextMap.get(move.textId);
+    if (aText) aText.accept(textMoverVisitor);
+  }
   function removeText(textId: number): void {
     const victimText = seTextMap.get(textId);
 
@@ -967,6 +974,7 @@ export const useSEStore = defineStore("se", () => {
     // );
     while (updateCandidates.length > 0) {
       const target = updateCandidates.shift()!;
+      console.log(`target is ${target.name}`);
       const accepted = target.accept(rotationVisitor);
       // console.log(`What's going on with ${target.name}?`, accepted);
       if (!accepted) {
@@ -4028,6 +4036,7 @@ export const useSEStore = defineStore("se", () => {
     fitZoomMagnificationFactor,
     moveLabel,
     movePoint,
+    moveText,
     hasObjects,
     init,
     removeAllFromLayers,

@@ -5,25 +5,26 @@ import { Vector3 } from "three";
 import { Vector } from "two.js/src/vector";
 import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
+import { TextMoverVisitor } from "@/visitors/TextMoverVisitor";
 import Text from "@/plottables/Text";
 const { t } = i18n.global;
 
 export class SEText extends SENodule {
 	public declare ref: Text //<- plottable Text
 
-	private x: number;// x, y coordinates
-	private y: number;
 	private text: string;// string text
 	protected _locationVector = new Vector3();
 
 	constructor(txt:string, x:number, y:number) {
 		super();
 		this.text = txt;
-		this.x = x;
-		this.y = -y;
-    console.log(`SEText.x = ${this.x}, SEText.y = ${this.y}`);
-    const text = new Text(this.text, this.x, this.y, this.name);
+    console.log(`SEText.x = ${x}, SEText.y = ${-y}`);
+    const text = new Text(this.text, x, -y, this.name);
     this.ref = text;
+    this._locationVector = this.ref.positionVector;
+    SENodule.TEXT_COUNT++;
+    this.name = `T${SENodule.TEXT_COUNT}`;
+    console.log(`_locationVector of ${this.name} = x: ${this._locationVector.x}, y: ${this._locationVector.y}, z: ${this._locationVector.z}`);
 	}
 
 	public shallowUpdate(): void {
@@ -39,7 +40,7 @@ export class SEText extends SENodule {
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]
     ): void {
-      console.log(`SEText.update(${objectState}, ${orderedSENoduleList})`);
+      //console.log(`SEText.update(${objectState}, ${orderedSENoduleList})`);
     	this.setOutOfDate(false);
     	this.shallowUpdate();
 
@@ -50,9 +51,12 @@ export class SEText extends SENodule {
         	);
         	return;
       	}
+        console.log(`this.id = ${this.id}`);
       	orderedSENoduleList.push(this.id);
       	const location = new Vector3();
       	location.copy(this._locationVector);
+        console.log(`_locationVector = x: ${this._locationVector.x} y: ${this._locationVector.y} z: ${this._locationVector.z} `);
+        console.log(`location = x: ${location.x} y: ${location.y} z: ${location.z} `);
       	objectState.set(this.id, {
         	kind: "text",
         	object: this,
@@ -89,8 +93,18 @@ scrPos.y: ${-screenPosition.y * currentMagnificationFactor + zoomTranslation[0]}
     );
 	}
 
+  public textDirectLocationSetter(pos: Vector3): void {
+    // Record the location on the unit ideal sphere of this SEPoint
+    this._locationVector.copy(pos);
+    // Set the position of the associated displayed plottable Point
+    this.ref.positionVector = this._locationVector;
+    if (this.showing) {
+      this.ref.updateDisplay();
+    }
+  }
+
   set locationVector(pos: Vector3) {
-    this._locationVector.copy(pos).normalize();
+    this._locationVector.copy(pos);
     this.ref.positionVector = this._locationVector;
   }
 
@@ -103,8 +117,9 @@ scrPos.y: ${-screenPosition.y * currentMagnificationFactor + zoomTranslation[0]}
     return new Set();
 	}
 	public accept(v: Visitor): boolean {
-		/**None**/
-    return false;
+    if (!(v instanceof TextMoverVisitor)) return false;
+    console.log("Accepting TextMoverVisitor.");
+    return v.actionOnText(this);
 	}
 	public get noduleItemText(): string {
 		/**None**/

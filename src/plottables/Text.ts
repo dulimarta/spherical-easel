@@ -22,10 +22,6 @@ import { Group } from "two.js/src/group";
 //had to name file Text so that it does not conflict wit two.js/src/text
 export default class Text extends Nodule {
   public text: TwoJsText;
-  constructor(txt: string, x: number, y: number, noduleName: string = "None") {
-    super(noduleName);
-    this.text = new TwoJsText(txt, x, y);
-  }
   /**
    * The vector location of the Label on the default unit sphere
    * The location vector in the Default Screen Plane
@@ -35,6 +31,10 @@ export default class Text extends Nodule {
   public _locationVector = new Vector3(1, 0, 0);
   public defaultScreenVectorLocation = new Vector(1, 0);
 
+  constructor(txt: string, x: number, y: number, noduleName: string = "None") {
+    super(noduleName);
+    this.text = new TwoJsText(txt, x, y);
+  }
   //private _defaultName = "";
 
   /**
@@ -115,13 +115,14 @@ export default class Text extends Nodule {
 
   set positionVector(idealUnitSphereVectorLocation: Vector3) {
     this._locationVector
-      .copy(idealUnitSphereVectorLocation)
-      .multiplyScalar(SETTINGS.boundaryCircle.radius);
+      .copy(idealUnitSphereVectorLocation);
+      //.multiplyScalar(SETTINGS.boundaryCircle.radius);
     // Translate the whole group (i.e. all points front/back/glowing/drawn) to the new center vector
     this.defaultScreenVectorLocation.set(
       this._locationVector.x,
-      this._locationVector.y
+      -this._locationVector.y
     );
+    this.text.position.copy(this.defaultScreenVectorLocation);
     //this.updateDisplay();  //<--- do not do this! disconnect the setting of position with the display, if you leave this in
     //then this turns on the display of the vertex point of the angle marker in a bad way. It turns on the
     //     // the display so that the following problem occurs.
