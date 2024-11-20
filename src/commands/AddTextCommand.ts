@@ -5,7 +5,6 @@ import { Command } from "./Command";
 export class AddTextCommand extends Command {
   private seText: SEText;
   constructor(txt: SEText) { //constructor(txt: SEText, x: number, y: number)
-    console.debug("AddTextCommand:AddTextCommand()");
     super();
     this.seText = txt;
   }
@@ -20,7 +19,6 @@ export class AddTextCommand extends Command {
   }
   do(): void {
     Command.store.addText(this.seText)
-    console.debug("AddTextCommand:do()");
     // throw new Error("Method not implemented.");
     // Go into object tree; parents, children, etc.
   }
