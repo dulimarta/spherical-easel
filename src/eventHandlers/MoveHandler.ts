@@ -421,6 +421,11 @@ export default class MoveHandler extends Highlighter {
           this.afterMoveStateMap,
           this.afterMoveSENoduleIDList
         );
+      } else if (this.moveTarget instanceof SEText) {
+        this.moveTarget.update(
+          this.afterMoveStateMap,
+          this.afterMoveSENoduleIDList
+        );
       } else if (this.moveTarget instanceof SESegment) {
         // First mark all children of the target's point parents out of date so that the update method does a topological sort
         this.moveTarget.startSEPoint.markKidsOutOfDate();
