@@ -70,7 +70,7 @@ export class TextMoverVisitor implements Visitor {
   }
   //eslint-disable-next-line
   actionOnText(t: SEText): boolean {
-    t.shallowUpdate();
-    return true;
+    t.locationVector = this.locationVector;
+    return false;
   }
 }

@@ -781,9 +781,11 @@ export const useSEStore = defineStore("se", () => {
     // this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
   }
   function moveText(move: { textId: number; location: Vector3 }): void {
+    console.log(`se.moveText(): textId: ${move.textId}, location: ${move.location.toFixed(3)}`);
     const textMoverVisitor = new TextMoverVisitor();
     textMoverVisitor.setNewLocation(move.location);
     const aText = seTextMap.get(move.textId);
+    console.log(`se.moveText() aText = ${aText?.id}, ${aText?.locationVector.toFixed(3)}`);
     if (aText) aText.accept(textMoverVisitor);
   }
   function removeText(textId: number): void {

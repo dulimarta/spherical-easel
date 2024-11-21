@@ -34,6 +34,8 @@ export default class Text extends Nodule {
   constructor(txt: string, x: number, y: number, noduleName: string = "None") {
     super(noduleName);
     this.text = new TwoJsText(txt, x, y);
+    this._locationVector.x = x;
+    this._locationVector.y = -y;
   }
   //private _defaultName = "";
 
@@ -114,6 +116,9 @@ export default class Text extends Nodule {
   }
 
   set positionVector(idealUnitSphereVectorLocation: Vector3) {
+
+    console.log("Calling set Text.positionVector");
+    console.log(`${idealUnitSphereVectorLocation.toFixed(3)}`);
     this._locationVector
       .copy(idealUnitSphereVectorLocation);
       //.multiplyScalar(SETTINGS.boundaryCircle.radius);

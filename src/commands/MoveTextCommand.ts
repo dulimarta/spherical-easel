@@ -16,6 +16,9 @@ export class MoveTextCommand extends Command {
     this.seText = seText;
     this.oldLocationVector.copy(oldLocationVector);
     this.newLocationVector.copy(newLocationVector);
+
+    console.log(`oldLocationVector = ${oldLocationVector.toFixed(3)}`);
+    console.log(`newLocationVector = ${newLocationVector.toFixed(3)}`);
   }
 
   do(): void {
@@ -30,10 +33,12 @@ export class MoveTextCommand extends Command {
   }
 
   restoreState(): void {
+    console.log(`MoveTextCommand.restoreState(): ${this.oldLocationVector.toFixed(3)}`);
     Command.store.moveText({
-      textId: this.lastState,
+      textId: this.seText.id,
       location: this.oldLocationVector
     });
+    this.seText.shallowUpdate();
   }
 
   toOpcode(): null | string | Array<string> {
