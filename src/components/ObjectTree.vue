@@ -144,6 +144,18 @@
             :label="t('measurements', seExpressions.length)"
             :children="seExpressions"></SENoduleList>
         </v-sheet>
+        <v-sheet
+          rounded
+          color = "accent"
+          :elevation="4"
+          class="my-3"
+          v-show="seText.length > 0">
+          <SENoduleList
+            :label="t('text', seText.length)"
+            :children="seText"></SENoduleList>
+        </v-sheet>
+
+
         <!--v-sheet rounded
           color="accent"
           :elevation="4"
@@ -185,7 +197,8 @@ const {
   seNodules,
   seExpressions,
   actionMode,
-  seTransformations
+  seTransformations,
+  seText //added seText in se.ts line 3999
 } = storeToRefs(seStore);
 const { t } = useI18n();
 let displayExpressionSheetAgain = true;
@@ -332,6 +345,7 @@ const showExpressionSheet = computed((): boolean => {
   "points": "Points | Point | Points | points",
   "segments": "Line Segments | Line Segment | Line segments | line segments",
   "slider": "Slider",
-  "transformations": "Transformations | Transformation | Transformations | transformations"
+  "transformations": "Transformations | Transformation | Transformations | transformations",
+  "text": "Text | Texts"
 }
 </i18n>

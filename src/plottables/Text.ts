@@ -83,7 +83,7 @@ export default class Text extends Nodule {
     /**None**/
   }
   setVisible(flag: boolean): void {
-    /**None**/
+    this.text.visible = flag;
   }
   updateDisplay(): void {
     this.normalDisplay();

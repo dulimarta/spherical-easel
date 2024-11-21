@@ -44,6 +44,7 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { storeToRefs } from "pinia";
 import { SEExpression } from "@/models/SEExpression";
 import { SETransformation } from "@/models/SETransformation";
+import { SEText } from "@/models/SEText";
 import { useI18n } from "vue-i18n";
 const props = defineProps<{
   children: SENodule[];

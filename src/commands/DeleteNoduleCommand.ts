@@ -16,6 +16,7 @@ import { SETransformation } from "@/models/SETransformation";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SavedNames } from "@/types";
 import { toSVGType } from "@/types";
+import { SEText } from "@/models/SEText";
 
 export class DeleteNoduleCommand extends Command {
   private seNodule: SENodule;
@@ -74,6 +75,8 @@ export class DeleteNoduleCommand extends Command {
       Command.store.removeAngleMarkerAndExpression(this.seNodule.id);
     } else if (this.seNodule instanceof SEPolygon) {
       Command.store.removePolygonAndExpression(this.seNodule.id);
+    } else if (this.seNodule instanceof SEText) {
+      Command.store.removeText(this.seNodule.id);
     } else if (this.seNodule instanceof SEExpression) {
       Command.store.removeExpression(this.seNodule.id);
       // when removing expressions that have effects on the labels, we must set those label display arrays to empty
@@ -128,6 +131,8 @@ export class DeleteNoduleCommand extends Command {
       Command.store.addLine(this.seNodule);
     } else if (this.seNodule instanceof SEPoint) {
       Command.store.addPoint(this.seNodule);
+    } else if (this.seNodule instanceof SEText) {
+      Command.store.addText(this.seNodule);
     }
     // The parent array of this.seNodule is empty prior to the execution of this loop
     for (let i = this.parentIds.length - 1; i > -1; i--) {

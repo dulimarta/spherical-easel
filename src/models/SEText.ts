@@ -17,6 +17,7 @@ export class SEText extends SENodule {
 
 	constructor(txt:string, x:number, y:number) {
 		super();
+    // TODO: Getter for text
 		this.text = txt;
     console.log(`SEText.x = ${x}, SEText.y = ${-y}`);
     const text = new Text(this.text, x, -y, this.name);
@@ -78,9 +79,6 @@ export class SEText extends SENodule {
     const canvasHeight = SENodule.store.canvasHeight;
     const zoomTranslation = SENodule.store.zoomTranslation;
 
-    /*console.log(`scrPos.x: ${screenPosition.x * currentMagnificationFactor + zoomTranslation[0]}\n\
-scrPos.y: ${-screenPosition.y * currentMagnificationFactor + zoomTranslation[0]}`);*/
-
     return (
       boundingBox.left - canvasWidth / 2 <
         screenPosition.x * currentMagnificationFactor + zoomTranslation[0] &&
@@ -123,11 +121,13 @@ scrPos.y: ${-screenPosition.y * currentMagnificationFactor + zoomTranslation[0]}
 	}
 	public get noduleItemText(): string {
 		/**None**/
-    return "";
+    return this.text;
 	}
 	public get noduleDescription(): string {
 		/**None**/
     return "";
 	}
+
+
 
 }
