@@ -8,11 +8,21 @@ export default class TextHandler extends Highlighter {
     console.debug("TextHandler::mousePressed()");
     console.debug(`Current Screen Vector - x: ${this.currentScreenVector.x}, y: ${this.currentScreenVector.y}`);
 
+    // Filter for relevant text objects
+    const texts = this.hitSETexts.filter(
+      (text) => text.showing
+    );
+
+    if (texts.length > 0) {
+      // A text object is clicked
+      const clickedText = texts[0]; // Get the top-most text object
+      console.log("Clicked on SEText:", clickedText.noduleItemText);
+    }
+    else {
     // Fire the event to show the dialog
     EventBus.fire("show-text-dialog", {}); // Empty data if not required for the dialog
     console.debug("Event 'show-text-dialog' fired");
-
-    //this.activate(); // Setup event listener for text submission
+    }
   }
 
   activate(): void {
