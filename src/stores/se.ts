@@ -788,6 +788,22 @@ export const useSEStore = defineStore("se", () => {
     console.log(`se.moveText() aText = ${aText?.id}, ${aText?.locationVector.toFixed(3)}`);
     if (aText) aText.accept(textMoverVisitor);
   }
+  function changeText(text: SEText): void {
+    if (seTextMap.has(text.id)) {
+        // Update the text in the map
+        seTextMap.set(text.id, text);
+
+        // Find and update the corresponding text in seNodules array
+        const index = seNodules.value.findIndex((nodule) => nodule.id === text.id);
+        if (index !== -1) {
+            seNodules.value[index] = text;
+        }
+        // Mark as unsaved
+        hasUnsavedNodules.value = true;
+    } else {
+        console.error(`Text with ID ${text.id} does not exist.`);
+    }
+}
   function removeText(textId: number): void {
     const victimText = seTextMap.get(textId);
 
@@ -4026,6 +4042,7 @@ export const useSEStore = defineStore("se", () => {
     changeGradientFill,
     changeLineNormalVector,
     changeSegmentNormalVectorArcLength,
+    changeText,
     clearUnsavedFlag,
     createAllIntersectionsWithCircle,
     createAllIntersectionsWithEllipse,

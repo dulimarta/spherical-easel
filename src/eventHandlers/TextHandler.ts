@@ -1,4 +1,5 @@
 import { AddTextCommand } from "@/commands/AddTextCommand";
+import { ChangeTextCommand } from "@/commands/ChangeTextCommand";
 import Highlighter from "./Highlighter";
 import { SEText } from "@/models/SEText";
 import EventBus from "@/eventHandlers/EventBus";
@@ -17,6 +18,14 @@ export default class TextHandler extends Highlighter {
       // A text object is clicked
       const clickedText = texts[0]; // Get the top-most text object
       console.log("Clicked on SEText:", clickedText.noduleItemText);
+
+      
+
+      new ChangeTextCommand(
+        clickedText,
+        clickedText.noduleItemText,
+        newText
+      )
     }
     else {
     // Fire the event to show the dialog

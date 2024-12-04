@@ -127,7 +127,12 @@ export class SEText extends SENodule {
 		/**None**/
     return "";
 	}
+  // Getter for the private variable text
+  public getText(): string {
+    return this.text;
+}
 
-
-
+public setText(newText: string): void {
+  this.text = newText;
+}
 }
