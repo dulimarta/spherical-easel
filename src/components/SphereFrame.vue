@@ -60,7 +60,7 @@
       title="Text Tool"
       yes-text="Submit"
       no-text="Cancel"
-      :yes-action="handleSubmit"
+      :yes-action="currentSubmitAction"
       max-width="40%"
     >
       <v-text-field
@@ -193,18 +193,41 @@ const { shift, alt, d, ctrl } = useMagicKeys();
 
 const inputDialog: Ref<DialogAction | null> = ref(null);
 const userInput = ref('');
+const currentSubmitAction = ref(() => {}); // Dynamic action placeholder
+const editingTextId = ref<number | null>(null); // Reactive state for textId
 const handleSubmit = () => {
   // Emit the text back to the handler
   EventBus.fire("text-data-submitted", { text: userInput.value });
   inputDialog.value?.hide();
   userInput.value = ''; // Clear input after submission
 };
+const handleEditSubmit = () => {
+  EventBus.fire("text-data-edited", {
+    text: userInput.value,
+    textId: editingTextId.value,
+   });
+  inputDialog.value?.hide();
+  userInput.value = ''; // Clear input after submission
+  editingTextId.value = null; // Clear textId
+};
 const showDialog = () => {
+  currentSubmitAction.value = handleSubmit; // Set action to create
   console.debug("Attempting to open dialog...");
   console.debug(inputDialog.value);
   inputDialog.value?.show();
   console.debug("Dialog open maybe");
 };
+const showEditDialog = (payload: { oldText: string, textId: number }) => {
+  currentSubmitAction.value = handleEditSubmit; // Set action to edit
+  console.debug("Attempting to open Edit Dialog...");
+  console.debug(inputDialog.value);
+  const { oldText, textId } = payload;
+  editingTextId.value = textId;
+  userInput.value = oldText;
+  console.debug("Prefilled userInput: ", userInput.value)
+  inputDialog.value?.show();
+  console.debug("Dialog Open Edit");
+}
 
 /**
  * The main (the only one) TwoJS object that contains the groups (each a Group) making up the screen graph
@@ -372,6 +395,7 @@ onBeforeMount((): void => {
   EventBus.listen("update-fill-objects", updateObjectsWithFill);
   // EventBus.listen("export-current-svg-for-icon", getCurrentSVGForIcon);
   EventBus.listen("show-text-dialog", showDialog);
+  EventBus.listen("show-edit-dialog", showEditDialog);
 });
 
 onMounted((): void => {
@@ -475,6 +499,7 @@ onBeforeUnmount((): void => {
   EventBus.unlisten("update-fill-objects");
   //EventBus.unlisten("export-current-svg-for-icon");
   EventBus.unlisten("show-text-dialog");
+  EventBus.unlisten("show-edit-dialog");
 });
 
 watch(

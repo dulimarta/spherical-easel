@@ -5,6 +5,7 @@ import { SEText } from "@/models/SEText";
 import EventBus from "@/eventHandlers/EventBus";
 
 export default class TextHandler extends Highlighter {
+  changeTextId: number | undefined;
   mousePressed(event: MouseEvent): void {
     console.debug("TextHandler::mousePressed()");
     console.debug(`Current Screen Vector - x: ${this.currentScreenVector.x}, y: ${this.currentScreenVector.y}`);
@@ -17,15 +18,21 @@ export default class TextHandler extends Highlighter {
     if (texts.length > 0) {
       // A text object is clicked
       const clickedText = texts[0]; // Get the top-most text object
+      this.changeTextId = clickedText.id;
       console.log("Clicked on SEText:", clickedText.noduleItemText);
+      console.log("Clieked Text ID:", clickedText.id);
 
-      
+      EventBus.fire("show-edit-dialog", {
+        oldText: clickedText.noduleItemText,
+        textId: clickedText.id
+       });
+      console.debug("Event 'show-edit-dialog' fired");
 
-      new ChangeTextCommand(
-        clickedText,
-        clickedText.noduleItemText,
-        newText
-      )
+      // new ChangeTextCommand(
+      //   clickedText,
+      //   clickedText.noduleItemText,
+      //   newText
+      // )
     }
     else {
     // Fire the event to show the dialog
@@ -39,6 +46,7 @@ export default class TextHandler extends Highlighter {
 
     // Set up the listener for text submission
     EventBus.listen("text-data-submitted", this.handleTextInput.bind(this));
+    EventBus.listen("text-data-edited", this.handleEditInput.bind(this));
   }
 
   deactivate(): void {
@@ -64,6 +72,13 @@ export default class TextHandler extends Highlighter {
 
     // Deactivate the listener once the text is handled
     //this.deactivate();
+  }
+  handleEditInput(data: any): void {
+    console.debug("Replaced Text:", data.text);
+    console.debug("Replaced Text ID in handleEditInput():", data.textId);
+
+    
+
   }
 
   mouseReleased(event: MouseEvent): void {

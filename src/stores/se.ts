@@ -788,22 +788,42 @@ export const useSEStore = defineStore("se", () => {
     console.log(`se.moveText() aText = ${aText?.id}, ${aText?.locationVector.toFixed(3)}`);
     if (aText) aText.accept(textMoverVisitor);
   }
-  function changeText(text: SEText): void {
-    if (seTextMap.has(text.id)) {
-        // Update the text in the map
-        seTextMap.set(text.id, text);
+  function changeText(change: { textId: number; newText: string }): void {
+    console.log(`se.changeText(): textId: ${change.textId}, newText: "${change.newText}"`);
 
-        // Find and update the corresponding text in seNodules array
-        const index = seNodules.value.findIndex((nodule) => nodule.id === text.id);
-        if (index !== -1) {
-            seNodules.value[index] = text;
-        }
-        // Mark as unsaved
-        hasUnsavedNodules.value = true;
+    // Retrieve the SEText object from the map using textId
+    const aText = seTextMap.get(change.textId);
+
+    console.log(`se.changeText() aText = ${aText?.id}, currentText: "${aText?.noduleItemText}"`);
+
+    if (aText) {
+      // Change the text content of the SEText object
+      aText.setText(change.newText);
+
+      // Log the change operation
+      console.log(`se.changeText(): Text content updated for textId: ${change.textId}`);
     } else {
-        console.error(`Text with ID ${text.id} does not exist.`);
+      // Handle the case where the textId does not exist in the map
+      console.warn(`se.changeText(): No SEText found with textId: ${change.textId}`);
     }
-}
+  }
+//   function changeText(text: SEText): void {
+//     if (seTextMap.has(text.id)) {
+//         // Update the text in the map
+//         seTextMap.set(text.id, text);
+
+
+//         // Find and update the corresponding text in seNodules array
+//         const index = seNodules.value.findIndex((nodule) => nodule.id === text.id);
+//         if (index !== -1) {
+//             seNodules.value[index] = text;
+//         }
+//         // Mark as unsaved
+//         hasUnsavedNodules.value = true;
+//     } else {
+//         console.error(`Text with ID ${text.id} does not exist.`);
+//     }
+// }
   function removeText(textId: number): void {
     const victimText = seTextMap.get(textId);
 
