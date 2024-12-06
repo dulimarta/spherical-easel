@@ -141,4 +141,9 @@ export default class Text extends Nodule {
   get positionVector(): Vector3 {
     return this._locationVector;
   }
+
+  set twoJsText(txt: string) {
+    this.text.value = txt;
+  }
+
 }

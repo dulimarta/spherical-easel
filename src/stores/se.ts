@@ -794,7 +794,7 @@ export const useSEStore = defineStore("se", () => {
     // Retrieve the SEText object from the map using textId
     const aText = seTextMap.get(change.textId);
 
-    console.log(`se.changeText() aText = ${aText?.id}, currentText: "${aText?.noduleItemText}"`);
+    console.log(`se.changeText() aText = ${aText?.id}, currentText: "${aText?.getText()}"`);
 
     if (aText) {
       // Change the text content of the SEText object
@@ -802,10 +802,7 @@ export const useSEStore = defineStore("se", () => {
 
       // Log the change operation
       console.log(`se.changeText(): Text content updated for textId: ${change.textId}`);
-    } else {
-      // Handle the case where the textId does not exist in the map
-      console.warn(`se.changeText(): No SEText found with textId: ${change.textId}`);
-    }
+    } 
   }
 //   function changeText(text: SEText): void {
 //     if (seTextMap.has(text.id)) {

@@ -134,5 +134,6 @@ export class SEText extends SENodule {
 
 public setText(newText: string): void {
   this.text = newText;
+  this.ref.twoJsText = newText; // Update the Two.js text instance
 }
 }

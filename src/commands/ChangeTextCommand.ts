@@ -22,7 +22,10 @@ export class ChangeTextCommand extends Command {
 
     restoreState(): void {
         this.seText.setText(this.oldText); // Restore old text
-        Command.store.changeText(this.seText); // Apply the restoration
+        Command.store.changeText({
+            textId: this.seText.id,
+            newText: this.oldText
+          }); // Apply the restoration
         this.seText.shallowUpdate(); // Ensure the visual state is refreshed
     }
     saveState(): void {
@@ -31,7 +34,10 @@ export class ChangeTextCommand extends Command {
 
     do(): void {
         this.seText.setText(this.newText)
-        Command.store.changeText(this.seText)
+        Command.store.changeText({
+            textId: this.seText.id,
+            newText: this.newText
+          }); // Apply new text
         this.seText.shallowUpdate();
     }
 

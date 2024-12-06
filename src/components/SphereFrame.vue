@@ -149,6 +149,7 @@ import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
 import { useMagicKeys } from "@vueuse/core";
 import { watchEffect } from "vue";
+import { SEText } from "@/models/SEText";
 
 type ComponentProps = {
   availableHeight: number;
@@ -195,6 +196,8 @@ const inputDialog: Ref<DialogAction | null> = ref(null);
 const userInput = ref('');
 const currentSubmitAction = ref(() => {}); // Dynamic action placeholder
 const editingTextId = ref<number | null>(null); // Reactive state for textId
+const editingOldText = ref<string>(''); // Reactive state for oldText
+const originalSeText = ref<SEText | null>(null); //Needed to pass original seText object
 const handleSubmit = () => {
   // Emit the text back to the handler
   EventBus.fire("text-data-submitted", { text: userInput.value });
@@ -205,6 +208,8 @@ const handleEditSubmit = () => {
   EventBus.fire("text-data-edited", {
     text: userInput.value,
     textId: editingTextId.value,
+    oldText: editingOldText.value,
+    seText: originalSeText.value
    });
   inputDialog.value?.hide();
   userInput.value = ''; // Clear input after submission
@@ -217,12 +222,14 @@ const showDialog = () => {
   inputDialog.value?.show();
   console.debug("Dialog open maybe");
 };
-const showEditDialog = (payload: { oldText: string, textId: number }) => {
+const showEditDialog = (payload: { oldText: string, textId: number, seText: SEText }) => {
   currentSubmitAction.value = handleEditSubmit; // Set action to edit
   console.debug("Attempting to open Edit Dialog...");
   console.debug(inputDialog.value);
-  const { oldText, textId } = payload;
+  const { oldText, textId, seText } = payload;
   editingTextId.value = textId;
+  editingOldText.value = oldText;
+  originalSeText.value = seText;
   userInput.value = oldText;
   console.debug("Prefilled userInput: ", userInput.value)
   inputDialog.value?.show();

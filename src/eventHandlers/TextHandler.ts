@@ -5,7 +5,6 @@ import { SEText } from "@/models/SEText";
 import EventBus from "@/eventHandlers/EventBus";
 
 export default class TextHandler extends Highlighter {
-  changeTextId: number | undefined;
   mousePressed(event: MouseEvent): void {
     console.debug("TextHandler::mousePressed()");
     console.debug(`Current Screen Vector - x: ${this.currentScreenVector.x}, y: ${this.currentScreenVector.y}`);
@@ -18,13 +17,13 @@ export default class TextHandler extends Highlighter {
     if (texts.length > 0) {
       // A text object is clicked
       const clickedText = texts[0]; // Get the top-most text object
-      this.changeTextId = clickedText.id;
       console.log("Clicked on SEText:", clickedText.noduleItemText);
       console.log("Clieked Text ID:", clickedText.id);
 
       EventBus.fire("show-edit-dialog", {
         oldText: clickedText.noduleItemText,
-        textId: clickedText.id
+        textId: clickedText.id,
+        seText: clickedText
        });
       console.debug("Event 'show-edit-dialog' fired");
 
@@ -76,9 +75,11 @@ export default class TextHandler extends Highlighter {
   handleEditInput(data: any): void {
     console.debug("Replaced Text:", data.text);
     console.debug("Replaced Text ID in handleEditInput():", data.textId);
+    console.debug("Original Text in handleEditInput():", data.oldText);
+    console.debug("Original seText Value:", data.seText);
 
-    
-
+    const changeTextCmd = new ChangeTextCommand(data.seText, data.oldText, data.text)
+    changeTextCmd.execute();
   }
 
   mouseReleased(event: MouseEvent): void {
