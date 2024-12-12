@@ -147,6 +147,9 @@
     "DummyDisplayedName": "A dummy tool",
     "DummyToolUseMessage": "Use instructions for the dummy tool.",
     "DummyToolTipMessage": "Tooltip for the dummy tool",
+    "TextDisplayedName": "Text",
+    "TextToolUseMessage": "Click on canvas to place text",
+    "ToolToolTipMessage": "Places text on canvas",
     "": ""
   },
   "settings": {

@@ -54,6 +54,26 @@
       </div>
     </div-->
   </div>
+  <!-- Dialog here -->
+  <Dialog
+      ref="inputDialog"
+      title="Text Tool"
+      yes-text="Submit"
+      no-text="Cancel"
+      :yes-action="currentSubmitAction"
+      max-width="40%"
+    >
+      <v-text-field
+        type="text"
+        density="compact"
+        clearable
+        counter
+        persistent-hint
+        label="Input Text"
+        required
+        v-model="userInput"
+      ></v-text-field>
+    </Dialog>
 </template>
 
 <script lang="ts" setup>
@@ -100,6 +120,7 @@ import NSectAngleHandler from "@/eventHandlers/NSectAngleHandler";
 import ThreePointCircleHandler from "@/eventHandlers/ThreePointCircleHandler";
 import MeasuredCircleHandler from "@/eventHandlers/MeasuredCircleHandler";
 import TranslationTransformationHandler from "@/eventHandlers/TranslationTransformationHandler";
+import Dialog, { DialogAction } from "@/components/Dialog.vue";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
@@ -117,6 +138,7 @@ import PointReflectionTransformationHandler from "@/eventHandlers/PointReflectio
 import InversionTransformationHandler from "@/eventHandlers/InversionTransformationHandler";
 // Use the DummyHandler example as a starter for a new handler
 import DummyHandler from "@/eventHandlers/DummyHandler";
+import TextHandler from "@/eventHandlers/TextHandler";
 import { SETransformation } from "@/models/SETransformation";
 import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandler";
 import { SENodule } from "@/models/SENodule";
@@ -127,6 +149,7 @@ import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
 import { useMagicKeys } from "@vueuse/core";
 import { watchEffect } from "vue";
+import { SEText } from "@/models/SEText";
 
 type ComponentProps = {
   availableHeight: number;
@@ -168,6 +191,51 @@ const shortCutIcons = computed((): Array<Array<ToolButtonType>> => {
 const mousePos = ref("");
 const showMousePos = ref(false);
 const { shift, alt, d, ctrl } = useMagicKeys();
+
+const inputDialog: Ref<DialogAction | null> = ref(null);
+const userInput = ref('');
+const currentSubmitAction = ref(() => {}); // Dynamic action placeholder
+const editingTextId = ref<number | null>(null); // Reactive state for textId
+const editingOldText = ref<string>(''); // Reactive state for oldText
+const originalSeText = ref<SEText | null>(null); //Needed to pass original seText object
+const handleSubmit = () => {
+  // Emit the text back to the handler
+  EventBus.fire("text-data-submitted", { text: userInput.value });
+  inputDialog.value?.hide();
+  userInput.value = ''; // Clear input after submission
+};
+const handleEditSubmit = () => {
+  EventBus.fire("text-data-edited", {
+    text: userInput.value,
+    textId: editingTextId.value,
+    oldText: editingOldText.value,
+    seText: originalSeText.value
+   });
+  inputDialog.value?.hide();
+  userInput.value = ''; // Clear input after submission
+  editingTextId.value = null; // Clear textId
+};
+const showDialog = () => {
+  currentSubmitAction.value = handleSubmit; // Set action to create
+  console.debug("Attempting to open dialog...");
+  console.debug(inputDialog.value);
+  inputDialog.value?.show();
+  console.debug("Dialog open maybe");
+};
+const showEditDialog = (payload: { oldText: string, textId: number, seText: SEText }) => {
+  currentSubmitAction.value = handleEditSubmit; // Set action to edit
+  console.debug("Attempting to open Edit Dialog...");
+  console.debug(inputDialog.value);
+  const { oldText, textId, seText } = payload;
+  editingTextId.value = textId;
+  editingOldText.value = oldText;
+  originalSeText.value = seText;
+  userInput.value = oldText;
+  console.debug("Prefilled userInput: ", userInput.value)
+  inputDialog.value?.show();
+  console.debug("Dialog Open Edit");
+}
+
 /**
  * The main (the only one) TwoJS object that contains the groups (each a Group) making up the screen graph
  * First groups  (Groups) are added to the twoInstance (index by the enum LAYER from
@@ -224,6 +292,7 @@ let reflectionTool: ReflectionTransformationHandler | null = null;
 let pointReflectionTool: PointReflectionTransformationHandler | null = null;
 let inversionTool: InversionTransformationHandler | null = null;
 let applyTransformationTool: ApplyTransformationHandler | null = null;
+let textTool: TextHandler | null = null;
 
 // Use the following line as a starter for a new handler
 let dummyTool: DummyHandler | null = null;
@@ -251,9 +320,10 @@ onBeforeMount((): void => {
   // Record the text layer number so that the y axis is not flipped for them
   const textLayers = [
     LAYER.foregroundText,
-    LAYER.backgroundText,
-    LAYER.foregroundTextGlowing,
-    LAYER.backgroundTextGlowing
+    LAYER.foregroundLabel,
+    LAYER.backgroundLabel,
+    LAYER.foregroundLabelGlowing,
+    LAYER.backgroundLabelGlowing
   ].map(Number); // shortcut for .map(x => Number(x))
 
   // Create a detached group to prevent duplicate group ID
@@ -331,6 +401,8 @@ onBeforeMount((): void => {
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   EventBus.listen("update-fill-objects", updateObjectsWithFill);
   // EventBus.listen("export-current-svg-for-icon", getCurrentSVGForIcon);
+  EventBus.listen("show-text-dialog", showDialog);
+  EventBus.listen("show-edit-dialog", showEditDialog);
 });
 
 onMounted((): void => {
@@ -377,6 +449,7 @@ onMounted((): void => {
   seStore.setCanvas(canvas.value!);
   // updateShortcutTools();
   updateView();
+  //Listen For text dialog box
 });
 watch(
   () => props.isEarthMode,
@@ -432,6 +505,8 @@ onBeforeUnmount((): void => {
   // EventBus.unlisten("update-two-instance");
   EventBus.unlisten("update-fill-objects");
   //EventBus.unlisten("export-current-svg-for-icon");
+  EventBus.unlisten("show-text-dialog");
+  EventBus.unlisten("show-edit-dialog");
 });
 
 watch(
@@ -1006,6 +1081,12 @@ watch(
           applyTransformationTool = new ApplyTransformationHandler(layers);
         }
         currentTool = applyTransformationTool;
+        break;
+      case "text":
+        if (!textTool) {
+          textTool = new TextHandler(layers);
+        }
+        currentTool = textTool;
         break;
       // Use the following switch case to activate a new handler
       case "dummy":

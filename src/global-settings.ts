@@ -1232,6 +1232,12 @@ export const SETTINGS = {
         mdiIcon: "mdi-alphabetical",
         svgFileName: ""
       }
+    },
+    text: {
+      props: {
+        mdiIcon: "mdi-format-text",
+        svgFileName: ""
+      }
     }
   },
   /* Controls the length of time (in ms) the tool tip are displayed */
@@ -1266,6 +1272,7 @@ export const SETTINGS = {
 };
 
 //#region layers
+
 export enum LAYER {
   backgroundGlowing,
   backgroundFills,
@@ -1274,8 +1281,8 @@ export enum LAYER {
   backgroundAngleMarkers,
   backgroundPointsGlowing,
   backgroundPoints,
-  backgroundTextGlowing,
-  backgroundText,
+  backgroundLabelGlowing,
+  backgroundLabel,
   midground,
   foregroundGlowing,
   foregroundFills,
@@ -1284,7 +1291,8 @@ export enum LAYER {
   foregroundAngleMarkers,
   foregroundPointsGlowing,
   foregroundPoints,
-  foregroundTextGlowing,
+  foregroundLabelGlowing,
+  foregroundLabel,
   foregroundText
 }
 //#endregion layers

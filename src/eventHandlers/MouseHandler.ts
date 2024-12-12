@@ -14,6 +14,7 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SEText } from "@/models/SEText";
 import { SEStoreType } from "@/stores/se";
 import { Group } from "two.js/src/group";
 import { Vector } from "two.js/src/vector";
@@ -59,6 +60,7 @@ export default abstract class MouseHandler implements ToolStrategy {
   protected hitSEAngleMarkers: SEAngleMarker[] = [];
   protected hitSEParametrics: SEParametric[] = [];
   protected hitSEPolygons: SEPolygon[] = [];
+  protected hitSETexts: SEText[] = [];
 
   /**
    * Holds the layers for each type of object, background, glowing background, etc..

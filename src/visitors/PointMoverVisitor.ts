@@ -10,6 +10,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SEText } from "@/models/SEText";
 
 export class PointMoverVisitor implements Visitor {
   private locationVector: Vector3 = new Vector3();
@@ -77,6 +78,10 @@ export class PointMoverVisitor implements Visitor {
   // eslint-disable-next-line
   actionOnPolygon(p: SEPolygon): boolean {
     // e.update();
+    return false;
+  }
+  //eslint-disable-next-line
+  actionOnText(t: SEText): boolean {
     return false;
   }
 }

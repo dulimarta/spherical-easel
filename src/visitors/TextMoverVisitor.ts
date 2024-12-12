@@ -1,37 +1,34 @@
 import { Visitor } from "./Visitor";
 import { SEPoint } from "@/models/SEPoint";
+import { SELabel } from "@/models/SELabel";
 import { SELine } from "@/models/SELine";
 import { Vector3 } from "three";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
-import { SELabel } from "@/models/SELabel";
+import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SEText } from "@/models/SEText";
 
-export class LineNormalVisitor implements Visitor {
-  private normalVector: Vector3 = new Vector3();
+export class TextMoverVisitor implements Visitor {
+  private locationVector: Vector3 = new Vector3();
 
-  setNewNormal(vec: Vector3): void {
-    this.normalVector.copy(vec);
+  setNewLocation(vec: Vector3): void {
+    this.locationVector.copy(vec);
   }
 
-  // eslint-disable-next-line
+  //#region actionOnPoint
   actionOnPoint(p: SEPoint): boolean {
-    // p.update();
     return false;
   }
+  //#endregion actionOnPoint
 
+  // eslint-disable-next-line
   actionOnLine(m: SELine): boolean {
-    m.normalVector = this.normalVector; // Set the new position vector
-    //console.log("position mover on point", m.name);
-    // Don't update here, because it may cause a point on one dimensional to update to the wrong location
-    // The undo and restore methods of command cause one update for display at the end of every command or
-    // command group
-    // m.update();
-    return true;
+    //m.update();
+    return false;
   }
 
   // eslint-disable-next-line
@@ -73,6 +70,7 @@ export class LineNormalVisitor implements Visitor {
   }
   //eslint-disable-next-line
   actionOnText(t: SEText): boolean {
+    t.locationVector = this.locationVector;
     return false;
   }
 }

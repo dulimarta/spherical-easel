@@ -12,6 +12,7 @@ import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SELatitude } from "@/models/SELatitude";
 import { SELongitude } from "@/models/SELongitude";
+import { SEText } from "@/models/SEText";
 
 export class RotationVisitor implements Visitor {
   private transformMatrix: Matrix4 = new Matrix4();
@@ -176,5 +177,9 @@ export class RotationVisitor implements Visitor {
     p.ref.updateDisplay(); // sets the location of the vertices for the front/back fills
     p.ref.normalDisplay() // displays the correct fills depending on where the polygon is
     return true;
+  }
+  //eslint-disable-next-line
+  actionOnText(t: SEText): boolean {
+    return false;
   }
 }

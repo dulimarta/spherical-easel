@@ -16,6 +16,7 @@ import { MovePointCommand } from "@/commands/MovePointCommand";
 import { MoveLineCommand } from "@/commands/MoveLineCommand";
 import { MoveSegmentCommand } from "@/commands/MoveSegmentCommand";
 import { MoveLabelCommand } from "@/commands/MoveLabelCommand";
+import { MoveTextCommand } from "@/commands/MoveTextCommand";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEEllipse } from "@/models/SEEllipse";
@@ -25,6 +26,8 @@ import { SetNoduleExistCommand } from "@/commands/SetNoduleExistCommand";
 import { SESlider } from "@/models/SESlider";
 import { ChangeSliderCommand } from "@/commands/ChangeSliderCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEText} from "@/models/SEText";
+
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 const tmpVector1 = new Vector3();
@@ -85,7 +88,7 @@ export default class MoveHandler extends Highlighter {
 
   mousePressed(event: MouseEvent): void {
     // if mouse press is not on the sphere do not do anything
-    if (!this.isOnSphere) return;
+    //if (!this.isOnSphere) return;
     // Reset the variables for another move event
     this.moveTarget = null;
     this.rotateSphere = false;
@@ -128,6 +131,21 @@ export default class MoveHandler extends Highlighter {
         this.movingSomething = true;
         return;
       }
+
+      const texts = this.hitSETexts.filter(
+        n => n.isFreeToMove() && n.showing
+      );
+      if (texts.length > 0) {
+        console.log("Found a Text to move");
+        this.moveTarget = texts[0];
+        this.moveTarget.update(
+          this.beforeMoveStateMap,
+          this.beforeMoveSENoduleIDList
+        );
+        this.movingSomething = true;
+        return;
+      }
+      
       //If the user tries to move a nonFree point or object, nothing should happen -- this communicates
       //to the user they are trying to move something that can't be moved
       if (this.hitSEPoints.length == 0) {
@@ -274,9 +292,9 @@ export default class MoveHandler extends Highlighter {
 
   mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
-    if (!this.isOnSphere) {
-      return;
-    }
+    //if (!this.isOnSphere) {
+    //  return;
+    //}
 
     event.preventDefault();
 
@@ -287,6 +305,9 @@ export default class MoveHandler extends Highlighter {
         this.hitSEPoints[0].glowing = true;
       } else if (this.hitSELabels.filter(n => n.isFreeToMove()).length > 0) {
         this.hitSELabels[0].glowing = true;
+      } else if (this.hitSETexts.filter(n => n.isFreeToMove()).length > 0) {
+        console.log("Hovering over SEText");
+        this.hitSETexts[0].glowing = true;
       } else if (this.hitSEPoints.length == 0) {
         if (this.hitSESegments.filter(n => n.isFreeToMove()).length > 0) {
           this.hitSESegments[0].glowing = true;
@@ -342,6 +363,11 @@ export default class MoveHandler extends Highlighter {
           this.previousSphereVector,
           this.currentSphereVector
         );
+      } else if (this.moveTarget instanceof SEText) {
+        console.log("Trying to move an SEText.");
+        console.log(`SEText.locationVector = x: ${this.moveTarget.locationVector.x}, y: ${this.moveTarget.locationVector.y}`);
+        this.moveTarget.locationVector = new Vector3(this.currentScreenVector.x, this.currentScreenVector.y, 0);
+        console.log(`currentScreenVector: x: ${this.currentScreenVector.x}, y: ${this.currentScreenVector.y}`);
       } else if (this.moveTarget == null && this.rotateSphere) {
         // Rotate the sphere, updates the display after moving all the points.
         this.doRotateSphere();
@@ -446,6 +472,13 @@ export default class MoveHandler extends Highlighter {
           this.afterMoveSENoduleIDList
         );
         this.moveTarget.ellipseSEPoint.update(
+          this.afterMoveStateMap,
+          this.afterMoveSENoduleIDList
+        );
+      } else if (this.moveTarget instanceof SEText) {
+        console.log("Placeing Text at new position.");
+        console.log(`location = x: ${this.moveTarget.locationVector.x}, y: ${this.moveTarget.locationVector.y}`);
+        this.moveTarget.update(
           this.afterMoveStateMap,
           this.afterMoveSENoduleIDList
         );
@@ -579,6 +612,24 @@ export default class MoveHandler extends Highlighter {
                     seNoduleAfterState.normalVector,
                     seNoduleBeforeState.arcLength,
                     seNoduleAfterState.arcLength
+                  )
+                );
+              }
+              break;
+            case "text":
+              if (
+                seNoduleAfterState.object &&
+                seNoduleAfterState.locationVector &&
+                seNoduleBeforeState.locationVector
+              ) {
+                console.log("Moving SEText in mouseReleased.");
+                console.log(`seNoduleBeforeState.locationVector = x: ${seNoduleBeforeState.locationVector.x}, y: ${seNoduleBeforeState.locationVector.y}`);
+                console.log(`seNoduleAfterState.locationVector = x: ${seNoduleAfterState.locationVector.x}, y: ${seNoduleAfterState.locationVector.y}`);
+                moveCommandGroup.addCommand(
+                  new MoveTextCommand(
+                    seNoduleAfterState.object as SEText,
+                    seNoduleBeforeState.locationVector,
+                    seNoduleAfterState.locationVector
                   )
                 );
               }

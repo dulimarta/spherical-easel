@@ -11,7 +11,7 @@ const toolGroupInternal: Array<ToolGroup> = [
   // Uncommenting the "dummy" entry below will automatically
   // set the app for a new tool button, its associated event handler,
   // and a Command class
-  { group: "EditTools", tools: ["select", "delete" /*, "dummy" */] },
+  { group: "EditTools", tools: ["select", "delete", "text" /*, "dummy" */] },
   {
     group: "DisplayTools",
     tools: [

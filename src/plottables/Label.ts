@@ -344,10 +344,10 @@ export default class Label extends Nodule {
   }
 
   addToLayers(layers: Group[]): void {
-    layers[LAYER.foregroundText].add(this.frontText);
-    layers[LAYER.foregroundTextGlowing].add(this.glowingFrontText);
-    layers[LAYER.backgroundText].add(this.backText);
-    layers[LAYER.backgroundTextGlowing].add(this.glowingBackText);
+    layers[LAYER.foregroundLabel].add(this.frontText);
+    layers[LAYER.foregroundLabelGlowing].add(this.glowingFrontText);
+    layers[LAYER.backgroundLabel].add(this.backText);
+    layers[LAYER.backgroundLabelGlowing].add(this.glowingBackText);
     // this.frontText.addTo(layers[LAYER.foregroundText]);
     // this.glowingFrontText.addTo(layers[LAYER.foregroundTextGlowing]);
     // this.backText.addTo(layers[LAYER.backgroundText]);
@@ -355,10 +355,10 @@ export default class Label extends Nodule {
   }
 
   removeFromLayers(layers: Group[]): void {
-    layers[LAYER.foregroundText].remove(this.frontText);
-    layers[LAYER.foregroundTextGlowing].remove(this.glowingFrontText);
-    layers[LAYER.backgroundText].remove(this.backText);
-    layers[LAYER.backgroundTextGlowing].remove(this.glowingBackText);
+    layers[LAYER.foregroundLabel].remove(this.frontText);
+    layers[LAYER.foregroundLabelGlowing].remove(this.glowingFrontText);
+    layers[LAYER.backgroundLabel].remove(this.backText);
+    layers[LAYER.backgroundLabelGlowing].remove(this.glowingBackText);
   }
 
   updateDisplay(): void {
@@ -431,7 +431,7 @@ export default class Label extends Nodule {
 
       svgFrontString += ">" + this.frontText.value + "</text>";
       returnSVGObject.layerSVGArray.push([
-        LAYER.foregroundText,
+        LAYER.foregroundLabel,
         svgFrontString
       ]);
     } else {
@@ -461,7 +461,7 @@ export default class Label extends Nodule {
         );
 
       svgBackString += ">" + this.backText.value + "</text>";
-      returnSVGObject.layerSVGArray.push([LAYER.backgroundText, svgBackString]);
+      returnSVGObject.layerSVGArray.push([LAYER.backgroundLabel, svgBackString]);
     }
     return [returnSVGObject];
   }

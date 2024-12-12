@@ -38,6 +38,7 @@ import { LabelMoverVisitor } from "@/visitors/LabelMoverVisitor";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { PointMoverVisitor } from "@/visitors/PointMoverVisitor";
 import { RotationVisitor } from "@/visitors/RotationVisitor";
+import { TextMoverVisitor } from "@/visitors/TextMoverVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
 import { Ref, ref } from "vue";
 import { defineStore } from "pinia";
@@ -48,6 +49,7 @@ import { computed } from "vue";
 import { Vector } from "two.js/src/vector";
 import SETTINGS from "@/global-settings";
 import Two from "two.js";
+import { SEText } from "@/models/SEText";
 
 const sePencils: Array<SEPencil> = [];
 const oldSelectedSENodules: Map<number, SENodule> = new Map();
@@ -351,6 +353,7 @@ const sePolygonMap: Map<number, SEPolygon> = new Map();
 const seSegmentMap: Map<number, SESegment> = new Map();
 const seExpressionMap: Map<number, SEExpression> = new Map();
 const seTransformationMap: Map<number, SETransformation> = new Map();
+const seTextMap: Map<number, SEText> = new Map();
 
 /* END Non-Reactive variables */
 
@@ -419,6 +422,12 @@ export const useSEStore = defineStore("se", () => {
   const seTransformations = computed((): SETransformation[] =>
     seTransformationIds.value.map(id => seTransformationMap.get(id)!)
   );
+
+  const seTextIds: Ref<Array<number>> = ref([]);
+  const seText = computed((): SEText[] =>
+        seTextIds.value.map(id => seTextMap.get(id)!)
+  );
+
   const selectedSENodules: Ref<Array<SENodule>> = ref([]);
   const oldSelectedSENoduleIds: Ref<Array<number>> = ref([]);
   // const styleSavedFromPanel: Ref<StyleCategory> = ref(StyleCategory.Label)
@@ -465,6 +474,8 @@ export const useSEStore = defineStore("se", () => {
     seSegmentMap.clear();
     seTransformationIds.value.splice(0);
     seTransformationMap.clear();
+    seTextIds.value.splice(0);
+    seTextMap.clear();
     oldSelectedSENodules.clear();
     oldSelectedSENoduleIds.value.splice(0);
     // intersections.splice(0);
@@ -761,6 +772,70 @@ export const useSEStore = defineStore("se", () => {
     const aLabel = seLabelMap.get(move.labelId);
     if (aLabel) aLabel.accept(labelMoverVisitor);
   }
+  function addText(text: SEText): void {
+    seTextIds.value.push(text.id);
+    seTextMap.set(text.id, text);
+    seNodules.value.push(text);
+    text.ref.addToLayers(layers);
+    hasUnsavedNodules.value = true;
+    // this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
+  }
+  function moveText(move: { textId: number; location: Vector3 }): void {
+    console.log(`se.moveText(): textId: ${move.textId}, location: ${move.location.toFixed(3)}`);
+    const textMoverVisitor = new TextMoverVisitor();
+    textMoverVisitor.setNewLocation(move.location);
+    const aText = seTextMap.get(move.textId);
+    console.log(`se.moveText() aText = ${aText?.id}, ${aText?.locationVector.toFixed(3)}`);
+    if (aText) aText.accept(textMoverVisitor);
+  }
+  function changeText(change: { textId: number; newText: string }): void {
+    console.log(`se.changeText(): textId: ${change.textId}, newText: "${change.newText}"`);
+
+    // Retrieve the SEText object from the map using textId
+    const aText = seTextMap.get(change.textId);
+
+    console.log(`se.changeText() aText = ${aText?.id}, currentText: "${aText?.getText()}"`);
+
+    if (aText) {
+      // Change the text content of the SEText object
+      aText.setText(change.newText);
+
+      // Log the change operation
+      console.log(`se.changeText(): Text content updated for textId: ${change.textId}`);
+    } 
+  }
+//   function changeText(text: SEText): void {
+//     if (seTextMap.has(text.id)) {
+//         // Update the text in the map
+//         seTextMap.set(text.id, text);
+
+
+//         // Find and update the corresponding text in seNodules array
+//         const index = seNodules.value.findIndex((nodule) => nodule.id === text.id);
+//         if (index !== -1) {
+//             seNodules.value[index] = text;
+//         }
+//         // Mark as unsaved
+//         hasUnsavedNodules.value = true;
+//     } else {
+//         console.error(`Text with ID ${text.id} does not exist.`);
+//     }
+// }
+  function removeText(textId: number): void {
+    const victimText = seTextMap.get(textId);
+
+    if (victimText) {
+      // Remove the associated plottable (Nodule) object from being rendered
+      victimText.ref.removeFromLayers(twojsLayers.value);
+      const pos = seTextIds.value.findIndex(x => x === textId);
+      const pos2 = seNodules.value.findIndex((x: SENodule) => x.id === textId);
+      seTextMap.delete(textId);
+      seTextIds.value.splice(pos, 1);
+      seNodules.value.splice(pos2, 1);
+      hasUnsavedNodules.value = true;
+      //this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
+    }
+  }
   function addAngleMarkerAndExpression(angleMarker: SEAngleMarker): void {
     seExpressionIds.value.push(angleMarker.id);
     seExpressionMap.set(angleMarker.id, angleMarker);
@@ -934,6 +1009,7 @@ export const useSEStore = defineStore("se", () => {
     // );
     while (updateCandidates.length > 0) {
       const target = updateCandidates.shift()!;
+      console.log(`target is ${target.name}`);
       const accepted = target.accept(rotationVisitor);
       // console.log(`What's going on with ${target.name}?`, accepted);
       if (!accepted) {
@@ -1297,7 +1373,7 @@ export const useSEStore = defineStore("se", () => {
     screenPosition: Vector
   ): SENodule[] {
     return seNodules.value.filter((obj: SENodule) => {
-      return obj.isHitAt(unitIdealVector, zoomMagnificationFactor.value);
+      return obj.isHitAt(unitIdealVector, zoomMagnificationFactor.value, screenPosition);
     });
     // return []
   }
@@ -3963,6 +4039,7 @@ export const useSEStore = defineStore("se", () => {
     seSegments,
     seTransformations,
     twojsLayers,
+    seText,
 
     /* functions */
     addAngleMarkerAndExpression,
@@ -3977,10 +4054,12 @@ export const useSEStore = defineStore("se", () => {
     addSegment,
     addTemporaryNodule,
     addTransformation,
+    addText,
     changeBackContrast,
     changeGradientFill,
     changeLineNormalVector,
     changeSegmentNormalVectorArcLength,
+    changeText,
     clearUnsavedFlag,
     createAllIntersectionsWithCircle,
     createAllIntersectionsWithEllipse,
@@ -3993,6 +4072,7 @@ export const useSEStore = defineStore("se", () => {
     fitZoomMagnificationFactor,
     moveLabel,
     movePoint,
+    moveText,
     hasObjects,
     init,
     removeAllFromLayers,
@@ -4007,6 +4087,7 @@ export const useSEStore = defineStore("se", () => {
     removePolygonAndExpression,
     removeSegment,
     removeTransformation,
+    removeText,
     revertActionMode,
     rotateSphere,
     setActionMode,
