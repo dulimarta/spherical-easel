@@ -43,81 +43,79 @@ export default class DeleteHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     // console.log("DeleteHandler::mousePressed");
     //Select an object to delete
-    //if (this.isOnSphere) {           //Commented Out For now 
-      // In the case of multiple selections prioritize points > lines > segments > circles > texts > labels
-      // Deleting an object deletes all objects that depend on that object including the label
-      if (this.hitSEPoints.length > 0) {
-        if (
-          (!(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
-            this.hitSEPoints[0].isUserCreated) &&
-          (!(this.hitSEPoints[0] instanceof SEAntipodalPoint) ||
-            this.hitSEPoints[0].isUserCreated)
-        ) {
-          this.victim = this.hitSEPoints[0];
-          this.victimName = this.hitSEPoints[0].label?.ref.shortUserName;
-          this.victimType = i18n.global.t(`objects.points`, 3);
-        }
-      } else if (this.hitSELines.length > 0) {
-        this.victim = this.hitSELines[0];
-        this.victimName = this.hitSELines[0].label?.ref.shortUserName;
-        this.victimType = i18n.global.t(`objects.lines`, 3);
-      } else if (this.hitSESegments.length > 0) {
-        this.victim = this.hitSESegments[0];
-        this.victimName = this.hitSESegments[0].label?.ref.shortUserName;
-        this.victimType = i18n.global.t(`objects.segments`, 3);
-      } else if (this.hitSECircles.length > 0) {
-        this.victim = this.hitSECircles[0];
-        this.victimName = this.hitSECircles[0].label?.ref.shortUserName;
-        this.victimType = i18n.global.t(`objects.circles`, 3);
-      } else if (this.hitSEEllipses.length > 0) {
-        this.victim = this.hitSEEllipses[0];
-        this.victimName = this.hitSEEllipses[0].label?.ref.shortUserName;
-        this.victimType = i18n.global.t(`objects.ellipses`, 3);
-      } else if (this.hitSEParametrics.length > 0) {
-        this.victim = this.hitSEParametrics[0];
-        this.victimName = this.hitSEParametrics[0].label?.ref.shortUserName;
-        this.victimType = i18n.global.t(`objects.parametrics`, 3);
-      } else if (this.hitSETexts.length > 0) {
-        this.victim = this.hitSETexts[0];
-        this.victimName = this.hitSETexts[0].ref.name; //need to put actual name here instead of .name
-        this.victimType = i18n.global.t(`objects.texts`, 3)
+    //if (this.isOnSphere) {           //Commented Out For now
+    // In the case of multiple selections prioritize texts > points > lines > segments > circles > ellipses > parametrics > labels > angle markers > polygons
+    // Deleting an object deletes all objects that depend on that object including the label
+    if (this.hitSETexts.length > 0) {
+      this.victim = this.hitSETexts[0];
+      this.victimName = this.hitSETexts[0].name;
+      this.victimType = i18n.global.t(`objects.texts`, 3);
+    } else if (this.hitSEPoints.length > 0) {
+      if (
+        (!(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
+          this.hitSEPoints[0].isUserCreated) &&
+        (!(this.hitSEPoints[0] instanceof SEAntipodalPoint) ||
+          this.hitSEPoints[0].isUserCreated)
+      ) {
+        this.victim = this.hitSEPoints[0];
+        this.victimName = this.hitSEPoints[0].label?.ref.shortUserName;
+        this.victimType = i18n.global.t(`objects.points`, 3);
       }
-
-      else if (this.hitSELabels.length > 0) {
-        // Do not allow deletion of labels - if a user selects a label with this tool, merely hide the label.
-        new SetNoduleDisplayCommand(this.hitSELabels[0], false).execute();
-      } else if (this.hitSEAngleMarkers.length > 0) {
-        this.victim = this.hitSEAngleMarkers[0];
-        this.victimName = this.hitSEAngleMarkers[0].label?.ref.shortUserName;
-        this.victimType = i18n.global.t(`objects.angleMarkers`, 3);
-      } else if (this.hitSEPolygons.length > 0) {
-        this.victim = this.hitSEPolygons[0];
-        this.victimName = this.hitSEPolygons[0].label?.ref.shortUserName;
-        this.victimType = i18n.global.t(`objects.polygons`, 3);
-      }
-      if (this.victim != null) {
-        console.debug("Candidate to delete", this.victimName)
-        // Do the deletion
-        const deletedNodeIds = this.delete(this.victim);
-        //deletedNodes: "Successfully deleted {type} {name} and {number} {objects} that depend on it.",
-        EventBus.fire("show-alert", {
-          key: `handlers.deletedNodes`,
-          keyOptions: {
-            type: this.victimType,
-            name: this.victimName ?? "",
-            number: deletedNodeIds.length - 1,
-            objects:
-              deletedNodeIds.length === 2
-                ? i18n.global.t(`objects.objects`, 4)
-                : i18n.global.t(`objects.objects`, 3)
-          },
-          type: "success"
-        });
-        // Reset the beforeDeleteState
-        this.mouseLeave(event);
-      } else {
-        console.debug("No candidate to delete")
-      }
+    } else if (this.hitSELines.length > 0) {
+      this.victim = this.hitSELines[0];
+      this.victimName = this.hitSELines[0].label?.ref.shortUserName;
+      this.victimType = i18n.global.t(`objects.lines`, 3);
+    } else if (this.hitSESegments.length > 0) {
+      this.victim = this.hitSESegments[0];
+      this.victimName = this.hitSESegments[0].label?.ref.shortUserName;
+      this.victimType = i18n.global.t(`objects.segments`, 3);
+    } else if (this.hitSECircles.length > 0) {
+      this.victim = this.hitSECircles[0];
+      this.victimName = this.hitSECircles[0].label?.ref.shortUserName;
+      this.victimType = i18n.global.t(`objects.circles`, 3);
+    } else if (this.hitSEEllipses.length > 0) {
+      this.victim = this.hitSEEllipses[0];
+      this.victimName = this.hitSEEllipses[0].label?.ref.shortUserName;
+      this.victimType = i18n.global.t(`objects.ellipses`, 3);
+    } else if (this.hitSEParametrics.length > 0) {
+      this.victim = this.hitSEParametrics[0];
+      this.victimName = this.hitSEParametrics[0].label?.ref.shortUserName;
+      this.victimType = i18n.global.t(`objects.parametrics`, 3);
+    } else if (this.hitSELabels.length > 0) {
+      // Do not allow deletion of labels - if a user selects a label with this tool, merely hide the label.
+      new SetNoduleDisplayCommand(this.hitSELabels[0], false).execute();
+    } else if (this.hitSEAngleMarkers.length > 0) {
+      this.victim = this.hitSEAngleMarkers[0];
+      this.victimName = this.hitSEAngleMarkers[0].label?.ref.shortUserName;
+      this.victimType = i18n.global.t(`objects.angleMarkers`, 3);
+    } else if (this.hitSEPolygons.length > 0) {
+      this.victim = this.hitSEPolygons[0];
+      this.victimName = this.hitSEPolygons[0].label?.ref.shortUserName;
+      this.victimType = i18n.global.t(`objects.polygons`, 3);
+    }
+    if (this.victim != null) {
+      console.debug("Candidate to delete", this.victimName);
+      // Do the deletion
+      const deletedNodeIds = this.delete(this.victim);
+      //deletedNodes: "Successfully deleted {type} {name} and {number} {objects} that depend on it.",
+      EventBus.fire("show-alert", {
+        key: `handlers.deletedNodes`,
+        keyOptions: {
+          type: this.victimType,
+          name: this.victimName ?? "",
+          number: deletedNodeIds.length - 1,
+          objects:
+            deletedNodeIds.length === 2
+              ? i18n.global.t(`objects.objects`, 4)
+              : i18n.global.t(`objects.objects`, 3)
+        },
+        type: "success"
+      });
+      // Reset the beforeDeleteState
+      this.mouseLeave(event);
+    } else {
+      console.debug("No candidate to delete");
+    }
     //}
   }
 
@@ -156,6 +154,8 @@ export default class DeleteHandler extends Highlighter {
       this.hitSEParametrics[0].glowing = true;
     } else if (this.hitSEPolygons.length > 0) {
       this.hitSEPolygons[0].glowing = true;
+    } else if (this.hitSETexts.length > 0) {
+      this.hitSETexts[0].glowing = true;
     }
   }
 
@@ -181,7 +181,7 @@ export default class DeleteHandler extends Highlighter {
       DeleteHandler.store.selectedSENodules
         //.map(x => x as SENodule)
         .filter(
-          (object) =>
+          object =>
             (!(object instanceof SEIntersectionPoint) ||
               object.isUserCreated) &&
             (!(object instanceof SEAntipodalPoint) || object.isUserCreated)
@@ -221,7 +221,7 @@ export default class DeleteHandler extends Highlighter {
     this.beforeDeleteSENoduleIDList.splice(0);
     // First mark all children of the victim out of date so that the update method does a topological sort
     victim.markKidsOutOfDate();
-    // console.debug("Delete Handler delete method");
+    console.debug("Delete Handler delete method");
     //Record the state of the victim and all the SENodules that depend on it (i.e kids, grandKids, etc..).
     victim.update(this.beforeDeleteStateMap, this.beforeDeleteSENoduleIDList);
 

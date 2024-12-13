@@ -7,6 +7,7 @@ import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
 // import { TextMoverVisitor } from "@/visitors/TextMoverVisitor";
 import Text from "@/plottables/Text";
+import { DisplayStyle } from "@/plottables/Nodule";
 const { t } = i18n.global;
 
 export class SEText extends SENodule {
@@ -17,7 +18,11 @@ export class SEText extends SENodule {
 
   constructor() {
     super();
+
     this.ref = new Text();
+    this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.ref.adjustSize();
+
     SENodule.TEXT_COUNT++;
     this.name = `T${SENodule.TEXT_COUNT}`;
     // Set the size for zoom
@@ -42,24 +47,24 @@ export class SEText extends SENodule {
     this.shallowUpdate();
 
     if (objectState && orderedSENoduleList) {
-      // This should never be execute because SEText objects have no children or parents and the object state is used when recording the state of a non-singleton tree
-      // if (objectState.has(this.id)) {
-      //   console.log(
-      //     `		Text with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-      //   );
-      //   return;
-      // }
-      // //console.log(`this.id = ${this.id}`);
-      // orderedSENoduleList.push(this.id);
-      // const location = new Vector2();
-      // location.copy(this._locationVector);
-      // //console.log(`_locationVector = x: ${this._locationVector.x} y: ${this._locationVector.y} z: ${this._locationVector.z} `);
-      // //console.log(`location = x: ${location.x} y: ${location.y} z: ${location.z} `);
-      // objectState.set(this.id, {
-      //   kind: "text",
-      //   object: this,
-      //   locationVector: location
-      // });
+
+      if (objectState.has(this.id)) {
+        console.log(
+          `		Text with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      //console.log(`this.id = ${this.id}`);
+      orderedSENoduleList.push(this.id);
+      const location = new Vector2();
+      location.copy(this._locationVector);
+      //console.log(`_locationVector = x: ${this._locationVector.x} y: ${this._locationVector.y} z: ${this._locationVector.z} `);
+      //console.log(`location = x: ${location.x} y: ${location.y} z: ${location.z} `);
+      objectState.set(this.id, {
+        kind: "text",
+        object: this,
+        locationVector: location
+      });
     }
   }
 
@@ -107,8 +112,7 @@ export class SEText extends SENodule {
     return this._text;
   }
   public get noduleDescription(): string {
-    /**None**/
-    return "";
+    return String(i18n.global.t(`objectTree.textObject`));
   }
   // Setter/Getter for the private variable text
   public get text(): string {

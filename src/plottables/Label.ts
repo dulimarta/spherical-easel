@@ -181,13 +181,7 @@ export default class Label extends Nodule {
     this.glowingBackText.translation = this.defaultScreenVectorLocation;
     this.backText.translation = this.defaultScreenVectorLocation;
 
-    // The text is not initially visible
-    // this.frontText.visible = false;
-    // this.glowingFrontText.visible = false;
-    // this.backText.visible = false;
-    // this.glowingBackText.visible = false;
-
-    // Set the properties of the points that never change - stroke width and some glowing options
+    // Set the properties of the labels that never change - stroke width and some glowing options
     this.frontText.noStroke();
     this.backText.noStroke();
     this.glowingFrontText.linewidth = SETTINGS.label.glowingStrokeWidth.front;
@@ -376,18 +370,18 @@ export default class Label extends Nodule {
     }
   }
 
-  setSelectedColoring(flag: boolean): void {
-    //set the new colors into the variables
-    if (flag) {
-      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
-      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
-    } else {
-      this.glowingStrokeColorFront = SETTINGS.label.glowingStrokeColor.front;
-      this.glowingStrokeColorBack = SETTINGS.label.glowingStrokeColor.back;
-    }
-    // apply the new color variables to the object
-    this.stylize(DisplayStyle.ApplyCurrentVariables);
-  }
+  // setSelectedColoring(flag: boolean): void {
+  //   //set the new colors into the variables
+  //   if (flag) {
+  //     this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+  //     this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+  //   } else {
+  //     this.glowingStrokeColorFront = SETTINGS.label.glowingStrokeColor.front;
+  //     this.glowingStrokeColorBack = SETTINGS.label.glowingStrokeColor.back;
+  //   }
+  //   // apply the new color variables to the object
+  //   this.stylize(DisplayStyle.ApplyCurrentVariables);
+  // }
 
   toSVG( nonScaling?: {
     stroke: boolean;

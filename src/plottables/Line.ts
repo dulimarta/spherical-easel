@@ -191,18 +191,18 @@ export default class Line extends Nodule {
     this._glowingBackHalf.height = tempHalfMinorAxis;
   }
 
-  setSelectedColoring(flag: boolean): void {
-    //set the new colors into the variables
-    if (flag) {
-      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
-      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
-    } else {
-      this.glowingStrokeColorFront = SETTINGS.line.glowing.strokeColor.front;
-      this.glowingStrokeColorBack = SETTINGS.line.glowing.strokeColor.back;
-    }
-    // apply the new color variables to the object
-    this.stylize(DisplayStyle.ApplyCurrentVariables);
-  }
+  // setSelectedColoring(flag: boolean): void {
+  //   //set the new colors into the variables
+  //   if (flag) {
+  //     this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+  //     this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+  //   } else {
+  //     this.glowingStrokeColorFront = SETTINGS.line.glowing.strokeColor.front;
+  //     this.glowingStrokeColorBack = SETTINGS.line.glowing.strokeColor.back;
+  //   }
+  //   // apply the new color variables to the object
+  //   this.stylize(DisplayStyle.ApplyCurrentVariables);
+  // }
 
   addToLayers(layers: Group[]): void {
     this._frontHalf.addTo(layers[LAYER.foreground]);

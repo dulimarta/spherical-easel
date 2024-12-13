@@ -1061,12 +1061,12 @@ export default class Polygon extends Nodule {
     }
   }
 
-  setSelectedColoring(flag: boolean): void {
-    //set the new colors into the variables of each segment
-    this.seEdgeSegments
-      .map(z => z.ref)
-      .forEach(seg => seg.setSelectedColoring(flag));
-  }
+  // setSelectedColoring(flag: boolean): void {
+  //   //set the new colors into the variables of each segment
+  //   this.seEdgeSegments
+  //     .map(z => z.ref)
+  //     .forEach(seg => seg.setSelectedColoring(flag));
+  // }
 
   /**
    * Sets the variables for stroke width glowing/not, this is empty in Polygon because there are no edges to stroke

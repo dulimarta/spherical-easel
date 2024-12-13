@@ -157,6 +157,7 @@
   },
   "objects": {
     "objects": "Objects | Object | object | objects",
+    "texts": "Texts | Text | text | texts",
     "triangles": "Triangles | Triangle | triangle | triangles",
     "polygons": "Polygons | Polygon | polygon | polygons",
     "angleMarkers": "Angle Markers | Angle Marker | angle marker |angle markers",
@@ -364,6 +365,7 @@
     "divideByZero": "Attempted to divide by zero."
   },
   "objectTree": {
+    "textObject": "Text Object",
     "aMidLineOf": "The line bisecting angle {angle}.",
     "anNsectLineOf": "Angle {angle} is divided into {N} equal parts and this is the line with index {index}.",
     "aMidPointOf": "A midpoint of segment {segment}",

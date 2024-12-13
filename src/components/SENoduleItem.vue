@@ -3,7 +3,8 @@
     <v-icon size="medium" :icon="iconName" :class="animationClassName"></v-icon>
     <v-tooltip location="end">
       <template v-slot:activator="{ props }">
-        <div data-testid="_test_selection"
+        <div
+          data-testid="_test_selection"
           class="contentText"
           @click="selectMe"
           v-bind="props"
@@ -13,11 +14,11 @@
             shakeTransformationDisplay
           ]">
           <span class="text-truncate ml-1" :key="displayCycleValueUpdateKey">
-              {{ node.noduleItemText }}
+            {{ node.noduleItemText }}
           </span>
         </div>
       </template>
-      <span>{{ node.noduleDescription }}/ {{ nodeName }}</span>
+      <span>{{ node.noduleDescription }} / {{ nodeName }}</span>
     </v-tooltip>
     <span style="flex-grow: 1">
       <!-- This is a spacer to push both groups to the left and right-->
@@ -48,7 +49,8 @@
     </v-tooltip>
     <v-tooltip location="end">
       <template v-slot:activator="{ props }">
-        <v-icon data-testid="toggle_visibility"
+        <v-icon
+          data-testid="toggle_visibility"
           v-if="isPlottable"
           v-bind="props"
           @click="toggleVisibility"
@@ -63,7 +65,7 @@
       <template v-slot:activator="{ props }">
         <v-icon
           id="_toggle_label_display"
-          v-if="isPlottable"
+          v-if="isPlottable && isNotText"
           v-bind="props"
           @click="toggleLabelDisplay"
           size="small"
@@ -92,7 +94,7 @@
             :max="parametricTMax"
             :step="parametricTStep" />
           <v-icon @click="animateCurvePoint">mdi-run</v-icon-->
-          </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -346,8 +348,8 @@ onBeforeMount(() => {
   //TextTool Attempt
   else if (props.node instanceof SEText) {
     iconName.value = "$text";
-    nodeName = "Text Item";
-    nodeType = t(`objects.texts`, 3)
+    nodeName = props.node.name;
+    nodeType = t(`objects.texts`, 3);
   }
 });
 
@@ -666,6 +668,10 @@ const isPlottable = computed((): boolean => {
     props.node instanceof SEPolygon ||
     props.node instanceof SEText
   );
+});
+
+const isNotText = computed((): boolean => {
+  return !(props.node instanceof SEText);
 });
 
 const showClass = computed((): string => {

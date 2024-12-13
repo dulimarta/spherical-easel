@@ -241,6 +241,16 @@ export const DEFAULT_LABEL_TEXT_STYLE: LabelStyleOptions = {
   labelDynamicBackStyle: SETTINGS.label.dynamicBackStyle
 };
 
+export const DEFAULT_TEXT_TEXT_STYLE: LabelStyleOptions = {
+  labelDisplayText: "Ada",
+  labelTextFamily: SETTINGS.text.family,
+  labelTextStyle: SETTINGS.text.style,
+  labelTextDecoration: SETTINGS.text.decoration,
+  labelTextScalePercent: 100,
+  labelTextRotation: 0,
+  labelFrontFillColor: SETTINGS.text.fillColor,
+};
+
 export const DEFAULT_PARAMETRIC_FRONT_STYLE: ShapeStyleOptions = {
   strokeColor: SETTINGS.parametric.drawn.strokeColor.front,
   strokeWidthPercent: 100,

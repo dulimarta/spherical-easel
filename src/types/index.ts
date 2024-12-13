@@ -645,7 +645,7 @@ export interface ObjectState {
   object: SENodule;
   normalVector?: Vector3;
   arcLength?: number;
-  locationVector?: Vector3;
+  locationVector?: Vector3 | Vector2;
   sliderValue?: number;
 }
 

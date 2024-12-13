@@ -241,22 +241,22 @@ export default class Point extends Nodule {
     }
   }
 
-  setSelectedColoring(flag: boolean): void {
-    //set the new colors into the variables
-    if (flag) {
-      this.glowingFillColorFront = SETTINGS.style.selectedColor.front;
-      this.glowingFillColorBack = SETTINGS.style.selectedColor.back;
-      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
-      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
-    } else {
-      this.glowingFillColorFront = SETTINGS.point.glowing.fillColor.front;
-      this.glowingFillColorBack = SETTINGS.point.glowing.fillColor.back;
-      this.glowingStrokeColorFront = SETTINGS.point.glowing.strokeColor.front;
-      this.glowingStrokeColorBack = SETTINGS.point.glowing.strokeColor.back;
-    }
-    // apply the new color variables to the object
-    this.stylize(DisplayStyle.ApplyCurrentVariables);
-  }
+  // setSelectedColoring(flag: boolean): void {
+  //   //set the new colors into the variables
+  //   if (flag) {
+  //     this.glowingFillColorFront = SETTINGS.style.selectedColor.front;
+  //     this.glowingFillColorBack = SETTINGS.style.selectedColor.back;
+  //     this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+  //     this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+  //   } else {
+  //     this.glowingFillColorFront = SETTINGS.point.glowing.fillColor.front;
+  //     this.glowingFillColorBack = SETTINGS.point.glowing.fillColor.back;
+  //     this.glowingStrokeColorFront = SETTINGS.point.glowing.strokeColor.front;
+  //     this.glowingStrokeColorBack = SETTINGS.point.glowing.strokeColor.back;
+  //   }
+  //   // apply the new color variables to the object
+  //   this.stylize(DisplayStyle.ApplyCurrentVariables);
+  // }
 
   toSVG(nonScaling?: {
     stroke: boolean;
