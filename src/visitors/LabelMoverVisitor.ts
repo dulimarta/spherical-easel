@@ -76,8 +76,4 @@ export class LabelMoverVisitor implements Visitor {
     // e.update();
     return false;
   }
-  //eslint-disable-next-line
-  actionOnText(t: SEText): boolean {
-    return false;
-  }
 }

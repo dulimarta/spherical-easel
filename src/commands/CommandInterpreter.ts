@@ -51,6 +51,7 @@ import { SetEarthModeCommand } from "./SetEarthModeCommand";
 import { AddLatitudeCommand } from "./AddLatitudeCommand";
 import { AddLongitudeCommand } from "./AddLongitudeCommand";
 import { UpdateTwoJSCommand } from "./UpdateTwoJSCommand";
+import { AddTextCommand } from "./AddTextCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -177,7 +178,8 @@ function executeIndividual(command: string): Command {
       return SetEarthModeCommand.parse(command, noduleDictionary);
     case "SetValueDisplayMode":
       return SetValueDisplayModeCommand.parse(command, noduleDictionary);
-
+    case "AddText":
+      return AddTextCommand.parse(command, noduleDictionary)
     default: {
       const errMsg = `Not yet implemented: ${command}`;
       EventBus.fire("show-alert", {

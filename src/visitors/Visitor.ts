@@ -24,6 +24,6 @@ export interface Visitor {
   actionOnEllipse(e: SEEllipse): boolean;
   actionOnParametric(P: SEParametric): boolean;
   actionOnPolygon(P: SEPolygon): boolean;
-  actionOnText(t: SEText): boolean;
+  //actionOnText(t: SEText): boolean; // THis is not needed because the visitors handle the rotation and text objects do not rotate
   //actionOnTransformation(T: SETransformation):boolean; // This is not needed because the visitors do geometric updates, and the transformations have no geometric representation on the sphere
 }

@@ -178,8 +178,4 @@ export class RotationVisitor implements Visitor {
     p.ref.normalDisplay() // displays the correct fills depending on where the polygon is
     return true;
   }
-  //eslint-disable-next-line
-  actionOnText(t: SEText): boolean {
-    return false;
-  }
 }

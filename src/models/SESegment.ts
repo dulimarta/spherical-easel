@@ -1,6 +1,6 @@
 import { SENodule } from "./SENodule";
 import Segment from "@/plottables/Segment";
-import { Vector3 } from "three";
+import { Vector2, Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SEPoint, SELabel } from "./internal";
@@ -169,6 +169,7 @@ export class SESegment
   public isHitAt(
     unitIdealVector: Vector3,
     currentMagnificationFactor: number,
+    screenVector?: Vector2,
     extraFactor?: number
   ): boolean {
     // sometimes, like when moving a point that is supposed to be inside a polygon,

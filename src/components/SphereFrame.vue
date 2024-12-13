@@ -215,25 +215,25 @@ const handleEditSubmit = () => {
   userInput.value = ''; // Clear input after submission
   editingTextId.value = null; // Clear textId
 };
-const showDialog = () => {
+const showTextInputDialog = () => {
   currentSubmitAction.value = handleSubmit; // Set action to create
-  console.debug("Attempting to open dialog...");
-  console.debug(inputDialog.value);
+  // console.debug("Attempting to open dialog...");
+  // console.debug(inputDialog.value);
   inputDialog.value?.show();
-  console.debug("Dialog open maybe");
+  // console.debug("Dialog open maybe");
 };
-const showEditDialog = (payload: { oldText: string, textId: number, seText: SEText }) => {
+const showTextEditDialog = (payload: { oldText: string, textId: number, seText: SEText }) => {
   currentSubmitAction.value = handleEditSubmit; // Set action to edit
-  console.debug("Attempting to open Edit Dialog...");
-  console.debug(inputDialog.value);
+  // console.debug("Attempting to open Edit Dialog...");
+  // console.debug(inputDialog.value);
   const { oldText, textId, seText } = payload;
   editingTextId.value = textId;
   editingOldText.value = oldText;
   originalSeText.value = seText;
   userInput.value = oldText;
-  console.debug("Prefilled userInput: ", userInput.value)
+  // console.debug("Prefilled userInput: ", userInput.value)
   inputDialog.value?.show();
-  console.debug("Dialog Open Edit");
+  // console.debug("Dialog Open Edit");
 }
 
 /**
@@ -401,8 +401,8 @@ onBeforeMount((): void => {
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   EventBus.listen("update-fill-objects", updateObjectsWithFill);
   // EventBus.listen("export-current-svg-for-icon", getCurrentSVGForIcon);
-  EventBus.listen("show-text-dialog", showDialog);
-  EventBus.listen("show-edit-dialog", showEditDialog);
+  EventBus.listen("show-text-dialog", showTextInputDialog);
+  EventBus.listen("show-edit-dialog", showTextEditDialog);
 });
 
 onMounted((): void => {

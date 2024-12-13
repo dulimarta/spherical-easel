@@ -76,8 +76,5 @@ export class SegmentNormalArcLengthVisitor implements Visitor {
     //Parametric curves are completely determined by their parents so no need to update them
     return false;
   }
-  //eslint-disable-next-line
-  actionOnText(t: SEText): boolean {
-    return false;
-  }
+
 }

@@ -1,7 +1,7 @@
 /** @format */
 
 
-import { Matrix4, Vector3 } from "three";
+import { Matrix4, Vector2, Vector3 } from "three";
 import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
 import { SELine } from "@/models/SELine";
@@ -89,6 +89,7 @@ export default class MoveHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     // if mouse press is not on the sphere do not do anything
     //if (!this.isOnSphere) return;
+    // We can restrict mouse press in this way because text objects can be off the sphere
     // Reset the variables for another move event
     this.moveTarget = null;
     this.rotateSphere = false;
@@ -145,7 +146,7 @@ export default class MoveHandler extends Highlighter {
         this.movingSomething = true;
         return;
       }
-      
+
       //If the user tries to move a nonFree point or object, nothing should happen -- this communicates
       //to the user they are trying to move something that can't be moved
       if (this.hitSEPoints.length == 0) {
@@ -366,7 +367,7 @@ export default class MoveHandler extends Highlighter {
       } else if (this.moveTarget instanceof SEText) {
         console.log("Trying to move an SEText.");
         console.log(`SEText.locationVector = x: ${this.moveTarget.locationVector.x}, y: ${this.moveTarget.locationVector.y}`);
-        this.moveTarget.locationVector = new Vector3(this.currentScreenVector.x, this.currentScreenVector.y, 0);
+        this.moveTarget.locationVector = this.currentScreenVector;
         console.log(`currentScreenVector: x: ${this.currentScreenVector.x}, y: ${this.currentScreenVector.y}`);
       } else if (this.moveTarget == null && this.rotateSphere) {
         // Rotate the sphere, updates the display after moving all the points.
@@ -625,11 +626,13 @@ export default class MoveHandler extends Highlighter {
                 console.log("Moving SEText in mouseReleased.");
                 console.log(`seNoduleBeforeState.locationVector = x: ${seNoduleBeforeState.locationVector.x}, y: ${seNoduleBeforeState.locationVector.y}`);
                 console.log(`seNoduleAfterState.locationVector = x: ${seNoduleAfterState.locationVector.x}, y: ${seNoduleAfterState.locationVector.y}`);
+                const beforeVector = new Vector2(seNoduleBeforeState.locationVector.x,seNoduleBeforeState.locationVector.y)
+                const afterVector = new Vector2(seNoduleAfterState.locationVector.x,seNoduleAfterState.locationVector.y)
                 moveCommandGroup.addCommand(
                   new MoveTextCommand(
                     seNoduleAfterState.object as SEText,
-                    seNoduleBeforeState.locationVector,
-                    seNoduleAfterState.locationVector
+                    beforeVector,
+                    afterVector
                   )
                 );
               }

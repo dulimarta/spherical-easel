@@ -6,37 +6,27 @@ import EventBus from "@/eventHandlers/EventBus";
 
 export default class TextHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
-    console.debug("TextHandler::mousePressed()");
-    console.debug(`Current Screen Vector - x: ${this.currentScreenVector.x}, y: ${this.currentScreenVector.y}`);
+    // console.debug("TextHandler::mousePressed()");
+    // console.debug(`Current Screen Vector - x: ${this.currentScreenVector.x}, y: ${this.currentScreenVector.y}`);
 
     // Filter for relevant text objects
-    const texts = this.hitSETexts.filter(
-      (text) => text.showing
-    );
+    const texts = this.hitSETexts.filter(text => text.showing);
 
     if (texts.length > 0) {
       // A text object is clicked
-      const clickedText = texts[0]; // Get the top-most text object
-      console.log("Clicked on SEText:", clickedText.noduleItemText);
-      console.log("Clieked Text ID:", clickedText.id);
+      const clickedTextObject = texts[0]; // Get the top-most text object
+      // console.log("Clicked on SEText:", clickedText.noduleItemText);
+      // console.log("Clieked Text ID:", clickedText.id);
 
       EventBus.fire("show-edit-dialog", {
-        oldText: clickedText.noduleItemText,
-        textId: clickedText.id,
-        seText: clickedText
-       });
-      console.debug("Event 'show-edit-dialog' fired");
-
-      // new ChangeTextCommand(
-      //   clickedText,
-      //   clickedText.noduleItemText,
-      //   newText
-      // )
-    }
-    else {
-    // Fire the event to show the dialog
-    EventBus.fire("show-text-dialog", {}); // Empty data if not required for the dialog
-    console.debug("Event 'show-text-dialog' fired");
+        oldText: clickedTextObject.noduleItemText,
+        textId: clickedTextObject.id,
+        seText: clickedTextObject
+      });
+      // console.debug("Event 'show-edit-dialog' fired");
+    } else {
+      // Fire the event to show the dialog
+      EventBus.fire("show-text-dialog", {}); // Empty data if not required for the dialog
     }
   }
 
@@ -50,35 +40,37 @@ export default class TextHandler extends Highlighter {
 
   deactivate(): void {
     EventBus.unlisten("text-data-submitted");
-   console.debug("TextHandler deactivated");
+    console.debug("TextHandler deactivated");
   }
 
   // Method to receive text input
   handleTextInput(data: any): void {
-    console.debug("TextHandler::handleTextInput() called with data:", data);
+    // console.debug("TextHandler::handleTextInput() called with data:", data);
 
     // Ensure the text content is accessed correctly from the event payload
     const submittedText = data.text || ""; // Adjust if data is structured differently
 
-    const text = new SEText(
-      submittedText,
-      this.currentScreenVector.x,
-      this.currentScreenVector.y
-    );
+    const newTextSENodule = new SEText();
+    newTextSENodule.text = submittedText;
+    newTextSENodule.locationVector = this.currentScreenVector;
 
-    const TextCmd = new AddTextCommand(text);
+    const TextCmd = new AddTextCommand(newTextSENodule);
     TextCmd.execute();
 
     // Deactivate the listener once the text is handled
     //this.deactivate();
   }
   handleEditInput(data: any): void {
-    console.debug("Replaced Text:", data.text);
-    console.debug("Replaced Text ID in handleEditInput():", data.textId);
-    console.debug("Original Text in handleEditInput():", data.oldText);
-    console.debug("Original seText Value:", data.seText);
+    // console.debug("Replaced Text:", data.text);
+    // console.debug("Replaced Text ID in handleEditInput():", data.textId);
+    // console.debug("Original Text in handleEditInput():", data.oldText);
+    // console.debug("Original seText Value:", data.seText);
 
-    const changeTextCmd = new ChangeTextCommand(data.seText, data.oldText, data.text)
+    const changeTextCmd = new ChangeTextCommand(
+      data.seText,
+      data.oldText,
+      data.text
+    );
     changeTextCmd.execute();
   }
 

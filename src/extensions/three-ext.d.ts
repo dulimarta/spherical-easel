@@ -14,6 +14,12 @@ declare module "three/src/math/Vector2" {
      * @param precision the number of decimal places for each coordinate
      */
     toFixed(precision: number): string;
+    /**
+     * Create a 2D vector from a string in the following format (___,____)
+     *
+     * @param arr
+     */
+    from(arr: string | undefined): void;
   }
 }
 declare module "three/src/math/Vector3" {

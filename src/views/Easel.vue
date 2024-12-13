@@ -178,6 +178,7 @@ import {
 import { useLayout, useDisplay } from "vuetify";
 import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
+import Text from "@/plottables/Text";
 
 const DELETE_DELAY = 5000; // in milliseconds
 /**
@@ -385,6 +386,7 @@ function resizePlottables(e: { factor: number }): void {
   Label.updateTextScaleFactorForZoom(e.factor);
   Ellipse.updateCurrentStrokeWidthForZoom(e.factor);
   Parametric.updateCurrentStrokeWidthForZoom(e.factor);
+  Text.updateTextScaleFactorForZoom(e.factor);
 
   // Apply the new size in each nodule in the store
   seNodules.value.forEach(p => {

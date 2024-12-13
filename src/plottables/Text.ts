@@ -1,7 +1,7 @@
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 
-import { Vector3 } from "three";
+import { Vector2, Vector3 } from "three";
 import {
   StyleOptions,
   StyleCategory,
@@ -19,28 +19,29 @@ import { Vector } from "two.js/src/vector";
 import { Text as TwoJsText } from "two.js/src/text";
 import { Group } from "two.js/src/group";
 
-//had to name file Text so that it does not conflict wit two.js/src/text
+//had to name file Text so that it does not conflict with two.js/src/text
 export default class Text extends Nodule {
-  public text: TwoJsText;
+  public textObject: TwoJsText;
   /**
    * The vector location of the Label on the default unit sphere
    * The location vector in the Default Screen Plane
    * It will always be the case the x and y coordinates of these two vectors are the same.
    * The sign of the z coordinate indicates if the Point is on the back of the sphere
    */
-  public _locationVector = new Vector3(1, 0, 0);
+  public _locationVector = new Vector2(1, 0);
   public defaultScreenVectorLocation = new Vector(1, 0);
 
-  constructor(txt: string, x: number, y: number, noduleName: string = "None") {
+  constructor(noduleName: string = "None") {
     super(noduleName);
-    this.text = new TwoJsText(txt, x, y);
-    this._locationVector.x = x;
-    this._locationVector.y = -y;
+    this.textObject = new TwoJsText();
+    // this.text = new TwoJsText(txt, x, y);
+    // this._locationVector.x = x;
+    // this._locationVector.y = -y;
   }
   //private _defaultName = "";
 
   /**
-   * Initialize the current point scale factor that is adjusted by the zoom level and the user pointRadiusPercent
+   * Initialize the current text scale factor that is adjusted by the zoom level and the user textPercent
    * Set with text.scale=this.scale;
    */
   static textScaleFactor = 1;
@@ -57,15 +58,15 @@ export default class Text extends Nodule {
 
   static isEarthMode = false;
 
-
-
   addToLayers(layers: Group[]): void {
-    layers[LAYER.foregroundText].add(this.text);
+    layers[LAYER.foregroundText].add(this.textObject);
   }
   removeFromLayers(layers: Group[]): void {
-    layers[LAYER.foregroundText].remove(this.text);
+    layers[LAYER.foregroundText].remove(this.textObject);
   }
   adjustSize(): void {
+    this.textObject.scale = Text.textScaleFactor;
+    // (Text.textScaleFactor * textScalePercent) / 100; // use when text is edited using the style panel -- i.e. when textScalePercents is set as a style option
   }
   normalDisplay(): void {
     /** None **/
@@ -77,20 +78,28 @@ export default class Text extends Nodule {
     /**None**/
   }
   defaultStyleState(mode: StyleCategory): StyleOptions {
-    /**None**/
+    //**None */
   }
   stylize(flag: DisplayStyle): void {
     /**None**/
   }
   setVisible(flag: boolean): void {
-    this.text.visible = flag;
+    this.textObject.visible = flag;
   }
   updateDisplay(): void {
     this.normalDisplay();
-    console.debug("Calling Text.normalDisplay();");
+    //console.debug("Calling Text.normalDisplay();");
     /**None**/
   }
-  toSVG(nonScaling?: { stroke: boolean; text: boolean; pointRadius: boolean; scaleFactor: number; }, svgForIcon?: boolean): toSVGType[] {
+  toSVG(
+    nonScaling?: {
+      stroke: boolean;
+      text: boolean;
+      pointRadius: boolean;
+      scaleFactor: number;
+    },
+    svgForIcon?: boolean
+  ): toSVGType[] {
     // Possibly don't need this.
     /**None**/
     return [];
@@ -104,7 +113,7 @@ export default class Text extends Nodule {
     top: number;
     width: number;
   } {
-    const rect = this.text.getBoundingClientRect();
+    const rect = this.textObject.getBoundingClientRect();
     return {
       bottom: rect.bottom,
       height: rect.height,
@@ -115,19 +124,17 @@ export default class Text extends Nodule {
     };
   }
 
-  set positionVector(idealUnitSphereVectorLocation: Vector3) {
-
-    console.log("Calling set Text.positionVector");
-    console.log(`${idealUnitSphereVectorLocation.toFixed(3)}`);
-    this._locationVector
-      .copy(idealUnitSphereVectorLocation);
-      //.multiplyScalar(SETTINGS.boundaryCircle.radius);
+  set positionVector(screenVector: Vector2) {
+    // console.log("Calling set Text.positionVector");
+    // console.log(`${screenVector.toFixed(3)}`);
+    this._locationVector.set(screenVector.x, screenVector.y);
+    //.multiplyScalar(SETTINGS.boundaryCircle.radius);
     // Translate the whole group (i.e. all points front/back/glowing/drawn) to the new center vector
-    this.defaultScreenVectorLocation.set(
+
+    this.textObject.position.set(
       this._locationVector.x,
       -this._locationVector.y
     );
-    this.text.position.copy(this.defaultScreenVectorLocation);
     //this.updateDisplay();  //<--- do not do this! disconnect the setting of position with the display, if you leave this in
     //then this turns on the display of the vertex point of the angle marker in a bad way. It turns on the
     //     // the display so that the following problem occurs.
@@ -138,12 +145,10 @@ export default class Text extends Nodule {
     //     //    actual display is showing, so it is not found in the Highligher.ts handler subclass )
     //     // I spent at least 8 hours looking for how this occurs ... :-()
   }
-  get positionVector(): Vector3 {
+  get positionVector(): Vector2 {
     return this._locationVector;
   }
-
-  set twoJsText(txt: string) {
-    this.text.value = txt;
+  set text(txt: string) {
+    this.textObject.value = txt;
   }
-
 }

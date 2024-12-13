@@ -6,7 +6,7 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { Matrix4, Vector3 } from "three";
+import { Matrix4, Vector2, Vector3 } from "three";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
@@ -233,7 +233,8 @@ export type SavedNames =
   | "setValueDisplayModeNewValue"
   | "pointVisibleBefore"
   | "earthLatitude"
-  | "earthLongitude";
+  | "earthLongitude"
+  | "textObjectText";
 
 export type ActionMode =
   | "angle"

@@ -42,7 +42,7 @@ import { TextMoverVisitor } from "@/visitors/TextMoverVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
 import { Ref, ref } from "vue";
 import { defineStore } from "pinia";
-import { Matrix4, Vector3 } from "three";
+import { Matrix4, Vector2, Vector3 } from "three";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { computed } from "vue";
@@ -358,7 +358,7 @@ const seTextMap: Map<number, SEText> = new Map();
 /* END Non-Reactive variables */
 
 export const useSEStore = defineStore("se", () => {
-  const twoInstance: Ref<Two|null> = ref(null)
+  const twoInstance: Ref<Two | null> = ref(null);
   const isEarthMode = ref(false);
   const actionMode: Ref<ActionMode> = ref<ActionMode>("rotate");
   const previousActionMode: Ref<ActionMode> = ref("rotate");
@@ -425,7 +425,7 @@ export const useSEStore = defineStore("se", () => {
 
   const seTextIds: Ref<Array<number>> = ref([]);
   const seText = computed((): SEText[] =>
-        seTextIds.value.map(id => seTextMap.get(id)!)
+    seTextIds.value.map(id => seTextMap.get(id)!)
   );
 
   const selectedSENodules: Ref<Array<SENodule>> = ref([]);
@@ -438,7 +438,8 @@ export const useSEStore = defineStore("se", () => {
     () =>
       sePointIds.value.length > 0 ||
       seCircles.value.length > 0 ||
-      seSegmentIds.value.length > 0
+      seSegmentIds.value.length > 0 ||
+      seTextIds.value.length > 0
   ); // SELatitude and SE Longitude are not constructed with SEPoints that are put into the object tree
 
   const twojsLayers = computed(() => layers);
@@ -493,13 +494,13 @@ export const useSEStore = defineStore("se", () => {
     // in this array *before* the this.init is called in App.vue mount.
   }
   function setLayers(two: Two, grp: Array<Group>): void {
-    twoInstance.value = two
+    twoInstance.value = two;
     // layers.splice(0);
     // layers.push(...grp);
     layers = grp;
   }
   function updateTwoJS() {
-    twoInstance.value!.update()
+    twoInstance.value!.update();
   }
 
   function setCanvas(c: HTMLDivElement | null): void {
@@ -544,7 +545,7 @@ export const useSEStore = defineStore("se", () => {
     seCircles.value.forEach((x: SECircle) => x.ref.removeFromLayers());
     seEllipses.value.forEach((x: SEEllipse) => x.ref.removeFromLayers());
     seLines.value.forEach((x: SELine) => x.ref.removeFromLayers());
-    sePoints.value.forEach((x:SEPoint) => x.ref.removeFromLayers())
+    sePoints.value.forEach((x: SEPoint) => x.ref.removeFromLayers());
     seSegments.value.forEach((x: SESegment) => x.ref.removeFromLayers());
     sePolygons.value.forEach((x: SEPolygon) => x.ref.removeFromLayers());
     seParametrics.value.forEach((x: SEParametric) => {
@@ -560,7 +561,7 @@ export const useSEStore = defineStore("se", () => {
         l.ref.removeFromLayers();
       });
     });
-    seLabels.value.forEach((x:SELabel) => x.ref.removeFromLayers(layers));
+    seLabels.value.forEach((x: SELabel) => x.ref.removeFromLayers(layers));
   }
   // Update the display of all free SEPoints to update the entire display
   function updateDisplay(): void {
@@ -780,47 +781,34 @@ export const useSEStore = defineStore("se", () => {
     hasUnsavedNodules.value = true;
     // this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
   }
-  function moveText(move: { textId: number; location: Vector3 }): void {
-    console.log(`se.moveText(): textId: ${move.textId}, location: ${move.location.toFixed(3)}`);
-    const textMoverVisitor = new TextMoverVisitor();
-    textMoverVisitor.setNewLocation(move.location);
+  function moveText(move: { textId: number; location: Vector2 }): void {
+    // console.log(`se.moveText(): textId: ${move.textId}, location: ${move.location.toFixed(3)}`);
+    // const textMoverVisitor = new TextMoverVisitor();
+    // textMoverVisitor.setNewLocation(move.location);
     const aText = seTextMap.get(move.textId);
-    console.log(`se.moveText() aText = ${aText?.id}, ${aText?.locationVector.toFixed(3)}`);
-    if (aText) aText.accept(textMoverVisitor);
+    // console.log(`se.moveText() aText = ${aText?.id}, ${aText?.locationVector.toFixed(3)}`);
+    // if (aText) aText.accept(textMoverVisitor);
+    if (aText) {
+      aText.locationVector = move.location;
+    }
   }
   function changeText(change: { textId: number; newText: string }): void {
-    console.log(`se.changeText(): textId: ${change.textId}, newText: "${change.newText}"`);
+    // console.log(`se.changeText(): textId: ${change.textId}, newText: "${change.newText}"`);
 
     // Retrieve the SEText object from the map using textId
     const aText = seTextMap.get(change.textId);
 
-    console.log(`se.changeText() aText = ${aText?.id}, currentText: "${aText?.getText()}"`);
+    // console.log(`se.changeText() aText = ${aText?.id}, currentText: "${aText?.text}"`);
 
     if (aText) {
       // Change the text content of the SEText object
-      aText.setText(change.newText);
+      aText.text = change.newText;
 
       // Log the change operation
-      console.log(`se.changeText(): Text content updated for textId: ${change.textId}`);
-    } 
+      // console.log(`se.changeText(): Text content updated for textId: ${change.textId}`);
+    }
   }
-//   function changeText(text: SEText): void {
-//     if (seTextMap.has(text.id)) {
-//         // Update the text in the map
-//         seTextMap.set(text.id, text);
 
-
-//         // Find and update the corresponding text in seNodules array
-//         const index = seNodules.value.findIndex((nodule) => nodule.id === text.id);
-//         if (index !== -1) {
-//             seNodules.value[index] = text;
-//         }
-//         // Mark as unsaved
-//         hasUnsavedNodules.value = true;
-//     } else {
-//         console.error(`Text with ID ${text.id} does not exist.`);
-//     }
-// }
   function removeText(textId: number): void {
     const victimText = seTextMap.get(textId);
 
@@ -999,9 +987,11 @@ export const useSEStore = defineStore("se", () => {
       });
     }
 
-    // Begin updating those objects with no parents
+    // Begin updating those objects with no parents that are not text object (because text does not rotate)
     updateCandidates.push(
-      ...seNodules.value.filter((p: SENodule) => p.parents.length === 0)
+      ...seNodules.value.filter((p: SENodule) => {
+        return p.parents.length === 0 && !(p instanceof SEText);
+      })
     );
     // console.log(
     //   "Update candidates",
@@ -1009,7 +999,7 @@ export const useSEStore = defineStore("se", () => {
     // );
     while (updateCandidates.length > 0) {
       const target = updateCandidates.shift()!;
-      console.log(`target is ${target.name}`);
+      //console.log(`target is ${target.name}`);
       const accepted = target.accept(rotationVisitor);
       // console.log(`What's going on with ${target.name}?`, accepted);
       if (!accepted) {
@@ -1370,10 +1360,14 @@ export const useSEStore = defineStore("se", () => {
   function findNearbySENodules(
     unitIdealVector: Vector3,
     // eslint-disable-next-line no-unused-vars
-    screenPosition: Vector
+    screenPosition: Vector2
   ): SENodule[] {
     return seNodules.value.filter((obj: SENodule) => {
-      return obj.isHitAt(unitIdealVector, zoomMagnificationFactor.value, screenPosition);
+      return obj.isHitAt(
+        unitIdealVector,
+        zoomMagnificationFactor.value,
+        screenPosition
+      );
     });
     // return []
   }

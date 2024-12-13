@@ -1,4 +1,4 @@
-import { Vector3 } from "three";
+import { Vector2, Vector3 } from "three";
 import { Vector } from "two.js/src/vector";
 import Nodule from "@/plottables/Nodule";
 import {
@@ -92,7 +92,7 @@ export abstract class SENodule implements Visitable {
   public name = "";
 
   constructor() {
-    this.name = ""
+    this.name = "";
     this.id = NODE_COUNT++;
   }
 
@@ -103,7 +103,7 @@ export abstract class SENodule implements Visitable {
         descendants of the object don't exist. */
   protected _exists = true;
 
-    /* If the object is selected, it is either being used by an event tool or is in the setSelectedSENodules in mutations. Its glow property is not turned off by the highlighter.ts routines*/
+  /* If the object is selected, it is either being used by an event tool or is in the setSelectedSENodules in mutations. Its glow property is not turned off by the highlighter.ts routines*/
   protected _selected = false;
 
   /* This boolean is set to indicate that the object is out of date and needs to be updated. */
@@ -139,7 +139,8 @@ export abstract class SENodule implements Visitable {
   public abstract isHitAt(
     unitIdealVector: Vector3,
     currentMagnificationFactor: number,
-    screenPosition?: Vector
+    screenPosition?: Vector2, // Used in SEText
+    extraFactor?: number // Used in SESegment to tighten the bounds
   ): boolean;
 
   /**
@@ -326,7 +327,7 @@ export abstract class SENodule implements Visitable {
   }
 
   public getLabel(): SELabel | null {
-    return null
+    return null;
   }
   // Only returns true if this is an SESegment of length pi (or very nearly pi)
   public isSegmentOfLengthPi(): boolean {
