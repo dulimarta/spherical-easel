@@ -424,7 +424,7 @@ export const useSEStore = defineStore("se", () => {
   );
 
   const seTextIds: Ref<Array<number>> = ref([]);
-  const seText = computed((): SEText[] =>
+  const seTexts = computed((): SEText[] =>
     seTextIds.value.map(id => seTextMap.get(id)!)
   );
 
@@ -4033,7 +4033,7 @@ export const useSEStore = defineStore("se", () => {
     seSegments,
     seTransformations,
     twojsLayers,
-    seText,
+    seTexts,
 
     /* functions */
     addAngleMarkerAndExpression,

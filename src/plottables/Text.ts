@@ -4,7 +4,9 @@ import { Vector2 } from "three";
 import {
   StyleOptions,
   StyleCategory,
-  DEFAULT_TEXT_TEXT_STYLE
+  DEFAULT_TEXT_TEXT_STYLE,
+  DEFAULT_TEXT_FRONT_STYLE,
+  DEFAULT_TEXT_BACK_STYLE
 } from "@/types/Styles";
 import { svgStyleType, toSVGType } from "@/types";
 import { Text as TwoJsText } from "two.js/src/text";
@@ -18,7 +20,7 @@ export default class Text extends Nodule {
   private glowingStrokeColor = SETTINGS.text.glowingStrokeColor;
 
   private _defaultText = "Bob";
-  private _text = ""
+  private _text = "";
   /**
    * The vector location of the Test on the default unit sphere (without the z coord)
    */
@@ -35,7 +37,7 @@ export default class Text extends Nodule {
     // Set the properties of the points that never change - stroke width and some glowing options
     this.textObject.noStroke();
     this.glowingTextObject.linewidth = SETTINGS.text.glowingStrokeWidth;
-    this.glowingTextObject.visible = false
+    this.glowingTextObject.visible = false;
 
     this.styleOptions.set(StyleCategory.Label, DEFAULT_TEXT_TEXT_STYLE);
   }
@@ -109,27 +111,33 @@ export default class Text extends Nodule {
     super.updateStyle(mode, options);
   }
 
-   /**
+  /**
    * Return the default style state
    */
-   defaultStyleState(panel: StyleCategory): StyleOptions {
-    if (panel === StyleCategory.Label) {
-      return {
-        ...DEFAULT_TEXT_TEXT_STYLE,
-        labelDisplayText: this._defaultText,
-      };
-    } else {
-      //Should never be called
-      throw new Error(
-        "Called defaultStyleState in Text with non-Label panel."
-      );
+  defaultStyleState(panel: StyleCategory): StyleOptions {
+    // throw new Error(
+    //   "Called defaultStyleState in Text with non-Label panel."
+    // );
+    switch (panel) {
+      case StyleCategory.Label:
+        return {
+          ...DEFAULT_TEXT_TEXT_STYLE,
+          labelDisplayText: this._defaultText
+        };
+      case StyleCategory.Front:
+        return DEFAULT_TEXT_FRONT_STYLE; //empty
+
+      case StyleCategory.Back:
+        return DEFAULT_TEXT_BACK_STYLE; //empty
+
+      default:
+        return {};
     }
   }
-
-   /**
+  /**
    * Sets the variables for point radius glowing/not
    */
-   adjustSize(): void {
+  adjustSize(): void {
     // console.log("Text adjust size")
     const labelStyle = this.styleOptions.get(StyleCategory.Label);
     const textScalePercent = labelStyle?.labelTextScalePercent ?? 100;
@@ -138,7 +146,7 @@ export default class Text extends Nodule {
       (Text.textScaleFactor * textScalePercent) / 100;
   }
 
- /**
+  /**
    * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the label
    *
    * ApplyTemporaryVariables means that
@@ -147,63 +155,63 @@ export default class Text extends Nodule {
    *
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
- stylize(flag: DisplayStyle): void {
-  switch (flag) {
-    case DisplayStyle.ApplyTemporaryVariables: {
-      // There is no temporary text so this should never be called
-      break;
-    }
-
-    case DisplayStyle.ApplyCurrentVariables: {
-      // Use the current variables to directly modify the js objects.
-      const labelStyle = this.styleOptions.get(StyleCategory.Label);
-
-      this.textObject.value = this._text;
-      this.glowingTextObject.value = this._text;
-      // we may want to modify this to allow changes in the text from the style panel
-      // this.textObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
-      // this.glowingTextObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
-      // this._text = labelStyle?.labelDisplayText ?? "TEXT ERROR"
-
-      if (labelStyle?.labelTextStyle !== "bold") {
-        this.textObject.style = (labelStyle?.labelTextStyle ??
-          SETTINGS.label.style) as "normal" | "italic";
-        this.glowingTextObject.style = (labelStyle?.labelTextStyle ??
-          SETTINGS.label.style) as "normal" | "italic";
-        this.textObject.weight = 500;
-        this.glowingTextObject.weight = 500;
-      } else if (labelStyle?.labelTextStyle === "bold") {
-        this.textObject.weight = 1000;
-        this.glowingTextObject.weight = 1000;
+  stylize(flag: DisplayStyle): void {
+    switch (flag) {
+      case DisplayStyle.ApplyTemporaryVariables: {
+        // There is no temporary text so this should never be called
+        break;
       }
 
-      this.textObject.family =
-        labelStyle?.labelTextFamily ?? SETTINGS.label.family;
-      this.glowingTextObject.family =
-        labelStyle?.labelTextFamily ?? SETTINGS.label.family;
+      case DisplayStyle.ApplyCurrentVariables: {
+        // Use the current variables to directly modify the js objects.
+        const labelStyle = this.styleOptions.get(StyleCategory.Label);
 
-      this.textObject.decoration = (labelStyle?.labelTextDecoration ??
-        SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
-      this.glowingTextObject.decoration = (labelStyle?.labelTextDecoration ??
-        SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
+        this.textObject.value = this._text;
+        this.glowingTextObject.value = this._text;
+        // we may want to modify this to allow changes in the text from the style panel
+        // this.textObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
+        // this.glowingTextObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
+        // this._text = labelStyle?.labelDisplayText ?? "TEXT ERROR"
 
-      this.textObject.rotation = labelStyle?.labelTextRotation ?? 0;
-      this.glowingTextObject.rotation = labelStyle?.labelTextRotation ?? 0;
+        if (labelStyle?.labelTextStyle !== "bold") {
+          this.textObject.style = (labelStyle?.labelTextStyle ??
+            SETTINGS.label.style) as "normal" | "italic";
+          this.glowingTextObject.style = (labelStyle?.labelTextStyle ??
+            SETTINGS.label.style) as "normal" | "italic";
+          this.textObject.weight = 500;
+          this.glowingTextObject.weight = 500;
+        } else if (labelStyle?.labelTextStyle === "bold") {
+          this.textObject.weight = 1000;
+          this.glowingTextObject.weight = 1000;
+        }
 
-      // FRONT = To shoehorn text into label, the front fill color is the same as overall stroke color, there are no front/back for text
-      const frontFillColor =
-        labelStyle?.labelFrontFillColor ?? SETTINGS.text.fillColor;
-      if (Nodule.rgbaIsNoFillOrNoStroke(frontFillColor)) {
-        this.textObject.noFill();
-      } else {
-        this.textObject.fill = frontFillColor;
+        this.textObject.family =
+          labelStyle?.labelTextFamily ?? SETTINGS.label.family;
+        this.glowingTextObject.family =
+          labelStyle?.labelTextFamily ?? SETTINGS.label.family;
+
+        this.textObject.decoration = (labelStyle?.labelTextDecoration ??
+          SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
+        this.glowingTextObject.decoration = (labelStyle?.labelTextDecoration ??
+          SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
+
+        this.textObject.rotation = labelStyle?.labelTextRotation ?? 0;
+        this.glowingTextObject.rotation = labelStyle?.labelTextRotation ?? 0;
+
+        // FRONT = To shoehorn text into label, the front fill color is the same as overall stroke color, there are no front/back for text
+        const frontFillColor =
+          labelStyle?.labelFrontFillColor ?? SETTINGS.text.fillColor;
+        if (Nodule.rgbaIsNoFillOrNoStroke(frontFillColor)) {
+          this.textObject.noFill();
+        } else {
+          this.textObject.fill = frontFillColor;
+        }
+        this.glowingTextObject.stroke = this.glowingStrokeColor;
+
+        break;
       }
-      this.glowingTextObject.stroke = this.glowingStrokeColor;
-
-      break;
     }
   }
-}
 
   toSVG(
     nonScaling?: {
@@ -267,8 +275,8 @@ export default class Text extends Nodule {
     return this._locationVector;
   }
   set text(txt: string) {
-    this._text = txt
+    this._text = txt;
     this.textObject.value = txt;
-    this.glowingTextObject.value = txt
+    this.glowingTextObject.value = txt;
   }
 }

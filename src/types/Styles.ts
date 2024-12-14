@@ -250,7 +250,10 @@ export const DEFAULT_TEXT_TEXT_STYLE: LabelStyleOptions = {
   labelTextRotation: 0,
   labelFrontFillColor: SETTINGS.text.fillColor,
 };
-
+export const DEFAULT_TEXT_FRONT_STYLE: LabelStyleOptions = {
+}
+export const DEFAULT_TEXT_BACK_STYLE: LabelStyleOptions = {
+}
 export const DEFAULT_PARAMETRIC_FRONT_STYLE: ShapeStyleOptions = {
   strokeColor: SETTINGS.parametric.drawn.strokeColor.front,
   strokeWidthPercent: 100,
