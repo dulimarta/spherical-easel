@@ -303,6 +303,8 @@ watch(
     // Update te hasVisibleLabels to true if at least
     // one of the selected labels is visible
     labels.forEach(labname => {
+      // selectedLabels is both labels and text so search both, but this only
+      // set a variable for labels so we don't have to search text
       const lab = seLabels.value.find(z => z.name === labname);
       if (lab && lab.ref.showing) {
         hasVisibleLabels.value = true;

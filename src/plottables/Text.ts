@@ -12,15 +12,15 @@ import { svgStyleType, toSVGType } from "@/types";
 import { Text as TwoJsText } from "two.js/src/text";
 import { Group } from "two.js/src/group";
 
-//had to name file Text so that it does not conflict with two.js/src/text
+//had to name the file Text so that it does not conflict with two.js/src/text
 export default class Text extends Nodule {
   protected textObject: TwoJsText;
   protected glowingTextObject: TwoJsText;
 
   private glowingStrokeColor = SETTINGS.text.glowingStrokeColor;
 
-  private _defaultText = "Bob";
-  private _text = "";
+  private _defaultText = "Default Text";
+  // private _text = "";
   /**
    * The vector location of the Test on the default unit sphere (without the z coord)
    */
@@ -147,7 +147,7 @@ export default class Text extends Nodule {
   }
 
   /**
-   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the label
+   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the text
    *
    * ApplyTemporaryVariables means that
    *    1) The temporary variables from SETTINGS.point.temp are copied into the actual js objects
@@ -166,11 +166,10 @@ export default class Text extends Nodule {
         // Use the current variables to directly modify the js objects.
         const labelStyle = this.styleOptions.get(StyleCategory.Label);
 
-        this.textObject.value = this._text;
-        this.glowingTextObject.value = this._text;
         // we may want to modify this to allow changes in the text from the style panel
-        // this.textObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
-        // this.glowingTextObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
+        console.log("Set text in",this.name,"name=",labelStyle?.labelDisplayText )
+        this.textObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
+        this.glowingTextObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
         // this._text = labelStyle?.labelDisplayText ?? "TEXT ERROR"
 
         if (labelStyle?.labelTextStyle !== "bold") {
@@ -275,8 +274,14 @@ export default class Text extends Nodule {
     return this._locationVector;
   }
   set text(txt: string) {
-    this._text = txt;
-    this.textObject.value = txt;
-    this.glowingTextObject.value = txt;
+    // this._text = txt;
+    this.updateStyle(StyleCategory.Label, {
+      labelDisplayText: txt
+    });
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
+
+  public setDefaultText(txt:string):void{
+    this._defaultText = txt
   }
 }

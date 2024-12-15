@@ -8,7 +8,18 @@ import { Visitor } from "@/visitors/Visitor";
 // import { TextMoverVisitor } from "@/visitors/TextMoverVisitor";
 import Text from "@/plottables/Text";
 import { DisplayStyle } from "@/plottables/Nodule";
+import {
+  DEFAULT_TEXT_BACK_STYLE,
+  DEFAULT_TEXT_FRONT_STYLE,
+  DEFAULT_TEXT_TEXT_STYLE
+} from "@/types/Styles";
 const { t } = i18n.global;
+
+const styleSet = new Set([
+  ...Object.getOwnPropertyNames(DEFAULT_TEXT_FRONT_STYLE),
+  ...Object.getOwnPropertyNames(DEFAULT_TEXT_BACK_STYLE),
+  ...Object.getOwnPropertyNames(DEFAULT_TEXT_TEXT_STYLE)
+]);
 
 export class SEText extends SENodule {
   public declare ref: Text; //<- plottable Text
@@ -19,12 +30,12 @@ export class SEText extends SENodule {
   constructor() {
     super();
 
-    this.ref = new Text();
+    this.name = `T${SENodule.TEXT_COUNT}`;
+    this.ref = new Text(this.name);
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
     this.ref.adjustSize();
 
     SENodule.TEXT_COUNT++;
-    this.name = `T${SENodule.TEXT_COUNT}`;
     // Set the size for zoom
     this.ref.adjustSize();
   }
@@ -47,7 +58,6 @@ export class SEText extends SENodule {
     this.shallowUpdate();
 
     if (objectState && orderedSENoduleList) {
-
       if (objectState.has(this.id)) {
         console.log(
           `		Text with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
@@ -73,7 +83,7 @@ export class SEText extends SENodule {
     unitIdealVector: Vector3,
     currentMagnificationFactor: number,
     screenPosition: Vector2 = new Vector2(),
-    extraFactor?:number
+    extraFactor?: number
   ): boolean {
     // Get the bounding box of the text
     const boundingBox = this.ref.boundingRectangle;
@@ -103,9 +113,8 @@ export class SEText extends SENodule {
     return this._locationVector;
   }
 
-  public customStyles(): Set<string> {
-    /**None**/
-    return new Set();
+  customStyles(): Set<string> {
+    return styleSet;
   }
 
   public get noduleItemText(): string {
@@ -122,7 +131,12 @@ export class SEText extends SENodule {
     this._text = newText;
     this.ref.text = newText; // Update the Two.js text instance
   }
+
+  public setDefaultName(txt:string):void{
+    console.log("set default name of ", this.name, "to", txt)
+    this.ref.setDefaultText(txt)
+  }
   public accept(v: Visitor): boolean {
-    return false
-	}
+    return false;
+  }
 }

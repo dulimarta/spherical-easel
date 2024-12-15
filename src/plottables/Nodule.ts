@@ -464,6 +464,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
 
   /** Get the current style state of the Nodule */
   currentStyleState(mode: StyleCategory): StyleOptions {
+    console.log("current style state of ", this.name, this.styleOptions.get(mode))
     return this.styleOptions.get(mode) ?? {};
   }
   /**
