@@ -133,7 +133,7 @@ export class SEText extends SENodule {
   }
 
   public setDefaultName(txt:string):void{
-    console.log("set default name of ", this.name, "to", txt)
+    // console.log("set default name of ", this.name, "to", txt)
     this.ref.setDefaultText(txt)
   }
   public accept(v: Visitor): boolean {

@@ -219,7 +219,7 @@ export const useStylingStore = defineStore("style", () => {
           // console.debug(`${n.name} label`, itsLabel.ref)
           if (!selectedLabels.value.has(itsLabel.ref.name)) {
             selectedLabels.value.add(itsLabel.ref.name);
-            console.log("Add label to selected Labels ", itsLabel.ref.name);
+            // console.log("Add label to selected Labels ", itsLabel.ref.name);
             // Remember the initial and default styles of the selected object
             // These maps are used by the  restoreTo() function below
             initialStyleMap.set(
@@ -237,7 +237,7 @@ export const useStylingStore = defineStore("style", () => {
         if (n instanceof SEText) {
           // console.debug(`${n.name} label`, itsLabel.ref)
           if (!selectedLabels.value.has(n.ref.name)) {
-            console.log("Add text to selected Labels ", n.ref.name);
+            // console.log("Add text to selected Labels ", n.ref.name);
             selectedLabels.value.add(n.ref.name);
             // Remember the initial and default styles of the selected object
             // These maps are used by the  restoreTo() function below

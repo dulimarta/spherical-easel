@@ -36,6 +36,7 @@ export class AddPointCommand extends Command {
     this.sePoint.incrementVisiblePointCount();
     if (this.sePoint.label && this.useVisiblePointCountToRename) {
       this.sePoint.label.ref.shortUserName = `P${this.sePoint.visiblePointCount}`;
+      this.sePoint.label.ref.defaultName = `P${this.sePoint.visiblePointCount}`;
     }
   }
 
@@ -46,6 +47,7 @@ export class AddPointCommand extends Command {
   restoreState(): void {
     this.sePoint.decrementVisiblePointCount();
     if (this.sePoint.label && this.useVisiblePointCountToRename) {
+      this.sePoint.label.ref.defaultName = `P${this.sePoint.visiblePointCount}`;
       this.sePoint.label.ref.shortUserName = `P${this.sePoint.visiblePointCount}`;
     }
     this.sePoint.pointVisibleBefore = false;

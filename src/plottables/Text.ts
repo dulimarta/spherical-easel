@@ -167,7 +167,7 @@ export default class Text extends Nodule {
         const labelStyle = this.styleOptions.get(StyleCategory.Label);
 
         // we may want to modify this to allow changes in the text from the style panel
-        console.log("Set text in",this.name,"name=",labelStyle?.labelDisplayText )
+        // console.log("Set text in",this.name,"name=",labelStyle?.labelDisplayText )
         this.textObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
         this.glowingTextObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
         // this._text = labelStyle?.labelDisplayText ?? "TEXT ERROR"
