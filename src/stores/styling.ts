@@ -112,6 +112,7 @@ export const useStylingStore = defineStore("style", () => {
   let fillStyleCopy: boolean = true;
   let activeStyleGroup: StyleCategory | null = null;
   let styleIndividuallyAltered = false;
+  let immediatelyAfterRestoreToButtonClick = false;
 
   // After style editing is done, we should restore label visibility
   // to their original state before editing
@@ -218,7 +219,7 @@ export const useStylingStore = defineStore("style", () => {
           // console.debug(`${n.name} label`, itsLabel.ref)
           if (!selectedLabels.value.has(itsLabel.ref.name)) {
             selectedLabels.value.add(itsLabel.ref.name);
-            console.log("Add label to selected Labels ",itsLabel.ref.name )
+            console.log("Add label to selected Labels ", itsLabel.ref.name);
             // Remember the initial and default styles of the selected object
             // These maps are used by the  restoreTo() function below
             initialStyleMap.set(
@@ -236,16 +237,16 @@ export const useStylingStore = defineStore("style", () => {
         if (n instanceof SEText) {
           // console.debug(`${n.name} label`, itsLabel.ref)
           if (!selectedLabels.value.has(n.ref.name)) {
-            console.log("Add text to selected Labels ",n.ref.name )
+            console.log("Add text to selected Labels ", n.ref.name);
             selectedLabels.value.add(n.ref.name);
             // Remember the initial and default styles of the selected object
             // These maps are used by the  restoreTo() function below
             initialStyleMap.set(
-              "text:" + n.name,
+              "label:" + n.name,
               n.ref.currentStyleState(StyleCategory.Label)
             );
             defaultStyleMap.set(
-              "text:" + n.name,
+              "label:" + n.name,
               n.ref.defaultStyleState(StyleCategory.Label)
             );
           }
@@ -268,6 +269,12 @@ export const useStylingStore = defineStore("style", () => {
     () => styleOptions.value,
     (opt: StyleOptions) => {
       // Use the spread operator (...) to guarantee copy by value (not copy by ref)
+      // This shouldn't execute if this is immediately after a restore to defaults
+      // or a restore to current style click.
+      if (immediatelyAfterRestoreToButtonClick) {
+        immediatelyAfterRestoreToButtonClick = false;
+        return;
+      }
       const newOptions: StyleOptions = { ...opt };
       postUpdateStyleOptions = {};
       styleIndividuallyAltered = false;
@@ -291,9 +298,6 @@ export const useStylingStore = defineStore("style", () => {
             const label = seLabels.value.find(
               lab => lab.ref.name === selectedName
             );
-            const text = seTexts.value.find(
-              text => text.ref.name === selectedName
-            );
             if (label) {
               label.ref.updateStyle(
                 StyleCategory.Label,
@@ -301,10 +305,18 @@ export const useStylingStore = defineStore("style", () => {
               );
               // When a label is modified, add it to the set
               editedLabels.value.add(label.name);
-            } else if (text) {
-              text.ref.updateStyle(StyleCategory.Label, postUpdateStyleOptions);
-              // When a label is modified, add it to the set
-              editedLabels.value.add(text.name);
+            } else {
+              const text = seTexts.value.find(
+                text => text.ref.name === selectedName
+              );
+              if (text) {
+                text.ref.updateStyle(
+                  StyleCategory.Label,
+                  postUpdateStyleOptions
+                );
+                // When a label is modified, add it to the set
+                editedLabels.value.add(text.name);
+              }
             }
           });
         } else if (
@@ -342,19 +354,22 @@ export const useStylingStore = defineStore("style", () => {
             const label = seLabels.value.find(
               lab => lab.ref.name === selectedName
             );
-            const text = seTexts.value.find(
-              text => text.ref.name === selectedName
-            );
+
             if (label) {
               label.ref.updateStyle(StyleCategory.Label, {
                 labelDynamicBackStyle: false
               });
               editedLabels.value.add(label.name);
-            } else if (text) {
-              text.ref.updateStyle(StyleCategory.Label, {
-                labelDynamicBackStyle: false
-              });
-              editedLabels.value.add(text.name);
+            } else {
+              const text = seTexts.value.find(
+                text => text.ref.name === selectedName
+              );
+              if (text) {
+                text.ref.updateStyle(StyleCategory.Label, {
+                  labelDynamicBackStyle: false
+                });
+                editedLabels.value.add(text.name);
+              }
             }
             // const label = seLabels.value.find(
             //   lab => lab.ref.name === labelName
@@ -408,13 +423,20 @@ export const useStylingStore = defineStore("style", () => {
     selectedLabels.value.forEach(selectedName => {
       // We are searching for the plottable (hence the seLab.ref.name)
       // selectedLabels are both labels and texts
-      const label = seLabels.value.find(seLab => seLab.ref.name === selectedName);
-      const text = seTexts.value.find(seText => seText.ref.name === selectedName);
+      const label = seLabels.value.find(
+        seLab => seLab.ref.name === selectedName
+      );
+
       var props: StyleOptions | undefined = undefined;
       if (label) {
         props = label.ref.currentStyleState(StyleCategory.Label);
-      } else if (text) {
-        props = text.ref.currentStyleState(StyleCategory.Label);
+      } else {
+        const text = seTexts.value.find(
+          seText => seText.ref.name === selectedName
+        );
+        if (text) {
+          props = text.ref.currentStyleState(StyleCategory.Label);
+        }
       }
       Object.getOwnPropertyNames(props)
         .filter((propName: string) => {
@@ -481,6 +503,27 @@ export const useStylingStore = defineStore("style", () => {
     return conflictingProperties.value.has(prop) && !forceAgreement.value;
   }
 
+  function hasTextObject():boolean {
+    let textObjectFound = false;
+    selectedSENodules.value.forEach(n => {
+      if (n instanceof SEText) {
+        textObjectFound=true;
+      }
+    });
+    // console.log("SETextObject in selection?",textObjectFound,selectedSENodules.value)
+    return textObjectFound;
+  }
+
+  function hasLabelObject():boolean {
+    let labelObjectFound = false;
+    selectedSENodules.value.forEach(n => {
+      if (n.getLabel()) {
+        labelObjectFound=true;
+      }
+    });
+    // console.log("SETextObject in selection?",labelObjectFound,selectedSENodules.value)
+    return labelObjectFound;
+  }
   function hasStyle(prop: string | RegExp): boolean {
     if (typeof prop === "string") {
       return Array.from(stylePropertyMap.keys()).some(x => {
@@ -548,13 +591,16 @@ export const useStylingStore = defineStore("style", () => {
             const label = seLabels.value.find(
               seLab => seLab.ref.name === selectedName
             );
-            const text = seTexts.value.find(
-              seText => seText.ref.name === selectedName
-            );
+
             if (label) {
               return label.ref as unknown as Nodule;
             } else {
-              return text?.ref! as unknown as Nodule;
+              const text = seTexts.value.find(
+                seText => seText.ref.name === selectedName
+              );
+              if (text) {
+                return text.ref! as unknown as Nodule;
+              }
             }
           }
           // seLabels.value.find(seLab => seLab.ref.name === labelName)!
@@ -594,27 +640,32 @@ export const useStylingStore = defineStore("style", () => {
 
     let combinedStyle: StyleOptions = {};
     styleMap.forEach((style: StyleOptions, name: string) => {
+      // console.log("restoreTo", name, style)
       // Do not use a simple assignment, so the initial/default styles are intact
       // styleOptions.value = style /* This WON'T work
       // Must use the following unpack syntax to create a different object
       // So the initial & default maps do not become aliases to the current
       // style option
       mergeStyles(combinedStyle, style);
+      console.log("after restoreTo", name, style);
       if (name.startsWith("label:")) {
         const objectName = name.substring(6);
         //The label:names might include text object so search seTexts too
         const theLabel = seLabels.value.find(n => {
-          console.log("Searching for matching label", n.name, n.ref.name);
           return n.ref.name === objectName;
         });
-        const theText = seTexts.value.find(n => {
-          console.log("Searching for matching text", n.name, n.ref.name);
-          return n.ref.name === objectName;
-        });
+
         if (theLabel) {
+          console.log("Restore Found matching label", theLabel, style);
           theLabel.ref?.updateStyle(StyleCategory.Label, style);
-        } else if (theText) {
-          theText.ref?.updateStyle(StyleCategory.Label, style);
+        } else {
+          const theText = seTexts.value.find(n => {
+            return n.ref.name === objectName;
+          });
+          if (theText) {
+            console.log("Restore Found matching text", theText, style);
+            theText.ref?.updateStyle(StyleCategory.Label, style);
+          }
         }
       } else if (name.startsWith(StyleCategory.Front + ":")) {
         const plotName = name.substring(2);
@@ -638,10 +689,14 @@ export const useStylingStore = defineStore("style", () => {
 
   function restoreDefaultStyles() {
     restoreTo(defaultStyleMap);
+    // set a restoreToButtonClick flag
+    immediatelyAfterRestoreToButtonClick = true;
   }
 
   function restoreInitialStyles() {
     restoreTo(initialStyleMap);
+    // set a restoreToButtonClick flag
+    immediatelyAfterRestoreToButtonClick = true;
   }
 
   function isCommonProperty(s: string) {
@@ -660,6 +715,8 @@ export const useStylingStore = defineStore("style", () => {
     conflictingProperties,
     forceAgreement,
     hasDisagreement,
+    hasTextObject,
+    hasLabelObject,
     hasStyle,
     changeBackContrast,
     changeFillStyle,

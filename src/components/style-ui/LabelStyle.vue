@@ -191,11 +191,12 @@
           :conflict="hasDisagreement('labelFrontFillColor')"
           v-model="styleOptions.labelFrontFillColor"></PropertyColorPicker>
         <v-switch
+          v-if="!hasTextObject()"
           color="secondary"
           v-model="styleOptions.labelDynamicBackStyle"
           :label="t('labelAutomaticBackStyle')"></v-switch>
         <PropertyColorPicker
-          v-if="!styleOptions.labelDynamicBackStyle"
+          v-if="!styleOptions.labelDynamicBackStyle && !hasTextObject()"
           :numSelected="selectedLabels.size"
           :title="t('labelBackFillColor')"
           :conflict="hasDisagreement('labelBackFillColor')"
@@ -320,7 +321,7 @@ const seStore = useSEStore();
 const styleStore = useStylingStore();
 const { selectedLabels, styleOptions, measurableSelections } =
   storeToRefs(styleStore);
-const { hasDisagreement, editedLabels } = styleStore;
+const { hasDisagreement, hasTextObject, hasLabelObject, editedLabels } = styleStore;
 const { t } = useI18n();
 
 // You are not allow to style labels  directly  so remove them from the selection and warn the user

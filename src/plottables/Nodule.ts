@@ -473,7 +473,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
    * @param options The style options
    */
   updateStyle(mode: StyleCategory, options: StyleOptions): void {
-    // console.debug("Update style of plottable", this, "using", options);
+    console.debug("Update style of plottable", this, "using", options);
     const currentOptions = this.styleOptions.get(mode);
     // console.log(
     //   "mode",
