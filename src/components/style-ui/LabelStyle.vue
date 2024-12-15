@@ -3,7 +3,7 @@
   <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
   <PopOverTabs
     :show-popup="showPopup!"
-    name="Label"
+    :name="t('label',i18nMessageSelector())"
     :disabled="selectedLabels.size < 1"
     @pop-up-shown="checkLabelsVisibility()"
     @pop-up-hidden="resetLabelsVisibility()">
@@ -22,8 +22,8 @@
           :disabled="
             selectedLabels.size < 1 || hasDisagreement('labelDisplayText')
           "
-          :label="t('labelText')"
-          :counter="maxLabelDisplayTextLength"
+          :label="t('labelText',i18nMessageSelector())"
+          :counter="!hasLabelObject() ? 1000 : maxLabelDisplayTextLength"
           :class="{
             shake: animatedInput.labelDisplayText,
             conflict: conflictItems.labelDisplayText
@@ -41,6 +41,7 @@
             labelDisplayTextTruncate(styleOptions)
           ]"></v-text-field>
         <v-text-field
+          v-if="!hasTextObject()"
           :disabled="
             selectedLabels.size < 1 ||
             hasDisagreement('labelDisplayCaption') ||
@@ -70,7 +71,7 @@
         <PropertySlider
           :numSelected="selectedLabels.size"
           v-model="styleOptions.labelTextScalePercent"
-          :title="t('labelTextScale')"
+          :title="t('labelTextScale',i18nMessageSelector())"
           :color="conflictItems.labelTextScalePercent ? 'red' : ''"
           :conflict="hasDisagreement('labelTextScalePercent')"
           :class="{ shake: animatedInput.labelTextScalePercent }"
@@ -83,7 +84,7 @@
           v-model="styleOptions.labelTextRotation"
           :conflict="hasDisagreement('labelTextRotation')"
           :class="{ shake: animatedInput.labelTextRotation }"
-          :title="t('labelTextRotation')"
+          :title="t('labelTextRotation',i18nMessageSelector())"
           :color="conflictItems.labelTextRotation ? 'red' : ''"
           :min="-3.14159"
           :max="3.14159"
@@ -107,7 +108,7 @@
             selectedLabels.size < 1 || hasDisagreement('labelTextFamily')
           "
           v-model.lazy="styleOptions.labelTextFamily"
-          v-bind:label="t('labelTextFamily')"
+          v-bind:label="t('labelTextFamily',i18nMessageSelector())"
           :items="labelTextFamilyItems"
           item-title="text"
           item-value="value"
@@ -124,7 +125,7 @@
             selectedLabels.size < 1 || hasDisagreement('labelTextStyle')
           "
           v-model.lazy="styleOptions.labelTextStyle"
-          v-bind:label="t('labelTextStyle')"
+          v-bind:label="t('labelTextStyle',i18nMessageSelector())"
           :items="labelTextStyleItems"
           item-title="text"
           item-value="value"
@@ -141,7 +142,7 @@
             selectedLabels.size < 1 || hasDisagreement('labelTextDecoration')
           "
           v-model.lazy="styleOptions.labelTextDecoration"
-          v-bind:label="t('labelTextDecoration')"
+          v-bind:label="t('labelTextDecoration',i18nMessageSelector())"
           :items="labelTextDecorationItems"
           item-title="text"
           item-value="value"
@@ -155,6 +156,7 @@
           density="compact"></v-select>
         <!-- Label Display Mode Selections -->
         <v-select
+          v-if="!hasTextObject()"
           :disabled="
             selectedLabels.size < 1 || hasDisagreement('labelDisplayMode')
           "
@@ -184,7 +186,7 @@
       <v-window-item>
         <!-- Third Tab-->
         <PropertyColorPicker
-          :title="t('labelFrontFillColor')"
+          :title="t('labelFrontFillColor',i18nMessageSelector())"
           :numSelected="selectedLabels.size"
           ref="labelFrontFillColor"
           style-name="labelFrontFillColor"
@@ -194,7 +196,7 @@
           v-if="!hasTextObject()"
           color="secondary"
           v-model="styleOptions.labelDynamicBackStyle"
-          :label="t('labelAutomaticBackStyle')"></v-switch>
+          :label="t('labelAutomaticBackStyle',i18nMessageSelector())"></v-switch>
         <PropertyColorPicker
           v-if="!styleOptions.labelDynamicBackStyle && !hasTextObject()"
           :numSelected="selectedLabels.size"
@@ -324,6 +326,7 @@ const { selectedLabels, styleOptions, measurableSelections } =
 const { hasDisagreement, hasTextObject, hasLabelObject, editedLabels } = styleStore;
 const { t } = useI18n();
 
+
 // You are not allow to style labels  directly  so remove them from the selection and warn the user
 const { seLabels, selectedSENodules } = storeToRefs(seStore);
 // const backStyleDisagreementDialog: Ref<DialogAction | null> = ref(null);
@@ -418,6 +421,16 @@ onMounted((): void => {
   );
 });
 
+function i18nMessageSelector(): number {
+  if (!hasTextObject()){
+    return 0 // only labels
+  } else if (!hasLabelObject()){
+    return 1 // only text objects
+  } else {
+    return 2 // a mix of text and label objects
+  }
+}
+
 function resetAndRestoreConflictItems(): void {
   // resetAllItemsFromConflict();
   distinguishConflictingItems(conflictingPropNames);
@@ -458,6 +471,7 @@ function resetLabelsVisibility() {
 
 // These methods are linked to the Style Data fade-in-card
 function labelDisplayTextCheck(txt: string | undefined): boolean | string {
+  if (!hasLabelObject()) {return true} // if (no label object) is true, then the selection is just text objects and the limit of 8 characters doesn't apply
   if (txt !== undefined && txt !== null) {
     if (txt.length > SETTINGS.label.maxLabelDisplayTextLength) {
       return t("message.maxLabelDisplayTextLength", {
@@ -472,6 +486,7 @@ function labelDisplayTextCheck(txt: string | undefined): boolean | string {
 }
 
 function labelDisplayTextTruncate(opt: LabelStyleOptions): boolean {
+  if (!hasLabelObject()) {return true} // if (no label object) is true, then the selection is just text objects and the limit of 8 characters doesn't apply
   if (opt.labelDisplayText !== undefined && opt.labelDisplayText !== null) {
     if (
       opt.labelDisplayText.length > SETTINGS.label.maxLabelDisplayTextLength
@@ -738,6 +753,7 @@ const conflictItems: ConflictItems = {
 </style>
 <i18n lang="json" locale="en">
 {
+  "label": "Label | Text | Label & Text",
   "backStyleDisagreement": "Back Styling Disagreement",
   "labelAutomaticBackStyle": "Infer Label Back Styles from Front Styles",
   "clickToMakeLabelsVisible": "Click the button below to make labels visible",
@@ -761,15 +777,15 @@ const conflictItems: ConflictItems = {
     "nameOnly": "Name Only",
     "valueOnly": "Value Only"
   },
-  "labelFrontFillColor": "Label Front Fill Color",
+  "labelFrontFillColor": "Label Front Fill Color|Text Front Fill Color|Label & Text Front Fill Color",
   "labelNotVisible": "Labels Not Visible",
-  "labelText": "Label Text",
-  "labelStyle": "Label Style",
-  "labelTextDecoration": "Label Text Decoration",
-  "labelTextFamily": "Label Text Family",
-  "labelTextRotation": "Label Rotation (°)",
-  "labelTextScale": "Label Scale (%)",
-  "labelTextStyle": "Label Text Style",
+  "labelText": "Label|Text|Label & Text" ,
+  "labelStyle": "Label Style|Text Style|Label & Text Style",
+  "labelTextDecoration": "Label Decoration|Text Decoration|Label & Text Decoration",
+  "labelTextFamily": "Label Family|Text Family|Label & Text Family",
+  "labelTextRotation": "Label Rotation (°)|Text Rotation (°)|Label & Text Rotation (°)",
+  "labelTextScale": "Label Scale (%)|Text Scale (%)|Label & Text Scale (%)",
+  "labelTextStyle": "Label Style|Text Style|Label & Text Style",
   "makeLabelsVisible": "Make Labels Visible",
   "message": {
     "maxLabelDisplayTextLength": "Label cannot be longer than {max} characters",
