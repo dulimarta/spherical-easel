@@ -56,24 +56,22 @@
   </div>
   <!-- Dialog here -->
   <Dialog
-      ref="inputDialog"
-      title="Text Tool"
-      yes-text="Submit"
-      no-text="Cancel"
-      :yes-action="currentSubmitAction"
-      max-width="40%"
-    >
-      <v-text-field
-        type="text"
-        density="compact"
-        clearable
-        counter
-        persistent-hint
-        label="Input Text"
-        required
-        v-model="userInput"
-      ></v-text-field>
-    </Dialog>
+    ref="inputDialog"
+    title="Text Tool"
+    yes-text="Submit"
+    no-text="Cancel"
+    :yes-action="currentSubmitAction"
+    max-width="40%">
+    <v-text-field
+      type="text"
+      density="compact"
+      clearable
+      counter
+      persistent-hint
+      label="Input Text"
+      required
+      v-model="userInput"></v-text-field>
+  </Dialog>
 </template>
 
 <script lang="ts" setup>
@@ -193,16 +191,18 @@ const showMousePos = ref(false);
 const { shift, alt, d, ctrl } = useMagicKeys();
 
 const inputDialog: Ref<DialogAction | null> = ref(null);
-const userInput = ref('');
+const userInput = ref("");
 const currentSubmitAction = ref(() => {}); // Dynamic action placeholder
 const editingTextId = ref<number | null>(null); // Reactive state for textId
-const editingOldText = ref<string>(''); // Reactive state for oldText
+const editingOldText = ref<string>(""); // Reactive state for oldText
 const originalSeText = ref<SEText | null>(null); //Needed to pass original seText object
 const handleSubmit = () => {
-  // Emit the text back to the handler
-  EventBus.fire("text-data-submitted", { text: userInput.value });
+  // Emit the text back to the handler if it not empty
+  if (userInput.value != "") {
+    EventBus.fire("text-data-submitted", { text: userInput.value });
+  }
   inputDialog.value?.hide();
-  userInput.value = ''; // Clear input after submission
+  userInput.value = ""; // Clear input after submission
 };
 const handleEditSubmit = () => {
   EventBus.fire("text-data-edited", {
@@ -210,9 +210,9 @@ const handleEditSubmit = () => {
     textId: editingTextId.value,
     oldText: editingOldText.value,
     seText: originalSeText.value
-   });
+  });
   inputDialog.value?.hide();
-  userInput.value = ''; // Clear input after submission
+  userInput.value = ""; // Clear input after submission
   editingTextId.value = null; // Clear textId
 };
 const showTextInputDialog = () => {
@@ -222,7 +222,11 @@ const showTextInputDialog = () => {
   inputDialog.value?.show();
   // console.debug("Dialog open maybe");
 };
-const showTextEditDialog = (payload: { oldText: string, textId: number, seText: SEText }) => {
+const showTextEditDialog = (payload: {
+  oldText: string;
+  textId: number;
+  seText: SEText;
+}) => {
   currentSubmitAction.value = handleEditSubmit; // Set action to edit
   // console.debug("Attempting to open Edit Dialog...");
   // console.debug(inputDialog.value);
@@ -234,7 +238,7 @@ const showTextEditDialog = (payload: { oldText: string, textId: number, seText: 
   // console.debug("Prefilled userInput: ", userInput.value)
   inputDialog.value?.show();
   // console.debug("Dialog Open Edit");
-}
+};
 
 /**
  * The main (the only one) TwoJS object that contains the groups (each a Group) making up the screen graph
