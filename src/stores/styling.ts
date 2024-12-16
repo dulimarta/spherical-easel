@@ -85,8 +85,6 @@ export const useStylingStore = defineStore("style", () => {
   // infinite update loop
   const selectedLabels: Ref<Set<string>> = ref(new Set());
 
-  // const selectedTexts: Ref<Set<string>> = ref(new Set());
-
   // When multiple objects are selected, their style properties
   // may conflict with each other. Keep them in a set
   const conflictingProperties: Ref<Set<string>> = ref(new Set());
@@ -524,6 +522,15 @@ export const useStylingStore = defineStore("style", () => {
     // console.log("SETextObject in selection?",labelObjectFound,selectedSENodules.value)
     return labelObjectFound;
   }
+  function i18nMessageSelector(): number {
+    if (!hasTextObject()){
+      return 0 // only labels
+    } else if (!hasLabelObject()){
+      return 1 // only text objects
+    } else {
+      return 2 // a mix of text and label objects
+    }
+  }
   function hasStyle(prop: string | RegExp): boolean {
     if (typeof prop === "string") {
       return Array.from(stylePropertyMap.keys()).some(x => {
@@ -717,6 +724,7 @@ export const useStylingStore = defineStore("style", () => {
     hasDisagreement,
     hasTextObject,
     hasLabelObject,
+    i18nMessageSelector,
     hasStyle,
     changeBackContrast,
     changeFillStyle,
