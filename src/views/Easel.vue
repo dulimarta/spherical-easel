@@ -39,7 +39,6 @@
           :available-height="availHeight"
           :available-width="availWidth" />
         <SphereFrame
-          style="position: relative"
           :available-width="availWidth"
           :available-height="availHeight"
           :is-earth-mode="localIsEarthMode" />

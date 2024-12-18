@@ -11,26 +11,65 @@ import {
 import { svgStyleType, toSVGType } from "@/types";
 import { Text as TwoJsText } from "two.js/src/text";
 import { Group } from "two.js/src/group";
+import { Renderer } from "two.js/src/renderers/svg";
+// https://stackoverflow.com/questions/76696724/how-to-import-mathjax-in-esm-modules
+import "mathjax/es5/tex-svg";
+import Two from "two.js"
+declare const MathJax: any;
+const twoInstance = new Two({width: 200, height: 200, autostart: false})
 
 //had to name file Text so that it does not conflict with two.js/src/text
 export default class Text extends Nodule {
-  protected textObject: TwoJsText;
+  protected textObject: Group;
   protected glowingTextObject: TwoJsText;
 
   private glowingStrokeColor = SETTINGS.text.glowingStrokeColor;
 
-  private _defaultText = "Bob";
-  private _text = "";
+  private _defaultText = "SphericalEasel";
+  private _text: Array<string> = [];
+  private _svg: Array<Group> = []
   /**
    * The vector location of the Test on the default unit sphere (without the z coord)
    */
   public _locationVector = new Vector2(1, 0);
 
-  constructor(noduleName: string = "None") {
-    super(noduleName);
-    this.textObject = new TwoJsText("Test", 1, 0, {
-      size: SETTINGS.text.fontSize
-    });
+  constructor(text: string) {
+    super(/* noduleName */ "None");
+    // this._text = text;
+    this.textObject = new Group();
+
+    if (text.includes("$")) {
+      // Does it have a LaTeX math?
+      const parts = text.split("$");
+      let xOffset = 0;
+      parts.forEach((tok, idx) => {
+        if (idx % 2 == 0) {
+          this._text.push(tok)
+          const plainText = new TwoJsText(tok, xOffset, 0, {
+            size: SETTINGS.text.fontSize
+          })
+          xOffset += plainText.getBoundingClientRect().width
+          this.textObject.add(plainText)
+        } else {
+          const mj_svg: Element = MathJax.tex2svg(tok);
+
+          const svg = mj_svg.querySelector('svg') as SVGSVGElement
+          const g = twoInstance.interpret(svg)
+          this._svg.push(g)
+          // const r = new Renderer({ domElement: z }).render()
+
+          console.debug(tok, svg, "Inner", g);
+          this.textObject.add(g)
+        }
+      });
+    } else {
+      const oneText = new TwoJsText(text, 1, 0, {
+        size: SETTINGS.text.fontSize
+      });
+      this._text.push(text)
+      this.textObject.add(oneText);
+    }
+
     this.glowingTextObject = new TwoJsText("Test", 1, 0, {
       size: SETTINGS.text.fontSize
     });
@@ -74,6 +113,9 @@ export default class Text extends Nodule {
   addToLayers(layers: Group[]): void {
     layers[LAYER.foregroundText].add(this.glowingTextObject);
     layers[LAYER.foregroundText].add(this.textObject);
+    this._svg.forEach(z => {
+      layers[LAYER.foregroundText].add(z)
+    })
   }
   removeFromLayers(layers: Group[]): void {
     layers[LAYER.foregroundText].remove(this.textObject);
@@ -166,31 +208,31 @@ export default class Text extends Nodule {
         // Use the current variables to directly modify the js objects.
         const labelStyle = this.styleOptions.get(StyleCategory.Label);
 
-        this.textObject.value = this._text;
-        this.glowingTextObject.value = this._text;
+        const oneText: TwoJsText = this.textObject.children[0] as TwoJsText;
+        oneText.value = this._text[0];
+        this.glowingTextObject.value = this._text[0];
         // we may want to modify this to allow changes in the text from the style panel
         // this.textObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
         // this.glowingTextObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
         // this._text = labelStyle?.labelDisplayText ?? "TEXT ERROR"
 
         if (labelStyle?.labelTextStyle !== "bold") {
-          this.textObject.style = (labelStyle?.labelTextStyle ??
+          oneText.style = (labelStyle?.labelTextStyle ??
             SETTINGS.label.style) as "normal" | "italic";
           this.glowingTextObject.style = (labelStyle?.labelTextStyle ??
             SETTINGS.label.style) as "normal" | "italic";
-          this.textObject.weight = 500;
+          oneText.weight = 500;
           this.glowingTextObject.weight = 500;
         } else if (labelStyle?.labelTextStyle === "bold") {
-          this.textObject.weight = 1000;
+          oneText.weight = 1000;
           this.glowingTextObject.weight = 1000;
         }
 
-        this.textObject.family =
-          labelStyle?.labelTextFamily ?? SETTINGS.label.family;
+        oneText.family = labelStyle?.labelTextFamily ?? SETTINGS.label.family;
         this.glowingTextObject.family =
           labelStyle?.labelTextFamily ?? SETTINGS.label.family;
 
-        this.textObject.decoration = (labelStyle?.labelTextDecoration ??
+        oneText.decoration = (labelStyle?.labelTextDecoration ??
           SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
         this.glowingTextObject.decoration = (labelStyle?.labelTextDecoration ??
           SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
@@ -275,8 +317,8 @@ export default class Text extends Nodule {
     return this._locationVector;
   }
   set text(txt: string) {
-    this._text = txt;
-    this.textObject.value = txt;
+    this._text[0] = txt;
+    (this.textObject.children[0] as TwoJsText).value = txt;
     this.glowingTextObject.value = txt;
   }
 }

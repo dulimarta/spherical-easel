@@ -16,10 +16,11 @@ export class SEText extends SENodule {
   private _text: string = ""; // string text
   protected _locationVector = new Vector2();
 
-  constructor() {
+  constructor(text: string) {
     super();
 
-    this.ref = new Text();
+    this._text = text;
+    this.ref = new Text(text);
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
     this.ref.adjustSize();
 

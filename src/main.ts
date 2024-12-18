@@ -13,7 +13,6 @@ import { Command } from "@/commands/Command";
 import { useSEStore } from "@/stores/se";
 import MouseHandler from "./eventHandlers/MouseHandler";
 import { SENodule } from "./models/internal";
-import Nodule from "./plottables/Nodule";
 const firebaseApp = initializeApp(firebaseConfig);
 const pinia = createPinia();
 
@@ -34,7 +33,6 @@ app.use(i18n);
 // https://stackoverflow.com/questions/77456631/why-cant-i-see-pinia-in-vue-devtools
 app.use(pinia);
 app.mount("#app");
-
 const seStore = useSEStore();
 Command.setGlobalStore(seStore);
 MouseHandler.setGlobalStore(seStore);

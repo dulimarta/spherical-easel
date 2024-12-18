@@ -50,8 +50,8 @@ export default class TextHandler extends Highlighter {
     // Ensure the text content is accessed correctly from the event payload
     const submittedText = data.text || ""; // Adjust if data is structured differently
 
-    const newTextSENodule = new SEText();
-    newTextSENodule.text = submittedText;
+    const newTextSENodule = new SEText(submittedText);
+    // newTextSENodule.text = submittedText;
     newTextSENodule.locationVector = this.currentScreenVector;
 
     const TextCmd = new AddTextCommand(newTextSENodule);
