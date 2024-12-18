@@ -31,9 +31,7 @@
     "titleBar.inactiveForeground": "#e7e7e799",
     "statusBarItem.remoteBackground": "#905dc6",
     "statusBarItem.remoteForeground": "#e7e7e7",
-    "commandCenter.border": "#e7e7e799",
-    "statusBar.debuggingBackground": "#93c65d",
-    "statusBar.debuggingForeground": "#15202b"
+    "commandCenter.border": "#e7e7e799"
   },
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"

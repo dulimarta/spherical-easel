@@ -16,7 +16,7 @@ import { Renderer } from "two.js/src/renderers/svg";
 import "mathjax/es5/tex-svg";
 import Two from "two.js"
 declare const MathJax: any;
-const twoInstance = new Two({width: 200, height: 200, autostart: false})
+const twoInstance = new Two({width: 40, height: 40, autostart: true})
 
 //had to name file Text so that it does not conflict with two.js/src/text
 export default class Text extends Nodule {
@@ -40,7 +40,7 @@ export default class Text extends Nodule {
 
     if (text.includes("$")) {
       // Does it have a LaTeX math?
-      const parts = text.split("$");
+      const parts = text.split("$").filter(s => s.length > 0);
       let xOffset = 0;
       parts.forEach((tok, idx) => {
         if (idx % 2 == 0) {
@@ -51,7 +51,7 @@ export default class Text extends Nodule {
           xOffset += plainText.getBoundingClientRect().width
           this.textObject.add(plainText)
         } else {
-          const mj_svg: Element = MathJax.tex2svg(tok);
+          const mj_svg: SVGElement = MathJax.tex2svg(tok, {ex: 14, containerWidth: 300, scale: 2});
 
           const svg = mj_svg.querySelector('svg') as SVGSVGElement
           const g = twoInstance.interpret(svg)
@@ -59,7 +59,7 @@ export default class Text extends Nodule {
           // const r = new Renderer({ domElement: z }).render()
 
           console.debug(tok, svg, "Inner", g);
-          this.textObject.add(g)
+          // this.textObject.add(g)
         }
       });
     } else {
