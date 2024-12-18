@@ -1412,20 +1412,20 @@ export default class AngleMarker extends Nodule {
       this.normalDisplay();
     }
   }
-  setSelectedColoring(flag: boolean): void {
-    //set the new colors into the variables
-    if (flag) {
-      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
-      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
-    } else {
-      this.glowingStrokeColorFront =
-        SETTINGS.angleMarker.glowing.strokeColor.front;
-      this.glowingStrokeColorBack =
-        SETTINGS.angleMarker.glowing.strokeColor.back;
-    }
-    // apply the new color variables to the object
-    this.stylize(DisplayStyle.ApplyCurrentVariables);
-  }
+  // setSelectedColoring(flag: boolean): void {
+  //   //set the new colors into the variables
+  //   if (flag) {
+  //     this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+  //     this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+  //   } else {
+  //     this.glowingStrokeColorFront =
+  //       SETTINGS.angleMarker.glowing.strokeColor.front;
+  //     this.glowingStrokeColorBack =
+  //       SETTINGS.angleMarker.glowing.strokeColor.back;
+  //   }
+  //   // apply the new color variables to the object
+  //   this.stylize(DisplayStyle.ApplyCurrentVariables);
+  // }
 
   /**
    * Adds the front/back/glowing/not parts to the correct layers

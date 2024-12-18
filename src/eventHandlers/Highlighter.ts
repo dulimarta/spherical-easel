@@ -15,6 +15,7 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { Vector3 } from "three";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
+import { SEText } from "@/models/SEText";
 
 // const tmpVector = new Vector3();
 
@@ -40,7 +41,7 @@ export default abstract class Highlighter extends MouseHandler {
     // Set the isOnSphere boolean and location vectors correctly
     super.mouseMoved(event);
 
-    if (!this.isOnSphere) return;
+    //if (!this.isOnSphere) return;
 
     // Set the display to normal for all previously nearby objects
     this.hitSENodules.forEach((n: SENodule) => {
@@ -57,6 +58,7 @@ export default abstract class Highlighter extends MouseHandler {
     this.hitSEAngleMarkers.clear();
     this.hitSEParametrics.clear();
     this.hitSEPolygons.clear();
+    this.hitSETexts.clear();
     this.infoText.hide();
 
     // Create an array of SENodules of all nearby objects by querying the store
@@ -103,6 +105,10 @@ export default abstract class Highlighter extends MouseHandler {
       .filter(obj => obj instanceof SELabel)
       .map(obj => obj as SELabel);
 
+    this.hitSETexts = this.hitSENodules
+      .filter(obj => obj instanceof SEText)
+      .map(obj => obj as SEText);
+
     this.hitSEAngleMarkers = this.hitSENodules
       .filter(obj => obj instanceof SEAngleMarker)
       .map(obj => obj as SEAngleMarker);
@@ -124,7 +130,8 @@ export default abstract class Highlighter extends MouseHandler {
       ...this.hitSEEllipses,
       ...this.hitSEAngleMarkers,
       ...this.hitSEParametrics,
-      ...this.hitSEPolygons
+      ...this.hitSEPolygons,
+      ...this.hitSETexts
     ]
       .map(n => n.label?.ref.shortUserName)
       .join(", ");
@@ -132,7 +139,7 @@ export default abstract class Highlighter extends MouseHandler {
     if (text.length > 0) {
       this.infoText.hide(); // hide the old box
       // Show the names temporarily
-      this.infoText.showWithDelay(this.layers[LAYER.foregroundText], 300);
+      this.infoText.showWithDelay(this.layers[LAYER.foregroundLabel], 300);
       // Textbox is set to handle a ???? How does this work????
       this.infoText.text = text;
       this.infoText.translation.set(

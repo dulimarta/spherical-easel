@@ -167,15 +167,6 @@ export default class Line extends Nodule {
       this._frontHalf.visible = true;
       this._glowingFrontHalf.visible = false;
     }
-
-    // if (!flag) {
-    //   this.frontHalf.visible = false;
-    //   this.glowingFrontHalf.visible = false;
-    //   this.backHalf.visible = false;
-    //   this.glowingBackHalf.visible = false;
-    // } else {
-    //   this.normalDisplay();
-    // }
   }
   /**
    * Update the display of line
@@ -200,18 +191,18 @@ export default class Line extends Nodule {
     this._glowingBackHalf.height = tempHalfMinorAxis;
   }
 
-  setSelectedColoring(flag: boolean): void {
-    //set the new colors into the variables
-    if (flag) {
-      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
-      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
-    } else {
-      this.glowingStrokeColorFront = SETTINGS.line.glowing.strokeColor.front;
-      this.glowingStrokeColorBack = SETTINGS.line.glowing.strokeColor.back;
-    }
-    // apply the new color variables to the object
-    this.stylize(DisplayStyle.ApplyCurrentVariables);
-  }
+  // setSelectedColoring(flag: boolean): void {
+  //   //set the new colors into the variables
+  //   if (flag) {
+  //     this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+  //     this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+  //   } else {
+  //     this.glowingStrokeColorFront = SETTINGS.line.glowing.strokeColor.front;
+  //     this.glowingStrokeColorBack = SETTINGS.line.glowing.strokeColor.back;
+  //   }
+  //   // apply the new color variables to the object
+  //   this.stylize(DisplayStyle.ApplyCurrentVariables);
+  // }
 
   addToLayers(layers: Group[]): void {
     this._frontHalf.addTo(layers[LAYER.foreground]);
@@ -314,6 +305,7 @@ export default class Line extends Nodule {
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
+    console.log("here line-1")
     const frontStyle = this.styleOptions.get(StyleCategory.Front);
     const backStyle = this.styleOptions.get(StyleCategory.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
@@ -347,6 +339,7 @@ export default class Line extends Nodule {
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
+    console.log("here line1")
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
         // Use the SETTINGS temporary options to directly modify the js objects.
@@ -403,6 +396,7 @@ export default class Line extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
+        console.log("here line2")
         // Use the current variables to directly modify the js objects.
 
         // Front
@@ -411,6 +405,7 @@ export default class Line extends Nodule {
         if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontHalf.noStroke();
         } else {
+          console.log("here line3")
           this._frontHalf.stroke = frontStyle?.strokeColor ?? "black";
         }
         // strokeWidthPercent applied by adjustSize()

@@ -96,7 +96,10 @@ const ACTION_MODE_MAP: Map<ActionMode, string> = new Map([
   ["reflection", "CreateReflectionDisplayedName"],
   ["pointReflection", "CreatePointReflectionDisplayedName"],
   ["inversion", "CreateInversionDisplayedName"],
-  ["applyTransformation", "ApplyTransformationDisplayedName"]
+  ["applyTransformation", "ApplyTransformationDisplayedName"],
+  // Use the following entry to define a new tool
+  ["dummy", "DummyDisplayedName"],
+  ["text", "TextDisplayedName"]
 ]);
 
 const seStore = useSEStore();

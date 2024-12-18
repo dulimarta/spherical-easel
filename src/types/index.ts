@@ -6,7 +6,7 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { Matrix4, Vector3 } from "three";
+import { Matrix4, Vector2, Vector3 } from "three";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
@@ -48,7 +48,6 @@ export type ToolButtonGroup = {
 };
 
 export type ToolButtonType = {
-  id: number;
   action: ActionMode;
   // Shortcut icons (undo, redo, clear) buttons will use this, other buttons will not use this
   clickFunc?: () => void;
@@ -234,7 +233,8 @@ export type SavedNames =
   | "setValueDisplayModeNewValue"
   | "pointVisibleBefore"
   | "earthLatitude"
-  | "earthLongitude";
+  | "earthLongitude"
+  | "textObjectText";
 
 export type ActionMode =
   | "angle"
@@ -278,7 +278,9 @@ export type ActionMode =
   | "applyTransformation"
   | "undoAction"
   | "redoAction"
-  | "resetAction";
+  | "resetAction"
+  | "text"
+  | "dummy" /* Use this entry to create a new actionMode for a new tool */;
 
 export type IconNames =
   | ActionMode
@@ -616,6 +618,7 @@ export type SEIsometry =
   | "tangentLineThruPoint"
   | "threePointCircleCenter"
   | "translation"
+  | "text"
   | "rotation"
   | "reflection"
   | "inversion"
@@ -642,7 +645,7 @@ export interface ObjectState {
   object: SENodule;
   normalVector?: Vector3;
   arcLength?: number;
-  locationVector?: Vector3;
+  locationVector?: Vector3 | Vector2;
   sliderValue?: number;
 }
 

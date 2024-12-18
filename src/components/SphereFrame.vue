@@ -54,6 +54,26 @@
       </div>
     </div-->
   </div>
+  <!-- Dialog here -->
+  <Dialog
+      ref="inputDialog"
+      title="Text Tool"
+      yes-text="Submit"
+      no-text="Cancel"
+      :yes-action="currentSubmitAction"
+      max-width="40%"
+    >
+      <v-text-field
+        type="text"
+        density="compact"
+        clearable
+        counter
+        persistent-hint
+        label="Input Text"
+        required
+        v-model="userInput"
+      ></v-text-field>
+    </Dialog>
 </template>
 
 <script lang="ts" setup>
@@ -100,6 +120,7 @@ import NSectAngleHandler from "@/eventHandlers/NSectAngleHandler";
 import ThreePointCircleHandler from "@/eventHandlers/ThreePointCircleHandler";
 import MeasuredCircleHandler from "@/eventHandlers/MeasuredCircleHandler";
 import TranslationTransformationHandler from "@/eventHandlers/TranslationTransformationHandler";
+import Dialog, { DialogAction } from "@/components/Dialog.vue";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
@@ -115,6 +136,9 @@ import RotationTransformationHandler from "@/eventHandlers/RotationTransformatio
 import ReflectionTransformationHandler from "@/eventHandlers/ReflectionTransformationHandler";
 import PointReflectionTransformationHandler from "@/eventHandlers/PointReflectionTransformationHandler";
 import InversionTransformationHandler from "@/eventHandlers/InversionTransformationHandler";
+// Use the DummyHandler example as a starter for a new handler
+import DummyHandler from "@/eventHandlers/DummyHandler";
+import TextHandler from "@/eventHandlers/TextHandler";
 import { SETransformation } from "@/models/SETransformation";
 import ApplyTransformationHandler from "@/eventHandlers/ApplyTransformationHandler";
 import { SENodule } from "@/models/SENodule";
@@ -125,6 +149,7 @@ import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
 import { useMagicKeys } from "@vueuse/core";
 import { watchEffect } from "vue";
+import { SEText } from "@/models/SEText";
 
 type ComponentProps = {
   availableHeight: number;
@@ -164,8 +189,53 @@ const shortCutIcons = computed((): Array<Array<ToolButtonType>> => {
   );
 });
 const mousePos = ref("");
-const showMousePos = ref(false)
+const showMousePos = ref(false);
 const { shift, alt, d, ctrl } = useMagicKeys();
+
+const inputDialog: Ref<DialogAction | null> = ref(null);
+const userInput = ref('');
+const currentSubmitAction = ref(() => {}); // Dynamic action placeholder
+const editingTextId = ref<number | null>(null); // Reactive state for textId
+const editingOldText = ref<string>(''); // Reactive state for oldText
+const originalSeText = ref<SEText | null>(null); //Needed to pass original seText object
+const handleSubmit = () => {
+  // Emit the text back to the handler
+  EventBus.fire("text-data-submitted", { text: userInput.value });
+  inputDialog.value?.hide();
+  userInput.value = ''; // Clear input after submission
+};
+const handleEditSubmit = () => {
+  EventBus.fire("text-data-edited", {
+    text: userInput.value,
+    textId: editingTextId.value,
+    oldText: editingOldText.value,
+    seText: originalSeText.value
+   });
+  inputDialog.value?.hide();
+  userInput.value = ''; // Clear input after submission
+  editingTextId.value = null; // Clear textId
+};
+const showTextInputDialog = () => {
+  currentSubmitAction.value = handleSubmit; // Set action to create
+  // console.debug("Attempting to open dialog...");
+  // console.debug(inputDialog.value);
+  inputDialog.value?.show();
+  // console.debug("Dialog open maybe");
+};
+const showTextEditDialog = (payload: { oldText: string, textId: number, seText: SEText }) => {
+  currentSubmitAction.value = handleEditSubmit; // Set action to edit
+  // console.debug("Attempting to open Edit Dialog...");
+  // console.debug(inputDialog.value);
+  const { oldText, textId, seText } = payload;
+  editingTextId.value = textId;
+  editingOldText.value = oldText;
+  originalSeText.value = seText;
+  userInput.value = oldText;
+  // console.debug("Prefilled userInput: ", userInput.value)
+  inputDialog.value?.show();
+  // console.debug("Dialog Open Edit");
+}
+
 /**
  * The main (the only one) TwoJS object that contains the groups (each a Group) making up the screen graph
  * First groups  (Groups) are added to the twoInstance (index by the enum LAYER from
@@ -222,12 +292,16 @@ let reflectionTool: ReflectionTransformationHandler | null = null;
 let pointReflectionTool: PointReflectionTransformationHandler | null = null;
 let inversionTool: InversionTransformationHandler | null = null;
 let applyTransformationTool: ApplyTransformationHandler | null = null;
+let textTool: TextHandler | null = null;
+
+// Use the following line as a starter for a new handler
+let dummyTool: DummyHandler | null = null;
 
 let layers: Array<Group> = [];
 
 watchEffect(() => {
   if (ctrl.value && alt.value && d.value) {
-    showMousePos.value = !showMousePos.value
+    showMousePos.value = !showMousePos.value;
   }
 });
 onBeforeMount((): void => {
@@ -246,9 +320,10 @@ onBeforeMount((): void => {
   // Record the text layer number so that the y axis is not flipped for them
   const textLayers = [
     LAYER.foregroundText,
-    LAYER.backgroundText,
-    LAYER.foregroundTextGlowing,
-    LAYER.backgroundTextGlowing
+    LAYER.foregroundLabel,
+    LAYER.backgroundLabel,
+    LAYER.foregroundLabelGlowing,
+    LAYER.backgroundLabelGlowing
   ].map(Number); // shortcut for .map(x => Number(x))
 
   // Create a detached group to prevent duplicate group ID
@@ -326,6 +401,8 @@ onBeforeMount((): void => {
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   EventBus.listen("update-fill-objects", updateObjectsWithFill);
   // EventBus.listen("export-current-svg-for-icon", getCurrentSVGForIcon);
+  EventBus.listen("show-text-dialog", showTextInputDialog);
+  EventBus.listen("show-edit-dialog", showTextEditDialog);
 });
 
 onMounted((): void => {
@@ -372,6 +449,7 @@ onMounted((): void => {
   seStore.setCanvas(canvas.value!);
   // updateShortcutTools();
   updateView();
+  //Listen For text dialog box
 });
 watch(
   () => props.isEarthMode,
@@ -427,6 +505,8 @@ onBeforeUnmount((): void => {
   // EventBus.unlisten("update-two-instance");
   EventBus.unlisten("update-fill-objects");
   //EventBus.unlisten("export-current-svg-for-icon");
+  EventBus.unlisten("show-text-dialog");
+  EventBus.unlisten("show-edit-dialog");
 });
 
 watch(
@@ -716,11 +796,6 @@ function deleteNode(e: {
   });
 }
 
-// TEMP REMOVE
-function updateTwoInstance() {
-  twoInstance.update();
-}
-
 function updateObjectsWithFill() {
   for (let e of seEllipses.value) {
     e.update();
@@ -732,105 +807,6 @@ function updateObjectsWithFill() {
     p.update();
   }
 }
-
-// function getCurrentSVGForIcon(): void {
-//   const svgRoot = canvas.value?.querySelector("svg") as SVGElement;
-//   //Dump a copy of the Nodule.idPlottableDescriptionMap into the console to it tso.js object
-//   console.log(
-//     "Nodule.idPlottableDescriptionMap",
-//     Nodule.idPlottableDescriptionMap
-//   );
-
-//   // Make a duplicate of the SVG tree
-//   const svgElement = svgRoot.cloneNode(true) as SVGElement;
-//   svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-//   //remove all the text items
-//   const textGroups = svgElement.querySelectorAll("text");
-//   for (let i = 0; i < textGroups.length; i++) {
-//     textGroups[i].remove();
-//   }
-//   // remove all the hidden paths or paths with no anchors
-//   // Also remove the straight edge start/end front/back for the angle markers (they look horrible in the icon)
-//   const allElements = svgElement.querySelectorAll("path");
-//   for (let i = 0; i < allElements.length; i++) {
-//     const element = allElements[i];
-//     const description = Nodule.idPlottableDescriptionMap.get(
-//       element.getAttribute("id") ?? ""
-//     );
-
-//     if (
-//       element.getAttribute("visibility") === "hidden" ||
-//       element.getAttribute("d") === "" ||
-//       (description?.type === "angleMarker" && description.part === "edge")
-//     ) {
-//       element.remove();
-//     }
-//   }
-
-//   // remove all SVG groups with no children (they are are result of empty groups)
-//   const groups = svgElement.querySelectorAll("g");
-//   for (let i = 0; i < groups.length; i++) {
-//     const group = groups[i];
-//     if (group.childElementCount === 0) {
-//       group.remove();
-//     }
-//   }
-//   const iconArray = [];
-//   const defs = svgElement.querySelectorAll("defs");
-//   for (let i = 0; i < defs.length; i++) {
-//     iconArray.push(defs[i].outerHTML);
-//   }
-
-//   const paths = svgElement.querySelectorAll("path");
-//   for (let i = 0; i < paths.length; i++) {
-//     paths[i].setAttribute("vector-effect", "non-scaling-stroke");
-
-//     // Into each path inject four new attributes, which will be removed later
-//     const description = Nodule.idPlottableDescriptionMap.get(
-//       paths[i].getAttribute("id") ?? ""
-//     );
-//     if (description === undefined) {
-//       throw new Error(`IconBase - ${paths[i]} has no id.`);
-//     }
-//     paths[i].setAttribute("type", description.type);
-//     paths[i].setAttribute("side", description.side);
-//     paths[i].setAttribute("myfill", String(description.fill));
-//     paths[i].setAttribute("part", description.part);
-
-//     iconArray.push(paths[i].outerHTML);
-//   }
-
-//   // We are NOT actually saving an SVG content,
-//   // but it is actually a plain text payload
-//   // The ";" delimiter is required by IconBase.vue
-//   var blob = new Blob([iconArray.join(";")], {
-//     type: "text/plain;charset=utf-8"
-//   });
-//   FileSaver.saveAs(blob, "iconXXXPaths.svg");
-// }
-
-// dialogBoxIsActive(e: { active: boolean }): void {
-//   // console.debug(`dialog box is active is ${e.active}`);
-//   if (hideTool) {
-//     hideTool.disableKeyHandler = e.active;
-//   }
-//   if (nSectAngleTool) {
-//     nSectAngleTool.disableKeyHandler = e.active;
-//   }
-//   if (nSectSegmentTool) {
-//     nSectSegmentTool.disableKeyHandler = e.active;
-//   }
-//   if (rotateTool) {
-//     rotateTool.disableKeyHandler = e.active;
-//   }
-//   if (selectTool) {
-//     selectTool.disableKeyHandler = e.active;
-//   }
-//   if (toggleLabelDisplayTool) {
-//     toggleLabelDisplayTool.disableKeyHandler = e.active;
-//   }
-// }
-
 
 /**
  * Watch the actionMode in the store. This is the two-way binding of variables in the Pinia Store.  Notice that this
@@ -1106,6 +1082,19 @@ watch(
         }
         currentTool = applyTransformationTool;
         break;
+      case "text":
+        if (!textTool) {
+          textTool = new TextHandler(layers);
+        }
+        currentTool = textTool;
+        break;
+      // Use the following switch case to activate a new handler
+      case "dummy":
+        if (!dummyTool) {
+          dummyTool = new DummyHandler(layers);
+        }
+        currentTool = dummyTool;
+        break;
       default:
         currentTool = null;
         if (import.meta.env.MODE === "test") assertNever(mode);
@@ -1143,8 +1132,12 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
 
   style.position = "absolute";
   // add in 3 px padding around the icons and 2 px between containers.
-  style[xLoc] = `${c * (SETTINGS.icons.shortcutButtonSize+3)+(c-1)*2}px`;
-  style[yLoc] = `${r * (SETTINGS.icons.shortcutButtonSize+3)+(r-1)*2}px`;
+  style[xLoc] = `${
+    c * (SETTINGS.icons.shortcutButtonSize + 3) + (c - 1) * 2
+  }px`;
+  style[yLoc] = `${
+    r * (SETTINGS.icons.shortcutButtonSize + 3) + (r - 1) * 2
+  }px`;
   return style;
 }
 </script>

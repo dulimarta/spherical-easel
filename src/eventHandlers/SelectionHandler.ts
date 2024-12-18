@@ -2,7 +2,7 @@ import { SENodule } from "@/models/SENodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import EventBus from "@/eventHandlers/EventBus";
 import Highlighter from "./Highlighter";
-import { Vector3 } from "three";
+import { Vector2, Vector3 } from "three";
 import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
 import { SEEllipse } from "@/models/SEEllipse";
@@ -12,16 +12,18 @@ import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import SETTINGS, { LAYER } from "@/global-settings";
-import { SelectionRectangle } from "@/plottables/SelectionRectangle";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SELabel } from "@/models/internal";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { Vector } from "two.js/src/vector";
+import { Circle } from "two.js/src/shapes/circle";
+import { Rectangle } from "two.js/src/shapes/rectangle";
+import { SEText } from "@/models/SEText";
 
 const MESHSIZE = 10;
 const sphereVector = new Vector3();
-const screenVector = new Vector(0, 0);
+const screenVector = new Vector2(0, 0);
 
 export default class SelectionHandler extends Highlighter {
   /**
@@ -41,7 +43,7 @@ export default class SelectionHandler extends Highlighter {
   private mouseDownLocation: number[] = [];
   private dragging = false;
 
-  private selectionRectangle: SelectionRectangle;
+  private selectionRectangle: Rectangle;
   private selectionRectangleAdded = false;
   private selectionRectangleSelection: SENodule[] = []; // The selections added in the selection rectangle
 
@@ -53,10 +55,13 @@ export default class SelectionHandler extends Highlighter {
 
   constructor(layers: Group[]) {
     super(layers);
-    this.selectionRectangle = new SelectionRectangle(
-      layers[LAYER.foregroundText]
-    );
-    // this.selectionRectangle.hide();
+    this.selectionRectangle = new Rectangle(0,0,10,10);
+    this.selectionRectangle.noFill();
+    this.selectionRectangle.stroke = "#000000";
+    this.selectionRectangle.linewidth = 0.5;
+    this.selectionRectangle.dashes.push(...[2, 5]);
+    // this.circle = new Circle(0,0,200)
+    //layers[LAYER.foregroundLabel].add(new Rectangle(0,0,10,200))
   }
   /**
    * This handles the keyboard events and when multiple objects are under
@@ -81,6 +86,16 @@ export default class SelectionHandler extends Highlighter {
             ) && n.showing
         ) // no unUserCreated intersection points allowed and no hidden points allowed
         .forEach((n: SEPoint) => {
+          this.keyPressSelection.push(n);
+          n.ref.glowingDisplay();
+        });
+    }
+    // Get all SETexts lower case t
+    else if (keyEvent.code === "KeyT" && !keyEvent.shiftKey) {
+      SelectionHandler.store.seTexts
+        .map(x => x as SEText)
+        .filter((n: SEText) => n.showing) //no hidden circles allowed
+        .forEach((n: SEText) => {
           this.keyPressSelection.push(n);
           n.ref.glowingDisplay();
         });
@@ -223,7 +238,7 @@ export default class SelectionHandler extends Highlighter {
   };
 
   mousePressed(event: MouseEvent): void {
-    if (!this.isOnSphere) return;
+    //if (!this.isOnSphere) return;
 
     if (SelectionHandler.store.actionMode === "select") {
       SelectionHandler.store.updateSelectedSENodules(this.currentSelection);
@@ -272,7 +287,7 @@ export default class SelectionHandler extends Highlighter {
       this.dragging = false;
       // remove the selection rectangle from the layers
       if (this.selectionRectangleAdded) {
-        this.selectionRectangle.hide();
+        this.layers[LAYER.foregroundLabel].remove(this.selectionRectangle)
       }
       this.selectionRectangleAdded = false;
       this.selectionRectangleSelection.splice(0);
@@ -315,15 +330,19 @@ export default class SelectionHandler extends Highlighter {
       this.dragging = true;
       // Add the rectangle if it hasn't been added already
       if (!this.selectionRectangleAdded) {
-        this.selectionRectangle.show();
+        this.layers[LAYER.foregroundLabel].add(this.selectionRectangle)
         this.selectionRectangleAdded = true;
       }
-      // update the location of the rectangle
-      this.selectionRectangle.move(
-        this.mouseDownLocation,
-        [this.currentScreenVector.x, this.currentScreenVector.y],
-        event.shiftKey
-      );
+      // update the location of the rectangle (origin = center)
+      this.selectionRectangle.width = Math.abs(this.mouseDownLocation[0]-this.currentScreenVector.x)
+      this.selectionRectangle.height = Math.abs(this.mouseDownLocation[1]-this.currentScreenVector.y)
+      this.selectionRectangle.origin.set(-(this.mouseDownLocation[0]+this.currentScreenVector.x)/2,(this.mouseDownLocation[1]+this.currentScreenVector.y)/2)
+      if (event.shiftKey) {
+        this.selectionRectangle.opacity = 0.25
+      } else {
+        this.selectionRectangle.opacity = 1.0
+      }
+
       // highlight and move the the selected objects intersecting the rectangle that are not already in the current selection into the current selection
       this.highlight(
         this.mouseDownLocation,
@@ -342,7 +361,9 @@ export default class SelectionHandler extends Highlighter {
         ) {
           this.hitSEPoints[0].glowing = true;
         }
-      } else if (this.hitSELines.length > 0) {
+      } else if (this.hitSETexts.length > 0) {
+        this.hitSETexts[0].glowing = true;
+      }else if (this.hitSELines.length > 0) {
         this.hitSELines[0].glowing = true;
       } else if (this.hitSESegments.length > 0) {
         this.hitSESegments[0].glowing = true;
@@ -424,6 +445,8 @@ export default class SelectionHandler extends Highlighter {
           ) {
             possibleAdditions.push(this.hitSEPoints[0]);
           }
+        } else if (this.hitSETexts.length > 0) {
+          possibleAdditions.push(this.hitSETexts[0]);
         } else if (this.hitSELines.length > 0) {
           possibleAdditions.push(this.hitSELines[0]);
         } else if (this.hitSESegments.length > 0) {
@@ -528,7 +551,7 @@ export default class SelectionHandler extends Highlighter {
     this.dragging = false;
     // remove the selection rectangle from the layers
     if (this.selectionRectangleAdded) {
-      this.selectionRectangle.hide();
+     this.layers[LAYER.foregroundLabel].remove(this.selectionRectangle)
     }
     this.selectionRectangleAdded = false;
     this.selectionRectangleSelection.splice(0);
@@ -569,7 +592,7 @@ export default class SelectionHandler extends Highlighter {
     //  another tool, the style state should be saved.
     EventBus.fire("save-style-state", {});
 
-    this.selectionRectangle.hide();
+    this.layers[LAYER.foregroundLabel].remove(this.selectionRectangle)
     this.selectionRectangleSelection.splice(0);
   }
   private highlight(

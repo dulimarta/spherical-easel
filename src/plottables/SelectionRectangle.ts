@@ -6,15 +6,15 @@ import { Path } from "two.js/src/path";
 
 export class SelectionRectangle extends Group {
   private path: Path;
-  private layer: Group;
+  // private layer: Group;
   private vertex1 = new Anchor(0, 0);
   private vertex2 = new Anchor(1, 0);
   private vertex3 = new Anchor(1, 1);
   private vertex4 = new Anchor(1, 0);
 
-  constructor(layer: Group) {
+  constructor() {
     super();
-    this.layer = layer;
+    // this.layer = layer;
 
     this.path = new Path(
       [this.vertex1, this.vertex2, this.vertex3, this.vertex4],
@@ -27,6 +27,7 @@ export class SelectionRectangle extends Group {
     this.path.linewidth = 1;
     this.path.dashes.push(...[1, 5]);
     this.path.addTo(this);
+    // this.layer.add(this)
     // this.addTo(this.layer);
     // this.hide();
   }
@@ -48,17 +49,20 @@ export class SelectionRectangle extends Group {
     }
   }
 
-  /**
-   * Show the rectangle
-   */
-  public show(): void {
-    this.addTo(this.layer);
-  }
+  // /**
+  //  * Show the rectangle
+  //  */
+  // public show(): void {
+  //   //layers[LAYER.foregroundText].add(this.glowingTextObject);
+  //   this.layer.add(this.path);
+  //   // this.addTo(this.layer)
+  // }
 
-  /*
-   * Hide the rectangle
-   */
-  public hide(): void {
-    this.remove();
-  }
+  // /*
+  //  * Hide the rectangle
+  //  */
+  // public hide(): void {
+  //   // this.layer.remove(this);ß
+  //   //this.path.remove()
+  // }
 }

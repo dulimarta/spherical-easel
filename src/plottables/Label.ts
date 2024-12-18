@@ -181,13 +181,7 @@ export default class Label extends Nodule {
     this.glowingBackText.translation = this.defaultScreenVectorLocation;
     this.backText.translation = this.defaultScreenVectorLocation;
 
-    // The text is not initially visible
-    // this.frontText.visible = false;
-    // this.glowingFrontText.visible = false;
-    // this.backText.visible = false;
-    // this.glowingBackText.visible = false;
-
-    // Set the properties of the points that never change - stroke width and some glowing options
+    // Set the properties of the labels that never change - stroke width and some glowing options
     this.frontText.noStroke();
     this.backText.noStroke();
     this.glowingFrontText.linewidth = SETTINGS.label.glowingStrokeWidth.front;
@@ -344,10 +338,10 @@ export default class Label extends Nodule {
   }
 
   addToLayers(layers: Group[]): void {
-    layers[LAYER.foregroundText].add(this.frontText);
-    layers[LAYER.foregroundTextGlowing].add(this.glowingFrontText);
-    layers[LAYER.backgroundText].add(this.backText);
-    layers[LAYER.backgroundTextGlowing].add(this.glowingBackText);
+    layers[LAYER.foregroundLabel].add(this.frontText);
+    layers[LAYER.foregroundLabelGlowing].add(this.glowingFrontText);
+    layers[LAYER.backgroundLabel].add(this.backText);
+    layers[LAYER.backgroundLabelGlowing].add(this.glowingBackText);
     // this.frontText.addTo(layers[LAYER.foregroundText]);
     // this.glowingFrontText.addTo(layers[LAYER.foregroundTextGlowing]);
     // this.backText.addTo(layers[LAYER.backgroundText]);
@@ -355,10 +349,10 @@ export default class Label extends Nodule {
   }
 
   removeFromLayers(layers: Group[]): void {
-    layers[LAYER.foregroundText].remove(this.frontText);
-    layers[LAYER.foregroundTextGlowing].remove(this.glowingFrontText);
-    layers[LAYER.backgroundText].remove(this.backText);
-    layers[LAYER.backgroundTextGlowing].remove(this.glowingBackText);
+    layers[LAYER.foregroundLabel].remove(this.frontText);
+    layers[LAYER.foregroundLabelGlowing].remove(this.glowingFrontText);
+    layers[LAYER.backgroundLabel].remove(this.backText);
+    layers[LAYER.backgroundLabelGlowing].remove(this.glowingBackText);
   }
 
   updateDisplay(): void {
@@ -376,18 +370,18 @@ export default class Label extends Nodule {
     }
   }
 
-  setSelectedColoring(flag: boolean): void {
-    //set the new colors into the variables
-    if (flag) {
-      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
-      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
-    } else {
-      this.glowingStrokeColorFront = SETTINGS.label.glowingStrokeColor.front;
-      this.glowingStrokeColorBack = SETTINGS.label.glowingStrokeColor.back;
-    }
-    // apply the new color variables to the object
-    this.stylize(DisplayStyle.ApplyCurrentVariables);
-  }
+  // setSelectedColoring(flag: boolean): void {
+  //   //set the new colors into the variables
+  //   if (flag) {
+  //     this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+  //     this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+  //   } else {
+  //     this.glowingStrokeColorFront = SETTINGS.label.glowingStrokeColor.front;
+  //     this.glowingStrokeColorBack = SETTINGS.label.glowingStrokeColor.back;
+  //   }
+  //   // apply the new color variables to the object
+  //   this.stylize(DisplayStyle.ApplyCurrentVariables);
+  // }
 
   toSVG( nonScaling?: {
     stroke: boolean;
@@ -431,7 +425,7 @@ export default class Label extends Nodule {
 
       svgFrontString += ">" + this.frontText.value + "</text>";
       returnSVGObject.layerSVGArray.push([
-        LAYER.foregroundText,
+        LAYER.foregroundLabel,
         svgFrontString
       ]);
     } else {
@@ -461,7 +455,7 @@ export default class Label extends Nodule {
         );
 
       svgBackString += ">" + this.backText.value + "</text>";
-      returnSVGObject.layerSVGArray.push([LAYER.backgroundText, svgBackString]);
+      returnSVGObject.layerSVGArray.push([LAYER.backgroundLabel, svgBackString]);
     }
     return [returnSVGObject];
   }

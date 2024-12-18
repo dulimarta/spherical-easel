@@ -1,6 +1,6 @@
 /** @format */
 
-import { Vector3 } from "three";
+import { Vector2, Vector3 } from "three";
 import { ToolStrategy } from "./ToolStrategy";
 import SETTINGS, { LAYER } from "@/global-settings";
 import { SEPoint } from "@/models/SEPoint";
@@ -14,6 +14,7 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SEText } from "@/models/SEText";
 import { SEStoreType } from "@/stores/se";
 import { Group } from "two.js/src/group";
 import { Vector } from "two.js/src/vector";
@@ -40,8 +41,8 @@ export default abstract class MouseHandler implements ToolStrategy {
   /**
    * The vector location of the current and previous mouse event in the Default Sphere Plane
    */
-  protected currentScreenVector: Vector;
-  protected previousScreenVector: Vector;
+  protected currentScreenVector: Vector2;
+  protected previousScreenVector: Vector2;
   /**
    * True if the mouse event is on the default sphere
    */
@@ -59,6 +60,7 @@ export default abstract class MouseHandler implements ToolStrategy {
   protected hitSEAngleMarkers: SEAngleMarker[] = [];
   protected hitSEParametrics: SEParametric[] = [];
   protected hitSEPolygons: SEPolygon[] = [];
+  protected hitSETexts: SEText[] = [];
 
   /**
    * Holds the layers for each type of object, background, glowing background, etc..
@@ -84,9 +86,9 @@ export default abstract class MouseHandler implements ToolStrategy {
     this.layers = layers;
     // this.canvas = layers[LAYER.midground];
     this.currentSphereVector = new Vector3();
-    this.currentScreenVector = new Vector(0, 0);
+    this.currentScreenVector = new Vector2(0, 0);
     this.previousSphereVector = new Vector3();
-    this.previousScreenVector = new Vector(0, 0);
+    this.previousScreenVector = new Vector2(0, 0);
     this.isOnSphere = false;
   }
   static setGlobalStore(store: SEStoreType): void {

@@ -116,6 +116,7 @@ export default class Segment extends Nodule {
    * @param factor The ratio of the current magnification factor over the old magnification factor
    */
   static updateCurrentStrokeWidthForZoom(factor: number): void {
+
     Segment.currentSegmentStrokeWidthFront *= factor;
     Segment.currentSegmentStrokeWidthBack *= factor;
     Segment.currentGlowingSegmentStrokeWidthFront *= factor;
@@ -658,32 +659,20 @@ export default class Segment extends Nodule {
         this._backExtra.visible = true;
       }
     }
-    // if (!flag) {
-    //   this._frontPart.visible = false;
-    //   this._glowingFrontPart.visible = false;
-    //   this._frontExtra.visible = false;
-    //   this._glowingFrontExtra.visible = false;
-    //   this._backPart.visible = false;
-    //   this._glowingBackPart.visible = false;
-    //   this._backExtra.visible = false;
-    //   this._glowingBackExtra.visible = false;
-    // } else {
-    //   this.normalDisplay();
-    // }
   }
 
-  setSelectedColoring(flag: boolean): void {
-    //set the new colors into the variables
-    if (flag) {
-      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
-      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
-    } else {
-      this.glowingStrokeColorFront = SETTINGS.segment.glowing.strokeColor.front;
-      this.glowingStrokeColorBack = SETTINGS.segment.glowing.strokeColor.back;
-    }
-    // apply the new color variables to the object
-    this.stylize(DisplayStyle.ApplyCurrentVariables);
-  }
+  // setSelectedColoring(flag: boolean): void {
+  //   //set the new colors into the variables
+  //   if (flag) {
+  //     this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+  //     this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+  //   } else {
+  //     this.glowingStrokeColorFront = SETTINGS.segment.glowing.strokeColor.front;
+  //     this.glowingStrokeColorBack = SETTINGS.segment.glowing.strokeColor.back;
+  //   }
+  //   // apply the new color variables to the object
+  //   this.stylize(DisplayStyle.ApplyCurrentVariables);
+  // }
 
   addToLayers(layers: Group[]): void {
     this._frontPart.addTo(layers[LAYER.foreground]);
@@ -942,6 +931,7 @@ export default class Segment extends Nodule {
    * Sets the variables for stroke width glowing/not front/back/extra
    */
   adjustSize(): void {
+    console.log("here segment-1")
     const frontStyle = this.styleOptions.get(StyleCategory.Front);
     const backStyle = this.styleOptions.get(StyleCategory.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
@@ -994,6 +984,7 @@ export default class Segment extends Nodule {
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
+    console.log("here segment1")
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
         // Use the SETTINGS temporary options to directly modify the js objects.
@@ -1074,13 +1065,14 @@ export default class Segment extends Nodule {
 
       case DisplayStyle.ApplyCurrentVariables: {
         // Use the current variables to directly modify the js objects.
-
+        console.log("here segment2")
         // FRONT PART
         const frontStyle = this.styleOptions.get(StyleCategory.Front);
         // no fillColor
         if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontPart.noStroke();
         } else {
+          console.log("here segment3")
           this._frontPart.stroke =
             frontStyle?.strokeColor ?? SETTINGS.segment.drawn.strokeColor.front;
         }

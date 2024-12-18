@@ -8,7 +8,10 @@ type ToolGroup = {
   tools: Array<ActionMode>;
 };
 const toolGroupInternal: Array<ToolGroup> = [
-  { group: "EditTools", tools: ["select", "delete"] },
+  // Uncommenting the "dummy" entry below will automatically
+  // set the app for a new tool button, its associated event handler,
+  // and a Command class
+  { group: "EditTools", tools: ["select", "delete", "text" /*, "dummy" */] },
   {
     group: "DisplayTools",
     tools: [

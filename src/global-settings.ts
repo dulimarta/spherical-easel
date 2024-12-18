@@ -1,10 +1,10 @@
 import { ValueDisplayMode, LabelDisplayMode } from "./types";
-import colors from 'vuetify/util/colors'
+import colors from "vuetify/util/colors";
 export const SETTINGS = {
   nearlyAntipodalIdeal: 0.01, // Two unit vectors, U and V, are nearly antipodal or nearly parallel (the) if crossVectors(U,V).isZero(nearlyAntipodalIdeal) is true. June 2024 - when this was 0.005 it was hard to draw a segment of length bigger than pi using the update method in SESegment
   tolerance: 0.00000000001, // Any number less that this tolerance is considered zero
   intersectionTolerance: 0.00000001, // If, when checking the difference between the current intersection location, and the location between two potentially new principle parents intersection the difference is less than this, they are the same
-  hideObjectHidesLabel: true, // hiding an object hide the label of that object automatically if this is true
+  hideObjectHidesLabel: true, // hiding an object hides the label of that object automatically if this is true
   showObjectShowsLabel: false, // showing an object (via the object tree) automatically shows the label if this is true
   decimalPrecision: 3, // The number decimal places to display when numerically measuring or computing a value
   messageTypes: ["success", "info", "error", "warning", "directive"],
@@ -156,12 +156,12 @@ export const SETTINGS = {
       },
       // The location of the center of the radial fill relative to the center of the boundary circle
       center: {
-        x:0,
-        y:0
+        x: 0,
+        y: 0
       },
       frontWhite: "#e6e6e633", // The light source location on the front is this shade of gray (white)
       backGray: "#d9d9d933" // The antipode of the light source on the back is this shade of gray
-    },
+    }
   },
   zoom: {
     maxMagnification: 10, // The greatest zoom in magnification factor
@@ -208,7 +208,7 @@ export const SETTINGS = {
       },
       fillColor: {
         front: "#ff8080FF",
-        back: "#ff8080FF",
+        back: "#ff8080FF"
       },
       strokeColor: {
         front: "#4d4dcbFF",
@@ -406,7 +406,7 @@ export const SETTINGS = {
     drawn: {
       fillColor: {
         front: "#d8ccff33",
-        back: "#ff2b0026",
+        back: "#ff2b0026"
       },
       strokeColor: {
         front: "#4287f5ff",
@@ -450,7 +450,7 @@ export const SETTINGS = {
     nonFree: {
       fillColor: {
         front: "#d8ccff33",
-        back: "#ff2b001a",
+        back: "#ff2b001a"
       },
       strokeColor: {
         front: "#42b9f5ff",
@@ -481,7 +481,7 @@ export const SETTINGS = {
     drawn: {
       fillColor: {
         front: "#d8ccff33",
-        back: "#ff2b001a",
+        back: "#ff2b001a"
       },
       strokeColor: {
         front: "#4287f5ff",
@@ -525,7 +525,7 @@ export const SETTINGS = {
     nonFree: {
       fillColor: {
         front: "#d8ccff33",
-        back: "#ff2b001a",
+        back: "#ff2b001a"
       },
       strokeColor: {
         front: "#42b9f5ff",
@@ -615,7 +615,7 @@ export const SETTINGS = {
     drawn: {
       fillColor: {
         front: "#d8ccff99",
-        back: "#ff2b001a",
+        back: "#ff2b001a"
       }
       //  strokeColor is determined by each edge
       // strokeWidth is determined by each edge
@@ -631,7 +631,7 @@ export const SETTINGS = {
     fontSize: 15,
     fillColor: {
       front: "#000000FF",
-      back: "#0000001a",
+      back: "#0000001a"
     },
     style: "normal",
     family: "sans-serif",
@@ -642,6 +642,18 @@ export const SETTINGS = {
       front: "#b3b3b3ff",
       back: "#d9d9d9ff"
     }
+  },
+  text: {
+    //The scaling of the text relative to the scaled for zoom default size
+    textScalePercent: 100,
+    fontSize: 15,
+    fillColor: "#000000FF",
+    style: "normal",
+    family: "sans-serif",
+    decoration: "none",
+    rotation: 0,
+    glowingStrokeWidth: 3,
+    glowingStrokeColor: "#b3b3b3ff"
   },
   angleMarker: {
     initialValueDisplayMode: ValueDisplayMode.DegreeDecimals, // Set the initial display of the values for the measurement of the angle
@@ -677,7 +689,7 @@ export const SETTINGS = {
     drawn: {
       fillColor: {
         front: "#d8ccff99",
-        back: "#ff2b0066",
+        back: "#ff2b0066"
       },
       strokeColor: {
         front: "#00000080",
@@ -732,9 +744,9 @@ export const SETTINGS = {
   },
   icons: {
     buttonIconSize: 50, // in pixels for the buttons in the left tool panel ToolButton.vue
-    shortcutIconSize: 32 , // in pixels for the icon inside the ShortcutIcon.vue
+    shortcutIconSize: 32, // in pixels for the icon inside the ShortcutIcon.vue
     shortcutButtonSize: 40, // in pixels the size of the button in ShortcutIcon.vue
-    currentToolSectionIconSize: 30,  // icon in the CurrentToolSelection.vue
+    currentToolSectionIconSize: 30, // icon in the CurrentToolSelection.vue
 
     defaultInlineIconSize: 25, // controls the size of the markdown icons included in documentation
 
@@ -1010,25 +1022,25 @@ export const SETTINGS = {
         svgFileName: ""
       }
     },
-    labelPopOverTab:{
+    labelPopOverTab: {
       props: {
         mdiIcon: "mdi-tag-edit",
         svgFileName: ""
       }
     },
-    labelTextEditTab:{
+    labelTextEditTab: {
       props: {
         mdiIcon: "mdi-pencil",
         svgFileName: ""
       }
     },
-    labelTextFamilyTab:{
+    labelTextFamilyTab: {
       props: {
         mdiIcon: "mdi-format-text",
         svgFileName: ""
       }
     },
-    labelColorFamilyTab:{
+    labelColorFamilyTab: {
       props: {
         mdiIcon: "mdi-palette",
         svgFileName: ""
@@ -1226,6 +1238,19 @@ export const SETTINGS = {
         svgFileName: "LogoAnimatedSmallerV3.svg"
       }
     },
+    /* Use this entry as a starter for a new tool icon */
+    dummy: {
+      props: {
+        mdiIcon: "mdi-alphabetical",
+        svgFileName: ""
+      }
+    },
+    text: {
+      props: {
+        mdiIcon: "mdi-format-text",
+        svgFileName: ""
+      }
+    }
   },
   /* Controls the length of time (in ms) the tool tip are displayed */
   /* Set the default tooltip delay in createVuetify() */
@@ -1259,6 +1284,7 @@ export const SETTINGS = {
 };
 
 //#region layers
+
 export enum LAYER {
   backgroundGlowing,
   backgroundFills,
@@ -1267,8 +1293,8 @@ export enum LAYER {
   backgroundAngleMarkers,
   backgroundPointsGlowing,
   backgroundPoints,
-  backgroundTextGlowing,
-  backgroundText,
+  backgroundLabelGlowing,
+  backgroundLabel,
   midground,
   foregroundGlowing,
   foregroundFills,
@@ -1277,7 +1303,8 @@ export enum LAYER {
   foregroundAngleMarkers,
   foregroundPointsGlowing,
   foregroundPoints,
-  foregroundTextGlowing,
+  foregroundLabelGlowing,
+  foregroundLabel,
   foregroundText
 }
 //#endregion layers

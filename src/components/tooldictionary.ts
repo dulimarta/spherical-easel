@@ -7,21 +7,18 @@ import MouseHandler from "@/eventHandlers/MouseHandler";
 export const TOOL_DICTIONARY: Map<ActionMode, ToolButtonType> = new Map();
 
 /* The first three are default shortcut icons with special actions */
-TOOL_DICTIONARY
-  .set("undoAction", {
-    id: 0,
-    action: "undoAction",
-    displayedName: "buttons.UndoLastActionDisplayedName",
-    icon: "mdi-undo",
-    toolTipMessage: "buttons.UndoLastActionToolTipMessage",
-    toolUseMessage: "buttons.UndoLastActionToolUseMessage",
-    clickFunc: () => {
-      // These have a clickFunc because the functions used to be statically defined in Easel.vue
-      Command.undo();
-    }
-  })
+TOOL_DICTIONARY.set("undoAction", {
+  action: "undoAction",
+  displayedName: "buttons.UndoLastActionDisplayedName",
+  icon: "mdi-undo",
+  toolTipMessage: "buttons.UndoLastActionToolTipMessage",
+  toolUseMessage: "buttons.UndoLastActionToolUseMessage",
+  clickFunc: () => {
+    // These have a clickFunc because the functions used to be statically defined in Easel.vue
+    Command.undo();
+  }
+})
   .set("redoAction", {
-    id: 5,
     action: "redoAction",
     displayedName: "buttons.RedoLastActionDisplayedName",
     icon: "mdi-redo",
@@ -32,7 +29,6 @@ TOOL_DICTIONARY
     }
   })
   .set("resetAction", {
-    id: 10,
     action: "resetAction",
     displayedName: "buttons.ResetSphereActionDisplayedName",
     icon: "mdi-broom",
@@ -44,22 +40,21 @@ TOOL_DICTIONARY
   });
 
 TOOL_DICTIONARY.set("select", {
-  id: 0,
+  // id:0,
   action: "select",
   displayedName: "buttons.SelectDisplayedName",
   toolGroup: "EditTools",
   toolTipMessage: "buttons.SelectToolTipMessage",
   toolUseMessage: "buttons.SelectToolUseMessage"
-}).set("delete", {
-  id: 5,
-  action: "delete",
-  displayedName: "buttons.DeleteDisplayedName",
-  toolGroup: "EditTools",
-  toolTipMessage: "buttons.DeleteToolTipMessage",
-  toolUseMessage: "buttons.DeleteToolUseMessage"
 })
+  .set("delete", {
+    action: "delete",
+    displayedName: "buttons.DeleteDisplayedName",
+    toolGroup: "EditTools",
+    toolTipMessage: "buttons.DeleteToolTipMessage",
+    toolUseMessage: "buttons.DeleteToolUseMessage"
+  })
   .set("hide", {
-    id: 0,
     action: "hide",
     displayedName: "buttons.HideDisplayedName",
     toolGroup: "DisplayTools",
@@ -67,7 +62,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.HideObjectToolUseMessage"
   })
   .set("toggleLabelDisplay", {
-    id: 5,
     action: "toggleLabelDisplay",
     displayedName: "buttons.ToggleLabelDisplayedName",
     toolGroup: "DisplayTools",
@@ -75,7 +69,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.ToggleLabelToolUseMessage"
   })
   .set("move", {
-    id: 15,
     action: "move",
     displayedName: "buttons.MoveDisplayedName",
     toolGroup: "DisplayTools",
@@ -83,7 +76,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.MoveObjectToolUseMessage"
   })
   .set("rotate", {
-    id: 20,
     action: "rotate",
     displayedName: "buttons.RotateDisplayedName",
     toolGroup: "DisplayTools",
@@ -91,7 +83,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.RotateSphereToolUseMessage"
   })
   .set("zoomIn", {
-    id: 25,
     action: "zoomIn",
     displayedName: "buttons.PanZoomInDisplayedName",
     toolGroup: "DisplayTools",
@@ -99,12 +90,11 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.PanZoomInToolUseMessage",
     clickFunc: () => {
       // The second arg is true when the first arg is a ratio
-      MouseHandler.store.scaleZoomMagnificationFactorBy(0.9)
-      EventBus.fire('zoom-updated', {})
+      MouseHandler.store.scaleZoomMagnificationFactorBy(0.9);
+      EventBus.fire("zoom-updated", {});
     }
   })
   .set("zoomOut", {
-    id: 30,
     action: "zoomOut",
     displayedName: "buttons.PanZoomOutDisplayedName",
     toolGroup: "DisplayTools",
@@ -112,24 +102,22 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.PanZoomOutToolUseMessage",
     clickFunc: () => {
       // The second arg is true when the first arg is a ratio
-      MouseHandler.store.scaleZoomMagnificationFactorBy(1.1)
-      EventBus.fire('zoom-updated', {})
+      MouseHandler.store.scaleZoomMagnificationFactorBy(1.1);
+      EventBus.fire("zoom-updated", {});
     }
   })
   .set("zoomFit", {
-    id: 35,
     action: "zoomFit",
     displayedName: "buttons.ZoomFitDisplayedName",
     toolGroup: "DisplayTools",
     toolTipMessage: "buttons.ZoomFitToolTipMessage",
     toolUseMessage: "buttons.ZoomFitToolUseMessage",
     clickFunc: () => {
-      MouseHandler.store.fitZoomMagnificationFactor()
-      EventBus.fire('zoom-updated', {})
+      MouseHandler.store.fitZoomMagnificationFactor();
+      EventBus.fire("zoom-updated", {});
     }
   })
   .set("point", {
-    id: 0,
     action: "point",
     displayedName: "buttons.CreatePointDisplayedName",
     toolGroup: "BasicTools",
@@ -137,7 +125,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreatePointToolUseMessage"
   })
   .set("line", {
-    id: 5,
     action: "line",
     displayedName: "buttons.CreateLineDisplayedName",
     toolGroup: "BasicTools",
@@ -145,7 +132,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateLineToolUseMessage"
   })
   .set("segment", {
-    id: 10,
     action: "segment",
     displayedName: "buttons.CreateLineSegmentDisplayedName",
     toolGroup: "BasicTools",
@@ -153,7 +139,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateLineSegmentToolUseMessage"
   })
   .set("circle", {
-    id: 20,
     action: "circle",
     displayedName: "buttons.CreateCircleDisplayedName",
     toolGroup: "BasicTools",
@@ -161,7 +146,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateCircleToolUseMessage"
   })
   .set("antipodalPoint", {
-    id: 0,
     action: "antipodalPoint",
     displayedName: "buttons.CreateAntipodalPointDisplayedName",
     toolGroup: "ConstructionTools",
@@ -169,7 +153,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateAntipodalPointToolUseMessage"
   })
   .set("polar", {
-    id: 5,
     action: "polar",
     displayedName: "buttons.CreatePolarDisplayedName",
     toolGroup: "ConstructionTools",
@@ -177,7 +160,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreatePolarToolUseMessage"
   })
   .set("midpoint", {
-    id: 10,
     action: "midpoint",
     displayedName: "buttons.CreateMidpointDisplayedName",
     toolGroup: "ConstructionTools",
@@ -185,7 +167,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateMidpointToolUseMessage"
   })
   .set("angleBisector", {
-    id: 15,
     action: "angleBisector",
     displayedName: "buttons.CreateAngleBisectorDisplayedName",
     toolGroup: "ConstructionTools",
@@ -193,7 +174,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateAngleBisectorToolUseMessage"
   })
   .set("tangent", {
-    id: 20,
     action: "tangent",
     displayedName: "buttons.CreateTangentDisplayedName",
     toolGroup: "ConstructionTools",
@@ -201,7 +181,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateTangentToolUseMessage"
   })
   .set("perpendicular", {
-    id: 25,
     action: "perpendicular",
     displayedName: "buttons.CreatePerpendicularDisplayedName",
     toolGroup: "ConstructionTools",
@@ -209,7 +188,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreatePerpendicularToolUseMessage"
   })
   .set("intersect", {
-    id: 30,
     action: "intersect",
     displayedName: "buttons.CreateIntersectionDisplayedName",
     toolGroup: "ConstructionTools",
@@ -217,7 +195,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateIntersectionToolUseMessage"
   })
   .set("pointOnObject", {
-    id: 55,
     action: "pointOnObject",
     displayedName: "buttons.CreatePointOnOneDimDisplayedName",
     toolGroup: "ConstructionTools",
@@ -225,7 +202,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreatePointOnOneDimToolUseMessage"
   })
   .set("angle", {
-    id: 0,
     action: "angle",
     displayedName: "buttons.CreateAngleDisplayedName",
     toolGroup: "MeasurementTools",
@@ -233,7 +209,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateAngleToolUseMessage"
   })
   .set("pointDistance", {
-    id: 5,
     action: "pointDistance",
     displayedName: "buttons.CreatePointDistanceDisplayedName",
     toolGroup: "MeasurementTools",
@@ -241,7 +216,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreatePointDistanceToolUseMessage"
   })
   .set("segmentLength", {
-    id: 10,
     action: "segmentLength",
     displayedName: "buttons.CreateSegmentLengthDisplayedName",
     toolGroup: "MeasurementTools",
@@ -249,7 +223,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateSegmentLengthToolUseMessage"
   })
   .set("coordinate", {
-    id: 15,
     action: "coordinate",
     displayedName: "buttons.CreateCoordinateDisplayedName",
     toolGroup: "MeasurementTools",
@@ -257,7 +230,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateCoordinateToolUseMessage"
   })
   .set("measureTriangle", {
-    id: 20,
     action: "measureTriangle",
     displayedName: "buttons.MeasureTriangleDisplayedName",
     toolGroup: "MeasurementTools",
@@ -265,7 +237,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.MeasureTriangleToolUseMessage"
   })
   .set("measurePolygon", {
-    id: 25,
     action: "measurePolygon",
     displayedName: "buttons.MeasurePolygonDisplayedName",
     toolGroup: "MeasurementTools",
@@ -273,7 +244,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.MeasurePolygonToolUseMessage"
   })
   .set("ellipse", {
-    id: 0,
     action: "ellipse",
     displayedName: "buttons.CreateEllipseDisplayedName",
     toolGroup: "ConicTools",
@@ -281,7 +251,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateEllipseToolUseMessage"
   })
   .set("threePointCircle", {
-    id: 0,
     action: "threePointCircle",
     displayedName: "buttons.CreateThreePointCircleDisplayedName",
     toolGroup: "AdvancedTools",
@@ -289,7 +258,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateThreePointCircleToolUseMessage"
   })
   .set("nSectPoint", {
-    id: 10,
     action: "nSectPoint",
     displayedName: "buttons.CreateNSectSegmentDisplayedName",
     toolGroup: "AdvancedTools",
@@ -297,7 +265,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateNSectSegmentToolUseMessage"
   })
   .set("nSectLine", {
-    id: 15,
     action: "nSectLine",
     displayedName: "buttons.CreateNSectAngleDisplayedName",
     toolGroup: "AdvancedTools",
@@ -305,7 +272,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateNSectAngleToolUseMessage"
   })
   .set("pointReflection", {
-    id: 0,
     action: "pointReflection",
     displayedName: "buttons.CreatePointReflectionDisplayedName",
     toolGroup: "TransformationTools",
@@ -313,7 +279,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreatePointReflectionToolUseMessage"
   })
   .set("reflection", {
-    id: 5,
     action: "reflection",
     displayedName: "buttons.CreateReflectionDisplayedName",
     toolGroup: "TransformationTools",
@@ -321,7 +286,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateReflectionToolUseMessage"
   })
   .set("rotation", {
-    id: 10,
     action: "rotation",
     displayedName: "buttons.CreateRotationDisplayedName",
     toolGroup: "TransformationTools",
@@ -329,7 +293,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateRotationToolUseMessage"
   })
   .set("translation", {
-    id: 15,
     action: "translation",
     displayedName: "buttons.CreateTranslationDisplayedName",
     toolGroup: "TransformationTools",
@@ -337,7 +300,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateTranslationToolUseMessage"
   })
   .set("inversion", {
-    id: 20,
     action: "inversion",
     displayedName: "buttons.CreateInversionDisplayedName",
     toolGroup: "TransformationTools",
@@ -345,7 +307,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateInversionToolUseMessage"
   })
   .set("applyTransformation", {
-    id: 25,
     action: "applyTransformation",
     displayedName: "buttons.ApplyTransformationDisplayedName",
     toolGroup: "TransformationTools",
@@ -353,7 +314,6 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.ApplyTransformationToolUseMessage"
   })
   .set("measuredCircle", {
-    id: 15,
     action: "measuredCircle",
     displayedName: "buttons.CreateMeasuredCircleDisplayedName",
     toolGroup: "MeasuredObjectTools",
@@ -361,10 +321,26 @@ TOOL_DICTIONARY.set("select", {
     toolUseMessage: "buttons.CreateMeasuredCircleToolUseMessage"
   })
   .set("iconFactory", {
-    id: 0,
     action: "iconFactory",
     displayedName: "buttons.CreateIconDisplayedName",
     toolGroup: "DeveloperOnlyTools",
     toolTipMessage: "buttons.CreateIconToolTipMessage",
     toolUseMessage: "buttons.CreateIconToolUseMessage"
   });
+
+// Use this entry a a starter for a new tool
+TOOL_DICTIONARY.set("dummy", {
+  icon: "mdi-alphabetical",
+  action: "dummy",
+  displayedName: "buttons.DummyDisplayedName",
+  toolGroup: "EditTools",
+  toolUseMessage: "buttons.DummyToolUseMessage",
+  toolTipMessage: "buttons.DummyToolTipMessage"
+})
+.set("text", {
+  action: "text",
+  displayedName: "buttons.TextDisplayedName",
+  toolGroup: "EditTools",
+  toolUseMessage: "buttons.TextToolUseMessage",
+  toolTipMessage: "buttons.TextToolTipMessage"
+});

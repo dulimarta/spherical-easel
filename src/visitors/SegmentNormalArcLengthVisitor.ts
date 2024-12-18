@@ -9,6 +9,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SEText } from "@/models/SEText";
 
 export class SegmentNormalArcLengthVisitor implements Visitor {
   private normalVector: Vector3 = new Vector3();
@@ -75,4 +76,5 @@ export class SegmentNormalArcLengthVisitor implements Visitor {
     //Parametric curves are completely determined by their parents so no need to update them
     return false;
   }
+
 }

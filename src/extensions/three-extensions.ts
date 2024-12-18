@@ -6,6 +6,18 @@ Vector2.prototype.toFixed = function (precision: number): string {
     "(" + this.x.toFixed(precision) + "," + this.y.toFixed(precision) + ")"
   );
 };
+
+Vector2.prototype.from = function (str: string | undefined): void {
+  if (str !== undefined) {
+    const arr = str.replaceAll(/[()]/g, "").split(",").map(Number);
+    this.setX(arr[0]);
+    this.setY(arr[1]);
+  } else {
+    this.setX(0);
+    this.setY(0);
+  }
+};
+
 Vector3.prototype.toFixed = function (precision: number): string {
   return (
     "(" +

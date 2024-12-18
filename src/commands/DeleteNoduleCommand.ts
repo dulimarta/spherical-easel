@@ -16,6 +16,7 @@ import { SETransformation } from "@/models/SETransformation";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SavedNames } from "@/types";
 import { toSVGType } from "@/types";
+import { SEText } from "@/models/SEText";
 
 export class DeleteNoduleCommand extends Command {
   private seNodule: SENodule;
@@ -29,8 +30,8 @@ export class DeleteNoduleCommand extends Command {
     });
   }
 
-  deletedNoduleId():number{
-    return 1//this.seNodule.id
+  deletedNoduleId(): number {
+    return 1; //this.seNodule.id
   }
 
   do(): void {
@@ -74,6 +75,8 @@ export class DeleteNoduleCommand extends Command {
       Command.store.removeAngleMarkerAndExpression(this.seNodule.id);
     } else if (this.seNodule instanceof SEPolygon) {
       Command.store.removePolygonAndExpression(this.seNodule.id);
+    } else if (this.seNodule instanceof SEText) {
+      Command.store.removeText(this.seNodule.id);
     } else if (this.seNodule instanceof SEExpression) {
       Command.store.removeExpression(this.seNodule.id);
       // when removing expressions that have effects on the labels, we must set those label display arrays to empty
@@ -98,8 +101,6 @@ export class DeleteNoduleCommand extends Command {
     } else if (this.seNodule instanceof SETransformation) {
       Command.store.removeTransformation(this.seNodule.id);
     }
-    // Add the id to the list of deleted Ids so that toSVG command will work properly
-    Command.deletedNoduleIds.push(this.seNodule.id)
   }
 
   saveState(): void {
@@ -107,10 +108,6 @@ export class DeleteNoduleCommand extends Command {
   }
 
   restoreState(): void {
-    // Remove the id to the list of deleted Ids so that toSVG command will work properly
-    const ind = Command.deletedNoduleIds.findIndex(id => id ==this.seNodule.id)
-    Command.deletedNoduleIds.splice(ind)
-
     // Add the object to the store and turn on display
     if (this.seNodule instanceof SETransformation) {
       Command.store.addTransformation(this.seNodule);
@@ -134,6 +131,8 @@ export class DeleteNoduleCommand extends Command {
       Command.store.addLine(this.seNodule);
     } else if (this.seNodule instanceof SEPoint) {
       Command.store.addPoint(this.seNodule);
+    } else if (this.seNodule instanceof SEText) {
+      Command.store.addText(this.seNodule);
     }
     // The parent array of this.seNodule is empty prior to the execution of this loop
     for (let i = this.parentIds.length - 1; i > -1; i--) {

@@ -3,7 +3,8 @@
     <v-icon size="medium" :icon="iconName" :class="animationClassName"></v-icon>
     <v-tooltip location="end">
       <template v-slot:activator="{ props }">
-        <div data-testid="_test_selection"
+        <div
+          data-testid="_test_selection"
           class="contentText"
           @click="selectMe"
           v-bind="props"
@@ -17,7 +18,7 @@
           </span>
         </div>
       </template>
-      <span>{{ node.noduleDescription }}/ {{ nodeName }}</span>
+      <span>{{ node.noduleDescription }} / {{ nodeName }}</span>
     </v-tooltip>
     <span style="flex-grow: 1">
       <!-- This is a spacer to push both groups to the left and right-->
@@ -48,7 +49,8 @@
     </v-tooltip>
     <v-tooltip location="end">
       <template v-slot:activator="{ props }">
-        <v-icon data-testid="toggle_visibility"
+        <v-icon
+          data-testid="toggle_visibility"
           v-if="isPlottable"
           v-bind="props"
           @click="toggleVisibility"
@@ -63,7 +65,7 @@
       <template v-slot:activator="{ props }">
         <v-icon
           id="_toggle_label_display"
-          v-if="isPlottable"
+          v-if="isPlottable && isNotText"
           v-bind="props"
           @click="toggleLabelDisplay"
           size="small"
@@ -92,7 +94,7 @@
             :max="parametricTMax"
             :step="parametricTStep" />
           <v-icon @click="animateCurvePoint">mdi-run</v-icon-->
-          </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -155,6 +157,7 @@ import { Poles } from "@/types";
 import { SELatitude } from "@/models/SELatitude";
 import { SELongitude } from "@/models/SELongitude";
 import { Vector3 } from "three";
+import { SEText } from "@/models/SEText";
 const seStore = useSEStore();
 const { actionMode, isEarthMode, inverseTotalRotationMatrix } =
   storeToRefs(seStore);
@@ -342,6 +345,12 @@ onBeforeMount(() => {
     nodeName = props.node.name;
     nodeType = t(`objects.measurements`, 3);
   }
+  //TextTool Attempt
+  else if (props.node instanceof SEText) {
+    iconName.value = "$text";
+    nodeName = props.node.name;
+    nodeType = t(`objects.texts`, 3);
+  }
 });
 
 onMounted((): void => {
@@ -360,6 +369,7 @@ onMounted((): void => {
   );
 });
 
+// noduleItemText is abstract, need to override it. (SEText.ts)
 watch(() => props.node.noduleItemText, updateVisibilityKeys);
 // Without this, the display/label icon doesn't change between the two showing and not showing variants and the display cycle mode doesn't update
 function updateVisibilityKeys() {
@@ -655,8 +665,13 @@ const isPlottable = computed((): boolean => {
     props.node instanceof SEEllipse ||
     props.node instanceof SEAngleMarker ||
     props.node instanceof SEParametric ||
-    props.node instanceof SEPolygon
+    props.node instanceof SEPolygon ||
+    props.node instanceof SEText
   );
+});
+
+const isNotText = computed((): boolean => {
+  return !(props.node instanceof SEText);
 });
 
 const showClass = computed((): string => {
