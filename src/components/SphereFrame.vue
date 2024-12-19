@@ -56,6 +56,7 @@
   </div>
   <!-- Dialog here -->
   <Dialog
+    id="inputDialog"
     ref="inputDialog"
     title="Text Tool"
     yes-text="Submit"
@@ -148,6 +149,7 @@ import { Group } from "two.js/src/group";
 import { useMagicKeys } from "@vueuse/core";
 import { watchEffect } from "vue";
 import { SEText } from "@/models/SEText";
+import { nextTick } from "vue";
 
 type ComponentProps = {
   availableHeight: number;
@@ -215,12 +217,18 @@ const handleEditSubmit = () => {
   userInput.value = ""; // Clear input after submission
   editingTextId.value = null; // Clear textId
 };
-const showTextInputDialog = () => {
+const showTextInputDialog = async () => {
   currentSubmitAction.value = handleSubmit; // Set action to create
-  // console.debug("Attempting to open dialog...");
-  // console.debug(inputDialog.value);
   inputDialog.value?.show();
-  // console.debug("Dialog open maybe");
+  await nextTick();
+  const textInput = document.querySelector("#inputDialog input") as HTMLElement
+  if (textInput) {
+    setTimeout(() => {
+      // Calling focus() without timeout does not work, even after nextTick()
+      textInput.focus()
+    }, 100)
+  }
+  // const textInput = inputDialog.value!! as unknown) as HTMLElement).querySelector("input")
 };
 const showTextEditDialog = (payload: {
   oldText: string;
