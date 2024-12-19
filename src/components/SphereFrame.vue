@@ -193,7 +193,7 @@ const showMousePos = ref(false);
 const { shift, alt, d, ctrl } = useMagicKeys();
 
 const inputDialog: Ref<DialogAction | null> = ref(null);
-const userInput = ref('');
+const userInput = ref('Hello $\\sum_{i=0}^N a_i x^i$ again');
 const currentSubmitAction = ref(() => {}); // Dynamic action placeholder
 const editingTextId = ref<number | null>(null); // Reactive state for textId
 const editingOldText = ref<string>(''); // Reactive state for oldText

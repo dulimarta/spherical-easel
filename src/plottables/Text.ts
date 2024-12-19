@@ -11,12 +11,16 @@ import {
 import { svgStyleType, toSVGType } from "@/types";
 import { Text as TwoJsText } from "two.js/src/text";
 import { Group } from "two.js/src/group";
-import { Renderer } from "two.js/src/renderers/svg";
+import { useSEStore } from "@/stores/se";
+// import { Renderer } from "two.js/src/renderers/svg";
 // https://stackoverflow.com/questions/76696724/how-to-import-mathjax-in-esm-modules
 import "mathjax/es5/tex-svg";
 import Two from "two.js"
+import { Shape } from "two.js/src/shape";
+import { Path } from "two.js/src/path";
 declare const MathJax: any;
-const twoInstance = new Two({width: 40, height: 40, autostart: true})
+
+let two: Two|null = null// = new Two({fitted: true, autostart: false})
 
 //had to name file Text so that it does not conflict with two.js/src/text
 export default class Text extends Nodule {
@@ -27,7 +31,7 @@ export default class Text extends Nodule {
 
   private _defaultText = "SphericalEasel";
   private _text: Array<string> = [];
-  private _svg: Array<Group> = []
+  // private _svg: Array<Group> = []
   /**
    * The vector location of the Test on the default unit sphere (without the z coord)
    */
@@ -38,28 +42,43 @@ export default class Text extends Nodule {
     // this._text = text;
     this.textObject = new Group();
 
+    if (two === null) {
+      const se = useSEStore()
+      const { twoInstance } = se;
+      two = twoInstance as Two
+    }
     if (text.includes("$")) {
-      // Does it have a LaTeX math?
-      const parts = text.split("$").filter(s => s.length > 0);
+      // Does it contain a LaTeX math?
+      const parts = text.split("$").filter(s => s.trim().length > 0);
       let xOffset = 0;
       parts.forEach((tok, idx) => {
-        if (idx % 2 == 0) {
+        if (idx % 2 == 0) { // the token is a plain text
           this._text.push(tok)
           const plainText = new TwoJsText(tok, xOffset, 0, {
             size: SETTINGS.text.fontSize
           })
-          xOffset += plainText.getBoundingClientRect().width
           this.textObject.add(plainText)
-        } else {
-          const mj_svg: SVGElement = MathJax.tex2svg(tok, {ex: 14, containerWidth: 300, scale: 2});
+          const {width} = plainText.getBoundingClientRect()
+          xOffset += width
+        } else { // the token is a TeX equation
+          // console.debug("Style", MathJax.svgStylesheet())
+          const mathjax_svg: SVGElement = MathJax.tex2svg(tok, { display: false, scale: 0.5 });
 
-          const svg = mj_svg.querySelector('svg') as SVGSVGElement
-          const g = twoInstance.interpret(svg)
-          this._svg.push(g)
+          const svg = mathjax_svg.querySelector('svg') as SVGSVGElement
+          console.debug("Before interpret", svg)
+          const g = two!!.interpret(svg, /* shallow */ false, /* add */ false)
+          const {width} = g.getBoundingClientRect()
+
+          g.scale = new Two.Vector(0.02, -0.02)
+          // TODO: how to get precise dimensions of the SVG box?
+          g.translation.x = xOffset - 20;
+          xOffset += 2 * width
+
+          // this._svg.push(g)
           // const r = new Renderer({ domElement: z }).render()
 
-          console.debug(tok, svg, "Inner", g);
-          // this.textObject.add(g)
+          console.debug(tok, "After interpret", g);
+          this.textObject.add(g)
         }
       });
     } else {
@@ -113,9 +132,9 @@ export default class Text extends Nodule {
   addToLayers(layers: Group[]): void {
     layers[LAYER.foregroundText].add(this.glowingTextObject);
     layers[LAYER.foregroundText].add(this.textObject);
-    this._svg.forEach(z => {
-      layers[LAYER.foregroundText].add(z)
-    })
+    // this._svg.forEach(z => {
+    //   layers[LAYER.foregroundText].add(z)
+    // })
   }
   removeFromLayers(layers: Group[]): void {
     layers[LAYER.foregroundText].remove(this.textObject);
