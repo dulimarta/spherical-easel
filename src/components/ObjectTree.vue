@@ -149,10 +149,10 @@
           color = "accent"
           :elevation="4"
           class="my-3"
-          v-show="seText.length > 0">
+          v-show="seTexts.length > 0">
           <SENoduleList
-            :label="t('text', seText.length)"
-            :children="seText"></SENoduleList>
+            :label="t('text', seTexts.length)"
+            :children="seTexts"></SENoduleList>
         </v-sheet>
 
 
@@ -198,7 +198,7 @@ const {
   seExpressions,
   actionMode,
   seTransformations,
-  seText //added seText in se.ts line 3999
+  seTexts //added seText in se.ts line 3999
 } = storeToRefs(seStore);
 const { t } = useI18n();
 let displayExpressionSheetAgain = true;

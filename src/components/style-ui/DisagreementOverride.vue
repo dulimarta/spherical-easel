@@ -64,7 +64,7 @@ const formattedDisagreement = computed(() => localDisagreement.value.join(","));
   "labelBackFillColor": "Fill color (back)",
   "labelDisplayCaption": "Caption",
   "labelDisplayMode": "Display Mode",
-  "labelDisplayText": "Label",
+  "labelDisplayText": "Text",
   "labelDynamicBackStyle": "Label Dynamic Back Style",
   "labelFrontFillColor": "Fill color (front)",
   "labelTextDecoration": "Text Decoration",

@@ -133,7 +133,7 @@
     "RotateSphereToolTipMessage": "Rotate Sphere",
     "RotateSphereToolUseMessage": "Click and drag to rotate the sphere.",
     "SelectDisplayedName": "Select Objects",
-    "SelectToolTipMessage": "Selection Keys: ((Cmd or Ctrl)+a)ll, (p)oints, (l)ines, (s)egments), (c)ircles, (e)llipses, p(o)lygons, (A)ngleMarkers, (P)arameterics",
+    "SelectToolTipMessage": "Selection Keys: ((Cmd or Ctrl)+a)ll, (t)exts, (p)oints, (l)ines, (s)egments), (c)ircles, (e)llipses, p(o)lygons, (A)ngleMarkers, (P)arameterics",
     "SelectToolUseMessage": "Click objects. Hold the Alt/Option key to add to your selection. Hold a key and click *without*  moving to select all objects of that type.",
     "ToggleLabelDisplayedName": "Toggle Label Display",
     "ToggleLabelToolTipMessage": "Toggle Display Of Labels",
@@ -149,7 +149,7 @@
     "DummyToolTipMessage": "Tooltip for the dummy tool",
     "TextDisplayedName": "Text",
     "TextToolUseMessage": "Click on canvas to place text",
-    "ToolToolTipMessage": "Places text on canvas",
+    "TextToolTipMessage": "Places text on canvas",
     "": ""
   },
   "settings": {

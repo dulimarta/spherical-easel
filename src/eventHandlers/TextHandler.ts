@@ -56,7 +56,7 @@ export default class TextHandler extends Highlighter {
 
     const TextCmd = new AddTextCommand(newTextSENodule);
     TextCmd.execute();
-
+    newTextSENodule.setDefaultName(submittedText)
     // Deactivate the listener once the text is handled
     //this.deactivate();
   }
