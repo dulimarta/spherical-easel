@@ -242,7 +242,7 @@ export const DEFAULT_LABEL_TEXT_STYLE: LabelStyleOptions = {
 };
 
 export const DEFAULT_TEXT_TEXT_STYLE: LabelStyleOptions = {
-  labelDisplayText: "Ada",
+  labelDisplayText: "",
   labelTextFamily: SETTINGS.text.family,
   labelTextStyle: SETTINGS.text.style,
   labelTextDecoration: SETTINGS.text.decoration,

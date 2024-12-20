@@ -9,7 +9,6 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SELabel } from "@/models/SELabel";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
-
 export default class HideObjectHandler extends Highlighter {
   /**
    * Object to hide - the victim!
@@ -92,48 +91,52 @@ export default class HideObjectHandler extends Highlighter {
 
   mousePressed(_event: MouseEvent): void {
     //Select an object to delete
-    if (this.isOnSphere) {
-      // In the case of multiple selections prioritize points > lines > segments > circles>ellipses > labels
-      if (this.hitSEPoints.length > 0) {
-        // you can't hide non-user created intersection points
-        if (
-          (!(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
-            this.hitSEPoints[0].isUserCreated) &&
-          (!(this.hitSEPoints[0] instanceof SEAntipodalPoint) ||
-            this.hitSEPoints[0].isUserCreated)
-        ) {
-          this.victim = this.hitSEPoints[0];
-        }
-      } else if (this.hitSELines.length > 0) {
-        this.victim = this.hitSELines[0];
-      } else if (this.hitSESegments.length > 0) {
-        this.victim = this.hitSESegments[0];
-      } else if (this.hitSECircles.length > 0) {
-        this.victim = this.hitSECircles[0];
-      } else if (this.hitSEEllipses.length > 0) {
-        this.victim = this.hitSEEllipses[0];
-      } else if (this.hitSEParametrics.length > 0) {
-        this.victim = this.hitSEParametrics[0];
-      } else if (this.hitSELabels.length > 0) {
-        this.victim = this.hitSELabels[0];
-      } else if (this.hitSEAngleMarkers.length > 0) {
-        this.victim = this.hitSEAngleMarkers[0];
-      } else if (this.hitSEPolygons.length > 0) {
-        this.victim = this.hitSEPolygons[0];
+    // if (this.isOnSphere) { // text objects are not necessarily on the sphere
+    // In the case of multiple selections prioritize text >points > lines > segments > circles>ellipses > labels
+    if (this.hitSETexts.length > 0) {
+      this.victim = this.hitSETexts[0];
+    } else if (this.hitSEPoints.length > 0) {
+      // you can't hide non-user created intersection points
+      if (
+        (!(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
+          this.hitSEPoints[0].isUserCreated) &&
+        (!(this.hitSEPoints[0] instanceof SEAntipodalPoint) ||
+          this.hitSEPoints[0].isUserCreated)
+      ) {
+        this.victim = this.hitSEPoints[0];
       }
-
-      if (this.victim != null) {
-        // Do the hiding via command so it will be undoable
-        new SetNoduleDisplayCommand(this.victim, false).execute();
-        this.victim = null;
-      }
+    } else if (this.hitSELines.length > 0) {
+      this.victim = this.hitSELines[0];
+    } else if (this.hitSESegments.length > 0) {
+      this.victim = this.hitSESegments[0];
+    } else if (this.hitSECircles.length > 0) {
+      this.victim = this.hitSECircles[0];
+    } else if (this.hitSEEllipses.length > 0) {
+      this.victim = this.hitSEEllipses[0];
+    } else if (this.hitSEParametrics.length > 0) {
+      this.victim = this.hitSEParametrics[0];
+    } else if (this.hitSELabels.length > 0) {
+      this.victim = this.hitSELabels[0];
+    } else if (this.hitSEAngleMarkers.length > 0) {
+      this.victim = this.hitSEAngleMarkers[0];
+    } else if (this.hitSEPolygons.length > 0) {
+      this.victim = this.hitSEPolygons[0];
     }
+
+    if (this.victim != null) {
+      // Do the hiding via command so it will be undoable
+      new SetNoduleDisplayCommand(this.victim, false).execute();
+      this.victim = null;
+    }
+    // }
   }
 
   mouseMoved(event: MouseEvent): void {
     // Highlight only one object, the one that will be hidden if the user mouse presses
     super.mouseMoved(event);
-    if (this.hitSEPoints.length > 0) {
+    if (this.hitSETexts.length > 0) {
+      this.hitSETexts[0].glowing = true;
+    } else if (this.hitSEPoints.length > 0) {
       // never highlight non user created intersection or antipodal points
       const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
         if (

@@ -20,7 +20,7 @@ declare const MathJax: any;
 
 let two: Two | null = null; // = new Two({fitted: true, autostart: false})
 
-//had to name file Text so that it does not conflict with two.js/src/text
+//had to name the file Text so that it does not conflict with two.js/src/text
 export default class Text extends Nodule {
   protected textObject: Group;
   protected glowingTextObject: Group;
@@ -33,8 +33,8 @@ export default class Text extends Nodule {
    */
   public _locationVector = new Vector2(1, 0);
 
-  constructor(text: string) {
-    super(/* noduleName */ "None");
+  constructor(text: string, noduleName: string = "None") {
+    super(noduleName);
     this.textObject = new Group();
     this.glowingTextObject = new Group();
 
@@ -69,7 +69,6 @@ export default class Text extends Nodule {
         );
         if (idx % 2 == 0) {
           // the token is a plain text
-          this._text.push(tok);
           const plainText = new TwoJsText(tok, xOffset, 0, {
             size: SETTINGS.text.fontSize
           });
@@ -220,7 +219,7 @@ export default class Text extends Nodule {
   }
 
   /**
-   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the label
+   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the text
    *
    * ApplyTemporaryVariables means that
    *    1) The temporary variables from SETTINGS.point.temp are copied into the actual js objects
@@ -363,5 +362,9 @@ export default class Text extends Nodule {
     this.textObject.children.splice(0);
     this.glowingTextObject.children.splice(0);
     this.setupUsing(txt);
+  }
+
+  public setDefaultText(txt:string):void{
+    this._defaultText = txt
   }
 }

@@ -38,7 +38,6 @@ import { LabelMoverVisitor } from "@/visitors/LabelMoverVisitor";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { PointMoverVisitor } from "@/visitors/PointMoverVisitor";
 import { RotationVisitor } from "@/visitors/RotationVisitor";
-// import { TextMoverVisitor } from "@/visitors/TextMoverVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
 import { Ref, ref } from "vue";
 import { defineStore } from "pinia";

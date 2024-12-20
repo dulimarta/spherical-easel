@@ -56,6 +56,7 @@
   </div>
   <!-- Dialog here -->
   <Dialog
+      id="inputDialog"
       ref="inputDialog"
       title="Text Tool"
       yes-text="Submit"
@@ -151,6 +152,7 @@ import { Group } from "two.js/src/group";
 import { useMagicKeys } from "@vueuse/core";
 import { watchEffect } from "vue";
 import { SEText } from "@/models/SEText";
+import { nextTick } from "vue";
 
 type ComponentProps = {
   availableHeight: number;
@@ -197,13 +199,15 @@ const inputDialog: Ref<DialogAction | null> = ref(null);
 const userInput = ref('Hello $\\sum_{i=0}^N a_i x^i$ again $\\alpha$ and $\\frac{\\sin(x)}{x}$');
 const currentSubmitAction = ref(() => {}); // Dynamic action placeholder
 const editingTextId = ref<number | null>(null); // Reactive state for textId
-const editingOldText = ref<string>(''); // Reactive state for oldText
+const editingOldText = ref<string>(""); // Reactive state for oldText
 const originalSeText = ref<SEText | null>(null); //Needed to pass original seText object
 const handleSubmit = () => {
-  // Emit the text back to the handler
-  EventBus.fire("text-data-submitted", { text: userInput.value });
+  // Emit the text back to the handler if it not empty
+  if (userInput.value != "") {
+    EventBus.fire("text-data-submitted", { text: userInput.value });
+  }
   inputDialog.value?.hide();
-  userInput.value = ''; // Clear input after submission
+  userInput.value = ""; // Clear input after submission
 };
 const handleEditSubmit = () => {
   EventBus.fire("text-data-edited", {
@@ -211,19 +215,29 @@ const handleEditSubmit = () => {
     textId: editingTextId.value,
     oldText: editingOldText.value,
     seText: originalSeText.value
-   });
+  });
   inputDialog.value?.hide();
-  userInput.value = ''; // Clear input after submission
+  userInput.value = ""; // Clear input after submission
   editingTextId.value = null; // Clear textId
 };
-const showTextInputDialog = () => {
+const showTextInputDialog = async () => {
   currentSubmitAction.value = handleSubmit; // Set action to create
-  // console.debug("Attempting to open dialog...");
-  // console.debug(inputDialog.value);
   inputDialog.value?.show();
-  // console.debug("Dialog open maybe");
+  await nextTick();
+  const textInput = document.querySelector("#inputDialog input") as HTMLElement
+  if (textInput) {
+    setTimeout(() => {
+      // Calling focus() without timeout does not work, even after nextTick()
+      textInput.focus()
+    }, 100)
+  }
+  // const textInput = inputDialog.value!! as unknown) as HTMLElement).querySelector("input")
 };
-const showTextEditDialog = (payload: { oldText: string, textId: number, seText: SEText }) => {
+const showTextEditDialog = async (payload: {
+  oldText: string;
+  textId: number;
+  seText: SEText;
+}) => {
   currentSubmitAction.value = handleEditSubmit; // Set action to edit
   // console.debug("Attempting to open Edit Dialog...");
   // console.debug(inputDialog.value);
@@ -234,7 +248,15 @@ const showTextEditDialog = (payload: { oldText: string, textId: number, seText: 
   userInput.value = oldText;
   // console.debug("Prefilled userInput: ", userInput.value)
   inputDialog.value?.show();
+  await nextTick()
   // console.debug("Dialog Open Edit");
+  const textInput = document.querySelector("#inputDialog input") as HTMLElement
+  if (textInput) {
+    setTimeout(() => {
+      // Calling focus() without timeout does not work, even after nextTick()
+      textInput.focus()
+    }, 100)
+  }
 }
 function latexcheck(str: string): boolean | string {
   if (!str.includes('$')) return true;
