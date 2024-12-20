@@ -23,7 +23,7 @@ let two: Two | null = null; // = new Two({fitted: true, autostart: false})
 //had to name file Text so that it does not conflict with two.js/src/text
 export default class Text extends Nodule {
   protected textObject: Group;
-  protected glowingTextObject: Array<TwoJsText> = [];
+  protected glowingTextObject: Group;
 
   private glowingStrokeColor = SETTINGS.text.glowingStrokeColor;
 
@@ -38,6 +38,7 @@ export default class Text extends Nodule {
     super(/* noduleName */ "None");
     // this._text = text;
     this.textObject = new Group();
+    this.glowingTextObject = new Group();
 
     if (two === null) {
       const se = useSEStore();
@@ -45,14 +46,12 @@ export default class Text extends Nodule {
       two = twoInstance as Two;
     }
 
-    this.setupUsing(text)
+    this.setupUsing(text);
 
     // Set the properties of the points that never change - stroke width and some glowing options
     this.textObject.noStroke();
-    this.glowingTextObject.forEach(t => {
-      t.linewidth = SETTINGS.text.glowingStrokeWidth;
-      t.visible = false;
-    });
+    this.glowingTextObject.linewidth = SETTINGS.text.glowingStrokeWidth;
+    this.glowingTextObject.visible = false;
 
     this.styleOptions.set(StyleCategory.Label, DEFAULT_TEXT_TEXT_STYLE);
   }
@@ -60,7 +59,10 @@ export default class Text extends Nodule {
   setupUsing(text: string) {
     if (text.includes("$")) {
       // Does it contain a LaTeX math?
-      const parts = text.split("$").map(s => s.trim()).filter(s => s.trim().length > 0);
+      const parts = text
+        .split("$")
+        .map(s => s.trim())
+        .filter(s => s.trim().length > 0);
       let xOffset = 0;
       let estTextHeight = 15;
       parts.forEach((tok, idx) => {
@@ -74,7 +76,7 @@ export default class Text extends Nodule {
             size: SETTINGS.text.fontSize
           });
           this.textObject.add(plainText);
-          this.glowingTextObject.push(plainText.clone() as TwoJsText);
+          this.glowingTextObject.add(plainText.clone() as TwoJsText);
           const { width, height } = plainText.getBoundingClientRect();
           estTextHeight = 0.8 * height + 0.2 * estTextHeight;
           console.debug(`Dimension of ${tok} is ${width}x${height}`);
@@ -108,10 +110,9 @@ export default class Text extends Nodule {
       });
       const glowingText = oneText.clone() as TwoJsText;
       this._text.push(text);
-      this.glowingTextObject.push(glowingText);
+      this.glowingTextObject.add(glowingText);
       this.textObject.add(oneText);
     }
-
   }
   //private _defaultName = "";
 
@@ -136,22 +137,18 @@ export default class Text extends Nodule {
   glowingDisplay(): void {
     this.textObject.visible = true;
     // console.debug("Glowing text count", this.glowingTextObject.length)
-    this.glowingTextObject.forEach(t => {
-      t.visible = true;
-    });
+    this.glowingTextObject.visible = true;
   }
 
   normalDisplay(): void {
     this.textObject.visible = true;
-    this.glowingTextObject.forEach(t => {
-      t.visible = false;
-    });
+    this.glowingTextObject.visible = false;
   }
 
   addToLayers(layers: Group[]): void {
-    this.glowingTextObject.forEach(t => {
-      layers[LAYER.foregroundText].add(t);
-    });
+    // We must add glowing text before the text itself,
+    // otherwise the glowing shadow will cover the text
+    layers[LAYER.foregroundText].add(this.glowingTextObject);
     layers[LAYER.foregroundText].add(this.textObject);
   }
   removeFromLayers(layers: Group[]): void {
@@ -163,10 +160,8 @@ export default class Text extends Nodule {
   }
   setVisible(flag: boolean): void {
     if (!flag) {
-      // this.textObject.visible = false;
-      this.glowingTextObject.forEach(t => {
-        t.visible = false;
-      });
+      this.textObject.visible = false;
+      this.glowingTextObject.visible = false;
     } else {
       this.normalDisplay();
     }
@@ -223,9 +218,8 @@ export default class Text extends Nodule {
     const labelStyle = this.styleOptions.get(StyleCategory.Label);
     const textScalePercent = labelStyle?.labelTextScalePercent ?? 100;
     this.textObject.scale = (Text.textScaleFactor * textScalePercent) / 100;
-    this.glowingTextObject.forEach(t => {
-      t.scale = (Text.textScaleFactor * textScalePercent) / 100;
-    });
+    this.glowingTextObject.scale =
+      (Text.textScaleFactor * textScalePercent) / 100;
   }
 
   /**
@@ -248,45 +242,52 @@ export default class Text extends Nodule {
         // Use the current variables to directly modify the js objects.
         const labelStyle = this.styleOptions.get(StyleCategory.Label);
 
-        this.textObject.children.forEach((child, idx) => {
-          if (idx % 2 == 1) return
-          const oneText = child as TwoJsText
-          const glowIdx = (idx / 2) | 0;
-          const glowText = this.glowingTextObject[glowIdx]
-          console.debug("Stylize", oneText.value, idx, glowIdx)
-          // oneText.value = this._text[idx];
-          // glowText.value = oneText.value
-          // we may want to modify this to allow changes in the text from the style panel
-          // oneText.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
-          // glowText.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
-          // this._text = labelStyle?.labelDisplayText ?? "TEXT ERROR"
+        this.textObject.children
+          .map(c => c as TwoJsText)
+          .forEach((oneText, idx) => {
+            // we may want to modify this to allow changes in the text from the style panel
+            // oneText.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
+            // glowText.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
+            // this._text = labelStyle?.labelDisplayText ?? "TEXT ERROR"
 
-          if (labelStyle?.labelTextStyle !== "bold") {
-            oneText.style = (labelStyle?.labelTextStyle ??
-              SETTINGS.label.style) as "normal" | "italic";
-            glowText.style = (labelStyle?.labelTextStyle ??
-              SETTINGS.label.style) as "normal" | "italic";
-            oneText.weight = 500;
-            glowText.weight = 500;
-          } else if (labelStyle?.labelTextStyle === "bold") {
-            oneText.weight = 1000;
-            glowText.weight = 1000;
-          }
+            if (labelStyle?.labelTextStyle !== "bold") {
+              oneText.style = (labelStyle?.labelTextStyle ??
+                SETTINGS.label.style) as "normal" | "italic";
+              oneText.weight = 500;
+            } else if (labelStyle?.labelTextStyle === "bold") {
+              oneText.weight = 1000;
+            }
 
-          oneText.family = labelStyle?.labelTextFamily ?? SETTINGS.label.family;
-          glowText.family =
-            labelStyle?.labelTextFamily ?? SETTINGS.label.family;
+            oneText.family =
+              labelStyle?.labelTextFamily ?? SETTINGS.label.family;
 
-          oneText.decoration = (labelStyle?.labelTextDecoration ??
-            SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
-          glowText.decoration = (labelStyle?.labelTextDecoration ??
-            SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
-
-          this.textObject.rotation = labelStyle?.labelTextRotation ?? 0;
-          glowText.rotation = labelStyle?.labelTextRotation ?? 0;
-          glowText.stroke = this.glowingStrokeColor;
-        })
-
+            oneText.decoration = (labelStyle?.labelTextDecoration ??
+              SETTINGS.label.decoration) as
+              | "none"
+              | "underline"
+              | "strikethrough";
+          });
+        this.glowingTextObject.children
+          .map(c => c as TwoJsText)
+          .forEach(glowText => {
+            if (labelStyle?.labelTextStyle !== "bold") {
+              glowText.style = (labelStyle?.labelTextStyle ??
+                SETTINGS.label.style) as "normal" | "italic";
+              glowText.weight = 500;
+            } else if (labelStyle?.labelTextStyle === "bold") {
+              glowText.weight = 1000;
+            }
+            glowText.family =
+              labelStyle?.labelTextFamily ?? SETTINGS.label.family;
+            glowText.decoration = (labelStyle?.labelTextDecoration ??
+              SETTINGS.label.decoration) as
+              | "none"
+              | "underline"
+              | "strikethrough";
+            glowText.stroke = this.glowingStrokeColor;
+          });
+        this.textObject.rotation = labelStyle?.labelTextRotation ?? 0;
+        this.glowingTextObject.rotation = labelStyle?.labelTextRotation ?? 0;
         // FRONT = To shoehorn text into label, the front fill color is the same as overall stroke color, there are no front/back for text
         const frontFillColor =
           labelStyle?.labelFrontFillColor ?? SETTINGS.text.fillColor;
@@ -345,12 +346,11 @@ export default class Text extends Nodule {
       this._locationVector.x,
       -this._locationVector.y
     );
-    this.glowingTextObject.forEach(t => {
-      t.position.set(
-        this._locationVector.x,
-        -this._locationVector.y
-      )
-    })
+    this.glowingTextObject.position.set(
+      this._locationVector.x,
+      -this._locationVector.y
+    );
+
     //this.updateDisplay();  //<--- do not do this! disconnect the setting of position with the display, if you leave this in
     //then this turns on the display of the vertex point of the angle marker in a bad way. It turns on the
     //     // the display so that the following problem occurs.
@@ -366,10 +366,10 @@ export default class Text extends Nodule {
   }
 
   set text(txt: string) {
-    console.debug("Setting text to", txt)
+    console.debug("Setting text to", txt);
     this._text.splice(0);
     this.textObject.children.splice(0);
-    this.glowingTextObject.splice(0);
-    this.setupUsing(txt)
+    this.glowingTextObject.children.splice(0);
+    this.setupUsing(txt);
   }
 }
