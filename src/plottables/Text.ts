@@ -28,7 +28,6 @@ export default class Text extends Nodule {
   private glowingStrokeColor = SETTINGS.text.glowingStrokeColor;
 
   private _defaultText = "SphericalEasel";
-  private _text: Array<string> = [];
   /**
    * The vector location of the Test on the default unit sphere (without the z coord)
    */
@@ -36,7 +35,6 @@ export default class Text extends Nodule {
 
   constructor(text: string) {
     super(/* noduleName */ "None");
-    // this._text = text;
     this.textObject = new Group();
     this.glowingTextObject = new Group();
 
@@ -109,7 +107,6 @@ export default class Text extends Nodule {
         size: SETTINGS.text.fontSize
       });
       const glowingText = oneText.clone() as TwoJsText;
-      this._text.push(text);
       this.glowingTextObject.add(glowingText);
       this.textObject.add(oneText);
     }
@@ -246,10 +243,6 @@ export default class Text extends Nodule {
           .map(c => c as TwoJsText)
           .forEach((oneText, idx) => {
             // we may want to modify this to allow changes in the text from the style panel
-            // oneText.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
-            // glowText.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
-            // this._text = labelStyle?.labelDisplayText ?? "TEXT ERROR"
-
             if (labelStyle?.labelTextStyle !== "bold") {
               oneText.style = (labelStyle?.labelTextStyle ??
                 SETTINGS.label.style) as "normal" | "italic";
@@ -367,7 +360,6 @@ export default class Text extends Nodule {
 
   set text(txt: string) {
     console.debug("Setting text to", txt);
-    this._text.splice(0);
     this.textObject.children.splice(0);
     this.glowingTextObject.children.splice(0);
     this.setupUsing(txt);
