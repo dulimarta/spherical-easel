@@ -12,12 +12,10 @@ import { svgStyleType, toSVGType } from "@/types";
 import { Text as TwoJsText } from "two.js/src/text";
 import { Group } from "two.js/src/group";
 import { useSEStore } from "@/stores/se";
-// import { Renderer } from "two.js/src/renderers/svg";
 // https://stackoverflow.com/questions/76696724/how-to-import-mathjax-in-esm-modules
 import "mathjax/es5/tex-svg";
 import Two from "two.js"
-import { Shape } from "two.js/src/shape";
-import { Path } from "two.js/src/path";
+import { TextBox } from "./TextBox";
 declare const MathJax: any;
 
 let two: Two|null = null// = new Two({fitted: true, autostart: false})
@@ -31,7 +29,6 @@ export default class Text extends Nodule {
 
   private _defaultText = "SphericalEasel";
   private _text: Array<string> = [];
-  // private _svg: Array<Group> = []
   /**
    * The vector location of the Test on the default unit sphere (without the z coord)
    */
@@ -51,33 +48,34 @@ export default class Text extends Nodule {
       // Does it contain a LaTeX math?
       const parts = text.split("$").filter(s => s.trim().length > 0);
       let xOffset = 0;
+      let estTextHeight = 15
       parts.forEach((tok, idx) => {
+        console.debug(`Placing ${tok} at offset ${xOffset}`)
         if (idx % 2 == 0) { // the token is a plain text
           this._text.push(tok)
           const plainText = new TwoJsText(tok, xOffset, 0, {
             size: SETTINGS.text.fontSize
           })
           this.textObject.add(plainText)
-          const {width} = plainText.getBoundingClientRect()
+          const { width, height } = plainText.getBoundingClientRect()
+          estTextHeight += 0.8 * height + 0.2 * estTextHeight
+          console.debug(`Dimension of ${tok} is ${width}x${height}`)
           xOffset += width
         } else { // the token is a TeX equation
-          // console.debug("Style", MathJax.svgStylesheet())
-          const mathjax_svg: SVGElement = MathJax.tex2svg(tok, { display: false, scale: 0.5 });
-
-          const svg = mathjax_svg.querySelector('svg') as SVGSVGElement
-          console.debug("Before interpret", svg)
+          const mathjax_svg: SVGElement = MathJax.tex2svg(tok, { display: true, ex:10 });
+          const svg = mathjax_svg.querySelector('svg') as SVGGraphicsElement
           const g = two!!.interpret(svg, /* shallow */ false, /* add */ false)
-          const {width} = g.getBoundingClientRect()
-
-          g.scale = new Two.Vector(0.02, -0.02)
+          g.scale = new Two.Vector(0.1, -0.1)
           // TODO: how to get precise dimensions of the SVG box?
-          g.translation.x = xOffset - 20;
-          xOffset += 2 * width
-
-          // this._svg.push(g)
-          // const r = new Renderer({ domElement: z }).render()
-
-          console.debug(tok, "After interpret", g);
+          g.translation.x = xOffset - 10;
+          g.mask = undefined // This prevents TwoJS SVG renderer from generating the clip-path
+          const dim1 = g.getBoundingClientRect()
+          console.debug(`Dimension of of SVG ${dim1.width}x${dim1.height}`)
+          const scaleFactor = estTextHeight / dim1.height
+          g.scale = new Two.Vector(scaleFactor * 0.1, -scaleFactor * 0.1)
+          const dim2 = g.getBoundingClientRect()
+          console.debug(`Dimension of of scaled SVG ${dim2.width}x${dim2.height}`)
+          xOffset += dim2.width + 8
           this.textObject.add(g)
         }
       });
