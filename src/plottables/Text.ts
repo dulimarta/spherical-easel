@@ -50,7 +50,7 @@ export default class Text extends Nodule {
       let xOffset = 0;
       let estTextHeight = 15
       parts.forEach((tok, idx) => {
-        console.debug(`Placing ${tok} at offset ${xOffset}`)
+        console.debug(`Placing ${tok} at offset ${xOffset} estimated text height ${estTextHeight}`)
         if (idx % 2 == 0) { // the token is a plain text
           this._text.push(tok)
           const plainText = new TwoJsText(tok, xOffset, 0, {
@@ -58,7 +58,7 @@ export default class Text extends Nodule {
           })
           this.textObject.add(plainText)
           const { width, height } = plainText.getBoundingClientRect()
-          estTextHeight += 0.8 * height + 0.2 * estTextHeight
+          estTextHeight = 0.8 * height + 0.2 * estTextHeight
           console.debug(`Dimension of ${tok} is ${width}x${height}`)
           xOffset += width
         } else { // the token is a TeX equation

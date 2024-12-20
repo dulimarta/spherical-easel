@@ -66,6 +66,7 @@
       <v-text-field
         type="text"
         density="compact"
+        :rules="[latexcheck]"
         clearable
         counter
         persistent-hint
@@ -193,7 +194,7 @@ const showMousePos = ref(false);
 const { shift, alt, d, ctrl } = useMagicKeys();
 
 const inputDialog: Ref<DialogAction | null> = ref(null);
-const userInput = ref('Hello $\\sum_{i=0}^N a_i x^i$ again');
+const userInput = ref('Hello $\\sum_{i=0}^N a_i x^i$ again $\\alpha$ and $\\frac{\\sin(x)}{x}$');
 const currentSubmitAction = ref(() => {}); // Dynamic action placeholder
 const editingTextId = ref<number | null>(null); // Reactive state for textId
 const editingOldText = ref<string>(''); // Reactive state for oldText
@@ -234,6 +235,11 @@ const showTextEditDialog = (payload: { oldText: string, textId: number, seText: 
   // console.debug("Prefilled userInput: ", userInput.value)
   inputDialog.value?.show();
   // console.debug("Dialog Open Edit");
+}
+function latexcheck(str: string): boolean | string {
+  if (!str.includes('$')) return true;
+  const tok = str.split('$')
+  return tok.length % 2 == 1 ? true : "Open LaTeX equation"
 }
 
 /**
