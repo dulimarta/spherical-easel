@@ -14,16 +14,16 @@ import { Group } from "two.js/src/group";
 import { useSEStore } from "@/stores/se";
 // https://stackoverflow.com/questions/76696724/how-to-import-mathjax-in-esm-modules
 import "mathjax/es5/tex-svg";
-import Two from "two.js"
+import Two from "two.js";
 import { TextBox } from "./TextBox";
 declare const MathJax: any;
 
-let two: Two|null = null// = new Two({fitted: true, autostart: false})
+let two: Two | null = null; // = new Two({fitted: true, autostart: false})
 
 //had to name file Text so that it does not conflict with two.js/src/text
 export default class Text extends Nodule {
   protected textObject: Group;
-  protected glowingTextObject: TwoJsText;
+  protected glowingTextObject: Array<TwoJsText> = [];
 
   private glowingStrokeColor = SETTINGS.text.glowingStrokeColor;
 
@@ -40,62 +40,78 @@ export default class Text extends Nodule {
     this.textObject = new Group();
 
     if (two === null) {
-      const se = useSEStore()
+      const se = useSEStore();
       const { twoInstance } = se;
-      two = twoInstance as Two
+      two = twoInstance as Two;
     }
+
+    this.setupUsing(text)
+
+    // Set the properties of the points that never change - stroke width and some glowing options
+    this.textObject.noStroke();
+    this.glowingTextObject.forEach(t => {
+      t.linewidth = SETTINGS.text.glowingStrokeWidth;
+      t.visible = false;
+    });
+
+    this.styleOptions.set(StyleCategory.Label, DEFAULT_TEXT_TEXT_STYLE);
+  }
+
+  setupUsing(text: string) {
     if (text.includes("$")) {
       // Does it contain a LaTeX math?
-      const parts = text.split("$").filter(s => s.trim().length > 0);
+      const parts = text.split("$").map(s => s.trim()).filter(s => s.trim().length > 0);
       let xOffset = 0;
-      let estTextHeight = 15
+      let estTextHeight = 15;
       parts.forEach((tok, idx) => {
-        console.debug(`Placing ${tok} at offset ${xOffset} estimated text height ${estTextHeight}`)
-        if (idx % 2 == 0) { // the token is a plain text
-          this._text.push(tok)
+        console.debug(
+          `Placing ${tok} at offset ${xOffset} estimated text height ${estTextHeight}`
+        );
+        if (idx % 2 == 0) {
+          // the token is a plain text
+          this._text.push(tok);
           const plainText = new TwoJsText(tok, xOffset, 0, {
             size: SETTINGS.text.fontSize
-          })
-          this.textObject.add(plainText)
-          const { width, height } = plainText.getBoundingClientRect()
-          estTextHeight = 0.8 * height + 0.2 * estTextHeight
-          console.debug(`Dimension of ${tok} is ${width}x${height}`)
-          xOffset += width
-        } else { // the token is a TeX equation
-          const mathjax_svg: SVGElement = MathJax.tex2svg(tok, { display: true, ex:10 });
-          const svg = mathjax_svg.querySelector('svg') as SVGGraphicsElement
-          const g = two!!.interpret(svg, /* shallow */ false, /* add */ false)
-          g.scale = new Two.Vector(0.1, -0.1)
-          // TODO: how to get precise dimensions of the SVG box?
+          });
+          this.textObject.add(plainText);
+          this.glowingTextObject.push(plainText.clone() as TwoJsText);
+          const { width, height } = plainText.getBoundingClientRect();
+          estTextHeight = 0.8 * height + 0.2 * estTextHeight;
+          console.debug(`Dimension of ${tok} is ${width}x${height}`);
+          xOffset += width;
+        } else {
+          // the token is a TeX equation
+          const mathjax_svg: SVGElement = MathJax.tex2svg(tok, {
+            display: true,
+            ex: 10
+          });
+          const svg = mathjax_svg.querySelector("svg") as SVGGraphicsElement;
+          const g = two!!.interpret(svg, /* shallow */ false, /* add */ true);
+          g.scale = new Two.Vector(0.1, -0.1);
           g.translation.x = xOffset - 10;
-          g.mask = undefined // This prevents TwoJS SVG renderer from generating the clip-path
-          const dim1 = g.getBoundingClientRect()
-          console.debug(`Dimension of of SVG ${dim1.width}x${dim1.height}`)
-          const scaleFactor = estTextHeight / dim1.height
-          g.scale = new Two.Vector(scaleFactor * 0.1, -scaleFactor * 0.1)
-          const dim2 = g.getBoundingClientRect()
-          console.debug(`Dimension of of scaled SVG ${dim2.width}x${dim2.height}`)
-          xOffset += dim2.width + 8
-          this.textObject.add(g)
+          g.mask = undefined; // This prevents TwoJS SVG renderer from generating the clip-path
+          const dim1 = g.getBoundingClientRect();
+          // console.debug(`Dimension of of SVG ${dim1.width}x${dim1.height}`);
+          const scaleFactor = estTextHeight / dim1.height;
+          g.scale = new Two.Vector(scaleFactor * 0.15, -scaleFactor * 0.15);
+          const dim2 = g.getBoundingClientRect();
+          console.debug(
+            `Dimension of of scaled SVG ${dim2.width}x${dim2.height}`
+          );
+          xOffset += dim2.width + 8;
+          this.textObject.add(g);
         }
       });
     } else {
       const oneText = new TwoJsText(text, 1, 0, {
         size: SETTINGS.text.fontSize
       });
-      this._text.push(text)
+      const glowingText = oneText.clone() as TwoJsText;
+      this._text.push(text);
+      this.glowingTextObject.push(glowingText);
       this.textObject.add(oneText);
     }
 
-    this.glowingTextObject = new TwoJsText("Test", 1, 0, {
-      size: SETTINGS.text.fontSize
-    });
-    // Set the properties of the points that never change - stroke width and some glowing options
-    this.textObject.noStroke();
-    this.glowingTextObject.linewidth = SETTINGS.text.glowingStrokeWidth;
-    this.glowingTextObject.visible = false;
-
-    this.styleOptions.set(StyleCategory.Label, DEFAULT_TEXT_TEXT_STYLE);
   }
   //private _defaultName = "";
 
@@ -119,20 +135,24 @@ export default class Text extends Nodule {
 
   glowingDisplay(): void {
     this.textObject.visible = true;
-    this.glowingTextObject.visible = true;
+    // console.debug("Glowing text count", this.glowingTextObject.length)
+    this.glowingTextObject.forEach(t => {
+      t.visible = true;
+    });
   }
 
   normalDisplay(): void {
     this.textObject.visible = true;
-    this.glowingTextObject.visible = false;
+    this.glowingTextObject.forEach(t => {
+      t.visible = false;
+    });
   }
 
   addToLayers(layers: Group[]): void {
-    layers[LAYER.foregroundText].add(this.glowingTextObject);
+    this.glowingTextObject.forEach(t => {
+      layers[LAYER.foregroundText].add(t);
+    });
     layers[LAYER.foregroundText].add(this.textObject);
-    // this._svg.forEach(z => {
-    //   layers[LAYER.foregroundText].add(z)
-    // })
   }
   removeFromLayers(layers: Group[]): void {
     layers[LAYER.foregroundText].remove(this.textObject);
@@ -143,8 +163,10 @@ export default class Text extends Nodule {
   }
   setVisible(flag: boolean): void {
     if (!flag) {
-      this.textObject.visible = false;
-      this.glowingTextObject.visible = false;
+      // this.textObject.visible = false;
+      this.glowingTextObject.forEach(t => {
+        t.visible = false;
+      });
     } else {
       this.normalDisplay();
     }
@@ -201,8 +223,9 @@ export default class Text extends Nodule {
     const labelStyle = this.styleOptions.get(StyleCategory.Label);
     const textScalePercent = labelStyle?.labelTextScalePercent ?? 100;
     this.textObject.scale = (Text.textScaleFactor * textScalePercent) / 100;
-    this.glowingTextObject.scale =
-      (Text.textScaleFactor * textScalePercent) / 100;
+    this.glowingTextObject.forEach(t => {
+      t.scale = (Text.textScaleFactor * textScalePercent) / 100;
+    });
   }
 
   /**
@@ -225,37 +248,44 @@ export default class Text extends Nodule {
         // Use the current variables to directly modify the js objects.
         const labelStyle = this.styleOptions.get(StyleCategory.Label);
 
-        const oneText: TwoJsText = this.textObject.children[0] as TwoJsText;
-        oneText.value = this._text[0];
-        this.glowingTextObject.value = this._text[0];
-        // we may want to modify this to allow changes in the text from the style panel
-        // this.textObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
-        // this.glowingTextObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
-        // this._text = labelStyle?.labelDisplayText ?? "TEXT ERROR"
+        this.textObject.children.forEach((child, idx) => {
+          if (idx % 2 == 1) return
+          const oneText = child as TwoJsText
+          const glowIdx = (idx / 2) | 0;
+          const glowText = this.glowingTextObject[glowIdx]
+          console.debug("Stylize", oneText.value, idx, glowIdx)
+          // oneText.value = this._text[idx];
+          // glowText.value = oneText.value
+          // we may want to modify this to allow changes in the text from the style panel
+          // oneText.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
+          // glowText.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
+          // this._text = labelStyle?.labelDisplayText ?? "TEXT ERROR"
 
-        if (labelStyle?.labelTextStyle !== "bold") {
-          oneText.style = (labelStyle?.labelTextStyle ??
-            SETTINGS.label.style) as "normal" | "italic";
-          this.glowingTextObject.style = (labelStyle?.labelTextStyle ??
-            SETTINGS.label.style) as "normal" | "italic";
-          oneText.weight = 500;
-          this.glowingTextObject.weight = 500;
-        } else if (labelStyle?.labelTextStyle === "bold") {
-          oneText.weight = 1000;
-          this.glowingTextObject.weight = 1000;
-        }
+          if (labelStyle?.labelTextStyle !== "bold") {
+            oneText.style = (labelStyle?.labelTextStyle ??
+              SETTINGS.label.style) as "normal" | "italic";
+            glowText.style = (labelStyle?.labelTextStyle ??
+              SETTINGS.label.style) as "normal" | "italic";
+            oneText.weight = 500;
+            glowText.weight = 500;
+          } else if (labelStyle?.labelTextStyle === "bold") {
+            oneText.weight = 1000;
+            glowText.weight = 1000;
+          }
 
-        oneText.family = labelStyle?.labelTextFamily ?? SETTINGS.label.family;
-        this.glowingTextObject.family =
-          labelStyle?.labelTextFamily ?? SETTINGS.label.family;
+          oneText.family = labelStyle?.labelTextFamily ?? SETTINGS.label.family;
+          glowText.family =
+            labelStyle?.labelTextFamily ?? SETTINGS.label.family;
 
-        oneText.decoration = (labelStyle?.labelTextDecoration ??
-          SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
-        this.glowingTextObject.decoration = (labelStyle?.labelTextDecoration ??
-          SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
+          oneText.decoration = (labelStyle?.labelTextDecoration ??
+            SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
+          glowText.decoration = (labelStyle?.labelTextDecoration ??
+            SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
 
-        this.textObject.rotation = labelStyle?.labelTextRotation ?? 0;
-        this.glowingTextObject.rotation = labelStyle?.labelTextRotation ?? 0;
+          this.textObject.rotation = labelStyle?.labelTextRotation ?? 0;
+          glowText.rotation = labelStyle?.labelTextRotation ?? 0;
+          glowText.stroke = this.glowingStrokeColor;
+        })
 
         // FRONT = To shoehorn text into label, the front fill color is the same as overall stroke color, there are no front/back for text
         const frontFillColor =
@@ -265,7 +295,6 @@ export default class Text extends Nodule {
         } else {
           this.textObject.fill = frontFillColor;
         }
-        this.glowingTextObject.stroke = this.glowingStrokeColor;
 
         break;
       }
@@ -316,10 +345,12 @@ export default class Text extends Nodule {
       this._locationVector.x,
       -this._locationVector.y
     );
-    this.glowingTextObject.position.set(
-      this._locationVector.x,
-      -this._locationVector.y
-    );
+    this.glowingTextObject.forEach(t => {
+      t.position.set(
+        this._locationVector.x,
+        -this._locationVector.y
+      )
+    })
     //this.updateDisplay();  //<--- do not do this! disconnect the setting of position with the display, if you leave this in
     //then this turns on the display of the vertex point of the angle marker in a bad way. It turns on the
     //     // the display so that the following problem occurs.
@@ -333,9 +364,12 @@ export default class Text extends Nodule {
   get positionVector(): Vector2 {
     return this._locationVector;
   }
+
   set text(txt: string) {
-    this._text[0] = txt;
-    (this.textObject.children[0] as TwoJsText).value = txt;
-    this.glowingTextObject.value = txt;
+    console.debug("Setting text to", txt)
+    this._text.splice(0);
+    this.textObject.children.splice(0);
+    this.glowingTextObject.splice(0);
+    this.setupUsing(txt)
   }
 }
