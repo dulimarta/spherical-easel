@@ -33,11 +33,9 @@ export class SEText extends SENodule {
     this.name = `T${SENodule.TEXT_COUNT}`;
     this.ref = new Text(text, this.name);
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
-    this.ref.adjustSize();
-
-    SENodule.TEXT_COUNT++;
     // Set the size for zoom
     this.ref.adjustSize();
+    SENodule.TEXT_COUNT++;
   }
 
   public shallowUpdate(): void {

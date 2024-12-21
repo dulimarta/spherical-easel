@@ -540,7 +540,7 @@ onBeforeUnmount((): void => {
 watch(
   [() => props.availableWidth, () => props.availableHeight],
   ([width, height]): void => {
-    console.debug(`Available rectangle WxH ${width}x${height}`);
+    // console.debug(`Available rectangle WxH ${width}x${height}`);
     twoInstance.width = width;
     twoInstance.height = height;
     // groups.forEach(z => {

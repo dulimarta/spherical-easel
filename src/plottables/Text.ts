@@ -8,17 +8,18 @@ import {
   DEFAULT_TEXT_FRONT_STYLE,
   DEFAULT_TEXT_BACK_STYLE
 } from "@/types/Styles";
-import { svgStyleType, toSVGType } from "@/types";
+import { toSVGType } from "@/types";
 import { Text as TwoJsText } from "two.js/src/text";
 import { Group } from "two.js/src/group";
-import { useSEStore } from "@/stores/se";
+
 // https://stackoverflow.com/questions/76696724/how-to-import-mathjax-in-esm-modules
 import "mathjax/es5/tex-svg";
 import Two from "two.js";
-import { TextBox } from "./TextBox";
 declare const MathJax: any;
 
-let two: Two | null = null; // = new Two({fitted: true, autostart: false})
+let two = new Two({ fitted: true, autostart: false });
+const TEX_OPTIONS = { display: true, ex: 10 };
+const TEXT_HEIGHT = 8; // Why 8? it seems to work :-)
 
 //had to name the file Text so that it does not conflict with two.js/src/text
 export default class Text extends Nodule {
@@ -32,19 +33,24 @@ export default class Text extends Nodule {
    * The vector location of the Test on the default unit sphere (without the z coord)
    */
   public _locationVector = new Vector2(1, 0);
+  static mathJaxScaleFactor = 0;
 
   constructor(text: string, noduleName: string = "None") {
     super(noduleName);
-    this.textObject = new Group();
+    // this.textObject = new Group();
     this.glowingTextObject = new Group();
 
-    if (two === null) {
-      const se = useSEStore();
-      const { twoInstance } = se;
-      two = twoInstance as Two;
+    if (Text.mathJaxScaleFactor === 0) {
+      // Compute the scale factor based on the height of lowercase 'm'
+      const em: SVGElement = MathJax.tex2svg("\\text{m}", TEX_OPTIONS);
+      const em_svg = em.querySelector("svg") as SVGGraphicsElement;
+      const em_group = two.interpret(em_svg, true, false);
+      em_group.mask = undefined;
+      em_group.scale = new Two.Vector(1, -1);
+      const em_box2 = em_group.getBoundingClientRect();
+      Text.mathJaxScaleFactor = TEXT_HEIGHT / em_box2.height;
     }
-
-    this.setupUsing(text);
+    this.textObject = this.setupUsing(text);
 
     // Set the properties of the points that never change - stroke width and some glowing options
     this.textObject.noStroke();
@@ -54,61 +60,22 @@ export default class Text extends Nodule {
     this.styleOptions.set(StyleCategory.Label, DEFAULT_TEXT_TEXT_STYLE);
   }
 
-  setupUsing(text: string) {
-    if (text.includes("$")) {
-      // Does it contain a LaTeX math?
-      const parts = text
-        .split("$")
-        .map(s => s.trim())
-        .filter(s => s.trim().length > 0);
-      let xOffset = 0;
-      let estTextHeight = 15;
-      parts.forEach((tok, idx) => {
-        console.debug(
-          `Placing ${tok} at offset ${xOffset} estimated text height ${estTextHeight}`
-        );
-        if (idx % 2 == 0) {
-          // the token is a plain text
-          const plainText = new TwoJsText(tok, xOffset, 0, {
-            size: SETTINGS.text.fontSize
-          });
-          this.textObject.add(plainText);
-          this.glowingTextObject.add(plainText.clone() as TwoJsText);
-          const { width, height } = plainText.getBoundingClientRect();
-          estTextHeight = 0.8 * height + 0.2 * estTextHeight;
-          console.debug(`Dimension of ${tok} is ${width}x${height}`);
-          xOffset += width;
-        } else {
-          // the token is a TeX equation
-          const mathjax_svg: SVGElement = MathJax.tex2svg(tok, {
-            display: true,
-            ex: 10
-          });
-          const svg = mathjax_svg.querySelector("svg") as SVGGraphicsElement;
-          const g = two!!.interpret(svg, /* shallow */ false, /* add */ true);
-          g.scale = new Two.Vector(0.1, -0.1);
-          g.translation.x = xOffset - 10;
-          g.mask = undefined; // This prevents TwoJS SVG renderer from generating the clip-path
-          const dim1 = g.getBoundingClientRect();
-          // console.debug(`Dimension of of SVG ${dim1.width}x${dim1.height}`);
-          const scaleFactor = estTextHeight / dim1.height;
-          g.scale = new Two.Vector(scaleFactor * 0.15, -scaleFactor * 0.15);
-          const dim2 = g.getBoundingClientRect();
-          console.debug(
-            `Dimension of of scaled SVG ${dim2.width}x${dim2.height}`
-          );
-          xOffset += dim2.width + 8;
-          this.textObject.add(g);
-        }
-      });
-    } else {
-      const oneText = new TwoJsText(text, 1, 0, {
-        size: SETTINGS.text.fontSize
-      });
-      const glowingText = oneText.clone() as TwoJsText;
-      this.glowingTextObject.add(glowingText);
-      this.textObject.add(oneText);
-    }
+  setupUsing(text: string): Group {
+    // Wrap non-Tex tokens inside \text{}, and remove $
+    // "Hello $\alpha$" becomes "\text{Hello} \alpha"
+    // "Hello world" becomes "\text{Hello world}"
+    let asTex: string;
+    asTex = text
+      .split("$")
+      // Wrap non-TeX tokens in \text{___}
+      .map((tok, idx) => (idx % 2 === 0 ? `\\text{${tok}}` : tok))
+      .join("");
+    const mathjax_svg: SVGElement = MathJax.tex2svg(asTex, TEX_OPTIONS);
+    const svg = mathjax_svg.querySelector("svg") as SVGElement;
+    const g = two!!.interpret(svg, /* shallow */ true, /* add */ false);
+    g.scale = new Two.Vector(Text.mathJaxScaleFactor, -Text.mathJaxScaleFactor);
+    g.mask = undefined; // This prevents TwoJS SVG renderer from generating the clip-path
+    return g;
   }
   //private _defaultName = "";
 
@@ -213,9 +180,12 @@ export default class Text extends Nodule {
     // console.log("Text adjust size")
     const labelStyle = this.styleOptions.get(StyleCategory.Label);
     const textScalePercent = labelStyle?.labelTextScalePercent ?? 100;
-    this.textObject.scale = (Text.textScaleFactor * textScalePercent) / 100;
+    const scaleFactor =
+      (Text.textScaleFactor * Text.mathJaxScaleFactor * textScalePercent) / 100;
+    this.textObject.scale = new Two.Vector(scaleFactor, -scaleFactor);
+
     this.glowingTextObject.scale =
-      (Text.textScaleFactor * textScalePercent) / 100;
+      (Text.textScaleFactor * Text.mathJaxScaleFactor * textScalePercent) / 100;
   }
 
   /**
@@ -364,7 +334,7 @@ export default class Text extends Nodule {
     this.setupUsing(txt);
   }
 
-  public setDefaultText(txt:string):void{
-    this._defaultText = txt
+  public setDefaultText(txt: string): void {
+    this._defaultText = txt;
   }
 }
