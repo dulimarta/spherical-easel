@@ -11,6 +11,7 @@ import {
 import { toSVGType } from "@/types";
 import { Text as TwoJsText } from "two.js/src/text";
 import { Group } from "two.js/src/group";
+import { Path } from "two.js/src/path";
 
 // https://stackoverflow.com/questions/76696724/how-to-import-mathjax-in-esm-modules
 import "mathjax/es5/tex-svg";
@@ -21,12 +22,14 @@ let two = new Two({ fitted: true, autostart: false });
 const TEX_OPTIONS = { display: true, ex: 10 };
 const TEXT_HEIGHT = 8; // Why 8? it seems to work :-)
 
+console.debug("MJ Config", MathJax.config);
+
 //had to name the file Text so that it does not conflict with two.js/src/text
 export default class Text extends Nodule {
   protected textObject: Group;
-  protected glowingTextObject: Group;
+  // protected glowingTextObject: Group;
 
-  private glowingStrokeColor = SETTINGS.text.glowingStrokeColor;
+  // private glowingStrokeColor = SETTINGS.text.glowingStrokeColor;
 
   private _defaultText = "SphericalEasel";
   /**
@@ -38,7 +41,7 @@ export default class Text extends Nodule {
   constructor(text: string, noduleName: string = "None") {
     super(noduleName);
     // this.textObject = new Group();
-    this.glowingTextObject = new Group();
+    // this.glowingTextObject = new Group();
 
     if (Text.mathJaxScaleFactor === 0) {
       // Compute the scale factor based on the height of lowercase 'm'
@@ -51,11 +54,12 @@ export default class Text extends Nodule {
       Text.mathJaxScaleFactor = TEXT_HEIGHT / em_box2.height;
     }
     this.textObject = this.setupUsing(text);
+    console.debug("Text group is", this.textObject);
 
     // Set the properties of the points that never change - stroke width and some glowing options
-    this.textObject.noStroke();
-    this.glowingTextObject.linewidth = SETTINGS.text.glowingStrokeWidth;
-    this.glowingTextObject.visible = false;
+    // this.textObject.noStroke();
+    // this.glowingTextObject.linewidth = SETTINGS.text.glowingStrokeWidth;
+    // this.glowingTextObject.visible = false;
 
     this.styleOptions.set(StyleCategory.Label, DEFAULT_TEXT_TEXT_STYLE);
   }
@@ -72,9 +76,15 @@ export default class Text extends Nodule {
       .join("");
     const mathjax_svg: SVGElement = MathJax.tex2svg(asTex, TEX_OPTIONS);
     const svg = mathjax_svg.querySelector("svg") as SVGElement;
-    const g = two!!.interpret(svg, /* shallow */ true, /* add */ false);
+    // FALSE FALSE: ok
+    // FALSE TRUE: ok
+    // TRUE FALSE: ok
+    // TRUE TRUE: does not show up
+    console.debug("Parsed SVG", svg);
+    const g = two!!.interpret(svg, /* shallow */ false, /* add */ false);
     g.scale = new Two.Vector(Text.mathJaxScaleFactor, -Text.mathJaxScaleFactor);
     g.mask = undefined; // This prevents TwoJS SVG renderer from generating the clip-path
+    console.debug("TeX group is", g.id);
     return g;
   }
   //private _defaultName = "";
@@ -99,24 +109,31 @@ export default class Text extends Nodule {
 
   glowingDisplay(): void {
     this.textObject.visible = true;
-    // console.debug("Glowing text count", this.glowingTextObject.length)
-    this.glowingTextObject.visible = true;
+    // this.glowingTextObject.visible = true;
+    const pp = this.textObject.getByType(Two.Path);
+    pp.map(s => s as Path).forEach(p => {
+      p.fill = "rgb(230,5,5)";
+    });
   }
 
   normalDisplay(): void {
     this.textObject.visible = true;
-    this.glowingTextObject.visible = false;
+    // this.glowingTextObject.visible = false;
+    const pp = this.textObject.getByType(Two.Path);
+    pp.map(s => s as Path).forEach(p => {
+      p.fill = "black";
+    });
   }
 
   addToLayers(layers: Group[]): void {
     // We must add glowing text before the text itself,
     // otherwise the glowing shadow will cover the text
-    layers[LAYER.foregroundText].add(this.glowingTextObject);
+    // layers[LAYER.foregroundText].add(this.glowingTextObject);
     layers[LAYER.foregroundText].add(this.textObject);
   }
   removeFromLayers(layers: Group[]): void {
     layers[LAYER.foregroundText].remove(this.textObject);
-    layers[LAYER.foregroundText].remove(this.glowingTextObject);
+    // layers[LAYER.foregroundText].remove(this.glowingTextObject);
   }
   updateDisplay(): void {
     this.normalDisplay();
@@ -124,7 +141,7 @@ export default class Text extends Nodule {
   setVisible(flag: boolean): void {
     if (!flag) {
       this.textObject.visible = false;
-      this.glowingTextObject.visible = false;
+      // this.glowingTextObject.visible = false;
     } else {
       this.normalDisplay();
     }
@@ -184,8 +201,8 @@ export default class Text extends Nodule {
       (Text.textScaleFactor * Text.mathJaxScaleFactor * textScalePercent) / 100;
     this.textObject.scale = new Two.Vector(scaleFactor, -scaleFactor);
 
-    this.glowingTextObject.scale =
-      (Text.textScaleFactor * Text.mathJaxScaleFactor * textScalePercent) / 100;
+    // this.glowingTextObject.scale =
+    //   (Text.textScaleFactor * Text.mathJaxScaleFactor * textScalePercent) / 100;
   }
 
   /**
@@ -198,6 +215,7 @@ export default class Text extends Nodule {
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
+    console.debug("Stylize is called");
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
         // There is no temporary text so this should never be called
@@ -207,57 +225,16 @@ export default class Text extends Nodule {
       case DisplayStyle.ApplyCurrentVariables: {
         // Use the current variables to directly modify the js objects.
         const labelStyle = this.styleOptions.get(StyleCategory.Label);
-
-        this.textObject.children
-          .map(c => c as TwoJsText)
-          .forEach((oneText, idx) => {
-            // we may want to modify this to allow changes in the text from the style panel
-            if (labelStyle?.labelTextStyle !== "bold") {
-              oneText.style = (labelStyle?.labelTextStyle ??
-                SETTINGS.label.style) as "normal" | "italic";
-              oneText.weight = 500;
-            } else if (labelStyle?.labelTextStyle === "bold") {
-              oneText.weight = 1000;
-            }
-
-            oneText.family =
-              labelStyle?.labelTextFamily ?? SETTINGS.label.family;
-
-            oneText.decoration = (labelStyle?.labelTextDecoration ??
-              SETTINGS.label.decoration) as
-              | "none"
-              | "underline"
-              | "strikethrough";
-          });
-        this.glowingTextObject.children
-          .map(c => c as TwoJsText)
-          .forEach(glowText => {
-            if (labelStyle?.labelTextStyle !== "bold") {
-              glowText.style = (labelStyle?.labelTextStyle ??
-                SETTINGS.label.style) as "normal" | "italic";
-              glowText.weight = 500;
-            } else if (labelStyle?.labelTextStyle === "bold") {
-              glowText.weight = 1000;
-            }
-            glowText.family =
-              labelStyle?.labelTextFamily ?? SETTINGS.label.family;
-            glowText.decoration = (labelStyle?.labelTextDecoration ??
-              SETTINGS.label.decoration) as
-              | "none"
-              | "underline"
-              | "strikethrough";
-            glowText.stroke = this.glowingStrokeColor;
-          });
         this.textObject.rotation = labelStyle?.labelTextRotation ?? 0;
-        this.glowingTextObject.rotation = labelStyle?.labelTextRotation ?? 0;
+        // this.glowingTextObject.rotation = labelStyle?.labelTextRotation ?? 0;
         // FRONT = To shoehorn text into label, the front fill color is the same as overall stroke color, there are no front/back for text
-        const frontFillColor =
-          labelStyle?.labelFrontFillColor ?? SETTINGS.text.fillColor;
-        if (Nodule.rgbaIsNoFillOrNoStroke(frontFillColor)) {
-          this.textObject.noFill();
-        } else {
-          this.textObject.fill = frontFillColor;
-        }
+        // const frontFillColor =
+        //   labelStyle?.labelFrontFillColor ?? SETTINGS.text.fillColor;
+        // if (Nodule.rgbaIsNoFillOrNoStroke(frontFillColor)) {
+        //   this.textObject.noFill();
+        // } else {
+        //   this.textObject.fill = frontFillColor;
+        // }
 
         break;
       }
@@ -308,10 +285,10 @@ export default class Text extends Nodule {
       this._locationVector.x,
       -this._locationVector.y
     );
-    this.glowingTextObject.position.set(
-      this._locationVector.x,
-      -this._locationVector.y
-    );
+    // this.glowingTextObject.position.set(
+    //   this._locationVector.x,
+    //   -this._locationVector.y
+    // );
 
     //this.updateDisplay();  //<--- do not do this! disconnect the setting of position with the display, if you leave this in
     //then this turns on the display of the vertex point of the angle marker in a bad way. It turns on the
@@ -329,8 +306,8 @@ export default class Text extends Nodule {
 
   set text(txt: string) {
     console.debug("Setting text to", txt);
-    this.textObject.children.splice(0);
-    this.glowingTextObject.children.splice(0);
+    // this.textObject.children.splice(0);
+    // this.glowingTextObject.children.splice(0);
     this.setupUsing(txt);
   }
 

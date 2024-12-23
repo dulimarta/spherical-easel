@@ -130,9 +130,14 @@ export class SEText extends SENodule {
     this.ref.text = newText; // Update the Two.js text instance
   }
 
-  public setDefaultName(txt:string):void{
+  public set glowing(onOff: boolean) {
+    if (onOff) this.ref.glowingDisplay();
+    else this.ref.normalDisplay();
+  }
+
+  public setDefaultName(txt: string): void {
     // console.log("set default name of ", this.name, "to", txt)
-    this.ref.setDefaultText(txt)
+    this.ref.setDefaultText(txt);
   }
   public accept(v: Visitor): boolean {
     return false;
