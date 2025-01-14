@@ -8,6 +8,9 @@ import SETTINGS from "@/global-settings";
 import { createTestingPinia } from "@pinia/testing";
 import { StyleCategory } from "@/types/Styles";
 import Nodule from "@/plottables/Nodule";
+import MouseHandler from "@/eventHandlers/MouseHandler";
+import { SENodule } from "@/models/internal";
+import { Command } from "@/commands/Command";
 
 const R = SETTINGS.boundaryCircle.radius;
 
@@ -27,6 +30,9 @@ describe("SphereFrame: Template", () => {
     });
     wrapper = out.wrapper;
     SEStore = useSEStore(testPinia);
+    SENodule.setGlobalStore(SEStore);
+    Command.setGlobalStore(SEStore);
+    MouseHandler.setGlobalStore(SEStore);
   });
 
   it("correct default styling of a point", async () => {

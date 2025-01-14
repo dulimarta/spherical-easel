@@ -41,11 +41,12 @@ function prepareWrapper(
       collection: vi.fn(),
       doc: vi.fn(),
       // docs: vi.fn(),
+      updateDoc: vi.fn(),
       getDoc: vi.fn().mockResolvedValue({} as DocumentSnapshot),
       getDocs: vi.fn().mockImplementation(() => ({
         docs: []
       })),
-      getFirestore: vi.fn(),
+      getFirestore: vi.fn()
     };
   });
   vi.mock("firebase/auth", () => {
