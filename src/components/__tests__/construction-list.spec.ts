@@ -36,16 +36,24 @@ const sampleData = () => {
 // import { mockFirebase } from "firestore-vitest-mock/mocks/firebase";
 function prepareWrapper(
 ) {
-  vi.mock("firebase/firestore",  () => {
+  vi.mock("firebase/firestore", async fn_arg => {
+    const firestoreObject = (await fn_arg()) as object;
+
+    // console.debug("Construction-list.spec.ts: What is this?", firestoreObject);
     return {
       collection: vi.fn(),
       doc: vi.fn(),
       // docs: vi.fn(),
       updateDoc: vi.fn(),
       getDoc: vi.fn().mockResolvedValue({} as DocumentSnapshot),
-      getDocs: vi.fn().mockImplementation(() => ({
-        docs: []
-      })),
+      getDocs: vi.fn().mockImplementation(() => {
+        console.debug(
+          "construction-list.spec.ts: Mocked implementation of getDocs is called"
+        );
+        return {
+          docs: []
+        };
+      }),
       getFirestore: vi.fn()
     };
   });

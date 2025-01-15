@@ -6,41 +6,6 @@ import { useConstructionStore } from "@/stores/construction";
 import { SphericalConstruction } from "@/types";
 import { Matrix4 } from "three";
 import { useAccountStore } from "@/stores/account";
-// import firebasemock from "firebase-mock";
-// const mockAuth = new firebasemock.MockAuthentication();
-// const mockFirestore = new firebasemock.MockFirestore();
-// const mockStorage = new firebasemock.MockStorage();
-// const mockSDK = new firebasemock.MockFirebaseSdk(
-//   () => null, // Realtime DB
-//   // () => mockAuth,
-//   // () => mockFirestore,
-//   // () => mockStorage,
-//   () => null // Messaging
-// );
-// import i18n from "../../i18n";
-// mockFirebase()
-// import firebase from "firebase/app";
-
-// const fakeFirebase = firebaseStub(
-//   {
-//     database: {
-//       users: [
-//         {
-//           id: "USR001",
-//           _collections: {
-//             constructions: []
-//           }
-//         }
-//       ],
-//       constructions: []
-//     },
-//     currentUser: fakeUser
-//   },
-//   {
-//     includeIdsInData: true,
-//     mutable: true
-//   }
-// );
 
 // vi.mock("vue-i18n", async orig => {
 //   const z = (await orig()) as object;
@@ -48,8 +13,6 @@ import { useAccountStore } from "@/stores/account";
 //   // console.debug("What is this?", orig, "and also this", z);
 //   return { ...z, t: (key: string) => key };
 // });
-
-//
 
 const sampleData = () => {
   const arr: Array<SphericalConstruction> = [];
@@ -72,12 +35,12 @@ const sampleData = () => {
   return arr;
 };
 
-vi.mock("firebase/firestore", async orig => {
-  const z = (await orig()) as object;
+vi.mock("firebase/firestore", async fnArg => {
+  const firestoreObject = (await fnArg()) as object;
 
-  // console.debug("What is this?", z);
+  // console.debug("Construction-loader.spec.ts: What is this?", firestoreObject);
   return {
-    ...z,
+    ...firestoreObject,
     getFirestore: vi.fn().mockReturnThis(),
     collection: vi.fn(),
     getDocs: vi.fn().mockImplementation(() => {

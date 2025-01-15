@@ -30,13 +30,13 @@ vi.mock("firebase/auth", async orig => {
 vi.mock("firebase/firestore", async orig => {
   const z = (await orig()) as object;
 
-  // console.debug("What is this?", z);
+  console.debug("What is this?", z);
   return {
     ...z,
     getFirestore: vi.fn().mockReturnThis(),
     collection: vi.fn(),
     getDocs: vi.fn().mockImplementation(() => {
-      console.debug("Inside mocked getDocs()");
+      console.debug("vitest-setup.mts: Inside mocked getDocs()");
       return {
         docs: []
       };
