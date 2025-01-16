@@ -109,10 +109,15 @@ describe("Construction Loader", () => {
 
   it("shows public constructions", async () => {
     vi.useFakeTimers();
+    // Create a Vue and Pinia instance for testing
+    // The second argument to createWrapper is an object (of options)
+    // to customize how the two instances are created
     const { wrapper, testPinia } = createWrapper(TestedComponent, {});
+    // Inject the test pinia instance to the store
     const constructionStore = useConstructionStore(testPinia);
     const testData = sampleData();
     constructionStore.publicConstructions = testData;
+    // Wait for VueJS next update cycle so the UI is refreshed
     await wrapper.vm.$nextTick();
     const pubPanel = wrapper.find("[data-testid=publicPanel");
     console.debug("Public panel", pubPanel.text());
