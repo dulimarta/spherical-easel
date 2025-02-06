@@ -14,27 +14,7 @@
     }
   },
   "vetur.format.options.tabSize": 2,
-  "workbench.colorCustomizations": {
-    "activityBar.activeBackground": "#aa83d3",
-    "activityBar.activeBorder": "#e6cfb8",
-    "activityBar.background": "#aa83d3",
-    "activityBar.foreground": "#15202b",
-    "activityBar.inactiveForeground": "#15202b99",
-    "activityBarBadge.background": "#e6cfb8",
-    "activityBarBadge.foreground": "#15202b",
-    "statusBar.background": "#905dc6",
-    "statusBar.foreground": "#e7e7e7",
-    "statusBarItem.hoverBackground": "#aa83d3",
-    "titleBar.activeBackground": "#905dc6",
-    "titleBar.activeForeground": "#e7e7e7",
-    "titleBar.inactiveBackground": "#905dc699",
-    "titleBar.inactiveForeground": "#e7e7e799",
-    "statusBarItem.remoteBackground": "#905dc6",
-    "statusBarItem.remoteForeground": "#e7e7e7",
-    "commandCenter.border": "#e7e7e799",
-    "statusBar.debuggingBackground": "#93c65d",
-    "statusBar.debuggingForeground": "#15202b"
-  },
+
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
