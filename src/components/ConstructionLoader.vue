@@ -1,3 +1,4 @@
+
 <template>
   <div class="pt-2 mr-2" id="cloader">
     <!--- WARNING: the "id" attribs below are needed for testing -->
@@ -11,6 +12,17 @@
       density="compact"
       :label="t('searchLabel')"
       :hint="searchResult" />
+
+
+ <!-- Add the treeview -->
+ <v-treeview
+    v-model="selectedItems"
+    :items="treeItems"
+    hoverable
+    activatable
+    class="mt-4"
+    @update:active="handleNodeSelection"
+  />
 
     <v-expansion-panels
       eager
@@ -90,6 +102,21 @@ import { SphericalConstruction } from "@/types";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 import { onMounted } from "vue";
+import { VTreeview } from 'vuetify/labs/VTreeview'
+import { createVuetify } from 'vuetify'
+
+// Add this line right after your imports
+//TODO: "Do not create a 2nd vuetify instance" - Dr.Dulimarta
+/*
+const vuetify = createVuetify({
+  components: {
+    VTreeview,
+  },
+})
+*/
+
+
+// Add to your setup function
 const { t } = useI18n();
 const filteredPrivateConstructions: Ref<Array<SphericalConstruction>> = ref([]);
 const filteredPublicConstructions: Ref<Array<SphericalConstruction>> = ref([]);
@@ -106,6 +133,69 @@ let lastSearchKey: string | null = null;
 const openPanels: Ref<Array<string> | string> = ref("");
 const openMultiple = ref(false);
 const { idle, reset } = useIdle(1000); // wait for 1 second idle
+const selectedItems = ref<string[]>([]);
+
+// Add this computed property to your setup function
+const treeItems = computed(() => {
+  return [
+    {
+      id: 'root',
+      name: 'Constructions',
+      children: [
+        {
+          id: 'private',
+          name: t('privateConstructions'),
+          children: filteredPrivateConstructions.value.map(item => ({
+            id: `private-${item.id}`,
+            name: item.description,
+            leaf: true
+          }))
+        },
+        {
+          id: 'starred',
+          name: t('starredConstructions'),
+          children: filteredStarredConstructions.value.map(item => ({
+            id: `starred-${item.id}`,
+            name: item.description,
+            leaf: true
+          }))
+        },
+        {
+          id: 'public',
+          name: t('publicConstructions'),
+          children: filteredPublicConstructions.value.map(item => ({
+            id: `public-${item.id}`,
+            name: item.description,
+            leaf: true
+          }))
+        }
+      ]
+    }
+  ];
+});
+const handleNodeSelection = (value: string[]) => {
+  // Define an array to store selected items
+  const selectedItemsArray: string[] = [];
+
+  // Check and add matching items
+  if (value.includes('private')) {
+    selectedItemsArray.push('private');
+  }
+  if (value.includes('starred')) {
+    selectedItemsArray.push('starred');
+  }
+  if (value.includes('public')) {
+    selectedItemsArray.push('public');
+  }
+
+  // Update openPanels with the selected items
+  openPanels.value = selectedItemsArray;
+
+  // Ensure selectedItems is also updated as an array
+  selectedItems.value = [...selectedItemsArray]; // Correctly updates the array
+};
+
+
 
 onMounted(() => {
   filteredPublicConstructions.value.push(...publicConstructions.value);
