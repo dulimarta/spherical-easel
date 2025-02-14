@@ -106,11 +106,15 @@ import { VTreeview } from 'vuetify/labs/VTreeview'
 import { createVuetify } from 'vuetify'
 
 // Add this line right after your imports
+//TODO: "Do not create a 2nd vuetify instance" - Dr.Dulimarta
+/*
 const vuetify = createVuetify({
   components: {
     VTreeview,
   },
 })
+*/
+
 
 // Add to your setup function
 const { t } = useI18n();
