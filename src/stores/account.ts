@@ -28,6 +28,14 @@ import {
 } from "firebase/auth";
 
 // Declare helper functions OUTSIDE the store definition
+
+/**
+ * @desc insert a string into an array of strings in ascending alphabetical
+ *       order.
+ *
+ * @param newItem item to insert
+ * @param arr list to insert into
+ */
 function insertAscending(newItem: string, arr: string[]): void {
   let k = 0;
   while (k < arr.length && newItem > arr[k]) k++;
@@ -38,7 +46,6 @@ function insertAscending(newItem: string, arr: string[]): void {
 
 const DEFAULT_TOOL_NAMES: Array<Array<ActionMode>> = [[], []];
 
-// defineStore("hans", (): => {});
 export const useAccountStore = defineStore("acct", () => {
   const appDB = getFirestore();
   const appAuth = getAuth();
@@ -126,14 +133,17 @@ export const useAccountStore = defineStore("acct", () => {
           userProfilePictureURL.value = profilePictureURL;
         if (role) userRole.value = role.toLowerCase();
         if (userStarredConstructions) {
-          console.debug(`User ${displayName} (${u.uid}) has starred constructions`, userStarredConstructions)
+          console.debug(
+            `User ${displayName} (${u.uid}) has starred constructions`,
+            userStarredConstructions
+          );
           starredConstructionIDs.value = userStarredConstructions;
         }
         parseAndSetFavoriteTools(favoriteTools ?? "#");
       } else {
-        console.debug("Initialize user profile with login provider data?")
-        userDisplayedName.value = u.displayName ?? undefined
-        userProfilePictureURL.value = u.photoURL ?? undefined
+        console.debug("Initialize user profile with login provider data?");
+        userDisplayedName.value = u.displayName ?? undefined;
+        userProfilePictureURL.value = u.photoURL ?? undefined;
       }
     });
   }
@@ -192,10 +202,10 @@ export const useAccountStore = defineStore("acct", () => {
   }
 
   async function signOff(): Promise<void> {
-    starredConstructionIDs.value.splice(0)
-    userEmail.value = undefined
-    userDisplayedName.value = undefined
-    favoriteTools.value = []
+    starredConstructionIDs.value.splice(0);
+    userEmail.value = undefined;
+    userDisplayedName.value = undefined;
+    favoriteTools.value = [];
     await signOut(appAuth);
   }
 
@@ -241,6 +251,6 @@ export const useAccountStore = defineStore("acct", () => {
     resetToolset,
     signIn,
     signOff,
-    signUp,
+    signUp
   };
 });
