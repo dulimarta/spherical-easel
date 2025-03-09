@@ -43,6 +43,7 @@ import { watch } from "vue";
 import { mergeIntoImageUrl } from "@/utils/helpingfunctions";
 import { watchDebounced, watchPausable } from "@vueuse/core";
 import EventBus from "@/eventHandlers/EventBus";
+import { i } from "vite/dist/node/types.d-aGj9QkWt";
 
 let appStorage: FirebaseStorage;
 let appDB: Firestore;
@@ -154,7 +155,8 @@ async function parseDocument(
     publicDocId: remoteDoc.publicDocId,
     // use the parsed tools from firebase if valid, otherwise leave them undefined.
     tools: remoteDoc.tools ?? undefined,
-    starCount: remoteDoc.starCount
+    starCount: remoteDoc.starCount,
+    path: remoteDoc.path ?? undefined
   } as SphericalConstruction);
 }
 
@@ -165,6 +167,108 @@ async function parseDocument(
  */
 function sortConstructionArray(arr: Array<SphericalConstruction>) {
   arr.sort((a, b) => a.id.localeCompare(b.id));
+}
+
+/**
+ * TreeviewNode representation with helper classes
+ */
+class TreeviewNode {
+  constructor(
+    public id: string,
+    public name: string,
+    public leaf?: boolean,
+    public children?: Array<TreeviewNode>
+  ) {
+    this.id = id;
+    this.name = name;
+    this.leaf = leaf ?? false;
+  }
+
+  /**
+   *
+   * @param path path to ensure exists and then return reference to; follows format
+   *             'folder0/folder1/folderN/'
+   * @param fullpath do not explicitly define this; it is only meant to be used by recursive calls.
+   */
+  private getPathParentNode(path: string, fullpath?: string): TreeviewNode {
+    /* ensure fullpath is defined, as it won't be at the root */
+    fullpath = fullpath ?? this.id + "/" + path;
+    /* find the first slash */
+    const firstSlashIndex: number = path.indexOf("/");
+    if (firstSlashIndex >= 0) {
+      /* if the first slash exists, split the string into the current path and the remaining path */
+      const curPath: string = path.slice(0, firstSlashIndex);
+      const remainingPath: string = path.slice(firstSlashIndex + 1);
+
+      /* use the path up to this point as a unique ID since duplicate paths can't exist - note that
+       * this may still cause problems if the same paths exist in private and starred constructions since
+       * this function is unaware of the name of root node. */
+      var fullPathChunk: string = fullpath;
+      if (remainingPath.length > 0) {
+        fullPathChunk = fullPathChunk.replace("/" + remainingPath, "");
+        if (fullPathChunk.at(-1) != "/") {
+          fullPathChunk += "/";
+        }
+      }
+
+      if (!this.children) {
+        /* if this node does not have a children array, give it one and add the folder to it */
+        this.children = [];
+        this.children.push(new TreeviewNode(fullPathChunk, curPath));
+        /* recurse */
+        return this.children[0].getPathParentNode(remainingPath, fullpath);
+      } else {
+        const childNode = this.children.find(node => node.id === fullPathChunk);
+        /* if the child node exists, recurse on it */
+        if (childNode) {
+          return childNode.getPathParentNode(remainingPath, fullpath);
+        } else {
+          /* if the child node does not exist, create it and then recurse on it */
+          this.children.push(new TreeviewNode(fullPathChunk, curPath));
+          return this.children
+            .at(-1)!
+            .getPathParentNode(remainingPath, fullpath);
+        }
+      }
+    } else {
+      /* if there is no first slash, assume we are at the right place in the hierarchy for this node */
+      /* ensure this node has allocated an array for children */
+      this.children = this.children ?? [];
+      /* return a reference to this node */
+      return this;
+    }
+  }
+
+  public appendChild(child: SphericalConstruction) {
+    /* determine the path at which the child is supposed to exist */
+    const path = child.path ?? "";
+
+    const parentNode: TreeviewNode = this.getPathParentNode(path);
+    parentNode.children!.push(
+      new TreeviewNode(child.id, child.description, true)
+    );
+  }
+}
+
+/**
+ * make a tree out of the owned constructions that is directly consumable by vuetify treeview
+ *
+ * @param arr array to convert to a
+ */
+function treeifyOwnedConstructions(
+  arr: Array<SphericalConstruction>
+): TreeviewNode {
+  let root: TreeviewNode = new TreeviewNode(
+    "Owned Constructions",
+    "Owned Constructions"
+  );
+
+  /* TODO append every construction in the array to the root */
+  arr.forEach(con => {
+    root.appendChild(con);
+  });
+
+  return root;
 }
 
 // define and export a store for constructions of all types
@@ -543,6 +647,7 @@ export const useConstructionStore = defineStore("construction", () => {
     const constructionArray: Array<SphericalConstruction> = await Promise.all(
       parseTask
     );
+    /* clear the existing targetArr list */
     targetArr.splice(0);
     /*
       push the newly parsed and downloaded constructions into the array
