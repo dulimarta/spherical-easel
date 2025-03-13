@@ -2,7 +2,8 @@ import {
   ConstructionInFirestore,
   SphericalConstruction,
   ConstructionScript,
-  PublicConstructionInFirestore
+  PublicConstructionInFirestore,
+  StarredConstruction
 } from "@/types";
 import { Command } from "@/commands/Command";
 import { defineStore } from "pinia";
@@ -668,23 +669,51 @@ export const useConstructionStore = defineStore("construction", () => {
   async function parseStarredConstructions(fromArr: string[]) {
     if (fromArr.length > 0 && publicParsed) {
       console.debug("List of favorite items", fromArr);
-      const [star, unstar] = allPublicConstructions.partition(s => {
-        const isStar = fromArr.some(favId => favId === s.publicDocId);
-        return isStar;
+      /* parse fromArr into a combination of ID and path */
+      const stars: Array<StarredConstruction> = [];
+      fromArr.forEach(x => {
+        const splitIdx = x.indexOf("/");
+        stars.push({
+          id: splitIdx != -1 ? x.slice(0, splitIdx) : x,
+          path: splitIdx != -1 ? x.slice(splitIdx + 1) : ""
+        } as StarredConstruction);
       });
-      starredConstructions.value = star;
-      publicConstructions.value = unstar;
-      if (star.length !== fromArr.length) {
+
+      console.debug("parsed stars: " + JSON.stringify(stars));
+
+      /*
+       * build list of starred and unstarred constructions, setting the path of the starred constructions
+       * to that of the star item rather than the constructions's owned path.
+       */
+      var starred: Array<SphericalConstruction> = [];
+      var unstarred: Array<SphericalConstruction> = [];
+      allPublicConstructions.forEach(s => {
+        const matchingStar = stars.find(star => star.id === s.publicDocId);
+        if (matchingStar != undefined) {
+          s.path = matchingStar.path;
+          starred.push(s);
+        } else {
+          unstarred.push(s);
+        }
+      });
+      starredConstructions.value = starred;
+      publicConstructions.value = unstarred;
+
+      /* if the starred length is not as expected, filter the stars to only include existing
+         constructions and upload the cleaned list to firebase */
+      if (starred.length !== stars.length) {
         EventBus.fire("show-alert", {
           type: "info",
           key: "Some of your starred constructions are not available anymore"
         });
-        const cleanStarred = fromArr.filter(fav => {
-          const pos = allPublicConstructions.findIndex(
-            z => fav === z.publicDocId
-          );
-          return pos >= 0;
-        });
+        /* filter the stars list to only those that reference an existing public construction,
+           then convert to an array of strings based on the id/path combination of the StarredConstruction object */
+        const cleanStarred: Array<string> = stars
+          .filter(star =>
+            allPublicConstructions.some(z => star.id === z.publicDocId)
+          )
+          .map(x => x.id + (x.path.length > 0 ? "/" + x.path : ""));
+
         await updateStarredArrayInFirebase(cleanStarred);
       }
     } else {
@@ -930,11 +959,13 @@ export const useConstructionStore = defineStore("construction", () => {
       /*
         yes, we found the construction in the local store:
           1. increment its star count
-          2. remove it from the local store's list of public constructions,
-          3. add it to the local store's list of starred constructions
-          4. update the star count and user's starred list in firebase
+          2. set its path to an empty string
+          3. remove it from the local store's list of public constructions,
+          4. add it to the local store's list of starred constructions
+          5. update the star count and user's starred list in firebase
        */
       publicConstructions.value[pos].starCount++;
+      publicConstructions.value[pos].path = "";
       const inPublic = publicConstructions.value.splice(pos, 1);
       starredConstructions.value.push(...inPublic);
       starredConstructionIDs.value.push(...inPublic.map(z => z.publicDocId!));

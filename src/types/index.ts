@@ -698,6 +698,11 @@ export interface UserProfile {
   userStarredConstructions?: Array<string>;
 }
 
+export interface StarredConstruction {
+  id: string;
+  path: string;
+}
+
 export enum AngleMode {
   NONE,
   LINES,
