@@ -51,7 +51,4 @@ docs/.vitepress/cache/**
 /yarn.lock
 
 easel-original
-# Note: Changed on 2-14-25
 package-lock.json
-
-bun.lockb
