@@ -172,7 +172,6 @@ import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 import { onMounted } from "vue";
 import { VTreeview } from "vuetify/labs/VTreeview";
-import { createVuetify } from "vuetify";
 
 // Add to your setup function
 const { t } = useI18n();
@@ -196,41 +195,7 @@ const showDialog = ref(false);
 
 // Add this computed property to your setup function
 const treeItems = computed(() => {
-  return [
-    {
-      id: "root",
-      title: "Constructions",
-      children: [
-        {
-          id: "private",
-          title: t("privateConstructions"),
-          children: filteredPrivateConstructions.value.map(item => ({
-            id: `private-${item.id}`,
-            title: item.description,
-            leaf: true
-          }))
-        },
-        {
-          id: "starred",
-          title: t("starredConstructions"),
-          children: filteredStarredConstructions.value.map(item => ({
-            id: `starred-${item.id}`,
-            title: item.description,
-            leaf: true
-          }))
-        },
-        {
-          id: "public",
-          title: t("publicConstructions"),
-          children: filteredPublicConstructions.value.map(item => ({
-            id: `public-${item.id}`,
-            title: item.description,
-            leaf: true
-          }))
-        }
-      ]
-    }
-  ];
+  return constructionStore.constructionTree.getRootAsArr();
 });
 
 // watcher to debug updates to treeItems
