@@ -34,7 +34,7 @@
     <HintButton
       color="green-lighten-2"
       v-if="firebaseUid && hasObjects"
-      @click="() => saveConstructionDialog?.show()"
+      @click="showSaveConstructionDialog()"
       tooltip="Save construction">
       <template #icon>mdi-content-save</template>
     </HintButton>
@@ -52,7 +52,6 @@
       <template #icon>mdi-file-export</template>
     </HintButton>
   </div>
-
   <Dialog
     ref="saveConstructionDialog"
     :title="
@@ -85,6 +84,40 @@
       :label="
         t('construction.saveOverwrite', { docId: constructionDocId })
       "></v-switch>
+
+    <!-- Folder Selection Section -->
+    <div class="my-2" v-if="!isSavedAsPublicConstruction">
+      <v-divider class="mb-2"></v-divider>
+      <h3 class="text-subtitle-1 mb-2">Select or Enter Folder Path</h3>
+
+      <!-- Folder path input -->
+      <v-text-field
+        v-model="folderPath"
+        label="Folder Path (e.g., Math/Geometry)"
+        density="compact"
+        hint="Enter a new or existing folder path"
+        persistent-hint
+        clearable
+        @keypress.stop></v-text-field>
+
+      <!-- Existing Folders Treeview -->
+      <!-- this tree view collapses items when one is selected - might be better if it didn't -->
+      <p class="text-caption mt-2 mb-1">Or select an existing folder:</p>
+      <v-treeview
+        :items="treeItems"
+        select-strategy="single-independent"
+        selectable
+        dense
+        item-value="id"
+        open-all
+        class="mt-1 folder-tree"
+        @update:selected="handleNodeSelection">
+        <!-- TODO add icon to TreeviewNode type -->
+        <template v-slot:prepend="{ item }">
+          <v-icon>{{ /*item.icon ||*/ "mdi-folder" }}</v-icon>
+        </template>
+      </v-treeview>
+    </div>
   </Dialog>
   <Dialog
     ref="exportConstructionDialog"
@@ -266,7 +299,11 @@ import { onKeyDown } from "@vueuse/core";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { DialogAction } from "./Dialog.vue";
-import { SphericalConstruction } from "@/types/ConstructionTypes";
+import {
+  ConstructionPath,
+  SphericalConstruction,
+  TreeviewNode
+} from "@/types/ConstructionTypes";
 import EventBus from "@/eventHandlers/EventBus";
 import { useConstructionStore } from "@/stores/construction";
 import FileSaver from "file-saver";
@@ -277,6 +314,9 @@ import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { VTreeview } from "vuetify/labs/VTreeview";
+import { shallowRef } from "vue";
+
 enum SecretKeyState {
   NONE,
   ACCEPT_S,
@@ -379,6 +419,70 @@ onKeyDown(
   },
   { dedupe: true } // ignore repeated key events when keys are held down
 );
+
+const folderPath = ref("");
+
+/**
+ * take the "any" input from the v-treeview component's update:selected property
+ * and convert it into a filepath to use with the picker.
+ *
+ * @param input input from the v-treeview component
+ */
+const handleNodeSelection = (input: any) => {
+  const selected: Array<string> = input as Array<string>;
+  if (selected && selected.length > 0) {
+    const selectedParsed: ConstructionPath = new ConstructionPath(selected[0]);
+    folderPath.value = selectedParsed.toString();
+    console.log(
+      "parsed path: " +
+        selectedParsed.toString() +
+        "\n" +
+        "got root: " +
+        selectedParsed.getRoot()
+    );
+  }
+};
+
+async function doSave(): Promise<void> {
+  constructionStore
+    .saveConstruction(
+      constructionDocId.value,
+      constructionDescription.value,
+      isSavedAsPublicConstruction.value,
+      new ConstructionPath(folderPath.value).toString() // Add this parameter to pass the folder name
+    )
+    .then((docId: string) => {
+      // Force a refresh of the treeview data
+      setTimeout(() => {
+        // This creates a shallow copy of the array, triggering reactivity
+        privateConstructions.value = [...privateConstructions.value];
+      }, 500);
+      EventBus.fire("show-alert", {
+        key: "constructions.firestoreConstructionSaved",
+        keyOptions: { docId },
+        type: "info"
+      });
+      seStore.clearUnsavedFlag();
+    })
+    .catch((err: Error) => {
+      console.error("Can't save document", err.message);
+      EventBus.fire("show-alert", {
+        key: t("construction.firestoreSaveError", { error: err }),
+        keyOptions: { error: err },
+        type: "error"
+      });
+    })
+    .finally(() => {
+      saveConstructionDialog.value?.hide();
+    });
+}
+
+const treeItems: Ref<Array<TreeviewNode> | undefined> = ref(undefined);
+
+const showSaveConstructionDialog = () => {
+  treeItems.value = constructionStore.constructionTree.getOwnedFolders();
+  saveConstructionDialog.value?.show();
+};
 
 const isMyOwnConstruction = computed((): boolean => {
   // Confirm if the current construction is in my private list
@@ -555,34 +659,6 @@ async function doLoginOrLogout() {
   } else {
     router.replace({ path: "/account" });
   }
-}
-
-async function doSave(): Promise<void> {
-  constructionStore
-    .saveConstruction(
-      constructionDocId.value,
-      constructionDescription.value,
-      isSavedAsPublicConstruction.value
-    )
-    .then((docId: string) => {
-      EventBus.fire("show-alert", {
-        key: "constructions.firestoreConstructionSaved",
-        keyOptions: { docId },
-        type: "info"
-      });
-      seStore.clearUnsavedFlag();
-    })
-    .catch((err: Error) => {
-      console.error("Can't save document", err.message);
-      EventBus.fire("show-alert", {
-        key: t("construction.firestoreSaveError", { error: err }),
-        keyOptions: { error: err },
-        type: "error"
-      });
-    })
-    .finally(() => {
-      saveConstructionDialog.value?.hide();
-    });
 }
 
 function updateExportPreview(): void {

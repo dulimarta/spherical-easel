@@ -191,11 +191,11 @@
 </template>
 
 <script lang="ts" setup>
+import { type ActionMode } from "@/types";
 import {
-  type ActionMode,
-  type ConstructionScript,
+  ConstructionScript,
   SphericalConstruction
-} from "@/types";
+} from "@/types/ConstructionTypes";
 import Dialog, { DialogAction } from "./Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import { useAccountStore } from "@/stores/account";
@@ -207,7 +207,7 @@ import { SENodule } from "@/models/internal";
 import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
 import { useConstructionStore } from "@/stores/construction";
-import { useClipboard, usePermission } from "@vueuse/core";
+import { useClipboard } from "@vueuse/core";
 const props = defineProps<{
   items: Array<SphericalConstruction>;
   allowSharing: boolean;
