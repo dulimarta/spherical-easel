@@ -11,7 +11,10 @@
     <!-- the class "nodata" is used for testing. Do not remove it -->
     <span v-if="items.length === 0" class="_test_nodata">No data</span>
     <template v-for="(r, pos) in items" :key="`${r.id}-${pos}`">
-      <v-hover v-slot:default="{ isHovering, props }" :close-delay="50" :open-delay="100">
+      <v-hover
+        v-slot:default="{ isHovering, props }"
+        :close-delay="50"
+        :open-delay="100">
         <v-sheet
           @mouseover="onItemHover(r)"
           data-testid="constructionItem"
@@ -239,7 +242,9 @@ function previewOrDefault(dataUrl: string | undefined): string {
 function inMyStarredList(docId: string | undefined): boolean {
   // console.debug(`Starred? ${docId}`, starredConstructions.value.map(s => `ID ${s.id} PUB ${s.publicDocId}`).join(" ") )
   if (!docId) return false;
-  return starredConstructionIDs.value.some(z => z === docId);
+  return starredConstructionIDs.value.some(
+    z => constructionStore.parseStarredID(z).id === docId
+  );
 }
 // TODO: the onXXXX functions below are not bug-free yet
 // There is a potential race-condition when the mouse moves too fast

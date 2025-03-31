@@ -62,8 +62,6 @@ export const useAccountStore = defineStore("acct", () => {
   const excludedTools: Ref<ActionMode[]> = ref([]);
   const favoriteTools: Ref<Array<Array<ActionMode>>> = ref(DEFAULT_TOOL_NAMES);
   const constructionDocId: Ref<string | null> = ref(null);
-  // const constructionSaved = ref(false);
-  // const hasUnsavedWork = computed((): boolean => false);
 
   appAuth.onAuthStateChanged(async (u: User | null) => {
     if (u) {
@@ -77,6 +75,7 @@ export const useAccountStore = defineStore("acct", () => {
       firebaseUid.value = undefined;
     }
   });
+
   function resetToolset(includeAll = true): void {
     includedTools.value.splice(0);
     excludedTools.value.splice(0);
@@ -89,6 +88,7 @@ export const useAccountStore = defineStore("acct", () => {
       excludedTools.value.push(...toolNames);
     }
   }
+
   function includeToolName(name: ActionMode): void {
     const pos = excludedTools.value.findIndex((tool: string) => tool === name);
     if (pos >= 0) {
@@ -96,6 +96,7 @@ export const useAccountStore = defineStore("acct", () => {
       excludedTools.value.splice(pos, 1);
     }
   }
+
   function excludeToolName(name: ActionMode): void {
     const pos = includedTools.value.findIndex((tool: string) => tool === name);
     if (pos >= 0) {
@@ -103,6 +104,7 @@ export const useAccountStore = defineStore("acct", () => {
       includedTools.value.splice(pos, 1);
     }
   }
+
   function parseAndSetFavoriteTools(favTools: string) {
     if (favTools.trim().length > 0) {
       favoriteTools.value = favTools
@@ -147,18 +149,6 @@ export const useAccountStore = defineStore("acct", () => {
       }
     });
   }
-
-  // async function fetchStarredConstructions(uid: string): Promise<string[]> {
-  //   const ds: DocumentSnapshot = await getDoc(doc(appDB, "users", uid));
-  //   if (ds?.exists()) {
-  //     const uProfile = ds.data() as UserProfile;
-  //     // console.debug("User Profile Details from Firestore", uProfile);
-  //     const { userStarredConstructions } = uProfile;
-  //     return userStarredConstructions ?? [];
-  //   } else {
-  //     return []
-  //   }
-  // }
 
   async function signIn(
     email: string,

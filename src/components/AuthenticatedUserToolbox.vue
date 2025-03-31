@@ -266,7 +266,7 @@ import { onKeyDown } from "@vueuse/core";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { DialogAction } from "./Dialog.vue";
-import { SphericalConstruction } from "@/types";
+import { SphericalConstruction } from "@/types/ConstructionTypes";
 import EventBus from "@/eventHandlers/EventBus";
 import { useConstructionStore } from "@/stores/construction";
 import FileSaver from "file-saver";
@@ -793,7 +793,7 @@ function doExport() {
   "animationRepeat": "Repeat (0 is indefinite)",
   "animatedNumberOfFramesErrorMessage": "Enter a number of times to repeat between 1 and 200 or 0 for Indefinite",
   "animatedSVGOptions": "Animated SVG Options",
-  "animatedSVGBestViewed":"The exported files are best viewed in the Chrome browser.",
+  "animatedSVGBestViewed": "The exported files are best viewed in the Chrome browser.",
   "line": "Line: ",
   "segment": "Segment: ",
   "point": "Point: ",
