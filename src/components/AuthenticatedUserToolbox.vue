@@ -53,16 +53,19 @@
     </HintButton>
   </div>
   <Dialog
-    ref="saveConstructionDialog"
-    :title="
-      isSavedAsPublicConstruction
-        ? t('savePublicConstructionDialogTitle')
-        : t('savePrivateConstructionDialogTitle')
-    "
-    :yes-text="t('saveAction')"
-    :no-text="t('cancelAction')"
-    :yes-action="doSave"
-    max-width="40%">
+  ref="saveConstructionDialog"
+  :title="
+    isSavedAsPublicConstruction
+      ? t('savePublicConstructionDialogTitle')
+      : t('savePrivateConstructionDialogTitle')
+  "
+  :yes-text="t('saveAction')"
+  :no-text="t('cancelAction')"
+  :yes-action="doSave"
+  max-width="40%">
+  
+  <!-- Wrapper div to prevent scrolling in the main dialog -->
+  <div style="overflow: visible; max-height: none;">
     <v-text-field
       type="text"
       density="compact"
@@ -86,9 +89,9 @@
       "></v-switch>
 
     <!-- Folder Selection Section -->
-    <div class="my-2" v-if="!isSavedAsPublicConstruction">
+    <div class="my-2">
       <v-divider class="mb-2"></v-divider>
-      <h3 class="text-subtitle-1 mb-2">Select or Enter Folder Path</h3>
+      <h3 class="text-subtitle-1 mb-2">Select or Enter Folder Path in Owned Constructions</h3>
 
       <!-- Folder path input -->
       <v-text-field
@@ -101,24 +104,26 @@
         @keypress.stop></v-text-field>
 
       <!-- Existing Folders Treeview -->
-      <!-- this tree view collapses items when one is selected - might be better if it didn't -->
       <p class="text-caption mt-2 mb-1">Or select an existing folder:</p>
-      <v-treeview
-        :items="treeItems"
-        select-strategy="single-independent"
-        selectable
-        dense
-        item-value="id"
-        open-all
-        class="mt-1 folder-tree"
-        @update:selected="handleNodeSelection">
-        <!-- TODO add icon to TreeviewNode type -->
-        <template v-slot:prepend="{ item }">
-          <v-icon>{{ /*item.icon ||*/ "mdi-folder" }}</v-icon>
-        </template>
-      </v-treeview>
+      <div class="folder-tree-container">
+        <v-treeview
+          :items="treeItems"
+          select-strategy="single-independent"
+          selectable
+          dense
+          item-value="id"
+          open-all
+          class="mt-1 folder-tree"
+          @update:selected="handleNodeSelection">
+          <!-- TODO add icon to TreeviewNode type -->
+          <template v-slot:prepend="{ item }">
+            <v-icon>{{ /*item.icon ||*/ "mdi-folder" }}</v-icon>
+          </template>
+        </v-treeview>
+      </div>
     </div>
-  </Dialog>
+  </div>
+</Dialog>
   <Dialog
     ref="exportConstructionDialog"
     :title="t('exportConstructionDialogTitle')"
@@ -282,10 +287,40 @@
     </v-row>
   </Dialog>
 </template>
+
 <style scoped>
 #authToolbox {
   display: flex;
   flex-direction: column;
+}
+.folder-tree-container {
+  max-height: 200px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 8px;
+  background-color: white;
+}
+
+:deep(.v-treeview-node__root) {
+  min-width: max-content;
+}
+
+:deep(.v-treeview-node__label) {
+  white-space: nowrap;
+  overflow: visible;
+}
+
+:deep(.v-treeview-node__content) {
+  width: auto;
+  min-width: max-content;
+  overflow: visible;
+}
+
+:deep(.v-treeview) {
+  overflow: visible;
+  min-width: max-content;
 }
 </style>
 <script setup lang="ts">
@@ -301,6 +336,7 @@ import { useI18n } from "vue-i18n";
 import { DialogAction } from "./Dialog.vue";
 import {
   ConstructionPath,
+  ConstructionPathError,
   SphericalConstruction,
   TreeviewNode
 } from "@/types/ConstructionTypes";
@@ -444,37 +480,53 @@ const handleNodeSelection = (input: any) => {
 };
 
 async function doSave(): Promise<void> {
-  constructionStore
-    .saveConstruction(
-      constructionDocId.value,
-      constructionDescription.value,
-      isSavedAsPublicConstruction.value,
-      new ConstructionPath(folderPath.value).toString() // Add this parameter to pass the folder name
-    )
-    .then((docId: string) => {
-      // Force a refresh of the treeview data
-      setTimeout(() => {
-        // This creates a shallow copy of the array, triggering reactivity
-        privateConstructions.value = [...privateConstructions.value];
-      }, 500);
-      EventBus.fire("show-alert", {
-        key: "constructions.firestoreConstructionSaved",
-        keyOptions: { docId },
-        type: "info"
+  const path: ConstructionPath = new ConstructionPath(folderPath.value);
+  if (path.isValid()) {
+    constructionStore
+      .saveConstruction(
+        constructionDocId.value,
+        constructionDescription.value,
+        isSavedAsPublicConstruction.value,
+        path.toString() // Add this parameter to pass the folder name
+      )
+      .then((docId: string) => {
+        // Force a refresh of the treeview data
+        setTimeout(() => {
+          // This creates a shallow copy of the array, triggering reactivity
+          privateConstructions.value = [...privateConstructions.value];
+        }, 500);
+        EventBus.fire("show-alert", {
+          key: "constructions.firestoreConstructionSaved",
+          keyOptions: { docId },
+          type: "info"
+        });
+        seStore.clearUnsavedFlag();
+      })
+      .catch((err: Error) => {
+        console.error("Can't save document", err.message);
+        EventBus.fire("show-alert", {
+          key: t("construction.firestoreSaveError", { error: err }),
+          keyOptions: { error: err },
+          type: "error"
+        });
+      })
+      .finally(() => {
+        saveConstructionDialog.value?.hide();
       });
-      seStore.clearUnsavedFlag();
-    })
-    .catch((err: Error) => {
-      console.error("Can't save document", err.message);
-      EventBus.fire("show-alert", {
-        key: t("construction.firestoreSaveError", { error: err }),
-        keyOptions: { error: err },
-        type: "error"
-      });
-    })
-    .finally(() => {
-      saveConstructionDialog.value?.hide();
+  } else {
+    let errKey: string = "";
+    switch (path.getError()) {
+      case ConstructionPathError.TOOLONG:
+        errKey = t("construction.pathError.tooLong");
+        break;
+      case ConstructionPathError.EMPTYPATHS:
+        errKey = t("construction.pathError.emptyFolders");
+    }
+    EventBus.fire("show-alert", {
+      key: errKey,
+      type: "error"
     });
+  }
 }
 
 const treeItems: Ref<Array<TreeviewNode> | undefined> = ref(undefined);
@@ -847,7 +899,11 @@ function doExport() {
     "saveDescription": "Description",
     "saveOverwrite": "Overwrite the existing construction {docId}",
     "makePublic": "Make construction publicly available",
-    "firestoreSaveError": "Construction was not saved: {error}"
+    "firestoreSaveError": "Construction was not saved: {error}",
+    "pathError": {
+      "tooLong": "path exceeds the max character limit ({limit})",
+      "emptyFolders": "path contains empty folder names (usually caused by multiple slashes in a name)"
+    }
   },
   "sliderFileDimensions": "Exported file size {widthHeight} in pixels",
   "exportFormat": "Image Format",

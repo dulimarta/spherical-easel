@@ -1,18 +1,30 @@
 import { SphericalConstruction } from "..";
 
 /**
- * TreeviewNode representation with helper classes
+ * TreeviewNode representation
  */
 export class TreeviewNode {
+  /** node ID - the construction's id, or the filepath if the node is a folder */
   public id: string;
+  /** node title - the name that appears in the treeview */
   public title: string;
+  /** whether or not this node is a leaf */
   public leaf: boolean;
+  /** whether or not this node should be enabled. */
+  public disabled: boolean; /* NOTE - this field does not work properly in the treeview in our current version of vuetify (3.6.10) */
+  /** the node's children, if it has any */
   public children?: Array<TreeviewNode>;
 
+  /**
+   * @param id the node's ID
+   * @param title the node's display name
+   * @param leaf whether or not the node is a leaf
+   */
   constructor(id: string, title: string, leaf?: boolean) {
     this.id = id;
     this.title = title;
     this.leaf = leaf ?? false;
+    this.disabled = false;
   }
 
   /**

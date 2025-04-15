@@ -224,6 +224,14 @@ export const useConstructionStore = defineStore("construction", () => {
     { debounce: 500 /* milliseconds */ }
   );
 
+  watch(
+    () => privateConstructions.value,
+    async _ => {
+      constructionTree.setOwnedConstructions(privateConstructions);
+    },
+    { deep: true }
+  );
+
   // watch for changes in starred constructions
   watch(
     () => starredConstructionIDs.value,
