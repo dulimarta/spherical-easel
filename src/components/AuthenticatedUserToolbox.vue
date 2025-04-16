@@ -34,7 +34,7 @@
     <HintButton
       color="green-lighten-2"
       v-if="firebaseUid && hasObjects"
-      @click="() => saveConstructionDialog?.show()"
+      @click="showSaveConstructionDialog()"
       tooltip="Save construction">
       <template #icon>mdi-content-save</template>
     </HintButton>
@@ -52,18 +52,20 @@
       <template #icon>mdi-file-export</template>
     </HintButton>
   </div>
-
   <Dialog
-    ref="saveConstructionDialog"
-    :title="
-      isSavedAsPublicConstruction
-        ? t('savePublicConstructionDialogTitle')
-        : t('savePrivateConstructionDialogTitle')
-    "
-    :yes-text="t('saveAction')"
-    :no-text="t('cancelAction')"
-    :yes-action="doSave"
-    max-width="40%">
+  ref="saveConstructionDialog"
+  :title="
+    isSavedAsPublicConstruction
+      ? t('savePublicConstructionDialogTitle')
+      : t('savePrivateConstructionDialogTitle')
+  "
+  :yes-text="t('saveAction')"
+  :no-text="t('cancelAction')"
+  :yes-action="doSave"
+  max-width="40%">
+  
+  <!-- Wrapper div to prevent scrolling in the main dialog -->
+  <div style="overflow: visible; max-height: none;">
     <v-text-field
       type="text"
       density="compact"
@@ -85,7 +87,43 @@
       :label="
         t('construction.saveOverwrite', { docId: constructionDocId })
       "></v-switch>
-  </Dialog>
+
+    <!-- Folder Selection Section -->
+    <div class="my-2">
+      <v-divider class="mb-2"></v-divider>
+      <h3 class="text-subtitle-1 mb-2">Select or Enter Folder Path in Owned Constructions</h3>
+
+      <!-- Folder path input -->
+      <v-text-field
+        v-model="folderPath"
+        label="Folder Path (e.g., Math/Geometry)"
+        density="compact"
+        hint="Enter a new or existing folder path"
+        persistent-hint
+        clearable
+        @keypress.stop></v-text-field>
+
+      <!-- Existing Folders Treeview -->
+      <p class="text-caption mt-2 mb-1">Or select an existing folder:</p>
+      <div class="folder-tree-container">
+        <v-treeview
+          :items="treeItems"
+          select-strategy="single-independent"
+          selectable
+          dense
+          item-value="id"
+          open-all
+          class="mt-1 folder-tree"
+          @update:selected="handleNodeSelection">
+          <!-- TODO add icon to TreeviewNode type -->
+          <template v-slot:prepend="{ item }">
+            <v-icon>{{ /*item.icon ||*/ "mdi-folder" }}</v-icon>
+          </template>
+        </v-treeview>
+      </div>
+    </div>
+  </div>
+</Dialog>
   <Dialog
     ref="exportConstructionDialog"
     :title="t('exportConstructionDialogTitle')"
@@ -249,10 +287,40 @@
     </v-row>
   </Dialog>
 </template>
+
 <style scoped>
 #authToolbox {
   display: flex;
   flex-direction: column;
+}
+.folder-tree-container {
+  max-height: 200px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 8px;
+  background-color: white;
+}
+
+:deep(.v-treeview-node__root) {
+  min-width: max-content;
+}
+
+:deep(.v-treeview-node__label) {
+  white-space: nowrap;
+  overflow: visible;
+}
+
+:deep(.v-treeview-node__content) {
+  width: auto;
+  min-width: max-content;
+  overflow: visible;
+}
+
+:deep(.v-treeview) {
+  overflow: visible;
+  min-width: max-content;
 }
 </style>
 <script setup lang="ts">
@@ -266,7 +334,12 @@ import { onKeyDown } from "@vueuse/core";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { DialogAction } from "./Dialog.vue";
-import { SphericalConstruction } from "@/types";
+import {
+  ConstructionPath,
+  ConstructionPathError,
+  SphericalConstruction,
+  TreeviewNode
+} from "@/types/ConstructionTypes";
 import EventBus from "@/eventHandlers/EventBus";
 import { useConstructionStore } from "@/stores/construction";
 import FileSaver from "file-saver";
@@ -277,6 +350,9 @@ import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { VTreeview } from "vuetify/labs/VTreeview";
+import { shallowRef } from "vue";
+
 enum SecretKeyState {
   NONE,
   ACCEPT_S,
@@ -379,6 +455,86 @@ onKeyDown(
   },
   { dedupe: true } // ignore repeated key events when keys are held down
 );
+
+const folderPath = ref("");
+
+/**
+ * take the "any" input from the v-treeview component's update:selected property
+ * and convert it into a filepath to use with the picker.
+ *
+ * @param input input from the v-treeview component
+ */
+const handleNodeSelection = (input: any) => {
+  const selected: Array<string> = input as Array<string>;
+  if (selected && selected.length > 0) {
+    const selectedParsed: ConstructionPath = new ConstructionPath(selected[0]);
+    folderPath.value = selectedParsed.toString();
+    console.log(
+      "parsed path: " +
+        selectedParsed.toString() +
+        "\n" +
+        "got root: " +
+        selectedParsed.getRoot()
+    );
+  }
+};
+
+async function doSave(): Promise<void> {
+  const path: ConstructionPath = new ConstructionPath(folderPath.value);
+  if (path.isValid()) {
+    constructionStore
+      .saveConstruction(
+        constructionDocId.value,
+        constructionDescription.value,
+        isSavedAsPublicConstruction.value,
+        path.toString() // Add this parameter to pass the folder name
+      )
+      .then((docId: string) => {
+        // Force a refresh of the treeview data
+        setTimeout(() => {
+          // This creates a shallow copy of the array, triggering reactivity
+          privateConstructions.value = [...privateConstructions.value];
+        }, 500);
+        EventBus.fire("show-alert", {
+          key: "constructions.firestoreConstructionSaved",
+          keyOptions: { docId },
+          type: "info"
+        });
+        seStore.clearUnsavedFlag();
+      })
+      .catch((err: Error) => {
+        console.error("Can't save document", err.message);
+        EventBus.fire("show-alert", {
+          key: t("construction.firestoreSaveError", { error: err }),
+          keyOptions: { error: err },
+          type: "error"
+        });
+      })
+      .finally(() => {
+        saveConstructionDialog.value?.hide();
+      });
+  } else {
+    let errKey: string = "";
+    switch (path.getError()) {
+      case ConstructionPathError.TOOLONG:
+        errKey = t("construction.pathError.tooLong");
+        break;
+      case ConstructionPathError.EMPTYPATHS:
+        errKey = t("construction.pathError.emptyFolders");
+    }
+    EventBus.fire("show-alert", {
+      key: errKey,
+      type: "error"
+    });
+  }
+}
+
+const treeItems: Ref<Array<TreeviewNode> | undefined> = ref(undefined);
+
+const showSaveConstructionDialog = () => {
+  treeItems.value = constructionStore.constructionTree.getOwnedFolders();
+  saveConstructionDialog.value?.show();
+};
 
 const isMyOwnConstruction = computed((): boolean => {
   // Confirm if the current construction is in my private list
@@ -555,34 +711,6 @@ async function doLoginOrLogout() {
   } else {
     router.replace({ path: "/account" });
   }
-}
-
-async function doSave(): Promise<void> {
-  constructionStore
-    .saveConstruction(
-      constructionDocId.value,
-      constructionDescription.value,
-      isSavedAsPublicConstruction.value
-    )
-    .then((docId: string) => {
-      EventBus.fire("show-alert", {
-        key: "constructions.firestoreConstructionSaved",
-        keyOptions: { docId },
-        type: "info"
-      });
-      seStore.clearUnsavedFlag();
-    })
-    .catch((err: Error) => {
-      console.error("Can't save document", err.message);
-      EventBus.fire("show-alert", {
-        key: t("construction.firestoreSaveError", { error: err }),
-        keyOptions: { error: err },
-        type: "error"
-      });
-    })
-    .finally(() => {
-      saveConstructionDialog.value?.hide();
-    });
 }
 
 function updateExportPreview(): void {
@@ -771,7 +899,11 @@ function doExport() {
     "saveDescription": "Description",
     "saveOverwrite": "Overwrite the existing construction {docId}",
     "makePublic": "Make construction publicly available",
-    "firestoreSaveError": "Construction was not saved: {error}"
+    "firestoreSaveError": "Construction was not saved: {error}",
+    "pathError": {
+      "tooLong": "path exceeds the max character limit ({limit})",
+      "emptyFolders": "path contains empty folder names (usually caused by multiple slashes in a name)"
+    }
   },
   "sliderFileDimensions": "Exported file size {widthHeight} in pixels",
   "exportFormat": "Image Format",
@@ -793,7 +925,7 @@ function doExport() {
   "animationRepeat": "Repeat (0 is indefinite)",
   "animatedNumberOfFramesErrorMessage": "Enter a number of times to repeat between 1 and 200 or 0 for Indefinite",
   "animatedSVGOptions": "Animated SVG Options",
-  "animatedSVGBestViewed":"The exported files are best viewed in the Chrome browser.",
+  "animatedSVGBestViewed": "The exported files are best viewed in the Chrome browser.",
   "line": "Line: ",
   "segment": "Segment: ",
   "point": "Point: ",

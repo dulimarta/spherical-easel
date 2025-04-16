@@ -6,7 +6,7 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { Matrix4, Vector2, Vector3 } from "three";
+import { Vector2, Vector3 } from "three";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
@@ -20,7 +20,6 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEExpression } from "@/models/SEExpression";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { LAYER } from "@/global-settings";
-import { contains } from "two.js/src/utils/shape";
 // import "@types/google.maps"
 
 export interface Selectable {
@@ -647,37 +646,6 @@ export interface ObjectState {
   arcLength?: number;
   locationVector?: Vector3 | Vector2;
   sliderValue?: number;
-}
-
-export type ConstructionScript = Array<string | Array<string>>;
-
-export interface SphericalConstruction extends ConstructionInFirestore {
-  starCount: number;
-  id: string;
-  parsedScript: ConstructionScript;
-  sphereRotationMatrix: Matrix4;
-  objectCount: number;
-  // previewData: string;
-}
-
-export interface PublicConstructionInFirestore {
-  author: string; // Firebase Auth UID of the construction owner
-  constructionDocId: string;
-}
-
-export interface ConstructionInFirestore {
-  version: string;
-  author: string;
-  dateCreated: string;
-  script: string;
-  description: string;
-  starCount: number;
-  rotationMatrix?: string;
-  preview: string; // Either the data:image of the URL to the data:image
-  aspectRatio?: number /* width / height of the screen when image was capture*/;
-  publicDocId?: string; // linked to the document with structure PublicConstructionInFirebase
-  // A list of enabled tool buttons associated with this construction
-  tools: Array<ActionMode> | undefined;
 }
 
 /* Reference to a user's favorite tool in settings */
