@@ -8,7 +8,7 @@
     "test": "vitest --watch",
     "test:ui": "vitest --ui",
     "lint": "eslint . --ignore-path .gitignore",
-    "app:build": "bunx --bun vite build",
+    "app:build": "bun vite build",
     "build": "bun run app:build",
     "check:links": "vuepress check-md ./docs",
     "docs:build": "vitepress build docs",
