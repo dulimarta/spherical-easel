@@ -1,23 +1,47 @@
 <template>
-  <h2>SVG Files</h2>
-  <v-data-table :items="svgFiles" :headers="tableHeaders" density="compact" hover class="pa-4">
-    <template v-slot:item.actions="{ item }">
-      <v-icon v-if="!item.used" @click="deleteFromStorage(item.path, 'construction-svg', svgFiles)">
-        mdi-delete
-      </v-icon>
-      <span v-else>N/A</span>
-    </template>
-  </v-data-table>
-  <h2>Script Files</h2>
-  <v-data-table :items="scriptFiles" :headers="tableHeaders" density="compact" hover class="pa-4">
-    <template v-slot:item.actions="{ item }">
-      <v-icon v-if="!item.used" @click="deleteFromStorage(item.path, 'scripts', scriptFiles)">
-        mdi-delete
-      </v-icon>
-      <span v-else>N/A</span>
-    </template>
-  </v-data-table>
-  <!-- <v-data-table :items="constructionDetails" /> -->
+  <v-tabs v-model="tab">
+    <v-tab value="SVG">SVG Files</v-tab>
+    <v-tab value="Script">Script Files</v-tab>
+  </v-tabs>
+  <v-tabs-window v-model="tab">
+    <v-tabs-window-item value="SVG" class="mx-3">
+      <h2>SVG Files</h2>
+      <v-data-table
+        :items="svgFiles"
+        :headers="tableHeaders"
+        density="compact"
+        hover
+        class="pa-4">
+        <template v-slot:item.actions="{ item }">
+          <v-icon
+            v-if="!item.used"
+            @click="deleteFromStorage(item.path, 'construction-svg', svgFiles)">
+            mdi-delete
+          </v-icon>
+          <span v-else>N/A</span>
+        </template>
+      </v-data-table>
+    </v-tabs-window-item>
+    <v-tabs-window-item value="Script" class="mx-3">
+      <h2>Script Files</h2>
+      <v-data-table
+        :items="scriptFiles"
+        :headers="tableHeaders"
+        density="compact"
+        hover
+        class="pa-4">
+        <template v-slot:item.actions="{ item }">
+          <v-icon
+            v-if="!item.used"
+            @click="deleteFromStorage(item.path, 'scripts', scriptFiles)">
+            mdi-delete
+          </v-icon>
+          <span v-else>N/A</span>
+        </template>
+      </v-data-table>
+    </v-tabs-window-item>
+    <!-- <v-data-table :items="constructionDetails" /> -->
+  </v-tabs-window>
 </template>
 <script setup lang="ts">
 import { onMounted, Ref, ref } from "vue";
@@ -76,6 +100,7 @@ type Construction = {
 
 const svgFiles: Ref<CloudFile[]> = ref([]);
 const scriptFiles: Ref<CloudFile[]> = ref([]);
+const tab = ref("SVG");
 
 const constructionDetails: Ref<Construction[]> = ref([]);
 
@@ -149,11 +174,11 @@ function deleteFromStorage(
   parentDir: string,
   arr: Array<CloudFile>
 ) {
-  const pos = arr.findIndex(s => (s.path === fileName));
+  const pos = arr.findIndex(s => s.path === fileName);
   if (pos >= 0) {
-    arr.splice(pos, 1)
-    const aFile = storageRef(appStorage, `${parentDir}/${fileName}`)
-    deleteObject(aFile)
+    arr.splice(pos, 1);
+    const aFile = storageRef(appStorage, `${parentDir}/${fileName}`);
+    deleteObject(aFile);
   }
 }
 </script>
