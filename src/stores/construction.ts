@@ -227,7 +227,7 @@ export const useConstructionStore = defineStore("construction", () => {
   watch(
     () => privateConstructions.value,
     async _ => {
-      constructionTree.setOwnedConstructions(privateConstructions);
+      constructionTree.setOwnedConstructions(privateConstructions.value);
     },
     { deep: true }
   );
@@ -425,14 +425,14 @@ export const useConstructionStore = defineStore("construction", () => {
             ...localCopy,
             publicDocId: publicConstructionDoc.id
           });
-          constructionTree.setOwnedConstructions(privateConstructions);
+          constructionTree.setOwnedConstructions(privateConstructions.value);
         } else {
           await updateDoc(constructionDoc, {
             script: scriptData,
             preview: svgData
           });
           privateConstructions.value.push(localCopy);
-          constructionTree.setOwnedConstructions(privateConstructions);
+          constructionTree.setOwnedConstructions(privateConstructions.value);
         }
         return docId;
       });
@@ -541,6 +541,8 @@ export const useConstructionStore = defineStore("construction", () => {
     targetArr: Array<SphericalConstruction>
   ): Promise<void> {
     /* get a snapshot of the owner's constructions list */
+    if (!owner) return
+    console.debug("Parse owned collections of", owner)
     const qs: QuerySnapshot = await getDocs(
       collection(appDB, "users", owner, "constructions")
     );
@@ -567,7 +569,7 @@ export const useConstructionStore = defineStore("construction", () => {
     );
 
     /* refresh the constructiontree */
-    constructionTree.setOwnedConstructions(ref(targetArr));
+    constructionTree.setOwnedConstructions(targetArr);
   }
 
   /**
@@ -1007,6 +1009,17 @@ export const useConstructionStore = defineStore("construction", () => {
     return success;
   }
 
+  function addPath(root: string, newPath: string) {
+    let fullPath = root
+    if (newPath.startsWith("/"))
+      fullPath += newPath
+    else
+      fullPath += '/' + newPath
+    const path: ConstructionPath = new ConstructionPath(fullPath)
+    constructionTree.addFolder(path)
+    console.debug("Tree", constructionTree)
+  }
+
   return {
     /* state */
     currentConstructionPreview,
@@ -1025,6 +1038,7 @@ export const useConstructionStore = defineStore("construction", () => {
     starConstruction,
     unstarConstruction,
     parseStarredID,
+    addPath,
     moveConstructions
   };
 });

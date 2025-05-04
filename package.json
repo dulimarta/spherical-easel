@@ -42,7 +42,7 @@
     "vue-advanced-cropper": "^2.8.8",
     "vue-i18n": "^9.13.1",
     "vue-router": "~4.0.0",
-    "vuetify": "^3.6.10"
+    "vuetify": "~3.6.15"
   },
   "devDependencies": {
     "@maginapp/vuepress-plugin-katex": "~1.0.11",

@@ -16,8 +16,7 @@
     <ConstructionTreeDialog
       v-if="firebaseUid && firebaseUid.length > 0"
       v-model:visible="showDialog"
-      v-model:loadFolder="folderToLoad"
-      @move="" />
+      v-model:loadFolder="folderToLoad"/>
 
     <!-- Panels for Constructions -->
     <PanelsContainer :selected-folder="folderToLoad" />

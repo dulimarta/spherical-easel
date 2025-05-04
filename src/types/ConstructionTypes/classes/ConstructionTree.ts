@@ -66,28 +66,45 @@ export class ConstructionTree {
 
   /** append one or more construction to the owned constructions subtree */
   public addOwnedConstructions(...constructions: SphericalConstruction[]) {
-    constructions.forEach(construction => {
-      this.root[this.ownedIdx].appendChildConstruction(construction);
-    });
+    constructions
+      .toSorted((a, b) => {
+        if (a.path && b.path) { // Both path are defined
+          const pathCompare = a.path.localeCompare(b.path)
+          if (pathCompare !== 0) return pathCompare
+          return a.description.localeCompare(b.description);
+        } else if (!a.path && !b.path) // Neither path is defined
+          return a.description.localeCompare(b.description);
+        else if (a.path) // A has path, B does not
+          return -1
+        else // B has path, A does not
+          return +1
+      })
+      .forEach(construction => {
+        this.root[this.ownedIdx].appendChildConstruction(construction);
+      });
     this.updateCounter.value += 1;
   }
 
   /**
    * clear the owned constructions and replace them with a new list
    */
-  public setOwnedConstructions(
-    constructions: Ref<Array<SphericalConstruction>>
-  ) {
+  public setOwnedConstructions(constructions: Array<SphericalConstruction>) {
     this.root[this.ownedIdx].children?.clear();
-    this.addOwnedConstructions(...constructions.value);
+    this.addOwnedConstructions(...constructions);
     this.updateCounter.value += 1;
   }
 
   /** append one or more constructions to the starred constructions subtree */
   public addStarredConstructions(...constructions: SphericalConstruction[]) {
-    constructions.forEach(construction => {
-      this.root[this.starredIdx].appendChildConstruction(construction);
-    });
+    constructions
+      .toSorted((a, b) => {
+        if (!a.path) return +1;
+        if (!b.path) return -1;
+        return a.description.localeCompare(b.description);
+      })
+      .forEach(construction => {
+        this.root[this.starredIdx].appendChildConstruction(construction);
+      });
     this.updateCounter.value += 1;
   }
 
@@ -193,14 +210,17 @@ export class ConstructionTree {
       switch (path.getRoot()) {
         case ConstructionPathRoots.OWNED:
           parent = this.root[this.ownedIdx].getPathParentNode(path.toString());
+          this.updateCounter.value += 1;
           break;
         case ConstructionPathRoots.PUBLIC:
           parent = this.root[this.publicIdx].getPathParentNode(path.toString());
+          this.updateCounter.value += 1;
           break;
         case ConstructionPathRoots.STARRED:
           parent = this.root[this.starredIdx].getPathParentNode(
             path.toString()
           );
+          this.updateCounter.value += 1;
           break;
         default:
           /* nothing to be done */
