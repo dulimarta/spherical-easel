@@ -15,6 +15,18 @@ export class ChangeTextCommand extends Command {
     console.log(`Old Text = ${oldText}`);
     console.log(`New Text = ${newText}`);
   }
+  do(): void {
+    this.seText.text = this.newText;
+    Command.store.changeText({
+      textId: this.seText.id,
+      newText: this.newText
+    }); // Apply new text
+    this.seText.shallowUpdate();
+  }
+
+  saveState(): void {
+    this.lastState = this.seText.id;
+  }
 
   restoreState(): void {
     this.seText.text = this.oldText; // Restore old text
@@ -23,18 +35,6 @@ export class ChangeTextCommand extends Command {
       newText: this.oldText
     }); // Apply the restoration
     this.seText.shallowUpdate(); // Ensure the visual state is refreshed
-  }
-  saveState(): void {
-    this.lastState = this.seText.id;
-  }
-
-  do(): void {
-    this.seText.text = this.newText;
-    Command.store.changeText({
-      textId: this.seText.id,
-      newText: this.newText
-    }); // Apply new text
-    this.seText.shallowUpdate();
   }
 
   toOpcode(): null | string | Array<string> {

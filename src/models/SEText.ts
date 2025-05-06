@@ -9,15 +9,15 @@ import { Visitor } from "@/visitors/Visitor";
 import Text from "@/plottables/Text";
 import { DisplayStyle } from "@/plottables/Nodule";
 import {
-  DEFAULT_TEXT_BACK_STYLE,
-  DEFAULT_TEXT_FRONT_STYLE,
+  // DEFAULT_TEXT_BACK_STYLE,
+  // DEFAULT_TEXT_FRONT_STYLE,
   DEFAULT_TEXT_TEXT_STYLE
 } from "@/types/Styles";
 const { t } = i18n.global;
 
 const styleSet = new Set([
-  ...Object.getOwnPropertyNames(DEFAULT_TEXT_FRONT_STYLE),
-  ...Object.getOwnPropertyNames(DEFAULT_TEXT_BACK_STYLE),
+  // ...Object.getOwnPropertyNames(DEFAULT_TEXT_FRONT_STYLE),
+  // ...Object.getOwnPropertyNames(DEFAULT_TEXT_BACK_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_TEXT_TEXT_STYLE)
 ]);
 

@@ -233,7 +233,8 @@ export type SavedNames =
   | "pointVisibleBefore"
   | "earthLatitude"
   | "earthLongitude"
-  | "textObjectText";
+  | "textObjectText"
+  | "textStyle";
 
 export type ActionMode =
   | "angle"

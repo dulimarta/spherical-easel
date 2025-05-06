@@ -5,8 +5,8 @@ import {
   StyleOptions,
   StyleCategory,
   DEFAULT_TEXT_TEXT_STYLE,
-  DEFAULT_TEXT_FRONT_STYLE,
-  DEFAULT_TEXT_BACK_STYLE
+  // DEFAULT_TEXT_FRONT_STYLE,
+  // DEFAULT_TEXT_BACK_STYLE
 } from "@/types/Styles";
 import { svgStyleType, toSVGType } from "@/types";
 import { Text as TwoJsText } from "two.js/src/text";
@@ -125,11 +125,11 @@ export default class Text extends Nodule {
           ...DEFAULT_TEXT_TEXT_STYLE,
           labelDisplayText: this._defaultText
         };
-      case StyleCategory.Front:
-        return DEFAULT_TEXT_FRONT_STYLE; //empty
+      // case StyleCategory.Front:
+      //   return DEFAULT_TEXT_FRONT_STYLE; //empty
 
-      case StyleCategory.Back:
-        return DEFAULT_TEXT_BACK_STYLE; //empty
+      // case StyleCategory.Back:
+      //   return DEFAULT_TEXT_BACK_STYLE; //empty
 
       default:
         return {};

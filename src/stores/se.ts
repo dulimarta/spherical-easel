@@ -444,7 +444,7 @@ export const useSEStore = defineStore("se", () => {
   const twojsLayers = computed(() => layers);
 
   function init(): void {
-    actionMode.value = "segment";
+    actionMode.value = "segment";  //The default tool when started and reset canvas cleared
     // this.activeToolName = "RotateDisplayedName";
     // Do not clear the layers array!
     // Replace clear() with splice(0). Since clear() is an extension function

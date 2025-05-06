@@ -4,6 +4,7 @@ import { Command } from "./Command";
 import { SavedNames } from "@/types";
 import { SELabel, SENodule } from "@/models/internal";
 import { Vector2, Vector3 } from "three";
+import { StyleCategory } from "@/types/Styles";
 
 export class AddTextCommand extends Command {
   private seText: SEText;
@@ -36,19 +37,16 @@ export class AddTextCommand extends Command {
       "objectName=" + Command.symbolToASCIIDec(this.seText.name),
       "objectExists=" + this.seText.exists, // should always be true
       "objectShowing=" + this.seText.showing,
-      // Maybe we will need this if we edit the text using the style editor
-      // "objectFrontStyle=" +
-      //   Command.symbolToASCIIDec(
-      //     JSON.stringify(
-      //       this.seText.ref.currentStyleState(StyleCategory.Front)
-      //     )
-      //   ),
+      "textStyle=" +
+      Command.symbolToASCIIDec(
+        JSON.stringify(
+          this.seText.ref.currentStyleState(StyleCategory.Label)
+        )
+        ),
       // "objectBackStyle=" +
       //   Command.symbolToASCIIDec(
       //     JSON.stringify(this.seText.ref.currentStyleState(StyleCategory.Back))
       //   ),
-      // No label for text objects
-
       // Object specific attributes
       "pointVector=" + this.seText.locationVector.toFixed(9),
       "textObjectText=" + Command.symbolToASCIIDec(this.seText.text)
@@ -77,14 +75,16 @@ export class AddTextCommand extends Command {
     } else {
       throw new Error("AddTextCommand: Undefined text ");
     }
-    // When SEText is edited in the style panel this will be needed
+    const textStyleString = propMap.get("textStyle");
     // console.debug(`Point front style string ${pointFrontStyleString}`);
-    // if (textFrontStyleString !== undefined) {
-    //   seText.updatePlottableStyle(
-    //     StyleCategory.Front,
-    //     JSON.parse(textFrontStyleString)
-    //   );
-    // }
+    if (textStyleString !== undefined) {
+      seText.updatePlottableStyle(
+        StyleCategory.Label,
+        JSON.parse(textStyleString)
+      );
+    }  else {
+      throw new Error("AddTextCommand: No text style string.");
+    }
 
     // text has no children so no need to put the text in the object map
     if (propMap.get("objectName") !== undefined) {
@@ -97,7 +97,7 @@ export class AddTextCommand extends Command {
       seText.text = propMap.get("textObjectText") ?? "";
       //objMap.set(seText.name, seText);
     }  else {
-      throw new Error("AddTextCommand: Undefined Object Name ");
+      throw new Error("AddTextCommand: Undefined Object Name");
     }
 
     return new AddTextCommand(seText);
