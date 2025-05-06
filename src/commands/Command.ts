@@ -245,7 +245,7 @@ export abstract class Command {
    * returns the empty array if nothing to process
    * override this method if there are geometric objects to convert to SVG
    */
-  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+  getSVGObjectLabelPairs(): [SENodule, SELabel | null][] {
     return []; // returns the empty array if nothing to process; override this method if there are geometric objects to convert to SVG
   }
 
@@ -393,13 +393,15 @@ export abstract class Command {
     //    backgroundFills,3 --> contains circles (fills only), ellipse (fills only), polygon
     //    background,4 --> contains lines, segments, circles (edges only), parametric, ellipse, edges only
     //    backgroundPoints,6 --> only contains points
-    //    backgroundText,8 --> only contains labels
+    //    backgroundLabel,8 --> only contains labels
     //    foregroundFills,13 --> contains circles (fills only), ellipse (fills only), polygon
     //    midground,9 --> contains only the boundary circle
     //    foregroundAngleMarkers,11 --> contains only angle markers (edges and fill)
     //    foreground,14 --> contains lines, segments, circles (edges only), parametric, ellipse, edges only
     //    foregroundPoints,16 --> only contains points
-    //    foregroundText, 18 --> only contains labels
+    //    foregroundLabel, 18 --> only contains labels
+    //    foregroundText, 20 --> only contains text objects
+    //    
     //
     //  Initially contains the boundary circle in the midground layer (The only object in the midground)
     const layerDictionaryArray: Map<LAYER, [string, string][]>[] = [];
@@ -445,7 +447,7 @@ export abstract class Command {
             }
             // now check the label (if the point is deleted the label is also so check this inside the first conditional statement)
             // labels are never deleted only hidden
-            if (pair[1].exists && pair[1].showing) {
+            if (pair[1] && pair[1].exists && pair[1].showing) {
               svgTypeArray.push(...pair[1].ref.toSVG(nonScaling));
             }
           }
@@ -668,7 +670,7 @@ export abstract class Command {
       }
     }
     //add the close of the style string
-    if (styleSVGReturnString.includes("label")) {
+    if (styleSVGReturnString.includes("label") || styleSVGReturnString.includes("text")) {
       styleSVGReturnString += textStyleString;
     }
     // remove the last newline character
@@ -722,11 +724,11 @@ export abstract class Command {
         const itemList = layerDictionary.get(Number(layerNumber));
         if (itemList != undefined) {
           if (
-            !(svgForIcon && LAYER[layerNumber].toLowerCase().includes("text")) // there is no text in icon SVG){
+            !(svgForIcon && (LAYER[layerNumber].toLowerCase().includes("text")||LAYER[layerNumber].toLowerCase().includes("label"))) // there is no text in icon SVG){
           ) {
             // This layer is not empty
             // Flip the orientation for text layers
-            if (LAYER[layerNumber].toLowerCase().includes("text")) {
+            if (LAYER[layerNumber].toLowerCase().includes("text") || LAYER[layerNumber].toLowerCase().includes("label")) {
               layerSVGReturnString +=
                 '\t\t\t<g id="' +
                 LAYER[layerNumber].replace("ground", "") +
@@ -739,7 +741,7 @@ export abstract class Command {
             }
             for (let [styleID, svgString] of itemList) {
               // insert the style ID class into the svgString using the first space
-              if (svgString.toLowerCase().includes("text")) {
+              if (svgString.toLowerCase().includes("text") || svgString.toLowerCase().includes("label")) {
                 layerSVGReturnString +=
                   "\t\t\t\t" +
                   svgString.replace(

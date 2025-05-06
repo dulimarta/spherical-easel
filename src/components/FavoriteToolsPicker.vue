@@ -77,7 +77,8 @@ onBeforeMount(() => {
       t.action !== "zoomFit" &&
       t.action !== "undoAction" &&
       t.action !== "redoAction" &&
-      t.action !== "resetAction"
+      t.action !== "resetAction" &&
+      t.action !== "dummy"
   );
   allToolsList.value.sort(toolSortFunc);
 });

@@ -2,7 +2,7 @@
 import { SEText } from "@/models/SEText";
 import { Command } from "./Command";
 import { SavedNames } from "@/types";
-import { SENodule } from "@/models/internal";
+import { SELabel, SENodule } from "@/models/internal";
 import { Vector2, Vector3 } from "three";
 
 export class AddTextCommand extends Command {
@@ -11,16 +11,23 @@ export class AddTextCommand extends Command {
     super();
     this.seText = txt;
   }
-  restoreState(): void {
-    Command.store.removeText(this.seText.id);
-    // for undo.
-  }
-  saveState(): void {
-    this.lastState = this.seText.id;
-  }
+
   do(): void {
     Command.store.addText(this.seText);
   }
+
+  saveState(): void {
+    this.lastState = this.seText.id;
+  }
+
+  restoreState(): void {
+    Command.store.removeText(this.seText.id);
+  }
+  
+  getSVGObjectLabelPairs(): [SENodule, SELabel|null][] {
+      return [[this.seText, null]];
+    }
+
   toOpcode(): null | string | Array<string> {
     return [
       "AddText",

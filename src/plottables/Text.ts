@@ -11,6 +11,7 @@ import {
 import { svgStyleType, toSVGType } from "@/types";
 import { Text as TwoJsText } from "two.js/src/text";
 import { Group } from "two.js/src/group";
+import Label from "./Label";
 
 //had to name the file Text so that it does not conflict with two.js/src/text
 export default class Text extends Nodule {
@@ -212,18 +213,53 @@ export default class Text extends Nodule {
     }
   }
 
-  toSVG(
-    nonScaling?: {
-      stroke: boolean;
-      text: boolean;
-      pointRadius: boolean;
-      scaleFactor: number;
-    },
-    svgForIcon?: boolean
-  ): toSVGType[] {
-    // Possibly don't need this.
-    /**None**/
-    return [];
+  toSVG( nonScaling?: {
+    stroke: boolean;
+    text: boolean;
+    pointRadius: boolean;
+    scaleFactor: number;
+  }): toSVGType[] {
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGObject: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyleDictionary: null,
+      layerSVGArray: [],
+      type: "text"
+    };
+    
+    const frontReturnDictionary = new Map<svgStyleType, string>();
+    frontReturnDictionary.set("font-family", this.textObject.family);
+    frontReturnDictionary.set("font-style", this.textObject.style);
+    frontReturnDictionary.set("font-weight", String(this.textObject.weight));
+    frontReturnDictionary.set("text-decoration", this.textObject.decoration);
+    frontReturnDictionary.set(
+      "fill",
+      String(this.textObject.fill).slice(0, 7) // separate out the alpha channel
+    );
+    frontReturnDictionary.set(
+      "fill-opacity",
+      String(Number("0x" + String(this.textObject.fill).slice(7)) / 255) // separate out the alpha channel
+    );
+    returnSVGObject.frontStyleDictionary = frontReturnDictionary;
+
+    let svgFrontString =
+      "<text " +
+      Label.svgTransformMatrixString(
+        this.textObject.rotation,
+        nonScaling?.text ? 1/nonScaling.scaleFactor : (this.textObject.scale as number),
+        this.textObject.position.x,
+        this.textObject.position.y
+      );
+
+    svgFrontString += ">" + this.textObject.value + "</text>";
+    returnSVGObject.layerSVGArray.push([
+      LAYER.foregroundText,
+      svgFrontString
+    ]);
+    
+    return [returnSVGObject];
   }
 
   get boundingRectangle(): {

@@ -11,7 +11,11 @@ const toolGroupInternal: Array<ToolGroup> = [
   // Uncommenting the "dummy" entry below will automatically
   // set the app for a new tool button, its associated event handler,
   // and a Command class
-  { group: "EditTools", tools: ["select", "delete", "text" /*, "dummy" */] },
+  {
+    group: "BasicTools",
+    tools: ["point", "line", "segment", "circle", "text"]
+  },
+  { group: "EditTools", tools: ["select", "delete" /*, "dummy" */] },
   {
     group: "DisplayTools",
     tools: [
@@ -23,10 +27,6 @@ const toolGroupInternal: Array<ToolGroup> = [
       "zoomOut",
       "zoomFit"
     ]
-  },
-  {
-    group: "BasicTools",
-    tools: ["point", "line", "segment", "circle"]
   },
   {
     group: "ConstructionTools",
