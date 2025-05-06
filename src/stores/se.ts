@@ -444,7 +444,7 @@ export const useSEStore = defineStore("se", () => {
   const twojsLayers = computed(() => layers);
 
   function init(): void {
-    actionMode.value = "rotate";
+    actionMode.value = "segment";
     // this.activeToolName = "RotateDisplayedName";
     // Do not clear the layers array!
     // Replace clear() with splice(0). Since clear() is an extension function
@@ -561,6 +561,7 @@ export const useSEStore = defineStore("se", () => {
       });
     });
     seLabels.value.forEach((x: SELabel) => x.ref.removeFromLayers(layers));
+    seTexts.value.forEach((x: SEText) => x.ref.removeFromLayers(layers));
   }
   // Update the display of all free SEPoints to update the entire display
   function updateDisplay(): void {
@@ -778,33 +779,17 @@ export const useSEStore = defineStore("se", () => {
     seNodules.value.push(text);
     text.ref.addToLayers(layers);
     hasUnsavedNodules.value = true;
-    // this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
   }
   function moveText(move: { textId: number; location: Vector2 }): void {
-    // console.log(`se.moveText(): textId: ${move.textId}, location: ${move.location.toFixed(3)}`);
-    // const textMoverVisitor = new TextMoverVisitor();
-    // textMoverVisitor.setNewLocation(move.location);
     const aText = seTextMap.get(move.textId);
-    // console.log(`se.moveText() aText = ${aText?.id}, ${aText?.locationVector.toFixed(3)}`);
-    // if (aText) aText.accept(textMoverVisitor);
     if (aText) {
       aText.locationVector = move.location;
     }
   }
   function changeText(change: { textId: number; newText: string }): void {
-    // console.log(`se.changeText(): textId: ${change.textId}, newText: "${change.newText}"`);
-
-    // Retrieve the SEText object from the map using textId
     const aText = seTextMap.get(change.textId);
-
-    // console.log(`se.changeText() aText = ${aText?.id}, currentText: "${aText?.text}"`);
-
     if (aText) {
-      // Change the text content of the SEText object
       aText.text = change.newText;
-
-      // Log the change operation
-      // console.log(`se.changeText(): Text content updated for textId: ${change.textId}`);
     }
   }
 
@@ -820,7 +805,6 @@ export const useSEStore = defineStore("se", () => {
       seTextIds.value.splice(pos, 1);
       seNodules.value.splice(pos2, 1);
       hasUnsavedNodules.value = true;
-      //this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
     }
   }
   function addAngleMarkerAndExpression(angleMarker: SEAngleMarker): void {
