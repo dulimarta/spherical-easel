@@ -42,14 +42,10 @@ export class AddTextCommand extends Command {
         JSON.stringify(
           this.seText.ref.currentStyleState(StyleCategory.Label)
         )
-        ),
-      // "objectBackStyle=" +
-      //   Command.symbolToASCIIDec(
-      //     JSON.stringify(this.seText.ref.currentStyleState(StyleCategory.Back))
-      //   ),
+        ), //textStyle include the current string that is displayed
       // Object specific attributes
       "pointVector=" + this.seText.locationVector.toFixed(9),
-      "textObjectText=" + Command.symbolToASCIIDec(this.seText.text)
+      //"textObjectText=" + Command.symbolToASCIIDec(this.seText.text)//This is now stored in the label style
     ].join("&");
   }
 
@@ -69,12 +65,13 @@ export class AddTextCommand extends Command {
     // const pointFrontStyleString = propMap.get("objectFrontStyle");
     // const pointBackStyleString = propMap.get("objectBackStyle");
     seText.locationVector = seTextLocation;
-    const tempText = propMap.get("textObjectText");
-    if (tempText != undefined) {
-      seText.text = tempText;
-    } else {
-      throw new Error("AddTextCommand: Undefined text ");
-    }
+    // const tempText = propMap.get("textObjectText");
+    // if (tempText != undefined) {
+    //   seText.text = tempText;
+    // } else {
+    //   throw new Error("AddTextCommand: Undefined text ");
+    // }
+    // textStyleString stores the text-string of the text object and the styling.
     const textStyleString = propMap.get("textStyle");
     // console.debug(`Point front style string ${pointFrontStyleString}`);
     if (textStyleString !== undefined) {

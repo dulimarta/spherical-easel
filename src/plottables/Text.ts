@@ -165,42 +165,42 @@ export default class Text extends Nodule {
 
       case DisplayStyle.ApplyCurrentVariables: {
         // Use the current variables to directly modify the js objects.
-        const labelStyle = this.styleOptions.get(StyleCategory.Label);
+        const textStyle = this.styleOptions.get(StyleCategory.Label);
 
         // we may want to modify this to allow changes in the text from the style panel
-        // console.log("Set text in",this.name,"name=",labelStyle?.labelDisplayText )
-        this.textObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
-        this.glowingTextObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
-        // this._text = labelStyle?.labelDisplayText ?? "TEXT ERROR"
+        // console.log("Set text in",this.name,"name=",textStyle?.labelDisplayText )
+        this.textObject.value = textStyle?.labelDisplayText ?? "TEXT ERROR"
+        this.glowingTextObject.value = textStyle?.labelDisplayText ?? "TEXT ERROR"
+        // this._text = textStyle?.labelDisplayText ?? "TEXT ERROR"
 
-        if (labelStyle?.labelTextStyle !== "bold") {
-          this.textObject.style = (labelStyle?.labelTextStyle ??
+        if (textStyle?.labelTextStyle !== "bold") {
+          this.textObject.style = (textStyle?.labelTextStyle ??
             SETTINGS.label.style) as "normal" | "italic";
-          this.glowingTextObject.style = (labelStyle?.labelTextStyle ??
+          this.glowingTextObject.style = (textStyle?.labelTextStyle ??
             SETTINGS.label.style) as "normal" | "italic";
           this.textObject.weight = 500;
           this.glowingTextObject.weight = 500;
-        } else if (labelStyle?.labelTextStyle === "bold") {
+        } else if (textStyle?.labelTextStyle === "bold") {
           this.textObject.weight = 1000;
           this.glowingTextObject.weight = 1000;
         }
 
         this.textObject.family =
-          labelStyle?.labelTextFamily ?? SETTINGS.label.family;
+          textStyle?.labelTextFamily ?? SETTINGS.label.family;
         this.glowingTextObject.family =
-          labelStyle?.labelTextFamily ?? SETTINGS.label.family;
+          textStyle?.labelTextFamily ?? SETTINGS.label.family;
 
-        this.textObject.decoration = (labelStyle?.labelTextDecoration ??
+        this.textObject.decoration = (textStyle?.labelTextDecoration ??
           SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
-        this.glowingTextObject.decoration = (labelStyle?.labelTextDecoration ??
+        this.glowingTextObject.decoration = (textStyle?.labelTextDecoration ??
           SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
 
-        this.textObject.rotation = labelStyle?.labelTextRotation ?? 0;
-        this.glowingTextObject.rotation = labelStyle?.labelTextRotation ?? 0;
+        this.textObject.rotation = textStyle?.labelTextRotation ?? 0;
+        this.glowingTextObject.rotation = textStyle?.labelTextRotation ?? 0;
 
         // FRONT = To shoehorn text into label, the front fill color is the same as overall stroke color, there are no front/back for text
         const frontFillColor =
-          labelStyle?.labelFrontFillColor ?? SETTINGS.text.fillColor;
+          textStyle?.labelFrontFillColor ?? SETTINGS.text.fillColor;
         if (Nodule.rgbaIsNoFillOrNoStroke(frontFillColor)) {
           this.textObject.noFill();
         } else {
@@ -316,8 +316,12 @@ export default class Text extends Nodule {
     });
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
-
-  public setDefaultText(txt:string):void{
-    this._defaultText = txt
+  get text():string {
+    const textStyle = this.styleOptions.get(StyleCategory.Label);
+    return textStyle?.labelDisplayText ?? ""
   }
+
+  // public setDefaultText(txt:string):void{
+  //   this._defaultText = txt
+  // }
 }

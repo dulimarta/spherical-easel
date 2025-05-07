@@ -24,14 +24,15 @@ const styleSet = new Set([
 export class SEText extends SENodule {
   public declare ref: Text; //<- plottable Text
 
-  private _text: string = ""; // string text
+  //private _text: string = ""; // string text
   protected _locationVector = new Vector2();
 
-  constructor() {
+  constructor(initialText:string) {
     super();
 
     this.name = `T${SENodule.TEXT_COUNT}`;
     this.ref = new Text(this.name);
+    this.ref.text = initialText;
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
     this.ref.adjustSize();
 
@@ -118,24 +119,24 @@ export class SEText extends SENodule {
   }
 
   public get noduleItemText(): string {
-    return this._text;
+    return this.ref.text;
   }
   public get noduleDescription(): string {
     return String(i18n.global.t(`objectTree.textObject`));
   }
-  // Setter/Getter for the private variable text
-  public get text(): string {
-    return this._text;
-  }
-  public set text(newText: string) {
-    this._text = newText;
-    this.ref.text = newText; // Update the Two.js text instance
-  }
+  // Setter/Getter for the private variable text // This is handled in the style now
+  // public get text(): string {
+  //   return this._text;
+  // }
+  // public set text(newText: string) {
+  //   this._text = newText;
+  //   this.ref.text = newText; // Update the Two.js text instance
+  // }
 
-  public setDefaultName(txt:string):void{
-    // console.log("set default name of ", this.name, "to", txt)
-    this.ref.setDefaultText(txt)
-  }
+  // public setDefaultName(txt:string):void{
+  //   // console.log("set default name of ", this.name, "to", txt)
+  //   this.ref.setDefaultText(txt)
+  // }
   public accept(v: Visitor): boolean {
     return false;
   }
