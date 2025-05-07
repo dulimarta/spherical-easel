@@ -194,7 +194,7 @@ const inputDialog: Ref<DialogAction | null> = ref(null);
 const userInput = ref("");
 const currentSubmitAction = ref(() => {}); // Dynamic action placeholder
 
-const handleEditSubmit = () => {
+const handleTextObjectEdit = () => {
   EventBus.fire("text-data-submitted", {
     text: userInput.value,
   }); // if the text is empty, the user is issued a warning in textHandler
@@ -202,8 +202,8 @@ const handleEditSubmit = () => {
   userInput.value = ""; // Clear input after submission
 };
 
-const showTextEditDialog = (payload: { oldText: string | null }) => {
-  currentSubmitAction.value = handleEditSubmit; // Set action to edit
+const showTextObjectEditDialog = (payload: { oldText: string | null }) => {
+  currentSubmitAction.value = handleTextObjectEdit; // Set action to edit
   userInput.value = payload.oldText ?? "" 
   inputDialog.value?.show();
 };
@@ -373,8 +373,7 @@ onBeforeMount((): void => {
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   EventBus.listen("update-fill-objects", updateObjectsWithFill);
   // EventBus.listen("export-current-svg-for-icon", getCurrentSVGForIcon);
-  // EventBus.listen("show-text-dialog", showTextInputDialog);
-  EventBus.listen("show-text-edit-dialog", showTextEditDialog);
+  EventBus.listen("show-text-edit-dialog", showTextObjectEditDialog);
 });
 
 onMounted((): void => {
@@ -477,7 +476,6 @@ onBeforeUnmount((): void => {
   // EventBus.unlisten("update-two-instance");
   EventBus.unlisten("update-fill-objects");
   //EventBus.unlisten("export-current-svg-for-icon");
-  //EventBus.unlisten("show-text-dialog");
   EventBus.unlisten("show-text-edit-dialog");
 });
 
