@@ -414,7 +414,7 @@ onBeforeMount((): void => {
   EventBus.listen("update-fill-objects", updateObjectsWithFill);
   // EventBus.listen("export-current-svg-for-icon", getCurrentSVGForIcon);
   EventBus.listen("show-text-dialog", showTextInputDialog);
-  EventBus.listen("show-edit-dialog", showTextEditDialog);
+  EventBus.listen("show-text-edit-dialog", showTextEditDialog);
 });
 
 onMounted((): void => {
@@ -518,7 +518,7 @@ onBeforeUnmount((): void => {
   EventBus.unlisten("update-fill-objects");
   //EventBus.unlisten("export-current-svg-for-icon");
   EventBus.unlisten("show-text-dialog");
-  EventBus.unlisten("show-edit-dialog");
+  EventBus.unlisten("show-text-edit-dialog");
 });
 
 watch(

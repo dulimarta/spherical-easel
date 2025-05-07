@@ -7,25 +7,23 @@ import { StyleCategory } from "@/types/Styles";
 import { CommandGroup } from "@/commands/CommandGroup";
 
 export default class TextHandler extends Highlighter {
-  mousePressed(event: MouseEvent): void {
-    // console.debug("TextHandler::mousePressed()");
-    // console.debug(`Current Screen Vector - x: ${this.currentScreenVector.x}, y: ${this.currentScreenVector.y}`);
 
+  private textObjectToEdit:SEText | null
+
+  mousePressed(event: MouseEvent): void {
     // Filter for relevant text objects
     const texts = this.hitSETexts.filter(text => text.showing);
 
     if (texts.length > 0) {
       // A text object is clicked
-      const clickedTextObject = texts[0]; // Get the top-most text object
-      // console.log("Clicked on SEText:", clickedText.noduleItemText);
-      // console.log("Clieked Text ID:", clickedText.id);
-
-      EventBus.fire("show-edit-dialog", {
-        oldText: clickedTextObject.noduleItemText,
-        textId: clickedTextObject.id,
-        seText: clickedTextObject
+      this.textObjectToEdit= texts[0]; // Get the top-most text object
+   
+      EventBus.fire("show-text-edit-dialog", {
+        oldText: this.textObjectToEdit.noduleItemText,
+        // textId: clickedTextObject.id,
+        // seText: clickedTextObject
       });
-      // console.debug("Event 'show-edit-dialog' fired");
+      // console.debug("Event 'show-text-edit-dialog' fired");
     } else {
       // Fire the event to show the dialog
       EventBus.fire("show-text-dialog", {}); // Empty data if not required for the dialog
@@ -41,20 +39,18 @@ export default class TextHandler extends Highlighter {
     
       
   }
+  mouseReleased(event: MouseEvent): void {
+    /* None */
+  }
   activate(): void {
-    console.debug("TextHandler activated");
-
     // Set up the listener for text submission
     EventBus.listen("text-data-submitted", this.handleTextInput.bind(this));
     EventBus.listen("text-data-edited", this.handleEditInput.bind(this));
   }
-
   deactivate(): void {
-    EventBus.unlisten("text-data-submitted");
     EventBus.unlisten("text-data-edited");
-    //console.debug("TextHandler deactivated");
+    EventBus.unlisten("text-data-submitted");
   }
-
   // Method to receive text input
   handleTextInput(data: { text: string }): void {
     //console.log("TextHandler::handleTextInput() called with data:", data);
@@ -88,6 +84,7 @@ export default class TextHandler extends Highlighter {
     // Deactivate the listener once the text is handled
     //this.deactivate();
   }
+  // Method to edit existing text
   handleEditInput(data: {
     seText: SEText;
     oldText: string;
@@ -116,7 +113,5 @@ export default class TextHandler extends Highlighter {
     changeTextCmd.execute();
   }
 
-  mouseReleased(event: MouseEvent): void {
-    /* None */
-  }
+  
 }
