@@ -148,8 +148,6 @@ import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
 import { useMagicKeys } from "@vueuse/core";
 import { watchEffect } from "vue";
-import { SEText } from "@/models/SEText";
-import { nextTick } from "vue";
 
 type ComponentProps = {
   availableHeight: number;
@@ -195,57 +193,19 @@ const { shift, alt, d, ctrl } = useMagicKeys();
 const inputDialog: Ref<DialogAction | null> = ref(null);
 const userInput = ref("");
 const currentSubmitAction = ref(() => {}); // Dynamic action placeholder
-const editingTextId = ref<number | null>(null); // Reactive state for textId
-const editingOldText = ref<string>(""); // Reactive state for oldText
-const originalSeText = ref<SEText | null>(null); //Needed to pass original seText object
-const handleSubmit = () => {
-  // Emit the text back to the handler if it not empty
-  if (userInput.value != "") {
-    EventBus.fire("text-data-submitted", { text: userInput.value });
-  }
-  inputDialog.value?.hide();
-  userInput.value = ""; // Clear input after submission
-};
+
 const handleEditSubmit = () => {
-  EventBus.fire("text-data-edited", {
+  EventBus.fire("text-data-submitted", {
     text: userInput.value,
-    textId: editingTextId.value,
-    oldText: editingOldText.value,
-    seText: originalSeText.value
-  });
+  }); // if the text is empty, the user is issued a warning in textHandler
   inputDialog.value?.hide();
   userInput.value = ""; // Clear input after submission
-  editingTextId.value = null; // Clear textId
 };
-const showTextInputDialog = async () => {
-  currentSubmitAction.value = handleSubmit; // Set action to create
-  inputDialog.value?.show();
-  await nextTick();
-  const textInput = document.querySelector("#inputDialog input") as HTMLElement
-  if (textInput) {
-    setTimeout(() => {
-      // Calling focus() without timeout does not work, even after nextTick()
-      textInput.focus()
-    }, 100)
-  }
-  // const textInput = inputDialog.value!! as unknown) as HTMLElement).querySelector("input")
-};
-const showTextEditDialog = (payload: {
-  oldText: string;
-  textId: number;
-  seText: SEText;
-}) => {
+
+const showTextEditDialog = (payload: { oldText: string | null }) => {
   currentSubmitAction.value = handleEditSubmit; // Set action to edit
-  // console.debug("Attempting to open Edit Dialog...");
-  // console.debug(inputDialog.value);
-  const { oldText, textId, seText } = payload;
-  editingTextId.value = textId;
-  editingOldText.value = oldText;
-  originalSeText.value = seText;
-  userInput.value = oldText;
-  // console.debug("Prefilled userInput: ", userInput.value)
+  userInput.value = payload.oldText ?? "" 
   inputDialog.value?.show();
-  // console.debug("Dialog Open Edit");
 };
 
 /**
@@ -413,7 +373,7 @@ onBeforeMount((): void => {
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   EventBus.listen("update-fill-objects", updateObjectsWithFill);
   // EventBus.listen("export-current-svg-for-icon", getCurrentSVGForIcon);
-  EventBus.listen("show-text-dialog", showTextInputDialog);
+  // EventBus.listen("show-text-dialog", showTextInputDialog);
   EventBus.listen("show-text-edit-dialog", showTextEditDialog);
 });
 
@@ -517,7 +477,7 @@ onBeforeUnmount((): void => {
   // EventBus.unlisten("update-two-instance");
   EventBus.unlisten("update-fill-objects");
   //EventBus.unlisten("export-current-svg-for-icon");
-  EventBus.unlisten("show-text-dialog");
+  //EventBus.unlisten("show-text-dialog");
   EventBus.unlisten("show-text-edit-dialog");
 });
 
