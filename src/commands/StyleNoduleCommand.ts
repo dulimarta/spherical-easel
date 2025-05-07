@@ -52,12 +52,12 @@ export class StyleNoduleCommand extends Command {
 
   restoreState(): void {
     for (let i = 0; i < this.nodules.length; i++) {
-      // console.debug(
-      //   "Restore effect of StyleNoduleCommand to ",
-      //   this.nodules[i],
-      //   "with payload",
-      //   this.pastStyles[i]
-      // );
+      console.debug(
+        "Restore effect of StyleNoduleCommand to ",
+        this.nodules[i],
+        "with payload",
+        this.pastStyles[i]
+      );
       this.nodules[i].updateStyle(this.panel,this.pastStyles[i]);
     }
   }

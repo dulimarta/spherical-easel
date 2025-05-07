@@ -58,10 +58,11 @@
   <Dialog
     id="inputDialog"
     ref="inputDialog"
-    title="Text Tool"
-    yes-text="Submit"
-    no-text="Cancel"
-    :yes-action="currentSubmitAction"
+    :title="t('collectTextObjectString')"
+    :yes-text="t('exportAction')"
+    :no-text="t('cancelAction')"
+    :yes-action="submitAction"
+    :no-action="cancelAction"
     max-width="40%">
     <v-text-field
       type="text"
@@ -69,7 +70,7 @@
       clearable
       counter
       persistent-hint
-      label="Input Text"
+      :label="t('inputText')"
       required
       v-model="userInput"></v-text-field>
   </Dialog>
@@ -192,19 +193,25 @@ const { shift, alt, d, ctrl } = useMagicKeys();
 
 const inputDialog: Ref<DialogAction | null> = ref(null);
 const userInput = ref("");
-const currentSubmitAction = ref(() => {}); // Dynamic action placeholder
+const submitAction = ref(() => {}); // Dynamic action placeholder
+const cancelAction = ref(() => {}); // Dynamic action placeholder
 
 const handleTextObjectEdit = () => {
   EventBus.fire("text-data-submitted", {
-    text: userInput.value,
+    text: userInput.value
   }); // if the text is empty, the user is issued a warning in textHandler
   inputDialog.value?.hide();
   userInput.value = ""; // Clear input after submission
 };
 
+const handleTextObjectEditCancel = () => {
+  userInput.value = ""; // set the payload in "text-data-submitted" to the empty string so that in textHandler the selected text object is set to null
+  handleTextObjectEdit()
+};
 const showTextObjectEditDialog = (payload: { oldText: string | null }) => {
-  currentSubmitAction.value = handleTextObjectEdit; // Set action to edit
-  userInput.value = payload.oldText ?? "" 
+  submitAction.value = handleTextObjectEdit; // Set action to edit
+  cancelAction.value = handleTextObjectEditCancel; 
+  userInput.value = payload.oldText ?? "";
   inputDialog.value?.show();
 };
 
@@ -1111,6 +1118,14 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
   return style;
 }
 </script>
+<i18n locale="en" lang="json">
+{
+  "collectTextObjectString": "Enter Text Object String",
+  "exportAction": "Enter",
+  "cancelAction": "Cancel",
+  "inputText": "Text String"
+}
+</i18n>
 
 <style lang="scss" scoped>
 .spin {

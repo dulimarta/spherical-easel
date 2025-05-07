@@ -45,16 +45,16 @@ export default class TextHandler extends Highlighter {
   }
   // Method to receive text input for both creating new text objects and editing existing ones.
   handleTextInput(payload: { text: string }): void {
-    console.log(
-      "TextHandler::handleTextInput() called with data:",
-      payload.text
-    );
-    console.log(
-      "text object",
-      this.textObjectToEdit
-        ? this.textObjectToEdit.name
-        : "No text object selected"
-    );
+    // console.log(
+    //   "TextHandler::handleTextInput() called with data:",
+    //   payload.text
+    // );
+    // console.log(
+    //   "text object",
+    //   this.textObjectToEdit
+    //     ? this.textObjectToEdit.name
+    //     : "No text object selected"
+    // );
 
     // Ensure the text content is accessed correctly from the event payload
     const newText = payload.text; // The new text.

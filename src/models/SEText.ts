@@ -16,29 +16,23 @@ import {
 const { t } = i18n.global;
 
 const styleSet = new Set([
-  // ...Object.getOwnPropertyNames(DEFAULT_TEXT_FRONT_STYLE),
-  // ...Object.getOwnPropertyNames(DEFAULT_TEXT_BACK_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_TEXT_TEXT_STYLE)
 ]);
 
 export class SEText extends SENodule {
-  public declare ref: Text; //<- plottable Text
+  public declare ref: Text; //<- plottable Text object in TwoJS
 
-  //private _text: string = ""; // string text
   protected _locationVector = new Vector2();
 
-  constructor(initialText:string) {
+  constructor(initialText: string) {
     super();
-
     this.name = `T${SENodule.TEXT_COUNT}`;
     this.ref = new Text(this.name);
     this.ref.text = initialText;
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
-    this.ref.adjustSize();
-
-    SENodule.TEXT_COUNT++;
     // Set the size for zoom
     this.ref.adjustSize();
+    SENodule.TEXT_COUNT++;
   }
 
   public shallowUpdate(): void {
