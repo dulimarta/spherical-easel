@@ -16,8 +16,9 @@ export class StyleNoduleCommand extends Command {
     pastStyles: StyleOptions[]
   ) {
     super();
-    // console.debug("Creating StyleNoduleCommand");
+    console.log("Creating StyleNoduleCommand");
     this.nodules.push(...nodules);
+    console.log("targets in style nodule command", this.nodules)
 
     this.panel = panel;
     // Carefully clone so that we create new objects and no pointer from the inputs are carried to the variables of this command

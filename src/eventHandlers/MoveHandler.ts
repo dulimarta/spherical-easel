@@ -539,8 +539,8 @@ export default class MoveHandler extends Highlighter {
                 seNoduleBeforeState.locationVector &&
                 !tmpVector1
                   .subVectors(
-                    seNoduleAfterState.locationVector,
-                    seNoduleBeforeState.locationVector
+                    seNoduleAfterState.locationVector as Vector3,
+                    seNoduleBeforeState.locationVector as Vector3
                   )
                   .isZero(SETTINGS.nearlyAntipodalIdeal)
               ) {
@@ -548,16 +548,16 @@ export default class MoveHandler extends Highlighter {
                   moveCommandGroup.addCommand(
                     new MovePointCommand(
                       seNoduleAfterState.object as SEPoint,
-                      seNoduleBeforeState.locationVector,
-                      seNoduleAfterState.locationVector
+                      seNoduleBeforeState.locationVector as Vector3,
+                      seNoduleAfterState.locationVector as Vector3
                     )
                   );
                 } else {
                   moveCommandGroup.addCommand(
                     new MoveLabelCommand(
                       seNoduleAfterState.object as SELabel,
-                      seNoduleBeforeState.locationVector,
-                      seNoduleAfterState.locationVector
+                      seNoduleBeforeState.locationVector as Vector3,
+                      seNoduleAfterState.locationVector as Vector3
                     )
                   );
                 }

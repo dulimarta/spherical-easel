@@ -195,22 +195,33 @@ export const useStylingStore = defineStore("style", () => {
           }
           // Remember the initial and default styles of the selected object
           // These maps are used by the  restoreTo() function below
-          initialStyleMap.set(
-            StyleCategory.Front + ":" + n.name,
-            itsPlot.currentStyleState(StyleCategory.Front)
-          );
-          initialStyleMap.set(
-            StyleCategory.Back + ":" + n.name,
-            itsPlot.currentStyleState(StyleCategory.Back)
-          );
-          defaultStyleMap.set(
-            StyleCategory.Front + ":" + n.name,
-            itsPlot.defaultStyleState(StyleCategory.Front)
-          );
-          defaultStyleMap.set(
-            StyleCategory.Back + ":" + n.name,
-            itsPlot.defaultStyleState(StyleCategory.Back)
-          );
+          if (itsPlot instanceof Text) { //Text objects are plottable and store their properties in the label style category
+            initialStyleMap.set(
+              StyleCategory.Label + ":" + n.name,
+              itsPlot.currentStyleState(StyleCategory.Label)
+            );
+            defaultStyleMap.set(
+              StyleCategory.Label + ":" + n.name,
+              itsPlot.defaultStyleState(StyleCategory.Label)
+            );
+          } else {
+            initialStyleMap.set(
+              StyleCategory.Front + ":" + n.name,
+              itsPlot.currentStyleState(StyleCategory.Front)
+            );
+            initialStyleMap.set(
+              StyleCategory.Back + ":" + n.name,
+              itsPlot.currentStyleState(StyleCategory.Back)
+            );
+            defaultStyleMap.set(
+              StyleCategory.Front + ":" + n.name,
+              itsPlot.defaultStyleState(StyleCategory.Front)
+            );
+            defaultStyleMap.set(
+              StyleCategory.Back + ":" + n.name,
+              itsPlot.defaultStyleState(StyleCategory.Back)
+            );
+          }
         }
         const itsLabel = n.getLabel();
         if (itsLabel) {
@@ -232,30 +243,30 @@ export const useStylingStore = defineStore("style", () => {
           if (itsLabel.ref.value.length > 0) measurableCount++;
         }
 
-        if (n instanceof SEText) {
-          // console.debug(`${n.name} label`, itsLabel.ref)
-          if (!selectedLabels.value.has(n.ref.name)) {
-            // console.log("Add text to selected Labels ", n.ref.name);
-            selectedLabels.value.add(n.ref.name);
-            // Remember the initial and default styles of the selected object
-            // These maps are used by the  restoreTo() function below
-            initialStyleMap.set(
-              "label:" + n.name,
-              n.ref.currentStyleState(StyleCategory.Label)
-            );
-            defaultStyleMap.set(
-              "label:" + n.name,
-              n.ref.defaultStyleState(StyleCategory.Label)
-            );
-          }
-        }
+        // if (n instanceof SEText) {
+        //   // console.debug(`${n.name} label`, itsLabel.ref)
+        //   if (!selectedLabels.value.has(n.ref.name)) {
+        //     // console.log("Add text to selected Labels ", n.ref.name);
+        //     selectedLabels.value.add(n.ref.name);
+        //     // Remember the initial and default styles of the selected object
+        //     // These maps are used by the  restoreTo() function below
+        //     initialStyleMap.set(
+        //       "label:" + n.name,
+        //       n.ref.currentStyleState(StyleCategory.Label)
+        //     );
+        //     defaultStyleMap.set(
+        //       "label:" + n.name,
+        //       n.ref.defaultStyleState(StyleCategory.Label)
+        //     );
+        //   }
+        // }
       });
 
       // The selections are measurable only if ALL of them are measurable
       measurableSelections.value = measurableCount === selectionArr.length;
       editedLabels.value.clear();
-      console.debug("Initial style map size = ", initialStyleMap.size);
-      console.debug("Default style map size = ", defaultStyleMap.size);
+      console.log("Initial style map size = ", initialStyleMap.size);
+      console.log("Default style map size = ", defaultStyleMap.size);
 
       backStyleContrastCopy = Nodule.getBackStyleContrast();
       fillStyleCopy = Nodule.getGradientFill();
@@ -501,34 +512,34 @@ export const useStylingStore = defineStore("style", () => {
     return conflictingProperties.value.has(prop) && !forceAgreement.value;
   }
 
-  function hasTextObject():boolean {
+  function hasTextObject(): boolean {
     let textObjectFound = false;
     selectedSENodules.value.forEach(n => {
       if (n instanceof SEText) {
-        textObjectFound=true;
+        textObjectFound = true;
       }
     });
     // console.log("SETextObject in selection?",textObjectFound,selectedSENodules.value)
     return textObjectFound;
   }
 
-  function hasLabelObject():boolean {
+  function hasLabelObject(): boolean {
     let labelObjectFound = false;
     selectedSENodules.value.forEach(n => {
       if (n.getLabel()) {
-        labelObjectFound=true;
+        labelObjectFound = true;
       }
     });
     // console.log("SETextObject in selection?",labelObjectFound,selectedSENodules.value)
     return labelObjectFound;
   }
   function i18nMessageSelector(): number {
-    if (!hasTextObject()){
-      return 0 // only labels
-    } else if (!hasLabelObject()){
-      return 1 // only text objects
+    if (!hasTextObject()) {
+      return 0; // only labels
+    } else if (!hasLabelObject()) {
+      return 1; // only text objects
     } else {
-      return 2 // a mix of text and label objects
+      return 2; // a mix of text and label objects
     }
   }
   function hasStyle(prop: string | RegExp): boolean {
@@ -593,28 +604,31 @@ export const useStylingStore = defineStore("style", () => {
       if (activeStyleGroup === StyleCategory.Label) {
         updateTargets = Array.from(selectedLabels.value).map(
           selectedName => {
-            // The target is the plottable, therefore we have to compare seLab.ref.name
-            // selectedLabels are both labels and texts so search the labels and the texts
+           
             const label = seLabels.value.find(
               seLab => seLab.ref.name === selectedName
             );
 
-            if (label) {
-              return label.ref as unknown as Nodule;
-            } else {
-              const text = seTexts.value.find(
-                seText => seText.ref.name === selectedName
-              );
-              if (text) {
-                return text.ref! as unknown as Nodule;
-              }
-            }
+            // if (label) {
+              return label!.ref as unknown as Nodule;
+            // } 
+            // else {
+            //   const text = seTexts.value.find(
+            //     seText => seText.ref.name === selectedName
+            //   );
+            //   if (text) {
+            //     return text.ref! as unknown as Nodule;
+            //   }
+            // }
           }
           // seLabels.value.find(seLab => seLab.ref.name === labelName)!
           //   .ref as unknown as Nodule
         );
       } else {
-        updateTargets = [];
+        // updateTargets = []; //I don't understand this line updateTarget should not be empty
+        updateTargets = Array.from(selectedPlottables.value).map(
+          pair => pair[1]
+        );
       }
 
       const styleCommand = new StyleNoduleCommand(
@@ -625,6 +639,9 @@ export const useStylingStore = defineStore("style", () => {
         new Array(updateTargets.length).fill(postUpdateStyleOptions),
         new Array(updateTargets.length).fill(preUpdateStyleOptions)
       );
+      console.log("after style", postUpdateStyleOptions);
+      console.log("before style", preUpdateStyleOptions);
+      console.log("target", updateTargets[0]);
       cmdGroup.addCommand(styleCommand);
       subCommandCount++;
     }

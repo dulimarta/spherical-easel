@@ -646,7 +646,7 @@ export interface ObjectState {
   object: SENodule;
   normalVector?: Vector3;
   arcLength?: number;
-  locationVector?: Vector3 | Vector2;
+  locationVector?: Vector3 | Vector2; // Vector2 is only used for the SeText objects
   sliderValue?: number;
 }
 
