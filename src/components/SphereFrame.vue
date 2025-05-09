@@ -1120,10 +1120,10 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
 </script>
 <i18n locale="en" lang="json">
 {
-  "collectTextObjectString": "Enter Text Object String",
+  "collectTextObjectString": "Text Object String",
   "exportAction": "Enter",
   "cancelAction": "Cancel",
-  "inputText": "Text String"
+  "inputText": "Enter Text String"
 }
 </i18n>
 

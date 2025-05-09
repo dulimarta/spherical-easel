@@ -22,6 +22,7 @@ import SETTINGS, { LAYER } from "@/global-settings";
 import { SELabel, SENodule } from "@/models/internal";
 //import { aN } from "vitest/dist/reporters-yx5ZTtEV";
 import { nextTick } from "vue";
+import { CommandGroup } from "./CommandGroup";
 
 export abstract class Command {
   protected static store: SEStoreType;
@@ -401,7 +402,7 @@ export abstract class Command {
     //    foregroundPoints,16 --> only contains points
     //    foregroundLabel, 18 --> only contains labels
     //    foregroundText, 20 --> only contains text objects
-    //    
+    //
     //
     //  Initially contains the boundary circle in the midground layer (The only object in the midground)
     const layerDictionaryArray: Map<LAYER, [string, string][]>[] = [];
@@ -425,7 +426,7 @@ export abstract class Command {
         m.makeRotationAxis(animate.axis, animate.degrees / numFrames);
 
         Command.store.rotateSphere(m);
-        Command.store.updateTwoJS()
+        Command.store.updateTwoJS();
       }
       // wait 1/60 of a second so that the two-instance updates
       // sleep(1000 / 60).then(() => {
@@ -670,7 +671,10 @@ export abstract class Command {
       }
     }
     //add the close of the style string
-    if (styleSVGReturnString.includes("label") || styleSVGReturnString.includes("text")) {
+    if (
+      styleSVGReturnString.includes("label") ||
+      styleSVGReturnString.includes("text")
+    ) {
       styleSVGReturnString += textStyleString;
     }
     // remove the last newline character
@@ -724,11 +728,18 @@ export abstract class Command {
         const itemList = layerDictionary.get(Number(layerNumber));
         if (itemList != undefined) {
           if (
-            !(svgForIcon && (LAYER[layerNumber].toLowerCase().includes("text")||LAYER[layerNumber].toLowerCase().includes("label"))) // there is no text in icon SVG){
+            !(
+              svgForIcon &&
+              (LAYER[layerNumber].toLowerCase().includes("text") ||
+                LAYER[layerNumber].toLowerCase().includes("label"))
+            ) // there is no text in icon SVG){
           ) {
             // This layer is not empty
             // Flip the orientation for text layers
-            if (LAYER[layerNumber].toLowerCase().includes("text") || LAYER[layerNumber].toLowerCase().includes("label")) {
+            if (
+              LAYER[layerNumber].toLowerCase().includes("text") ||
+              LAYER[layerNumber].toLowerCase().includes("label")
+            ) {
               layerSVGReturnString +=
                 '\t\t\t<g id="' +
                 LAYER[layerNumber].replace("ground", "") +
@@ -741,7 +752,10 @@ export abstract class Command {
             }
             for (let [styleID, svgString] of itemList) {
               // insert the style ID class into the svgString using the first space
-              if (svgString.toLowerCase().includes("text") || svgString.toLowerCase().includes("label")) {
+              if (
+                svgString.toLowerCase().includes("text") ||
+                svgString.toLowerCase().includes("label")
+              ) {
                 layerSVGReturnString +=
                   "\t\t\t\t" +
                   svgString.replace(
@@ -790,9 +804,7 @@ export abstract class Command {
         animationSVGString += 'begin="0s" ';
         animationSVGString += 'repeatCount="' + repeat + '" ';
         animationSVGString +=
-          frameNum == 0
-            ? 'fill="remove" />\n'
-            : 'fill="freeze" />\n'; // set the animation to display the first frame when it is done
+          frameNum == 0 ? 'fill="remove" />\n' : 'fill="freeze" />\n'; // set the animation to display the first frame when it is done
 
         // add the animation string only if there are more than 1 frame
         if (numFrames > 0) {
@@ -828,7 +840,7 @@ export abstract class Command {
       m.makeRotationAxis(animate.axis, -animate.degrees); // + 1 / animate.degrees);
       Command.store.rotateSphere(m);
       // We need to update the two-instance so that the fills can be correctly calculated
-      Command.store.updateTwoJS()
+      Command.store.updateTwoJS();
       EventBus.fire("update-fill-objects", {});
     }
     return returnString.replace(/[\t]/gm, "   ");

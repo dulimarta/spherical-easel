@@ -572,7 +572,7 @@ export const useStylingStore = defineStore("style", () => {
       subCommandCount++;
     }
 
-    // Check if the fill style was modifed
+    // Check if the fill style was modified
     if (fillStyleCopy !== Nodule.getGradientFill()) {
       const fillCommand = new ChangeFillStyleCommand(
         Nodule.getGradientFill(),

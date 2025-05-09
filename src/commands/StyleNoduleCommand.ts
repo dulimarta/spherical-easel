@@ -33,12 +33,12 @@ export class StyleNoduleCommand extends Command {
 
   do(): void {
     for (let i = 0; i < this.nodules.length; i++) {
-      // console.debug(
-      //   "Do effect of StyleNoduleCommand on ",
-      //   this.nodules[i],
-      //   "with payload old",
-      //   this.pastStyles[i]
-      // );
+      console.log(
+        "Do effect of StyleNoduleCommand on ",
+        this.nodules[i].name,
+        "to",
+        this.currentStyles[i]
+      );
 
       this.nodules[i].updateStyle(this.panel, this.currentStyles[i]);
 
@@ -52,10 +52,10 @@ export class StyleNoduleCommand extends Command {
 
   restoreState(): void {
     for (let i = 0; i < this.nodules.length; i++) {
-      console.debug(
-        "Restore effect of StyleNoduleCommand to ",
-        this.nodules[i],
-        "with payload",
+      console.log(
+        "Restore effect of StyleNoduleCommand on ",
+        this.nodules[i].name,
+        " to ",
         this.pastStyles[i]
       );
       this.nodules[i].updateStyle(this.panel,this.pastStyles[i]);
