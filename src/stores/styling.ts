@@ -195,7 +195,8 @@ export const useStylingStore = defineStore("style", () => {
           }
           // Remember the initial and default styles of the selected object
           // These maps are used by the  restoreTo() function below
-          if (itsPlot instanceof Text) { //Text objects are plottable and store their properties in the label style category
+          if (itsPlot instanceof Text) {
+            //Text objects are plottable and store their properties in the label style category
             initialStyleMap.set(
               StyleCategory.Label + ":" + n.name,
               itsPlot.currentStyleState(StyleCategory.Label)
@@ -289,9 +290,9 @@ export const useStylingStore = defineStore("style", () => {
       styleIndividuallyAltered = false;
       stylePropertyMap.forEach((val, key) => {
         const newValue = (newOptions as any)[key];
-        console.log("newValue", newValue)
+        // console.log("newValue", newValue);
         const oldValue = stylePropertyMap.get(key);
-        console.log("oldValue", oldValue)
+        // console.log("oldValue", oldValue);
         if (!isPropEqual(oldValue, newValue)) {
           console.log(
             `Property ${key} changes from ${oldValue} to ${newValue}`
@@ -301,7 +302,7 @@ export const useStylingStore = defineStore("style", () => {
           styleIndividuallyAltered = true;
         }
       });
-      console.log("postUpdateStyleOptions",postUpdateStyleOptions)
+      console.log("postUpdateStyleOptions", postUpdateStyleOptions);
       if (styleIndividuallyAltered) {
         if (activeStyleGroup === StyleCategory.Label) {
           selectedLabels.value.forEach(selectedName => {
@@ -597,6 +598,9 @@ export const useStylingStore = defineStore("style", () => {
 
     // Check if any other properties were modified
     const postUpdateKeys = Object.keys(postUpdateStyleOptions);
+    console.log("postUpdateKeys", postUpdateKeys);
+    console.log("activeStyleGroup", activeStyleGroup);
+    console.log("styleIndividuallyAltered", styleIndividuallyAltered);
     if (
       postUpdateKeys.length > 0 &&
       activeStyleGroup !== null &&
@@ -606,14 +610,13 @@ export const useStylingStore = defineStore("style", () => {
       if (activeStyleGroup === StyleCategory.Label) {
         updateTargets = Array.from(selectedLabels.value).map(
           selectedName => {
-           
             const label = seLabels.value.find(
               seLab => seLab.ref.name === selectedName
             );
 
             // if (label) {
-              return label!.ref as unknown as Nodule; // label should always be defined, if not then somehow a label was added to the selectedLabels that doesn't exist
-            // } 
+            return label!.ref as unknown as Nodule; // label should always be defined, if not then somehow a label was added to the selectedLabels that doesn't exist
+            // }
             // else {
             //   const text = seTexts.value.find(
             //     seText => seText.ref.name === selectedName
@@ -663,6 +666,61 @@ export const useStylingStore = defineStore("style", () => {
         }
       });
     }
+    // First check if subSetStyles is a subset of superSetStyles.
+    //  if no return false
+    //  if yes, return true if at least of the styles in subSetStyles
+    //   is different than the style in superSetStyles
+    function differentStyle(
+      subSetStyles: StyleOptions,
+      superSetStyles: StyleOptions
+    ) {
+      console.log("Substyle", subSetStyles);
+      console.log("superStyle", superSetStyles);
+      let differenceDetected = false;
+      let subset = true;
+      Object.getOwnPropertyNames(subSetStyles).forEach((propName: string) => {
+        console.log(
+          "SubPropName: ",
+          propName,
+          "SuperValue: ",
+          (superSetStyles as any)[propName]
+        );
+        console.log(
+          "SubPropName: ",
+          propName,
+          "SubValue: ",
+          (superSetStyles as any)[propName]
+        );
+        if ((superSetStyles as any)[propName] != undefined) {
+          // The propName MUST be in the subSetStyles
+          if (
+            (superSetStyles as any)[propName] != (subSetStyles as any)[propName]
+          ) {
+            differenceDetected = true;
+          }
+        } else {
+          subset = false;
+        }
+      });
+      console.log("differenceDetected", differenceDetected);
+      console.log("subset", subset);
+      return differenceDetected && subset;
+    }
+    const cmdGroup = new CommandGroup();
+    let subCommandCount = 0;
+    let updateTargets: Nodule[];
+    if (activeStyleGroup === StyleCategory.Label) {
+      updateTargets = Array.from(selectedLabels.value).map(selectedName => {
+        const label = seLabels.value.find(
+          seLab => seLab.ref.name === selectedName
+        );
+
+        // if (label) {
+        return label!.ref as unknown as Nodule; // label should always be defined, if not then somehow a label was added to the selectedLabels that doesn't exist
+      });
+    } else {
+      updateTargets = Array.from(selectedPlottables.value).map(pair => pair[1]);
+    }
 
     let combinedStyle: StyleOptions = {};
     styleMap.forEach((style: StyleOptions, name: string) => {
@@ -673,30 +731,56 @@ export const useStylingStore = defineStore("style", () => {
       // So the initial & default maps do not become aliases to the current
       // style option
       mergeStyles(combinedStyle, style);
-      console.log("after restoreTo", name, style);
+      console.log("After restore! Name:", name, " Style:", style);
       if (name.startsWith("label:")) {
         const objectName = name.substring(6);
         //The label:names might include text object so search seTexts too
         const theLabel = seLabels.value.find(n => {
           return n.ref.name === objectName;
         });
-
         if (theLabel) {
-          console.log("Restore Found matching label", theLabel, style);
-          theLabel.ref?.updateStyle(StyleCategory.Label, style);
-        } else {
-          const theText = seTexts.value.find(n => {
-            return n.ref.name === objectName;
-          });
-          if (theText) {
-            console.log("Restore Found matching text", theText, style);
-            theText.ref?.updateStyle(StyleCategory.Label, style);
+          //console.log("Restore Found matching label", theLabel, style);
+          if (differentStyle(style, preUpdateStyleOptions)) {
+            //create a command so this is undoable
+            const styleCommand = new StyleNoduleCommand(
+              updateTargets,
+              StyleCategory.Label,
+              // The StyleOptions array must have the same number of
+              // items as the updateTargets!!!
+              new Array(updateTargets.length).fill(style),
+              new Array(updateTargets.length).fill(preUpdateStyleOptions)
+            );
+            cmdGroup.addCommand(styleCommand);
+            subCommandCount++;
           }
+          theLabel.ref?.updateStyle(StyleCategory.Label, style);
         }
+        // else {
+        //   const theText = seTexts.value.find(n => {
+        //     return n.ref.name === objectName;
+        //   });
+        //   if (theText) {
+        //     console.log("Restore Found matching text", theText, style);
+        //     theText.ref?.updateStyle(StyleCategory.Label, style);
+        //   }
+        // }
       } else if (name.startsWith(StyleCategory.Front + ":")) {
         const plotName = name.substring(2);
         const thePlot = selectedPlottables.value.get(plotName);
         if (thePlot) {
+          if (differentStyle(style, preUpdateStyleOptions)) {
+            //create a command so this is undoable
+            const styleCommand = new StyleNoduleCommand(
+              updateTargets,
+              StyleCategory.Front,
+              // The StyleOptions array must have the same number of
+              // items as the updateTargets!!!
+              new Array(updateTargets.length).fill(style),
+              new Array(updateTargets.length).fill(preUpdateStyleOptions)
+            );
+            cmdGroup.addCommand(styleCommand);
+            subCommandCount++;
+          }
           thePlot.updateStyle(StyleCategory.Front, style);
           thePlot.adjustSize();
         }
@@ -704,11 +788,30 @@ export const useStylingStore = defineStore("style", () => {
         const plotName = name.substring(2);
         const thePlot = selectedPlottables.value.get(plotName);
         if (thePlot) {
+          if (differentStyle(style, preUpdateStyleOptions)) {
+            //create a command so this is undoable
+            const styleCommand = new StyleNoduleCommand(
+              updateTargets,
+              StyleCategory.Back,
+              // The StyleOptions array must have the same number of
+              // items as the updateTargets!!!
+              new Array(updateTargets.length).fill(style),
+              new Array(updateTargets.length).fill(preUpdateStyleOptions)
+            );
+            cmdGroup.addCommand(styleCommand);
+            subCommandCount++;
+          }
           thePlot.updateStyle(StyleCategory.Back, style);
           thePlot.adjustSize();
         }
       }
     });
+    if (subCommandCount > 0) {
+      cmdGroup.push();
+      console.log("Style changes recorded in command so they will be undoable");
+    } else {
+      console.log("Restore to inti/default clicked but no changes detected");
+    }
     styleOptions.value = { ...combinedStyle };
     styleIndividuallyAltered = false;
   }
