@@ -289,17 +289,19 @@ export const useStylingStore = defineStore("style", () => {
       styleIndividuallyAltered = false;
       stylePropertyMap.forEach((val, key) => {
         const newValue = (newOptions as any)[key];
+        console.log("newValue", newValue)
         const oldValue = stylePropertyMap.get(key);
+        console.log("oldValue", oldValue)
         if (!isPropEqual(oldValue, newValue)) {
-          console.debug(
+          console.log(
             `Property ${key} changes from ${oldValue} to ${newValue}`
           );
           (postUpdateStyleOptions as any)[key] = newValue;
-          stylePropertyMap.set(key, newValue);
+          //stylePropertyMap.set(key, newValue); // if this line is left in, then only the last style change is undoable
           styleIndividuallyAltered = true;
         }
       });
-
+      console.log("postUpdateStyleOptions",postUpdateStyleOptions)
       if (styleIndividuallyAltered) {
         if (activeStyleGroup === StyleCategory.Label) {
           selectedLabels.value.forEach(selectedName => {
@@ -610,7 +612,7 @@ export const useStylingStore = defineStore("style", () => {
             );
 
             // if (label) {
-              return label!.ref as unknown as Nodule;
+              return label!.ref as unknown as Nodule; // label should always be defined, if not then somehow a label was added to the selectedLabels that doesn't exist
             // } 
             // else {
             //   const text = seTexts.value.find(
