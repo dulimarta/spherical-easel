@@ -212,7 +212,7 @@
             </v-badge>
           </div>
         </template>
-        <v-btn icon size="x-small" @click="minified = !minified" class="my-2">
+        <v-btn icon size="x-small" @click="closeStyleDrawer" class="my-2">
           <v-icon>$closePanelRight</v-icon>
         </v-btn>
       </div>
@@ -449,6 +449,12 @@ const nonTextSelectedLabelsCount = computed(() => {
   });
   return count;
 });
+
+function closeStyleDrawer(){
+  styleSelection.value = undefined
+  minified.value = !minified.value
+
+}
 
 function undoStyleChanges() {
   styleStore.restoreInitialStyles();
