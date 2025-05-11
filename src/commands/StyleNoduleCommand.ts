@@ -23,11 +23,11 @@ export class StyleNoduleCommand extends Command {
     this.panel = panel;
     // Carefully clone so that we create new objects and no pointer from the inputs are carried to the variables of this command
     currentStyles.forEach(obj => {
-      // console.log("current", obj);
+      console.log("current", obj);
       this.currentStyles.push({ ...obj });
     });
     pastStyles.forEach(obj => {
-      // console.log("past", obj);
+      console.log("past", obj);
       this.pastStyles.push({ ...obj });
     });
   }

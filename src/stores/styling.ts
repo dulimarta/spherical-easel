@@ -104,7 +104,8 @@ export const useStylingStore = defineStore("style", () => {
   /** styleOptions is a copy visible to Vue components */
   const styleOptions = ref<StyleOptions>({});
   // The following two vars keep track of before and after style updates
-  let preUpdateStyleOptions: StyleOptions = {}; //
+  let updateTargets: Nodule[] = [];
+  let preUpdateStyleOptionsArray: StyleOptions[] = [];
   let postUpdateStyleOptions: StyleOptions = {};
   let backStyleContrastCopy: number = NaN;
   let fillStyleCopy: boolean = true;
@@ -142,7 +143,7 @@ export const useStylingStore = defineStore("style", () => {
   }
 
   watch(
-    // This watcher run when the user changes the object selection
+    // This watcher runs when the user changes the object selection
     () => selectedSENodules.value,
     selectionArr => {
       // With deep watching enabled, visual blinking of the selected objects
@@ -191,6 +192,7 @@ export const useStylingStore = defineStore("style", () => {
         if (itsPlot) {
           // console.debug(`${n.name} plottable`, itsPlot)
           if (itsPlot instanceof Nodule) {
+            console.log("Adding to selected Plottable: ", n.name, itsPlot);
             selectedPlottables.value.set(n.name, itsPlot);
           }
           // Remember the initial and default styles of the selected object
@@ -226,6 +228,7 @@ export const useStylingStore = defineStore("style", () => {
         }
         const itsLabel = n.getLabel();
         if (itsLabel) {
+          console.log("Adding to selected Labels: ", n.name, itsLabel);
           // console.debug(`${n.name} label`, itsLabel.ref)
           if (!selectedLabels.value.has(itsLabel.ref.name)) {
             selectedLabels.value.add(itsLabel.ref.name);
@@ -262,11 +265,13 @@ export const useStylingStore = defineStore("style", () => {
         //   }
         // }
       });
+      //create an array of the current style state of all selected objects using
+      // the
 
       // The selections are measurable only if ALL of them are measurable
       measurableSelections.value = measurableCount === selectionArr.length;
       editedLabels.value.clear();
-      console.log("Initial style map size = ", initialStyleMap.size);
+      console.log("Initial style map size = ", initialStyleMap.size,initialStyleMap);
       console.log("Default style map size = ", defaultStyleMap.size);
 
       backStyleContrastCopy = Nodule.getBackStyleContrast();
@@ -433,6 +438,7 @@ export const useStylingStore = defineStore("style", () => {
     // plottableStyleOptions.value = {}
     stylePropertyMap.clear();
     selectedLabels.value.forEach(selectedName => {
+      console.log("Collecting Label State", selectedName);
       // We are searching for the plottable (hence the seLab.ref.name)
       // selectedLabels are both labels and texts
       const label = seLabels.value.find(
@@ -467,8 +473,9 @@ export const useStylingStore = defineStore("style", () => {
           }
         });
     });
-
+    console.log("selectedPlottables.value", selectedPlottables.value);
     selectedPlottables.value.forEach(plot => {
+      console.log("Collecting Plottable State", plot);
       const props = plot.currentStyleState(category);
       Object.getOwnPropertyNames(props).forEach(propName => {
         const recordedPropValue = stylePropertyMap.get(propName);
@@ -494,7 +501,7 @@ export const useStylingStore = defineStore("style", () => {
         commonProperties.add(propName);
     });
     console.debug("Common properties", commonProperties);
-    preUpdateStyleOptions = JSON.parse(JSON.stringify(styleOptions.value));
+    //preUpdateStyleOptions = JSON.parse(JSON.stringify(styleOptions.value));
   }
 
   function deselectActiveGroup() {
@@ -572,6 +579,55 @@ export const useStylingStore = defineStore("style", () => {
     });
   }
 
+  function setUpdateTargetsAndPreUpdateStyleOptionsArrays(): void {
+    // Clear the preUpdateStyleOptions and updateTargets arrays
+    updateTargets = [];
+    preUpdateStyleOptionsArray = [];
+
+    // if (name.startsWith("label:")) {
+    //   const objectName = name.substring(6);
+    //   const theLabel = seLabels.value.find(n => {
+    //     return n.ref.name === objectName;
+    //   });
+    //   if (theLabel) 
+
+
+    if (activeStyleGroup === StyleCategory.Label) {
+      updateTargets = Array.from(selectedLabels.value).map(selectedName => {
+        const label = seLabels.value.find(
+          seLab => seLab.ref.name === selectedName
+        );
+        if (label) {
+          const styleOptions = initialStyleMap.get("label:" + label.ref.name);
+          if (styleOptions) {
+            preUpdateStyleOptionsArray.push(styleOptions);
+          } else {
+            console.error("preUpdateStyle NOT found for label ",label.ref.name);
+          }
+        }
+        return label!.ref as unknown as Nodule; // label should always be defined, if not then somehow a label was added to the selectedLabels that doesn't exist
+      });
+    } else {
+
+    // } else if (name.startsWith(StyleCategory.Front + ":")) {
+    //   const plotName = name.substring(2);
+    //   const thePlot = selectedPlottables.value.get(plotName);
+    //   if (thePlot) {
+
+      updateTargets = Array.from(selectedPlottables.value).map(pair => {
+        const styleOptions = initialStyleMap.get(
+          activeStyleGroup + ":" + pair[0]
+        );
+        if (styleOptions) {
+          preUpdateStyleOptionsArray.push(styleOptions);
+        } else {
+          console.error("preUpdateStyle NOT found for plottable", pair);
+        }
+        return pair[1];
+      });
+    }
+  }
+
   function persistUpdatedStyleOptions() {
     const cmdGroup = new CommandGroup();
     let subCommandCount = 0;
@@ -606,47 +662,18 @@ export const useStylingStore = defineStore("style", () => {
       activeStyleGroup !== null &&
       styleIndividuallyAltered // include this flag, to prevent an extra save after restore do default
     ) {
-      let updateTargets: Nodule[];
-      if (activeStyleGroup === StyleCategory.Label) {
-        updateTargets = Array.from(selectedLabels.value).map(
-          selectedName => {
-            const label = seLabels.value.find(
-              seLab => seLab.ref.name === selectedName
-            );
-
-            // if (label) {
-            return label!.ref as unknown as Nodule; // label should always be defined, if not then somehow a label was added to the selectedLabels that doesn't exist
-            // }
-            // else {
-            //   const text = seTexts.value.find(
-            //     seText => seText.ref.name === selectedName
-            //   );
-            //   if (text) {
-            //     return text.ref! as unknown as Nodule;
-            //   }
-            // }
-          }
-          // seLabels.value.find(seLab => seLab.ref.name === labelName)!
-          //   .ref as unknown as Nodule
-        );
-      } else {
-        // updateTargets = []; //I don't understand this line updateTarget should not be empty
-        updateTargets = Array.from(selectedPlottables.value).map(
-          pair => pair[1]
-        );
-      }
-
+      setUpdateTargetsAndPreUpdateStyleOptionsArrays();
       const styleCommand = new StyleNoduleCommand(
         updateTargets,
         activeStyleGroup,
         // The StyleOptions array must have the same number of
         // items as the updateTargets!!!
         new Array(updateTargets.length).fill(postUpdateStyleOptions),
-        new Array(updateTargets.length).fill(preUpdateStyleOptions)
+        preUpdateStyleOptionsArray
       );
+      console.log("target", updateTargets);
       console.log("after style", postUpdateStyleOptions);
-      console.log("before style", preUpdateStyleOptions);
-      console.log("target", updateTargets[0]);
+      console.log("before style", preUpdateStyleOptionsArray);
       cmdGroup.addCommand(styleCommand);
       subCommandCount++;
     }
@@ -708,19 +735,7 @@ export const useStylingStore = defineStore("style", () => {
     }
     const cmdGroup = new CommandGroup();
     let subCommandCount = 0;
-    let updateTargets: Nodule[];
-    if (activeStyleGroup === StyleCategory.Label) {
-      updateTargets = Array.from(selectedLabels.value).map(selectedName => {
-        const label = seLabels.value.find(
-          seLab => seLab.ref.name === selectedName
-        );
-
-        // if (label) {
-        return label!.ref as unknown as Nodule; // label should always be defined, if not then somehow a label was added to the selectedLabels that doesn't exist
-      });
-    } else {
-      updateTargets = Array.from(selectedPlottables.value).map(pair => pair[1]);
-    }
+    setUpdateTargetsAndPreUpdateStyleOptionsArrays();
 
     let combinedStyle: StyleOptions = {};
     styleMap.forEach((style: StyleOptions, name: string) => {
@@ -734,75 +749,96 @@ export const useStylingStore = defineStore("style", () => {
       console.log("After restore! Name:", name, " Style:", style);
       if (name.startsWith("label:")) {
         const objectName = name.substring(6);
-        //The label:names might include text object so search seTexts too
         const theLabel = seLabels.value.find(n => {
           return n.ref.name === objectName;
         });
+        console.log("label name",theLabel?.ref.name)
         if (theLabel) {
           //console.log("Restore Found matching label", theLabel, style);
-          if (differentStyle(style, preUpdateStyleOptions)) {
-            //create a command so this is undoable
-            const styleCommand = new StyleNoduleCommand(
-              updateTargets,
-              StyleCategory.Label,
-              // The StyleOptions array must have the same number of
-              // items as the updateTargets!!!
-              new Array(updateTargets.length).fill(style),
-              new Array(updateTargets.length).fill(preUpdateStyleOptions)
-            );
-            cmdGroup.addCommand(styleCommand);
-            subCommandCount++;
-          }
-          theLabel.ref?.updateStyle(StyleCategory.Label, style);
+          preUpdateStyleOptionsArray.forEach((preUpdateStyleOptions, index) => {
+            if (differentStyle(style, preUpdateStyleOptions)) {
+              //create a command so this is undoable
+              const styleCommand = new StyleNoduleCommand(
+                [updateTargets[index]],
+                StyleCategory.Label,
+                // The StyleOptions array must have the same number of
+                // items as the updateTargets!!!
+                [style],
+                [preUpdateStyleOptions]
+              );
+              cmdGroup.addCommand(styleCommand);
+              subCommandCount++;
+            }
+            theLabel.ref?.updateStyle(StyleCategory.Label, style);
+          });
         }
-        // else {
-        //   const theText = seTexts.value.find(n => {
-        //     return n.ref.name === objectName;
-        //   });
-        //   if (theText) {
-        //     console.log("Restore Found matching text", theText, style);
-        //     theText.ref?.updateStyle(StyleCategory.Label, style);
-        //   }
-        // }
       } else if (name.startsWith(StyleCategory.Front + ":")) {
         const plotName = name.substring(2);
         const thePlot = selectedPlottables.value.get(plotName);
         if (thePlot) {
-          if (differentStyle(style, preUpdateStyleOptions)) {
-            //create a command so this is undoable
-            const styleCommand = new StyleNoduleCommand(
-              updateTargets,
-              StyleCategory.Front,
-              // The StyleOptions array must have the same number of
-              // items as the updateTargets!!!
-              new Array(updateTargets.length).fill(style),
-              new Array(updateTargets.length).fill(preUpdateStyleOptions)
-            );
-            cmdGroup.addCommand(styleCommand);
-            subCommandCount++;
-          }
-          thePlot.updateStyle(StyleCategory.Front, style);
-          thePlot.adjustSize();
+          //See which preUpdateOptions are different and update the corresponding nodule
+          preUpdateStyleOptionsArray.forEach((preUpdateStyleOptions, index) => {
+            if (differentStyle(style, preUpdateStyleOptions)) {
+              //create a command so this is undoable
+              const styleCommand = new StyleNoduleCommand(
+                [updateTargets[index]],
+                StyleCategory.Front,
+                [style],
+                [preUpdateStyleOptions]
+              );
+              cmdGroup.addCommand(styleCommand);
+              subCommandCount++;
+            }
+            // if (differentStyle(style, preUpdateStyleOptionsArray)) {
+            //   //create a command so this is undoable
+            //   const styleCommand = new StyleNoduleCommand(
+            //     updateTargets,
+            //     StyleCategory.Front,
+            //     // The StyleOptions array must have the same number of
+            //     // items as the updateTargets!!!
+            //     new Array(updateTargets.length).fill(style),
+            //     new Array(updateTargets.length).fill(preUpdateStyleOptionsArray)
+            //   );
+            //   cmdGroup.addCommand(styleCommand);
+            //   subCommandCount++;
+            // }
+            thePlot.updateStyle(StyleCategory.Front, style);
+            thePlot.adjustSize();
+          });
         }
       } else if (name.startsWith(StyleCategory.Back + ":")) {
         const plotName = name.substring(2);
         const thePlot = selectedPlottables.value.get(plotName);
         if (thePlot) {
-          if (differentStyle(style, preUpdateStyleOptions)) {
-            //create a command so this is undoable
-            const styleCommand = new StyleNoduleCommand(
-              updateTargets,
-              StyleCategory.Back,
-              // The StyleOptions array must have the same number of
-              // items as the updateTargets!!!
-              new Array(updateTargets.length).fill(style),
-              new Array(updateTargets.length).fill(preUpdateStyleOptions)
-            );
-            cmdGroup.addCommand(styleCommand);
-            subCommandCount++;
-          }
-          thePlot.updateStyle(StyleCategory.Back, style);
-          thePlot.adjustSize();
+          //See which preUpdateOptions are different and update the corresponding nodule
+          preUpdateStyleOptionsArray.forEach((preUpdateStyleOptions, index) => {
+            if (differentStyle(style, preUpdateStyleOptions)) {
+              //create a command so this is undoable
+              const styleCommand = new StyleNoduleCommand(
+                [updateTargets[index]],
+                StyleCategory.Back,
+                [style],
+                [preUpdateStyleOptions]
+              );
+              cmdGroup.addCommand(styleCommand);
+              subCommandCount++;
+            }
+            // if (differentStyle(style, preUpdateStyleOptionsArray)) {
+            //   //create a command so this is undoable
+            //   const styleCommand = new StyleNoduleCommand(
+            //     updateTargets,
+            //     StyleCategory.Back,
+            //     // The StyleOptions array must have the same number of
+            //     // items as the updateTargets!!!
+            //     new Array(updateTargets.length).fill(style),
+            //     new Array(updateTargets.length).fill(preUpdateStyleOptionsArray)
+            //   );
+            //   cmdGroup.addCommand(styleCommand);
+            //   subCommandCount++;
+            // }
+            thePlot.updateStyle(StyleCategory.Back, style);
+            thePlot.adjustSize();
+          });
         }
       }
     });
