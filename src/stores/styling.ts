@@ -189,7 +189,7 @@ export const useStylingStore = defineStore("style", () => {
       // Among the selected object, check if we have new selection
       selectionArr.forEach(n => {
         const itsPlot = n.ref;
-        if (itsPlot) {
+        if (itsPlot && !(n instanceof SEText)) {
           // console.debug(`${n.name} plottable`, itsPlot)
           if (itsPlot instanceof Nodule) {
             console.log("Adding to selected Plottable: ", n.name, itsPlot);
@@ -197,34 +197,24 @@ export const useStylingStore = defineStore("style", () => {
           }
           // Remember the initial and default styles of the selected object
           // These maps are used by the  restoreTo() function below
-          if (itsPlot instanceof Text) {
-            //Text objects are plottable and store their properties in the label style category
-            initialStyleMap.set(
-              StyleCategory.Label + ":" + n.name,
-              itsPlot.currentStyleState(StyleCategory.Label)
-            );
-            defaultStyleMap.set(
-              StyleCategory.Label + ":" + n.name,
-              itsPlot.defaultStyleState(StyleCategory.Label)
-            );
-          } else {
-            initialStyleMap.set(
-              StyleCategory.Front + ":" + n.name,
-              itsPlot.currentStyleState(StyleCategory.Front)
-            );
-            initialStyleMap.set(
-              StyleCategory.Back + ":" + n.name,
-              itsPlot.currentStyleState(StyleCategory.Back)
-            );
-            defaultStyleMap.set(
-              StyleCategory.Front + ":" + n.name,
-              itsPlot.defaultStyleState(StyleCategory.Front)
-            );
-            defaultStyleMap.set(
-              StyleCategory.Back + ":" + n.name,
-              itsPlot.defaultStyleState(StyleCategory.Back)
-            );
-          }
+          // console.log("is this a text nodule?",n instanceof SEText,n,itsPlot)
+
+          initialStyleMap.set(
+            StyleCategory.Front + ":" + n.name,
+            itsPlot.currentStyleState(StyleCategory.Front)
+          );
+          initialStyleMap.set(
+            StyleCategory.Back + ":" + n.name,
+            itsPlot.currentStyleState(StyleCategory.Back)
+          );
+          defaultStyleMap.set(
+            StyleCategory.Front + ":" + n.name,
+            itsPlot.defaultStyleState(StyleCategory.Front)
+          );
+          defaultStyleMap.set(
+            StyleCategory.Back + ":" + n.name,
+            itsPlot.defaultStyleState(StyleCategory.Back)
+          );
         }
         const itsLabel = n.getLabel();
         if (itsLabel) {
@@ -247,31 +237,31 @@ export const useStylingStore = defineStore("style", () => {
           if (itsLabel.ref.value.length > 0) measurableCount++;
         }
 
-        // if (n instanceof SEText) {
-        //   // console.debug(`${n.name} label`, itsLabel.ref)
-        //   if (!selectedLabels.value.has(n.ref.name)) {
-        //     // console.log("Add text to selected Labels ", n.ref.name);
-        //     selectedLabels.value.add(n.ref.name);
-        //     // Remember the initial and default styles of the selected object
-        //     // These maps are used by the  restoreTo() function below
-        //     initialStyleMap.set(
-        //       "label:" + n.name,
-        //       n.ref.currentStyleState(StyleCategory.Label)
-        //     );
-        //     defaultStyleMap.set(
-        //       "label:" + n.name,
-        //       n.ref.defaultStyleState(StyleCategory.Label)
-        //     );
-        //   }
-        // }
+        if (n instanceof SEText) {
+          //Text objects are plottable and store their properties in the label style category so put them in selectedLabels
+          selectedLabels.value.add(n.ref.name);
+          initialStyleMap.set(
+            "label:" + n.name,
+            n.ref.currentStyleState(StyleCategory.Label)
+          );
+          defaultStyleMap.set(
+            "label:" + n.name,
+            n.ref.defaultStyleState(StyleCategory.Label)
+          );
+        }
       });
+
       //create an array of the current style state of all selected objects using
       // the
 
       // The selections are measurable only if ALL of them are measurable
       measurableSelections.value = measurableCount === selectionArr.length;
       editedLabels.value.clear();
-      console.log("Initial style map size = ", initialStyleMap.size,initialStyleMap);
+      console.log(
+        "Initial style map size = ",
+        initialStyleMap.size,
+        initialStyleMap
+      );
       console.log("Default style map size = ", defaultStyleMap.size);
 
       backStyleContrastCopy = Nodule.getBackStyleContrast();
@@ -589,8 +579,7 @@ export const useStylingStore = defineStore("style", () => {
     //   const theLabel = seLabels.value.find(n => {
     //     return n.ref.name === objectName;
     //   });
-    //   if (theLabel) 
-
+    //   if (theLabel)
 
     if (activeStyleGroup === StyleCategory.Label) {
       updateTargets = Array.from(selectedLabels.value).map(selectedName => {
@@ -602,18 +591,34 @@ export const useStylingStore = defineStore("style", () => {
           if (styleOptions) {
             preUpdateStyleOptionsArray.push(styleOptions);
           } else {
-            console.error("preUpdateStyle NOT found for label ",label.ref.name);
+            console.error(
+              "preUpdateStyle NOT found for label ",
+              label.ref.name
+            );
+          }
+          return label.ref as unknown as Nodule; // label should always be defined, if not then somehow a label was added to the selectedLabels that doesn't exist
+        } else {
+          // there is a text object in the selectedLabels.values array
+          const text = seTexts.value.find(
+            seText => seText.ref.name === selectedName
+          );
+          if (text) {
+            const styleOptions = initialStyleMap.get("label:" + text.ref.name);
+            if (styleOptions) {
+              preUpdateStyleOptionsArray.push(styleOptions);
+            } else {
+              console.error(
+                "preUpdateStyle NOT found for text ",
+                text.ref.name
+              );
+            }
+            return text.ref as unknown as Nodule; // label should always be defined, if not then somehow a label was added to the selectedLabels that doesn't exist
           }
         }
-        return label!.ref as unknown as Nodule; // label should always be defined, if not then somehow a label was added to the selectedLabels that doesn't exist
+        console.error("No label or text was found for update target");
+        return new Label("This Should Never Happen", "point"); //Dummy label to make the linter happy
       });
     } else {
-
-    // } else if (name.startsWith(StyleCategory.Front + ":")) {
-    //   const plotName = name.substring(2);
-    //   const thePlot = selectedPlottables.value.get(plotName);
-    //   if (thePlot) {
-
       updateTargets = Array.from(selectedPlottables.value).map(pair => {
         const styleOptions = initialStyleMap.get(
           activeStyleGroup + ":" + pair[0]
@@ -752,7 +757,7 @@ export const useStylingStore = defineStore("style", () => {
         const theLabel = seLabels.value.find(n => {
           return n.ref.name === objectName;
         });
-        console.log("label name",theLabel?.ref.name)
+        console.log("label name", theLabel?.ref.name);
         if (theLabel) {
           //console.log("Restore Found matching label", theLabel, style);
           preUpdateStyleOptionsArray.forEach((preUpdateStyleOptions, index) => {
@@ -771,6 +776,33 @@ export const useStylingStore = defineStore("style", () => {
             }
             theLabel.ref?.updateStyle(StyleCategory.Label, style);
           });
+        } else {
+          // the name is the name of a text object
+          const theText = seTexts.value.find(n => {
+            return n.ref.name === objectName;
+          });
+          console.log("text name", theText?.ref.name);
+          if (theText) {
+            //console.log("Restore Found matching label", theLabel, style);
+            preUpdateStyleOptionsArray.forEach(
+              (preUpdateStyleOptions, index) => {
+                if (differentStyle(style, preUpdateStyleOptions)) {
+                  //create a command so this is undoable
+                  const styleCommand = new StyleNoduleCommand(
+                    [updateTargets[index]],
+                    StyleCategory.Label,
+                    // The StyleOptions array must have the same number of
+                    // items as the updateTargets!!!
+                    [style],
+                    [preUpdateStyleOptions]
+                  );
+                  cmdGroup.addCommand(styleCommand);
+                  subCommandCount++;
+                }
+                theText.ref?.updateStyle(StyleCategory.Label, style);
+              }
+            );
+          }
         }
       } else if (name.startsWith(StyleCategory.Front + ":")) {
         const plotName = name.substring(2);

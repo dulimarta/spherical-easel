@@ -42,7 +42,6 @@ export default class Text extends Nodule {
 
     this.styleOptions.set(StyleCategory.Label, DEFAULT_TEXT_TEXT_STYLE);
   }
-  //private _defaultName = "";
 
   /**
    * Initialize the current text scale factor that is adjusted by the zoom level and the user textPercent
@@ -321,7 +320,7 @@ export default class Text extends Nodule {
     return textStyle?.labelDisplayText ?? ""
   }
 
-  // public setDefaultText(txt:string):void{
-  //   this._defaultText = txt
-  // }
+  public setDefaultText(txt:string):void{
+    this._defaultText = txt
+  }
 }

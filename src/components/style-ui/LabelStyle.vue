@@ -815,7 +815,7 @@ const conflictItems: ConflictItems = {
     "italic": "Italic",
     "normal": "Normal"
   },
-  "defaultStyles": "Restore Default Styles",
+  "defaultStyles": "Restore Default Styles (ALL)",
   "undoStyles": "Undo Style Changes"
 }
 </i18n>

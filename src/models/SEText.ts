@@ -29,6 +29,7 @@ export class SEText extends SENodule {
     this.name = `T${SENodule.TEXT_COUNT}`;
     this.ref = new Text(this.name);
     this.ref.text = initialText;
+    this.ref.setDefaultText(initialText);
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
     // Set the size for zoom
     this.ref.adjustSize();

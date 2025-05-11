@@ -542,7 +542,7 @@ function updateInputGroup(inputSelector: string): void {
   "pointRadiusPercent": "Point Radius",
   "strokeColor": "Stroke Color",
   "strokeWidthPercent": "Stroke Width",
-  "defaultStyles": "Restore Default Styles",
+  "defaultStyles": "Restore Default Styles (ALL)",
   "undoStyles": "Undo Style Changes"
 }
 </i18n>
