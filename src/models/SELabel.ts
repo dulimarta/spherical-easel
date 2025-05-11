@@ -77,23 +77,24 @@ export class SELabel extends SENodule implements Visitable {
       // use the parent name for the short name, so to get around this we use  this
       // and the angleMarkerNumber.
       label.shortUserName = `Am${this.parent.angleMarkerNumber}`;
-      this.ref.defaultName = `Am${this.parent.angleMarkerNumber}`;
-      this.ref.value = [this.parent.value]
+      label.defaultName = `Am${this.parent.angleMarkerNumber}`;
+      label.value = [this.parent.value]
     } else if (this.parent instanceof SEPolygon) {
       // polygons are an exception which are both plottable and an expression.
       // As expressions MUST have a name of a measurement token (ie. M###), we can't
       // use the parent name for the short name, so to get around this we use  this
       // and the angleMarkerNumber.
       label.shortUserName = `Po${this.parent.polygonNumber}`;
-      this.ref.defaultName = `Po${this.parent.polygonNumber}`;
+      label.defaultName = `Po${this.parent.polygonNumber}`;
     } else {
       if (!(this.parent instanceof SEPoint)) {
         label.shortUserName = parent.name; // the short user name of a point's label is set else where via point visible count
       }
-      this.ref.defaultName = this.parent.name;
+      label.shortUserName = this.parent.name; // if this line isn't here then the antipodal point tool creates a point (with a label) and an antipodal point (***without*** a label)
+      label.defaultName = this.parent.name;
     }
     // Set the size for zoom
-    this.ref.adjustSize();
+    label.adjustSize();
 
     // Display the label initially (both showing or not or the mode)
     if (parent instanceof SEPoint) {
