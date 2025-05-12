@@ -42,7 +42,7 @@ export abstract class Command {
     if (Command.commandHistory.length === 0) return;
     // Pop the last command from the history stack
     const lastAction: Command | undefined = Command.commandHistory.pop();
-    console.log("undo last", lastAction);
+    // console.log("undo last", lastAction);
     // Run is restore state logic
     if (lastAction) {
       Command.redoHistory.push(lastAction);
@@ -266,7 +266,8 @@ export abstract class Command {
       frames: number;
       repeat: number; // 0 is indefinite
     },
-    svgForIcon?: boolean
+    svgForIcon?: boolean,
+    svgForJpeg?: boolean // When exporting to jpeg, transparent background is not supported so you must use white.
   ): string {
     function gradientDictionariesEqual(
       d1: Map<svgGradientType, string | Map<svgStopType, string>[]>,
@@ -331,10 +332,6 @@ export abstract class Command {
       }
       return true;
     }
-    if (svgForIcon == undefined) {
-      svgForIcon = false;
-    }
-
     // Build the header string for the SVG
     let svgHeaderReturnString =
       '<svg width="' +
@@ -343,7 +340,9 @@ export abstract class Command {
       'height="' +
       (svgForIcon ? 2 * SETTINGS.boundaryCircle.radius : width) +
       'px" ' +
-      'xmlns="http://www.w3.org/2000/svg" style="background-color:transparent" overflow="visible" >\n';
+      'xmlns="http://www.w3.org/2000/svg" style="background-color:' +
+      (svgForJpeg ? "white" : "transparent") +
+      '" overflow="visible" >\n';
 
     // Record the gradients (which will be radial gradients for us) for the SVG in a dictionary
     // key: names like circleFrontGradient1 and polygonBackGradient2, etc.
