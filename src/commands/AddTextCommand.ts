@@ -78,21 +78,16 @@ export class AddTextCommand extends Command {
       seText.updatePlottableStyle(
         StyleCategory.Label,
         JSON.parse(textStyleString)
-      );
+      ); // this updates the displayed text
     }  else {
       throw new Error("AddTextCommand: No text style string.");
     }
 
     // text has no children so no need to put the text in the object map
     if (propMap.get("objectName") !== undefined) {
-      // console.debug(
-      //   `old name ${seText.name}, new name ${propMap.get("objectName")}`
-      // );
       seText.name = propMap.get("objectName") ?? "";
       seText.showing = propMap.get("objectShowing") === "true";
       seText.exists = propMap.get("objectExists") === "true";
-      seText.text = propMap.get("textObjectText") ?? "";
-      //objMap.set(seText.name, seText);
     }  else {
       throw new Error("AddTextCommand: Undefined Object Name");
     }

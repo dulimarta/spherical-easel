@@ -206,7 +206,8 @@ export abstract class Command {
         Command.allowedAngleMarkerAttributes.includes(attribute)) ||
       (name.toLowerCase().includes("polygon") &&
         Command.allowedPolygonAttributes.includes(attribute)) ||
-      (name.toLowerCase().includes("label") &&
+      ((name.toLowerCase().includes("label") ||
+        name.toLowerCase().includes("text")) &&
         Command.allowedLabelAttributes.includes(attribute))
     ) {
       if (
@@ -439,15 +440,15 @@ export abstract class Command {
       let backStyleCount = 0;
       Command.commandHistory.forEach((c: Command) => {
         ///// former toSVG on each command is the same
-        const objectPairs = c.getSVGObjectLabelPairs(); // returns the empty array if nothing to process
+        const objectPairs = c.getSVGObjectLabelPairs(); // returns the empty array if nothing to process or all the pairs [SENodule, SELabel] that might need to be converted to SVG. [SEText, null] is the return for text objects. This is the only return where the SELabel part is null
         const svgTypeArray: toSVGType[] = [];
         objectPairs.forEach(pair => {
           if (pair[0].exists && pair[0].showing) {
             if (pair[0].ref != undefined) {
               svgTypeArray.push(...pair[0].ref.toSVG(nonScaling, svgForIcon));
             }
-            // now check the label (if the point is deleted the label is also so check this inside the first conditional statement)
-            // labels are never deleted only hidden
+            // now check the label (if the point is deleted the label is also - so check this inside the first conditional statement)
+            // labels are never deleted only hidden and never used in an icon
             if (pair[1] && pair[1].exists && pair[1].showing) {
               svgTypeArray.push(...pair[1].ref.toSVG(nonScaling));
             }
@@ -654,10 +655,17 @@ export abstract class Command {
     // Create the CSS style part of the SVG return string
     var styleSVGReturnString = '\t<style type="text/css">\n'; //<![CDATA[\n';
     for (let [name, styleDict] of styleDictionary.entries()) {
-      if (!(svgForIcon && name.toLowerCase().includes("label"))) {
+      if (
+        !(
+          svgForIcon &&
+          (name.toLowerCase().includes("label") ||
+            name.toLowerCase().includes("text"))
+        )
+      ) {
         // no text/label in icon SVG
         styleSVGReturnString += "\t\t\t." + name + " { ";
         //Add the list of attributes, but make sure it is not the default
+
         for (let [attribute, value] of styleDict) {
           if (Command.includeStyleOption(name, attribute, value)) {
             styleSVGReturnString += attribute + ":" + value + "; ";

@@ -257,7 +257,7 @@ export default class Text extends Nodule {
       LAYER.foregroundText,
       svgFrontString
     ]);
-    
+    //console.log("text front style dictionary", returnSVGObject.frontStyleDictionary)
     return [returnSVGObject];
   }
 

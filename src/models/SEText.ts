@@ -24,7 +24,7 @@ export class SEText extends SENodule {
 
   protected _locationVector = new Vector2();
 
-  constructor(initialText: string) {
+  constructor(initialText: string="Default Text") {
     super();
     this.name = `T${SENodule.TEXT_COUNT}`;
     this.ref = new Text(this.name);
