@@ -83,6 +83,14 @@ export class RotationVisitor implements Visitor {
 
     // s.ref.updateDisplay();
     // }
+    if (s.nearlyAntipodal){
+      this.tmpVector.copy(s.normalVector); // Copy the old vector location of the normal
+      this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+      s.normalVector = this.tmpVector; // update the end point
+
+      s.shallowUpdate();
+      return true;
+    }
     if (s instanceof SELongitude) {
       //console.log("SELatitude actionOnCircle");
 
@@ -96,7 +104,7 @@ export class RotationVisitor implements Visitor {
       // this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
       // s.endSEPoint.locationVector = this.tmpVector; // update the end point
 
-      this.tmpVector.copy(s.normalVector); // Copy the old vector location of the SEPoint
+      this.tmpVector.copy(s.normalVector); // Copy the old vector location of the normal
       this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
       s.normalVector = this.tmpVector; // update the end point
 
