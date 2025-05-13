@@ -192,7 +192,7 @@ export const useStylingStore = defineStore("style", () => {
         if (itsPlot && !(n instanceof SEText)) {
           // console.debug(`${n.name} plottable`, itsPlot)
           if (itsPlot instanceof Nodule) {
-            console.log("Adding to selected Plottable: ", n.name, itsPlot);
+            // console.log("Adding to selected Plottable: ", n.name, itsPlot);
             selectedPlottables.value.set(n.name, itsPlot);
           }
           // Remember the initial and default styles of the selected object
@@ -218,7 +218,7 @@ export const useStylingStore = defineStore("style", () => {
         }
         const itsLabel = n.getLabel();
         if (itsLabel) {
-          console.log("Adding to selected Labels: ", n.name, itsLabel);
+          // console.log("Adding to selected Labels: ", n.name, itsLabel);
           // console.debug(`${n.name} label`, itsLabel.ref)
           if (!selectedLabels.value.has(itsLabel.ref.name)) {
             selectedLabels.value.add(itsLabel.ref.name);
@@ -257,12 +257,12 @@ export const useStylingStore = defineStore("style", () => {
       // The selections are measurable only if ALL of them are measurable
       measurableSelections.value = measurableCount === selectionArr.length;
       editedLabels.value.clear();
-      console.log(
-        "Initial style map size = ",
-        initialStyleMap.size,
-        initialStyleMap
-      );
-      console.log("Default style map size = ", defaultStyleMap.size);
+      // console.log(
+      //   "Initial style map size = ",
+      //   initialStyleMap.size,
+      //   initialStyleMap
+      // );
+      // console.log("Default style map size = ", defaultStyleMap.size);
 
       backStyleContrastCopy = Nodule.getBackStyleContrast();
       fillStyleCopy = Nodule.getGradientFill();
@@ -289,15 +289,15 @@ export const useStylingStore = defineStore("style", () => {
         const oldValue = stylePropertyMap.get(key);
         // console.log("oldValue", oldValue);
         if (!isPropEqual(oldValue, newValue)) {
-          console.log(
-            `Property ${key} changes from ${oldValue} to ${newValue}`
-          );
+          // console.log(
+          //   `Property ${key} changes from ${oldValue} to ${newValue}`
+          // );
           (postUpdateStyleOptions as any)[key] = newValue;
           //stylePropertyMap.set(key, newValue); // if this line is left in, then only the last style change is undoable
           styleIndividuallyAltered = true;
         }
       });
-      console.log("postUpdateStyleOptions", postUpdateStyleOptions);
+      // console.log("postUpdateStyleOptions", postUpdateStyleOptions);
       if (styleIndividuallyAltered) {
         if (activeStyleGroup === StyleCategory.Label) {
           selectedLabels.value.forEach(selectedName => {
@@ -659,9 +659,9 @@ export const useStylingStore = defineStore("style", () => {
 
     // Check if any other properties were modified
     const postUpdateKeys = Object.keys(postUpdateStyleOptions);
-    console.log("postUpdateKeys", postUpdateKeys);
-    console.log("activeStyleGroup", activeStyleGroup);
-    console.log("styleIndividuallyAltered", styleIndividuallyAltered);
+    // console.log("postUpdateKeys", postUpdateKeys);
+    // console.log("activeStyleGroup", activeStyleGroup);
+    // console.log("styleIndividuallyAltered", styleIndividuallyAltered);
     if (
       postUpdateKeys.length > 0 &&
       activeStyleGroup !== null &&
@@ -676,9 +676,9 @@ export const useStylingStore = defineStore("style", () => {
         new Array(updateTargets.length).fill(postUpdateStyleOptions),
         preUpdateStyleOptionsArray
       );
-      console.log("target", updateTargets);
-      console.log("after style", postUpdateStyleOptions);
-      console.log("before style", preUpdateStyleOptionsArray);
+      // console.log("target", updateTargets);
+      // console.log("after style", postUpdateStyleOptions);
+      // console.log("before style", preUpdateStyleOptionsArray);
       cmdGroup.addCommand(styleCommand);
       subCommandCount++;
     }
@@ -706,23 +706,23 @@ export const useStylingStore = defineStore("style", () => {
       subSetStyles: StyleOptions,
       superSetStyles: StyleOptions
     ) {
-      console.log("Substyle", subSetStyles);
-      console.log("superStyle", superSetStyles);
+      // console.log("Substyle", subSetStyles);
+      // console.log("superStyle", superSetStyles);
       let differenceDetected = false;
       let subset = true;
       Object.getOwnPropertyNames(subSetStyles).forEach((propName: string) => {
-        console.log(
-          "SubPropName: ",
-          propName,
-          "SuperValue: ",
-          (superSetStyles as any)[propName]
-        );
-        console.log(
-          "SubPropName: ",
-          propName,
-          "SubValue: ",
-          (superSetStyles as any)[propName]
-        );
+        // console.log(
+        //   "SubPropName: ",
+        //   propName,
+        //   "SuperValue: ",
+        //   (superSetStyles as any)[propName]
+        // );
+        // console.log(
+        //   "SubPropName: ",
+        //   propName,
+        //   "SubValue: ",
+        //   (superSetStyles as any)[propName]
+        // );
         if ((superSetStyles as any)[propName] != undefined) {
           // The propName MUST be in the subSetStyles
           if (
@@ -734,8 +734,8 @@ export const useStylingStore = defineStore("style", () => {
           subset = false;
         }
       });
-      console.log("differenceDetected", differenceDetected);
-      console.log("subset", subset);
+      // console.log("differenceDetected", differenceDetected);
+      // console.log("subset", subset);
       return differenceDetected && subset;
     }
     const cmdGroup = new CommandGroup();
@@ -751,13 +751,13 @@ export const useStylingStore = defineStore("style", () => {
       // So the initial & default maps do not become aliases to the current
       // style option
       mergeStyles(combinedStyle, style);
-      console.log("After restore! Name:", name, " Style:", style);
+      // console.log("After restore! Name:", name, " Style:", style);
       if (name.startsWith("label:")) {
         const objectName = name.substring(6);
         const theLabel = seLabels.value.find(n => {
           return n.ref.name === objectName;
         });
-        console.log("label name", theLabel?.ref.name);
+        // console.log("label name", theLabel?.ref.name);
         if (theLabel) {
           //console.log("Restore Found matching label", theLabel, style);
           preUpdateStyleOptionsArray.forEach((preUpdateStyleOptions, index) => {
@@ -781,7 +781,7 @@ export const useStylingStore = defineStore("style", () => {
           const theText = seTexts.value.find(n => {
             return n.ref.name === objectName;
           });
-          console.log("text name", theText?.ref.name);
+          // console.log("text name", theText?.ref.name);
           if (theText) {
             //console.log("Restore Found matching label", theLabel, style);
             preUpdateStyleOptionsArray.forEach(
@@ -876,10 +876,11 @@ export const useStylingStore = defineStore("style", () => {
     });
     if (subCommandCount > 0) {
       cmdGroup.push();
-      console.log("Style changes recorded in command so they will be undoable");
-    } else {
-      console.log("Restore to inti/default clicked but no changes detected");
-    }
+      // console.log("Style changes recorded in command so they will be undoable");
+    } 
+    // else {
+    //   console.log("Restore to inti/default clicked but no changes detected");
+    // }
     styleOptions.value = { ...combinedStyle };
     styleIndividuallyAltered = false;
   }

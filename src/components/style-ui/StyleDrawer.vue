@@ -453,7 +453,6 @@ const nonTextSelectedLabelsCount = computed(() => {
 function closeStyleDrawer(){
   styleSelection.value = undefined //Ensures the current style changes are recorded
   minified.value = !minified.value //closes the drawer
-
 }
 
 function undoStyleChanges() {

@@ -18,6 +18,7 @@ import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleCategory } from "@/types/Styles";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { Group } from "two.js/src/group";
+import { DisplayStyle } from "@/plottables/Nodule";
 //import Two from "two.js";
 
 export default class PolygonHandler extends Highlighter {
@@ -316,7 +317,7 @@ export default class PolygonHandler extends Highlighter {
               });
               if (measuredBefore) {
                 token = poly.label?.ref.shortUserName ?? "";
-                return true // skip checking the remaining polygons
+                return true; // skip checking the remaining polygons
               }
             }
           }
@@ -406,6 +407,8 @@ export default class PolygonHandler extends Highlighter {
           seg.markKidsOutOfDate();
           seg.update();
         });
+        // Update the display to get the fill to appear
+        vtx.ref.stylize(DisplayStyle.ApplyCurrentVariables);
 
         EventBus.fire("show-alert", {
           key: `handlers.newPolygonAdded`,
@@ -604,7 +607,9 @@ export default class PolygonHandler extends Highlighter {
         this.temporaryAngleMarkers[0].updateDisplay();
         this.temporaryAngleMarkers[0].normalDisplay(); // if we don't do this the tick mark and all (front/back) angle markers are displayed on top of each other
       }
-      this.temporaryAngleMarkers.forEach((AM:AngleMarker)=> AM.updateDisplay()) // if we don't do this all the existing angle markers either have the wrong fill displayed or no fill at all
+      this.temporaryAngleMarkers.forEach((AM: AngleMarker) =>
+        AM.updateDisplay()
+      ); // if we don't do this all the existing angle markers either have the wrong fill displayed or no fill at all
     }
   }
 

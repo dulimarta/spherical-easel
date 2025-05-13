@@ -16,30 +16,30 @@ export class StyleNoduleCommand extends Command {
     pastStyles: StyleOptions[]
   ) {
     super();
-    console.log("Creating StyleNoduleCommand");
+    // console.log("Creating StyleNoduleCommand");
     this.nodules.push(...nodules);
-    console.log("targets in style nodule command", this.nodules)
+    // console.log("targets in style nodule command", this.nodules)
 
     this.panel = panel;
     // Carefully clone so that we create new objects and no pointer from the inputs are carried to the variables of this command
     currentStyles.forEach(obj => {
-      console.log("current", obj);
+      // console.log("current", obj);
       this.currentStyles.push({ ...obj });
     });
     pastStyles.forEach(obj => {
-      console.log("past", obj);
+      // console.log("past", obj);
       this.pastStyles.push({ ...obj });
     });
   }
 
   do(): void {
     for (let i = 0; i < this.nodules.length; i++) {
-      console.log(
-        "Do effect of StyleNoduleCommand on ",
-        this.nodules[i].name,
-        "to",
-        this.currentStyles[i]
-      );
+      // console.log(
+      //   "Do effect of StyleNoduleCommand on ",
+      //   this.nodules[i].name,
+      //   "to",
+      //   this.currentStyles[i]
+      // );
 
       this.nodules[i].updateStyle(this.panel, this.currentStyles[i]);
 
@@ -53,12 +53,12 @@ export class StyleNoduleCommand extends Command {
 
   restoreState(): void {
     for (let i = 0; i < this.nodules.length; i++) {
-      console.log(
-        "Restore effect of StyleNoduleCommand on ",
-        this.nodules[i].name,
-        " to ",
-        this.pastStyles[i]
-      );
+      // console.log(
+      //   "Restore effect of StyleNoduleCommand on ",
+      //   this.nodules[i].name,
+      //   " to ",
+      //   this.pastStyles[i]
+      // );
       this.nodules[i].updateStyle(this.panel,this.pastStyles[i]);
     }
   }
