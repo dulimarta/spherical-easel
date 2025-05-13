@@ -470,13 +470,13 @@ const handleNodeSelection = (input: any) => {
   if (selected && selected.length > 0) {
     const selectedParsed: ConstructionPath = new ConstructionPath(selected[0]);
     folderPath.value = selectedParsed.toString();
-    console.log(
-      "parsed path: " +
-        selectedParsed.toString() +
-        "\n" +
-        "got root: " +
-        selectedParsed.getRoot()
-    );
+    // console.log(
+    //   "parsed path: " +
+    //     selectedParsed.toString() +
+    //     "\n" +
+    //     "got root: " +
+    //     selectedParsed.getRoot()
+    // );
   }
 };
 
