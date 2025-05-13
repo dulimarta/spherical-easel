@@ -247,7 +247,7 @@ export default class MoveHandler extends Highlighter {
         }
       }
     } else {
-      // In this case the user mouse pressed in a location with *no* nodules (nothing was highlighted when she mouse pressed)
+      // In this case the user mouse pressed in a location with *no* nodules (nothing was highlighted when she mouse pressed) or inside a SEPolygon
 
       // Check to see if there was an object on the back of the sphere that he was trying to
       // select but doesn't know about the shift key.  Send an alert in this case

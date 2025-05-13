@@ -658,7 +658,7 @@ export const SETTINGS = {
   angleMarker: {
     initialValueDisplayMode: ValueDisplayMode.DegreeDecimals, // Set the initial display of the values for the measurement of the angle
     showLabelsInitially: true, // Should the labels be show upon creating the angleMarker
-    maxLabelDistance: 0.25, // The maximum distance that a label is allowed to get away from the angleMarker
+    maxLabelDistance: 0.2, // The maximum distance that a label is allowed to get away from the angleMarker
     initialLabelOffset: 0.2, // When making point labels this is initially how far (roughly) they are from the angleMarker
     defaultLabelMode: LabelDisplayMode.ValueOnly, // The default way of displaying this objects label
     turnOffVertexLabelOnCreation: true, // When an angle marker is created with a label at the vertex, that label is turned off if this is set.

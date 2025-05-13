@@ -1977,6 +1977,15 @@ export default class AngleMarker extends Nodule {
   }
 
   /**
+   * The percent that the default angle marker is scaled relative to the current magnification factor
+   */
+  get angleMarkerRadiusPercent(): number {
+    const frontStyle = this.styleOptions.get(StyleCategory.Front);
+    if (!frontStyle) return 100;
+    return frontStyle.angleMarkerRadiusPercent ?? 100;
+  }
+
+  /**
    * Copies the style options set by the Style Panel into the style variables and then updates the
    * js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
