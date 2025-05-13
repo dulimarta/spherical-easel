@@ -29,7 +29,7 @@
     "MeasurePolygonToolUseMessage": "Select three or more line segments that make a polygon with out crossing. The measurement is found in the object tab.",
     "CreateAngleDisplayedName": "Measure Angle",
     "CreateAngleToolTipMessage": "Calculate Angle",
-    "CreateAngleToolUseMessage": "Select two lines, three points or two segments with an endpoint in common to measure an angle. The measurement is found in the object tab.",
+    "CreateAngleToolUseMessage": "Select two lines, three points or two segments with a common endpoint to measure an angle. The measurement is found in the object tab.",
     "CreateAntipodalPointDisplayedName": "Antipodal Point",
     "CreateAntipodalPointToolTipMessage": "Create Antipode",
     "CreateAntipodalPointToolUseMessage": "Select a location to create a point (if necessary) and its antipode.",

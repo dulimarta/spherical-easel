@@ -49,7 +49,7 @@
       v-if="constructionDocId"
       @click="() => exportConstructionDialog?.show()"
       tooltip="Export Construction">
-      <template #icon>mdi-file-export</template>
+      <template #icon>mdi-export</template>
     </HintButton>
   </div>
   <Dialog
