@@ -5,8 +5,7 @@
     :show-popup="showPopup!"
     :name="t('label', i18nMessageSelector())"
     :disabled="selectedLabels.size < 1"
-    @pop-up-shown="checkLabelsVisibility()"
-    @pop-up-hidden="resetLabelsVisibility()">
+    @pop-up-shown="checkLabelsVisibility()">
     <template #tabs>
       <v-tab>
         <v-icon>mdi-pencil</v-icon>
@@ -77,7 +76,7 @@
           :class="{ shake: animatedInput.labelTextScalePercent }"
           :min="minLabelTextScalePercent"
           :max="maxLabelTextScalePercent"
-          :step="22.5"
+          :step="20"
           :thumb-string-values="textScaleSelectorThumbStrings" />
         <PropertySlider
           :numSelected="selectedLabels.size"
@@ -113,6 +112,7 @@
           item-title="text"
           item-value="value"
           ref="labelTextFamily"
+          @mousedown="emits('ignore-mouse-down')"
           :class="{
             shake: animatedInput.labelTextFamily,
             conflict: conflictItems.labelTextFamily
@@ -130,6 +130,7 @@
           item-title="text"
           item-value="value"
           ref="labelTextStyle"
+          @mousedown="emits('ignore-mouse-down')"
           :class="{
             shake: animatedInput.labelTextStyle,
             conflict: conflictItems.labelTextStyle
@@ -147,6 +148,7 @@
           item-title="text"
           item-value="value"
           ref="labelTextDecorations"
+          @mousedown="emits('ignore-mouse-down')"
           :class="{
             shake: animatedInput.labelTextDecoration,
             conflict: conflictItems.labelTextDecoration
@@ -174,6 +176,7 @@
           item-title="text"
           item-value="value"
           variant="outlined"
+          @mousedown="emits('ignore-mouse-down')"
           density="compact"></v-select>
         <DisagreementOverride
           :style-properties="[
@@ -262,7 +265,7 @@ import {
   Ref
 } from "vue";
 import { SENodule } from "@/models/SENodule";
-import { LabelStyleOptions, StyleOptions } from "@/types/Styles";
+import { LabelStyleOptions, StyleCategory, StyleOptions } from "@/types/Styles";
 import { LabelDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import { Labelable } from "@/types";
@@ -274,10 +277,9 @@ import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
-// const attrs = useAttrs();
 import PopOverTabs from "./PopOverTabs.vue";
-import { useAttrs } from "vue";
 import { useStylingStore } from "@/stores/styling";
+
 type LabelDisplayModeItem = {
   text: any; //typeof VueI18n.TranslateResult
   value: LabelDisplayMode;
@@ -315,7 +317,7 @@ type LabelStyleProps = {
   // noduleFilterFunction: () => void,
 };
 const emits = defineEmits([
-  // 'apply-styles',
+  "ignore-mouse-down", //this tells the mousedown handler in StyleDrawer to ignore this event when it happens in the pull down menus of these styling options.
   "undo-styles",
   "apply-default-styles"
 ]);
@@ -330,9 +332,15 @@ const {
   hasTextObject,
   hasLabelObject,
   i18nMessageSelector,
+  persistUpdatedStyleOptions,
   editedLabels
 } = styleStore;
 const { t } = useI18n();
+
+// const labelTextFamily = ref<HTMLElement | null>(null);
+// defineExpose({
+//   labelTextFamily
+// });
 
 // You are not allow to style labels  directly  so remove them from the selection and warn the user
 const { seLabels, selectedSENodules } = storeToRefs(seStore);
@@ -464,17 +472,17 @@ function checkLabelsVisibility() {
   });
 }
 // TODO: this function needs more work
-function resetLabelsVisibility() {
-  // popupVisible = false;
-  // groupSelection.value = undefined;
-  // selectedLabels.value.forEach(n => {
-  //   if (!editedLabels.has(n.name)) {
-  //     const visibility = labelVisibiltyState.get(n.name);
-  //     if (typeof visibility === "boolean") n.showing = visibility;
-  //   }
-  // });
-  // emits('apply-styles')
-}
+// function resetLabelsVisibility() {
+//   // popupVisible = false;
+//   // groupSelection.value = undefined;
+//   // selectedLabels.value.forEach(n => {
+//   //   if (!editedLabels.has(n.name)) {
+//   //     const visibility = labelVisibiltyState.get(n.name);
+//   //     if (typeof visibility === "boolean") n.showing = visibility;
+//   //   }
+//   // });
+//   // emits('apply-styles')
+// }
 
 // These methods are linked to the Style Data fade-in-card
 function labelDisplayTextCheck(txt: string | undefined): boolean | string {
@@ -794,8 +802,8 @@ const conflictItems: ConflictItems = {
   "labelStyle": "Label Style|Text Style|Label & Text Style",
   "labelTextDecoration": "Label Decoration|Text Decoration|Label & Text Decoration",
   "labelTextFamily": "Label Family|Text Family|Label & Text Family",
-  "labelTextRotation": "Label Rotation (°)|Text Rotation (°)|Label & Text Rotation (°)",
-  "labelTextScale": "Label Scale (%)|Text Scale (%)|Label & Text Scale (%)",
+  "labelTextRotation": "Label Rotation |Text Rotation |Label & Text Rotation ",
+  "labelTextScale": "Label Scale |Text Scale |Label & Text Scale ",
   "labelTextStyle": "Label Style|Text Style|Label & Text Style",
   "makeLabelsVisible": "Make Labels Visible",
   "message": {

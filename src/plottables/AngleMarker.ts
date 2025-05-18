@@ -1990,11 +1990,12 @@ export default class AngleMarker extends Nodule {
    * js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
    */
-  updateStyle(mode: StyleCategory, options: StyleOptions): void {
-    // console.debug("Update style of Angle Marker using", options);
-    super.updateStyle(mode, options);
-    this.setVisible(true); // applies the decoration changes (we know that the angle marker is visible because the style panel won't let you edit hidden objects)
-  }
+  // updateStyle(mode: StyleCategory, options: StyleOptions): void {
+  //   console.log("Update style of Angle Marker using", options);
+  //   super.updateStyle(mode, options);
+  //   this.setVisible(true); // applies the decoration changes (we know that the angle marker is visible because the style panel won't let you edit hidden objects)
+  //   // this.stylize(DisplayStyle.ApplyCurrentVariables)
+  // }
   /**
    * Return the default style state
    */

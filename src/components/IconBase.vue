@@ -11,7 +11,7 @@
     :aria-labelledby="iconName"
     :style="customIconStyle"
     vector-effect="non-scaling-stroke"
-    width="inherit">
+    width="100%">
     <g v-html="svgSnippetAmended"></g>
   </svg>
 </template>

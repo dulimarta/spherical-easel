@@ -187,11 +187,6 @@
             v-model="styleOptions.angleMarkerTickMark"
             :color="
               hasDisagreement('angleMarkerTickMark') ? 'red' : 'secondary'
-            "
-            @change="
-              updateInputGroup(
-                'angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc'
-              )
             ">
             <template v-slot:label>
               <span
@@ -206,11 +201,6 @@
             v-model="styleOptions.angleMarkerDoubleArc"
             :color="
               hasDisagreement('angleMarkerDoubleArc') ? 'red' : 'secondary'
-            "
-            @change="
-              updateInputGroup(
-                'angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc,angleMarkerAArrowHeads'
-              )
             ">
             <template v-slot:label>
               <span
@@ -226,11 +216,6 @@
             v-model="styleOptions.angleMarkerArrowHeads"
             :color="
               hasDisagreement('angleMarkerArrowHeads') ? 'red' : 'secondary'
-            "
-            @change="
-              updateInputGroup(
-                'angleMarkerRadiusPercent,angleMarkerTickMark,angleMarkerDoubleArc,angleMarkerArrowHeads'
-              )
             ">
             <template v-slot:label>
               <span
@@ -270,12 +255,18 @@
           :text="t('defaultStyles')"></v-tooltip>
         <v-btn
           id="restore-btn"
-          @click="emits('undo-styles')"
+          @click="
+            emits('undo-styles');
+            checkDashPattern(editModeIsBack, false);
+          "
           icon="mdi-undo"
           size="small"></v-btn>
         <v-btn
           id="default-btn"
-          @click="emits('apply-default-styles')"
+          @click="
+            emits('apply-default-styles');
+            checkDashPattern(editModeIsBack, true);
+          "
           icon="mdi-backup-restore"
           size="small"></v-btn>
       </div>
@@ -310,8 +301,13 @@ const emits = defineEmits(["undo-styles", "apply-default-styles"]);
 const props = defineProps<ComponentProps>();
 const styleStore = useStylingStore();
 const { selectedPlottables, styleOptions } = storeToRefs(styleStore);
-const { hasStyle, hasDisagreement, isCommonProperty, hasSomeProperties } =
-  styleStore;
+const {
+  hasStyle,
+  hasDisagreement,
+  isCommonProperty,
+  hasSomeProperties,
+  persistUpdatedStyleOptions
+} = styleStore;
 const { t } = useI18n({ useScope: "local" });
 const angleMarkerRadiusPercentage = ref(
   styleOptions.value.angleMarkerRadiusPercent ?? 100
@@ -324,13 +320,28 @@ const flipDashPattern = ref(false);
 //   return dArr[0] !== 0 && dArr[1] !== 0
 // });
 
+// watch(
+//   () => props.showPopup,
+//   showing => {
+//     console.log("hereFB", showing, editModeIsBack.value ? StyleCategory.Back : StyleCategory.Front);
+//     if (!showing) {
+//       //if necessary, record the style state when not F/B style menu is hidden
+//       persistUpdatedStyleOptions(
+//         editModeIsBack.value ? StyleCategory.Back : StyleCategory.Front
+//       );
+//     }
+//   }
+// );
+
 watch(
   () => styleOptions.value,
   opt => {
     if (Array.isArray(opt.dashArray)) {
+      // console.log("watcher 1", opt.dashArray);
       const arr = opt.dashArray;
-      if (arr.length < 2) useDashPattern.value = false;
-      else {
+      if (arr.length < 2) {
+        useDashPattern.value = false;
+      } else {
         if (arr[0] !== 0 && arr[1] !== 0) {
           useDashPattern.value = true;
           // Copy the predefined pattern
@@ -355,17 +366,21 @@ watch(
 watch(
   () => useDashPattern.value,
   useDash => {
+    // console.log("watcher 2 use Dash: ", useDash);
     if (useDash) {
       styleOptions.value.reverseDashArray = flipDashPattern.value;
       styleOptions.value.dashArray = dashArray.value.slice(0);
     } else {
-      delete styleOptions.value.dashArray;
+      styleOptions.value.dashArray = [0, 0];
+      //delete styleOptions.value.dashArray;
     }
   }
 );
+
 watch(
   () => dashArray.value,
   (dArr, oldArr) => {
+    // console.log("watcher 3 use Dash: ", dArr);
     if (!useDashPattern.value) return;
     // TwoJS interpretation: dashes[0] = gap length; dashes[1] = dash length
     styleOptions.value.dashArray = dArr.slice(0);
@@ -376,12 +391,36 @@ watch(
 watch(
   () => flipDashPattern.value,
   flip => {
+    console.log("watcher 4 flip: ", flip);
     if (typeof flip === "undefined") return;
     if (!useDashPattern.value) return;
     styleOptions.value.reverseDashArray = flip;
   }
 );
 
+function checkDashPattern(
+  editModeIsBack: boolean,
+  globalDefaults: boolean
+): void {
+  //check the dash pattern and if it is [0,0] set the useDashPattern to false
+  // console.log("checkDashPattern", editModeIsBack, globalDefaults);
+  // console.log(
+  //   "useDashArray before",
+  //   useDashPattern.value,
+  //   styleOptions.value.dashArray
+  // );
+  const arr = styleOptions.value.dashArray;
+  if (Array.isArray(arr)) {
+    if (arr[0] == 0 && arr[1] == 0) {
+      useDashPattern.value = false;
+    }
+  }
+  // console.log(
+  //   "useDashArray before",
+  //   useDashPattern.value,
+  //   styleOptions.value.dashArray
+  // );
+}
 // change the background color of the input if there is a conflict on that particular input
 
 /**
@@ -459,6 +498,9 @@ const editModeIsBack = computed((): boolean => {
   return props.panel === StyleCategory.Back;
 });
 
+function setUseDashArray(value: boolean): void {
+  useDashPattern.value = value;
+}
 // const editModeIsFront = computed((): boolean => {
 //   return props.panel === StyleCategory.Front;
 // });
@@ -502,11 +544,11 @@ const editModeIsBack = computed((): boolean => {
 //   } else return "";
 // }
 
-function updateInputGroup(inputSelector: string): void {
-  EventBus.fire("update-input-group-with-selector", {
-    inputSelector: inputSelector
-  });
-}
+// function updateInputGroup(inputSelector: string): void {
+//   EventBus.fire("update-input-group-with-selector", {
+//     inputSelector: inputSelector
+//   });
+// }
 </script>
 <style lang="scss" scoped>
 @import "@/scss/variables.scss";

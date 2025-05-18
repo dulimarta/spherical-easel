@@ -55,7 +55,7 @@ export default class SelectionHandler extends Highlighter {
 
   constructor(layers: Group[]) {
     super(layers);
-    this.selectionRectangle = new Rectangle(0,0,10,10);
+    this.selectionRectangle = new Rectangle(0, 0, 10, 10);
     this.selectionRectangle.noFill();
     this.selectionRectangle.stroke = "#000000";
     this.selectionRectangle.linewidth = 0.5;
@@ -276,18 +276,13 @@ export default class SelectionHandler extends Highlighter {
         this.highlightTimer !== null
       ) {
         // interval timer is running and we have no selections, then stop timer
-        clearInterval(this.highlightTimer);
-        if (this.highlightTimer2) clearInterval(this.highlightTimer2);
-        if (this.delayedStart) clearInterval(this.delayedStart);
-        this.delayedStart = null;
-        this.highlightTimer = null;
-        this.highlightTimer2 = null;
+        this.clearAllTimers()
       }
       this.mouseDownLocation.splice(0);
       this.dragging = false;
       // remove the selection rectangle from the layers
       if (this.selectionRectangleAdded) {
-        this.layers[LAYER.foregroundLabel].remove(this.selectionRectangle)
+        this.layers[LAYER.foregroundLabel].remove(this.selectionRectangle);
       }
       this.selectionRectangleAdded = false;
       this.selectionRectangleSelection.splice(0);
@@ -330,17 +325,24 @@ export default class SelectionHandler extends Highlighter {
       this.dragging = true;
       // Add the rectangle if it hasn't been added already
       if (!this.selectionRectangleAdded) {
-        this.layers[LAYER.foregroundLabel].add(this.selectionRectangle)
+        this.layers[LAYER.foregroundLabel].add(this.selectionRectangle);
         this.selectionRectangleAdded = true;
       }
       // update the location of the rectangle (origin = center)
-      this.selectionRectangle.width = Math.abs(this.mouseDownLocation[0]-this.currentScreenVector.x)
-      this.selectionRectangle.height = Math.abs(this.mouseDownLocation[1]-this.currentScreenVector.y)
-      this.selectionRectangle.origin.set(-(this.mouseDownLocation[0]+this.currentScreenVector.x)/2,(this.mouseDownLocation[1]+this.currentScreenVector.y)/2)
+      this.selectionRectangle.width = Math.abs(
+        this.mouseDownLocation[0] - this.currentScreenVector.x
+      );
+      this.selectionRectangle.height = Math.abs(
+        this.mouseDownLocation[1] - this.currentScreenVector.y
+      );
+      this.selectionRectangle.origin.set(
+        -(this.mouseDownLocation[0] + this.currentScreenVector.x) / 2,
+        (this.mouseDownLocation[1] + this.currentScreenVector.y) / 2
+      );
       if (event.shiftKey) {
-        this.selectionRectangle.opacity = 0.25
+        this.selectionRectangle.opacity = 0.25;
       } else {
-        this.selectionRectangle.opacity = 1.0
+        this.selectionRectangle.opacity = 1.0;
       }
 
       // highlight and move the the selected objects intersecting the rectangle that are not already in the current selection into the current selection
@@ -363,7 +365,7 @@ export default class SelectionHandler extends Highlighter {
         }
       } else if (this.hitSETexts.length > 0) {
         this.hitSETexts[0].glowing = true;
-      }else if (this.hitSELines.length > 0) {
+      } else if (this.hitSELines.length > 0) {
         this.hitSELines[0].glowing = true;
       } else if (this.hitSESegments.length > 0) {
         this.hitSESegments[0].glowing = true;
@@ -551,7 +553,7 @@ export default class SelectionHandler extends Highlighter {
     this.dragging = false;
     // remove the selection rectangle from the layers
     if (this.selectionRectangleAdded) {
-     this.layers[LAYER.foregroundLabel].remove(this.selectionRectangle)
+      this.layers[LAYER.foregroundLabel].remove(this.selectionRectangle);
     }
     this.selectionRectangleAdded = false;
     this.selectionRectangleSelection.splice(0);
@@ -561,18 +563,12 @@ export default class SelectionHandler extends Highlighter {
     window.addEventListener("keydown", this.keyPressHandler);
     this.currentSelection.splice(0);
     this.selectionRectangleSelection.splice(0);
+    EventBus.listen("stop-blinking-nodules", this.clearAllTimers.bind(this));
   }
 
   deactivate(): void {
     // Clear the timers
-    if (this.highlightTimer !== null) {
-      clearInterval(this.highlightTimer);
-      this.highlightTimer = null;
-      if (this.highlightTimer2) clearInterval(this.highlightTimer2);
-      this.highlightTimer2 = null;
-      if (this.delayedStart) clearInterval(this.delayedStart);
-      this.delayedStart = null;
-    }
+    this.clearAllTimers();
     // Unselect all selected objects (this unglows them and sets the selected flag to false for them)
     // this.store.state.selectedSENodules.forEach((obj: SENodule) => {
     //   obj.selected = false;
@@ -588,12 +584,9 @@ export default class SelectionHandler extends Highlighter {
     // Remove the listener
     window.removeEventListener("keydown", this.keyPressHandler);
 
-    // If the user has been styling objects and then, without selecting new objects, activates
-    //  another tool, the style state should be saved.
-    EventBus.fire("save-style-state", {});
-
-    this.layers[LAYER.foregroundLabel].remove(this.selectionRectangle)
+    this.layers[LAYER.foregroundLabel].remove(this.selectionRectangle);
     this.selectionRectangleSelection.splice(0);
+    EventBus.unlisten("stop-blinking-nodules");
   }
   private highlight(
     cornerOne: number[],
@@ -693,5 +686,15 @@ export default class SelectionHandler extends Highlighter {
     } while (Math.abs(cornerOne[1] - cornerTwo[1]) > Math.abs(deltaY));
     // add the collection of selected objects to the current selection
     this.currentSelection.push(...this.selectionRectangleSelection);
+  }
+  //turn off the timers to stop the blinking
+  clearAllTimers(): void {
+    // Clear the timers
+    if (this.highlightTimer) clearInterval(this.highlightTimer);
+    this.highlightTimer = null;
+    if (this.highlightTimer2) clearInterval(this.highlightTimer2);
+    this.highlightTimer2 = null;
+    if (this.delayedStart) clearInterval(this.delayedStart);
+    this.delayedStart = null;
   }
 }

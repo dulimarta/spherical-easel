@@ -13,49 +13,61 @@
         <span>{{elementProps.tooltip}}</span>
       </v-tooltip>
     </template-->
-    <v-sheet class="bg-white" v-if="showPopup && menu" position="fixed" elevation="4"
-    :style="{right: '80px'}">
-      <v-tabs v-model="currentTab">
-        <slot name="tabs"></slot>
-        <!-- we assume this value will not be used-->
-        <v-spacer/>
-        <v-tab :value="LAST_TAB_MARKER" @click="menu = false">
-          {{ name }}
-          <v-icon>mdi-chevron-double-right</v-icon>
-        </v-tab>
-      </v-tabs>
-      <slot name="top"></slot>
-      <v-window v-model="currentTab" class="pa-1">
-        <slot name="pages"></slot>
-      </v-window>
-      <v-divider thickness="3"/>
-      <slot name="bottom"></slot>
-    </v-sheet>
+  <v-sheet
+    class="bg-white"
+    v-if="showPopup && menu"
+    position="fixed"
+    elevation="4"
+    :style="{ right: '80px' }"
+    >
+    <v-tabs v-model="currentTab">
+      <slot name="tabs"></slot>
+      <!-- we assume this value will not be used-->
+      <v-spacer />
+      <v-tab :value="LAST_TAB_MARKER" @click="menu = false">
+        {{ name }}
+        <v-icon>mdi-chevron-double-right</v-icon>
+      </v-tab>
+    </v-tabs>
+    <slot name="top"></slot>
+    <v-window v-model="currentTab" class="pa-1">
+      <slot name="pages"></slot>
+    </v-window>
+    <v-divider thickness="3" />
+    <slot name="bottom"></slot>
+  </v-sheet>
   <!--/--v-menu-->
 </template>
 <script lang="ts" setup>
 import { mergeProps } from "vue";
 import { ref, watch } from "vue";
 type Props = {
-  showPopup: boolean,
-  name?: string,
+  showPopup: boolean;
+  name?: string;
 };
 const elementProps = withDefaults(defineProps<Props>(), {
   name: ""
 });
-const emit = defineEmits(['popUpShown','popUpHidden'])
+const emit = defineEmits(["popUpShown", "popUpHidden", "loseFocus"]);
 const LAST_TAB_MARKER = 99999;
 const currentTab = ref(0);
-const menu = ref(false)
-watch(() => elementProps.showPopup, (show) => {
-  menu.value = show
-  if (show) emit('popUpShown')
-  else emit('popUpHidden')
-})
-watch(() => currentTab.value, tab => {
-  if (tab === LAST_TAB_MARKER) {
-    menu.value = false
-    emit('popUpHidden')
+const menu = ref(false);
+watch(
+  () => elementProps.showPopup,
+  show => {
+    menu.value = show;
+    if (show) emit("popUpShown");
+    else emit("popUpHidden");
   }
-})
+);
+watch(
+  () => currentTab.value,
+  tab => {
+    if (tab === LAST_TAB_MARKER) {
+      menu.value = false;
+      emit("popUpHidden");
+    }
+  }
+);
+
 </script>

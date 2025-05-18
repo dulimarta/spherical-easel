@@ -19,10 +19,12 @@ import {
   toSVGType
 } from "@/types/index";
 import SETTINGS, { LAYER } from "@/global-settings";
-import { SELabel, SENodule } from "@/models/internal";
+import { SELabel, SENodule} from "@/models/internal";
 //import { aN } from "vitest/dist/reporters-yx5ZTtEV";
 import { nextTick } from "vue";
 import { CommandGroup } from "./CommandGroup";
+import { DisplayStyle } from "@/plottables/Nodule";
+import { StyleCategory } from "@/types/Styles";
 
 export abstract class Command {
   protected static store: SEStoreType;
@@ -55,6 +57,17 @@ export abstract class Command {
     EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
     EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
     this.store.updateSelectedSENodules([]);
+    // The display of the gradient fill is not updated correctly so for
+    // any filled object call the stylize method
+    // this.store.seNodules
+    //   .filter(
+    //     seNodule =>
+    //       seNodule instanceof SEPolygon || seNodule instanceof SEAngleMarker
+    //   )
+    //   .map(polyOrAM => {for (const styleCat in StyleCategory){
+    //     const t1 = StyleCategory[styleCat] 
+    //     polyOrAM.ref.updateStyle(t1 as unknown as StyleCategory,{})}}
+    //   );
   }
   //#endregion undo
 
@@ -73,6 +86,17 @@ export abstract class Command {
     // not have to update the display in the middle of undoing or redoing a command (this middle stuff causes
     // problems with the move *redo*)
     Command.store?.updateDisplay();
+    // The display of the gradient fill is not updated correctly so for
+    // any filled object call the stylize method
+    // this.store.seNodules
+    //   .filter(
+    //     seNodule =>
+    //       seNodule instanceof SEPolygon || seNodule instanceof SEAngleMarker
+    //   )
+    //   .map(polyOrAM => {for (const styleCat in StyleCategory){
+    //     const t1 = StyleCategory[styleCat] 
+    //     polyOrAM.ref.updateStyle(t1 as unknown as StyleCategory,{})}}
+    //   );
   }
   //#endregion redo
 
