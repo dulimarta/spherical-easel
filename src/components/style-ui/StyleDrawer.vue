@@ -54,7 +54,10 @@
                 @ignore-mouse-down="ignoreMouseDown = true"
                 @undo-styles="undoStyleChanges"
                 @apply-default-styles="restoreDefaultStyles"
-                @pop-up-hidden="styleSelection = undefined"></LabelStyle>
+                @pop-up-hidden="
+                  labelPanelShowing = false;
+                  styleSelection = undefined;
+                "></LabelStyle>
             </div>
           </v-item>
           <v-item v-slot="frontVSlotObject">
@@ -80,7 +83,10 @@
                 :panel="StyleCategory.Front"
                 @undo-styles="undoStyleChanges"
                 @apply-default-styles="restoreDefaultStyles"
-                @pop-up-hidden="styleSelection = undefined"></FrontBackStyle>
+                @pop-up-hidden="
+                  frontPanelShowing = false;
+                  styleSelection = undefined;
+                "></FrontBackStyle>
             </div>
           </v-item>
           <v-item v-slot="backVSlotObject">
@@ -106,7 +112,10 @@
                 :panel="StyleCategory.Back"
                 @undo-styles="undoStyleChanges"
                 @apply-default-styles="restoreDefaultStyles"
-                @pop-up-hidden="styleSelection = undefined"></FrontBackStyle>
+                @pop-up-hidden="
+                  backPanelShowing = false;
+                  styleSelection = undefined;
+                "></FrontBackStyle>
             </div>
           </v-item>
           <v-item v-slot="globalVSlotObject">
@@ -204,6 +213,7 @@
                   size="small"
                   @click="
                     globalVSlotObject.toggle();
+                    globalOptionsPanelShowing = false;
                     styleSelection = undefined;
                   "></v-btn>
               </v-sheet>
@@ -291,9 +301,9 @@ const { t } = useI18n();
 const seStore = useSEStore();
 const styleStore = useStylingStore();
 const { hasObjects, seNodules, seLabels } = storeToRefs(seStore);
-const { selectedPlottables, selectedLabels, editedLabels } =
-  storeToRefs(styleStore);
-const { hasTextObject, i18nMessageSelector, hasLabelObject } = styleStore;
+const { selectedPlottables, selectedLabels } = storeToRefs(styleStore);
+const { i18nMessageSelector, hasLabelObject, resetInitialAndDefaultStyleMaps } =
+  styleStore;
 const styleSelection = ref<number | undefined>(undefined);
 // const { hasStyle, hasDisagreement } = styleStore;
 const fillStyle = ref(Nodule.getGradientFill());
@@ -352,7 +362,7 @@ watch(
     if (labels.size === 0) {
       styleSelection.value = undefined;
     }
-    // Update te hasVisibleLabels to true if at least
+    // Update hasVisibleLabels to true if at least
     // one of the selected labels is visible
     labels.forEach(labname => {
       // selectedLabels is both labels and text so search both, but this only
@@ -367,29 +377,24 @@ watch(
 );
 
 watch(
-  () => editedLabels.value,
-  editSet => {
-    // When the edited label set is NOT empty,
-    // those modified labels will stay visible
-    // Reflect this fact in our internal flag
-    hasVisibleLabels.value = editSet.size > 0;
-  }
-);
-
-watch(
   () => styleSelection.value,
   (selectedTab: number | undefined, prevTab: number | undefined) => {
     if (typeof prevTab === "number" && selectedTab === undefined) {
+      console.log("here1", prevTab, selectedTab);
       styleStore.deselectActiveGroup();
     } else {
+      console.log("here2", prevTab, selectedTab);
       switch (selectedTab) {
         case 0:
+          // resetInitialAndDefaultStyleMaps(StyleCategory.Label);
           styleStore.recordCurrentStyleProperties(StyleCategory.Label);
           break;
         case 1:
+          // resetInitialAndDefaultStyleMaps(StyleCategory.Front);
           styleStore.recordCurrentStyleProperties(StyleCategory.Front);
           break;
         case 2:
+          // resetInitialAndDefaultStyleMaps(StyleCategory.Label);
           styleStore.recordCurrentStyleProperties(StyleCategory.Back);
           break;
         case 3:
@@ -500,12 +505,18 @@ function styleIconAction(
   switch (panel) {
     case "label":
       labelPanelShowing.value = true;
+      // Every time the user opens a panel, record the state of the selected objects
+      resetInitialAndDefaultStyleMaps(StyleCategory.Label);
       break;
     case "front":
       frontPanelShowing.value = true;
+      // Every time the user opens a panel, record the state of the selected objects
+      resetInitialAndDefaultStyleMaps(StyleCategory.Front);
       break;
     case "back":
       backPanelShowing.value = true;
+      // Every time the user opens a panel, record the state of the selected objects
+      resetInitialAndDefaultStyleMaps(StyleCategory.Back);
       break;
     case "global":
       globalOptionsPanelShowing.value = true;
@@ -534,27 +545,17 @@ const labelTooltip = computed((): string => {
 });
 
 const backTooltip = computed((): string => {
-  let text = "";
-  if (hasTextObject()) {
-    text += t("textObjectsAndBackground");
-  } else {
-    text += t("backgroundTooltip");
-    if (selectedPlottables.value.size <= 0) {
-      text += " " + t("disabledTooltip");
-    }
+  let text = t("backgroundTooltip");
+  if (selectedPlottables.value.size <= 0) {
+    text += " " + t("disabledTooltip");
   }
   return text;
 });
 
 const frontTooltip = computed((): string => {
-  let text = "";
-  if (hasTextObject()) {
-    text += t("textObjectsAndForeground");
-  } else {
-    text += t("foregroundTooltip");
-    if (selectedPlottables.value.size <= 0) {
-      text += " " + t("disabledTooltip");
-    }
+  let text = t("foregroundTooltip");
+  if (selectedPlottables.value.size <= 0) {
+    text += " " + t("disabledTooltip");
   }
   return text;
 });

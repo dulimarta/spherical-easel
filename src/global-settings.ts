@@ -287,9 +287,9 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
-      } // An empty array means no dashing.
+        front: [2, 8], 
+        back: [5, 10] 
+      } 
     },
     //The properties of the region around a segment when it is glowing
     glowing: {
@@ -324,8 +324,8 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
+        front: [2, 8], 
+        back: [5, 10] 
       }
     }
   },
@@ -357,8 +357,8 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
+        front: [2, 8], 
+        back: [5, 10]
       }
     },
     //The properties of the region around a line when it is glowing
@@ -394,8 +394,8 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
+        front: [2, 8], 
+        back: [5, 10]
       }
     }
   },
@@ -430,9 +430,9 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
-      } // An empty array means no dashing.
+        front: [2, 8], 
+        back: [5, 10] 
+      } 
     },
     //The properties of the region around a circle when it is glowing
     glowing: {
@@ -473,8 +473,8 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
+        front: [2, 8], 
+        back: [5, 10]
       }
     }
   },
@@ -509,9 +509,9 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
-      } // An empty array means no dashing.
+        front: [2, 8], 
+        back: [5, 10] 
+      } 
     },
     //The properties of the region around a ellipse when it is glowing
     glowing: {
@@ -552,8 +552,8 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
+        front: [2, 8], 
+        back: [5, 10]
       }
     }
   },
@@ -589,9 +589,9 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
-      } // An empty array means no dashing.
+        front: [2, 8], 
+        back: [5, 10] 
+      } 
     },
     //The properties of the region around a parametric curve when it is glowing
     glowing: {
@@ -732,9 +732,9 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: false,
-        front: [0, 0], // An empty array or [0,0] means no dashing.
-        back: [0, 0] // An empty array or [0,0] means no dashing.
-      } // An empty array means no dashing.
+        front: [2, 8], 
+        back: [5 , 10] 
+      } 
     },
     //The properties of the region around an angle when it is glowing
     glowing: {

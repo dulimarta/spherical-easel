@@ -1,11 +1,9 @@
 <template>
-  <!-- For debugging -->
-  <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
   <PopOverTabs
     :show-popup="showPopup!"
     :name="t('label', i18nMessageSelector())"
     :disabled="selectedLabels.size < 1"
-    @pop-up-shown="checkLabelsVisibility()">
+    @pop-up-shown="displayAllLabels()">
     <template #tabs>
       <v-tab>
         <v-icon>mdi-pencil</v-icon>
@@ -40,7 +38,6 @@
             labelDisplayTextTruncate(styleOptions)
           ]"></v-text-field>
         <v-text-field
-          v-if="!hasTextObject()"
           :disabled="
             selectedLabels.size < 1 ||
             hasDisagreement('labelDisplayCaption') ||
@@ -158,7 +155,6 @@
           density="compact"></v-select>
         <!-- Label Display Mode Selections -->
         <v-select
-          v-if="!hasTextObject()"
           :disabled="
             selectedLabels.size < 1 || hasDisagreement('labelDisplayMode')
           "
@@ -196,14 +192,13 @@
           :conflict="hasDisagreement('labelFrontFillColor')"
           v-model="styleOptions.labelFrontFillColor"></PropertyColorPicker>
         <v-switch
-          v-if="!hasTextObject()"
           color="secondary"
           v-model="styleOptions.labelDynamicBackStyle"
           :label="
             t('labelAutomaticBackStyle', i18nMessageSelector())
           "></v-switch>
         <PropertyColorPicker
-          v-if="!styleOptions.labelDynamicBackStyle && !hasTextObject()"
+          v-if="!styleOptions.labelDynamicBackStyle"
           :numSelected="selectedLabels.size"
           :title="t('labelBackFillColor')"
           :conflict="hasDisagreement('labelBackFillColor')"
@@ -244,41 +239,22 @@
       </div>
     </template>
   </PopOverTabs>
-
-  <!--Dialog
-    ref="backStyleDisagreementDialog"
-    :title="t('backStyleDisagreement')"
-    width="50%"
-    :yes-text="t('enableCommonStyle')"
-    :yes-action="overrideDynamicBackStyleDisagreement">
-    {{ t("message.multipleObjectDifferingStyles") }}
-  </!--Dialog-->
 </template>
 <script setup lang="ts">
-import {
-  computed,
-  ref,
-  onMounted,
-  onBeforeMount,
-  onBeforeUnmount,
-  watch,
-  Ref
-} from "vue";
-import { SENodule } from "@/models/SENodule";
-import { LabelStyleOptions, StyleCategory, StyleOptions } from "@/types/Styles";
+import { ref, onMounted, onBeforeMount, watch, Ref } from "vue";
+import { LabelStyleOptions } from "@/types/Styles";
 import { LabelDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
-import { Labelable } from "@/types";
-// import EventBus from "@/eventHandlers/EventBus";
 import PropertySlider from "./StylePropertySlider.vue";
 import PropertyColorPicker from "./StylePropertyColorPicker.vue";
 import DisagreementOverride from "./DisagreementOverride.vue";
-import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import PopOverTabs from "./PopOverTabs.vue";
 import { useStylingStore } from "@/stores/styling";
+import { CommandGroup } from "@/commands/CommandGroup";
+import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
 type LabelDisplayModeItem = {
   text: any; //typeof VueI18n.TranslateResult
@@ -312,9 +288,6 @@ type ConflictItems = {
 };
 type LabelStyleProps = {
   showPopup: boolean;
-  // panel: StyleCategory;
-  // activePanel: number;
-  // noduleFilterFunction: () => void,
 };
 const emits = defineEmits([
   "ignore-mouse-down", //this tells the mousedown handler in StyleDrawer to ignore this event when it happens in the pull down menus of these styling options.
@@ -322,57 +295,25 @@ const emits = defineEmits([
   "apply-default-styles"
 ]);
 const props = defineProps<LabelStyleProps>();
-let groupSelection = defineModel<number>({});
 const seStore = useSEStore();
 const styleStore = useStylingStore();
 const { selectedLabels, styleOptions, measurableSelections } =
   storeToRefs(styleStore);
-const { hasDisagreement, hasTextObject, hasLabelObject, i18nMessageSelector } =
+const { hasDisagreement, hasLabelObject, i18nMessageSelector } =
   styleStore;
 const { t } = useI18n();
-
-// const labelTextFamily = ref<HTMLElement | null>(null);
-// defineExpose({
-//   labelTextFamily
-// });
-
-// You are not allow to style labels  directly  so remove them from the selection and warn the user
-const { seLabels, selectedSENodules } = storeToRefs(seStore);
-// const backStyleDisagreementDialog: Ref<DialogAction | null> = ref(null);
-const labelDisplayText = ref(null);
-const labelDisplayCaption = ref(null);
-// const labelTextScalePercentage = ref(
-//   styleOptions.value.labelTextScalePercent ?? 100
-// );
-// const labelTextRotationAmount: Ref<number> = ref(
-//   styleOptions.value.labelTextRotation ?? 0
-// );
-let popupVisible = false;
-
-// usingAutomaticBackStyle = false means that the user is setting the color for the back on their own and is
-// *not* using the contrast (i.e. not using the dynamic back styling)
-// usingAutomaticBackStyle = true means the program is setting the style of the back objects
-// private usingAutomaticBackStyle = true;
-
-const conflictingPropNames: string[] = []; // this should always be identical to conflictingProps in the template above.
+const { seLabels } = storeToRefs(seStore);
 
 const maxLabelTextScalePercent = SETTINGS.style.maxLabelTextScalePercent;
 const minLabelTextScalePercent = SETTINGS.style.minLabelTextScalePercent;
 //step is 20 from 60 to 200 is 8 steps
 const textScaleSelectorThumbStrings: Array<string> = [];
-
-//Many of the label style will not be commonly modified so create a button/variable for
-// the user to click to show more of the Label Styling options
-
 const maxLabelDisplayTextLength = SETTINGS.label.maxLabelDisplayTextLength;
 const labelDisplayTextErrorMessageKey = "";
-const labelDisplayTestResults = [true, true];
 const lastValidDisplayText = ref("");
-
 const maxLabelDisplayCaptionLength =
   SETTINGS.label.maxLabelDisplayCaptionLength;
 const labelDisplayCaptionErrorMessageKey = "";
-const labelVisibilityState = new Map<string, boolean>();
 
 //step is Pi/8 from -pi to pi is 17 steps
 const textRotationSelectorThumbStrings: Array<string> = [];
@@ -428,24 +369,6 @@ onMounted((): void => {
     x => !x.optionRequiresMeasurementValueToExist || measurableSelections.value
   );
 });
-
-function checkLabelsVisibility() {
-  popupVisible = true;
-
-  selectedLabels.value.forEach(labName => {
-    const lab = seLabels.value.find(z => {
-      return z.ref.name === labName;
-    })?.ref;
-    if (lab) {
-      if (!labelVisibilityState.has(labName)) {
-        labelVisibilityState.set(labName, lab.showing);
-      }
-      if (!lab.showing) {
-        lab.showing = true;
-      }
-    }
-  });
-}
 
 // These methods are linked to the Style Data fade-in-card
 function labelDisplayTextCheck(txt: string | undefined): boolean | string {
@@ -508,10 +431,6 @@ function labelDisplayCaptionTruncate(opt: LabelStyleOptions): boolean {
         SETTINGS.label.maxLabelDisplayCaptionLength
       );
     }
-    // else if (opt.labelDisplayCaption.length === 0) {
-    //   // the label mode should be set to name only
-    //   opt.labelDisplayMode = LabelDisplayMode.NameOnly;
-    // }
   }
   return true;
 }
@@ -538,6 +457,25 @@ function hasCaption(opt: LabelStyleOptions | undefined): boolean {
     opt.labelDisplayMode === LabelDisplayMode.CaptionOnly ||
     opt.labelDisplayMode === LabelDisplayMode.NameAndCaption
   );
+}
+
+function displayAllLabels() {
+  const cmdGroup = new CommandGroup();
+  let subCommandCount = 0;
+  selectedLabels.value.forEach(labName => {
+    const lab = seLabels.value.find(z => {
+      return z.ref.name === labName;
+    });
+    if (lab && !lab.ref.showing) {
+        const newCmd = new SetNoduleDisplayCommand(lab, true);
+        cmdGroup.addCommand(newCmd);
+        subCommandCount++;
+      }
+    }
+  );
+  if (subCommandCount > 0) {
+    cmdGroup.execute();
+  }
 }
 
 const labelDisplayModeItems: LabelDisplayModeItem[] = [

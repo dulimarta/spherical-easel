@@ -305,7 +305,6 @@ export default class Line extends Nodule {
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
-    console.log("here line-1");
     const frontStyle = this.styleOptions.get(StyleCategory.Front);
     const backStyle = this.styleOptions.get(StyleCategory.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
@@ -339,7 +338,6 @@ export default class Line extends Nodule {
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
-    console.log("here line1");
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
         // Use the SETTINGS temporary options to directly modify the js objects.
@@ -396,7 +394,6 @@ export default class Line extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
-        console.log("here line2");
         // Use the current variables to directly modify the js objects.
 
         // Front
@@ -405,7 +402,6 @@ export default class Line extends Nodule {
         if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontHalf.noStroke();
         } else {
-          console.log("here line3");
           this._frontHalf.stroke = frontStyle?.strokeColor ?? "black";
         }
         // strokeWidthPercent applied by adjustSize()
