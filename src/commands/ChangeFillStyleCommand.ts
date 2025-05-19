@@ -1,6 +1,7 @@
 import Nodule from "@/plottables/Nodule";
 import { Command } from "./Command";
-import { toSVGType } from "@/types";
+import { SavedNames, toSVGType } from "@/types";
+import { SENodule } from "@/models/internal";
 
 export class ChangeFillStyleCommand extends Command {
   private currentFillStyle: boolean;
@@ -23,11 +24,29 @@ export class ChangeFillStyleCommand extends Command {
   }
 
   restoreState(): void {
-    Nodule.setGradientFill(this.pastFillStyle);
     Command.store.changeGradientFill(this.pastFillStyle);
+    Nodule.setGradientFill(this.pastFillStyle);
   }
 
   toOpcode(): null | string | Array<string> {
-    return null; // Exclude this command from interpretation
+    return [
+      "ChangeGlobalFillStyle",
+      "currentGlobalFillStyle=" + this.currentFillStyle,
+      "pastGlobalFillStyle=" + this.pastFillStyle
+    ].join("&");
+  }
+
+  static parse(command: string, objMap: Map<string, SENodule>): Command {
+    const tokens = command.split("&");
+    const propMap = new Map<SavedNames, string>();
+    // load the tokens into the map
+    tokens.forEach((token, ind) => {
+      if (ind === 0) return; // don't put the command type in the propMap
+      const parts = token.split("=");
+      propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
+    });
+    const currentFillStyle = propMap.get("currentGlobalFillStyle") === "true";
+    const pastFillStyle = propMap.get("pastGlobalFillStyle") === "true";
+    return new ChangeFillStyleCommand(currentFillStyle, pastFillStyle);
   }
 }

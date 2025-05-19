@@ -279,7 +279,7 @@
 }
 </style>
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, onBeforeUpdate } from "vue";
 import { StyleCategory } from "@/types/Styles";
 import { useI18n } from "vue-i18n";
 import LabelStyle from "./LabelStyle.vue";
@@ -290,9 +290,6 @@ import { useStylingStore } from "@/stores/styling";
 import { watch } from "vue";
 import Nodule from "@/plottables/Nodule";
 import { SEText } from "@/models/SEText";
-import { SELabel } from "@/models/internal";
-import EventBus from "@/eventHandlers/EventBus";
-import { lab } from "color";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
@@ -530,6 +527,10 @@ function styleIconAction(
 
 onMounted((): void => {
   document.addEventListener("mousedown", handleClick); //MUST be mousedown because, if is it mouse up or click, then the other event handlers process this event first. For example, if this was mouseup or click, and the user clicks in the sphere, then the selection tool clears the selection *before* the user style choices can be recorded (which defeats the whole purpose of this listener).
+  fillStyle.value = Nodule.getGradientFill();
+});
+onBeforeUpdate((): void => {
+  fillStyle.value = Nodule.getGradientFill();
 });
 
 onBeforeUnmount((): void => {

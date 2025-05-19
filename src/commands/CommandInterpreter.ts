@@ -52,6 +52,7 @@ import { AddLatitudeCommand } from "./AddLatitudeCommand";
 import { AddLongitudeCommand } from "./AddLongitudeCommand";
 import { UpdateTwoJSCommand } from "./UpdateTwoJSCommand";
 import { AddTextCommand } from "./AddTextCommand";
+import { ChangeFillStyleCommand } from "./ChangeFillStyleCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -179,7 +180,9 @@ function executeIndividual(command: string): Command {
     case "SetValueDisplayMode":
       return SetValueDisplayModeCommand.parse(command, noduleDictionary);
     case "AddText":
-      return AddTextCommand.parse(command, noduleDictionary)
+      return AddTextCommand.parse(command, noduleDictionary);
+    case "ChangeGlobalFillStyle":
+      return ChangeFillStyleCommand.parse(command, noduleDictionary);
     default: {
       const errMsg = `Not yet implemented: ${command}`;
       EventBus.fire("show-alert", {
@@ -205,7 +208,7 @@ function interpret(command: string | Array<string>): void {
   } else {
     // This is a CommandGroup, interpret each command individually
     const group = new CommandGroup();
-    const updateTwoJS = new UpdateTwoJSCommand()
+    const updateTwoJS = new UpdateTwoJSCommand();
     command
       // Remove leading and training quotes
       .map((s: string) => s.replace(/^"/, "").replace(/"$/, ""))
@@ -215,7 +218,7 @@ function interpret(command: string | Array<string>): void {
         // state of TwoJS.
         // The following "no-op" command allows TwoJS to update
         // its internal states
-        group.addCommand(updateTwoJS)
+        group.addCommand(updateTwoJS);
       });
     // Then execute as a group
     group.execute();

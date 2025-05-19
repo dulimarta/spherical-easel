@@ -234,7 +234,9 @@ export type SavedNames =
   | "earthLatitude"
   | "earthLongitude"
   | "textObjectText"
-  | "textStyle";
+  | "textStyle"
+  | "currentGlobalFillStyle"
+  | "pastGlobalFillStyle";
 
 export type ActionMode =
   | "angle"
