@@ -83,7 +83,7 @@ export class RotationVisitor implements Visitor {
 
     // s.ref.updateDisplay();
     // }
-    if (s.nearlyAntipodal){
+    if (s.nearlyAntipodal) {
       this.tmpVector.copy(s.normalVector); // Copy the old vector location of the normal
       this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
       s.normalVector = this.tmpVector; // update the end point
@@ -182,8 +182,11 @@ export class RotationVisitor implements Visitor {
   }
   actionOnPolygon(p: SEPolygon): boolean {
     // update the display of the plottable object. update gets the new rotation matrix directly from the store.
-    p.ref.updateDisplay(); // sets the location of the vertices for the front/back fills
-    p.ref.normalDisplay() // displays the correct fills depending on where the polygon is
-    return true;
+    // p.ref.updateDisplay(); // sets the location of the vertices for the front/back fills
+    // p.ref.normalDisplay() // displays the correct fills depending on where the polygon is
+    // seNodules.value.forEach(obj => {
+    // // obj.ref?.stylize(DisplayStyle.ApplyCurrentVariables)
+    // // })
+    return false;
   }
 }

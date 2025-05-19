@@ -284,6 +284,7 @@ export default class Circle extends Nodule {
    * call this method once those variables are updated.
    */
   public updateDisplay(): void {
+    console.log("circle update display",this.centerVector.toFixed(2), this._circleRadius)
     //#region circleDisplay
     //Set all the parameters that control the size and location of the projected ellipse (but not the part of the ellipse that is drawn)
     this._beta = Math.acos(this._centerVector.z);

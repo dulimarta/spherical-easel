@@ -199,7 +199,8 @@ export class SECircle
 
     this.setOutOfDate(false);
     this.shallowUpdate();
-
+    console.log("update two js in SECircle")
+    SENodule.store.updateTwoJS() // make sure that fills update properly after a re/do move command
     // These circles are completely determined by their point parents and an update on the parents
     // will cause this circle to be put into the correct location.So we don't store any additional information
     if (objectState && orderedSENoduleList) {

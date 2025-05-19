@@ -444,7 +444,7 @@ export const useSEStore = defineStore("se", () => {
   const twojsLayers = computed(() => layers);
 
   function init(): void {
-    actionMode.value = "segment";  //The default tool when started and reset canvas cleared
+    actionMode.value = "segment"; //The default tool when started and reset canvas cleared
     // this.activeToolName = "RotateDisplayedName";
     // Do not clear the layers array!
     // Replace clear() with splice(0). Since clear() is an extension function
@@ -709,7 +709,6 @@ export const useSEStore = defineStore("se", () => {
     hasUnsavedNodules.value = true;
     updateDisabledTools("segment");
   }
-
   function removeSegment(segId: number): void {
     const victimSegment = seSegmentMap.get(segId);
     if (victimSegment) {
@@ -786,13 +785,6 @@ export const useSEStore = defineStore("se", () => {
       aText.locationVector = move.location;
     }
   }
-  function changeText(change: { textId: number; newText: string }): void {
-    const aText = seTextMap.get(change.textId);
-    if (aText) {
-      aText.text = change.newText;
-    }
-  }
-
   function removeText(textId: number): void {
     const victimText = seTextMap.get(textId);
 
@@ -998,6 +990,23 @@ export const useSEStore = defineStore("se", () => {
       addCandidatesFrom(target);
     }
 
+    // //update the display of all objects with a fill 
+    // sePolygons.value.forEach(p => {
+    //   p.ref.updateDisplay(); // sets the location of the vertices for the front/back fills
+    //   p.ref.normalDisplay(); // displays the correct fills depending on where the polygon is
+    // });
+    // seAngleMarkers.value.forEach(a => {
+    //   a.ref.updateDisplay(); // sets the location of the vertices for the front/back fills
+    //   a.ref.normalDisplay(); // displays the correct fills depending on where the polygon is
+    // });
+    // seEllipses.value.forEach(e => {
+    //   e.ref.updateDisplay(); // sets the location of the vertices for the front/back fills
+    //   e.ref.normalDisplay(); // displays the correct fills depending on where the polygon is
+    // });
+    // seCircles.value.forEach(c => {
+    //   c.ref.updateDisplay(); // sets the location of the vertices for the front/back fills
+    //   c.ref.normalDisplay(); // displays the correct fills depending on where the polygon is
+    // });
     // console.debug(
     //   `Update candidate has ${updateCandidates.length} items`,
     //   updateCandidates.map((n: SENodule) => n.name).join(", ")
@@ -4036,7 +4045,6 @@ export const useSEStore = defineStore("se", () => {
     changeGradientFill,
     changeLineNormalVector,
     changeSegmentNormalVectorArcLength,
-    changeText,
     clearUnsavedFlag,
     createAllIntersectionsWithCircle,
     createAllIntersectionsWithEllipse,
