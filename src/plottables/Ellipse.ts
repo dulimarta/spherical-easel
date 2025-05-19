@@ -15,10 +15,7 @@ import { Stop } from "two.js/src/effects/stop";
 import { RadialGradient } from "two.js/src/effects/radial-gradient";
 import { Anchor } from "two.js/src/anchor";
 import { Group } from "two.js/src/group";
-import {
-  svgArcObject,
-  toSVGType
-} from "@/types";
+import { svgArcObject, toSVGType } from "@/types";
 import Settings from "@/views/Settings.vue";
 
 const desiredXAxis = new Vector3();
@@ -1004,7 +1001,7 @@ export default class Ellipse extends Nodule {
     this.glowingBackPart.remove();
   }
 
-  toSVG( nonScaling?: {
+  toSVG(nonScaling?: {
     stroke: boolean;
     text: boolean;
     pointRadius: boolean;
@@ -1019,7 +1016,6 @@ export default class Ellipse extends Nodule {
       layerSVGArray: [],
       type: "ellipse"
     };
-
 
     // Add the gradient to the gradient dictionary (if used)
     if (Nodule.getGradientFill()) {
@@ -1044,17 +1040,17 @@ export default class Ellipse extends Nodule {
 
     // collect the front style
     if (this.frontFillInUse) {
-      returnSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary(
-        {strokeObject:this.frontPart,
-        fillObject:this.frontFill}
-      );
+      returnSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({
+        strokeObject: this.frontPart,
+        fillObject: this.frontFill
+      });
     }
     // collect the front style
     if (this.backFillInUse) {
-      returnSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary(
-        {strokeObject: this.backPart,
-        fillObject:this.backFill}
-      );
+      returnSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({
+        strokeObject: this.backPart,
+        fillObject: this.backFill
+      });
     }
     // the ellipse edge is entirely on the front or the ellipse edge is entirely on the back")
     if (this.frontPart.closed || this.backPart.closed) {
@@ -1627,7 +1623,7 @@ export default class Ellipse extends Nodule {
         // The ellipse width is set to the current ellipse width (which is updated for zoom magnification)
         this.frontPart.linewidth = Ellipse.currentEllipseStrokeWidthFront;
         // Copy the front dash properties from the front default drawn dash properties
-        if (SETTINGS.ellipse.drawn.dashArray.front.length > 0) {
+        if (SETTINGS.ellipse.drawn.dashArray.useOnFront) {
           this.frontPart.dashes.clear();
           SETTINGS.ellipse.drawn.dashArray.front.forEach(v => {
             this.frontPart.dashes.push(v);
@@ -1659,7 +1655,7 @@ export default class Ellipse extends Nodule {
         // The ellipse width is set to the current ellipse width (which is updated for zoom magnification)
         this.backPart.linewidth = Ellipse.currentEllipseStrokeWidthBack;
         // Copy the front dash properties from the front default drawn dash properties
-        if (SETTINGS.ellipse.drawn.dashArray.back.length > 0) {
+        if (SETTINGS.ellipse.drawn.dashArray.useOnBack) {
           this.backPart.dashes.clear();
           SETTINGS.ellipse.drawn.dashArray.back.forEach(v => {
             this.backPart.dashes.push(v);
@@ -1702,9 +1698,9 @@ export default class Ellipse extends Nodule {
         // strokeWidthPercent is applied by adjustSize()
 
         if (
+          frontStyle?.useDashPattern &&
           frontStyle?.dashArray &&
-          frontStyle?.reverseDashArray !== undefined &&
-          frontStyle.dashArray.length > 0
+          frontStyle.reverseDashArray != undefined
         ) {
           this.frontPart.dashes.clear();
           this.frontPart.dashes.push(...frontStyle.dashArray);
@@ -1774,9 +1770,9 @@ export default class Ellipse extends Nodule {
         // strokeWidthPercent applied by adjustSizer()
 
         if (
+          backStyle?.useDashPattern &&
           backStyle?.dashArray &&
-          backStyle?.reverseDashArray !== undefined &&
-          backStyle.dashArray.length > 0
+          backStyle.reverseDashArray != undefined
         ) {
           this.backPart.dashes.clear();
           this.backPart.dashes.push(...backStyle.dashArray);
@@ -1798,9 +1794,9 @@ export default class Ellipse extends Nodule {
 
         // Copy the front dash properties to the glowing object
         if (
+          frontStyle?.useDashPattern &&
           frontStyle?.dashArray &&
-          frontStyle?.reverseDashArray !== undefined &&
-          frontStyle.dashArray.length > 0
+          frontStyle.reverseDashArray != undefined
         ) {
           this.glowingFrontPart.dashes.clear();
           this.glowingFrontPart.dashes.push(...frontStyle.dashArray);
@@ -1820,9 +1816,9 @@ export default class Ellipse extends Nodule {
 
         // Copy the back dash properties to the glowing object
         if (
+          backStyle?.useDashPattern &&
           backStyle?.dashArray &&
-          backStyle?.reverseDashArray !== undefined &&
-          backStyle.dashArray.length > 0
+          backStyle.reverseDashArray != undefined
         ) {
           this.glowingBackPart.dashes.clear();
           this.glowingBackPart.dashes.push(...backStyle.dashArray);

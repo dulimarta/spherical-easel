@@ -36,8 +36,9 @@ export default class Text extends Nodule {
       size: SETTINGS.text.fontSize
     });
     // Set the properties of the points that never change - stroke width and some glowing options
-    this.textObject.noStroke();
+    this.textObject.noStroke()
     this.glowingTextObject.linewidth = SETTINGS.text.glowingStrokeWidth;
+    this.glowingTextObject.stroke = SETTINGS.text.glowingStrokeColor
     this.glowingTextObject.visible = false;
 
     this.styleOptions.set(StyleCategory.Label, DEFAULT_TEXT_TEXT_STYLE);

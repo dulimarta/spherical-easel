@@ -61,7 +61,7 @@
             <v-tooltip activator="#front-icon" :text="frontTooltip"></v-tooltip>
             <div id="front-icon" ref="frontPanelIcon">
               <v-badge
-                v-if="selectedPlottables.size > 0 && !hasTextObject()"
+                v-if="selectedPlottables.size > 0"
                 :content="selectedPlottables.size"
                 :color="frontPanelShowing ? 'primary' : 'secondary'">
                 <v-icon
@@ -76,7 +76,6 @@
             </div>
             <div ref="frontPanel">
               <FrontBackStyle
-                v-if="!hasTextObject()"
                 :show-popup="frontVSlotObject.isSelected"
                 :panel="StyleCategory.Front"
                 @undo-styles="undoStyleChanges"
@@ -88,7 +87,7 @@
             <v-tooltip activator="#back-icon" :text="backTooltip"></v-tooltip>
             <div id="back-icon" ref="backPanelIcon">
               <v-badge
-                v-if="selectedPlottables.size > 0 && !hasTextObject()"
+                v-if="selectedPlottables.size > 0"
                 :content="selectedPlottables.size"
                 :color="backPanelShowing ? 'primary' : 'secondary'">
                 <v-icon
@@ -103,7 +102,6 @@
             </div>
             <div ref="backPanel">
               <FrontBackStyle
-                v-if="!hasTextObject()"
                 :show-popup="backVSlotObject.isSelected"
                 :panel="StyleCategory.Back"
                 @undo-styles="undoStyleChanges"
@@ -114,11 +112,11 @@
           <v-item v-slot="globalVSlotObject">
             <v-tooltip
               activator="#global-contrast-icon"
-              :text="globalBackStyleContrastToolTip"></v-tooltip>
+              :text="t('globalBackStyleContrastToolTip')"></v-tooltip>
             <!-- Count only visible objects -->
             <div id="global-contrast-icon" ref="globalOptionsPanelIcon">
               <v-badge
-                v-if="hasObjects && !hasTextObject()"
+                v-if="hasObjects"
                 :content="visibleNodulesCount"
                 :color="globalOptionsPanelShowing ? 'primary' : 'secondary'">
                 <v-icon
@@ -132,7 +130,7 @@
             </div>
             <div ref="globalOptionsPanel">
               <v-sheet
-                v-if="globalVSlotObject.isSelected && !hasTextObject()"
+                v-if="globalVSlotObject.isSelected"
                 position="fixed"
                 class="pa-3"
                 elevation="4"
@@ -217,13 +215,9 @@
             activator="#show-labels-icon"
             :text="showHideLabels"></v-tooltip>
           <div id="show-labels-icon">
-            <v-badge
-              v-if="!hasTextObject()"
-              :content="nonTextSelectedLabelsCount"
-              color="secondary">
+            <v-badge :content="nonTextSelectedLabelsCount" color="secondary">
               <v-icon
                 class="show-labels"
-                :disabled="hasTextObject()"
                 @click="toggleLabelVisibility"
                 :icon="
                   hasVisibleLabels ? 'mdi-label-off-outline' : 'mdi-label'
@@ -289,6 +283,8 @@ import { SEText } from "@/models/SEText";
 import { SELabel } from "@/models/internal";
 import EventBus from "@/eventHandlers/EventBus";
 import { lab } from "color";
+import { CommandGroup } from "@/commands/CommandGroup";
+import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
 const minified = ref(true);
 const { t } = useI18n();
@@ -297,12 +293,7 @@ const styleStore = useStylingStore();
 const { hasObjects, seNodules, seLabels } = storeToRefs(seStore);
 const { selectedPlottables, selectedLabels, editedLabels } =
   storeToRefs(styleStore);
-const {
-  hasTextObject,
-  i18nMessageSelector,
-  hasLabelObject,
-  persistUpdatedStyleOptions
-} = styleStore;
+const { hasTextObject, i18nMessageSelector, hasLabelObject } = styleStore;
 const styleSelection = ref<number | undefined>(undefined);
 // const { hasStyle, hasDisagreement } = styleStore;
 const fillStyle = ref(Nodule.getGradientFill());
@@ -328,7 +319,6 @@ const backPanelShowing = ref(false);
 const globalOptionsPanelShowing = ref(false);
 // HTML elements to determine the location of a mouse click (to close the panel and save the style state)
 
-// const labelPanel = useTemplateRef<InstanceType<typeof LabelStyle>>("labelPanel");
 const labelPanel = ref<HTMLElement | null>(null);
 const labelPanelIcon = ref<HTMLElement | null>(null);
 const backPanel = ref<HTMLElement | null>(null);
@@ -423,7 +413,6 @@ watch(
 );
 
 const handleClick = (event: MouseEvent) => {
- 
   //if no style panels are open, do nothing
   if (
     !(
@@ -495,6 +484,7 @@ const handleClick = (event: MouseEvent) => {
     }
   }
 };
+
 function styleIconAction(
   panel: string,
   vSlotObject: {
@@ -530,14 +520,10 @@ function styleIconAction(
 onMounted((): void => {
   document.addEventListener("mousedown", handleClick); //MUST be mousedown because, if is it mouse up or click, then the other event handlers process this event first. For example, if this was mouseup or click, and the user clicks in the sphere, then the selection tool clears the selection *before* the user style choices can be recorded (which defeats the whole purpose of this listener).
 });
+
 onBeforeUnmount((): void => {
   document.removeEventListener("mousedown", handleClick);
 });
-
-function saveStyleState(): void {
-  // console.log("here",styleSelection.value);
-  persistUpdatedStyleOptions();
-}
 
 const labelTooltip = computed((): string => {
   let text = t("labelTooltip", i18nMessageSelector());
@@ -573,16 +559,6 @@ const frontTooltip = computed((): string => {
   return text;
 });
 
-const globalBackStyleContrastToolTip = computed((): string => {
-  let text = "";
-  if (hasTextObject()) {
-    text += t("textObjectAndGlobalBackStyleContrastToolTip");
-  } else {
-    text += t("globalBackStyleContrastToolTip");
-  }
-  return text;
-});
-
 const showHideLabels = computed((): string => {
   let text = "";
   if (!hasLabelObject()) {
@@ -592,6 +568,7 @@ const showHideLabels = computed((): string => {
   }
   return text;
 });
+
 const visibleNodulesCount = computed(
   () => seNodules.value.filter(n => n.showing && !(n instanceof SEText)).length
 );
@@ -624,19 +601,27 @@ function restoreDefaultStyles() {
 
 function toggleLabelVisibility() {
   hasVisibleLabels.value = !hasVisibleLabels.value;
+  const cmdGroup = new CommandGroup();
+  let subCommandCount = 0;
+
   selectedLabels.value.forEach(labName => {
     // Searching for the plottable; must use 'z.ref.name' (and not z.name)
     const lab = seLabels.value.find(z => z.ref.name === labName);
-    if (lab) lab.ref.showing = hasVisibleLabels.value;
+    if (lab) {
+      if (lab.ref.showing != hasVisibleLabels.value) {
+        const newCmd = new SetNoduleDisplayCommand(lab, hasVisibleLabels.value);
+        cmdGroup.addCommand(newCmd);
+        subCommandCount++;
+      }
+    }
   });
+  if (subCommandCount > 0) {
+    cmdGroup.execute();
+  }
 }
 
 function activateSelectionTool() {
   seStore.setActionMode("select");
-}
-
-function what() {
-  console.debug("I'm here");
 }
 </script>
 <i18n lang="json" locale="en">
@@ -655,7 +640,6 @@ function what() {
   "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of Global Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is invisible and its size reduction is maximized.",
   "globalBackStyleContrast": "Global Back Style Contrast",
   "globalBackStyleContrastToolTip": "Adjusts the default display of objects on the back of the sphere and the fill style.",
-  "textObjectAndGlobalBackStyleContrastToolTip": "Text objects are not effected by these options",
   "globalFillStyle": "Current Global Fill Style:",
   "changeFillStyleText": "Change Fill Style",
   "globalFillStyleToolTip": "By default a gradient/shading fill is used to make the fill of circles, ellipses, and polygons appear more three dimensional. This switch toggles this feature.",

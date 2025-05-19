@@ -327,14 +327,8 @@ const seStore = useSEStore();
 const styleStore = useStylingStore();
 const { selectedLabels, styleOptions, measurableSelections } =
   storeToRefs(styleStore);
-const {
-  hasDisagreement,
-  hasTextObject,
-  hasLabelObject,
-  i18nMessageSelector,
-  persistUpdatedStyleOptions,
-  editedLabels
-} = styleStore;
+const { hasDisagreement, hasTextObject, hasLabelObject, i18nMessageSelector } =
+  styleStore;
 const { t } = useI18n();
 
 // const labelTextFamily = ref<HTMLElement | null>(null);
@@ -378,7 +372,6 @@ const lastValidDisplayText = ref("");
 const maxLabelDisplayCaptionLength =
   SETTINGS.label.maxLabelDisplayCaptionLength;
 const labelDisplayCaptionErrorMessageKey = "";
-const labelDisplayCaptionTestResults = [true, true];
 const labelVisibilityState = new Map<string, boolean>();
 
 //step is Pi/8 from -pi to pi is 17 steps
@@ -436,24 +429,6 @@ onMounted((): void => {
   );
 });
 
-// function i18nMessageSelector(): number {
-//   if (!hasTextObject()){
-//     return 0 // only labels
-//   } else if (!hasLabelObject()){
-//     return 1 // only text objects
-//   } else {
-//     return 2 // a mix of text and label objects
-//   }
-// }
-
-function resetAndRestoreConflictItems(): void {
-  // resetAllItemsFromConflict();
-  distinguishConflictingItems(conflictingPropNames);
-}
-
-function overrideDynamicBackStyleDisagreement() {}
-
-// TODO: this function needs more work: label names are required
 function checkLabelsVisibility() {
   popupVisible = true;
 
@@ -471,18 +446,6 @@ function checkLabelsVisibility() {
     }
   });
 }
-// TODO: this function needs more work
-// function resetLabelsVisibility() {
-//   // popupVisible = false;
-//   // groupSelection.value = undefined;
-//   // selectedLabels.value.forEach(n => {
-//   //   if (!editedLabels.has(n.name)) {
-//   //     const visibility = labelVisibiltyState.get(n.name);
-//   //     if (typeof visibility === "boolean") n.showing = visibility;
-//   //   }
-//   // });
-//   // emits('apply-styles')
-// }
 
 // These methods are linked to the Style Data fade-in-card
 function labelDisplayTextCheck(txt: string | undefined): boolean | string {
@@ -532,6 +495,7 @@ function labelDisplayCaptionCheck(txt: string | undefined): boolean | string {
   }
   return true;
 }
+
 function labelDisplayCaptionTruncate(opt: LabelStyleOptions): boolean {
   if (opt.labelDisplayCaption !== undefined) {
     if (
@@ -568,38 +532,6 @@ function placeHolderText(numSelected: number, caption: boolean): string {
   }
 }
 
-function distinguishConflictingItems(conflictingProps: string[]): void {
-  conflictingProps.forEach(conflictPropName => {
-    switch (conflictPropName) {
-      case "labelDisplayText":
-        // clear the display of the labels
-        if (labelDisplayText !== undefined) {
-          (labelDisplayText as any).$el.getElementsByTagName("input")[0].value =
-            "";
-        }
-        break;
-      case "labelDisplayCaption":
-        // clear the display of the captions
-        if (labelDisplayCaption !== undefined) {
-          (labelDisplayCaption as any).$el.getElementsByTagName(
-            "input"
-          )[0].value = "";
-        }
-        break;
-    }
-    // console.log(this.$refs);
-    // (this.animatedInput as any)[conflictPropName] = true;
-    if (conflictPropName.search(/Color/) === -1) {
-      (conflictItems as any)[conflictPropName] = "error";
-    } else {
-      (conflictItems as any)[conflictPropName] = "red";
-    }
-    // setTimeout(() => {
-    //   (this.animatedInput as any)[conflictPropName] = false;
-    //   // (this.conflictItems as any)[conflictPropName] = undefined;
-    // }, 1000);
-  });
-}
 function hasCaption(opt: LabelStyleOptions | undefined): boolean {
   if (!opt) return false;
   return (
@@ -608,9 +540,6 @@ function hasCaption(opt: LabelStyleOptions | undefined): boolean {
   );
 }
 
-function applyStyles() {
-  // props.showPopup = false
-}
 const labelDisplayModeItems: LabelDisplayModeItem[] = [
   {
     text: t("labelDisplayModes.nameOnly"),
@@ -824,7 +753,7 @@ const conflictItems: ConflictItems = {
     "normal": "Normal"
   },
   "defaultStyles": "Restore Default Styles (ALL)",
-  "undoStyles": "Undo Style Changes"
+  "undoStyles": "Undo Recent Style Changes (ALL)"
 }
 </i18n>
 <i18n lang="json" locale="id">

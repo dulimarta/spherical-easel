@@ -15,10 +15,7 @@ import { Stop } from "two.js/src/effects/stop";
 import { RadialGradient } from "two.js/src/effects/radial-gradient";
 import { Anchor } from "two.js/src/anchor";
 import { Path } from "two.js/src/path";
-import {
-  svgArcObject,
-  toSVGType
-} from "@/types";
+import { svgArcObject, toSVGType } from "@/types";
 
 // The number of vertices used to draw an arc of a projected circle
 const SUBDIVISIONS = SETTINGS.circle.numPoints;
@@ -888,7 +885,7 @@ export default class Circle extends Nodule {
     this._glowingBackPart.remove();
   }
 
-  toSVG( nonScaling?: {
+  toSVG(nonScaling?: {
     stroke: boolean;
     text: boolean;
     pointRadius: boolean;
@@ -1314,13 +1311,15 @@ export default class Circle extends Nodule {
         // The circle width is set to the current circle width (which is updated for zoom magnification)
         this._frontPart.linewidth = Circle.currentCircleStrokeWidthFront;
         // Copy the front dash properties from the front default drawn dash properties
-        if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
-          this._frontPart.dashes.clear();
-          SETTINGS.circle.drawn.dashArray.front.forEach(v => {
-            this._frontPart.dashes.push(v);
-          });
-          if (SETTINGS.circle.drawn.dashArray.reverse.front) {
-            this._frontPart.dashes.reverse();
+        if (SETTINGS.circle.drawn.dashArray.useOnFront) {
+          if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
+            this._frontPart.dashes.clear();
+            SETTINGS.circle.drawn.dashArray.front.forEach(v => {
+              this._frontPart.dashes.push(v);
+            });
+            if (SETTINGS.circle.drawn.dashArray.reverse.front) {
+              this._frontPart.dashes.reverse();
+            }
           }
         }
         //BACK
@@ -1346,13 +1345,15 @@ export default class Circle extends Nodule {
         // The circle width is set to the current circle width (which is updated for zoom magnification)
         this._backPart.linewidth = Circle.currentCircleStrokeWidthBack;
         // Copy the front dash properties from the front default drawn dash properties
-        if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
-          this._backPart.dashes.clear();
-          SETTINGS.circle.drawn.dashArray.back.forEach(v => {
-            this._backPart.dashes.push(v);
-          });
-          if (SETTINGS.circle.drawn.dashArray.reverse.back) {
-            this._backPart.dashes.reverse();
+        if (SETTINGS.circle.drawn.dashArray.useOnBack) {
+          if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
+            this._backPart.dashes.clear();
+            SETTINGS.circle.drawn.dashArray.back.forEach(v => {
+              this._backPart.dashes.push(v);
+            });
+            if (SETTINGS.circle.drawn.dashArray.reverse.back) {
+              this._backPart.dashes.reverse();
+            }
           }
         }
 
@@ -1387,9 +1388,16 @@ export default class Circle extends Nodule {
         }
         // strokeWidthPercent is applied by adjustSize()
 
-        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
+        if (
+          frontStyle?.useDashPattern &&
+          frontStyle?.dashArray &&
+          frontStyle.reverseDashArray != undefined
+        ) {
           this._frontPart.dashes.clear();
           this._frontPart.dashes.push(...frontStyle.dashArray);
+          if (frontStyle.reverseDashArray) {
+            this._frontPart.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this._frontPart.dashes.clear();
@@ -1456,13 +1464,13 @@ export default class Circle extends Nodule {
         // strokeWidthPercent applied by adjustSizer()
 
         if (
+          backStyle?.useDashPattern &&
           backStyle?.dashArray &&
-          backStyle?.reverseDashArray !== undefined &&
-          backStyle.dashArray.length > 0
+          backStyle.reverseDashArray != undefined
         ) {
           this._backPart.dashes.clear();
           this._backPart.dashes.push(...backStyle.dashArray);
-          if (backStyle.dashArray) {
+          if (backStyle.reverseDashArray) {
             this._backPart.dashes.reverse();
           }
         } else {
@@ -1480,16 +1488,15 @@ export default class Circle extends Nodule {
 
         // Copy the front dash properties to the glowing object
         if (
+          frontStyle?.useDashPattern &&
           frontStyle?.dashArray &&
-          frontStyle?.reverseDashArray !== undefined &&
-          frontStyle.dashArray.length > 0
+          frontStyle.reverseDashArray != undefined
         ) {
           this._glowingFrontPart.dashes.clear();
           this._glowingFrontPart.dashes.push(...frontStyle.dashArray);
-          // I think the following three lines do a double reverse()
-          // if (frontStyle.reverseDashArray) {
-          //   this.glowingFrontPart.dashes.reverse();
-          // }
+          if (frontStyle.reverseDashArray) {
+            this._glowingFrontPart.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this._glowingFrontPart.dashes.clear();
@@ -1503,9 +1510,9 @@ export default class Circle extends Nodule {
 
         // Copy the back dash properties to the glowing object
         if (
+          backStyle?.useDashPattern &&
           backStyle?.dashArray &&
-          backStyle?.reverseDashArray !== undefined &&
-          backStyle.dashArray.length > 0
+          backStyle.reverseDashArray != undefined
         ) {
           this._glowingBackPart.dashes.clear();
           this._glowingBackPart.dashes.push(...backStyle.dashArray);

@@ -2279,11 +2279,7 @@ export default class AngleMarker extends Nodule {
         //There are never tick marks or double decorators on temporary angle markers
 
         // Copy the front dash properties from the front default drawn dash properties
-        if (
-          SETTINGS.angleMarker.drawn.dashArray.front.length > 0 &&
-          SETTINGS.angleMarker.drawn.dashArray.front[0] !== 0 &&
-          SETTINGS.angleMarker.drawn.dashArray.front[1] !== 0
-        ) {
+        if (SETTINGS.angleMarker.drawn.dashArray.useOnFront) {
           this._frontCircle.dashes.clear();
           SETTINGS.angleMarker.drawn.dashArray.front.forEach(v => {
             this._frontCircle.dashes.push(v);
@@ -2344,11 +2340,7 @@ export default class AngleMarker extends Nodule {
         //There are never tick marks or double decorators on temporary angle markers
 
         // Copy the front dash properties from the front default drawn dash properties
-        if (
-          SETTINGS.angleMarker.drawn.dashArray.back.length > 0 &&
-          SETTINGS.angleMarker.drawn.dashArray.back[0] !== 0 &&
-          SETTINGS.angleMarker.drawn.dashArray.back[1] !== 0
-        ) {
+        if (SETTINGS.angleMarker.drawn.dashArray.useOnBack) {
           this._backCircle.dashes.clear();
           SETTINGS.angleMarker.drawn.dashArray.back.forEach(v => {
             this._backCircle.dashes.push(v);
@@ -2423,11 +2415,9 @@ export default class AngleMarker extends Nodule {
         }
         // strokeWidthPercent is applied by adjustSize()
         if (
+          frontStyle?.useDashPattern &&
           frontStyle?.dashArray &&
-          frontStyle?.reverseDashArray !== undefined &&
-          frontStyle.dashArray.length > 0 &&
-          frontStyle.dashArray[0] !== 0 &&
-          frontStyle.dashArray[1] !== 0
+          frontStyle.reverseDashArray != undefined
         ) {
           this._frontCircle.dashes.clear();
           this._frontDouble.dashes.clear();
@@ -2537,11 +2527,9 @@ export default class AngleMarker extends Nodule {
 
         // strokeWidthPercent applied by adjustSizer()
         if (
+          backStyle?.useDashPattern &&
           backStyle?.dashArray &&
-          backStyle?.reverseDashArray !== undefined &&
-          backStyle.dashArray.length > 0 &&
-          backStyle.dashArray[0] !== 0 &&
-          backStyle.dashArray[1] !== 0
+          backStyle.reverseDashArray != undefined
         ) {
           this._backCircle.dashes.clear();
           this._backDouble.dashes.clear();
@@ -2578,10 +2566,9 @@ export default class AngleMarker extends Nodule {
         // strokeWidthPercent applied by adjustSize()
         // Copy the front dash properties to the glowing object
         if (
+          frontStyle?.useDashPattern &&
           frontStyle?.dashArray &&
-          frontStyle.dashArray.length > 0 &&
-          frontStyle.dashArray[0] !== 0 &&
-          frontStyle.dashArray[1] !== 0
+          frontStyle.reverseDashArray != undefined
         ) {
           this._glowingFrontCircle.dashes.clear();
           this._glowingFrontDouble.dashes.clear();
@@ -2610,11 +2597,9 @@ export default class AngleMarker extends Nodule {
         // strokeWidthPercent applied by adjustSize()
         // Copy the back dash properties to the glowing object
         if (
+          backStyle?.useDashPattern &&
           backStyle?.dashArray &&
-          backStyle?.reverseDashArray !== undefined &&
-          backStyle.dashArray.length > 0 &&
-          backStyle.dashArray[0] !== 0 &&
-          backStyle.dashArray[1] !== 0
+          backStyle.reverseDashArray != undefined
         ) {
           this._glowingBackCircle.dashes.clear();
           this._glowingBackDouble.dashes.clear();

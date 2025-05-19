@@ -17,8 +17,6 @@ import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackstyleContra
 import { SEText } from "@/models/SEText";
 import EventBus from "@/eventHandlers/EventBus";
 
-// type ObjectStyle = { [_: string]: StylePropertyValue };
-
 function isArrayEqual(a: Array<any>, b: Array<any>) {
   if (a.length !== b.length) return false;
   for (let k = 0; k < a.length; k++) {
@@ -42,39 +40,6 @@ function isPropEqual(
   console.debug(`isProp does not yet handle`, typeof a);
   return false;
 }
-
-// function checkInsertOrDelete(
-//   prev: string[],
-//   curr: string[]
-// ): [Set<string>, Set<string>] {
-//   const added = new Set<string>();
-//   const removed = new Set<string>();
-//   prev.sort((a, b) => a.localeCompare(b));
-//   curr.sort((a, b) => a.localeCompare(b));
-//   let p = 0,
-//     c = 0;
-//   while (p < prev.length && c < curr.length) {
-//     if (prev[p] == curr[c]) {
-//       p++;
-//       c++;
-//     } else if (curr[c] < prev[p]) {
-//       added.add(curr[c]);
-//       c++;
-//     } else {
-//       removed.add(prev[p]);
-//       p++;
-//     }
-//   }
-//   while (p < prev.length) {
-//     removed.add(prev[p]);
-//     p++;
-//   }
-//   while (c < curr.length) {
-//     added.add(curr[c]);
-//     c++;
-//   }
-//   return [added, removed];
-// }
 
 export const useStylingStore = defineStore("style", () => {
   const seStore = useSEStore();
@@ -111,8 +76,6 @@ export const useStylingStore = defineStore("style", () => {
   let backStyleContrastCopy: number = NaN;
   let fillStyleCopy: boolean = true;
   let activeStyleGroup: StyleCategory | null = null;
-  // let styleIndividuallyAltered = false;
-  // let immediatelyAfterRestoreToButtonClick = false;
 
   // After style editing is done, we should restore label visibility
   // to their original state before editing
@@ -156,10 +119,10 @@ export const useStylingStore = defineStore("style", () => {
       // by the SelectionHandler will trigger a watch update. To ignore
       // this visual changes, compare the current selection with a recorded set
       if (isSameAsPreviousSet(selectionArr as any)) return;
-      // console.log(
-      //   "Watcher in styling, selected SENodules",
-      //   selectedSENodules.value
-      // );
+      console.log(
+        "Watcher in styling, selected SENodules",
+        selectedSENodules.value
+      );
       // First check for any objects which were deselected
       // by comparing the selectedLabels/plottables map against the current
       // selection. An object recorded in the map but no longer exists
@@ -193,33 +156,23 @@ export const useStylingStore = defineStore("style", () => {
     () => styleOptions.value,
     (opt: StyleOptions) => {
       // Use the spread operator (...) to guarantee copy by value (not copy by ref)
-      // This shouldn't execute if this is immediately after a restore to defaults
-      // or a restore to current style click.
-      // if (immediatelyAfterRestoreToButtonClick) {
-      //   immediatelyAfterRestoreToButtonClick = false;
-      //   return;
-      // }
       const newOptions: StyleOptions = { ...opt };
-      //postUpdateStyleOptions = {};
-      // styleIndividuallyAltered = false;
       stylePropertyMap.forEach((val, key) => {
         const newValue = (newOptions as any)[key];
+        // get the old value from postUpdateStyleOptions unless it is undefined, then get the old value from the stylePropertyMap
         let oldValue = (postUpdateStyleOptions as any)[key];
         if (oldValue == undefined) {
           oldValue = stylePropertyMap.get(key);
         }
         // console.log("key", key, "new", newValue, "old", oldValue);
         if (!isPropEqual(oldValue, newValue)) {
-          // console.log(
-          //   `Property ${key} changes from ${oldValue} to ${newValue}`
-          // );
+          console.log(
+            `Property ${key} CHANGES from ${oldValue} to ${newValue}`
+          );
           (postUpdateStyleOptions as any)[key] = newValue;
-          //stylePropertyMap.set(key, newValue); // if this line is left in, then only the last style change is undoable
-          // styleIndividuallyAltered = true;
         }
       });
-      // console.log("postUpdateStyleOptions", postUpdateStyleOptions);
-      // if (styleIndividuallyAltered) {
+      //now apply the changes so that they are visible in the sphere canvas
       if (activeStyleGroup === StyleCategory.Label) {
         selectedLabels.value.forEach(selectedName => {
           // selected labels contain both labels and texts, so search both
@@ -249,12 +202,10 @@ export const useStylingStore = defineStore("style", () => {
           plot.updateStyle(activeStyleGroup!!, postUpdateStyleOptions);
           // any property which may depends on Zoom factor, must also be updated
           // by calling adjustSize()
-          // console.log("call update display on ", plot);
           plot.updateDisplay();
           plot.adjustSize();
         });
       }
-      //}
     },
     {
       deep: true,
@@ -295,15 +246,6 @@ export const useStylingStore = defineStore("style", () => {
                 editedLabels.value.add(text.name);
               }
             }
-            // const label = seLabels.value.find(
-            //   lab => lab.ref.name === labelName
-            // );
-            // if (label) {
-            //   label.ref.updateStyle(StyleCategory.Label, {
-            //     labelDynamicBackStyle: false
-            //   });
-            //   editedLabels.value.add(label.name);
-            // }
           });
         }
 
@@ -493,10 +435,7 @@ export const useStylingStore = defineStore("style", () => {
       if (count === selectedPlottables.value.size)
         commonProperties.add(propName);
     });
-    console.debug("Common properties", commonProperties);
-    //preUpdateStyleOptions = JSON.parse(JSON.stringify(styleOptions.value));
-    //console.log("recordCurrentStyleProperites reset initial style map")
-    //resetInitialAndDefaultStyleMaps();
+    // console.log("Common properties", commonProperties);
   }
 
   function deselectActiveGroup() {
@@ -524,7 +463,6 @@ export const useStylingStore = defineStore("style", () => {
         textObjectFound = true;
       }
     });
-    // console.log("SETextObject in selection?",textObjectFound,selectedSENodules.value)
     return textObjectFound;
   }
 
@@ -538,6 +476,7 @@ export const useStylingStore = defineStore("style", () => {
     // console.log("SETextObject in selection?",labelObjectFound,selectedSENodules.value)
     return labelObjectFound;
   }
+
   function i18nMessageSelector(): number {
     if (!hasTextObject()) {
       return 0; // only labels
@@ -547,6 +486,7 @@ export const useStylingStore = defineStore("style", () => {
       return 2; // a mix of text and label objects
     }
   }
+
   function hasStyle(prop: string | RegExp): boolean {
     if (typeof prop === "string") {
       return Array.from(stylePropertyMap.keys()).some(x => {
@@ -677,8 +617,8 @@ export const useStylingStore = defineStore("style", () => {
 
     // Check if any other properties were modified
     const postUpdateKeys = Object.keys(postUpdateStyleOptions);
-    // console.log("postUpdateKeys", postUpdateKeys);
-    // console.log("activeStyleGroup", activeStyleGroup);
+    console.log("postUpdateKeys", postUpdateKeys);
+    console.log("activeStyleGroup", activeStyleGroup);
     // Check to see if any of the postUpdateStyleOptions are new this is
     // useful because a user can change a value and then change it back to
     // the original value. This needs to be detected in order to update
@@ -691,14 +631,13 @@ export const useStylingStore = defineStore("style", () => {
     }
     let styleChangeDetected = false;
     preUpdateStyleOptionsArray.forEach(opt => {
-      styleChangeDetected = differentStyle(postUpdateStyleOptions, opt); //order of arguments is important! opt is the larger complete set of styleOptions and postUpdateStyleOptions is only those that have been changed by the user (which is different than the ones that have changed because a user can change a value and then change it back to its original value which is exactly what would happen for a user exploring an toggle switch and then don't like the change they observe )
+      styleChangeDetected = differentStyle(postUpdateStyleOptions, opt); //order of arguments is important! opt is the larger complete set of styleOptions and postUpdateStyleOptions is only those that have been changed by the user (which is different than the ones that the user has manipulated because a user can change a value and then change it back to its original value which is exactly what would happen for a user exploring an toggle switch and then don't like the change they observe )
     });
     console.log("non-global style change detected? ", styleChangeDetected);
     if (
       styleChangeDetected &&
       postUpdateKeys.length > 0 &&
       tempActiveStyleGroup !== null
-      // &&      styleIndividuallyAltered // include this flag, to prevent an extra save after restore do default
     ) {
       const styleCommand = new StyleNoduleCommand(
         updateTargets,
@@ -787,132 +726,48 @@ export const useStylingStore = defineStore("style", () => {
         }
       });
     }
-    const cmdGroup = new CommandGroup();
-    let subCommandCount = 0;
     setUpdateTargetsAndPreUpdateStyleOptionsArrays();
 
     let combinedStyle: StyleOptions = {};
     styleMap.forEach((style: StyleOptions, name: string) => {
-      // console.log("restoreTo", name, style)
       // Do not use a simple assignment, so the initial/default styles are intact
       // styleOptions.value = style /* This WON'T work
       // Must use the following unpack syntax to create a different object
       // So the initial & default maps do not become aliases to the current
       // style option
       mergeStyles(combinedStyle, style);
-      // console.log("After restore! Name:", name, " Style:", style);
       if (name.startsWith("label:")) {
         const objectName = name.substring(6);
         const theLabel = seLabels.value.find(n => {
           return n.ref.name === objectName;
         });
-        // console.log("label name", theLabel?.ref.name);
         if (theLabel) {
-          //console.log("Restore Found matching label", theLabel, style);
-          // preUpdateStyleOptionsArray.forEach((preUpdateStyleOptions, index) => {
-          //   if (differentStyle(style, preUpdateStyleOptions)) {
-          //     //create a command so this is undoable
-          //     const styleCommand = new StyleNoduleCommand(
-          //       [updateTargets[index]],
-          //       StyleCategory.Label,
-          //       // The StyleOptions array must have the same number of
-          //       // items as the updateTargets!!!
-          //       [style],
-          //       [preUpdateStyleOptions]
-          //     );
-          //     cmdGroup.addCommand(styleCommand);
-          //     subCommandCount++;
-          //   }
-          // });
           theLabel.ref?.updateStyle(StyleCategory.Label, style);
         } else {
-          // the name is the name of a text object
           const theText = seTexts.value.find(n => {
             return n.ref.name === objectName;
           });
-          // console.log("text name", theText?.ref.name);
           if (theText) {
-            //console.log("Restore Found matching label", theLabel, style);
-            // preUpdateStyleOptionsArray.forEach(
-            //   (preUpdateStyleOptions, index) => {
-            //     if (differentStyle(style, preUpdateStyleOptions)) {
-            //       //create a command so this is undoable
-            //       const styleCommand = new StyleNoduleCommand(
-            //         [updateTargets[index]],
-            //         StyleCategory.Label,
-            //         // The StyleOptions array must have the same number of
-            //         // items as the updateTargets!!!
-            //         [style],
-            //         [preUpdateStyleOptions]
-            //       );
-            //       cmdGroup.addCommand(styleCommand);
-            //       subCommandCount++;
-            //     }
-
-            //   }
-            // );
             theText.ref?.updateStyle(StyleCategory.Label, style);
           }
         }
-      } else if (name.startsWith(StyleCategory.Front + ":")) {
+      } else if (
+        name.startsWith(StyleCategory.Front + ":") ||
+        name.startsWith(StyleCategory.Back + ":")
+      ) {
         const plotName = name.substring(2);
         const thePlot = selectedPlottables.value.get(plotName);
         if (thePlot) {
-          //See which preUpdateOptions are different and update the corresponding nodule
-          // preUpdateStyleOptionsArray.forEach((preUpdateStyleOptions, index) => {
-          // if (differentStyle(style, preUpdateStyleOptions)) {
-          //   //create a command so this is undoable
-          //   const styleCommand = new StyleNoduleCommand(
-          //     [updateTargets[index]],
-          //     StyleCategory.Front,
-          //     [style],
-          //     [preUpdateStyleOptions]
-          //   );
-          //   cmdGroup.addCommand(styleCommand);
-          //   subCommandCount++;
-          // }
-          // if (preUpdateStyleOptions.dashArray){
-          //   // if this array is 0,0 then set useDashArray to false in FrontBackStyle.vue
-          // }
-          // });
-          // apply the style even if it is not different from t
-          thePlot.updateStyle(StyleCategory.Front, style);
-          thePlot.adjustSize();
-        }
-      } else if (name.startsWith(StyleCategory.Back + ":")) {
-        const plotName = name.substring(2);
-        const thePlot = selectedPlottables.value.get(plotName);
-        if (thePlot) {
-          //See which preUpdateOptions are different and update the corresponding nodule
-          // preUpdateStyleOptionsArray.forEach((preUpdateStyleOptions, index) => {
-          // if (differentStyle(style, preUpdateStyleOptions)) {
-          //   //create a command so this is undoable
-          //   const styleCommand = new StyleNoduleCommand(
-          //     [updateTargets[index]],
-          //     StyleCategory.Back,
-          //     [style],
-          //     [preUpdateStyleOptions]
-          //   );
-          //   cmdGroup.addCommand(styleCommand);
-          //   subCommandCount++;
-          // }
-          // if (preUpdateStyleOptions.dashArray){
-          //   // if this array is 0,0 then set useDashArray to false in FrontBackStyle.vue
-          // }
-          // });
-          thePlot.updateStyle(StyleCategory.Back, style);
+          thePlot.updateStyle(
+            name.startsWith(StyleCategory.Front + ":")
+              ? StyleCategory.Front
+              : StyleCategory.Back,
+            style
+          );
           thePlot.adjustSize();
         }
       }
     });
-    // if (subCommandCount > 0) {
-    //   cmdGroup.push();
-    //   // console.log("Style changes recorded in command so they will be undoable");
-    // }
-    // else {
-    //   console.log("Restore to inti/default clicked but no changes detected");
-    // }
-    //also have to restore the useDashPattern
     styleOptions.value = { ...combinedStyle };
   }
 

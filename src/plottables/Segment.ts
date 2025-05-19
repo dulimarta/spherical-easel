@@ -116,7 +116,6 @@ export default class Segment extends Nodule {
    * @param factor The ratio of the current magnification factor over the old magnification factor
    */
   static updateCurrentStrokeWidthForZoom(factor: number): void {
-
     Segment.currentSegmentStrokeWidthFront *= factor;
     Segment.currentSegmentStrokeWidthBack *= factor;
     Segment.currentGlowingSegmentStrokeWidthFront *= factor;
@@ -229,7 +228,7 @@ export default class Segment extends Nodule {
 
     this.styleOptions.set(StyleCategory.Front, DEFAULT_SEGMENT_FRONT_STYLE);
     this.styleOptions.set(StyleCategory.Back, DEFAULT_SEGMENT_BACK_STYLE);
-    this.updateDisplay()
+    this.updateDisplay();
   }
 
   /**
@@ -702,7 +701,6 @@ export default class Segment extends Nodule {
     pointRadius: boolean;
     scaleFactor: number;
   }): toSVGType[] {
-
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,
@@ -994,7 +992,7 @@ export default class Segment extends Nodule {
         this._frontPart.linewidth = Segment.currentSegmentStrokeWidthFront;
 
         // Copy the front dash properties from the front default drawn dash properties
-        if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
+        if (SETTINGS.segment.drawn.dashArray.useOnFront) {
           this._frontPart.dashes.clear();
           SETTINGS.segment.drawn.dashArray.front.forEach(v => {
             this._frontPart.dashes.push(v);
@@ -1011,7 +1009,7 @@ export default class Segment extends Nodule {
         this._frontExtra.linewidth = Segment.currentSegmentStrokeWidthFront;
 
         // Copy the front dash properties from the front default drawn dash properties
-        if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
+        if (SETTINGS.segment.drawn.dashArray.useOnFront) {
           this._frontExtra.dashes.clear();
           SETTINGS.segment.drawn.dashArray.front.forEach(v => {
             this._frontExtra.dashes.push(v);
@@ -1027,7 +1025,7 @@ export default class Segment extends Nodule {
         this._backPart.linewidth = Segment.currentSegmentStrokeWidthBack;
 
         // Copy the back dash properties from the back default drawn dash properties
-        if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
+        if (SETTINGS.segment.drawn.dashArray.useOnBack) {
           this._backPart.dashes.clear();
           SETTINGS.segment.drawn.dashArray.back.forEach(v => {
             this._backPart.dashes.push(v);
@@ -1043,7 +1041,7 @@ export default class Segment extends Nodule {
         this._backExtra.linewidth = Segment.currentSegmentStrokeWidthBack;
 
         // Copy the back dash properties from the back default drawn dash properties
-        if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
+        if (SETTINGS.segment.drawn.dashArray.useOnBack) {
           this._backExtra.dashes.clear();
           SETTINGS.segment.drawn.dashArray.back.forEach(v => {
             this._backExtra.dashes.push(v);
@@ -1075,9 +1073,9 @@ export default class Segment extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         if (
+          frontStyle?.useDashPattern &&
           frontStyle?.dashArray &&
-          frontStyle?.reverseDashArray !== undefined &&
-          frontStyle.dashArray.length > 0
+          frontStyle.reverseDashArray != undefined
         ) {
           this._frontPart.dashes.clear();
           this._frontPart.dashes.push(...frontStyle.dashArray);
@@ -1100,9 +1098,9 @@ export default class Segment extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         if (
+          frontStyle?.useDashPattern &&
           frontStyle?.dashArray &&
-          frontStyle?.reverseDashArray !== undefined &&
-          frontStyle.dashArray.length > 0
+          frontStyle.reverseDashArray != undefined
         ) {
           this._frontExtra.dashes.clear();
           this._frontExtra.dashes.push(...frontStyle.dashArray);
@@ -1142,9 +1140,9 @@ export default class Segment extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         if (
+          backStyle?.useDashPattern &&
           backStyle?.dashArray &&
-          backStyle?.reverseDashArray !== undefined &&
-          backStyle.dashArray.length > 0
+          backStyle.reverseDashArray != undefined
         ) {
           this._backPart.dashes.clear();
           this._backPart.dashes.push(...backStyle.dashArray);
@@ -1181,9 +1179,9 @@ export default class Segment extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         if (
+          backStyle?.useDashPattern &&
           backStyle?.dashArray &&
-          backStyle?.reverseDashArray !== undefined &&
-          backStyle.dashArray.length > 0
+          backStyle.reverseDashArray != undefined
         ) {
           this._backExtra.dashes.clear();
           this._backExtra.dashes.push(...backStyle.dashArray);
@@ -1204,9 +1202,9 @@ export default class Segment extends Nodule {
 
         // Copy the front dash properties to the glowing object
         if (
+          frontStyle?.useDashPattern &&
           frontStyle?.dashArray &&
-          frontStyle?.reverseDashArray !== undefined &&
-          frontStyle.dashArray.length > 0
+          frontStyle.reverseDashArray != undefined
         ) {
           this._glowingFrontPart.dashes.clear();
           this._glowingFrontPart.dashes.push(...frontStyle.dashArray);
@@ -1226,9 +1224,9 @@ export default class Segment extends Nodule {
 
         // Copy the front dash properties to the glowing object
         if (
+          frontStyle?.useDashPattern &&
           frontStyle?.dashArray &&
-          frontStyle?.reverseDashArray !== undefined &&
-          frontStyle.dashArray.length > 0
+          frontStyle.reverseDashArray != undefined
         ) {
           this._glowingFrontExtra.dashes.clear();
           this._glowingFrontExtra.dashes.push(...frontStyle.dashArray);
@@ -1248,9 +1246,9 @@ export default class Segment extends Nodule {
 
         // Copy the back dash properties to the glowing object
         if (
+          backStyle?.useDashPattern &&
           backStyle?.dashArray &&
-          backStyle?.reverseDashArray !== undefined &&
-          backStyle.dashArray.length > 0
+          backStyle.reverseDashArray != undefined
         ) {
           this._glowingBackPart.dashes.clear();
           this._glowingBackPart.dashes.push(...backStyle.dashArray);
@@ -1270,9 +1268,9 @@ export default class Segment extends Nodule {
 
         // Copy the back dash properties to the glowing object
         if (
+          backStyle?.useDashPattern &&
           backStyle?.dashArray &&
-          backStyle?.reverseDashArray !== undefined &&
-          backStyle.dashArray.length > 0
+          backStyle.reverseDashArray != undefined
         ) {
           this._glowingBackExtra.dashes.clear();
           this._glowingBackExtra.dashes.push(...backStyle.dashArray);

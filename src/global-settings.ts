@@ -285,7 +285,9 @@ export const SETTINGS = {
       dashArray: {
         reverse: { front: false, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], // An empty array or [0,0] means no dashing.
         back: [5, 10] // An empty array means no dashing.
       } // An empty array means no dashing.
     },
@@ -320,7 +322,9 @@ export const SETTINGS = {
       dashArray: {
         reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], // An empty array or [0,0] means no dashing.
         back: [5, 10] // An empty array means no dashing.
       }
     }
@@ -351,7 +355,9 @@ export const SETTINGS = {
       dashArray: {
         reverse: { front: false, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], // An empty array or [0,0] means no dashing.
         back: [5, 10] // An empty array means no dashing.
       }
     },
@@ -386,7 +392,9 @@ export const SETTINGS = {
       dashArray: {
         reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], // An empty array or [0,0] means no dashing.
         back: [5, 10] // An empty array means no dashing.
       }
     }
@@ -420,7 +428,9 @@ export const SETTINGS = {
       dashArray: {
         reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], // An empty array or [0,0] means no dashing.
         back: [5, 10] // An empty array means no dashing.
       } // An empty array means no dashing.
     },
@@ -461,7 +471,9 @@ export const SETTINGS = {
       dashArray: {
         reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], // An empty array or [0,0] means no dashing.
         back: [5, 10] // An empty array means no dashing.
       }
     }
@@ -495,7 +507,9 @@ export const SETTINGS = {
       dashArray: {
         reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], // An empty array or [0,0] means no dashing.
         back: [5, 10] // An empty array means no dashing.
       } // An empty array means no dashing.
     },
@@ -536,7 +550,9 @@ export const SETTINGS = {
       dashArray: {
         reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], // An empty array or [0,0] means no dashing.
         back: [5, 10] // An empty array means no dashing.
       }
     }
@@ -571,7 +587,9 @@ export const SETTINGS = {
       dashArray: {
         reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], // An empty array or [0,0] means no dashing.
         back: [5, 10] // An empty array means no dashing.
       } // An empty array means no dashing.
     },
@@ -653,7 +671,7 @@ export const SETTINGS = {
     decoration: "none",
     rotation: 0,
     glowingStrokeWidth: 3,
-    glowingStrokeColor: "#B3B3B3FF"
+    glowingStrokeColor: "#FF8080FF"
   },
   angleMarker: {
     initialValueDisplayMode: ValueDisplayMode.DegreeDecimals, // Set the initial display of the values for the measurement of the angle
@@ -712,6 +730,8 @@ export const SETTINGS = {
       dashArray: {
         reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
+        useOnFront: false,
+        useOnBack: false,
         front: [0, 0], // An empty array or [0,0] means no dashing.
         back: [0, 0] // An empty array or [0,0] means no dashing.
       } // An empty array means no dashing.
