@@ -192,13 +192,14 @@
           :conflict="hasDisagreement('labelFrontFillColor')"
           v-model="styleOptions.labelFrontFillColor"></PropertyColorPicker>
         <v-switch
+          v-if="!hasTextObject()"
           color="secondary"
           v-model="styleOptions.labelDynamicBackStyle"
           :label="
             t('labelAutomaticBackStyle', i18nMessageSelector())
           "></v-switch>
         <PropertyColorPicker
-          v-if="!styleOptions.labelDynamicBackStyle"
+          v-if="!styleOptions.labelDynamicBackStyle && !hasTextObject()"
           :numSelected="selectedLabels.size"
           :title="t('labelBackFillColor')"
           :conflict="hasDisagreement('labelBackFillColor')"
@@ -299,7 +300,7 @@ const seStore = useSEStore();
 const styleStore = useStylingStore();
 const { selectedLabels, styleOptions, measurableSelections } =
   storeToRefs(styleStore);
-const { hasDisagreement, hasLabelObject, i18nMessageSelector } =
+const { hasDisagreement, hasLabelObject, i18nMessageSelector, hasTextObject } =
   styleStore;
 const { t } = useI18n();
 const { seLabels } = storeToRefs(seStore);
@@ -381,7 +382,6 @@ function labelDisplayTextCheck(txt: string | undefined): boolean | string {
         max: SETTINGS.label.maxLabelDisplayTextLength
       });
     } else if (txt.length === 0) {
-      // console.log("here");
       return t("message.minLabelDisplayTextLength", {});
     }
   }
@@ -467,12 +467,11 @@ function displayAllLabels() {
       return z.ref.name === labName;
     });
     if (lab && !lab.ref.showing) {
-        const newCmd = new SetNoduleDisplayCommand(lab, true);
-        cmdGroup.addCommand(newCmd);
-        subCommandCount++;
-      }
+      const newCmd = new SetNoduleDisplayCommand(lab, true);
+      cmdGroup.addCommand(newCmd);
+      subCommandCount++;
     }
-  );
+  });
   if (subCommandCount > 0) {
     cmdGroup.execute();
   }

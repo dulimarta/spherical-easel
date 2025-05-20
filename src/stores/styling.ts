@@ -44,7 +44,12 @@ export const useStylingStore = defineStore("style", () => {
   const seStore = useSEStore();
   const { selectedSENodules, seNodules, seLabels, seTexts } =
     storeToRefs(seStore);
+
+  // These are the selectedPlottables, but *not* SEText objects.  SEText objects
+  // are plottables, but they are treated like labels, because we want to use
+  // all the label styling options on them
   const selectedPlottables: Ref<Map<string, Nodule>> = ref(new Map());
+
   // Apparently, we can't use a Map for recording the selected labels
   // Otherwise the selectedSENodules watcher will get trapped in an
   // infinite update loop
@@ -54,11 +59,18 @@ export const useStylingStore = defineStore("style", () => {
   // may conflict with each other. Keep them in a set
   const conflictingProperties: Ref<Set<string>> = ref(new Set());
   const commonProperties: Set<string> = new Set();
+
   // To detect conflict, we use the following map to record the current
-  // value of each style property
+  // value of each style property.  This should be a map from a style propName
+  // to the value in the displayed Label/Front/Back/Global panel
   const currentStyleChoicesMap: Map<string, StylePropertyValue> = new Map();
 
   // Maps for recording the styles at the beginning of object selection
+  // These are map of *all* objects with *all* (Front/Back/Label) options with
+  // a value of the complete set of styles for that object and option.
+  // defaultStyleMap is set once when the selectionNodules change
+  // initialStyleMap is set each time the user changes panels (Label/Front/Back/Global)
+  // This is used to issue a style command
   const initialStyleMap: Map<string, StyleOptions> = new Map();
   const defaultStyleMap: Map<string, StyleOptions> = new Map();
 
@@ -66,14 +78,25 @@ export const useStylingStore = defineStore("style", () => {
   const forceAgreement = ref(false);
   const measurableSelections = ref(false);
 
-  /** styleOptions is a copy visible to Vue components */
+  /**
+   * styleOptions is a copy visible to Vue components
+   * styleOptions.<propName> are the model objects for all the property
+   * selectors on the Label/Front/Back/Global panels
+   */
   const styleOptions = ref<StyleOptions>({});
-  // The following two vars keep track of before and after style updates
+
+  // The following variables keep track of before and after style updates
+  // There are used when issuing a style command
   let updateTargets: Nodule[] = [];
   let preUpdateStyleOptionsArray: StyleOptions[] = [];
   let postUpdateStyleOptions: StyleOptions = {};
   let backStyleContrastCopy: number = NaN;
   let fillStyleCopy: boolean = true;
+
+  // This variable is used to direct a function to modify only those
+  // style options are that are on the Label/Front/Back/Global panel
+  // this should match the name of the open panel that the user has
+  // open or just closed
   let activeStyleGroup: StyleCategory | null = null;
 
   const selectedSet: Set<string> = new Set();
@@ -114,10 +137,7 @@ export const useStylingStore = defineStore("style", () => {
       // by the SelectionHandler will trigger a watch update. To ignore
       // this visual changes, compare the current selection with a recorded set
       if (isSameAsPreviousSet(selectionArr as any)) return;
-      console.log(
-        "Watcher in styling, selected SENodules",
-        selectedSENodules.value
-      );
+
       // First check for any objects which were deselected
       // by comparing the selectedLabels/plottables map against the current
       // selection. An object recorded in the map but no longer exists
@@ -142,7 +162,7 @@ export const useStylingStore = defineStore("style", () => {
           defaultStyleMap.delete(StyleCategory.Back + ":" + plotName);
         }
       });
-      resetInitialAndDefaultStyleMaps();
+      resetInitialAndDefaultStyleMaps(); // no arguments to this method mean that the defaultStyleMap will be (re)created and the selected labels and plottables will be (re)created. This is the *ONLY* time this method is called with no arguments
     },
     { deep: true }
   );
@@ -150,7 +170,6 @@ export const useStylingStore = defineStore("style", () => {
   watch(
     () => styleOptions.value,
     (opt: StyleOptions) => {
-      console.log("styleOptions Watcher");
       // Use the spread operator (...) to guarantee copy by value (not copy by ref)
       const newOptions: StyleOptions = { ...opt };
       currentStyleChoicesMap.forEach((oldValue, key) => {
@@ -255,7 +274,6 @@ export const useStylingStore = defineStore("style", () => {
   function resetInitialAndDefaultStyleMaps(
     tempActiveStyleGroup: StyleCategory | null = null
   ) {
-    console.log("resetInitialAndDefaultStyleMaps", tempActiveStyleGroup);
     const selectionArr = selectedSENodules.value;
     let measurableCount = 0;
     // Among the selected object, check if we have new selection
@@ -264,7 +282,6 @@ export const useStylingStore = defineStore("style", () => {
       if (itsPlot && !(n instanceof SEText)) {
         console.debug(`${n.name} plottable`, itsPlot);
         if (tempActiveStyleGroup == null) {
-          // console.log("Adding to selected Plottable: ", n.name, itsPlot);
           selectedPlottables.value.set(n.name, itsPlot);
           defaultStyleMap.set(
             StyleCategory.Front + ":" + n.name,
@@ -299,9 +316,6 @@ export const useStylingStore = defineStore("style", () => {
       }
       const itsLabel = n.getLabel();
       if (itsLabel) {
-        // console.log("Checking selected Labels: ", n.name, itsLabel);
-        // console.log(`${n.name} label`, itsLabel.ref)
-        // if (!selectedLabels.value.has(itsLabel.ref.name)) {
         if (tempActiveStyleGroup == null) {
           selectedLabels.value.add(itsLabel.ref.name);
           defaultStyleMap.set(
@@ -309,10 +323,8 @@ export const useStylingStore = defineStore("style", () => {
             itsLabel.ref.defaultStyleState(StyleCategory.Label)
           );
         }
-        // console.log("Add label to selected Labels ", itsLabel.ref.name);
         // Remember the initial and default styles of the selected object
         // These maps are used by the  restoreTo() function below
-
         if (
           tempActiveStyleGroup == StyleCategory.Label ||
           tempActiveStyleGroup == null
@@ -514,7 +526,7 @@ export const useStylingStore = defineStore("style", () => {
     Nodule.setGradientFill(useGradientFill);
     // update all objects display
     seNodules.value.forEach(n => {
-      console.debug("Calling stylize", n.ref?.name);
+      // console.debug("Calling stylize", n.ref?.name);
       n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
     });
   }
@@ -583,12 +595,12 @@ export const useStylingStore = defineStore("style", () => {
         return pair[1];
       });
     }
-    console.log(
-      "set targets and pre style",
-      tempActiveStyleGroup,
-      updateTargets,
-      preUpdateStyleOptionsArray
-    );
+    // console.log(
+    //   "set targets and pre style",
+    //   tempActiveStyleGroup,
+    //   updateTargets,
+    //   preUpdateStyleOptionsArray
+    // );
   }
 
   function persistUpdatedStyleOptions(
@@ -622,8 +634,8 @@ export const useStylingStore = defineStore("style", () => {
 
     // Check if any other properties were modified
     const postUpdateKeys = Object.keys(postUpdateStyleOptions);
-    console.log("persist postUpdateKeys", postUpdateKeys);
-    console.log("persist activeStyleGroup", activeStyleGroup);
+    // console.log("persist postUpdateKeys", postUpdateKeys);
+    // console.log("persist activeStyleGroup", activeStyleGroup);
     // Check to see if any of the postUpdateStyleOptions are new this is
     // useful because a user can change a value and then change it back to
     // the original value. This needs to be detected in order to update
@@ -638,7 +650,6 @@ export const useStylingStore = defineStore("style", () => {
     preUpdateStyleOptionsArray.forEach(opt => {
       styleChangeDetected = differentStyle(postUpdateStyleOptions, opt); //order of arguments is important! opt is the larger complete set of styleOptions and postUpdateStyleOptions is only those that have been changed by the user (which is different than the ones that the user has manipulated because a user can change a value and then change it back to its original value which is exactly what would happen for a user exploring an toggle switch and then don't like the change they observe )
     });
-    console.log("non-global style change detected? ", styleChangeDetected);
     if (
       styleChangeDetected &&
       postUpdateKeys.length > 0 &&
@@ -667,50 +678,38 @@ export const useStylingStore = defineStore("style", () => {
     postUpdateStyleOptions = {};
   }
 
-  // First check if subSetStyles is a subset of or equal to superSetStyles.
-  //  if no return false
-  //  if yes, return true if at least of the styles in subSetStyles
-  //   is different than the style in superSetStyles
+  // return true if at least of the styles in subSetStyles
+  //   is different than the style in superSetStyles, order matters
   function differentStyle(
     subSetStyles: StyleOptions,
     superSetStyles: StyleOptions
   ) {
-    // console.log("subStyle", subSetStyles);
-    // console.log("superStyle", superSetStyles);
     let differenceDetected = false;
-    let subset = true;
     Object.getOwnPropertyNames(subSetStyles).forEach((propName: string) => {
-      console.log(
-        "SubPropName: ",
-        propName,
-        "SuperValue: ",
-        (superSetStyles as any)[propName],
-        "SubValue: ",
-        (subSetStyles as any)[propName]
-      );
-      const supVal = (superSetStyles as any)[propName];
-      // if (supVal != undefined) {
-      //   // The propName MUST be in the subSetStyles so subVal is defined
-      const subVal = (subSetStyles as any)[propName];
       // console.log(
-      //   "detect style difference: Prop ",
+      //   "SubPropName: ",
+      //   propName,
+      //   "SuperValue: ",
+      //   (superSetStyles as any)[propName],
+      //   "SubValue: ",
+      //   (subSetStyles as any)[propName]
+      // );
+      const supVal = (superSetStyles as any)[propName];
+      const subVal = (subSetStyles as any)[propName];
+   
+      if (!isPropEqual(supVal, subVal)) {
+        differenceDetected = true;
+           // console.log(
+      //   "style difference: Prop ",
       //   propName,
       //   "sub ",
       //   subVal,
       //   "sup",
       //   supVal
       // );
-      if (!isPropEqual(supVal, subVal)) {
-        differenceDetected = true;
       }
-      // } else {
-      //   // console.log("here3", propName)
-      //   subset = false;
-      // }
     });
-    console.log("differenceDetected", differenceDetected);
-    console.log("subset", subset);
-    return differenceDetected && subset;
+    return differenceDetected;
   }
 
   function restoreTo(styleMap: Map<string, StyleOptions>) {
@@ -798,6 +797,7 @@ export const useStylingStore = defineStore("style", () => {
     forceAgreement,
     hasDisagreement,
     hasLabelObject,
+    hasTextObject,
     i18nMessageSelector,
     hasStyle,
     changeBackContrast,

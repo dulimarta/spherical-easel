@@ -236,7 +236,9 @@ export type SavedNames =
   | "textObjectText"
   | "textStyle"
   | "currentGlobalFillStyle"
-  | "pastGlobalFillStyle";
+  | "pastGlobalFillStyle"
+  | "currentGlobalBackStyleContrast"
+  | "pastGlobalBackStyleContrast";
 
 export type ActionMode =
   | "angle"

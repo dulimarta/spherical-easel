@@ -452,12 +452,6 @@ export default class PolygonHandler extends Highlighter {
                 seg.startSEPoint.name ||
               this.seEdgeSegments[0].endSEPoint.name === seg.endSEPoint.name
             ) {
-              // console.log(
-              //   "here2",
-              //   this.seEdgeSegments[0].endSEPoint.name,
-              //   seg.endSEPoint.name,
-              //   this.seEdgeSegments[0].endSEPoint.name === seg.endSEPoint.name
-              // );
               return this.acceptableAddition(
                 this.seEdgeSegments,
                 seg,

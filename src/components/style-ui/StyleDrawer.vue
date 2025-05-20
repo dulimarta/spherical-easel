@@ -377,25 +377,21 @@ watch(
   () => styleSelection.value,
   (selectedTab: number | undefined, prevTab: number | undefined) => {
     if (typeof prevTab === "number" && selectedTab === undefined) {
-      console.log("here1", prevTab, selectedTab);
       styleStore.deselectActiveGroup();
     } else {
-      console.log("here2", prevTab, selectedTab);
       switch (selectedTab) {
         case 0:
-          // resetInitialAndDefaultStyleMaps(StyleCategory.Label);
           styleStore.recordCurrentStyleProperties(StyleCategory.Label);
           break;
         case 1:
-          // resetInitialAndDefaultStyleMaps(StyleCategory.Front);
           styleStore.recordCurrentStyleProperties(StyleCategory.Front);
           break;
         case 2:
-          // resetInitialAndDefaultStyleMaps(StyleCategory.Label);
           styleStore.recordCurrentStyleProperties(StyleCategory.Back);
           break;
         case 3:
           styleStore.recordGlobalContrast();
+          styleStore.recordFillStyle();
           break;
         default:
           // TODO: should we deselect or do nothing?
@@ -530,7 +526,8 @@ onMounted((): void => {
   fillStyle.value = Nodule.getGradientFill();
 });
 onBeforeUpdate((): void => {
-  fillStyle.value = Nodule.getGradientFill();
+  fillStyle.value = Nodule.getGradientFill(); 
+  backStyleContrast.value = Nodule.getBackStyleContrast();// If these lines are removed when you load a construction that doesn't have the default fill (shading) or default global back style (50%) then when you initially open the global options panel the fill type/contrast is displayed incorrectly
 });
 
 onBeforeUnmount((): void => {
@@ -589,8 +586,7 @@ const nonTextSelectedLabelsCount = computed(() => {
 });
 
 function closeStyleDrawer() {
-  styleSelection.value = undefined; //Ensures the current style changes are recorded
-  minified.value = !minified.value; //closes the drawer
+  minified.value = !minified.value; 
 }
 
 function undoStyleChanges() {
@@ -637,7 +633,7 @@ function activateSelectionTool() {
   "textObjectsAndBackground": "Text objects have no background style to edit",
   "foregroundTooltip": "Foreground Style",
   "textObjectsAndForeground": "Text objects have no foreground style to edit",
-  "disabledTooltip": "(disabled: no object selected)",
+  "disabledTooltip": "Disabled: no editable object selected",
   "backStyleContrast": "Back Style Contrast",
   "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of Global Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is invisible and its size reduction is maximized.",
   "globalBackStyleContrast": "Global Back Style Contrast",

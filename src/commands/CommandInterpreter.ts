@@ -53,6 +53,7 @@ import { AddLongitudeCommand } from "./AddLongitudeCommand";
 import { UpdateTwoJSCommand } from "./UpdateTwoJSCommand";
 import { AddTextCommand } from "./AddTextCommand";
 import { ChangeFillStyleCommand } from "./ChangeFillStyleCommand";
+import { ChangeBackStyleContrastCommand } from "./ChangeBackstyleContrastCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -183,6 +184,8 @@ function executeIndividual(command: string): Command {
       return AddTextCommand.parse(command, noduleDictionary);
     case "ChangeGlobalFillStyle":
       return ChangeFillStyleCommand.parse(command, noduleDictionary);
+    case "ChangeBackStyleContrast":
+      return ChangeBackStyleContrastCommand.parse(command, noduleDictionary)
     default: {
       const errMsg = `Not yet implemented: ${command}`;
       EventBus.fire("show-alert", {

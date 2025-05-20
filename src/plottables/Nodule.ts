@@ -375,12 +375,10 @@ export default abstract class Nodule implements Stylable, Resizeable {
   }
 
   static setGradientFill(value: boolean): void {
-    console.log("set Gradient Fill?", value)
     this.globalGradientFill = value;
   }
 
   static getGradientFill(): boolean {
-    console.log("get Gradient Fill?", this.globalGradientFill)
     return this.globalGradientFill;
   }
 

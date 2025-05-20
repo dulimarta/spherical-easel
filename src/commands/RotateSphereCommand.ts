@@ -16,7 +16,7 @@ export class RotateSphereCommand extends Command {
   do(): void {
     // console.log(this.rotationMat.toArray())
     Command.store.rotateSphere(this.rotationMat);
-    Command.store.updateTwoJS() //update the display of all objects with a fill 
+    Command.store.updateTwoJS() //update the display of all objects with a fill with out this when undoing a rotation of a fill object the fill doesn't display correctly when doing or undoing
   }
 
   saveState(): void {
