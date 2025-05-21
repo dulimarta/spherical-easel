@@ -2,6 +2,7 @@
   <v-tabs v-model="tab">
     <v-tab value="SVG">SVG Files</v-tab>
     <v-tab value="Script">Script Files</v-tab>
+    <v-tab value="User">Users</v-tab>
   </v-tabs>
   <v-tabs-window v-model="tab">
     <v-tabs-window-item value="SVG" class="mx-3">
@@ -40,6 +41,25 @@
         </template>
       </v-data-table>
     </v-tabs-window-item>
+    <v-tabs-window-item value="User" class="mx-3">
+      <h2>User Created Constructions</h2>
+      <v-data-table :items="queryOwner" :headers="userTableHeaders">
+        <template #item.query="{ value }">
+          {{ value.docs.length }} files
+        </template>
+        <template #item.owner="{ value }">
+          <div class="text-h6">
+          {{ userProfiles.get(value)?.displayName ?? "<NONAME>" }} / {{ userProfiles.get(value)?.role }} </div>
+            <div>
+               (ID {{ value }})
+            {{ userProfiles.get(value)?.location }}        
+            </div>
+        </template>
+        <template #item.actions="{item}">
+          <v-icon v-if="item.query.docs.length === 0" @click="deleteUserCollection(item.owner)">mdi-delete</v-icon>
+        </template>
+      </v-data-table>
+    </v-tabs-window-item>
     <!-- <v-data-table :items="constructionDetails" /> -->
   </v-tabs-window>
 </template>
@@ -50,21 +70,24 @@ import {
   ref as storageRef,
   FirebaseStorage,
   listAll,
-  ListResult,
+  // ListResult,
   StorageReference,
   getMetadata,
-  FullMetadata,
+  // FullMetadata,
   deleteObject
 } from "firebase/storage";
 import {
   collection,
+  deleteDoc,
+  doc,
   DocumentSnapshot,
   Firestore,
   getDocs,
   getFirestore,
   QuerySnapshot
 } from "firebase/firestore";
-import { SphericalConstruction } from "@/types";
+import { UserProfile } from "@/types";
+// import { SphericalConstruction } from "@/types";
 let appStorage: FirebaseStorage;
 let appDB: Firestore;
 
@@ -86,6 +109,18 @@ const tableHeaders = [
     key: "actions"
   }
 ];
+const userTableHeaders = [
+  {
+    title: "Owner", key: "owner"
+  },
+  {
+    title: "Constructions Count", key: "query"
+  },
+  {
+    title: "Actions", key: "actions"
+  }
+]
+
 type CloudFile = {
   path: string;
   size: number;
@@ -97,9 +132,14 @@ type Construction = {
   preview: string;
   script: string;
 };
-
+type OwnDocs = {
+  owner: string,
+  query: QuerySnapshot
+}
 const svgFiles: Ref<CloudFile[]> = ref([]);
 const scriptFiles: Ref<CloudFile[]> = ref([]);
+const queryOwner: Ref<OwnDocs[]> = ref([]);
+const userProfiles: Ref<Map<string,UserProfile>> = ref(new Map())
 const tab = ref("SVG");
 
 const constructionDetails: Ref<Construction[]> = ref([]);
@@ -109,16 +149,26 @@ onMounted(async () => {
   appDB = getFirestore();
 
   const qsUsers = await getDocs(collection(appDB, "users"));
+  const promiseOwner: Map<string, Promise<QuerySnapshot>> = new Map();
   const task = qsUsers.docs.map((qdUser: DocumentSnapshot) => {
+    const uDetails = qdUser.data() as UserProfile
+    console.debug(uDetails)
+    userProfiles.value.set(qdUser.id, uDetails)
     const uCons = collection(qdUser.ref, "constructions");
-    return getDocs(uCons);
+    const uProm = getDocs(uCons);
+    promiseOwner.set(qdUser.id, uProm);
+    return uProm;
   });
   const svgSet: Set<string> = new Set();
   const scriptSet: Set<string> = new Set();
-  const zzzz = (await Promise.all(task))
-    .map(uColl => uColl.docs)
-    .filter(docs => docs.length > 0)
-    .flatMap(docs => docs)
+  await Promise.all(task);
+  await promiseOwner.forEach(async (pDocs, owner) => {
+    queryOwner.value.push({ owner, query: await pDocs });
+  });
+
+  queryOwner.value
+    .filter(z => z.query.docs.length > 0)
+    .flatMap(z => z.query.docs)
     .map(qds => {
       const details = qds.data();
       let preview = "N/A";
@@ -142,7 +192,6 @@ onMounted(async () => {
       } as Construction;
     })
     .filter((c: Construction) => c.preview !== "N/A" || c.script !== "N/A");
-  // console.debug("What is", zzzz);
   console.debug("SVG set", svgSet);
   console.debug("Script set", scriptSet);
   const svgRef = storageRef(appStorage, "construction-svg");
@@ -180,5 +229,17 @@ function deleteFromStorage(
     const aFile = storageRef(appStorage, `${parentDir}/${fileName}`);
     deleteObject(aFile);
   }
+}
+
+function deleteUserCollection(uid: string) {
+  const uDoc = doc(appDB, "users", uid)
+  console.debug(`Removing user ${uid}`)
+  deleteDoc(uDoc).then(() => { 
+    userProfiles.value.delete(uid)
+    const pos = queryOwner.value.findIndex(x => x.owner == uid)
+    if (pos >= 0) {
+      queryOwner.value.splice(pos, 1)
+    }
+  })
 }
 </script>
