@@ -21,7 +21,7 @@
     "outDir": "ts-out",
     "types": [
       "vite/client",
-      "vitest/globals", /* "node", "vuetify", "google.maps" */
+      "vitest/globals", "vuetify" /* "node", "google.maps" */
     ],
     "typeRoots": [
       "./node_modules/@types",

@@ -38,7 +38,12 @@
           v-if="localIsEarthMode"
           :available-height="availHeight"
           :available-width="availWidth" />
+        <HyperbolicFrame
+          v-if="route.path.endsWith('/hyperbolic')"
+          :available-width="availWidth" 
+          :available-height="availHeight"></HyperbolicFrame>
         <SphereFrame
+          v-else
           :available-width="availWidth"
           :available-height="availHeight"
           :is-earth-mode="localIsEarthMode" />
@@ -75,7 +80,8 @@
               constructionInfo.id.substring(0, 6).toUpperCase()
             }}
             <span v-if="constructionInfo.publicDocId">
-              Public ID: {{ constructionInfo.publicDocId?.substring(0, 6).toUpperCase() }}
+              Public ID:
+              {{ constructionInfo.publicDocId?.substring(0, 6).toUpperCase() }}
             </span>
             )
           </div>
@@ -146,6 +152,7 @@ import EarthLayer from "@/components/EarthLayer.vue";
 import MessageHub from "@/components/MessageHub.vue";
 // import AddressInput from "@/components/AddressInput.vue";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
+import HyperbolicFrame from "@/components/HyperbolicFrame.vue";
 /* Import Command so we can use the command paradigm */
 import { Command } from "@/commands/Command";
 import EventBus from "../eventHandlers/EventBus";
@@ -157,11 +164,13 @@ import Label from "@/plottables/Label";
 import Segment from "@/plottables/Segment";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
-import { SphericalConstruction } from "@/types";
+import {
+  SphericalConstruction,
+  ConstructionScript
+} from "@/types/ConstructionTypes";
 import AngleMarker from "@/plottables/AngleMarker";
 
 import { run } from "@/commands/CommandInterpreter";
-import { ConstructionScript } from "@/types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import { useConstructionStore } from "@/stores/construction";
@@ -172,6 +181,7 @@ import { useI18n } from "vue-i18n";
 import {
   onBeforeRouteLeave,
   RouteLocationNormalized,
+  useRoute,
   useRouter
 } from "vue-router";
 import { useLayout, useDisplay } from "vuetify";
@@ -191,6 +201,7 @@ const seStore = useSEStore();
 const constructionStore = useConstructionStore();
 const acctStore = useAccountStore();
 const router = useRouter();
+const route = useRoute();
 const {
   seNodules,
   temporaryNodules,

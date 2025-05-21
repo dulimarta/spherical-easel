@@ -2,7 +2,7 @@ import TestedComponent from "../ConstructionLoader.vue";
 import { vi, describe, beforeEach, it, expect } from "vitest";
 import { createWrapper } from "$/vue-helper";
 import { useConstructionStore } from "@/stores/construction";
-import { SphericalConstruction } from "@/types";
+import { SphericalConstruction } from "@/types/ConstructionTypes";
 import { Matrix4 } from "three";
 import { useAccountStore } from "@/stores/account";
 

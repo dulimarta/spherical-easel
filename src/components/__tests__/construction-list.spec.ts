@@ -1,5 +1,5 @@
 import ConstructionList from "@/components/ConstructionList.vue";
-import { SphericalConstruction } from "@/types";
+import { SphericalConstruction } from "@/types/ConstructionTypes";
 import { createWrapper } from "$/vue-helper";
 import {mockedStore} from "$/mock-utils"
 import { Matrix4 } from "three";
