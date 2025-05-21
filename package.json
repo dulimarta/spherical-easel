@@ -23,6 +23,7 @@
     "@mdi/font": "^7.4.47",
     "@vueuse/core": "^10.2.1",
     "axios": "^0.27.2",
+    "camera-controls": "^2.10.1",
     "color": "^4.2.3",
     "detect-browser": "^5.2.0",
     "file-saver": "^2.0.5",

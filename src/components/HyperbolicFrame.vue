@@ -9,11 +9,11 @@
 </template>
 
 <script setup lang="ts">
-import { AmbientLight, ArrowHelper, DoubleSide, Mesh, MeshStandardMaterial, PerspectiveCamera, PointLight, Scene, Vector3, WebGLRenderer } from "three";
+import { AmbientLight, ArrowHelper, Clock, DoubleSide, Mesh, MeshStandardMaterial, PerspectiveCamera, PointLight, Scene, Vector3, WebGLRenderer } from "three";
+import * as THREE from "three"
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry"
-import { onUpdated } from "vue";
-import { onMounted } from "vue";
-import { Ref, ref } from "vue";
+import { onUpdated, onMounted, Ref, ref } from "vue";
+import CameraControls from "camera-controls";
 type ComponentProps = {
   availableHeight: number;
   availableWidth: number;
@@ -24,9 +24,11 @@ const props = withDefaults(defineProps<ComponentProps>(), {
 });
 const webglCanvas: Ref<HTMLCanvasElement | null> = ref(null);
 const scene = new Scene();
+const clock = new Clock()
 let camera: PerspectiveCamera;
 let renderer: WebGLRenderer;
-
+let cameraController: CameraControls
+CameraControls.install({ THREE })
 const arrowX = new ArrowHelper(new Vector3(1, 0, 0))
 arrowX.setColor(0xFF0000)
 arrowX.setLength(2, 0.2, 0.2)
@@ -57,6 +59,13 @@ pointLight.position.set(3,3,5)
 scene.add(ambientLight)
 scene.add(pointLight)
 
+function doRender() {
+  const deltaTime = clock.getDelta()
+  const hasUpdatedControls = cameraController.update(deltaTime)
+  if (hasUpdatedControls)
+    renderer.render(scene, camera)
+}
+
 onMounted(() => {
   console.debug(`Mounted size ${props.availableWidth}x${props.availableHeight}`)
   camera = new PerspectiveCamera(
@@ -68,13 +77,15 @@ onMounted(() => {
   camera.position.set(5, 7, 4)
   camera.up.set(0, 0, 1)
   camera.lookAt(0, 0, 0)
+  cameraController = new CameraControls(camera, webglCanvas.value!)
   renderer = new WebGLRenderer({
     canvas: webglCanvas.value!,
     antialias: true
   });
   renderer.setSize(props.availableWidth, props.availableHeight);
   renderer.setClearColor(0x999999, 1);
-  renderer.setAnimationLoop(() => renderer.render(scene, camera));
+  renderer.setAnimationLoop(doRender);
+  renderer.render(scene, camera)
 });
 onUpdated(() => {
   console.debug(`onUpdated size ${props.availableWidth}x${props.availableHeight}`)
