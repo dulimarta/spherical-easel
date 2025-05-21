@@ -149,6 +149,7 @@ import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
 import { useMagicKeys } from "@vueuse/core";
 import { watchEffect } from "vue";
+import Settings from "@/views/Settings.vue";
 
 type ComponentProps = {
   availableHeight: number;
@@ -206,11 +207,11 @@ const handleTextObjectEdit = () => {
 
 const handleTextObjectEditCancel = () => {
   userInput.value = ""; // set the payload in "text-data-submitted" to the empty string so that in textHandler the selected text object is set to null
-  handleTextObjectEdit()
+  handleTextObjectEdit();
 };
 const showTextObjectEditDialog = (payload: { oldText: string | null }) => {
   submitAction.value = handleTextObjectEdit; // Set action to edit
-  cancelAction.value = handleTextObjectEditCancel; 
+  cancelAction.value = handleTextObjectEditCancel;
   userInput.value = payload.oldText ?? "";
   inputDialog.value?.show();
 };
@@ -224,7 +225,7 @@ const showTextObjectEditDialog = (payload: { oldText: string | null }) => {
 let twoInstance!: Two;
 
 /**
- * The circle that is the end of the projection of the Default Sphere in the Default Screen Plane
+ * The circle that is the edge of the projection of the Default Sphere in the Default Screen Plane
  */
 let boundaryCircle!: Circle;
 /**
@@ -513,7 +514,13 @@ watch(
     seStore.setCanvasDimension(width, height);
   }
 );
-
+//adjust the width of the boundary circle for zoom
+watch(
+  () => zoomMagnificationFactor.value,
+  newFactor => {
+    boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth / newFactor;
+  }
+);
 /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
 
 // The translation element of the CSS transform matrix

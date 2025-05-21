@@ -181,7 +181,7 @@ export const SETTINGS = {
   boundaryCircle: {
     radius: 250 /* default radius */,
     color: "#000000FF",
-    lineWidth: 3
+    lineWidth: 4
   },
   // #endregion boundarycircle
   point: {
