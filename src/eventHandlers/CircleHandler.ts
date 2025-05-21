@@ -756,7 +756,7 @@ export default class CircleHandler extends Highlighter {
 
       circleCommandGroup.execute();
 
-      CircleHandler.store.updateTwoJS()
+      CircleHandler.store.updateTwoJS() // if this is not included, when you make a new circle, the fill is not displayed
       newSECircle.ref.updateDisplay(); // The newly created circle will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
     }
     return true;

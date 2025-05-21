@@ -1105,7 +1105,7 @@ export default class AngleHandler extends Highlighter {
     angleMarkerCommandGroup.execute();
 
     // Update the display of the new angle marker
-    AngleHandler.store.updateTwoJS()
+    AngleHandler.store.updateTwoJS() // without this, when creating a new angle marker, the fill is not displayed
     newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
     // The labels on any newly created points will be incorrect unless we update all the parents.
     newSEAngleMarker.parents.forEach((par:SENodule)=>{
@@ -1230,7 +1230,7 @@ export default class AngleHandler extends Highlighter {
       this.targetLines[1]
     ).execute();
     // Update the display of the new angle marker
-    AngleHandler.store.updateTwoJS()
+    AngleHandler.store.updateTwoJS()// without this, when creating a new angle marker, the fill is not displayed
     newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
 
     return true;
@@ -1340,7 +1340,7 @@ export default class AngleHandler extends Highlighter {
     ).execute();
 
     // Update the display of the new angle marker
-    AngleHandler.store.updateTwoJS()
+    AngleHandler.store.updateTwoJS()// without this, when creating a new angle marker, the fill is not displayed
     newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
     return true;
   }
@@ -1479,7 +1479,7 @@ export default class AngleHandler extends Highlighter {
       this.targetSegments[0]
     ).execute();
     // Update the display of the new angle marker
-    AngleHandler.store.updateTwoJS()
+    AngleHandler.store.updateTwoJS()// without this, when creating a new angle marker, the fill is not displayed
     newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
     return true;
   }

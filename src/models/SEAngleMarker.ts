@@ -351,7 +351,6 @@ export class SEAngleMarker
     this.setOutOfDate(false);
 
     this.shallowUpdate();
-    SENodule.store.updateTwoJS() // make sure that fills update properly after a re/do move command
     // These angle markers are completely determined by their line/segment/point parents and an update on the parents
     // will cause this angleMarker to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
