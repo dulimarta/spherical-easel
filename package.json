@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "app:serve": "bunx --bun vite",
+    "app:serve": "bunx --bun vite --host",
     "serve": "bun run app:serve & bun run docs:serve",
     "test": "vitest --watch",
     "test:ui": "vitest --ui",

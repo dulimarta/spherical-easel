@@ -1,15 +1,16 @@
 <template>
   <p :style="{
     position: 'fixed'
-  }">ThreeJS  {{ props.availableWidth }}x{{ props.availableHeight }}</p>
+  }">ThreeJS  {{ props.availableWidth }}x{{ props.availableHeight }} Mouse @ ({{mouseCoord.toFixed(2)}}) {{ mouseCoordNormalized.toFixed(3) }}</p>
   <canvas
     ref="webglCanvas"
+    id="webglCanvas"
     :width="props.availableWidth"
     :height="props.availableHeight" />
 </template>
 
 <script setup lang="ts">
-import { AmbientLight, ArrowHelper, Clock, DoubleSide, Mesh, MeshStandardMaterial, PerspectiveCamera, PointLight, Scene, Vector3, WebGLRenderer } from "three";
+import { AmbientLight, ArrowHelper, Clock, DoubleSide, GridHelper, Mesh, MeshStandardMaterial, PerspectiveCamera, PointLight, Raycaster, Scene, SphereGeometry, Vector3, WebGLRenderer } from "three";
 import * as THREE from "three"
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry"
 import { onUpdated, onMounted, Ref, ref } from "vue";
@@ -24,11 +25,18 @@ const props = withDefaults(defineProps<ComponentProps>(), {
 });
 const webglCanvas: Ref<HTMLCanvasElement | null> = ref(null);
 const scene = new Scene();
-const clock = new Clock()
+const clock = new Clock() // used by camera control animation
+const rayCaster = new Raycaster()
+const mouseCoord: Ref<THREE.Vector2> = ref(new THREE.Vector2())
+const mouseCoordNormalized:Ref<THREE.Vector2> = ref(new THREE.Vector2()) // used by RayCaster
 let camera: PerspectiveCamera;
 let renderer: WebGLRenderer;
 let cameraController: CameraControls
 CameraControls.install({ THREE })
+const xyGrid = new GridHelper()
+xyGrid.rotateX(Math.PI/2)
+scene.add(xyGrid)
+// Insert the grid BEFORE the arrow helper
 const arrowX = new ArrowHelper(new Vector3(1, 0, 0))
 arrowX.setColor(0xFF0000)
 arrowX.setLength(2, 0.2, 0.2)
@@ -50,9 +58,20 @@ const lowerHyperboloidMesh = new Mesh(
   new ParametricGeometry(hyperboloidMinus, 30, 30),
   new MeshStandardMaterial({color: "chocolate", side: DoubleSide, roughness: 0.2})
 )
+const rayIntersectionPoint = new Mesh(
+  new SphereGeometry(0.05), new MeshStandardMaterial({color: "white"})
+)
+lowerHyperboloidMesh.name = "Lower Sheet"
+upperHyperboloidMesh.name = "Upper Sheet"
 scene.add(upperHyperboloidMesh)
 scene.add(lowerHyperboloidMesh)
 
+const centerSphere = new Mesh(
+  new SphereGeometry(.95),
+  new MeshStandardMaterial({color: "green"})
+)
+centerSphere.name = "Center Sphere"
+scene.add(centerSphere)
 const ambientLight = new AmbientLight(0xcccccc, 1.5)
 const pointLight = new PointLight(0xffffff, 2, 0)
 pointLight.position.set(3,3,5)
@@ -86,14 +105,49 @@ onMounted(() => {
   renderer.setClearColor(0x999999, 1);
   renderer.setAnimationLoop(doRender);
   renderer.render(scene, camera)
+  window.addEventListener('mousemove', mouseTracker)
 });
 onUpdated(() => {
-  console.debug(`onUpdated size ${props.availableWidth}x${props.availableHeight}`)
+  // console.debug(`onUpdated size ${props.availableWidth}x${props.availableHeight}`)
   camera.aspect = props.availableWidth / props.availableHeight
   camera.updateProjectionMatrix()
   renderer.setSize(props.availableWidth, props.availableHeight)
+  renderer.render(scene, camera)
 })
 
+function mouseTracker(ev: MouseEvent) {
+  // ev.stopPropagation()
+  // console.debug(`Mouse move to (${ev.clientX},${ev.clientY})`
+  //  + ` Event offset ${ev.offsetX} ${ev.offsetY}`
+  //   + ` ClientLeft ${webglCanvas.value?.clientLeft}`
+  //   + ` Container ${webglCanvas.value?.clientWidth}x${webglCanvas.value?.clientHeight}`
+  //   + ` Renderer ${renderer.domElement.clientWidth}x${renderer.domElement.clientHeight}`
+  // )
+  mouseCoord.value.x = ev.offsetX
+  mouseCoord.value.y = ev.offsetY
+  mouseCoordNormalized.value.x = 2 * (ev.offsetX / renderer.domElement.clientWidth) - 1
+  mouseCoordNormalized.value.y = 1 - 2 * (ev.offsetY / renderer.domElement.clientHeight)
+  rayCaster.setFromCamera(mouseCoordNormalized.value, camera)
+  const allIntersections = rayCaster.intersectObjects(scene.children, true)
+  if (allIntersections.length > 0) {
+    // console.debug(`Number of all intersections ${allIntersections.length}`)
+    // We are interested only in intersection with named objects
+    const namedIntersections = allIntersections.filter(z => z.object.name.length > 0)
+    console.debug(`Number of special intersections ${namedIntersections.length}`)
+    // namedIntersections.forEach(z => {
+    //   console.debug(`With ${z.object.name} at ${z.point.toFixed(3)}`)
+    // })
+    if (namedIntersections.length > 0) {
+      // console.debug(`First intersection ${namedIntersections[0].object.name}`)
+      rayIntersectionPoint.position.copy(namedIntersections[0].point)
+      scene.add(rayIntersectionPoint)
+    } else {
+      scene.remove(rayIntersectionPoint)
+    }
+  } else {
+    scene.remove(rayIntersectionPoint)
+  }
+}
 function hyperboloidPlus(u: number, v: number, pt: Vector3) {
   u = u * 1.5
   const theta = v * 2 * Math.PI
@@ -112,3 +166,8 @@ function hyperboloidMinus(u: number, v: number, pt: Vector3) {
 }
 
 </script>
+<style scoped>
+#webglCanvas {
+  border: 2px solid red
+}
+</style>
