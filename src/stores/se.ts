@@ -501,7 +501,6 @@ export const useSEStore = defineStore("se", () => {
   function updateTwoJS() {
     twoInstance.value!.update();
   }
-
   function setCanvas(c: HTMLDivElement | null): void {
     console.debug("Set canvas in SE store");
     svgCanvas.value = c;
@@ -513,15 +512,7 @@ export const useSEStore = defineStore("se", () => {
   function setRotationMatrix(mat: Matrix4): void {
     inverseTotalRotationMatrix.value.copy(mat);
   }
-  // setSphereRadius(r: number): void {
-  //   // TODO
-  // },
-
-  // setButton(buttonSelection: ToolButtonType): void {
-  //   this.buttonSelection = buttonSelection;
-  // },
-
-  function setActionMode(mode: ActionMode): void {
+   function setActionMode(mode: ActionMode): void {
     // console.debug("Changing action mode in SE store to", mode);
     // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
     if (
@@ -846,7 +837,6 @@ export const useSEStore = defineStore("se", () => {
     hasUnsavedNodules.value = true;
     updateDisabledTools("parametric");
   }
-
   function removeParametric(parametricId: number): void {
     const victim = seParametricMap.get(parametricId);
     if (victim) {
@@ -1018,21 +1008,18 @@ export const useSEStore = defineStore("se", () => {
   function clearUnsavedFlag(): void {
     hasUnsavedNodules.value = false;
   }
-
   function changeBackContrast(newContrast: number) {
     Nodule.setBackStyleContrast(newContrast);
     seNodules.value.forEach(n => {
       n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
     });
   }
-
   function changeGradientFill(useGradientFill: boolean) {
     Nodule.setGradientFill(useGradientFill);
     seNodules.value.forEach(n => {
       n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
     });
   }
-
   function changeSegmentNormalVectorArcLength(change: {
     segmentId: number;
     normal: Vector3;
@@ -1441,8 +1428,6 @@ export const useSEStore = defineStore("se", () => {
     const intersectionPointList: SEIntersectionReturnType[] = [];
     // Intersect this new line with all old lines
     seLines.value
-      //   .map(x => x as SELine)
-      //          .filter((line: SELine) => line.id !== newLine.id) // ignore self
       .forEach((oldLine: SELine) => {
         if (oldLine.id === newLine.id) {
           return;
@@ -1941,12 +1926,8 @@ export const useSEStore = defineStore("se", () => {
     if (existingNewSEPoints) {
       existingSEPoints.push(...existingNewSEPoints);
     }
-    // // First add the two parent points of the newLine, if they are new, then
-    // //  they won't have been added to the state.points array yet so add them first
-    // existingSEPoints.push(newSegment.startSEPoint);
-    // existingSEPoints.push(newSegment.endSEPoint);
+    // First add *all* non-zero points not on in the existingSEPoint list already
     for (let pt of sePoints.value) {
-      // sePoints.value.forEach(pt => {
       if (
         !pt.locationVector.isZero() &&
         !existingSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the existingSEPoints array
@@ -1971,10 +1952,10 @@ export const useSEStore = defineStore("se", () => {
       let indexOfExistingSEIntersectionPoint = -1;
       intersectionInfo.forEach((info, index) => {
         // Options
-        //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
-        //  1) The intersection point is new so create a new intersection point
-        //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
-        //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+        //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection). Think about a segment with one (or both) endpoint glued to a line.
+        //  1) The intersection point is new so create a new intersection point. Think about a segment crossing a line.
+        //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore) Think about a concurrence in a triangle where this is the third segment to be drawn (the first was a segment, the second was a line)
+        //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore).  Think about a concurrence in a triangle where this is the third segment to be drawn (the first was a line, the second was a line) and we are intersecting with the second line.
 
         if (
           !existingSEPoints.some((pt, ind) => {
@@ -2034,7 +2015,7 @@ export const useSEStore = defineStore("se", () => {
               }
             } else {
               // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
-              // this mean that the old one dimensional object should be a new parent of this intersection point
+              // this means that the old one dimensional object should be a new parent of this intersection point
               intersectionPointList.push({
                 SEIntersectionPoint: existingSEIntersectionPoint,
                 parent1: oldLine, // this is the new parent of the intersection point

@@ -1,11 +1,5 @@
-import {
-  SESegment,
-  SELine,
-  SECircle,
-  SEEllipse,
-  SENodule
-} from "./internal";
-import {SEPoint} from "./SEPoint"
+import { SESegment, SELine, SECircle, SEEllipse, SENodule } from "./internal";
+import { SEPoint } from "./SEPoint";
 import { IntersectionReturnType, ObjectState, SEOneDimensional } from "@/types";
 import { intersectTwoObjects } from "@/utils/intersections";
 import i18n from "@/i18n";
@@ -191,15 +185,18 @@ export class SEIntersectionPoint extends SEPoint {
 
   public addIntersectionOtherParent(n: SEOneDimensional): void {
     // only add a new parent that is not already on the list of other parents and is not a principle parent
+    console.log(
+      `Intersection point ${this.name} attempt add other parent ${n.name}`
+    );
     if (
       !this.otherSEParents.some(parent => n.name === parent.name) &&
       n.name !== this.principleParent1.name &&
       n.name !== this.principleParent2.name
     ) {
       this.otherSEParents.push(n);
-      // console.debug(
-      //   `Added other parent ${n.name} to intersection point ${this.name}`
-      // );
+      console.log(
+        `Added other parent ${n.name} to intersection point ${this.name}`
+      );
     } else {
       console.warn(
         `SEIntersection Point ${this.name}: Attempted to add nodule ${n.name} that was already on the other parent array or is a principle parent.`
@@ -491,13 +488,20 @@ export class SEIntersectionPoint extends SEPoint {
       );
     }
   }
-  //check to see if the new location is on two existing parents (principle or other)
-  private updateExistenceWithParentChange(): void {
+  //check to see if the new location is on two existing parents (principle or other). Return the two parents that give the existence (if such a pair )
+  private updateExistenceWithParentChange(
+    filterForExistence?: boolean
+  ): SEOneDimensional[] | null {
     const parentList = [
       this.sePrincipleParent1,
       this.sePrincipleParent2,
       ...this.otherSEParents
-    ];
+    ].filter(par =>
+      filterForExistence != undefined && filterForExistence == true
+        ? par.exists
+        : true
+    );
+
     //check all pairs of parents for existence
     for (let i = 0; i < parentList.length; i++) {
       for (let j = i + 1; j < parentList.length; j++) {
@@ -527,11 +531,13 @@ export class SEIntersectionPoint extends SEPoint {
           this._exists = updatedIntersectionInfo[this.order].exists;
           if (this._exists) {
             //As soon as this exists, exit all the loops checking the existence
-            return;
+            // return the two objects that create the intersection
+            return [object1, object2];
           }
         }
       }
     }
+    return null;
 
     // This doesn't work because if you create a line AB and then create two segments CD and EF on the line so that
     //  C A E D B F is the order when seen from the front and then create a segment GH so that initially GH intersects
@@ -600,10 +606,43 @@ export class SEIntersectionPoint extends SEPoint {
           this.locationVector = updatedIntersectionInfo[this.order].vector;
           this._exists = updatedIntersectionInfo[this.order].exists;
         }
-        //check to see if the new location is on two existing parents (principle or other)
-        //this.setExistence();
       } else {
         this._exists = false;
+      }
+      // if the existence is false as an intersection between the two principle parents, check to see if the existence is true for two other parents (principle or not).  If so, update the principle parents.
+      if (!this._exists) {
+        const possibleNewParents = this.updateExistenceWithParentChange(true);
+        // console.log(
+        //   `possible parents of ${this.name}`, possibleNewParents?.length 
+        // )
+        if (Array.isArray(possibleNewParents)) {
+          //We know that the possibleNewParents is NOT equal to [principle1, principle2] because, if we reach here in the code, the existing intersections of the two principle parents does NOT include this intersection. Could both principles have to be replaced? I'm not sure if this is possible.
+          // Remember that the principles and the possibleNewParents are in
+          // rank order and, in the case of a tie, in alphabetical order
+          if (
+            this.principleParent1.name != possibleNewParents[0].name &&
+            this.principleParent2.name == possibleNewParents[1].name
+          ) {
+            //principle1 must be replaced with possibleNewParents[1]
+            this.replacePrincipleParent(
+              this.principleParent1,
+              possibleNewParents[0]
+            );
+          } else if (
+            this.principleParent1.name == possibleNewParents[0].name &&
+            this.principleParent2.name != possibleNewParents[1].name
+          ) {
+            //principle2 must be replaced with possibleNewParents[2]
+            this.replacePrincipleParent(
+              this.principleParent2,
+              possibleNewParents[1]
+            );
+          } else {
+            console.log(
+              `Warning: Intersection point ${this.name}, old parents ${this.principleParent1.name} and ${this.principleParent2.name} new possible parents ${possibleNewParents[0].name} and ${possibleNewParents[1].name} Replace both principles with the new possible ones?`
+            );
+          }
+        }
       }
       // console.debug(
       //   `Intersection Point ${this.name}, user created ${this._isUserCreated}, showing ${this.showing},exists ${this.exists}`
