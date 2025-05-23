@@ -185,18 +185,18 @@ export class SEIntersectionPoint extends SEPoint {
 
   public addIntersectionOtherParent(n: SEOneDimensional): void {
     // only add a new parent that is not already on the list of other parents and is not a principle parent
-    console.log(
-      `Intersection point ${this.name} attempt add other parent ${n.name}`
-    );
+    // console.log(
+    //   `Intersection point ${this.name} attempt add other parent ${n.name}`
+    // );
     if (
       !this.otherSEParents.some(parent => n.name === parent.name) &&
       n.name !== this.principleParent1.name &&
       n.name !== this.principleParent2.name
     ) {
       this.otherSEParents.push(n);
-      console.log(
-        `Added other parent ${n.name} to intersection point ${this.name}`
-      );
+      // console.log(
+      //   `Added other parent ${n.name} to intersection point ${this.name}`
+      // );
     } else {
       console.warn(
         `SEIntersection Point ${this.name}: Attempted to add nodule ${n.name} that was already on the other parent array or is a principle parent.`
