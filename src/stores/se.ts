@@ -1385,7 +1385,7 @@ export const useSEStore = defineStore("se", () => {
    *  (SELine,SELine), (SELine,SESegment), (SELine,SECircle), (SELine,SEEllipse), (SESegment, SESegment),
    *      (SESegment, SECircle), (SESegment, SEEllipse),(SECircle, SECircle), (SECircle, SEEllipse)
    *      (SEEllipse, SEEllipse)
-   * If they have the same type put them in alphabetical order. (old then new)
+   * If they have the same type put them in lexicographic order. (old then new)
    * The creation of the intersection objects automatically follows this convention in assigning parents.
    */
   function createAllIntersectionsWithLine(

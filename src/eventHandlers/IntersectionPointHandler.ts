@@ -240,14 +240,14 @@ export default class IntersectionPointHandler extends Highlighter {
     //  That the argument pair to the store.getters.intersectTwoObjects() method is one of:
     //  (SELine,SELine), (SELine,SESegment),  (SELine,SECircle),(SELine,SEEllipse), (SESegment, SESegment),
     //      (SESegment, SECircle), (SESegment, SEEllipse),(SECircle, SECircle),(SECircle, SEEllipse)
-    //  If they have the same type put them in alphabetical order.
+    //  If they have the same type put them in lexicographic order.
     const inverseTotalRotationMatrix =
       IntersectionPointHandler.store.inverseTotalRotationMatrix;
     const rank1 = rank_of_type(oneDimensional1);
     const rank2 = rank_of_type(oneDimensional2);
     // console.debug(`ranks ${rank1} and ${rank2}`);
     if (
-      (rank1 === rank2 && oneDimensional2.name > oneDimensional1.name) ||
+      (rank1 === rank2 && oneDimensional2.name < oneDimensional1.name) ||
       rank2 < rank1
     ) {
       // TODO: Avoid computing intersection of the same pair twice

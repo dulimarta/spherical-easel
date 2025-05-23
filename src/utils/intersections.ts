@@ -57,7 +57,7 @@ function vectorOnList(vec: Vector3, vectorList: Vector3[]) {
 
 /**
  * Return an ordered list of IntersectionReturnType (i.e. a vector location and exists flag) for the
- * intersection of two lines. This must be called with the lines in alphabetical order in order to the
+ * intersection of two lines. This must be called with the lines in lexicographic order in order to the
  * return type correct.
  * @param lineOne An SELine
  * @param lineTwo An SELine
@@ -489,7 +489,7 @@ export function intersectLineWithParametric(
 }
 
 /**
- * Find intersection between a two segment. This must be called with the lines in alphabetical order in order to the
+ * Find intersection between a two segment. This must be called with the lines in lexicographic order in order to the
  * return type correct.
  * @param segment1 An SESegment
  * @param segment2 An SESegment
@@ -729,7 +729,7 @@ export function intersectSegmentWithParametric(
 /**
  * Find intersection points between two circles.
  * The order *matter* intersectCircleWithCircle(C1,r1,C2,r2) is not intersectCircleWithCircle(C2,r2,C1,r1)
- * Always call this with the circles in alphabetical order
+ * Always call this with the circles in lexicographic order
  * The array is a list of the intersections positive then negative.
  * @param n1 center vector of the first circle
  * @param arc1 arc length radius of the first circle
@@ -1024,7 +1024,7 @@ export function intersectCircleWithParametric(
 
 /**
  * Find intersection between an ellipse and an ellipse,
- * Always call this with the ellipses in alphabetical order
+ * Always call this with the ellipses in lexicographic order
  * @param ellipse1 An SEEllipse
  * @param ellipse2 An SEEllipse
  */
@@ -1542,7 +1542,7 @@ export function intersectParametricWithParametric(
  *                                         (SECircle, SECircle) ,(SECircle, SEEllipse),(SECircle, SEParametric),
  *                                                                (SEEllipse, SEEllipse),(SEEllipse, SEParametric),
  *                                                                                        (SEEllipse, SEParametric),
- * If they have the same type put them in alphabetical order.
+ * If they have the same type put them in lexicographic order.
  * The creation of the intersection objects automatically follows this convention in assigning parents.
  */
 
@@ -1553,7 +1553,7 @@ export function intersectTwoObjects(
 ): IntersectionReturnType[] {
   // console.log(
   //   `Intersect two objects ${one.name} and ${two.name}.`,
-  //   `In alphabetical order? ${one.name < two.name}`
+  //   `In lexicographic order? ${one.name < two.name}`
   // );
   if (one instanceof SELine) {
     if (two instanceof SELine)
