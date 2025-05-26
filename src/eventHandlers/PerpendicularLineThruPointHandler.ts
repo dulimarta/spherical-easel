@@ -29,7 +29,7 @@ import { SEPencil } from "@/models/SEPencil";
 import { AddPencilCommand } from "@/commands/AddPencilCommand";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
-import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
@@ -144,7 +144,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.sePoint instanceof SEAntipodalPoint) &&
             !this.sePoint.isUserCreated
           ) {
-            this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+            this.temporaryPointMarker.positionVectorAndDisplay =
+              this.sePointVector;
             this.temporaryPointMarker.addToLayers(this.layers);
             this.temporaryPointAdded = true;
           }
@@ -157,7 +158,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -170,7 +172,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -183,7 +186,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -196,7 +200,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -209,7 +214,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -218,7 +224,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           //  Eventually, we will create a new SEPointOneDimensional and Point
           this.sePointOneDimensionalParent = this.hitSEPolygons[0];
           this.sePointVector.copy(this.currentSphereVector);
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -226,7 +233,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           // The mouse press is not near an existing point or one dimensional object.
           //  Record the location in a temporary point (tempPointMarker found in MouseHandler).
           //  Eventually, we will create a new SEPoint and Point
-          this.temporaryPointMarker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.currentSphereVector;
           this.sePointVector.copy(this.currentSphereVector);
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
@@ -423,7 +431,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       //   this.snapToTemporaryOneDimensional = null;
       //   this.snapToTemporaryPoint = null;
       // }
-       else {
+      else {
         this.snapToTemporaryOneDimensional = null;
         this.snapToTemporaryPoint = null;
       }
@@ -481,7 +489,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
         }
-        this.temporaryPointMarker.positionVectorAndDisplay = this.currentSphereVector;
+        this.temporaryPointMarker.positionVectorAndDisplay =
+          this.currentSphereVector;
       }
 
       if (
@@ -527,7 +536,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             );
         } else if (this.snapToTemporaryPoint == null) {
-          this.temporaryPointMarker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.currentSphereVector;
         }
       }
       if (this.oneDimensional !== null) {
@@ -811,15 +821,14 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
       // Determine all new intersection points and add their creation to the command so it can be undone
       PerpendicularLineThruPointHandler.store
-        .createAllIntersectionsWithLine(newPerpLine, newlyCreatedSEPoints)
+        .createAllIntersectionsWith(newPerpLine, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
             console.debug(
               "PerpendicularHandler: new command AddIntersectionPointOtherParent"
             );
-            const addIntersectionCmd = new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              item.parent1
+            const addIntersectionCmd = new AddIntersectionPointOtherParentsInfo(
+              item
             );
             if (usePencil) addPencilGroup.addCommand(addIntersectionCmd);
             else addPerpendicularLineGroup.addCommand(addIntersectionCmd);

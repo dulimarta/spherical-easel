@@ -217,31 +217,31 @@ onBeforeMount(() => {
   } else if (props.node instanceof SEEarthPoint) {
     // All the point subclasses with SEPoint last
     iconName.value = "$earthPoint";
-    nodeType = t(`objects.points`, 3);
+    nodeType = t(`point`);
   } else if (props.node instanceof SEAntipodalPoint) {
     iconName.value = "$antipodalPoint";
-    nodeType = t(`objects.points`, 3);
+    nodeType = t(`point`);
   } else if (props.node instanceof SEIntersectionPoint) {
     iconName.value = "$intersect";
-    nodeType = t(`objects.points`, 3);
+    nodeType = t(`point`);
   } else if (props.node instanceof SENSectPoint) {
     iconName.value = props.node.N === 2 ? "$midpoint" : "$nSectPoint";
-    nodeType = t(`objects.points`, 3);
+    nodeType = t(`point`);
   } else if (props.node instanceof SEPolarPoint) {
     iconName.value = "$polar";
-    nodeType = t(`objects.points`, 3);
+    nodeType = t(`point`);
   } else if (
     props.node instanceof SETransformedPoint ||
     props.node instanceof SEInversionCircleCenter
   ) {
     iconName.value = "$transformedPoint";
-    nodeType = t(`objects.points`, 3);
+    nodeType = t(`point`);
   } else if (props.node instanceof SEPointOnOneOrTwoDimensional) {
     iconName.value = "$pointOnObject";
-    nodeType = t(`objects.points`, 3);
+    nodeType = t(`point`);
   } else if (props.node instanceof SEPoint) {
     iconName.value = "$point";
-    nodeType = t(`objects.points`, 3);
+    nodeType = t(`point`);
   } else if (
     props.node instanceof SEIsometryCircle ||
     (props.node instanceof SECircle &&
@@ -252,104 +252,104 @@ onBeforeMount(() => {
   ) {
     // All the SECircle subclasses with SECircle last
     iconName.value = "$transformedCircle";
-    nodeType = t(`objects.circles`, 3);
+    nodeType = t(`circle`);
   } else if (props.node instanceof SELatitude) {
     iconName.value = "$earthLatitude";
-    nodeType = t(`objects.circle`, 3);
+    nodeType = t(`circle`);
     if (props.node.latitude == 0) {
       isEquator = true;
     }
   } else if (props.node instanceof SECircle) {
     iconName.value = "$circle";
-    nodeType = t(`objects.circles`, 3);
+    nodeType = t(`circle`);
   } else if (props.node instanceof SEIsometryEllipse) {
     // All the SEEllipse subclasses with SEEllipse last
     iconName.value = "$transformedEllipse";
-    nodeType = t(`objects.ellipses`, 3);
+    nodeType = t(`ellipse`);
   } else if (props.node instanceof SEEllipse) {
     iconName.value = "$ellipse";
-    nodeType = t(`objects.ellipses`, 3);
+    nodeType = t(`ellipse`);
   } else if (props.node instanceof SEInversion) {
     // All the transformation classes
     iconName.value = "$inversion";
-    nodeType = t(`objects.transformations`, 3);
+    nodeType = t(`transformation`);
   } else if (props.node instanceof SEPointReflection) {
     iconName.value = "$pointReflection";
-    nodeType = t(`objects.transformations`, 3);
+    nodeType = t(`transformation`);
   } else if (props.node instanceof SEReflection) {
     iconName.value = "$reflection";
-    nodeType = t(`objects.transformations`, 3);
+    nodeType = t(`transformation`);
   } else if (props.node instanceof SERotation) {
     iconName.value = "$rotation";
-    nodeType = t(`objects.transformations`, 3);
+    nodeType = t(`transformation`);
   } else if (props.node instanceof SETranslation) {
     iconName.value = "$translation";
-    nodeType = t(`objects.transformations`, 3);
+    nodeType = t(`transformation`);
   } // All the SELine subclasses with SELine last
   else if (props.node instanceof SEPerpendicularLineThruPoint) {
     iconName.value = "$perpendicular";
-    nodeType = t(`objects.lines`, 3);
+    nodeType = t(`line`);
   } else if (props.node instanceof SEIsometryLine) {
     iconName.value = "$transformedLine";
     nodeName = props.node.name;
-    nodeType = t(`objects.lines`, 3);
+    nodeType = t(`line`);
   } else if (props.node instanceof SENSectLine) {
     iconName.value = props.node.N === 2 ? "$angleBisector" : "$nSectLine";
-    nodeType = t(`objects.lines`, 3);
+    nodeType = t(`line`);
   } else if (props.node instanceof SEPolarLine) {
     iconName.value = "$polar";
-    nodeType = t(`objects.lines`, 3);
+    nodeType = t(`line`);
   } else if (props.node instanceof SETangentLineThruPoint) {
     iconName.value = "$tangent";
-    nodeType = t(`objects.lines`, 3);
+    nodeType = t(`line`);
   } else if (props.node instanceof SELine) {
     iconName.value = "$line";
-    nodeType = t(`objects.lines`, 3);
+    nodeType = t(`line`);
   } //All the SESegment subclasses with SESegment last
   else if (props.node instanceof SEIsometrySegment) {
     iconName.value = "$transformedSegment";
     nodeName = props.node.name;
-    nodeType = t(`objects.segments`, 3);
+    nodeType = t(`segment`);
   } else if (props.node instanceof SELongitude) {
     iconName.value = "$earthLongitude";
-    nodeType = t(`objects.segments`, 3);
+    nodeType = t(`segment`);
     if (props.node.longitude == 0) {
       isPrimeMeridian = true;
     }
   } else if (props.node instanceof SESegment) {
     iconName.value = "$segment";
-    nodeType = t(`objects.segments`, 3);
+    nodeType = t(`segment`);
   } // All the SEExpression subclasses with SEExpression last
   else if (props.node instanceof SEAngleMarker) {
     iconName.value = "$angle";
-    nodeType = t(`objects.angleMarkers`, 3);
+    nodeType = t(`angleMarker`);
   } else if (props.node instanceof SEPolygon) {
     iconName.value =
       props.node.seEdgeSegments.length === 3
         ? "$measureTriangle"
         : "$measurePolygon";
-    nodeType = t(`objects.triangles`, 3);
+    nodeType = t(`triangle`);
   } else if (props.node instanceof SESegmentLength) {
     iconName.value = "$segmentLength";
-    nodeType = t(`objects.measurements`, 3);
+    nodeType = t(`measurement`);
   } else if (props.node instanceof SEPointDistance) {
     iconName.value = "$pointDistance";
     nodeName = props.node.name;
-    nodeType = t(`objects.measurements`, 3);
+    nodeType = t(`measurement`);
   } else if (props.node instanceof SECalculation) {
     iconName.value = "$calculationObject";
     nodeName = props.node.name;
-    nodeType = t(`objects.calculations`, 3);
+    nodeType = t(`calculation`);
   } else if (props.node instanceof SEExpression) {
     iconName.value = "$measurementObject";
     nodeName = props.node.name;
-    nodeType = t(`objects.measurements`, 3);
+    nodeType = t(`measurement`);
   }
   //TextTool Attempt
   else if (props.node instanceof SEText) {
     iconName.value = "$text";
     nodeName = props.node.name;
-    nodeType = t(`objects.texts`, 3);
+    nodeType = t(`text`);
   }
 });
 
@@ -650,7 +650,7 @@ const isParametric = computed((): boolean => {
   // return props.node instanceof SEParametric;
   if (props.node instanceof SEParametric) {
     nodeName = props.node.label?.ref.shortUserName ?? "";
-    nodeType = t(`objects.parametrics`, 3);
+    nodeType = t(`objects.parametric`);
     return true;
   }
   return false;
@@ -783,6 +783,17 @@ const shakeTransformationDisplay = computed((): string => {
   "deleteNode": "Delete the selected object.",
   "toggleLabelDisplay": "Toggle the display of the corresponding label.",
   "toggleDisplay": "Toggle the display of the corresponding object.",
-  "sdfdf": "sdfsdf"
+  "circle": "Circle",
+  "line": "Line",
+  "point": "Point",
+  "ellipse": "Ellipse",
+  "segment": "Segment",
+  "transformation": "Transformation",
+  "text": "Text",
+  "angleMarker": "Angle Marker",
+  "triangle": "Triangle",
+  "measurement": "Measurement",
+  "polygon":"Polygon"
+
 }
 </i18n>

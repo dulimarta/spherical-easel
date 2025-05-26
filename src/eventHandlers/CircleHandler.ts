@@ -17,7 +17,7 @@ import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 // import Two from "two.js";
 import { Group } from "two.js/src/group";
-import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
@@ -101,7 +101,8 @@ export default class CircleHandler extends Highlighter {
         // Record the model object as the center of the circle
         this.centerSEPoint = selected;
         // Move the startMarker to the current selected point
-        this.temporaryStartMarker.positionVectorAndDisplay = selected.locationVector;
+        this.temporaryStartMarker.positionVectorAndDisplay =
+          selected.locationVector;
         // Set the center of the circle in the plottable object
         this.temporaryCircle.centerVector = selected.locationVector;
         // Glow the selected point and select it so the highlighter.ts doesn't unglow it with the mouseMoved method
@@ -185,13 +186,15 @@ export default class CircleHandler extends Highlighter {
         // Set the center of the circle in the plottable object - also calls temporaryCircle.readjust()
         this.temporaryCircle.centerVector = this.currentSphereVector;
         // Move the startMarker to the current mouse location
-        this.temporaryStartMarker.positionVectorAndDisplay = this.currentSphereVector;
+        this.temporaryStartMarker.positionVectorAndDisplay =
+          this.currentSphereVector;
         // Record the center vector of the circle so it can be past to the non-temporary circle
         this.centerVector.copy(this.currentSphereVector);
         // Set the center of the circle to null so it can be created later
         this.centerSEPoint = null;
       }
-      this.temporaryEndMarker.positionVectorAndDisplay = this.currentSphereVector;
+      this.temporaryEndMarker.positionVectorAndDisplay =
+        this.currentSphereVector;
       EventBus.fire("show-alert", {
         key: `handlers.circleCenterSelected`,
         keyOptions: {},
@@ -275,7 +278,8 @@ export default class CircleHandler extends Highlighter {
               this.currentSphereVector
             );
         } else if (this.snapTemporaryPointMarkerToPoint == null) {
-          this.temporaryStartMarker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryStartMarker.positionVectorAndDisplay =
+            this.currentSphereVector;
         }
       } else {
         // If the temporary endMarker has *not* been added to the scene do so now
@@ -310,7 +314,8 @@ export default class CircleHandler extends Highlighter {
               this.currentSphereVector
             );
         } else if (this.snapTemporaryPointMarkerToPoint === null) {
-          this.temporaryEndMarker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryEndMarker.positionVectorAndDisplay =
+            this.currentSphereVector;
         }
 
         // If the temporary circle has *not* been added to the scene do so now (only once)
@@ -708,14 +713,11 @@ export default class CircleHandler extends Highlighter {
       // in the store. Add the new created points to the circle command so they can be undone.
 
       CircleHandler.store
-        .createAllIntersectionsWithCircle(newSECircle, newlyCreatedSEPoints)
+        .createAllIntersectionsWith(newSECircle, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
             circleCommandGroup.addCommand(
-              new AddIntersectionPointOtherParent(
-                item.SEIntersectionPoint,
-                item.parent1
-              )
+              new AddIntersectionPointOtherParentsInfo(item)
             );
           } else {
             // the intersection point is newly created and must be added as a child of the two parents returned
@@ -756,7 +758,7 @@ export default class CircleHandler extends Highlighter {
 
       circleCommandGroup.execute();
 
-      CircleHandler.store.updateTwoJS() // if this is not included, when you make a new circle, the fill is not displayed
+      CircleHandler.store.updateTwoJS(); // if this is not included, when you make a new circle, the fill is not displayed
       newSECircle.ref.updateDisplay(); // The newly created circle will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
     }
     return true;

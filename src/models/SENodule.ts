@@ -320,12 +320,14 @@ export abstract class SENodule implements Visitable {
   public isNonFreeLine(): boolean {
     return false;
   }
-
   // // Only returns true if this is an SEOneDimensional
   public isOneDimensional(): boolean {
     return false;
   }
-
+  // // Only returns true if this is an SEFillable
+  public isFillable(): boolean {
+    return false;
+  }
   public getLabel(): SELabel | null {
     return null;
   }

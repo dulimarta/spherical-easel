@@ -29,7 +29,7 @@ import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
-import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
 enum Create {
@@ -637,13 +637,12 @@ export default class PolarObjectHandler extends Highlighter {
 
     // Determine all new intersection points and add their creation to the command so it can be undone
     PolarObjectHandler.store
-      .createAllIntersectionsWithLine(newPolarLine, newlyCreatedSEPoints)
+      .createAllIntersectionsWith(newPolarLine, newlyCreatedSEPoints)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
           polarLineCommandGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              newPolarLine
+            new AddIntersectionPointOtherParentsInfo(
+              item
             )
           );
         } else {

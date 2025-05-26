@@ -17,7 +17,7 @@ import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 import Two from "two.js";
 import { Group } from "two.js/src/group";
-import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 import Settings from "@/views/Settings.vue";
@@ -139,7 +139,8 @@ export default class SegmentHandler extends Highlighter {
         this.startVector.copy(selected.locationVector);
         this.startSEPoint = this.hitSEPoints[0];
         // Set the start of the temp segment and the startMarker at the location of the selected point
-        this.temporaryStartMarker.positionVectorAndDisplay = selected.locationVector;
+        this.temporaryStartMarker.positionVectorAndDisplay =
+          selected.locationVector;
         this.temporarySegment.startVector = selected.locationVector;
         // Glow the selected point and select it so the highlighter.ts doesn't unglow it with the mouseMoved method
         this.startSEPoint.glowing = true;
@@ -224,11 +225,13 @@ export default class SegmentHandler extends Highlighter {
         // The start vector of the temporary segment and the start marker are
         //  also the the current location on the sphere
         this.temporarySegment.startVector = this.currentSphereVector;
-        this.temporaryStartMarker.positionVectorAndDisplay = this.currentSphereVector;
+        this.temporaryStartMarker.positionVectorAndDisplay =
+          this.currentSphereVector;
         this.startVector.copy(this.currentSphereVector);
         this.startSEPoint = null;
       }
-      this.temporaryEndMarker.positionVectorAndDisplay = this.currentSphereVector;
+      this.temporaryEndMarker.positionVectorAndDisplay =
+        this.currentSphereVector;
 
       // Set the booleans for describing the segment
       this.nearlyAntipodal = false;
@@ -377,7 +380,8 @@ export default class SegmentHandler extends Highlighter {
               this.currentSphereVector
             );
         } else if (this.snapStartMarkerToTemporaryPoint == null) {
-          this.temporaryStartMarker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryStartMarker.positionVectorAndDisplay =
+            this.currentSphereVector;
         }
       } else {
         // If the temporary end/StartMarker has *not* been added to the scene do so now
@@ -401,7 +405,8 @@ export default class SegmentHandler extends Highlighter {
               this.currentSphereVector
             );
         } else {
-          this.temporaryEndMarker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryEndMarker.positionVectorAndDisplay =
+            this.currentSphereVector;
         }
 
         // If the temporary segment has *not* been added to the scene do so now (only once)
@@ -759,7 +764,8 @@ export default class SegmentHandler extends Highlighter {
       } //There are some situations in which the mouse actions (hard to duplicate) lead to an undefined normal vector and I'm hoping this will prevent the program from entering an error state.
 
       // update the location of the endMarker
-      this.temporaryEndMarker.positionVectorAndDisplay = this.endSEPoint.locationVector;
+      this.temporaryEndMarker.positionVectorAndDisplay =
+        this.endSEPoint.locationVector;
 
       // Finally set the values for the unit vectors defining the segment and update the display
       this.temporarySegment.arcLength = this.arcLength;
@@ -842,15 +848,10 @@ export default class SegmentHandler extends Highlighter {
       );
 
       SegmentHandler.store
-        .createAllIntersectionsWithSegment(newSESegment, newlyCreatedSEPoints)
+        .createAllIntersectionsWith(newSESegment, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
-            segmentGroup.addCommand(
-              new AddIntersectionPointOtherParent(
-                item.SEIntersectionPoint,
-                item.parent1
-              )
-            );
+            segmentGroup.addCommand(new AddIntersectionPointOtherParentsInfo(item));
           } else {
             // Create the plottable label
             const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(

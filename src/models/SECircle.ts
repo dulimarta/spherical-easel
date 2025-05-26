@@ -83,7 +83,9 @@ export class SECircle
     this._circleSEPoint = circlePoint;
     SECircle.CIRCLE_COUNT++;
     this.name = `C${SECircle.CIRCLE_COUNT}`;
-    this.ref = createNonFreeCircle ? new NonFreeCircle(this.name) : new Circle(this.name);
+    this.ref = createNonFreeCircle
+      ? new NonFreeCircle(this.name)
+      : new Circle(this.name);
     this.ref.centerVector = centerPoint.locationVector;
     this.ref.circleRadius = this.circleRadius;
     this.ref.updateDisplay();
@@ -462,10 +464,12 @@ export class SECircle
   }
 
   public getLabel(): SELabel | null {
-    return (this as Labelable).label!
-
+    return (this as Labelable).label!;
   }
   public isMeasurable(): boolean {
+    return true;
+  }
+  public isFillable(): boolean {
     return true;
   }
 }

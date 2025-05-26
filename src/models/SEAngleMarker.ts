@@ -1,4 +1,11 @@
-import { SEExpression, SEPoint, SELine, SESegment, SELabel, SENodule } from "./internal";
+import {
+  SEExpression,
+  SEPoint,
+  SELine,
+  SESegment,
+  SELabel,
+  SENodule
+} from "./internal";
 import AngleMarker from "@/plottables/AngleMarker";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";

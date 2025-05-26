@@ -38,6 +38,7 @@ export * from "./SESegment";
 export * from "./SESegmentLength";
 export * from "./SESlider";
 export * from "./SETangentLineThruPoint";
+export * from "./SEText";
 export * from "./SEThreePointCircleCenter";
 export * from "./SETransformedPoint";
 export * from "./SETranslation";

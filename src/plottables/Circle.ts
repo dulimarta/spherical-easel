@@ -15,7 +15,7 @@ import { Stop } from "two.js/src/effects/stop";
 import { RadialGradient } from "two.js/src/effects/radial-gradient";
 import { Anchor } from "two.js/src/anchor";
 import { Path } from "two.js/src/path";
-import { svgArcObject, toSVGType } from "@/types";
+import { FillStyle, svgArcObject, toSVGType } from "@/types";
 
 // The number of vertices used to draw an arc of a projected circle
 const SUBDIVISIONS = SETTINGS.circle.numPoints;
@@ -363,81 +363,23 @@ export default class Circle extends Nodule {
       // this._backFillInUse could be either true or false
       this._frontFillIsEntireFront = false;
       // this._backFillIsEntireBack could be either true or false
-
-      // Begin to set the frontFill that is common to both cases
-      // Bring all the front anchor points to a common pool
-      this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
-      // don't dump the anchors of the back fill into the common pool if there is a chance that the backFill is the entire back and might not need to be updated.
-      if (!this._backFillIsEntireBack) {
-        this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
-      }
-
-      // In this case the frontFillVertices are the same as the frontPartVertices
-      this._frontPart.vertices.findLast((v: Anchor, ind: number) => {
-        const coords = localMatrix.multiply(v.x, v.y, 1);
-        const vertex = this.fillStorageAnchors.pop();
-        if (vertex !== undefined) {
-          vertex.x = coords[0];
-          vertex.y = coords[1];
-          this._frontFill.vertices.push(vertex);
-        } else {
-          throw new Error(
-            "Circle: not enough anchors in the pool to trace the circle on the front."
-          );
+      if (Nodule.globalFillStyle != FillStyle.NoFill) {
+        // Begin to set the frontFill that is common to both cases
+        // Bring all the front anchor points to a common pool
+        this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
+        // don't dump the anchors of the back fill into the common pool if there is a chance that the backFill is the entire back and might not need to be updated.
+        if (!this._backFillIsEntireBack) {
+          this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
         }
-      });
 
-      if (this.centerVector.z > 0) {
-        // The interior of the circle is entirely contained on the front")
-        // Nothing needs to be added to the frontFill
-
-        // backFill
-        this._backFillInUse = false;
-        this._backFillIsEntireBack = false;
-        this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
-      } else {
-        //  the circle is a hole on the front, the back is entirely covered")
-
-        // Finish setting the frontFill
-        // We need 2*SUBDIVISION +2 anchors for the annular region on the front. Currently there are SUBDIVISION in the front fill
-        // Add an anchor to close the inner region
-        const vert = this.fillStorageAnchors.pop();
-        if (vert != undefined) {
-          vert.x = this._frontFill.vertices[0].x;
-          vert.y = this._frontFill.vertices[0].y;
-          this._frontFill.vertices.push(vert);
-        } else {
-          throw new Error(
-            "Circle: not enough anchors in the pool to trace the circle on the front."
-          );
-        }
-        // Now there are SUBDIVISION + 1 in the front fill
-
-        // now the frontFillVertices must trace out the boundary vertices
-        // To help with the rendering, start tracing the boundary circle directly across from the last vertex on the circle (which
-        // is the same as the one at index zero)
-        let coords = localMatrix.multiply(
-          this._frontPart.vertices[0].x,
-          this._frontPart.vertices[0].y,
-          1
-        );
-        let frontStartTraceIndex = Math.ceil(
-          Math.atan2(coords[1], coords[0]).modTwoPi() /
-            ((2 * Math.PI) / SUBDIVISIONS)
-        );
-        // The use of math.ceil means that frontStartTraceIndex could be equal to SUBDIVISIONS, so reduce mod SUBDIVISIONS
-        frontStartTraceIndex =
-          ((frontStartTraceIndex % SUBDIVISIONS) + SUBDIVISIONS) % SUBDIVISIONS;
-
-        //Move the boundary vertices array so that the first index one is geometrically close to the start and end of the vertices tracing the circular "hole"
-        Circle.boundaryVertices.rotate(frontStartTraceIndex);
-
-        Circle.boundaryVertices.findLast(v => {
-          const vert = this.fillStorageAnchors.pop();
-          if (vert != undefined) {
-            vert.x = v[0];
-            vert.y = v[1];
-            this._frontFill.vertices.push(vert);
+        // In this case the frontFillVertices are the same as the frontPartVertices
+        this._frontPart.vertices.findLast((v: Anchor, ind: number) => {
+          const coords = localMatrix.multiply(v.x, v.y, 1);
+          const vertex = this.fillStorageAnchors.pop();
+          if (vertex !== undefined) {
+            vertex.x = coords[0];
+            vertex.y = coords[1];
+            this._frontFill.vertices.push(vertex);
           } else {
             throw new Error(
               "Circle: not enough anchors in the pool to trace the circle on the front."
@@ -445,39 +387,99 @@ export default class Circle extends Nodule {
           }
         });
 
-        // Make sure that the last entry in the frontFill is the first from the boundary vertices to close up the annular region
-        const vert1 = this.fillStorageAnchors.pop();
-        const len = Circle.boundaryVertices.length;
-        if (vert1 != undefined) {
-          vert1.x = Circle.boundaryVertices[len - 1][0];
-          vert1.y = Circle.boundaryVertices[len - 1][1];
-          this._frontFill.vertices.push(vert1);
-        } else {
-          throw new Error(
-            "Circle: not enough anchors in the pool to trace the circle on the front."
-          );
-        }
-        //un-rotate the boundary vertices to their initial state
-        Circle.boundaryVertices.rotate(-frontStartTraceIndex);
+        if (this.centerVector.z > 0) {
+          // The interior of the circle is entirely contained on the front")
+          // Nothing needs to be added to the frontFill
 
-        // Set the backFill
-        this._backFillInUse = true;
-        // In this case set the backFillVertices to the entire boundary circle of the sphere (unless it is already the entire back so that it doesn't need to be updated)
-        if (!this._backFillIsEntireBack) {
+          // backFill
+          this._backFillInUse = false;
+          this._backFillIsEntireBack = false;
           this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
-          Circle.boundaryVertices.forEach(v => {
-            const vertex = this.fillStorageAnchors.pop();
-            if (vertex !== undefined) {
-              vertex.x = v[0];
-              vertex.y = v[1];
-              this._backFill.vertices.push(vertex);
+        } else {
+          //  the circle is a hole on the front, the back is entirely covered")
+
+          // Finish setting the frontFill
+          // We need 2*SUBDIVISION +2 anchors for the annular region on the front. Currently there are SUBDIVISION in the front fill
+          // Add an anchor to close the inner region
+          const vert = this.fillStorageAnchors.pop();
+          if (vert != undefined) {
+            vert.x = this._frontFill.vertices[0].x;
+            vert.y = this._frontFill.vertices[0].y;
+            this._frontFill.vertices.push(vert);
+          } else {
+            throw new Error(
+              "Circle: not enough anchors in the pool to trace the circle on the front."
+            );
+          }
+          // Now there are SUBDIVISION + 1 in the front fill
+
+          // now the frontFillVertices must trace out the boundary vertices
+          // To help with the rendering, start tracing the boundary circle directly across from the last vertex on the circle (which
+          // is the same as the one at index zero)
+          let coords = localMatrix.multiply(
+            this._frontPart.vertices[0].x,
+            this._frontPart.vertices[0].y,
+            1
+          );
+          let frontStartTraceIndex = Math.ceil(
+            Math.atan2(coords[1], coords[0]).modTwoPi() /
+              ((2 * Math.PI) / SUBDIVISIONS)
+          );
+          // The use of math.ceil means that frontStartTraceIndex could be equal to SUBDIVISIONS, so reduce mod SUBDIVISIONS
+          frontStartTraceIndex =
+            ((frontStartTraceIndex % SUBDIVISIONS) + SUBDIVISIONS) %
+            SUBDIVISIONS;
+
+          //Move the boundary vertices array so that the first index one is geometrically close to the start and end of the vertices tracing the circular "hole"
+          Circle.boundaryVertices.rotate(frontStartTraceIndex);
+
+          Circle.boundaryVertices.findLast(v => {
+            const vert = this.fillStorageAnchors.pop();
+            if (vert != undefined) {
+              vert.x = v[0];
+              vert.y = v[1];
+              this._frontFill.vertices.push(vert);
             } else {
               throw new Error(
-                "Circle: not enough anchors in the pool to trace the circle on the back."
+                "Circle: not enough anchors in the pool to trace the circle on the front."
               );
             }
           });
-          this._backFillIsEntireBack = true;
+
+          // Make sure that the last entry in the frontFill is the first from the boundary vertices to close up the annular region
+          const vert1 = this.fillStorageAnchors.pop();
+          const len = Circle.boundaryVertices.length;
+          if (vert1 != undefined) {
+            vert1.x = Circle.boundaryVertices[len - 1][0];
+            vert1.y = Circle.boundaryVertices[len - 1][1];
+            this._frontFill.vertices.push(vert1);
+          } else {
+            throw new Error(
+              "Circle: not enough anchors in the pool to trace the circle on the front."
+            );
+          }
+          //un-rotate the boundary vertices to their initial state
+          Circle.boundaryVertices.rotate(-frontStartTraceIndex);
+
+          // Set the backFill
+          this._backFillInUse = true;
+          // In this case set the backFillVertices to the entire boundary circle of the sphere (unless it is already the entire back so that it doesn't need to be updated)
+          if (!this._backFillIsEntireBack) {
+            this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
+            Circle.boundaryVertices.forEach(v => {
+              const vertex = this.fillStorageAnchors.pop();
+              if (vertex !== undefined) {
+                vertex.x = v[0];
+                vertex.y = v[1];
+                this._backFill.vertices.push(vertex);
+              } else {
+                throw new Error(
+                  "Circle: not enough anchors in the pool to trace the circle on the back."
+                );
+              }
+            });
+            this._backFillIsEntireBack = true;
+          }
         }
       }
     } else if (
@@ -500,131 +502,133 @@ export default class Circle extends Nodule {
       this._backFillInUse = true;
       // this._frontFillIsEntireFront could be true or false;
       this._backFillIsEntireBack = false;
-
-      // Begin to set the back Fill that is common to both cases
-      // Bring all the front anchor points to a common pool
-      this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
-      // don't dump the anchors of the front fill into the common pool if there is a chance that the frontFill is the entire front and might not need to be updated.
-      if (!this._frontFillIsEntireFront) {
-        this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
-      }
-
-      // In this case the backFillVertices are the same as the backPartVertices
-      // get the local transformation matrix of the circle (should be the same for all parts glowing/not front/back)
-      const localMatrix = this._backPart.matrix; //local matrix works for just the position, rotation, and scale of that object in its local frame
-      this._backPart.vertices.forEach((v: Anchor, ind: number) => {
-        //if (ind < 20) {
-        const coords = localMatrix.multiply(v.x, v.y, 1);
-        const vertex = this.fillStorageAnchors.pop();
-        if (vertex !== undefined) {
-          vertex.x = coords[0];
-          vertex.y = coords[1];
-          this._backFill.vertices.push(vertex);
-        } else {
-          throw new Error(
-            "Circle: not enough anchors in the pool to trace the circle on the back."
-          );
+      if (Nodule.globalFillStyle != FillStyle.NoFill) {
+        // Begin to set the back Fill that is common to both cases
+        // Bring all the front anchor points to a common pool
+        this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
+        // don't dump the anchors of the front fill into the common pool if there is a chance that the frontFill is the entire front and might not need to be updated.
+        if (!this._frontFillIsEntireFront) {
+          this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
         }
-        //}
-      });
 
-      if (this.centerVector.z < 0) {
-        // console.log(
-        //   "The interior of the circle is entirely contained on the back"
-        // );
-        // Nothing needs to be added to the backFill
-        // backFill
-        this._frontFillInUse = false;
-        this._frontFillIsEntireFront = false;
-        this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
-      } else {
-        // console.log(
-        //   "the circle is a hole on the back, the front is entirely covered"
-        // );
+        // In this case the backFillVertices are the same as the backPartVertices
+        // get the local transformation matrix of the circle (should be the same for all parts glowing/not front/back)
+        const localMatrix = this._backPart.matrix; //local matrix works for just the position, rotation, and scale of that object in its local frame
+        this._backPart.vertices.forEach((v: Anchor, ind: number) => {
+          //if (ind < 20) {
+          const coords = localMatrix.multiply(v.x, v.y, 1);
+          const vertex = this.fillStorageAnchors.pop();
+          if (vertex !== undefined) {
+            vertex.x = coords[0];
+            vertex.y = coords[1];
+            this._backFill.vertices.push(vertex);
+          } else {
+            throw new Error(
+              "Circle: not enough anchors in the pool to trace the circle on the back."
+            );
+          }
+          //}
+        });
 
-        // Set the backFill
-        // We need 3*SUBDIVISION +2 anchors for the annular region on the back. Currently there are SUBDIVISION in the back fill
-        // Add an anchor to close the inner region
-        const vert = this.fillStorageAnchors.pop();
-        if (vert != undefined) {
-          vert.x = this._backFill.vertices[0].x;
-          vert.y = this._backFill.vertices[0].y;
-          this._backFill.vertices.push(vert);
+        if (this.centerVector.z < 0) {
+          // console.log(
+          //   "The interior of the circle is entirely contained on the back"
+          // );
+          // Nothing needs to be added to the backFill
+          // backFill
+          this._frontFillInUse = false;
+          this._frontFillIsEntireFront = false;
+          this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
         } else {
-          throw new Error(
-            "Circle: not enough anchors in the pool to trace the circle on the back."
-          );
-        }
-        // Now there are SUBDIVISION + 1 in the back fill
+          // console.log(
+          //   "the circle is a hole on the back, the front is entirely covered"
+          // );
 
-        // now the backFillVertices must trace out the boundary vertices
-        // To help with the rendering, start tracing the boundary circle directly across from the last vertex on the circle (which
-        // is the same as the one at index zero
-        let coords = localMatrix.multiply(
-          this._backPart.vertices[0].x,
-          this._backPart.vertices[0].y,
-          1
-        );
-
-        let backStartTraceIndex = Math.ceil(
-          Math.atan2(coords[1], coords[0]).modTwoPi() /
-            ((2 * Math.PI) / SUBDIVISIONS)
-        );
-
-        // The use of math.ceil means that frontStartTraceIndex could be equal to SUBDIVISIONS, so reduce mod SUBDIVISIONS
-        backStartTraceIndex =
-          ((backStartTraceIndex % SUBDIVISIONS) + SUBDIVISIONS) % SUBDIVISIONS;
-
-        //Move the boundary vertices array so that the first index one is geometrically close to the start and end of the vertices tracing the circular "hole"
-        Circle.boundaryVertices.rotate(backStartTraceIndex);
-
-        Circle.boundaryVertices.findLast(v => {
+          // Set the backFill
+          // We need 3*SUBDIVISION +2 anchors for the annular region on the back. Currently there are SUBDIVISION in the back fill
+          // Add an anchor to close the inner region
           const vert = this.fillStorageAnchors.pop();
           if (vert != undefined) {
-            vert.x = v[0];
-            vert.y = v[1];
+            vert.x = this._backFill.vertices[0].x;
+            vert.y = this._backFill.vertices[0].y;
             this._backFill.vertices.push(vert);
           } else {
             throw new Error(
               "Circle: not enough anchors in the pool to trace the circle on the back."
             );
           }
-        });
+          // Now there are SUBDIVISION + 1 in the back fill
 
-        // Make sure that the last entry in the backFill is the first from the boundary vertices to close up the annular region
-        const vert1 = this.fillStorageAnchors.pop();
-        const len3 = Circle.boundaryVertices.length;
-        if (vert1 != undefined) {
-          vert1.x = Circle.boundaryVertices[len3 - 1][0];
-          vert1.y = Circle.boundaryVertices[len3 - 1][1];
-          this._backFill.vertices.push(vert1);
-        } else {
-          throw new Error(
-            "Circle: not enough anchors in the pool to trace the circle on the back."
+          // now the backFillVertices must trace out the boundary vertices
+          // To help with the rendering, start tracing the boundary circle directly across from the last vertex on the circle (which
+          // is the same as the one at index zero
+          let coords = localMatrix.multiply(
+            this._backPart.vertices[0].x,
+            this._backPart.vertices[0].y,
+            1
           );
-        }
 
-        //un-rotate and reverse the boundary vertices to their initial state
-        Circle.boundaryVertices.rotate(-backStartTraceIndex);
+          let backStartTraceIndex = Math.ceil(
+            Math.atan2(coords[1], coords[0]).modTwoPi() /
+              ((2 * Math.PI) / SUBDIVISIONS)
+          );
 
-        // Set the frontFill
-        this._frontFillInUse = true;
-        // In this case set the frontFillVertices to the entire boundary circle of the sphere (unless it is already the entire front so that it doesn't need to be updated)
-        if (!this._frontFillIsEntireFront) {
-          this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
-          Circle.boundaryVertices.forEach(v => {
-            const vertex = this.fillStorageAnchors.pop();
-            if (vertex !== undefined) {
-              vertex.x = v[0];
-              vertex.y = v[1];
-              this._frontFill.vertices.push(vertex);
+          // The use of math.ceil means that frontStartTraceIndex could be equal to SUBDIVISIONS, so reduce mod SUBDIVISIONS
+          backStartTraceIndex =
+            ((backStartTraceIndex % SUBDIVISIONS) + SUBDIVISIONS) %
+            SUBDIVISIONS;
+
+          //Move the boundary vertices array so that the first index one is geometrically close to the start and end of the vertices tracing the circular "hole"
+          Circle.boundaryVertices.rotate(backStartTraceIndex);
+
+          Circle.boundaryVertices.findLast(v => {
+            const vert = this.fillStorageAnchors.pop();
+            if (vert != undefined) {
+              vert.x = v[0];
+              vert.y = v[1];
+              this._backFill.vertices.push(vert);
             } else {
               throw new Error(
-                "Circle: not enough anchors in the pool to trace the circle on the front."
+                "Circle: not enough anchors in the pool to trace the circle on the back."
               );
             }
           });
-          this._frontFillIsEntireFront = true;
+
+          // Make sure that the last entry in the backFill is the first from the boundary vertices to close up the annular region
+          const vert1 = this.fillStorageAnchors.pop();
+          const len3 = Circle.boundaryVertices.length;
+          if (vert1 != undefined) {
+            vert1.x = Circle.boundaryVertices[len3 - 1][0];
+            vert1.y = Circle.boundaryVertices[len3 - 1][1];
+            this._backFill.vertices.push(vert1);
+          } else {
+            throw new Error(
+              "Circle: not enough anchors in the pool to trace the circle on the back."
+            );
+          }
+
+          //un-rotate and reverse the boundary vertices to their initial state
+          Circle.boundaryVertices.rotate(-backStartTraceIndex);
+
+          // Set the frontFill
+          this._frontFillInUse = true;
+          // In this case set the frontFillVertices to the entire boundary circle of the sphere (unless it is already the entire front so that it doesn't need to be updated)
+          if (!this._frontFillIsEntireFront) {
+            this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
+            Circle.boundaryVertices.forEach(v => {
+              const vertex = this.fillStorageAnchors.pop();
+              if (vertex !== undefined) {
+                vertex.x = v[0];
+                vertex.y = v[1];
+                this._frontFill.vertices.push(vertex);
+              } else {
+                throw new Error(
+                  "Circle: not enough anchors in the pool to trace the circle on the front."
+                );
+              }
+            });
+            this._frontFillIsEntireFront = true;
+          }
         }
       }
     } else if (
@@ -663,97 +667,99 @@ export default class Circle extends Nodule {
       this._backPart.endAngle = Math.PI / 2 + this._boundaryParameter;
       this._glowingBackPart.endAngle = Math.PI / 2 + this._boundaryParameter;
 
-      const startPoint = Circle.pointOnProjectedEllipse(
-        this._centerVector,
-        this._circleRadius,
-        this._boundaryParameter
-      );
-      //find the angular width of the part of the boundary circle to be copied
-      // Compute the angle from the positive x axis to the last frontPartVertex
-      //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
-      const startAngle = Math.atan2(startPoint[1], startPoint[0]);
+      if (Nodule.globalFillStyle != FillStyle.NoFill) {
+        const startPoint = Circle.pointOnProjectedEllipse(
+          this._centerVector,
+          this._circleRadius,
+          this._boundaryParameter
+        );
+        //find the angular width of the part of the boundary circle to be copied
+        // Compute the angle from the positive x axis to the last frontPartVertex
+        //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
+        const startAngle = Math.atan2(startPoint[1], startPoint[0]);
 
-      const endPoint = Circle.pointOnProjectedEllipse(
-        this._centerVector,
-        this._circleRadius,
-        -this._boundaryParameter
-      );
-      // Compute the angle from the positive x axis to the first frontPartVertex
-      //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
-      const endAngle = Math.atan2(endPoint[1], endPoint[0]);
+        const endPoint = Circle.pointOnProjectedEllipse(
+          this._centerVector,
+          this._circleRadius,
+          -this._boundaryParameter
+        );
+        // Compute the angle from the positive x axis to the first frontPartVertex
+        //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
+        const endAngle = Math.atan2(endPoint[1], endPoint[0]);
 
-      // Compute the angular width of the section of the boundary circle to add to the front/back fill
-      // This can be positive if traced counterclockwise or negative if traced clockwise( add 2 Pi to make positive)
-      let angularWidth = endAngle - startAngle;
-      if (angularWidth < 0) {
-        angularWidth += 2 * Math.PI;
+        // Compute the angular width of the section of the boundary circle to add to the front/back fill
+        // This can be positive if traced counterclockwise or negative if traced clockwise( add 2 Pi to make positive)
+        let angularWidth = endAngle - startAngle;
+        if (angularWidth < 0) {
+          angularWidth += 2 * Math.PI;
+        }
+
+        //eEnd by creating the boundary points
+        const boundaryPoints = Nodule.boundaryCircleCoordinates(
+          startPoint,
+          SUBDIVISIONS,
+          [-startPoint[1], startPoint[0]], // Always go counterclockwise ,
+          angularWidth
+        );
+
+        // clear the old front and back fill into the storage
+        this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
+        this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
+
+        // now add boundary points to the front and back fill
+        boundaryPoints.forEach(v => {
+          const vertex1 = this.fillStorageAnchors.pop();
+          if (vertex1 !== undefined) {
+            vertex1.x = v[0];
+            vertex1.y = v[1];
+          } else {
+            throw new Error(
+              "Circle: not enough anchors in the pool to trace the circle on the front."
+            );
+          }
+          this._frontFill.vertices.push(vertex1);
+
+          const vertex2 = this.fillStorageAnchors.pop();
+          if (vertex2 !== undefined) {
+            vertex2.x = v[0];
+            vertex2.y = v[1];
+          } else {
+            throw new Error(
+              "Circle: not enough anchors in the pool to trace the circle on the back."
+            );
+          }
+          this._backFill.vertices.push(vertex2);
+        });
+
+        // Now add the points from the front edge to the front fill
+        this._frontPart.vertices.forEach((v: Anchor) => {
+          const coords = localMatrix.multiply(v.x, v.y, 1);
+          const vertex = this.fillStorageAnchors.pop();
+          if (vertex !== undefined) {
+            vertex.x = coords[0];
+            vertex.y = coords[1];
+            this._frontFill.vertices.push(vertex);
+          } else {
+            throw new Error(
+              "Circle: not enough anchors in the pool to trace the circle on the front."
+            );
+          }
+        });
+        // Now add the points from the back edges to the back fill
+        this._backPart.vertices.findLast((v: Anchor) => {
+          const coords = localMatrix.multiply(v.x, v.y, 1);
+          const vertex = this.fillStorageAnchors.pop();
+          if (vertex !== undefined) {
+            vertex.x = coords[0];
+            vertex.y = coords[1];
+            this._backFill.vertices.push(vertex);
+          } else {
+            throw new Error(
+              "Circle: not enough anchors in the pool to trace the circle on the back."
+            );
+          }
+        });
       }
-
-      //eEnd by creating the boundary points
-      const boundaryPoints = Nodule.boundaryCircleCoordinates(
-        startPoint,
-        SUBDIVISIONS,
-        [-startPoint[1], startPoint[0]], // Always go counterclockwise ,
-        angularWidth
-      );
-
-      // clear the old front and back fill into the storage
-      this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
-      this.fillStorageAnchors.push(...this._backFill.vertices.splice(0));
-
-      // now add boundary points to the front and back fill
-      boundaryPoints.forEach(v => {
-        const vertex1 = this.fillStorageAnchors.pop();
-        if (vertex1 !== undefined) {
-          vertex1.x = v[0];
-          vertex1.y = v[1];
-        } else {
-          throw new Error(
-            "Circle: not enough anchors in the pool to trace the circle on the front."
-          );
-        }
-        this._frontFill.vertices.push(vertex1);
-
-        const vertex2 = this.fillStorageAnchors.pop();
-        if (vertex2 !== undefined) {
-          vertex2.x = v[0];
-          vertex2.y = v[1];
-        } else {
-          throw new Error(
-            "Circle: not enough anchors in the pool to trace the circle on the back."
-          );
-        }
-        this._backFill.vertices.push(vertex2);
-      });
-
-      // Now add the points from the front edge to the front fill
-      this._frontPart.vertices.forEach((v: Anchor) => {
-        const coords = localMatrix.multiply(v.x, v.y, 1);
-        const vertex = this.fillStorageAnchors.pop();
-        if (vertex !== undefined) {
-          vertex.x = coords[0];
-          vertex.y = coords[1];
-          this._frontFill.vertices.push(vertex);
-        } else {
-          throw new Error(
-            "Circle: not enough anchors in the pool to trace the circle on the front."
-          );
-        }
-      });
-      // Now add the points from the back edges to the back fill
-      this._backPart.vertices.findLast((v: Anchor) => {
-        const coords = localMatrix.multiply(v.x, v.y, 1);
-        const vertex = this.fillStorageAnchors.pop();
-        if (vertex !== undefined) {
-          vertex.x = coords[0];
-          vertex.y = coords[1];
-          this._backFill.vertices.push(vertex);
-        } else {
-          throw new Error(
-            "Circle: not enough anchors in the pool to trace the circle on the back."
-          );
-        }
-      });
     }
   }
 
@@ -901,7 +907,7 @@ export default class Circle extends Nodule {
       type: "circle"
     };
     // Add the gradient to the gradient dictionary (if used)
-    if (Nodule.getGradientFill()) {
+    if (Nodule.globalFillStyle === FillStyle.ShadeFill) {
       if (this._frontFillInUse) {
         returnSVGObject.frontGradientDictionary =
           Nodule.createSVGGradientDictionary(
@@ -1289,11 +1295,12 @@ export default class Circle extends Nodule {
 
         //FRONT
         if (
-          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.front)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.front) ||
+          Nodule.globalFillStyle == FillStyle.NoFill
         ) {
           this._frontFill.noFill();
         } else {
-          if (Nodule.globalGradientFill) {
+          if (Nodule.globalFillStyle == FillStyle.ShadeFill) {
             this.frontGradientColor.color =
               SETTINGS.circle.temp.fillColor.front;
             this._frontFill.fill = this.frontGradient;
@@ -1324,11 +1331,12 @@ export default class Circle extends Nodule {
         }
         //BACK
         if (
-          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.back)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.circle.temp.fillColor.back) ||
+          Nodule.globalFillStyle == FillStyle.NoFill
         ) {
           this._backFill.noFill();
         } else {
-          if (Nodule.globalGradientFill) {
+          if (Nodule.globalFillStyle==FillStyle.ShadeFill) {
             this.backGradientColor.color = SETTINGS.circle.temp.fillColor.back;
             this._backFill.fill = this.backGradient;
           } else {
@@ -1367,10 +1375,13 @@ export default class Circle extends Nodule {
 
         // FRONT
         const frontStyle = this.styleOptions.get(StyleCategory.Front);
-        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
+        if (
+          Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.fillColor) ||
+          Nodule.globalFillStyle == FillStyle.NoFill
+        ) {
           this._frontFill.noFill();
         } else {
-          if (Nodule.globalGradientFill) {
+          if (Nodule.globalFillStyle == FillStyle.ShadeFill) {
             this.frontGradientColor.color =
               frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.front;
             this._frontFill.fill = this.frontGradient;
@@ -1409,11 +1420,12 @@ export default class Circle extends Nodule {
           if (
             Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontStyle?.fillColor)
-            )
+            ) ||
+            Nodule.globalFillStyle == FillStyle.NoFill
           ) {
             this._backFill.noFill();
           } else {
-            if (Nodule.globalGradientFill) {
+            if (Nodule.globalFillStyle == FillStyle.ShadeFill) {
               this.backGradientColor.color = Nodule.contrastFillColor(
                 frontStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back
               );
@@ -1425,10 +1437,13 @@ export default class Circle extends Nodule {
             }
           }
         } else {
-          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.fillColor)) {
+          if (
+            Nodule.rgbaIsNoFillOrNoStroke(backStyle?.fillColor) ||
+            Nodule.globalFillStyle == FillStyle.NoFill
+          ) {
             this._backFill.noFill();
           } else {
-            if (Nodule.globalGradientFill) {
+            if (Nodule.globalFillStyle==FillStyle.ShadeFill) {
               this.backGradientColor.color =
                 backStyle?.fillColor ?? SETTINGS.circle.drawn.fillColor.back;
               this._backFill.fill = this.backGradient;

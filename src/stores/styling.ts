@@ -15,6 +15,7 @@ import { SENodule } from "@/models/SENodule";
 import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackstyleContrastCommand";
 import { SEText } from "@/models/SEText";
 import EventBus from "@/eventHandlers/EventBus";
+import { FillStyle } from "@/types";
 
 function isArrayEqual(a: Array<any>, b: Array<any>) {
   if (a.length !== b.length) return false;
@@ -91,7 +92,7 @@ export const useStylingStore = defineStore("style", () => {
   let preUpdateStyleOptionsArray: StyleOptions[] = [];
   let postUpdateStyleOptions: StyleOptions = {};
   let backStyleContrastCopy: number = NaN;
-  let fillStyleCopy: boolean = true;
+  let fillStyleCopy: FillStyle = FillStyle.NoFill;
 
   // This variable is used to direct a function to modify only those
   // style options are that are on the Label/Front/Back/Global panel
@@ -372,7 +373,7 @@ export const useStylingStore = defineStore("style", () => {
     // console.log("Default style map size = ", defaultStyleMap.size);
 
     backStyleContrastCopy = Nodule.getBackStyleContrast();
-    fillStyleCopy = Nodule.getGradientFill();
+    fillStyleCopy = Nodule.getFillStyle();
   }
 
   function recordGlobalContrast() {
@@ -380,7 +381,7 @@ export const useStylingStore = defineStore("style", () => {
   }
 
   function recordFillStyle() {
-    fillStyleCopy = Nodule.getGradientFill();
+    fillStyleCopy = Nodule.getFillStyle();
   }
 
   function recordCurrentStyleProperties(category: StyleCategory) {
@@ -517,18 +518,22 @@ export const useStylingStore = defineStore("style", () => {
     Nodule.setBackStyleContrast(newContrast);
     // update all objects display
     seNodules.value.forEach(n => {
-      console.debug("Calling stylize", n.ref?.name);
       n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
     });
   }
 
-  function changeFillStyle(useGradientFill: boolean): void {
-    Nodule.setGradientFill(useGradientFill);
+  function changeFillStyle(newFillStyle: FillStyle): void {
+    Nodule.setFillStyle(newFillStyle);
     // update all objects display
     seNodules.value.forEach(n => {
-      // console.debug("Calling stylize", n.ref?.name);
+      // The fillable types must be recomputed in order to display the change
+      if (n.isFillable()) {
+        n.ref?.updateDisplay();
+      }
       n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
     });
+    // // to apply fill style we have to update the two instance
+    // updateTwoJS()
   }
 
   function setUpdateTargetsAndPreUpdateStyleOptionsArrays(
@@ -623,9 +628,9 @@ export const useStylingStore = defineStore("style", () => {
     }
 
     // Check if the fill style was modified
-    if (fillStyleCopy !== Nodule.getGradientFill()) {
+    if (fillStyleCopy !== Nodule.getFillStyle()) {
       const fillCommand = new ChangeFillStyleCommand(
-        Nodule.getGradientFill(),
+        Nodule.getFillStyle(),
         fillStyleCopy
       );
       cmdGroup.addCommand(fillCommand);
@@ -696,17 +701,17 @@ export const useStylingStore = defineStore("style", () => {
       // );
       const supVal = (superSetStyles as any)[propName];
       const subVal = (subSetStyles as any)[propName];
-   
+
       if (!isPropEqual(supVal, subVal)) {
         differenceDetected = true;
-           // console.log(
-      //   "style difference: Prop ",
-      //   propName,
-      //   "sub ",
-      //   subVal,
-      //   "sup",
-      //   supVal
-      // );
+        // console.log(
+        //   "style difference: Prop ",
+        //   propName,
+        //   "sub ",
+        //   subVal,
+        //   "sup",
+        //   supVal
+        // );
       }
     });
     return differenceDetected;
@@ -789,12 +794,23 @@ export const useStylingStore = defineStore("style", () => {
     return arr.some(p => commonProperties.has(p));
   }
 
+  function showFillColorPicker() {
+    let containsFillableSENodule = false;
+    selectedSENodules.value.forEach(n => {
+      if (n.isFillable()) {
+        containsFillableSENodule = true;
+      }
+    });
+    return Nodule.getFillStyle() == FillStyle.NoFill && containsFillableSENodule;
+  }
+
   return {
     selectedLabels,
     selectedPlottables,
     styleOptions,
     conflictingProperties,
     forceAgreement,
+    showFillColorPicker,
     hasDisagreement,
     hasLabelObject,
     hasTextObject,
