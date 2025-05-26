@@ -59,6 +59,7 @@ CameraControls.install({ THREE });
 const xyGrid = new GridHelper();
 xyGrid.rotateX(Math.PI / 2);
 scene.add(xyGrid);
+
 // Insert the grid BEFORE the arrow helper
 const arrowX = new ArrowHelper(new Vector3(1, 0, 0));
 arrowX.setColor(0xff0000);
@@ -93,8 +94,15 @@ const rayIntersectionPoint = new Mesh(
   new SphereGeometry(0.05),
   new MeshStandardMaterial({ color: "white" })
 );
-// const auxLinePath = new LineCurve3(new Vector3(0, 0, 0), new Vector3(3, 3, 3));
-// const auxLineTube = new TubeGeometry(auxLinePath, 20, .03, 16, true)
+const mouseNormalArrow = new ArrowHelper() // ArrowHelper to show the normal vector of mouse intersection point
+mouseNormalArrow.setColor(0xFFFFFF)
+mouseNormalArrow.setLength(1, 0.2, 0.2)
+// Attach the arrowhelper of the mouse normal to the
+// intersectionpoint itself 
+rayIntersectionPoint.add(mouseNormalArrow)
+
+const auxLinePath = new LineCurve3(new Vector3(0, 0, 0), new Vector3(3, 3, 3));
+const auxLineTube = new TubeGeometry(auxLinePath, 20, .03, 16, true)
 const auxLine = new Mesh(
   new CylinderGeometry(0.02, 0.02, 100),
   // auxLineTube,
@@ -189,10 +197,20 @@ function mouseTracker(ev: MouseEvent) {
       // console.debug(`First intersection ${namedIntersections[0].object.name}`)
       rayIntersectionPoint.position.copy(namedIntersections[0].point);
       scene.add(rayIntersectionPoint);
-      if (ev.shiftKey) {
+      // mouseNormalArrow.position.copy(rayIntersectionPoint.position)
+      mouseNormalArrow.setDirection(namedIntersections[0].normal!)
+      // Show auxiliary line with shift-key
+      if (ev.shiftKey) { 
         // auxLinePath.v1.set(0, 0, 0)
         // auxLinePath.v2.copy(rayIntersectionPoint.position)
         // auxLinePath.updateArcLengths()
+        // const pts = auxLinePath.getPoints();
+        // console.debug("First point", pts[0], "Last point ", pts[pts.length - 1])
+        // auxLineTube.attributes.position.needsUpdate = true
+        // auxLineTube.scale(1, 1, 1)
+        // auxLineTube.refresh()
+        // const b = auxLineTube.boundingBox
+        // console.debug("Bounding box", b?.min, b?.max)
         // auxLine.updateMatrix()
         auxLine.rotation.set(0, 0, 0)
         const hypotenuse = Math.sqrt(Math.pow(rayIntersectionPoint.position.x, 2) + Math.pow(rayIntersectionPoint.position.y, 2))
