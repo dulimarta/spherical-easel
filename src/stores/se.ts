@@ -25,7 +25,6 @@ import {
   SEOneDimensional
 } from "@/types";
 import {
-  intersectCircleWithCircle,
   intersectCircles,
   intersectCircleWithEllipse,
   intersectCircleWithParametric,
@@ -1398,36 +1397,47 @@ export const useSEStore = defineStore("se", () => {
     existingSEPoints: SEPoint[],
     firstParent: SEOneDimensional,
     secondParent: SEOneDimensional
-  ): { updatedSEPoints: SEPoint[]; intersections: SEIntersectionReturnType[] } {
+  ): {
+    intersections: SEIntersectionReturnType[];
+  } {
     const returnArray: SEIntersectionReturnType[] = [];
-    const createAntipodal =
+    const createAntipodal = !(
       (firstParent instanceof SELine || firstParent instanceof SESegment) &&
-      (secondParent instanceof SELine || secondParent instanceof SESegment); // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
+      (secondParent instanceof SELine || secondParent instanceof SESegment)
+    ); // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
+    
 
     let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
     intersectionInfo.forEach((info, index) => {
       // Options
       //  0) The intersection point is on the list of sePoints, but the sePoint is not an seIntersection point (so do nothing with this intersection)
       //  1) The intersection point is new so create a new intersection point
-      //  2) The intersection point is old so the intersection information can be added to the otherSEParents array of the intersection point
+      //  2) The intersection point is old so the intersection information might be added to the otherSEParents array of the intersection point
 
-      if (
-        !existingSEPoints.some(pt => {
-          if (
-            tmpVector.subVectors(info.vector, pt.locationVector).isZero() &&
-            !pt.locationVector.isZero() //Never happens if a line and line don't initially intersect the intersection is the zero vector,
-            //but if some other intersection like line circle doesn't initially intersection, this still needs to be avoided
-            //The default is that when two objects don't intersect the vector is zero
-          ) {
-            if (pt instanceof SEIntersectionPoint) {
-              existingSEIntersectionPoint = pt;
-            }
-            return true;
-          } else {
-            return false;
+      //clear the existingSEIntersectionPoint
+      existingSEIntersectionPoint = null;
+      let isOnExistingPointList = false;
+      // Search the existing (and newly created points and newly created --i.e. earlier in this command group) intersection points for these intersections
+      existingSEPoints.forEach(pt => {
+        if (pt.locationVector.isZero()) {
+          console.warn(
+            `Intersection point with zero vector encountered ${pt.name}/${pt.label?.ref.shortUserName}/${pt.noduleDescription}`
+          );
+        }
+        if (
+          tmpVector.subVectors(info.vector, pt.locationVector).isZero() &&
+          !pt.locationVector.isZero() //Never happens for a line and line as they always *initially* intersect.  However for a line and circle, if they
+          // don't initially intersect then the intersection vectors are zero.
+          //The default is that when two objects don't intersect initially the vector is zero
+        ) {
+          if (pt instanceof SEIntersectionPoint) {
+            existingSEIntersectionPoint = pt;
           }
-        })
-      ) {
+          isOnExistingPointList = true;
+        }
+      });
+
+      if (!isOnExistingPointList) {
         // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
         const newSEIntersectionPt = new SEIntersectionPoint(
           firstParent,
@@ -1437,6 +1447,7 @@ export const useSEStore = defineStore("se", () => {
         );
         //put the new intersection point on the existing list
         existingSEPoints.push(newSEIntersectionPt);
+  
         //copy the location and existence information into the new intersection point and put it on the list to be returned
         newSEIntersectionPt.locationVector = info.vector;
         newSEIntersectionPt.exists = info.exists;
@@ -1450,9 +1461,9 @@ export const useSEStore = defineStore("se", () => {
         });
       } else {
         // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an seIntersection point) so do nothing with these intersection points
-        if (existingSEIntersectionPoint) {
+        if (existingSEIntersectionPoint != null) {
           // the intersection vector (info.vector) is at an existing SEIntersection point (Option #2 above)
-          // this means that one of the parents might be a parent of this intersection point check later
+          // this means that the parents might new parents of this intersection point check later
           returnArray.push({
             SEIntersectionPoint: existingSEIntersectionPoint,
             parent1: firstParent,
@@ -1463,10 +1474,10 @@ export const useSEStore = defineStore("se", () => {
           });
         }
       }
-      //clear the existingSEIntersectionPoint
-      existingSEIntersectionPoint = null;
     });
-    return { updatedSEPoints: existingSEPoints, intersections: returnArray };
+    return {
+      intersections: returnArray
+    };
   }
 
   /**
@@ -1497,11 +1508,24 @@ export const useSEStore = defineStore("se", () => {
         existingSEPoints.push(pt);
       }
     }
+    // console.log(
+    //   `Number of points before intersection ${existingSEPoints.length}`
+    // );
     // The intersectionPointList to return
     const intersectionPointReturnArray: SEIntersectionReturnType[] = [];
 
-    const dummy = new SECircle(new SEPoint(), new SEPoint(), false);
     // type the newNodule
+    if (newSENodule instanceof SELine) {
+      newSENodule = newSENodule as SELine;
+    } else if (newSENodule instanceof SESegment) {
+      newSENodule = newSENodule as SESegment;
+    } else if (newSENodule instanceof SECircle) {
+      newSENodule = newSENodule as SECircle;
+    } else if (newSENodule instanceof SEEllipse) {
+      newSENodule = newSENodule as SEEllipse;
+    } else if (newSENodule instanceof SEParametric) {
+      newSENodule = newSENodule as SEParametric;
+    }
     if (newSENodule instanceof SELine) {
       newSENodule = newSENodule as SELine;
     } else if (newSENodule instanceof SESegment) {
@@ -1551,117 +1575,129 @@ export const useSEStore = defineStore("se", () => {
           object2 = newSENodule;
           object1 = oldSENodule;
         }
-      if (object1 instanceof SELine && object2 instanceof SELine) {
-        if (object1.name != object2.name) {
-          intersectionInfo = intersectLineWithLine(
+        if (object1 instanceof SELine && object2 instanceof SELine) {
+          if (object1.name != object2.name) {
+            intersectionInfo = intersectLineWithLine(
+              object1,
+              object2,
+              true // this is the first time these two objects have been intersected
+            );
+          }
+        } else if (object1 instanceof SELine && object2 instanceof SESegment) {
+          intersectionInfo = intersectLineWithSegment(
             object1,
             object2,
             true // this is the first time these two objects have been intersected
           );
-        }
-      } else if (object1 instanceof SELine && object2 instanceof SESegment) {
-        intersectionInfo = intersectLineWithSegment(
-          object1,
-          object2,
-          true // this is the first time these two objects have been intersected
-        );
-      } else if (object1 instanceof SELine && object2 instanceof SECircle) {
-        intersectionInfo = intersectLineWithCircle(object1, object2);
-      } else if (object1 instanceof SELine && object2 instanceof SEEllipse) {
-        intersectionInfo = intersectLineWithEllipse(object1, object2);
-      } else if (
-        object1 instanceof SELine &&
-        object2 instanceof SEParametric
-      ) {
-        intersectionInfo = intersectLineWithParametric(
-          object1,
-          object2,
-          inverseTotalRotationMatrix.value
-        );
-      } else if (
-        object1 instanceof SESegment &&
-        object2 instanceof SESegment
-      ) {
-        if (object1.name != object2.name) {
-          intersectionInfo = intersectSegmentWithSegment(
+        } else if (object1 instanceof SELine && object2 instanceof SECircle) {
+          intersectionInfo = intersectLineWithCircle(object1, object2);
+        } else if (object1 instanceof SELine && object2 instanceof SEEllipse) {
+          intersectionInfo = intersectLineWithEllipse(object1, object2);
+        } else if (
+          object1 instanceof SELine &&
+          object2 instanceof SEParametric
+        ) {
+          intersectionInfo = intersectLineWithParametric(
             object1,
             object2,
-            true // this is the first time these two objects have been intersected
+            inverseTotalRotationMatrix.value
+          );
+        } else if (
+          object1 instanceof SESegment &&
+          object2 instanceof SESegment
+        ) {
+          if (object1.name != object2.name) {
+            intersectionInfo = intersectSegmentWithSegment(
+              object1,
+              object2,
+              true // this is the first time these two objects have been intersected
+            );
+          }
+        } else if (
+          object1 instanceof SESegment &&
+          object2 instanceof SECircle
+        ) {
+          intersectionInfo = intersectSegmentWithCircle(object1, object2);
+        } else if (
+          object1 instanceof SESegment &&
+          object2 instanceof SEEllipse
+        ) {
+          intersectionInfo = intersectSegmentWithEllipse(object1, object2);
+        } else if (
+          object1 instanceof SESegment &&
+          object2 instanceof SEParametric
+        ) {
+          intersectionInfo = intersectSegmentWithParametric(
+            object1,
+            object2,
+            inverseTotalRotationMatrix.value
+          );
+        } else if (object1 instanceof SECircle && object2 instanceof SECircle) {
+          if (object1.name != object2.name) {
+            intersectionInfo = intersectCircles(
+              object1.centerSEPoint.locationVector,
+              object1.circleRadius,
+              object2.centerSEPoint.locationVector,
+              object2.circleRadius
+            );
+          }
+        } else if (
+          object1 instanceof SECircle &&
+          object2 instanceof SEEllipse
+        ) {
+          intersectionInfo = intersectCircleWithEllipse(object1, object2);
+        } else if (
+          object1 instanceof SECircle &&
+          object2 instanceof SEParametric
+        ) {
+          intersectionInfo = intersectCircleWithParametric(
+            object1,
+            object2,
+            inverseTotalRotationMatrix.value
+          );
+        } else if (
+          object1 instanceof SEEllipse &&
+          object2 instanceof SEEllipse
+        ) {
+          if (object1.name != object2.name) {
+            intersectionInfo = intersectEllipseWithEllipse(object1, object2);
+          }
+        } else if (
+          object1 instanceof SEEllipse &&
+          object2 instanceof SEParametric
+        ) {
+          intersectionInfo = intersectEllipseWithParametric(
+            object1,
+            object2,
+            inverseTotalRotationMatrix.value
+          );
+        } else if (
+          object1 instanceof SEParametric &&
+          object2 instanceof SEParametric
+        ) {
+          intersectionInfo = intersectParametricWithParametric(
+            object1,
+            object2
           );
         }
-      } else if (
-        object1 instanceof SESegment &&
-        object2 instanceof SECircle
-      ) {
-        intersectionInfo = intersectSegmentWithCircle(object1, object2);
-      } else if (
-        object1 instanceof SESegment &&
-        object2 instanceof SEEllipse
-      ) {
-        intersectionInfo = intersectSegmentWithEllipse(object1, object2);
-      } else if (
-        object1 instanceof SESegment &&
-        object2 instanceof SEParametric
-      ) {
-        intersectionInfo = intersectSegmentWithParametric(
-          object1,
-          object2,
-          inverseTotalRotationMatrix.value
-        );
-      } else if (object1 instanceof SECircle && object2 instanceof SECircle) {
-        if (object1.name != object2.name) {
-          intersectionInfo = intersectCircleWithCircle(object1, object2);
-        }
-      } else if (
-        object1 instanceof SECircle &&
-        object2 instanceof SEEllipse
-      ) {
-        intersectionInfo = intersectCircleWithEllipse(object1, object2);
-      } else if (
-        object1 instanceof SECircle &&
-        object2 instanceof SEParametric
-      ) {
-        intersectionInfo = intersectCircleWithParametric(
-          object1,
-          object2,
-          inverseTotalRotationMatrix.value
-        );
-      } else if (
-        object1 instanceof SEEllipse &&
-        object2 instanceof SEEllipse
-      ) {
-        if (object1.name != object2.name) {
-          intersectionInfo = intersectEllipseWithEllipse(object1, object2);
-        }
-      } else if (
-        object1 instanceof SEEllipse &&
-        object2 instanceof SEParametric
-      ) {
-        intersectionInfo = intersectEllipseWithParametric(
-          object1,
-          object2,
-          inverseTotalRotationMatrix.value
-        );
-      } else if (
-        object1 instanceof SEParametric &&
-        object2 instanceof SEParametric
-      ) {
-        intersectionInfo = intersectParametricWithParametric(
+        const info = classifyIntersections(
+          intersectionInfo,
+          existingSEPoints,
           object1,
           object2
         );
-      }
-      const info = classifyIntersections(
-        intersectionInfo,
-        existingSEPoints,
-        object1,
-        object2
-      );
-      existingSEPoints.push(...info.updatedSEPoints);
-      intersectionPointReturnArray.push(...info.intersections);
+        intersectionPointReturnArray.push(...info.intersections);
       });
     });
 
+    // console.log(
+    //   `Number of points after intersection ${existingSEPoints.length}`
+    // );
+    // existingSEPoints.forEach((pt,index) => {
+    //   console.log( index, 
+    //     `${pt.name}/${pt.label?.ref.shortUserName}/${pt.noduleDescription}`
+    //   );
+    // });
     return intersectionPointReturnArray;
   }
 

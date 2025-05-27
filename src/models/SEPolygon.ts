@@ -610,6 +610,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   accept(v: Visitor): boolean {
     return v.actionOnPolygon(this);
   }
+
   public getLabel(): SELabel | null {
     return (this as Labelable).label!
   }

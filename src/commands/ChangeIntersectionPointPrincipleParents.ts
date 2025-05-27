@@ -23,11 +23,12 @@ export class ChangeIntersectionPointPrincipleParents extends Command {
       parent1: newInfo.SEIntersectionPoint.principleParent1,
       parent2: newInfo.SEIntersectionPoint.principleParent2,
       existingIntersectionPoint: true,
-      createAntipodalPoint:
+      createAntipodalPoint: !(
         (newInfo.SEIntersectionPoint.principleParent1 instanceof SELine ||
           newInfo.SEIntersectionPoint.principleParent1 instanceof SESegment) &&
         (newInfo.SEIntersectionPoint.principleParent2 instanceof SELine ||
-          newInfo.SEIntersectionPoint.principleParent2 instanceof SESegment),
+          newInfo.SEIntersectionPoint.principleParent2 instanceof SESegment)
+      ),
       order: newInfo.SEIntersectionPoint.intersectionOrder
     };
     this.newParentInfo = newInfo;
@@ -107,11 +108,12 @@ export class ChangeIntersectionPointPrincipleParents extends Command {
         parent1: newPrincipleParent1,
         parent2: newPrincipleParent2,
         existingIntersectionPoint: true,
-        createAntipodalPoint:
+        createAntipodalPoint: !(
           (newPrincipleParent1 instanceof SELine ||
             newPrincipleParent1 instanceof SESegment) &&
           (newPrincipleParent2 instanceof SELine ||
-            newPrincipleParent2 instanceof SESegment),
+            newPrincipleParent2 instanceof SESegment)
+        ),
         order: newOrder
       });
     }
