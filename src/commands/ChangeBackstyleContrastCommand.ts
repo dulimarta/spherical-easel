@@ -1,7 +1,7 @@
 import Nodule from "@/plottables/Nodule";
 import { Command } from "./Command";
 import { SavedNames, toSVGType } from "@/types";
-import { SENodule } from "@/models/internal";
+import { SENodule } from "@/models/SENodule";
 
 export class ChangeBackStyleContrastCommand extends Command {
   private currentBackStyleContrast: number;

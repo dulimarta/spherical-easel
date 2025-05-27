@@ -9,9 +9,12 @@ import {
 } from "@/types/Styles";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import { Labelable } from "@/types";
-import { SELabel, SESegment, SEExpression, SEAngleMarker } from "./internal";
 import i18n from "@/i18n";
 import Polygon from "@/plottables/Polygon";
+import { SEExpression } from "./SEExpression";
+import { SESegment } from "./SESegment";
+import { SEAngleMarker } from "./SEAngleMarker";
+import { SELabel } from "./SELabel";
 const { t } = i18n.global;
 
 const styleSet = new Set([
@@ -180,7 +183,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     // the user can put a point a polygon, and then move it *just* outside of the polygon (the 1000 prevents this)
     if (
       this._seEdgeSegments.some(seg =>
-        seg.isHitAt(unitIdealVector, currentMagnificationFactor, 1000)
+        seg.isHitAt(unitIdealVector, currentMagnificationFactor)
       )
     ) {
       // console.log("Here inside hit a segment");

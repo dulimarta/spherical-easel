@@ -1,9 +1,9 @@
-import { SEExpression } from "./internal";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import { SENodule } from "./SENodule";
 import i18n from "@/i18n";
 import EventBus from "@/eventHandlers/EventBus";
+import { SEExpression } from "./SEExpression";
 const { t } = i18n.global;
 
 const emptySet = new Set<string>();

@@ -1,21 +1,13 @@
 import { Vector3 } from "three";
-import {
-  SEPoint,
-  SETransformation,
-  SETranslation,
-  SERotation,
-  SEReflection,
-  SEPointReflection
-} from "./internal";
 import { SESegment } from "./SESegment";
 import { ObjectState, SEIsometry } from "@/types";
 import i18n from "@/i18n";
-// import { SESegment } from "./SESegment";
-// import { SETransformation } from "./SETransformation";
-// import { SETranslation } from "./SETranslation";
-// import { SERotation } from "./SERotation";
-// import { SEReflection } from "./SEReflection";
-// import { SEPointReflection } from "./SEPointReflection";
+import { SETransformation } from "./SETransformation";
+import { SETranslation } from "./SETranslation";
+import { SERotation } from "./SERotation";
+import { SEReflection } from "./SEReflection";
+import { SEPointReflection } from "./SEPointReflection";
+import { SEPoint } from "./SEPoint";
 const { t } = i18n.global;
 
 export class SEIsometrySegment extends SESegment {

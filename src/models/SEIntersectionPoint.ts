@@ -1,4 +1,3 @@
-import { SESegment, SELine, SECircle, SEEllipse, SENodule } from "./internal";
 import { SEPoint } from "./SEPoint";
 import {
   IntersectionReturnType,
@@ -17,6 +16,11 @@ import {
 import SETTINGS from "@/global-settings";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { ChangeIntersectionPointPrincipleParents } from "@/commands/ChangeIntersectionPointPrincipleParents";
+import { SENodule } from "@/models/SENodule";
+import { SESegment } from "./SESegment";
+import { SELine } from "./SELine";
+import { SECircle } from "./SECircle";
+import { SEEllipse } from "./SEEllipse";
 const { t } = i18n.global;
 export class SEIntersectionPoint extends SEPoint {
   /**

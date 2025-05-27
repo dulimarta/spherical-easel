@@ -1,10 +1,10 @@
 import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
-import { SETransformation, SESegment, SELine } from "./internal";
-// import { SESegment } from "./SESegment";
+import { SESegment } from "./SESegment";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-// import { SELine } from "./SELine";
+import { SELine } from "./SELine";
+import { SETransformation } from "./SETransformation";
 const { t } = i18n.global;
 
 export class SEReflection extends SETransformation {

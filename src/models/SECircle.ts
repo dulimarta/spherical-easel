@@ -1,11 +1,4 @@
 import { SENodule } from "./SENodule";
-import {
-  SEPoint,
-  SELabel,
-  SELine,
-  SEThreePointCircleCenter,
-  SEInversionCircleCenter
-} from "./internal";
 import Circle from "@/plottables/Circle";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
@@ -26,6 +19,11 @@ import { intersectCircles } from "@/utils/intersections";
 import i18n from "@/i18n";
 import NonFreeCircle from "@/plottables/NonFreeCircle";
 import { DisplayStyle } from "@/plottables/Nodule";
+import { SELabel } from "./SELabel";
+import { SEPoint } from "./SEPoint";
+import { SEThreePointCircleCenter } from "./SEThreePointCircleCenter";
+import { SEInversionCircleCenter } from "./SEInversionCircleCenter";
+import { SELine } from "./SELine";
 // import { SEThreePointCircleCenter } from "./SEThreePointCircleCenter";
 // import { SEInversionCircleCenter } from "./SEInversionCircleCenter";
 // import { SELine } from "./SELine";

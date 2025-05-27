@@ -1,8 +1,10 @@
-import { SEExpression, SENodule, SEPoint } from "./internal";
 import { Matrix4, Vector3 } from "three";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import i18n from "@/i18n";
 import EventBus from "@/eventHandlers/EventBus";
+import { SEExpression } from "./SEExpression";
+import { SEPoint } from "./SEPoint";
+import { SENodule } from "@/models/SENodule";
 const emptySet = new Set<string>();
 const { t } = i18n.global;
 

@@ -13,13 +13,13 @@ import { SEPolygon } from "@/models/SEPolygon";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import SETTINGS, { LAYER } from "@/global-settings";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { SELabel } from "@/models/internal";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { Vector } from "two.js/src/vector";
 import { Circle } from "two.js/src/shapes/circle";
 import { Rectangle } from "two.js/src/shapes/rectangle";
 import { SEText } from "@/models/SEText";
+import { SELabel } from "@/models/SELabel";
 
 const MESHSIZE = 10;
 const sphereVector = new Vector3();

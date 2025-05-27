@@ -15,7 +15,7 @@ import { StyleCategory, StyleOptions } from "@/types/Styles";
 import { SEStoreType } from "@/stores/se";
 import { SEEarthPoint } from "./SEEarthPoint";
 import { SEPoint } from "./SEPoint";
-import { SELabel } from "./internal";
+import { SELabel } from "./SELabel";
 
 let NODE_COUNT = 0;
 

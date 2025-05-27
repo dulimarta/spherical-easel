@@ -16,12 +16,6 @@ import {
 } from "@/types";
 import SETTINGS from "@/global-settings";
 import { Labelable } from "@/types";
-import {
-  SELabel,
-  SEParametricEndPoint,
-  SEParametricTracePoint,
-  SEExpression
-} from "./internal";
 import i18n from "@/i18n";
 import Parametric from "@/plottables/Parametric";
 // import { SEParametricEndPoint } from "./SEParametricEndPoint";
@@ -38,6 +32,10 @@ const styleSet = new Set([
 ]);
 
 import { Heap } from "@datastructures-js/heap";
+import { SEParametricEndPoint } from "./SEParametricEndPoint";
+import { SEParametricTracePoint } from "./SEParametricTracePoint";
+import { SEExpression } from "./SEExpression";
+import { SELabel } from "./SELabel";
 
 // To keep the sample points in t-value order when new sample points
 // are appended to the array, keep track of its left and right neighbors

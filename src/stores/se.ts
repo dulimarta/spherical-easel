@@ -1502,17 +1502,17 @@ export const useSEStore = defineStore("se", () => {
 
     const dummy = new SECircle(new SEPoint(), new SEPoint(), false);
     // type the newNodule
-    // if (newSENodule instanceof SELine) {
-    //   newSENodule = newSENodule as SELine;
-    // } else if (newSENodule instanceof SESegment) {
-    //   newSENodule = newSENodule as SESegment;
-    // } else if (newSENodule instanceof SECircle) {
-    //   newSENodule = newSENodule as SECircle;
-    // } else if (newSENodule instanceof SEEllipse) {
-    //   newSENodule = newSENodule as SEEllipse;
-    // } else if (newSENodule instanceof SEParametric) {
-    //   newSENodule = newSENodule as SEParametric;
-    // }
+    if (newSENodule instanceof SELine) {
+      newSENodule = newSENodule as SELine;
+    } else if (newSENodule instanceof SESegment) {
+      newSENodule = newSENodule as SESegment;
+    } else if (newSENodule instanceof SECircle) {
+      newSENodule = newSENodule as SECircle;
+    } else if (newSENodule instanceof SEEllipse) {
+      newSENodule = newSENodule as SEEllipse;
+    } else if (newSENodule instanceof SEParametric) {
+      newSENodule = newSENodule as SEParametric;
+    }
     const rank1 = rank_of_type(newSENodule);
 
     const computedRefArray = [
@@ -1523,143 +1523,143 @@ export const useSEStore = defineStore("se", () => {
       seParametrics
     ];
     computedRefArray.forEach(ref => {
-      // ref.value.forEach(oldSENodule => {
-      //   let intersectionInfo: IntersectionReturnType[] = [];
-      //   // type the oldNodule
-      //   if (oldSENodule instanceof SELine) {
-      //     oldSENodule = oldSENodule as SELine;
-      //   } else if (oldSENodule instanceof SESegment) {
-      //     oldSENodule = oldSENodule as SESegment;
-      //   } else if (oldSENodule instanceof SECircle) {
-      //     oldSENodule = oldSENodule as SECircle;
-      //   } else if (oldSENodule instanceof SEEllipse) {
-      //     oldSENodule = oldSENodule as SEEllipse;
-      //   } else if (oldSENodule instanceof SEParametric) {
-      //     oldSENodule = oldSENodule as SEParametric;
-      //   }
-      //   // Order the objects properly
-      //   let object1: SEOneDimensional;
-      //   let object2: SEOneDimensional;
-      //   const rank2 = rank_of_type(oldSENodule);
-      //   if (
-      //     rank1 < rank2 ||
-      //     (rank1 == rank2 && newSENodule.name < oldSENodule.name)
-      //   ) {
-      //     object1 = newSENodule;
-      //     object2 = oldSENodule;
-      //   } else {
-      //     object2 = newSENodule;
-      //     object1 = oldSENodule;
-      //   }
-      // if (object1 instanceof SELine && object2 instanceof SELine) {
-      //   if (object1.name != object2.name) {
-      //     intersectionInfo = intersectLineWithLine(
-      //       object1,
-      //       object2,
-      //       true // this is the first time these two objects have been intersected
-      //     );
-      //   }
-      // } else if (object1 instanceof SELine && object2 instanceof SESegment) {
-      //   intersectionInfo = intersectLineWithSegment(
-      //     object1,
-      //     object2,
-      //     true // this is the first time these two objects have been intersected
-      //   );
-      // } else if (object1 instanceof SELine && object2 instanceof SECircle) {
-      //   intersectionInfo = intersectLineWithCircle(object1, object2);
-      // } else if (object1 instanceof SELine && object2 instanceof SEEllipse) {
-      //   intersectionInfo = intersectLineWithEllipse(object1, object2);
-      // } else if (
-      //   object1 instanceof SELine &&
-      //   object2 instanceof SEParametric
-      // ) {
-      //   intersectionInfo = intersectLineWithParametric(
-      //     object1,
-      //     object2,
-      //     inverseTotalRotationMatrix.value
-      //   );
-      // } else if (
-      //   object1 instanceof SESegment &&
-      //   object2 instanceof SESegment
-      // ) {
-      //   if (object1.name != object2.name) {
-      //     intersectionInfo = intersectSegmentWithSegment(
-      //       object1,
-      //       object2,
-      //       true // this is the first time these two objects have been intersected
-      //     );
-      //   }
-      // } else if (
-      //   object1 instanceof SESegment &&
-      //   object2 instanceof SECircle
-      // ) {
-      //   intersectionInfo = intersectSegmentWithCircle(object1, object2);
-      // } else if (
-      //   object1 instanceof SESegment &&
-      //   object2 instanceof SEEllipse
-      // ) {
-      //   intersectionInfo = intersectSegmentWithEllipse(object1, object2);
-      // } else if (
-      //   object1 instanceof SESegment &&
-      //   object2 instanceof SEParametric
-      // ) {
-      //   intersectionInfo = intersectSegmentWithParametric(
-      //     object1,
-      //     object2,
-      //     inverseTotalRotationMatrix.value
-      //   );
-      // } else if (object1 instanceof SECircle && object2 instanceof SECircle) {
-      //   if (object1.name != object2.name) {
-      //     intersectionInfo = intersectCircleWithCircle(object1, object2);
-      //   }
-      // } else if (
-      //   object1 instanceof SECircle &&
-      //   object2 instanceof SEEllipse
-      // ) {
-      //   intersectionInfo = intersectCircleWithEllipse(object1, object2);
-      // } else if (
-      //   object1 instanceof SECircle &&
-      //   object2 instanceof SEParametric
-      // ) {
-      //   intersectionInfo = intersectCircleWithParametric(
-      //     object1,
-      //     object2,
-      //     inverseTotalRotationMatrix.value
-      //   );
-      // } else if (
-      //   object1 instanceof SEEllipse &&
-      //   object2 instanceof SEEllipse
-      // ) {
-      //   if (object1.name != object2.name) {
-      //     intersectionInfo = intersectEllipseWithEllipse(object1, object2);
-      //   }
-      // } else if (
-      //   object1 instanceof SEEllipse &&
-      //   object2 instanceof SEParametric
-      // ) {
-      //   intersectionInfo = intersectEllipseWithParametric(
-      //     object1,
-      //     object2,
-      //     inverseTotalRotationMatrix.value
-      //   );
-      // } else if (
-      //   object1 instanceof SEParametric &&
-      //   object2 instanceof SEParametric
-      // ) {
-      //   intersectionInfo = intersectParametricWithParametric(
-      //     object1,
-      //     object2
-      //   );
-      // }
-      // const info = classifyIntersections(
-      //   intersectionInfo,
-      //   existingSEPoints,
-      //   object1,
-      //   object2
-      // );
-      // existingSEPoints.push(...info.updatedSEPoints);
-      // intersectionPointReturnArray.push(...info.intersections);
-      // });
+      ref.value.forEach(oldSENodule => {
+        let intersectionInfo: IntersectionReturnType[] = [];
+        // type the oldNodule
+        if (oldSENodule instanceof SELine) {
+          oldSENodule = oldSENodule as SELine;
+        } else if (oldSENodule instanceof SESegment) {
+          oldSENodule = oldSENodule as SESegment;
+        } else if (oldSENodule instanceof SECircle) {
+          oldSENodule = oldSENodule as SECircle;
+        } else if (oldSENodule instanceof SEEllipse) {
+          oldSENodule = oldSENodule as SEEllipse;
+        } else if (oldSENodule instanceof SEParametric) {
+          oldSENodule = oldSENodule as SEParametric;
+        }
+        // Order the objects properly
+        let object1: SEOneDimensional;
+        let object2: SEOneDimensional;
+        const rank2 = rank_of_type(oldSENodule);
+        if (
+          rank1 < rank2 ||
+          (rank1 == rank2 && newSENodule.name < oldSENodule.name)
+        ) {
+          object1 = newSENodule;
+          object2 = oldSENodule;
+        } else {
+          object2 = newSENodule;
+          object1 = oldSENodule;
+        }
+      if (object1 instanceof SELine && object2 instanceof SELine) {
+        if (object1.name != object2.name) {
+          intersectionInfo = intersectLineWithLine(
+            object1,
+            object2,
+            true // this is the first time these two objects have been intersected
+          );
+        }
+      } else if (object1 instanceof SELine && object2 instanceof SESegment) {
+        intersectionInfo = intersectLineWithSegment(
+          object1,
+          object2,
+          true // this is the first time these two objects have been intersected
+        );
+      } else if (object1 instanceof SELine && object2 instanceof SECircle) {
+        intersectionInfo = intersectLineWithCircle(object1, object2);
+      } else if (object1 instanceof SELine && object2 instanceof SEEllipse) {
+        intersectionInfo = intersectLineWithEllipse(object1, object2);
+      } else if (
+        object1 instanceof SELine &&
+        object2 instanceof SEParametric
+      ) {
+        intersectionInfo = intersectLineWithParametric(
+          object1,
+          object2,
+          inverseTotalRotationMatrix.value
+        );
+      } else if (
+        object1 instanceof SESegment &&
+        object2 instanceof SESegment
+      ) {
+        if (object1.name != object2.name) {
+          intersectionInfo = intersectSegmentWithSegment(
+            object1,
+            object2,
+            true // this is the first time these two objects have been intersected
+          );
+        }
+      } else if (
+        object1 instanceof SESegment &&
+        object2 instanceof SECircle
+      ) {
+        intersectionInfo = intersectSegmentWithCircle(object1, object2);
+      } else if (
+        object1 instanceof SESegment &&
+        object2 instanceof SEEllipse
+      ) {
+        intersectionInfo = intersectSegmentWithEllipse(object1, object2);
+      } else if (
+        object1 instanceof SESegment &&
+        object2 instanceof SEParametric
+      ) {
+        intersectionInfo = intersectSegmentWithParametric(
+          object1,
+          object2,
+          inverseTotalRotationMatrix.value
+        );
+      } else if (object1 instanceof SECircle && object2 instanceof SECircle) {
+        if (object1.name != object2.name) {
+          intersectionInfo = intersectCircleWithCircle(object1, object2);
+        }
+      } else if (
+        object1 instanceof SECircle &&
+        object2 instanceof SEEllipse
+      ) {
+        intersectionInfo = intersectCircleWithEllipse(object1, object2);
+      } else if (
+        object1 instanceof SECircle &&
+        object2 instanceof SEParametric
+      ) {
+        intersectionInfo = intersectCircleWithParametric(
+          object1,
+          object2,
+          inverseTotalRotationMatrix.value
+        );
+      } else if (
+        object1 instanceof SEEllipse &&
+        object2 instanceof SEEllipse
+      ) {
+        if (object1.name != object2.name) {
+          intersectionInfo = intersectEllipseWithEllipse(object1, object2);
+        }
+      } else if (
+        object1 instanceof SEEllipse &&
+        object2 instanceof SEParametric
+      ) {
+        intersectionInfo = intersectEllipseWithParametric(
+          object1,
+          object2,
+          inverseTotalRotationMatrix.value
+        );
+      } else if (
+        object1 instanceof SEParametric &&
+        object2 instanceof SEParametric
+      ) {
+        intersectionInfo = intersectParametricWithParametric(
+          object1,
+          object2
+        );
+      }
+      const info = classifyIntersections(
+        intersectionInfo,
+        existingSEPoints,
+        object1,
+        object2
+      );
+      existingSEPoints.push(...info.updatedSEPoints);
+      intersectionPointReturnArray.push(...info.intersections);
+      });
     });
 
     return intersectionPointReturnArray;

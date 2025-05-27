@@ -1,7 +1,9 @@
-import { SEPoint, SELine, SEAngleMarker } from "./internal";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { Vector3 } from "three";
+import { SELine } from "./SELine";
+import { SEAngleMarker } from "./SEAngleMarker";
+import { SEPoint } from "./SEPoint";
 const { t } = i18n.global;
 export class SENSectLine extends SELine {
   /**

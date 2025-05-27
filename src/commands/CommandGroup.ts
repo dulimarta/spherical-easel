@@ -4,7 +4,8 @@
  */
 import { toSVGType } from "@/types";
 import { Command } from "./Command";
-import { SELabel, SENodule } from "@/models/internal";
+import { SENodule } from "@/models/SENodule";
+import { SELabel } from "@/models/SELabel";
 
 export class CommandGroup extends Command {
   public subCommands: Command[] = [];

@@ -1,12 +1,11 @@
 import { SEPoint } from "./SEPoint"
-import { SECircle, SELine, SEInversion } from "./internal";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { Vector3 } from "three";
 // import SETTINGS from "@/global-settings";
-// import { SEInversion } from "./SEInversion";
-// import { SECircle } from "./SECircle";
-// import { SELine } from "./SELine";
+import { SEInversion } from "./SEInversion";
+import { SECircle } from "./SECircle";
+import { SELine } from "./SELine";
 const { t } = i18n.global;
 export class SEInversionCircleCenter extends SEPoint {
   /**

@@ -1,7 +1,7 @@
 import Nodule from "@/plottables/Nodule";
 import { Command } from "./Command";
 import { FillStyle, SavedNames } from "@/types";
-import { SENodule } from "@/models/internal";
+import { SENodule } from "@/models/SENodule";
 
 
 export class ChangeFillStyleCommand extends Command {

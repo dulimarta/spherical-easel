@@ -1,9 +1,9 @@
-import { SEPoint, SECircle, SEExpression } from "./internal";
 import { Vector3 } from "three";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-// import { SECircle } from "./SECircle";
-// import { SEExpression } from "./SEExpression";
+import { SECircle } from "./SECircle";
+import { SEExpression } from "./SEExpression";
+import { SEPoint } from "./SEPoint";
 const { t } = i18n.global;
 
 export class SEMeasuredCircle extends SECircle {

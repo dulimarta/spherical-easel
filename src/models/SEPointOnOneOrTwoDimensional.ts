@@ -1,8 +1,11 @@
-import { SESegment, SELine, SECircle, SEEllipse } from "./internal";
 import { SEPoint } from "./SEPoint"
 import { Vector3 } from "three";
 import { ObjectState, SEOneOrTwoDimensional } from "@/types";
 import i18n from "@/i18n";
+import { SESegment } from "./SESegment";
+import { SELine } from "./SELine";
+import { SECircle } from "./SECircle";
+import { SEEllipse } from "./SEEllipse";
 
 export class SEPointOnOneOrTwoDimensional extends SEPoint {
   /**

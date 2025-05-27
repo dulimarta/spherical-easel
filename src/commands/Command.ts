@@ -19,12 +19,13 @@ import {
   toSVGType
 } from "@/types/index";
 import SETTINGS, { LAYER } from "@/global-settings";
-import { SELabel, SENodule} from "@/models/internal";
 //import { aN } from "vitest/dist/reporters-yx5ZTtEV";
 import { nextTick } from "vue";
 import { CommandGroup } from "./CommandGroup";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { StyleCategory } from "@/types/Styles";
+import { SENodule } from "@/models/SENodule";
+import { SELabel } from "@/models/SELabel";
 
 export abstract class Command {
   protected static store: SEStoreType;

@@ -59,7 +59,7 @@
           :key="visibilityUpdateKey"
           :style="{ color: node.showing ? 'gray' : 'black' }" />
       </template>
-      <span>{{ $t("toggleDisplay") }}</span>
+      <span>{{ t("toggleDisplay") }}</span>
     </v-tooltip>
     <v-tooltip location="end">
       <template v-slot:activator="{ props }">
@@ -75,7 +75,7 @@
           :style="{ color: isLabelHidden() ? 'inherit' : 'gray' }"
           :key="labelVisibilityUpdateKey"></v-icon>
       </template>
-      <span>{{ $t("toggleLabelDisplay") }}</span>
+      <span>{{ t("toggleLabelDisplay") }}</span>
     </v-tooltip>
     <v-tooltip location="end">
       <template v-slot:activator="{ props }">

@@ -9,7 +9,6 @@ import {
   DEFAULT_POINT_FRONT_STYLE
 } from "@/types/Styles";
 import { Labelable, ObjectState } from "@/types";
-import { SELabel } from "./internal";
 // The following import creates a circular dependencies when testing SENoduleItem
 // The dependency loop is:
 // SENoduleItem.vue => SEIntersectionPoint => SEPoint => store/index.ts => se-module.ts
@@ -18,6 +17,7 @@ import { SELabel } from "./internal";
 import i18n from "@/i18n";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { DisplayStyle } from "@/plottables/Nodule";
+import { SELabel } from "./SELabel";
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_POINT_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_POINT_BACK_STYLE)

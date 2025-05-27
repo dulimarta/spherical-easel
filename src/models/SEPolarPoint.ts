@@ -1,6 +1,8 @@
-import { SEPoint, SELine, SESegment } from "./internal";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
+import { SEPoint } from "./SEPoint";
+import { SELine } from "./SELine";
+import { SESegment } from "./SESegment";
 const { t } = i18n.global;
 
 export class SEPolarPoint extends SEPoint {

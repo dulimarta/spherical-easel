@@ -203,12 +203,12 @@ import { Ref, ref } from "vue";
 import { storeToRefs } from "pinia";
 import EventBus from "@/eventHandlers/EventBus";
 import { run } from "@/commands/CommandInterpreter";
-import { SENodule } from "@/models/internal";
 import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
 import { useConstructionStore } from "@/stores/construction";
 import { useClipboard } from "@vueuse/core";
 import { DisplayStyle } from "@/plottables/Nodule";
+import { SENodule } from "@/models/SENodule";
 
 const props = defineProps<{
   items: Array<SphericalConstruction>;

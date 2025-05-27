@@ -2,9 +2,10 @@
 import { SEText } from "@/models/SEText";
 import { Command } from "./Command";
 import { SavedNames } from "@/types";
-import { SELabel, SENodule } from "@/models/internal";
 import { Vector2, Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
+import { SENodule } from "@/models/SENodule";
+import { SELabel } from "@/models/SELabel";
 
 export class AddTextCommand extends Command {
   private seText: SEText;
