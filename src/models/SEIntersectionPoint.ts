@@ -306,6 +306,10 @@ export class SEIntersectionPoint extends SEPoint {
         for (const info of this._otherParentsInfoArray) {
           info.parent1.shallowUpdate();
           info.parent2.shallowUpdate();
+          if (info.parent1.canUpdateNow() && info.parent2.canUpdateNow()) {
+            info.parent1.shallowUpdate();
+            info.parent2.shallowUpdate();
+          }
           if (info.parent1.exists && info.parent1.exists) {
             const intersectionInfo = intersectTwoObjects(
               info.parent1,
@@ -327,6 +331,15 @@ export class SEIntersectionPoint extends SEPoint {
               this._exists = true;
               this.locationVector = intersectionInfo.vector;
               break; // exit the search after the first successful one
+            }
+          }
+        }
+      }
+      // Update visibility
+      if (this._exists && this._isUserCreated && this.showing) {
+        this.ref.setVisible(true);
+      } else {
+        this.ref.setVisible(false);
             }
           }
         }
@@ -385,7 +398,6 @@ export class SEIntersectionPoint extends SEPoint {
     return true;
   }
   public isFreePoint(): boolean {
-    console.log("non free point query")
     return false;
   }
 }

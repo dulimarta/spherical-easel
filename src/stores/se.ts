@@ -1401,7 +1401,11 @@ export const useSEStore = defineStore("se", () => {
   ): {
     intersections: SEIntersectionReturnType[];
   } {
+  ): {
+    intersections: SEIntersectionReturnType[];
+  } {
     const returnArray: SEIntersectionReturnType[] = [];
+    const createAntipodal = !(
     const createAntipodal = !(
       (firstParent instanceof SELine || firstParent instanceof SESegment) &&
       (secondParent instanceof SELine || secondParent instanceof SESegment)
@@ -1413,17 +1417,18 @@ export const useSEStore = defineStore("se", () => {
       //  0) The intersection point is on the list of sePoints, but the sePoint is not an seIntersection point (so do nothing with this intersection)
       //  1) The intersection point is new so create a new intersection point
       //  2) The intersection point is old so the intersection information might be added to the otherSEParents array of the intersection point
+      //  2) The intersection point is old so the intersection information might be added to the otherSEParents array of the intersection point
 
       //clear the existingSEIntersectionPoint
       existingSEIntersectionPoint = null;
       let isOnExistingPointList = false;
       // Search the existing (and newly created points and newly created --i.e. earlier in this command group) intersection points for these intersections
       existingSEPoints.forEach(pt => {
-        // if (pt.locationVector.isZero()) {
-        //   console.warn(
-        //     `Intersection point with zero vector encountered ${pt.name}/${pt.label?.ref.shortUserName}/${pt.noduleDescription}`
-        //   );
-        // }
+        if (pt.locationVector.isZero()) {
+          console.warn(
+            `Intersection point with zero vector encountered ${pt.name}/${pt.label?.ref.shortUserName}/${pt.noduleDescription}`
+          );
+        }
         if (
           tmpVector.subVectors(info.vector, pt.locationVector).isZero() &&
           !pt.locationVector.isZero() //Never happens for a line and line as they always *initially* intersect.  However for a line and circle, if they
@@ -1462,7 +1467,9 @@ export const useSEStore = defineStore("se", () => {
       } else {
         // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an seIntersection point) so do nothing with these intersection points
         if (existingSEIntersectionPoint != null) {
+        if (existingSEIntersectionPoint != null) {
           // the intersection vector (info.vector) is at an existing SEIntersection point (Option #2 above)
+          // this means that the parents might new parents of this intersection point check later
           // this means that the parents might new parents of this intersection point check later
           returnArray.push({
             SEIntersectionPoint: existingSEIntersectionPoint,
@@ -1477,6 +1484,9 @@ export const useSEStore = defineStore("se", () => {
       //clear the existingSEIntersectionPoint
       existingSEIntersectionPoint = null;
     });
+    return {
+      intersections: returnArray
+    };
     return {
       intersections: returnArray
     };
@@ -1513,10 +1523,24 @@ export const useSEStore = defineStore("se", () => {
     // console.log(
     //   `Number of points before intersection ${existingSEPoints.length}`
     // );
+    // console.log(
+    //   `Number of points before intersection ${existingSEPoints.length}`
+    // );
     // The intersectionPointList to return
     const intersectionPointReturnArray: SEIntersectionReturnType[] = [];
 
     // type the newNodule
+    if (newSENodule instanceof SELine) {
+      newSENodule = newSENodule as SELine;
+    } else if (newSENodule instanceof SESegment) {
+      newSENodule = newSENodule as SESegment;
+    } else if (newSENodule instanceof SECircle) {
+      newSENodule = newSENodule as SECircle;
+    } else if (newSENodule instanceof SEEllipse) {
+      newSENodule = newSENodule as SEEllipse;
+    } else if (newSENodule instanceof SEParametric) {
+      newSENodule = newSENodule as SEParametric;
+    }
     if (newSENodule instanceof SELine) {
       newSENodule = newSENodule as SELine;
     } else if (newSENodule instanceof SESegment) {
@@ -1566,7 +1590,6 @@ export const useSEStore = defineStore("se", () => {
           object2 = newSENodule;
           object1 = oldSENodule;
         }
-        // now intersect them
         if (object1 instanceof SELine && object2 instanceof SELine) {
           if (object1.name != object2.name) {
             intersectionInfo = intersectLineWithLine(
