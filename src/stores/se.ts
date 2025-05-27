@@ -1515,6 +1515,17 @@ export const useSEStore = defineStore("se", () => {
     } else if (newSENodule instanceof SEParametric) {
       newSENodule = newSENodule as SEParametric;
     }
+    if (newSENodule instanceof SELine) {
+      newSENodule = newSENodule as SELine;
+    } else if (newSENodule instanceof SESegment) {
+      newSENodule = newSENodule as SESegment;
+    } else if (newSENodule instanceof SECircle) {
+      newSENodule = newSENodule as SECircle;
+    } else if (newSENodule instanceof SEEllipse) {
+      newSENodule = newSENodule as SEEllipse;
+    } else if (newSENodule instanceof SEParametric) {
+      newSENodule = newSENodule as SEParametric;
+    }
     const rank1 = rank_of_type(newSENodule);
 
     const computedRefArray = [
@@ -1553,7 +1564,6 @@ export const useSEStore = defineStore("se", () => {
           object2 = newSENodule;
           object1 = oldSENodule;
         }
-        // now intersect them
         if (object1 instanceof SELine && object2 instanceof SELine) {
           if (object1.name != object2.name) {
             intersectionInfo = intersectLineWithLine(
@@ -1660,6 +1670,7 @@ export const useSEStore = defineStore("se", () => {
           object1,
           object2
         );
+        existingSEPoints.push(...info.updatedSEPoints);
         intersectionPointReturnArray.push(...info.intersections);
       });
     });
