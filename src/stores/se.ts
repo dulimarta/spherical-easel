@@ -1470,8 +1470,6 @@ export const useSEStore = defineStore("se", () => {
           });
         }
       }
-      //clear the existingSEIntersectionPoint
-      existingSEIntersectionPoint = null;
     });
     return {
       intersections: returnArray
@@ -1506,10 +1504,24 @@ export const useSEStore = defineStore("se", () => {
         existingSEPoints.push(pt);
       }
     }
+    // console.log(
+    //   `Number of points before intersection ${existingSEPoints.length}`
+    // );
     // The intersectionPointList to return
     const intersectionPointReturnArray: SEIntersectionReturnType[] = [];
 
     // type the newNodule
+    if (newSENodule instanceof SELine) {
+      newSENodule = newSENodule as SELine;
+    } else if (newSENodule instanceof SESegment) {
+      newSENodule = newSENodule as SESegment;
+    } else if (newSENodule instanceof SECircle) {
+      newSENodule = newSENodule as SECircle;
+    } else if (newSENodule instanceof SEEllipse) {
+      newSENodule = newSENodule as SEEllipse;
+    } else if (newSENodule instanceof SEParametric) {
+      newSENodule = newSENodule as SEParametric;
+    }
     if (newSENodule instanceof SELine) {
       newSENodule = newSENodule as SELine;
     } else if (newSENodule instanceof SESegment) {
