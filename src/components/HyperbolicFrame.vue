@@ -38,6 +38,7 @@ import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeom
 import { LineCurve3 } from "three/src/extras/curves/LineCurve3";
 import { onUpdated, onMounted, Ref, ref } from "vue";
 import CameraControls from "camera-controls";
+import { au } from "vitest/dist/chunks/reporters.nr4dxCkA";
 type ComponentProps = {
   availableHeight: number;
   availableWidth: number;
@@ -46,10 +47,13 @@ const props = withDefaults(defineProps<ComponentProps>(), {
   availableHeight: 240,
   availableWidth: 240
 });
+
 const webglCanvas: Ref<HTMLCanvasElement | null> = ref(null);
 const scene = new Scene();
 const clock = new Clock(); // used by camera control animation
 const rayCaster = new Raycaster();
+const auxLineRayCaster = new Raycaster();
+const auxRaycasterStart = new Vector3(0, 0, 0);
 const mouseCoord: Ref<THREE.Vector2> = ref(new THREE.Vector2());
 const mouseCoordNormalized: Ref<THREE.Vector2> = ref(new THREE.Vector2()); // used by RayCaster
 let camera: PerspectiveCamera;
@@ -94,22 +98,33 @@ const rayIntersectionPoint = new Mesh(
   new SphereGeometry(0.05),
   new MeshStandardMaterial({ color: "white" })
 );
-const mouseNormalArrow = new ArrowHelper() // ArrowHelper to show the normal vector of mouse intersection point
-mouseNormalArrow.setColor(0xFFFFFF)
-mouseNormalArrow.setLength(1, 0.2, 0.2)
-// Attach the arrowhelper of the mouse normal to the
-// intersectionpoint itself 
-rayIntersectionPoint.add(mouseNormalArrow)
+
+const auxLineIntersectionPoints: Array<Mesh> = [];
+for (let k = 0; k < 4; k++) {
+  const p = rayIntersectionPoint.clone(true);
+  // cloning the mesh does not automatically clone the material
+  // so we have to clone the material properties
+  p.material = rayIntersectionPoint.material.clone()
+  p.material.color.setColorName("black");
+  auxLineIntersectionPoints.push(p);
+}
+
+const mouseNormalArrow = new ArrowHelper(); // ArrowHelper to show the normal vector of mouse intersection point
+mouseNormalArrow.setColor(0xffffff);
+mouseNormalArrow.setLength(1, 0.2, 0.2);
+// Attach the arrowhelper of the mouse normal to the intersectionpoint itself
+rayIntersectionPoint.add(mouseNormalArrow);
 
 const auxLinePath = new LineCurve3(new Vector3(0, 0, 0), new Vector3(3, 3, 3));
-const auxLineTube = new TubeGeometry(auxLinePath, 20, .03, 16, true)
+const auxLineTube = new TubeGeometry(auxLinePath, 20, 0.03, 16, true);
+const auxLineDirection = new Vector3();
 const auxLine = new Mesh(
-  new CylinderGeometry(0.02, 0.02, 100),
+  new CylinderGeometry(0.01, 0.01, 100),
   // auxLineTube,
   new MeshStandardMaterial({ color: 0xaaaaaa })
 );
 // auxLine.rotateX(Math.PI/2)
-scene.add(auxLine)
+scene.add(auxLine);
 lowerHyperboloidMesh.name = "Lower Sheet";
 upperHyperboloidMesh.name = "Upper Sheet";
 scene.add(upperHyperboloidMesh);
@@ -117,7 +132,7 @@ scene.add(lowerHyperboloidMesh);
 
 const centerSphere = new Mesh(
   new SphereGeometry(1),
-  new MeshStandardMaterial({ color: "green" })
+  new MeshStandardMaterial({ color: "green", side: DoubleSide })
 );
 centerSphere.name = "Center Sphere";
 scene.add(centerSphere);
@@ -185,22 +200,17 @@ function mouseTracker(ev: MouseEvent) {
     // console.debug(`Number of all intersections ${allIntersections.length}`)
     // We are interested only in intersection with named objects
     const namedIntersections = allIntersections.filter(
-      z => z.object.name.length > 0
+      z => z.object.name.length > 0 // we are interested only in named objects
     );
-    console.debug(
-      `Number of special intersections ${namedIntersections.length}`
-    );
-    // namedIntersections.forEach(z => {
-    //   console.debug(`With ${z.object.name} at ${z.point.toFixed(3)}`)
-    // })
     if (namedIntersections.length > 0) {
       // console.debug(`First intersection ${namedIntersections[0].object.name}`)
       rayIntersectionPoint.position.copy(namedIntersections[0].point);
       scene.add(rayIntersectionPoint);
       // mouseNormalArrow.position.copy(rayIntersectionPoint.position)
-      mouseNormalArrow.setDirection(namedIntersections[0].normal!)
+      mouseNormalArrow.setDirection(namedIntersections[0].normal!);
       // Show auxiliary line with shift-key
-      if (ev.shiftKey) { 
+      auxLineIntersectionPoints.forEach(p => scene.remove(p));
+      if (ev.shiftKey) {
         // auxLinePath.v1.set(0, 0, 0)
         // auxLinePath.v2.copy(rayIntersectionPoint.position)
         // auxLinePath.updateArcLengths()
@@ -212,21 +222,57 @@ function mouseTracker(ev: MouseEvent) {
         // const b = auxLineTube.boundingBox
         // console.debug("Bounding box", b?.min, b?.max)
         // auxLine.updateMatrix()
-        auxLine.rotation.set(0, 0, 0)
-        const hypotenuse = Math.sqrt(Math.pow(rayIntersectionPoint.position.x, 2) + Math.pow(rayIntersectionPoint.position.y, 2))
-        auxLine.rotateZ(Math.PI / 2 + Math.atan2(rayIntersectionPoint.position.y, rayIntersectionPoint.position.x))
-        auxLine.rotateX(Math.atan2(rayIntersectionPoint.position.z, -hypotenuse))
-        scene.add(auxLine)
+        const hypotenuse = Math.sqrt(
+          Math.pow(rayIntersectionPoint.position.x, 2) +
+            Math.pow(rayIntersectionPoint.position.y, 2)
+        );
+        auxLine.rotation.set(0, 0, 0);
+        auxLine.rotateZ(
+          Math.PI / 2 +
+            Math.atan2(
+              rayIntersectionPoint.position.y,
+              rayIntersectionPoint.position.x
+            )
+        );
+        auxLine.rotateX(
+          -Math.atan2(rayIntersectionPoint.position.z, hypotenuse)
+        );
+        scene.add(auxLine);
+        auxLineDirection.copy(rayIntersectionPoint.position);
+        auxRaycasterStart.copy(rayIntersectionPoint.position);
+        auxRaycasterStart.multiplyScalar(-10);
+        auxLineRayCaster.set(auxRaycasterStart, auxLineDirection.normalize());
+        const x = auxLineRayCaster
+          .intersectObjects(scene.children, true)
+          .filter(obj => obj.object.name.length > 0);
+        if (x.length > 0) {
+          console.debug(
+            `Mouse at ${rayIntersectionPoint.position.toFixed(3)} with ${x.length} auxiliary intersections`
+          );
+          x.forEach((z, idx) => {
+            const dist = z.point.distanceToSquared(rayIntersectionPoint.position)
+            // console.debug(
+            //   `AuxLine intersection ${idx} with ${
+            //     z.object.name
+            //   } at ${z.point.toFixed(3)} ${dist} away from mouse intersection`
+            // );
+            if (dist > 1e-4) {
+              auxLineIntersectionPoints[idx].position.copy(z.point);
+              scene.add(auxLineIntersectionPoints[idx]);
+            }
+          });
+        } else {
+        }
       } else {
-        scene.remove(auxLine)
+        scene.remove(auxLine);
       }
     } else {
       scene.remove(rayIntersectionPoint);
-      scene.remove(auxLine)
+      scene.remove(auxLine);
     }
   } else {
     scene.remove(rayIntersectionPoint);
-    scene.remove(auxLine)
+    scene.remove(auxLine);
   }
 }
 function hyperboloidPlus(u: number, v: number, pt: Vector3) {
