@@ -9,8 +9,8 @@ import { createTestingPinia } from "@pinia/testing";
 import { StyleCategory } from "@/types/Styles";
 import Nodule from "@/plottables/Nodule";
 import MouseHandler from "@/eventHandlers/MouseHandler";
-import { SENodule } from "@/models/internal";
 import { Command } from "@/commands/Command";
+import { SENodule } from "@/models/SENodule";
 
 const R = SETTINGS.boundaryCircle.radius;
 

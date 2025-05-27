@@ -123,7 +123,7 @@ import { SELongitude } from "@/models/SELongitude";
 import { AddLongitudeCommand } from "@/commands/AddLongitudeCommand";
 import { SELatitude } from "@/models/SELatitude";
 import { AddLatitudeCommand } from "@/commands/AddLatitudeCommand";
-import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import SegmentHandler from "@/eventHandlers/SegmentHandler";
 import { SEPoint } from "@/models/SEPoint";
@@ -135,14 +135,9 @@ import Highlighter from "@/eventHandlers/Highlighter";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 
 const store = useSEStore();
-const {
-  inverseTotalRotationMatrix,
-  sePoints,
-  seCircles,
-  seSegments,
-} = storeToRefs(store);
-const {  createAllIntersectionsWithSegment,
-  createAllIntersectionsWithCircle} = store
+const { inverseTotalRotationMatrix, sePoints, seCircles, seSegments } =
+  storeToRefs(store);
+const { createAllIntersectionsWith } = store;
 const { t } = useI18n();
 const { geoLocationToUnitSphere } = useEarthCoordinate();
 const tempVec = new Vector3();
@@ -486,60 +481,60 @@ function findPoleInObjectTree(pole: Poles): SEEarthPoint | SEPoint | undefined {
   //     positive z axis is to the left
 
   // const z = sePoints.value.find((pt:SEPoint) => {
-    // tempVec.copy(pt.locationVector);
-    // // transform the pt back to standard position
-    // tempVec.applyMatrix4(inverseTotalRotationMatrix.value);
-    // console.log("point y value ", tempVec.y);
-    // if (
-    //   Math.abs(tempVec.y - (Poles.NORTH === pole ? 1 : -1)) < SETTINGS.tolerance
-    // ) {
-      // console.log(Poles.NORTH === pole ? "North" : "South", "pole found");
-      // if (pt.label) {
-      //   if (pole === Poles.NORTH && !northPoleLabelSetOnce) {
-      //     pt.label.ref.caption = t("northPole");
-      //     northPoleLabelSetOnce = true;
-      //     // set the label display mode
-      //     new StyleNoduleCommand(
-      //       [pt.getLabel()!.ref],
-      //       StyleCategory.Label,
-      //       [
-      //         {
-      //           labelDisplayMode: LabelDisplayMode.CaptionOnly
-      //         }
-      //       ],
-      //       [
-      //         {
-      //           labelDisplayMode: pt.label.ref.labelDisplayMode
-      //         }
-      //       ]
-      //     ).execute();
-      //   } else if (pole === Poles.SOUTH && !southPoleLabelSetOnce) {
-      //     pt.label.ref.caption = t("southPole");
-      //     southPoleLabelSetOnce = true;
-      //     // set the label display mode
-      //     new StyleNoduleCommand(
-      //       [pt.getLabel()!.ref],
-      //       StyleCategory.Label,
-      //       [
-      //         {
-      //           labelDisplayMode: LabelDisplayMode.CaptionOnly
-      //         }
-      //       ],
-      //       [
-      //         {
-      //           labelDisplayMode: pt.label.ref.labelDisplayMode
-      //         }
-      //       ]
-      //     ).execute();
-      //   }
-      // }
+  // tempVec.copy(pt.locationVector);
+  // // transform the pt back to standard position
+  // tempVec.applyMatrix4(inverseTotalRotationMatrix.value);
+  // console.log("point y value ", tempVec.y);
+  // if (
+  //   Math.abs(tempVec.y - (Poles.NORTH === pole ? 1 : -1)) < SETTINGS.tolerance
+  // ) {
+  // console.log(Poles.NORTH === pole ? "North" : "South", "pole found");
+  // if (pt.label) {
+  //   if (pole === Poles.NORTH && !northPoleLabelSetOnce) {
+  //     pt.label.ref.caption = t("northPole");
+  //     northPoleLabelSetOnce = true;
+  //     // set the label display mode
+  //     new StyleNoduleCommand(
+  //       [pt.getLabel()!.ref],
+  //       StyleCategory.Label,
+  //       [
+  //         {
+  //           labelDisplayMode: LabelDisplayMode.CaptionOnly
+  //         }
+  //       ],
+  //       [
+  //         {
+  //           labelDisplayMode: pt.label.ref.labelDisplayMode
+  //         }
+  //       ]
+  //     ).execute();
+  //   } else if (pole === Poles.SOUTH && !southPoleLabelSetOnce) {
+  //     pt.label.ref.caption = t("southPole");
+  //     southPoleLabelSetOnce = true;
+  //     // set the label display mode
+  //     new StyleNoduleCommand(
+  //       [pt.getLabel()!.ref],
+  //       StyleCategory.Label,
+  //       [
+  //         {
+  //           labelDisplayMode: LabelDisplayMode.CaptionOnly
+  //         }
+  //       ],
+  //       [
+  //         {
+  //           labelDisplayMode: pt.label.ref.labelDisplayMode
+  //         }
+  //       ]
+  //     ).execute();
+  //   }
+  // }
   //     pt.update();
   //     return true;
   //   } else {
   //     return false;
   //   }
   // });
-  return undefined
+  return undefined;
 }
 
 function findLatitudeInObjectTree(lat: number): SELatitude | undefined {
@@ -857,16 +852,10 @@ function getSegmentIntersectionsCommands(
   newSESegment: SELongitude
 ): CommandGroup {
   const segmentGroup = new CommandGroup();
-  createAllIntersectionsWithSegment
-    (newSESegment, []) // empty array of new points created
+  createAllIntersectionsWith(newSESegment, []) // empty array of new points created
     .forEach((item: SEIntersectionReturnType) => {
       if (item.existingIntersectionPoint) {
-        segmentGroup.addCommand(
-          new AddIntersectionPointOtherParent(
-            item.SEIntersectionPoint,
-            item.parent1
-          )
-        );
+        segmentGroup.addCommand(new AddIntersectionPointOtherParentsInfo(item));
       } else {
         // Create the plottable label
         const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
@@ -901,16 +890,10 @@ function getSegmentIntersectionsCommands(
 // create all the intersections with the circle/latitude being added
 function getCircleIntersectionsCommands(newSECircle: SELatitude): CommandGroup {
   const circleGroup = new CommandGroup();
-  createAllIntersectionsWithCircle
-    (newSECircle, []) // empty array of new points created
-    .forEach((item: SEIntersectionReturnType) => {
+  createAllIntersectionsWith(newSECircle).forEach(
+    (item: SEIntersectionReturnType) => {
       if (item.existingIntersectionPoint) {
-        circleGroup.addCommand(
-          new AddIntersectionPointOtherParent(
-            item.SEIntersectionPoint,
-            item.parent1
-          )
-        );
+        circleGroup.addCommand(new AddIntersectionPointOtherParentsInfo(item));
       } else {
         // Create the plottable label
         const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
@@ -938,7 +921,8 @@ function getCircleIntersectionsCommands(newSECircle: SELatitude): CommandGroup {
           );
         }
       }
-    });
+    }
+  );
   return circleGroup;
 }
 </script>

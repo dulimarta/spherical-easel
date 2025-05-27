@@ -1,4 +1,3 @@
-import { SEExpression, SEPoint, SELine, SESegment, SELabel, SENodule } from "./internal";
 import AngleMarker from "@/plottables/AngleMarker";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
@@ -11,6 +10,11 @@ import {
 } from "@/types/Styles";
 import i18n from "@/i18n";
 import { DisplayStyle } from "@/plottables/Nodule";
+import { SEExpression } from "./SEExpression";
+import { SELabel } from "./SELabel";
+import { SELine } from "./SELine";
+import { SESegment } from "./SESegment";
+import { SEPoint } from "./SEPoint";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_ANGLE_MARKER_FRONT_STYLE),

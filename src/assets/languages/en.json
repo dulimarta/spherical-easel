@@ -158,6 +158,10 @@
   "objects": {
     "objects": "Objects | Object | object | objects",
     "texts": "Texts | Text | text | texts",
+    "circles": "Circles | Circle | circle | circles",
+    "lines": "Lines | Line | line | lines",
+    "segments": "Segments | Segment | segment | segments",
+    "ellipses": "Ellipses | Ellipse | ellipse | ellipses",
     "triangles": "Triangles | Triangle | triangle | triangles",
     "polygons": "Polygons | Polygon | polygon | polygons",
     "angleMarkers": "Angle Markers | Angle Marker | angle marker |angle markers",

@@ -15,7 +15,7 @@ import { Stop } from "two.js/src/effects/stop";
 import { RadialGradient } from "two.js/src/effects/radial-gradient";
 import { Anchor } from "two.js/src/anchor";
 import { Group } from "two.js/src/group";
-import { svgArcObject, toSVGType } from "@/types";
+import { FillStyle, svgArcObject, toSVGType } from "@/types";
 import Settings from "@/views/Settings.vue";
 
 const desiredXAxis = new Vector3();
@@ -447,213 +447,30 @@ export default class Ellipse extends Nodule {
     this.glowingBackPart.closed = frontLen === 0;
 
     //Now build the front/back fill objects based on the front/back parts
+    if (Nodule.globalFillStyle != FillStyle.NoFill) {
+      // console.log(
+      //   "sum of front and back part",
+      //   this.frontPart.vertices.length + this.backPart.vertices.length
+      // );
+      // Bring all the anchor points to a common pool
+      // Each front/back fill path will pull anchor points from
+      // this pool as needed
+      // any remaining are put in storage
+      const pool: Anchor[] = [];
+      pool.push(...this.frontFill.vertices.splice(0));
+      pool.push(...this.backFill.vertices.splice(0));
+      pool.push(...this.fillStorageAnchors.splice(0));
+      // console.log("pool size initially", pool.length);
 
-    // console.log(
-    //   "sum of front and back part",
-    //   this.frontPart.vertices.length + this.backPart.vertices.length
-    // );
-    // Bring all the anchor points to a common pool
-    // Each front/back fill path will pull anchor points from
-    // this pool as needed
-    // any remaining are put in storage
-    const pool: Anchor[] = [];
-    pool.push(...this.frontFill.vertices.splice(0));
-    pool.push(...this.backFill.vertices.splice(0));
-    pool.push(...this.fillStorageAnchors.splice(0));
-    // console.log("pool size initially", pool.length);
-
-    let posIndexFill = 0;
-    let negIndexFill = 0;
-    let boundaryPoints: number[][] = [];
-    // The ellipse interior is only on the front of the sphere (recall that  a and b are both either bigger than Pi/2 or both less, no mixing)
-    if (backLen === 0 && this._a < Math.PI / 2) {
-      this.frontFillInUse = true;
-      this.backFillInUse = false;
-      // In this case the frontFillVertices are the same as the frontVertices
-      this.frontPart.vertices.forEach((v: Anchor) => {
-        if (posIndexFill === this.frontFill.vertices.length) {
-          //add a vector from the pool
-          const vert = pool.pop();
-          if (vert !== undefined) {
-            this.frontFill.vertices.push(vert);
-          } else {
-            throw new Error(
-              "Ellipse: not enough anchors in the pool to trace the ellipse on the front."
-            );
-          }
-        }
-        this.frontFill.vertices[posIndexFill].x = v.x;
-        this.frontFill.vertices[posIndexFill].y = v.y;
-        posIndexFill++;
-      });
-      // put remaining vertices in the storage
-      this.fillStorageAnchors.push(...pool.splice(0));
-    } // The ellipse interior is split between front and back
-    else if (backLen !== 0 && frontLen !== 0) {
-      this.frontFillInUse = true;
-      this.backFillInUse = true;
-      //find the angular width of the part of the boundary ellipse to be copied
-      // Compute the angle from the positive x axis to the last frontPartVertex
-      //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
-      const startAngle = Math.atan2(
-        this.frontPart.vertices[frontLen - 1].y,
-        this.frontPart.vertices[frontLen - 1].x
-      );
-
-      // Compute the angle from the positive x axis to the first frontPartVertex
-      //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
-      const endAngle = Math.atan2(
-        this.frontPart.vertices[0].y,
-        this.frontPart.vertices[0].x
-      );
-
-      // Compute the angular width of the section of the boundary ellipse to add to the front/back fill
-      // This can be positive if traced counterclockwise or negative if traced clockwise( add 2 Pi to make positive)
-      let angularWidth = endAngle - startAngle;
-      if (angularWidth < 0) {
-        angularWidth += 2 * Math.PI;
-      }
-      //console.log(angularWidth);
-      // When tracing the boundary ellipse we start from fromVector = this.frontPart.vertices[frontLen - 1]
-      const fromVector = [
-        this.frontPart.vertices[frontLen - 1].x,
-        this.frontPart.vertices[frontLen - 1].y
-      ];
-      // then
-      // trace in the direction of a toVector that is perpendicular to this.frontPart.vertices[frontLen - 1]
-      // and points in the same direction as this.frontPart.vertices[0]
-      let toVector = [-fromVector[1], fromVector[0]];
-
-      // If the toVector doesn't point in the same direction as the first vector in frontPart then reverse the toVector
-      if (
-        toVector[0] * this.frontPart.vertices[0].x +
-          toVector[1] * this.frontPart.vertices[0].y <
-        0
-      ) {
-        toVector = [-toVector[0], -toVector[1]];
-      }
-
-      // If the a,b are bigger than Pi/2 then reverse the toVector
-      if (this._a > Math.PI / 2) {
-        toVector = [-toVector[0], -toVector[1]];
-      }
-      // Create the boundary points
-      boundaryPoints = this.boundaryCircleCoordinates(
-        fromVector,
-        SUBDIVISIONS + 1,
-        toVector,
-        angularWidth
-      );
-
-      // Build the frontFill- first add the frontPart.vertices
-      this.frontPart.vertices.forEach((node: Anchor) => {
-        if (posIndexFill === this.frontFill.vertices.length) {
-          //add a vector from the pool
-          const vert = pool.pop();
-          if (vert !== undefined) {
-            this.frontFill.vertices.push(vert);
-          } else {
-            throw new Error(
-              "Ellipse: not enough anchors in the pool to trace the ellipse on the front."
-            );
-          }
-        }
-        this.frontFill.vertices[posIndexFill].x = node.x;
-        this.frontFill.vertices[posIndexFill].y = node.y;
-        posIndexFill++;
-      });
-      // add the boundary points
-      boundaryPoints.forEach(node => {
-        if (posIndexFill === this.frontFill.vertices.length) {
-          //add a vector from the pool
-          const vert = pool.pop();
-          if (vert !== undefined) {
-            this.frontFill.vertices.push(vert);
-          } else {
-            throw new Error(
-              "Ellipse: not enough anchors in the pool to trace the ellipse on the front."
-            );
-          }
-        }
-        this.frontFill.vertices[posIndexFill].x = node[0];
-        this.frontFill.vertices[posIndexFill].y = node[1];
-        posIndexFill++;
-      });
-      // console.log("posIndex", posIndexFill, " of ", 4 * SUBDIVISIONS + 2);
-      // console.log("pool size", pool.length);
-      // Build the backFill- first add the backPart.vertices
-      this.backPart.vertices.forEach((node: Anchor) => {
-        if (negIndexFill === this.backFill.vertices.length) {
-          //add a vector from the pool
-          const vert = pool.pop();
-          if (vert !== undefined) {
-            this.backFill.vertices.push(vert);
-          } else {
-            throw new Error(
-              "Ellipse: not enough anchors in the pool to trace the ellipse on the back."
-            );
-          }
-        }
-        this.backFill.vertices[negIndexFill].x = node.x;
-        this.backFill.vertices[negIndexFill].y = node.y;
-        negIndexFill++;
-      });
-      // console.log("negIndex", negIndexFill, " of ", 4 * SUBDIVISIONS + 2);
-      // console.log("pool size", pool.length);
-      // add the boundary points (but in reverse!)
-      boundaryPoints.reverse().forEach(node => {
-        if (negIndexFill === this.backFill.vertices.length) {
-          //add a vector from the pool
-          const vert = pool.pop();
-          if (vert !== undefined) {
-            this.backFill.vertices.push(vert);
-          } else {
-            throw new Error(
-              "Ellipse: not enough anchors in the pool to trace the ellipse on the back."
-            );
-          }
-        }
-        this.backFill.vertices[negIndexFill].x = node[0];
-        this.backFill.vertices[negIndexFill].y = node[1];
-        negIndexFill++;
-      });
-
-      // put remaining vertices in the storage (there shouldn't be any in this case)
-      this.fillStorageAnchors.push(...pool.splice(0));
-    }
-    // The ellipse interior is only on the back of the sphere
-    else if (frontLen === 0 && this._a < Math.PI / 2) {
-      this.frontFillInUse = false;
-      this.backFillInUse = true;
-      //
-      // In this case the backFillVertices are the same as the backVertices
-      this.backPart.vertices.forEach((v: Anchor) => {
-        if (negIndexFill === this.backFill.vertices.length) {
-          //add a vector from the pool
-          const vert = pool.pop();
-          if (vert !== undefined) {
-            this.backFill.vertices.push(vert);
-          } else {
-            throw new Error(
-              "Ellipse: not enough anchors in the pool to trace the ellipse on the back."
-            );
-          }
-        }
-        this.backFill.vertices[negIndexFill].x = v.x;
-        this.backFill.vertices[negIndexFill].y = v.y;
-        negIndexFill++;
-      });
-      // put remaining vertices in the storage
-      this.fillStorageAnchors.push(...pool.splice(0));
-    }
-    // The ellipse interior covers the entire front half of the sphere and is a 'hole' on the back
-    else if (frontLen === 0 && this._a > Math.PI / 2) {
-      this.frontFillInUse = true;
-      this.backFillInUse = true;
-      // In this case set the frontFillVertices to the entire boundary circle which are the originalVertices, but only add half of them
-      // so that only SUBDIVISION number of vectors are used. (We need 3*SUBDIVISION +2 for the annular region on the back)
-      this.originalVertices.reverse().forEach((v, ind) => {
-        if (ind % 2 === 0) {
+      let posIndexFill = 0;
+      let negIndexFill = 0;
+      let boundaryPoints: number[][] = [];
+      // The ellipse interior is only on the front of the sphere (recall that  a and b are both either bigger than Pi/2 or both less, no mixing)
+      if (backLen === 0 && this._a < Math.PI / 2) {
+        this.frontFillInUse = true;
+        this.backFillInUse = false;
+        // In this case the frontFillVertices are the same as the frontVertices
+        this.frontPart.vertices.forEach((v: Anchor) => {
           if (posIndexFill === this.frontFill.vertices.length) {
             //add a vector from the pool
             const vert = pool.pop();
@@ -668,25 +485,270 @@ export default class Ellipse extends Nodule {
           this.frontFill.vertices[posIndexFill].x = v.x;
           this.frontFill.vertices[posIndexFill].y = v.y;
           posIndexFill++;
+        });
+        // put remaining vertices in the storage
+        this.fillStorageAnchors.push(...pool.splice(0));
+      } // The ellipse interior is split between front and back
+      else if (backLen !== 0 && frontLen !== 0) {
+        this.frontFillInUse = true;
+        this.backFillInUse = true;
+        //find the angular width of the part of the boundary ellipse to be copied
+        // Compute the angle from the positive x axis to the last frontPartVertex
+        //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
+        const startAngle = Math.atan2(
+          this.frontPart.vertices[frontLen - 1].y,
+          this.frontPart.vertices[frontLen - 1].x
+        );
+
+        // Compute the angle from the positive x axis to the first frontPartVertex
+        //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
+        const endAngle = Math.atan2(
+          this.frontPart.vertices[0].y,
+          this.frontPart.vertices[0].x
+        );
+
+        // Compute the angular width of the section of the boundary ellipse to add to the front/back fill
+        // This can be positive if traced counterclockwise or negative if traced clockwise( add 2 Pi to make positive)
+        let angularWidth = endAngle - startAngle;
+        if (angularWidth < 0) {
+          angularWidth += 2 * Math.PI;
         }
-      });
+        //console.log(angularWidth);
+        // When tracing the boundary ellipse we start from fromVector = this.frontPart.vertices[frontLen - 1]
+        const fromVector = [
+          this.frontPart.vertices[frontLen - 1].x,
+          this.frontPart.vertices[frontLen - 1].y
+        ];
+        // then
+        // trace in the direction of a toVector that is perpendicular to this.frontPart.vertices[frontLen - 1]
+        // and points in the same direction as this.frontPart.vertices[0]
+        let toVector = [-fromVector[1], fromVector[0]];
 
-      // In this case the backFillVertices must trace out first the boundary circle (originalVertices) and then
-      //  the ellipse, to trace an annular region.  To help with the rendering, start tracing
-      //  the boundary circle directly across from the vertex on the circle at index zero
-      const backStartTraceIndex = Math.floor(
-        Math.atan2(
-          this.backPart.vertices[0].y,
-          this.backPart.vertices[0].x
-        ).modTwoPi() /
-          (Math.PI / SUBDIVISIONS)
-      );
+        // If the toVector doesn't point in the same direction as the first vector in frontPart then reverse the toVector
+        if (
+          toVector[0] * this.frontPart.vertices[0].x +
+            toVector[1] * this.frontPart.vertices[0].y <
+          0
+        ) {
+          toVector = [-toVector[0], -toVector[1]];
+        }
 
-      this.originalVertices
-        .reverse()
-        .rotate(backStartTraceIndex)
-        .forEach((v, ind) => {
-          // Again add every other one so that only SUBDIVISION vectors are used in the first part of backFill
+        // If the a,b are bigger than Pi/2 then reverse the toVector
+        if (this._a > Math.PI / 2) {
+          toVector = [-toVector[0], -toVector[1]];
+        }
+        // Create the boundary points
+        boundaryPoints = this.boundaryCircleCoordinates(
+          fromVector,
+          SUBDIVISIONS + 1,
+          toVector,
+          angularWidth
+        );
+
+        // Build the frontFill- first add the frontPart.vertices
+        this.frontPart.vertices.forEach((node: Anchor) => {
+          if (posIndexFill === this.frontFill.vertices.length) {
+            //add a vector from the pool
+            const vert = pool.pop();
+            if (vert !== undefined) {
+              this.frontFill.vertices.push(vert);
+            } else {
+              throw new Error(
+                "Ellipse: not enough anchors in the pool to trace the ellipse on the front."
+              );
+            }
+          }
+          this.frontFill.vertices[posIndexFill].x = node.x;
+          this.frontFill.vertices[posIndexFill].y = node.y;
+          posIndexFill++;
+        });
+        // add the boundary points
+        boundaryPoints.forEach(node => {
+          if (posIndexFill === this.frontFill.vertices.length) {
+            //add a vector from the pool
+            const vert = pool.pop();
+            if (vert !== undefined) {
+              this.frontFill.vertices.push(vert);
+            } else {
+              throw new Error(
+                "Ellipse: not enough anchors in the pool to trace the ellipse on the front."
+              );
+            }
+          }
+          this.frontFill.vertices[posIndexFill].x = node[0];
+          this.frontFill.vertices[posIndexFill].y = node[1];
+          posIndexFill++;
+        });
+        // console.log("posIndex", posIndexFill, " of ", 4 * SUBDIVISIONS + 2);
+        // console.log("pool size", pool.length);
+        // Build the backFill- first add the backPart.vertices
+        this.backPart.vertices.forEach((node: Anchor) => {
+          if (negIndexFill === this.backFill.vertices.length) {
+            //add a vector from the pool
+            const vert = pool.pop();
+            if (vert !== undefined) {
+              this.backFill.vertices.push(vert);
+            } else {
+              throw new Error(
+                "Ellipse: not enough anchors in the pool to trace the ellipse on the back."
+              );
+            }
+          }
+          this.backFill.vertices[negIndexFill].x = node.x;
+          this.backFill.vertices[negIndexFill].y = node.y;
+          negIndexFill++;
+        });
+        // console.log("negIndex", negIndexFill, " of ", 4 * SUBDIVISIONS + 2);
+        // console.log("pool size", pool.length);
+        // add the boundary points (but in reverse!)
+        boundaryPoints.reverse().forEach(node => {
+          if (negIndexFill === this.backFill.vertices.length) {
+            //add a vector from the pool
+            const vert = pool.pop();
+            if (vert !== undefined) {
+              this.backFill.vertices.push(vert);
+            } else {
+              throw new Error(
+                "Ellipse: not enough anchors in the pool to trace the ellipse on the back."
+              );
+            }
+          }
+          this.backFill.vertices[negIndexFill].x = node[0];
+          this.backFill.vertices[negIndexFill].y = node[1];
+          negIndexFill++;
+        });
+
+        // put remaining vertices in the storage (there shouldn't be any in this case)
+        this.fillStorageAnchors.push(...pool.splice(0));
+      }
+      // The ellipse interior is only on the back of the sphere
+      else if (frontLen === 0 && this._a < Math.PI / 2) {
+        this.frontFillInUse = false;
+        this.backFillInUse = true;
+        //
+        // In this case the backFillVertices are the same as the backVertices
+        this.backPart.vertices.forEach((v: Anchor) => {
+          if (negIndexFill === this.backFill.vertices.length) {
+            //add a vector from the pool
+            const vert = pool.pop();
+            if (vert !== undefined) {
+              this.backFill.vertices.push(vert);
+            } else {
+              throw new Error(
+                "Ellipse: not enough anchors in the pool to trace the ellipse on the back."
+              );
+            }
+          }
+          this.backFill.vertices[negIndexFill].x = v.x;
+          this.backFill.vertices[negIndexFill].y = v.y;
+          negIndexFill++;
+        });
+        // put remaining vertices in the storage
+        this.fillStorageAnchors.push(...pool.splice(0));
+      }
+      // The ellipse interior covers the entire front half of the sphere and is a 'hole' on the back
+      else if (frontLen === 0 && this._a > Math.PI / 2) {
+        this.frontFillInUse = true;
+        this.backFillInUse = true;
+        // In this case set the frontFillVertices to the entire boundary circle which are the originalVertices, but only add half of them
+        // so that only SUBDIVISION number of vectors are used. (We need 3*SUBDIVISION +2 for the annular region on the back)
+        this.originalVertices.reverse().forEach((v, ind) => {
+          if (ind % 2 === 0) {
+            if (posIndexFill === this.frontFill.vertices.length) {
+              //add a vector from the pool
+              const vert = pool.pop();
+              if (vert !== undefined) {
+                this.frontFill.vertices.push(vert);
+              } else {
+                throw new Error(
+                  "Ellipse: not enough anchors in the pool to trace the ellipse on the front."
+                );
+              }
+            }
+            this.frontFill.vertices[posIndexFill].x = v.x;
+            this.frontFill.vertices[posIndexFill].y = v.y;
+            posIndexFill++;
+          }
+        });
+
+        // In this case the backFillVertices must trace out first the boundary circle (originalVertices) and then
+        //  the ellipse, to trace an annular region.  To help with the rendering, start tracing
+        //  the boundary circle directly across from the vertex on the circle at index zero
+        const backStartTraceIndex = Math.floor(
+          Math.atan2(
+            this.backPart.vertices[0].y,
+            this.backPart.vertices[0].x
+          ).modTwoPi() /
+            (Math.PI / SUBDIVISIONS)
+        );
+
+        this.originalVertices
+          .reverse()
+          .rotate(backStartTraceIndex)
+          .forEach((v, ind) => {
+            // Again add every other one so that only SUBDIVISION vectors are used in the first part of backFill
+            if (ind % 2 === 0) {
+              if (negIndexFill === this.backFill.vertices.length) {
+                //add a vector from the pool
+                const vert = pool.pop();
+                if (vert !== undefined) {
+                  this.backFill.vertices.push(vert);
+                } else {
+                  throw new Error(
+                    "Ellipse: not enough anchors in the pool to trace the ellipse on the back."
+                  );
+                }
+              }
+              this.backFill.vertices[negIndexFill].x = v.x;
+              this.backFill.vertices[negIndexFill].y = v.y;
+              negIndexFill++;
+            }
+          });
+
+        //return the original vertices to there initial state (notice that they were reversed twice)
+        this.originalVertices.rotate(-backStartTraceIndex);
+
+        // Make sure that the next entry in the backFill is the first to closed up the annular region
+        const vert1 = pool.pop()!;
+        vert1.x = this.backFill.vertices[0].x;
+        vert1.y = this.backFill.vertices[0].y;
+        this.backFill.vertices.push(vert1);
+        negIndexFill++;
+
+        // now add the backPart vertices
+        this.backPart.vertices.forEach((v: Anchor, index: number) => {
+          if (negIndexFill === this.backFill.vertices.length) {
+            //add a vector from the pool
+            const vert = pool.pop();
+            if (vert !== undefined) {
+              this.backFill.vertices.push(vert);
+            } else {
+              throw new Error(
+                "Ellipse: not enough anchors in the pool to trace the ellipse on the back."
+              );
+            }
+          }
+          this.backFill.vertices[negIndexFill].x = v.x;
+          this.backFill.vertices[negIndexFill].y = v.y;
+          negIndexFill++;
+        });
+
+        // Make sure that the next entry in the backFill is the first to closed up the annular region
+        const vert2 = pool.pop()!;
+        vert2.x = this.backFill.vertices.slice(-1)[0].x;
+        vert2.y = this.backFill.vertices.slice(-1)[0].y;
+        this.backFill.vertices.push(vert2);
+
+        // put remaining vertices in the storage (There shouldn't be any in this case)
+        this.fillStorageAnchors.push(...pool.splice(0));
+      }
+      // The ellipse interior covers the entire back half of the sphere and is a 'hole' on the front
+      else if (backLen === 0 && this._a > Math.PI / 2) {
+        this.frontFillInUse = true;
+        this.backFillInUse = true;
+        // In this case set the backFillVertices to the entire boundary circle of the sphere which are the originalVertices, but only add half of them
+        // so that only SUBDIVISION number of vectors are used. (We need 3*SUBDIVISION +2 for the annular region on the front)
+        this.originalVertices.reverse().forEach((v, ind) => {
           if (ind % 2 === 0) {
             if (negIndexFill === this.backFill.vertices.length) {
               //add a vector from the pool
@@ -705,137 +767,76 @@ export default class Ellipse extends Nodule {
           }
         });
 
-      //return the original vertices to there initial state (notice that they were reversed twice)
-      this.originalVertices.rotate(-backStartTraceIndex);
+        // In this case the frontFillVertices must trace out first the boundary circle (originalVertices) and then
+        //  the ellipse, to trace an annular region.  To help with the rendering, start tracing
+        //  the boundary circle directly across from the vertex on the ellipse at index zero
+        const frontStartTraceIndex = Math.floor(
+          Math.atan2(
+            this.frontPart.vertices[0].y,
+            this.frontPart.vertices[0].x
+          ).modTwoPi() /
+            (Math.PI / SUBDIVISIONS)
+        );
 
-      // Make sure that the next entry in the backFill is the first to closed up the annular region
-      const vert1 = pool.pop()!;
-      vert1.x = this.backFill.vertices[0].x;
-      vert1.y = this.backFill.vertices[0].y;
-      this.backFill.vertices.push(vert1);
-      negIndexFill++;
+        this.originalVertices
+          .reverse()
+          .rotate(frontStartTraceIndex)
+          .forEach((v, ind) => {
+            // Again add every other one so that only SUBDIVISION vectors are used in the first part of frontFill
+            if (ind % 2 === 0) {
+              if (posIndexFill === this.frontFill.vertices.length) {
+                //add a vector from the pool
+                const vert = pool.pop();
+                if (vert !== undefined) {
+                  this.frontFill.vertices.push(vert);
+                } else {
+                  throw new Error(
+                    "Ellipse: not enough anchors in the pool to trace the ellipse on the front."
+                  );
+                }
+              }
+              this.frontFill.vertices[posIndexFill].x = v.x;
+              this.frontFill.vertices[posIndexFill].y = v.y;
+              posIndexFill++;
+            }
+          });
+        //return/rotate the original vertices to there initial state (notice that they were reversed twice)
+        this.originalVertices.rotate(-frontStartTraceIndex);
 
-      // now add the backPart vertices
-      this.backPart.vertices.forEach((v: Anchor, index: number) => {
-        if (negIndexFill === this.backFill.vertices.length) {
-          //add a vector from the pool
-          const vert = pool.pop();
-          if (vert !== undefined) {
-            this.backFill.vertices.push(vert);
-          } else {
-            throw new Error(
-              "Ellipse: not enough anchors in the pool to trace the ellipse on the back."
-            );
-          }
-        }
-        this.backFill.vertices[negIndexFill].x = v.x;
-        this.backFill.vertices[negIndexFill].y = v.y;
-        negIndexFill++;
-      });
+        // Make sure that the next entry in the frontFill is the first to closed up the annular region
+        const vert1 = pool.pop()!;
+        vert1.x = this.frontFill.vertices[0].x;
+        vert1.y = this.frontFill.vertices[0].y;
+        this.frontFill.vertices.push(vert1);
+        posIndexFill++;
 
-      // Make sure that the next entry in the backFill is the first to closed up the annular region
-      const vert2 = pool.pop()!;
-      vert2.x = this.backFill.vertices.slice(-1)[0].x;
-      vert2.y = this.backFill.vertices.slice(-1)[0].y;
-      this.backFill.vertices.push(vert2);
-
-      // put remaining vertices in the storage (There shouldn't be any in this case)
-      this.fillStorageAnchors.push(...pool.splice(0));
-    }
-    // The ellipse interior covers the entire back half of the sphere and is a 'hole' on the front
-    else if (backLen === 0 && this._a > Math.PI / 2) {
-      this.frontFillInUse = true;
-      this.backFillInUse = true;
-      // In this case set the backFillVertices to the entire boundary circle of the sphere which are the originalVertices, but only add half of them
-      // so that only SUBDIVISION number of vectors are used. (We need 3*SUBDIVISION +2 for the annular region on the front)
-      this.originalVertices.reverse().forEach((v, ind) => {
-        if (ind % 2 === 0) {
-          if (negIndexFill === this.backFill.vertices.length) {
+        // now add the frontPart vertices
+        this.frontPart.vertices.forEach((v: Anchor, index: number) => {
+          if (posIndexFill === this.frontFill.vertices.length) {
             //add a vector from the pool
             const vert = pool.pop();
             if (vert !== undefined) {
-              this.backFill.vertices.push(vert);
+              this.frontFill.vertices.push(vert);
             } else {
               throw new Error(
-                "Ellipse: not enough anchors in the pool to trace the ellipse on the back."
+                "Ellipse: not enough anchors in the pool to trace the ellipse on the front."
               );
             }
           }
-          this.backFill.vertices[negIndexFill].x = v.x;
-          this.backFill.vertices[negIndexFill].y = v.y;
-          negIndexFill++;
-        }
-      });
-
-      // In this case the frontFillVertices must trace out first the boundary circle (originalVertices) and then
-      //  the ellipse, to trace an annular region.  To help with the rendering, start tracing
-      //  the boundary circle directly across from the vertex on the ellipse at index zero
-      const frontStartTraceIndex = Math.floor(
-        Math.atan2(
-          this.frontPart.vertices[0].y,
-          this.frontPart.vertices[0].x
-        ).modTwoPi() /
-          (Math.PI / SUBDIVISIONS)
-      );
-
-      this.originalVertices
-        .reverse()
-        .rotate(frontStartTraceIndex)
-        .forEach((v, ind) => {
-          // Again add every other one so that only SUBDIVISION vectors are used in the first part of frontFill
-          if (ind % 2 === 0) {
-            if (posIndexFill === this.frontFill.vertices.length) {
-              //add a vector from the pool
-              const vert = pool.pop();
-              if (vert !== undefined) {
-                this.frontFill.vertices.push(vert);
-              } else {
-                throw new Error(
-                  "Ellipse: not enough anchors in the pool to trace the ellipse on the front."
-                );
-              }
-            }
-            this.frontFill.vertices[posIndexFill].x = v.x;
-            this.frontFill.vertices[posIndexFill].y = v.y;
-            posIndexFill++;
-          }
+          this.frontFill.vertices[posIndexFill].x = v.x;
+          this.frontFill.vertices[posIndexFill].y = v.y;
+          posIndexFill++;
         });
-      //return/rotate the original vertices to there initial state (notice that they were reversed twice)
-      this.originalVertices.rotate(-frontStartTraceIndex);
 
-      // Make sure that the next entry in the frontFill is the first to closed up the annular region
-      const vert1 = pool.pop()!;
-      vert1.x = this.frontFill.vertices[0].x;
-      vert1.y = this.frontFill.vertices[0].y;
-      this.frontFill.vertices.push(vert1);
-      posIndexFill++;
+        // Make sure that the next entry in the frontFill is the first to closed up the annular region
+        const vert2 = pool.pop()!;
+        vert2.x = this.frontPart.vertices[0].x;
+        vert2.y = this.frontPart.vertices[0].y;
+        this.frontFill.vertices.push(vert2);
 
-      // now add the frontPart vertices
-      this.frontPart.vertices.forEach((v: Anchor, index: number) => {
-        if (posIndexFill === this.frontFill.vertices.length) {
-          //add a vector from the pool
-          const vert = pool.pop();
-          if (vert !== undefined) {
-            this.frontFill.vertices.push(vert);
-          } else {
-            throw new Error(
-              "Ellipse: not enough anchors in the pool to trace the ellipse on the front."
-            );
-          }
-        }
-        this.frontFill.vertices[posIndexFill].x = v.x;
-        this.frontFill.vertices[posIndexFill].y = v.y;
-        posIndexFill++;
-      });
-
-      // Make sure that the next entry in the frontFill is the first to closed up the annular region
-      const vert2 = pool.pop()!;
-      vert2.x = this.frontPart.vertices[0].x;
-      vert2.y = this.frontPart.vertices[0].y;
-      this.frontFill.vertices.push(vert2);
-
-      // put remaining vertices in the storage (There shouldn't be any in this case)
-      this.fillStorageAnchors.push(...pool.splice(0));
+        // put remaining vertices in the storage (There shouldn't be any in this case)
+        this.fillStorageAnchors.push(...pool.splice(0));
+      }
     }
   }
 
@@ -1018,7 +1019,7 @@ export default class Ellipse extends Nodule {
     };
 
     // Add the gradient to the gradient dictionary (if used)
-    if (Nodule.getGradientFill()) {
+    if (Nodule.globalFillStyle == FillStyle.ShadeFill) {
       if (this.frontFillInUse) {
         returnSVGObject.frontGradientDictionary =
           Nodule.createSVGGradientDictionary(
@@ -1601,11 +1602,14 @@ export default class Ellipse extends Nodule {
 
         //FRONT
         if (
-          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.fillColor.front)
+          Nodule.rgbaIsNoFillOrNoStroke(
+            SETTINGS.ellipse.temp.fillColor.front
+          ) ||
+          Nodule.globalFillStyle == FillStyle.NoFill
         ) {
           this.frontFill.noFill();
         } else {
-          if (Nodule.globalGradientFill) {
+          if (Nodule.globalFillStyle == FillStyle.ShadeFill) {
             this.frontGradientColor.color =
               SETTINGS.ellipse.temp.fillColor.front;
             this.frontFill.fill = this.frontGradient;
@@ -1634,11 +1638,12 @@ export default class Ellipse extends Nodule {
         }
         //BACK
         if (
-          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.fillColor.back)
+          Nodule.rgbaIsNoFillOrNoStroke(SETTINGS.ellipse.temp.fillColor.back) ||
+          Nodule.globalFillStyle == FillStyle.NoFill
         ) {
           this.backFill.noFill();
         } else {
-          if (Nodule.globalGradientFill) {
+          if (Nodule.globalFillStyle == FillStyle.ShadeFill) {
             this.backGradientColor.color = SETTINGS.ellipse.temp.fillColor.back;
             this.backFill.fill = this.backGradient;
           } else {
@@ -1677,10 +1682,13 @@ export default class Ellipse extends Nodule {
         // FRONT
         const frontStyle = this.styleOptions.get(StyleCategory.Front);
 
-        if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
+        if (
+          Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.fillColor) ||
+          Nodule.globalFillStyle == FillStyle.NoFill
+        ) {
           this.frontFill.noFill();
         } else {
-          if (Nodule.globalGradientFill) {
+          if (Nodule.globalFillStyle == FillStyle.ShadeFill) {
             this.frontGradientColor.color =
               frontStyle?.fillColor ?? SETTINGS.ellipse.drawn.fillColor.front;
             this.frontFill.fill = this.frontGradient;
@@ -1718,11 +1726,12 @@ export default class Ellipse extends Nodule {
           if (
             Nodule.rgbaIsNoFillOrNoStroke(
               Nodule.contrastFillColor(frontStyle?.fillColor)
-            )
+            ) ||
+            Nodule.globalFillStyle == FillStyle.NoFill
           ) {
             this.backFill.noFill();
           } else {
-            if (Nodule.globalGradientFill) {
+            if (Nodule.globalFillStyle == FillStyle.ShadeFill) {
               this.backGradientColor.color = Nodule.contrastFillColor(
                 frontStyle?.fillColor ?? "black"
               );
@@ -1735,10 +1744,13 @@ export default class Ellipse extends Nodule {
             }
           }
         } else {
-          if (Nodule.rgbaIsNoFillOrNoStroke(backStyle?.fillColor)) {
+          if (
+            Nodule.rgbaIsNoFillOrNoStroke(backStyle?.fillColor) ||
+            Nodule.globalFillStyle == FillStyle.NoFill
+          ) {
             this.backFill.noFill();
           } else {
-            if (Nodule.globalGradientFill) {
+            if (Nodule.globalFillStyle == FillStyle.ShadeFill) {
               this.backGradientColor.color = backStyle?.fillColor ?? "black";
               this.backFill.fill = this.backGradient;
             } else {

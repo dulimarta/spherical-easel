@@ -31,7 +31,7 @@ import { StyleCategory } from "@/types/Styles";
 import { SEPointDistance } from "@/models/SEPointDistance";
 import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceMeasurementCommand";
 import { AddMeasuredCircleCommand } from "@/commands/AddMeasuredCircleCommand";
-import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
@@ -125,7 +125,8 @@ export default class MeasuredCircleHandler extends Highlighter {
         // Record the model object as the center of the circle
         this.centerSEPoint = selected;
         // Move the startMarker to the current selected point
-        this.temporaryCenterMarker.positionVectorAndDisplay = selected.locationVector;
+        this.temporaryCenterMarker.positionVectorAndDisplay =
+          selected.locationVector;
         // Set the center of the circle in the plottable object
         this.temporaryCircle.centerVector = selected.locationVector;
         // Glow the selected point and select it so the highlighter.ts doesn't unglow it with the mouseMoved method
@@ -209,7 +210,8 @@ export default class MeasuredCircleHandler extends Highlighter {
         // Set the center of the circle in the plottable object - also calls temporaryCircle.readjust()
         this.temporaryCircle.centerVector = this.currentSphereVector;
         // Move the startMarker to the current mouse location
-        this.temporaryCenterMarker.positionVectorAndDisplay = this.currentSphereVector;
+        this.temporaryCenterMarker.positionVectorAndDisplay =
+          this.currentSphereVector;
         // Record the center vector of the circle so it can be past to the non-temporary circle
         this.centerVector.copy(this.currentSphereVector);
         // Set the center of the circle to null so it can be created later
@@ -309,7 +311,8 @@ export default class MeasuredCircleHandler extends Highlighter {
             this.currentSphereVector
           );
       } else if (this.snapTemporaryPointMarkerToPoint == null) {
-        this.temporaryCenterMarker.positionVectorAndDisplay = this.currentSphereVector;
+        this.temporaryCenterMarker.positionVectorAndDisplay =
+          this.currentSphereVector;
       }
     }
     // Make sure that the event is on the sphere
@@ -725,27 +728,21 @@ export default class MeasuredCircleHandler extends Highlighter {
       // Generate new intersection points. These points must be computed and created
       // in the store. Add the new created points to the circle command so they can be undone.
       MeasuredCircleHandler.store
-        .createAllIntersectionsWithCircle(
-          newMeasuredSECircle,
-          newlyCreatedSEPoints
-        )
+        .createAllIntersectionsWith(newMeasuredSECircle, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
             circleCommandGroup.addCommand(
-              new AddIntersectionPointOtherParent(
-                item.SEIntersectionPoint,
-                item.parent1
-              )
+              new AddIntersectionPointOtherParentsInfo(item)
             );
           } else {
             // Create the plottable and model label
             const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
-                new Vector3(
-                  2 * SETTINGS.point.initialLabelOffset,
-                  SETTINGS.point.initialLabelOffset,
-                  0
-                )
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
               )
+            );
 
             circleCommandGroup.addCommand(
               new AddIntersectionPointCommand(

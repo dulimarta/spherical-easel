@@ -1,18 +1,11 @@
-import {
-  SEPoint,
-  SEEllipse,
-  SETranslation,
-  SERotation,
-  SEReflection,
-  SEPointReflection
-} from "./internal";
 import { ObjectState, SEIsometry } from "@/types";
 import i18n from "@/i18n";
-// import { SEEllipse } from "./SEEllipse";
-// import { SETranslation } from "./SETranslation";
-// import { SERotation } from "./SERotation";
-// import { SEReflection } from "./SEReflection";
-// import { SEPointReflection } from "./SEPointReflection";
+import { SEEllipse } from "./SEEllipse";
+import { SETranslation } from "./SETranslation";
+import { SERotation } from "./SERotation";
+import { SEReflection } from "./SEReflection";
+import { SEPointReflection } from "./SEPointReflection";
+import { SEPoint } from "./SEPoint";
 const { t } = i18n.global;
 
 export class SEIsometryEllipse extends SEEllipse {

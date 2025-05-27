@@ -1,10 +1,10 @@
-import { SEPoint } from "./internal";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 const { t } = i18n.global;
 import { getThreeCircleCenter } from "@/utils/helpingfunctions";
+import { SEPoint } from "./SEPoint";
 
 export class SEThreePointCircleCenter extends SEPoint {
   /**

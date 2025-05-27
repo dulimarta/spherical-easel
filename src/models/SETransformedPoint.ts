@@ -1,14 +1,12 @@
-import {
-  SEPoint,
-  SETransformation,
-  SETranslation,
-  SERotation,
-  SEReflection,
-  SEPointReflection,
-  SEInversion
-} from "./internal";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
+import { SEPoint } from "./SEPoint";
+import { SETransformation } from "./SETransformation";
+import { SETranslation } from "./SETranslation";
+import { SERotation } from "./SERotation";
+import { SEReflection } from "./SEReflection";
+import { SEPointReflection } from "./SEPointReflection";
+import { SEInversion } from "./SEInversion";
 const { t } = i18n.global;
 export class SETransformedPoint extends SEPoint {
   /**

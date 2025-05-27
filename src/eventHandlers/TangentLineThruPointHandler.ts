@@ -26,7 +26,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
-import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 import { SELatitude } from "@/models/SELatitude";
@@ -142,7 +142,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
             (this.sePoint instanceof SEAntipodalPoint &&
               !this.sePoint.isUserCreated)
           ) {
-            this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+            this.temporaryPointMarker.positionVectorAndDisplay =
+              this.sePointVector;
             this.temporaryPointMarker.addToLayers(this.layers);
             this.temporaryPointAdded = true;
           }
@@ -155,7 +156,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -168,7 +170,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -181,7 +184,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -194,7 +198,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -207,7 +212,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -216,7 +222,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
           //  Eventually, we will create a new SEPointOneDimensional and Point
           this.sePointOneDimensionalParent = this.hitSEPolygons[0];
           this.sePointVector.copy(this.currentSphereVector);
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -224,7 +231,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
           // The mouse press is not near an existing point or one dimensional object.
           //  Record the location in a temporary point (tempPointMarker found in MouseHandler).
           //  Eventually, we will create a new SEPoint and Point
-          this.temporaryPointMarker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.currentSphereVector;
           this.sePointVector.copy(this.currentSphereVector);
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
@@ -464,14 +472,17 @@ export default class TangentLineThruPointHandler extends Highlighter {
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
         }
-        this.temporaryPointMarker.positionVectorAndDisplay = this.currentSphereVector;
+        this.temporaryPointMarker.positionVectorAndDisplay =
+          this.currentSphereVector;
       }
 
       if (this.snapToTemporaryOneDimensional !== null) {
-         // if this is a line or segment, snap the point to it, if other one dim remove the temp point
+        // if this is a line or segment, snap the point to it, if other one dim remove the temp point
         if (
-         (this.hitSELines[0] !== undefined && this.snapToTemporaryOneDimensional.id === this.hitSELines[0].id) ||
-         (this.hitSESegments[0] !== undefined && this.snapToTemporaryOneDimensional.id === this.hitSESegments[0].id)
+          (this.hitSELines[0] !== undefined &&
+            this.snapToTemporaryOneDimensional.id === this.hitSELines[0].id) ||
+          (this.hitSESegments[0] !== undefined &&
+            this.snapToTemporaryOneDimensional.id === this.hitSESegments[0].id)
         ) {
           this.temporaryPointMarker.positionVectorAndDisplay =
             this.snapToTemporaryOneDimensional.closestVector(
@@ -525,7 +536,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             );
         } else if (this.snapToTemporaryPoint == null) {
-          this.temporaryPointMarker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.currentSphereVector;
         }
       }
       if (this.oneDimensional !== null) {
@@ -782,14 +794,11 @@ export default class TangentLineThruPointHandler extends Highlighter {
 
       // Determine all new intersection points and add their creation to the command so it can be undone
       TangentLineThruPointHandler.store
-        .createAllIntersectionsWithLine(newSETangentLine, newlyCreatedSEPoints)
+        .createAllIntersectionsWith(newSETangentLine, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
             addTangentLineGroup.addCommand(
-              new AddIntersectionPointOtherParent(
-                item.SEIntersectionPoint,
-                item.parent1
-              )
+              new AddIntersectionPointOtherParentsInfo(item)
             );
           } else {
             // Create the plottable label

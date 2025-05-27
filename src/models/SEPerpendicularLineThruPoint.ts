@@ -1,16 +1,14 @@
-import {
-  SEPoint,
-  SELine,
-  SESegment,
-  SECircle,
-  SEEllipse,
-  SEParametric,
-  SEPencil
-} from "./internal";
 import { ObjectState, SEOneDimensional } from "@/types";
 
 import { Vector3 } from "three";
 import i18n from "@/i18n";
+import { SELine } from "./SELine";
+import { SEPencil } from "./SEPencil";
+import { SEPoint } from "./SEPoint";
+import { SESegment } from "./SESegment";
+import { SECircle } from "./SECircle";
+import { SEEllipse } from "./SEEllipse";
+import { SEParametric } from "./SEParametric";
 const { t } = i18n.global;
 export class SEPerpendicularLineThruPoint extends SELine {
   /**

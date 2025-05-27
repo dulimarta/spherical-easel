@@ -2,7 +2,11 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SELine } from "@/models/SELine";
 import { SEEllipse } from "@/models/SEEllipse";
-import { IntersectionReturnType, ParametricIntersectionType } from "@/types";
+import {
+  IntersectionReturnType,
+  ParametricIntersectionType,
+  SEOneDimensional
+} from "@/types";
 import { Vector3, Matrix4, Vector2 } from "three";
 import { SENodule } from "@/models/SENodule";
 import SETTINGS from "@/global-settings";
@@ -10,6 +14,7 @@ import { SEParametric } from "@/models/SEParametric";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { MinHeap } from "@datastructures-js/heap";
+import { rank_of_type } from "./helpingfunctions";
 
 // const PIXEL_CLOSE_ENOUGH = 8;
 
@@ -728,7 +733,7 @@ export function intersectSegmentWithParametric(
 
 /**
  * Find intersection points between two circles.
- * The order *matter* intersectCircleWithCircle(C1,r1,C2,r2) is not intersectCircleWithCircle(C2,r2,C1,r1)
+ * The order *matters* intersectCircleWithCircle(C1,r1,C2,r2) is not intersectCircleWithCircle(C2,r2,C1,r1)
  * Always call this with the circles in lexicographic order
  * The array is a list of the intersections positive then negative.
  * @param n1 center vector of the first circle
@@ -736,6 +741,15 @@ export function intersectSegmentWithParametric(
  * @param n2 center vector of the second circle
  * @param arc2 arc length radius of the second circle
  */
+export function intersectCircleWithCircle(circ1: SECircle, circ2: SECircle) {
+  return intersectCircles(
+    circ1.centerSEPoint.locationVector,
+    circ1.circleRadius,
+    circ2.centerSEPoint.locationVector,
+    circ2.circleRadius
+  );
+}
+
 export function intersectCircles(
   n1: Vector3, // center
   arc1: number, // arc radius
@@ -1547,14 +1561,21 @@ export function intersectParametricWithParametric(
  */
 
 export function intersectTwoObjects(
-  one: SENodule,
-  two: SENodule,
+  one: SEOneDimensional,
+  two: SEOneDimensional,
   inverseTotalRotationMatrix: Matrix4
 ): IntersectionReturnType[] {
-  // console.log(
-  //   `Intersect two objects ${one.name} and ${two.name}.`,
-  //   `In lexicographic order? ${one.name < two.name}`
-  // );
+  const rank1 = rank_of_type(one);
+  const rank2 = rank_of_type(two);
+  if (
+    rank2 < rank1 ||
+    (rank1 == rank2 && two.name < one.name)
+  ) {
+    console.error(
+      `Intersect two objects ${one.name} and ${two.name}: They are NOT in rank and/or lexicographic order! One: ${one.name} and  Two: ${two.name}`
+    );
+  }
+
   if (one instanceof SELine) {
     if (two instanceof SELine)
       return one.name < two.name

@@ -163,21 +163,22 @@
                   <span class="text-subtitle-2">
                     {{ " (" + Math.floor(backStyleContrast * 100) + "%)" }}
                   </span>
+
+                  <v-slider
+                    v-model="backStyleContrast"
+                    :min="0"
+                    :step="0.1"
+                    :max="1"
+                    density="compact">
+                    <template v-slot:thumb-label="{ modelValue }">
+                      {{
+                        backStyleContrastSelectorThumbStrings[
+                          Math.floor(modelValue * 10)
+                        ]
+                      }}
+                    </template>
+                  </v-slider>
                 </p>
-                <v-slider
-                  v-model="backStyleContrast"
-                  :min="0"
-                  :step="0.1"
-                  :max="1"
-                  density="compact">
-                  <template v-slot:thumb-label="{ modelValue }">
-                    {{
-                      backStyleContrastSelectorThumbStrings[
-                        Math.floor(modelValue * 10)
-                      ]
-                    }}
-                  </template>
-                </v-slider>
                 <v-divider></v-divider>
                 <!-- Global fill option -->
                 <v-tooltip
@@ -186,36 +187,32 @@
                   activator="#global-fill-choice">
                   <span>{{ t("globalFillStyleToolTip") }}</span>
                 </v-tooltip>
-                <p id="global-fill-choice">
+                <div id="global-fill-choice">
                   <span class="text-subtitle-2" style="color: red">
                     {{ t("globalFillStyle") + " " }}
                   </span>
-                  <span
-                    v-if="fillStyle"
-                    class="text-subtitle-2"
-                    style="color: black">
-                    {{ t("shadingFill") }}
-                  </span>
-                  <span v-else class="text-subtitle-2" style="color: black">
-                    {{ t("plainFill") }}
-                  </span>
-                </p>
-                <v-switch
-                  v-model="fillStyle"
-                  color="black"
-                  :label="t('changeFillStyleText')"
-                  hide-details></v-switch>
-                <v-btn
-                  :style="{
-                    alignSelf: 'flex-end'
-                  }"
-                  icon="mdi-check"
-                  size="small"
-                  @click="
-                    globalVSlotObject.toggle();
-                    globalOptionsPanelShowing = false;
-                    styleSelection = undefined;
-                  "></v-btn>
+                  <v-select
+                    v-model="fillStyle"
+                    sel:label="t('globalFillStyleOptions')"
+                    :items="fillStyleItems"
+                    item-title="text"
+                    item-value="value"
+                    @mousedown="ignoreMouseDown = true"
+                    variant="outlined"
+                    density="compact"></v-select>
+
+                  <v-btn
+                    :style="{
+                      alignSelf: 'flex-end'
+                    }"
+                    icon="mdi-check"
+                    size="small"
+                    @click="
+                      globalVSlotObject.toggle();
+                      globalOptionsPanelShowing = false;
+                      styleSelection = undefined;
+                    "></v-btn>
+                </div>
               </v-sheet>
             </div>
           </v-item>
@@ -292,6 +289,7 @@ import Nodule from "@/plottables/Nodule";
 import { SEText } from "@/models/SEText";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import { FillStyle } from "@/types";
 
 const minified = ref(true);
 const { t } = useI18n();
@@ -303,7 +301,22 @@ const { i18nMessageSelector, hasLabelObject, resetInitialAndDefaultStyleMaps } =
   styleStore;
 const styleSelection = ref<number | undefined>(undefined);
 // const { hasStyle, hasDisagreement } = styleStore;
-const fillStyle = ref(Nodule.getGradientFill());
+const fillStyle = ref(Nodule.getFillStyle());
+const fillStyleItems = [
+  {
+    text: t("noFill"),
+    value: FillStyle.NoFill
+  },
+  {
+    text: t("plainFill"),
+    value: FillStyle.PlainFill
+  },
+  {
+    text: t("shadeFill"),
+    value: FillStyle.ShadeFill
+  }
+];
+
 const backStyleContrast = ref(Nodule.getBackStyleContrast());
 const backStyleContrastSelectorThumbStrings = [
   "Min",
@@ -346,9 +359,9 @@ watch(
 
 watch(
   () => fillStyle.value,
-  gradientFill => {
-    console.debug("Updating fill style to", gradientFill);
-    styleStore.changeFillStyle(gradientFill);
+  newFillStyle => {
+    console.log("Updating fill style to", newFillStyle);
+    styleStore.changeFillStyle(newFillStyle);
   }
 );
 
@@ -477,8 +490,11 @@ const handleClick = (event: MouseEvent) => {
         globalOptionsPanelIcon.value.contains(event.target as Node)
       )
     ) {
-      globalOptionsPanelShowing.value = false;
-      styleSelection.value = undefined; //Ensures the current style changes are recorded if necessary
+      if (!ignoreMouseDown.value) {
+        globalOptionsPanelShowing.value = false;
+        styleSelection.value = undefined; //Ensures the current style changes are recorded if necessary
+      }
+      ignoreMouseDown.value = false;
     }
   }
 };
@@ -523,11 +539,11 @@ function styleIconAction(
 
 onMounted((): void => {
   document.addEventListener("mousedown", handleClick); //MUST be mousedown because, if is it mouse up or click, then the other event handlers process this event first. For example, if this was mouseup or click, and the user clicks in the sphere, then the selection tool clears the selection *before* the user style choices can be recorded (which defeats the whole purpose of this listener).
-  fillStyle.value = Nodule.getGradientFill();
+  fillStyle.value = Nodule.getFillStyle();
 });
 onBeforeUpdate((): void => {
-  fillStyle.value = Nodule.getGradientFill(); 
-  backStyleContrast.value = Nodule.getBackStyleContrast();// If these lines are removed when you load a construction that doesn't have the default fill (shading) or default global back style (50%) then when you initially open the global options panel the fill type/contrast is displayed incorrectly
+  fillStyle.value = Nodule.getFillStyle();
+  backStyleContrast.value = Nodule.getBackStyleContrast(); // If these lines are removed when you load a construction that doesn't have the default fill (shading) or default global back style (50%) then when you initially open the global options panel the fill type/contrast is displayed incorrectly
 });
 
 onBeforeUnmount((): void => {
@@ -586,7 +602,7 @@ const nonTextSelectedLabelsCount = computed(() => {
 });
 
 function closeStyleDrawer() {
-  minified.value = !minified.value; 
+  minified.value = !minified.value;
 }
 
 function undoStyleChanges() {
@@ -638,11 +654,12 @@ function activateSelectionTool() {
   "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of Global Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is invisible and its size reduction is maximized.",
   "globalBackStyleContrast": "Global Back Style Contrast",
   "globalBackStyleContrastToolTip": "Adjusts the default display of objects on the back of the sphere and the fill style.",
-  "globalFillStyle": "Current Global Fill Style:",
-  "changeFillStyleText": "Change Fill Style",
-  "globalFillStyleToolTip": "By default a gradient/shading fill is used to make the fill of circles, ellipses, and polygons appear more three dimensional. This switch toggles this feature.",
-  "shadingFill": "Shading",
-  "plainFill": "Plain",
+  "globalFillStyleOptions": "Global Fill Style Options",
+  "globalFillStyle": "Global Fill Style",
+  "globalFillStyleToolTip": "Change the fill style for circles, ellipses, polygons, and angle markers. Shading makes the objects appear more three-dimensional.",
+  "shadeFill": "Shading",
+  "plainFill": "Solid",
+  "noFill": "No Fill",
   "showHideLabels": "Show/Hide Labels",
   "textHasNoLabel": "Text objects have no labels"
 }

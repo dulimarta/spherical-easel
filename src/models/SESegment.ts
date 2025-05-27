@@ -3,7 +3,6 @@ import Segment from "@/plottables/Segment";
 import { Vector2, Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { SEPoint, SELabel } from "./internal";
 import SETTINGS from "@/global-settings";
 import {
   OneDimensional,
@@ -19,6 +18,8 @@ import {
 import i18n from "@/i18n";
 import NonFreeSegment from "@/plottables/NonFreeSegment";
 import { DisplayStyle } from "@/plottables/Nodule";
+import { SELabel } from "./SELabel";
+import { SEPoint } from "./SEPoint";
 const { t } = i18n.global;
 
 const styleSet = new Set([

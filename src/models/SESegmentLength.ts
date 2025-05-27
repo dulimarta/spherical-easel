@@ -1,8 +1,10 @@
-import { SEExpression, SENodule, SESegment } from "./internal";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
 import EventBus from "@/eventHandlers/EventBus";
+import { SEExpression } from "./SEExpression";
+import { SESegment } from "./SESegment";
+import { SENodule } from "@/models/SENodule";
 const emptySet = new Set<string>();
 const { t } = i18n.global;
 

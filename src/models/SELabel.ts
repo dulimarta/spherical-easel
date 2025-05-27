@@ -11,26 +11,17 @@ import {
   Labelable,
   ObjectState
 } from "@/types";
-import {
-  SEPoint,
-  SESegment,
-  SELine,
-  SECircle,
-  SEAngleMarker,
-  SEEllipse,
-  SEParametric,
-  SEPolygon
-} from "./internal";
-// import { SESegment } from "./SESegment";
-// import { SELine } from "./SELine";
-// import { SECircle } from "./SECircle";
-// import { SEAngleMarker } from "./SEAngleMarker";
-// import { SEEllipse } from "./SEEllipse";
-// import { SEParametric } from "./SEParametric";
-// import { SEPolygon } from "./SEPolygon";
+import { SESegment } from "./SESegment";
+import { SELine } from "./SELine";
+import { SECircle } from "./SECircle";
+import { SEAngleMarker } from "./SEAngleMarker";
+import { SEEllipse } from "./SEEllipse";
+import { SEParametric } from "./SEParametric";
+import { SEPolygon } from "./SEPolygon";
 import { SEEarthPoint } from "./SEEarthPoint";
 import { SELatitude } from "./SELatitude";
 import { SELongitude } from "./SELongitude";
+import { SEPoint } from "./SEPoint";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LABEL_TEXT_STYLE)

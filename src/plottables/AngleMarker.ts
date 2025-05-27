@@ -16,7 +16,6 @@ import { Path } from "two.js/src/path";
 import { Line } from "two.js/src/shapes/line";
 import { Vector } from "two.js/src/vector";
 import { svgStyleType, toSVGType } from "@/types";
-import EventBus from "@/eventHandlers/EventBus";
 
 const NUMCIRCLEVERTICES = SETTINGS.angleMarker.numCirclePoints;
 const radius = SETTINGS.boundaryCircle.radius;
@@ -763,33 +762,6 @@ export default class AngleMarker extends Nodule {
       this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
     this._glowingBackTick.vertices[1].y =
       this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
-
-    // // Now compute the end of the glowing/not glowing, front/back, not double tick marks
-    // this.tmpVector1.set(0, 0, 0);
-    // this.tmpVector1.addScaledVector(
-    //   this.desiredZAxis,
-    //   Math.cos(this._radiusDouble + this._tickMarkLength / 2)
-    // );
-    // this.tmpVector1.addScaledVector(
-    //   this.tmpVector,
-    //   Math.sin(this._radiusDouble + (3 * this._tickMarkLength) / 4)
-    // );
-    // this._frontTickDouble.vertices[1].x =
-    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
-    // this._frontTickDouble.vertices[1].y =
-    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
-    // this._backTickDouble.vertices[1].x =
-    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
-    // this._backTickDouble.vertices[1].y =
-    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
-    // this._glowingFrontTickDouble.vertices[1].x =
-    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
-    // this._glowingFrontTickDouble.vertices[1].y =
-    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
-    // this._glowingBackTickDouble.vertices[1].x =
-    //   this.tmpVector1.x * SETTINGS.boundaryCircle.radius;
-    // this._glowingBackTickDouble.vertices[1].y =
-    //   this.tmpVector1.y * SETTINGS.boundaryCircle.radius;
 
     // Compute the arrow head vertices.
     // The arrow head is a non-convex non-crossed quadrilateral (almost a kite whose diagonals don't intersect)

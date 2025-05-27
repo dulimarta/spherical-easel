@@ -1,13 +1,14 @@
 import Nodule from "@/plottables/Nodule";
 import { Command } from "./Command";
-import { SavedNames, toSVGType } from "@/types";
-import { SENodule } from "@/models/internal";
+import { FillStyle, SavedNames } from "@/types";
+import { SENodule } from "@/models/SENodule";
+
 
 export class ChangeFillStyleCommand extends Command {
-  private currentFillStyle: boolean;
-  private pastFillStyle: boolean;
+  private currentFillStyle: FillStyle;
+  private pastFillStyle: FillStyle;
 
-  constructor(currentFillStyle: boolean, pastFillStyle: boolean) {
+  constructor(currentFillStyle: FillStyle, pastFillStyle: FillStyle) {
     super();
 
     this.currentFillStyle = currentFillStyle;
@@ -15,8 +16,8 @@ export class ChangeFillStyleCommand extends Command {
   }
 
   do(): void {
-    Nodule.setGradientFill(this.currentFillStyle);
-    Command.store.changeGradientFill(this.currentFillStyle);
+    Nodule.setFillStyle(this.currentFillStyle);
+    Command.store.changeFillStyle(this.currentFillStyle);
   }
 
   saveState(): void {
@@ -24,8 +25,8 @@ export class ChangeFillStyleCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.changeGradientFill(this.pastFillStyle);
-    Nodule.setGradientFill(this.pastFillStyle);
+    Command.store.changeFillStyle(this.pastFillStyle);
+    Nodule.setFillStyle(this.pastFillStyle);
   }
 
   toOpcode(): null | string | Array<string> {
@@ -45,8 +46,18 @@ export class ChangeFillStyleCommand extends Command {
       const parts = token.split("=");
       propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
     });
-    const currentFillStyle = propMap.get("currentGlobalFillStyle") === "true";
-    const pastFillStyle = propMap.get("pastGlobalFillStyle") === "true";
-    return new ChangeFillStyleCommand(currentFillStyle, pastFillStyle);
+    const currentFillStyle = Number(propMap.get("currentGlobalFillStyle")) as
+      | FillStyle
+      | undefined;
+    const pastFillStyle = Number(propMap.get("pastGlobalFillStyle")) as
+      | FillStyle
+      | undefined;
+    if (currentFillStyle != undefined && pastFillStyle != undefined) {
+      return new ChangeFillStyleCommand(currentFillStyle, pastFillStyle);
+    }else {
+      throw new Error(
+        `ChangeFillStyleCommand: past or current fill is undefined`
+      );
+    }
   }
 }

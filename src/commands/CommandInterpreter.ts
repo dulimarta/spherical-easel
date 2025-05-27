@@ -41,10 +41,10 @@ import { AddIsometryLineCommand } from "./AddIsometryLineCommand";
 import { AddIsometryCircleCommand } from "./AddIsometryCircleCommand";
 import { AddIsometryEllipseCommand } from "./AddIsometryEllipseCommand";
 import { AddInvertedCircleCenterCommand } from "./AddInvertedCircleCenterCommand";
-import { AddIntersectionPointOtherParent } from "./AddIntersectionPointOtherParent";
-import { RemoveIntersectionPointOtherParent } from "./RemoveIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "./AddIntersectionPointOtherParentsInfo";
+import { RemoveIntersectionPointOtherParentsInfo } from "./RemoveIntersectionPointOtherParentsInfo";
 import { DeleteNoduleCommand } from "./DeleteNoduleCommand";
-import { ChangeIntersectionPointPrincipleParent } from "./ChangeIntersectionPointPrincipleParent";
+import { ChangeIntersectionPointPrincipleParents } from "./ChangeIntersectionPointPrincipleParents";
 import { SetNoduleDisplayCommand } from "./SetNoduleDisplayCommand";
 import { SetValueDisplayModeCommand } from "./SetValueDisplayModeCommand";
 import { SetEarthModeCommand } from "./SetEarthModeCommand";
@@ -77,10 +77,10 @@ function executeIndividual(command: string): Command {
       return AddPointOnOneDimensionalCommand.parse(command, noduleDictionary);
     case "AddIntersectionPoint":
       return AddIntersectionPointCommand.parse(command, noduleDictionary);
-    case "AddIntersectionPointOtherParent":
-      return AddIntersectionPointOtherParent.parse(command, noduleDictionary);
-    case "RemoveIntersectionPointOtherParent":
-      return RemoveIntersectionPointOtherParent.parse(
+    case "AddIntersectionPointOtherParentsInfo":
+      return AddIntersectionPointOtherParentsInfo.parse(command, noduleDictionary);
+    case "RemoveIntersectionPointOtherParentsInfo":
+      return RemoveIntersectionPointOtherParentsInfo.parse(
         command,
         noduleDictionary
       );
@@ -169,8 +169,8 @@ function executeIndividual(command: string): Command {
       return AddInvertedCircleCenterCommand.parse(command, noduleDictionary);
     case "DeleteNodule":
       return DeleteNoduleCommand.parse(command, noduleDictionary);
-    case "ChangeIntersectionPointPrinciplePoint":
-      return ChangeIntersectionPointPrincipleParent.parse(
+    case "ChangeIntersectionPointPrincipleParents":
+      return ChangeIntersectionPointPrincipleParents.parse(
         command,
         noduleDictionary
       );

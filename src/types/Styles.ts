@@ -9,7 +9,6 @@ export enum StyleCategory {
   Advanced
 }
 
-
 export type StyleOptions = ShapeStyleOptions & LabelStyleOptions
 export type ShapeStyleOptions = {
   strokeWidthPercent?: number;

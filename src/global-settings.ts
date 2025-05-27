@@ -1,4 +1,4 @@
-import { ValueDisplayMode, LabelDisplayMode } from "./types";
+import { ValueDisplayMode, LabelDisplayMode, FillStyle } from "./types";
 import colors from "vuetify/util/colors";
 export const SETTINGS = {
   nearlyAntipodalIdeal: 0.01, // Two unit vectors, U and V, are nearly antipodal or nearly parallel (the) if crossVectors(U,V).isZero(nearlyAntipodalIdeal) is true. June 2024 - when this was 0.005 it was hard to draw a segment of length bigger than pi using the update method in SESegment
@@ -147,8 +147,8 @@ export const SETTINGS = {
     fill: {
       // offset for the color fill. At this percent of the radius (boundaryCircle) the fill becomes all the fill color and not a bleed from the center color.
       gradientPercent: 0.8,
-      // Initially Draw the fills using a gradient or not
-      gradientFill: true,
+      // Initially use no fill for polygon, circle, ellipse, anglemarker
+      fillStyle: FillStyle.NoFill,
       //The location of the light source when shading using a gradient fill (also called the focal point) relative to the center of the boundary circle. This must be in the radius of the gradient fill (which is the boundary circle radius)
       lightSource: {
         x: -250 / 3, // 250 is the radius of the boundary circle

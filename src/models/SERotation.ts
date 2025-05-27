@@ -1,8 +1,10 @@
 import { SENodule } from "./SENodule";
 import { Matrix4, Vector3 } from "three";
-import { SETransformation, SEPoint, SEExpression } from "./internal";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
+import { SETransformation } from "./SETransformation";
+import { SEPoint } from "./SEPoint";
+import { SEExpression } from "./SEExpression";
 const { t } = i18n.global;
 
 export class SERotation extends SETransformation {

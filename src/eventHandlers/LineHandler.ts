@@ -17,7 +17,7 @@ import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
-import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
@@ -110,7 +110,8 @@ export default class LineHandler extends Highlighter {
         const selected = this.hitSEPoints[0];
         this.startVector.copy(selected.locationVector);
         this.startSEPoint = this.hitSEPoints[0];
-        this.temporaryStartMarker.positionVectorAndDisplay = selected.locationVector;
+        this.temporaryStartMarker.positionVectorAndDisplay =
+          selected.locationVector;
         // Glow the selected point and select it so the highlighter.ts doesn't unglow it with the mouseMoved method
         this.startSEPoint.glowing = true;
         this.startSEPoint.selected = true;
@@ -184,11 +185,13 @@ export default class LineHandler extends Highlighter {
         // The mouse press is not near an existing point or one dimensional object.
         //  Record the location in a temporary point (startMarker found in MouseHandler).
         //  Eventually, we will create a new SEPoint and Point
-        this.temporaryStartMarker.positionVectorAndDisplay = this.currentSphereVector;
+        this.temporaryStartMarker.positionVectorAndDisplay =
+          this.currentSphereVector;
         this.startVector.copy(this.currentSphereVector);
         this.startSEPoint = null;
       }
-      this.temporaryEndMarker.positionVectorAndDisplay = this.currentSphereVector;
+      this.temporaryEndMarker.positionVectorAndDisplay =
+        this.currentSphereVector;
     }
   }
   mouseMoved(event: MouseEvent): void {
@@ -330,7 +333,8 @@ export default class LineHandler extends Highlighter {
               this.currentSphereVector
             );
         } else if (this.snapStartMarkerToTemporaryPoint == null) {
-          this.temporaryStartMarker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryStartMarker.positionVectorAndDisplay =
+            this.currentSphereVector;
         }
       } else {
         // If the temporary startMarker has *not* been added to the scene do so now (it might have
@@ -356,7 +360,8 @@ export default class LineHandler extends Highlighter {
               this.currentSphereVector
             );
         } else {
-          this.temporaryEndMarker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryEndMarker.positionVectorAndDisplay =
+            this.currentSphereVector;
         }
 
         // If the temporary line has *not* been added to the scene do so now (only once)
@@ -775,7 +780,7 @@ export default class LineHandler extends Highlighter {
       // Determine all new intersection points and add their creation to the command so it can be undone
       // let i = 1;
       LineHandler.store
-        .createAllIntersectionsWithLine(newSELine, newlyCreatedSEPoints)
+        .createAllIntersectionsWith(newSELine, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           // console.debug(
           //   `Line Intersection count ${i} ${item.existingIntersectionPoint} ${item.parent1.name} ${item.parent2.name}`
@@ -783,10 +788,7 @@ export default class LineHandler extends Highlighter {
           // i += 1;
           if (item.existingIntersectionPoint) {
             lineGroup.addCommand(
-              new AddIntersectionPointOtherParent(
-                item.SEIntersectionPoint,
-                item.parent1
-              )
+              new AddIntersectionPointOtherParentsInfo(item)
             );
           } else {
             // Create the plottable label

@@ -10,7 +10,6 @@ import {
   NormalAndPerpendicularPoint,
   ObjectState
 } from "@/types";
-import { SELabel, SEPoint } from "./internal";
 import i18n from "@/i18n";
 import {
   DEFAULT_LINE_BACK_STYLE,
@@ -18,6 +17,8 @@ import {
 } from "@/types/Styles";
 import { DisplayStyle } from "@/plottables/Nodule";
 import NonFreeLine from "@/plottables/NonFreeLine";
+import { SELabel } from "./SELabel";
+import { SEPoint } from "./SEPoint";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LINE_FRONT_STYLE),

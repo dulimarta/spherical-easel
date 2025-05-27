@@ -21,7 +21,7 @@ import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
-import { SENodule } from "@/models/internal";
+import { SENodule } from "@/models/SENodule";
 
 enum HighlightMode {
   NONE,

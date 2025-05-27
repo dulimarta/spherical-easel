@@ -1,4 +1,4 @@
-import { SELabel } from "@/models/internal"
+import { SELabel } from "@/models/dontuse-internal"
 import { Vector3 } from "three"
 
 

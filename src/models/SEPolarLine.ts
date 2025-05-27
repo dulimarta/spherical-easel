@@ -1,9 +1,10 @@
 import { Visitable } from "@/visitors/Visitable";
-import { SEPoint, SELine } from "./internal";
 import SETTINGS from "@/global-settings";
 import { OneDimensional, Labelable, ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { Vector3 } from "three";
+import { SELine } from "./SELine";
+import { SEPoint } from "./SEPoint";
 const { t } = i18n.global;
 
 export class SEPolarLine
