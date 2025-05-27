@@ -247,7 +247,7 @@ export default class MoveHandler extends Highlighter {
         }
       }
     } else {
-      // In this case the user mouse pressed in a location with *no* nodules (nothing was highlighted when she mouse pressed)
+      // In this case the user mouse pressed in a location with *no* nodules (nothing was highlighted when she mouse pressed) or inside a SEPolygon
 
       // Check to see if there was an object on the back of the sphere that he was trying to
       // select but doesn't know about the shift key.  Send an alert in this case
@@ -539,8 +539,8 @@ export default class MoveHandler extends Highlighter {
                 seNoduleBeforeState.locationVector &&
                 !tmpVector1
                   .subVectors(
-                    seNoduleAfterState.locationVector,
-                    seNoduleBeforeState.locationVector
+                    seNoduleAfterState.locationVector as Vector3,
+                    seNoduleBeforeState.locationVector as Vector3
                   )
                   .isZero(SETTINGS.nearlyAntipodalIdeal)
               ) {
@@ -548,16 +548,16 @@ export default class MoveHandler extends Highlighter {
                   moveCommandGroup.addCommand(
                     new MovePointCommand(
                       seNoduleAfterState.object as SEPoint,
-                      seNoduleBeforeState.locationVector,
-                      seNoduleAfterState.locationVector
+                      seNoduleBeforeState.locationVector as Vector3,
+                      seNoduleAfterState.locationVector as Vector3
                     )
                   );
                 } else {
                   moveCommandGroup.addCommand(
                     new MoveLabelCommand(
                       seNoduleAfterState.object as SELabel,
-                      seNoduleBeforeState.locationVector,
-                      seNoduleAfterState.locationVector
+                      seNoduleBeforeState.locationVector as Vector3,
+                      seNoduleAfterState.locationVector as Vector3
                     )
                   );
                 }

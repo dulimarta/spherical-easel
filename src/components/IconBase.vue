@@ -10,7 +10,8 @@
     preserveAspectRatio="xMidYMid meet"
     :aria-labelledby="iconName"
     :style="customIconStyle"
-    vector-effect="non-scaling-stroke">
+    vector-effect="non-scaling-stroke"
+    width="100%">
     <g v-html="svgSnippetAmended"></g>
   </svg>
 </template>

@@ -133,7 +133,8 @@ export default abstract class Highlighter extends MouseHandler {
       ...this.hitSEPolygons,
       ...this.hitSETexts
     ]
-      .map(n => n.label?.ref.shortUserName)
+      // .map(n => n.label?.ref.shortUserName)
+      .map(n => n.name) //use internal names
       .join(", ");
 
     if (text.length > 0) {

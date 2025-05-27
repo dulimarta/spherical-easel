@@ -56,7 +56,7 @@ export default class AntipodalPointHandler extends Highlighter {
 
   constructor(layers: Group[]) {
     super(layers);
-    console.debug("AntipodalPointHandler::constructor")
+    console.debug("AntipodalPointHandler::constructor");
     // Create and style the temporary antipode/point marking the antipode/point being created
     this.temporaryAntipodeMarker = new Point();
     AntipodalPointHandler.store.addTemporaryNodule(
@@ -101,8 +101,9 @@ export default class AntipodalPointHandler extends Highlighter {
             `AntipodePointHandler: The point ${this.parentPoint.name} doesn't have an antipode!`
           );
         } else {
-          possibleAntipode =
-            AntipodalPointHandler.store.sePoints[antipodeIndex] as any;
+          possibleAntipode = AntipodalPointHandler.store.sePoints[
+            antipodeIndex
+          ] as any;
         }
         this.revealAntipode(possibleAntipode as any, this.parentPoint);
       } else if (this.hitSESegments.length > 0) {
@@ -211,19 +212,6 @@ export default class AntipodalPointHandler extends Highlighter {
               0
             )
           );
-          // const newSELabel = new SELabel("point", this.parentPoint);
-          // // Set the initial label location
-          // this.tmpVector
-          //   .copy(this.parentPoint.locationVector)
-          //   .add(
-          //     new Vector3(
-          //       2 * SETTINGS.point.initialLabelOffset,
-          //       SETTINGS.point.initialLabelOffset,
-          //       0
-          //     )
-          //   )
-          //   .normalize();
-          // newSELabel.locationVector = this.tmpVector;
 
           antipodalCommandGroup.addCommand(
             new AddPointCommand(this.parentPoint, newSELabel)
@@ -231,10 +219,11 @@ export default class AntipodalPointHandler extends Highlighter {
         }
 
         // Create the model object for the new point and link them
-        const vtx = new SEAntipodalPoint(this.parentPoint, true);
-
+        const antipodalVtx = new SEAntipodalPoint(this.parentPoint, true);
+        antipodalVtx.locationVector = this.parentPoint.locationVector;
+        antipodalVtx.locationVector.multiplyScalar(-1);
         // Create the plottable label
-        const newSELabel = vtx.attachLabelWithOffset(
+        const newSELabel = antipodalVtx.attachLabelWithOffset(
           new Vector3(
             2 * SETTINGS.point.initialLabelOffset,
             SETTINGS.point.initialLabelOffset,
@@ -244,9 +233,9 @@ export default class AntipodalPointHandler extends Highlighter {
 
         // Create and execute the command to create a new point for undo/redo
         antipodalCommandGroup.addCommand(
-          new AddAntipodalPointCommand(vtx, this.parentPoint, newSELabel)
+          new AddAntipodalPointCommand(antipodalVtx, this.parentPoint, newSELabel)
         );
-        vtx.shallowUpdate();
+        antipodalVtx.shallowUpdate();
 
         antipodalCommandGroup.execute();
 
@@ -360,9 +349,8 @@ export default class AntipodalPointHandler extends Highlighter {
           .multiplyScalar(-1);
         if (this.hitSEPoints.length === 0) {
           //no nearby points that can be antipode_ed, so display the pointMarker
-          this.temporaryPointMarker.positionVectorAndDisplay = this.tmpVector.copy(
-            this.currentSphereVector
-          );
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.tmpVector.copy(this.currentSphereVector);
         } else {
           // there is a nearby point so the temporary point should not be displayed
           // Remove the temporary objects from the display.
@@ -389,11 +377,12 @@ export default class AntipodalPointHandler extends Highlighter {
           .multiplyScalar(-1);
         if (this.hitSEPoints.length === 0) {
           //no nearby points, so display the pointMarker
-          this.temporaryPointMarker.positionVectorAndDisplay = this.tmpVector.copy(
-            this.snapToTemporaryOneDimensional.closestVector(
-              this.currentSphereVector
-            )
-          );
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.tmpVector.copy(
+              this.snapToTemporaryOneDimensional.closestVector(
+                this.currentSphereVector
+              )
+            );
         } else {
           // there is a nearby point so the temporary point should not be displayed
           // Remove the temporary objects from the display.
@@ -415,9 +404,8 @@ export default class AntipodalPointHandler extends Highlighter {
           .multiplyScalar(-1);
         if (this.hitSEPoints.length === 0) {
           //no nearby points, so display the pointMarker
-          this.temporaryPointMarker.positionVectorAndDisplay = this.tmpVector.copy(
-            this.snapToTemporaryPoint.locationVector
-          );
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.tmpVector.copy(this.snapToTemporaryPoint.locationVector);
         } else {
           // there is a nearby point so the temporary point should not be displayed
           // Remove the temporary objects from the display.
@@ -468,8 +456,9 @@ export default class AntipodalPointHandler extends Highlighter {
     this.snapToTemporaryOneDimensional = null;
     this.snapToTemporaryPoint = null;
   }
+
   activate(): void {
-    console.debug("AntipodalPointHandler::activate")
+    console.debug("AntipodalPointHandler::activate");
 
     // If there is exactly one point selected, reveal its anitpode unless it is already visible
     if (AntipodalPointHandler.store.selectedSENodules.length == 1) {
@@ -503,7 +492,7 @@ export default class AntipodalPointHandler extends Highlighter {
   }
 
   deactivate(): void {
-    console.debug("AntipodalPointHandler::deActivate")
+    console.debug("AntipodalPointHandler::deActivate");
 
     super.deactivate();
   }

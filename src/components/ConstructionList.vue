@@ -208,6 +208,8 @@ import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
 import { useConstructionStore } from "@/stores/construction";
 import { useClipboard } from "@vueuse/core";
+import { DisplayStyle } from "@/plottables/Nodule";
+
 const props = defineProps<{
   items: Array<SphericalConstruction>;
   allowSharing: boolean;
@@ -319,12 +321,16 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
     EventBus.fire("construction-loaded", {});
     seStore.setActionMode("move");
     console.debug("# of objects", seNodules.value.length);
+
     // After fixing the locationVector.copy() bug in the
     // parse() functions, the following call to updateDisplay
     // becomes unnecessary
-    // seNodules.value.forEach(obj => {
+
+    // include this so that filled objects (circles, ellipses, polygons, angleMarkers) display correctly after loading
+    seNodules.value.forEach(obj => {
+      obj.update()
     // obj.ref?.stylize(DisplayStyle.ApplyCurrentVariables)
-    // })
+    })
   }
 }
 

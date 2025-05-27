@@ -58,10 +58,11 @@
   <Dialog
     id="inputDialog"
     ref="inputDialog"
-    title="Text Tool"
-    yes-text="Submit"
-    no-text="Cancel"
-    :yes-action="currentSubmitAction"
+    :title="t('collectTextObjectString')"
+    :yes-text="t('exportAction')"
+    :no-text="t('cancelAction')"
+    :yes-action="submitAction"
+    :no-action="cancelAction"
     max-width="40%">
     <v-text-field
       type="text"
@@ -69,7 +70,7 @@
       clearable
       counter
       persistent-hint
-      label="Input Text"
+      :label="t('inputText')"
       required
       v-model="userInput"></v-text-field>
   </Dialog>
@@ -148,8 +149,7 @@ import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
 import { useMagicKeys } from "@vueuse/core";
 import { watchEffect } from "vue";
-import { SEText } from "@/models/SEText";
-import { nextTick } from "vue";
+import Settings from "@/views/Settings.vue";
 
 type ComponentProps = {
   availableHeight: number;
@@ -194,58 +194,26 @@ const { shift, alt, d, ctrl } = useMagicKeys();
 
 const inputDialog: Ref<DialogAction | null> = ref(null);
 const userInput = ref("");
-const currentSubmitAction = ref(() => {}); // Dynamic action placeholder
-const editingTextId = ref<number | null>(null); // Reactive state for textId
-const editingOldText = ref<string>(""); // Reactive state for oldText
-const originalSeText = ref<SEText | null>(null); //Needed to pass original seText object
-const handleSubmit = () => {
-  // Emit the text back to the handler if it not empty
-  if (userInput.value != "") {
-    EventBus.fire("text-data-submitted", { text: userInput.value });
-  }
+const submitAction = ref(() => {}); // Dynamic action placeholder
+const cancelAction = ref(() => {}); // Dynamic action placeholder
+
+const handleTextObjectEdit = () => {
+  EventBus.fire("text-data-submitted", {
+    text: userInput.value
+  }); // if the text is empty, the user is issued a warning in textHandler
   inputDialog.value?.hide();
   userInput.value = ""; // Clear input after submission
 };
-const handleEditSubmit = () => {
-  EventBus.fire("text-data-edited", {
-    text: userInput.value,
-    textId: editingTextId.value,
-    oldText: editingOldText.value,
-    seText: originalSeText.value
-  });
-  inputDialog.value?.hide();
-  userInput.value = ""; // Clear input after submission
-  editingTextId.value = null; // Clear textId
+
+const handleTextObjectEditCancel = () => {
+  userInput.value = ""; // set the payload in "text-data-submitted" to the empty string so that in textHandler the selected text object is set to null
+  handleTextObjectEdit();
 };
-const showTextInputDialog = async () => {
-  currentSubmitAction.value = handleSubmit; // Set action to create
+const showTextObjectEditDialog = (payload: { oldText: string | null }) => {
+  submitAction.value = handleTextObjectEdit; // Set action to edit
+  cancelAction.value = handleTextObjectEditCancel;
+  userInput.value = payload.oldText ?? "";
   inputDialog.value?.show();
-  await nextTick();
-  const textInput = document.querySelector("#inputDialog input") as HTMLElement
-  if (textInput) {
-    setTimeout(() => {
-      // Calling focus() without timeout does not work, even after nextTick()
-      textInput.focus()
-    }, 100)
-  }
-  // const textInput = inputDialog.value!! as unknown) as HTMLElement).querySelector("input")
-};
-const showTextEditDialog = (payload: {
-  oldText: string;
-  textId: number;
-  seText: SEText;
-}) => {
-  currentSubmitAction.value = handleEditSubmit; // Set action to edit
-  // console.debug("Attempting to open Edit Dialog...");
-  // console.debug(inputDialog.value);
-  const { oldText, textId, seText } = payload;
-  editingTextId.value = textId;
-  editingOldText.value = oldText;
-  originalSeText.value = seText;
-  userInput.value = oldText;
-  // console.debug("Prefilled userInput: ", userInput.value)
-  inputDialog.value?.show();
-  // console.debug("Dialog Open Edit");
 };
 
 /**
@@ -257,7 +225,7 @@ const showTextEditDialog = (payload: {
 let twoInstance!: Two;
 
 /**
- * The circle that is the end of the projection of the Default Sphere in the Default Screen Plane
+ * The circle that is the edge of the projection of the Default Sphere in the Default Screen Plane
  */
 let boundaryCircle!: Circle;
 /**
@@ -413,8 +381,7 @@ onBeforeMount((): void => {
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   EventBus.listen("update-fill-objects", updateObjectsWithFill);
   // EventBus.listen("export-current-svg-for-icon", getCurrentSVGForIcon);
-  EventBus.listen("show-text-dialog", showTextInputDialog);
-  EventBus.listen("show-edit-dialog", showTextEditDialog);
+  EventBus.listen("show-text-edit-dialog", showTextObjectEditDialog);
 });
 
 onMounted((): void => {
@@ -517,8 +484,7 @@ onBeforeUnmount((): void => {
   // EventBus.unlisten("update-two-instance");
   EventBus.unlisten("update-fill-objects");
   //EventBus.unlisten("export-current-svg-for-icon");
-  EventBus.unlisten("show-text-dialog");
-  EventBus.unlisten("show-edit-dialog");
+  EventBus.unlisten("show-text-edit-dialog");
 });
 
 watch(
@@ -548,7 +514,13 @@ watch(
     seStore.setCanvasDimension(width, height);
   }
 );
-
+//adjust the width of the boundary circle for zoom
+watch(
+  () => zoomMagnificationFactor.value,
+  newFactor => {
+    boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth / newFactor;
+  }
+);
 /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
 
 // The translation element of the CSS transform matrix
@@ -1153,6 +1125,14 @@ function listItemStyle(idx: number, xLoc: string, yLoc: string) {
   return style;
 }
 </script>
+<i18n locale="en" lang="json">
+{
+  "collectTextObjectString": "Text Object String",
+  "exportAction": "Enter",
+  "cancelAction": "Cancel",
+  "inputText": "Enter Text String"
+}
+</i18n>
 
 <style lang="scss" scoped>
 .spin {

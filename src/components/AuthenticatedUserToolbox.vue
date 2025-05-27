@@ -49,81 +49,82 @@
       v-if="constructionDocId"
       @click="() => exportConstructionDialog?.show()"
       tooltip="Export Construction">
-      <template #icon>mdi-file-export</template>
+      <template #icon>mdi-export</template>
     </HintButton>
   </div>
   <Dialog
-  ref="saveConstructionDialog"
-  :title="
-    isSavedAsPublicConstruction
-      ? t('savePublicConstructionDialogTitle')
-      : t('savePrivateConstructionDialogTitle')
-  "
-  :yes-text="t('saveAction')"
-  :no-text="t('cancelAction')"
-  :yes-action="doSave"
-  max-width="40%">
-  
-  <!-- Wrapper div to prevent scrolling in the main dialog -->
-  <div style="overflow: visible; max-height: none;">
-    <v-text-field
-      type="text"
-      density="compact"
-      clearable
-      counter
-      persistent-hint
-      :label="t('construction.saveDescription')"
-      required
-      v-model="constructionDescription"
-      @keypress.stop></v-text-field>
-    <v-switch
-      v-model="isSavedAsPublicConstruction"
-      :disabled="!firebaseUid"
-      :label="t('construction.makePublic')"></v-switch>
-    <v-switch
-      v-if="isMyOwnConstruction"
-      v-model="shouldSaveOverwrite"
-      :disabled="!firebaseUid"
-      :label="
-        t('construction.saveOverwrite', { docId: constructionDocId })
-      "></v-switch>
-
-    <!-- Folder Selection Section -->
-    <div class="my-2">
-      <v-divider class="mb-2"></v-divider>
-      <h3 class="text-subtitle-1 mb-2">Select or Enter Folder Path in Owned Constructions</h3>
-
-      <!-- Folder path input -->
+    ref="saveConstructionDialog"
+    :title="
+      isSavedAsPublicConstruction
+        ? t('savePublicConstructionDialogTitle')
+        : t('savePrivateConstructionDialogTitle')
+    "
+    :yes-text="t('saveAction')"
+    :no-text="t('cancelAction')"
+    :yes-action="doSave"
+    max-width="40%">
+    <!-- Wrapper div to prevent scrolling in the main dialog -->
+    <div style="overflow: visible; max-height: none">
       <v-text-field
-        v-model="folderPath"
-        label="Folder Path (e.g., Math/Geometry)"
+        type="text"
         density="compact"
-        hint="Enter a new or existing folder path"
-        persistent-hint
         clearable
+        counter
+        persistent-hint
+        :label="t('construction.saveDescription')"
+        required
+        v-model="constructionDescription"
         @keypress.stop></v-text-field>
+      <v-switch
+        v-model="isSavedAsPublicConstruction"
+        :disabled="!firebaseUid"
+        :label="t('construction.makePublic')"></v-switch>
+      <v-switch
+        v-if="isMyOwnConstruction"
+        v-model="shouldSaveOverwrite"
+        :disabled="!firebaseUid"
+        :label="
+          t('construction.saveOverwrite', { docId: constructionDocId })
+        "></v-switch>
 
-      <!-- Existing Folders Treeview -->
-      <p class="text-caption mt-2 mb-1">Or select an existing folder:</p>
-      <div class="folder-tree-container">
-        <v-treeview
-          :items="treeItems"
-          select-strategy="single-independent"
-          selectable
-          dense
-          item-value="id"
-          open-all
-          class="mt-1 folder-tree"
-          @update:selected="handleNodeSelection">
-          <!-- TODO add icon to TreeviewNode type -->
-          <template v-slot:prepend="{ item }">
-            <v-icon>{{ /*item.icon ||*/ "mdi-folder" }}</v-icon>
-          </template>
-        </v-treeview>
+      <!-- Folder Selection Section -->
+      <div class="my-2">
+        <v-divider class="mb-2"></v-divider>
+        <h3 class="text-subtitle-1 mb-2">
+          Select or Enter Folder Path in Owned Constructions
+        </h3>
+
+        <!-- Folder path input -->
+        <v-text-field
+          v-model="folderPath"
+          label="Folder Path (e.g., Math/Geometry)"
+          density="compact"
+          hint="Enter a new or existing folder path"
+          persistent-hint
+          clearable
+          @keypress.stop></v-text-field>
+
+        <!-- Existing Folders Treeview -->
+        <p class="text-caption mt-2 mb-1">Or select an existing folder:</p>
+        <div class="folder-tree-container">
+          <v-treeview
+            :items="treeItems"
+            select-strategy="single-independent"
+            selectable
+            dense
+            item-value="id"
+            open-all
+            class="mt-1 folder-tree"
+            @update:selected="handleNodeSelection">
+            <!-- TODO add icon to TreeviewNode type -->
+            <template v-slot:prepend="{ item }">
+              <v-icon>{{ /*item.icon ||*/ "mdi-folder" }}</v-icon>
+            </template>
+          </v-treeview>
+        </div>
       </div>
     </div>
-  </div>
-</Dialog>
+  </Dialog>
   <Dialog
     ref="exportConstructionDialog"
     :title="t('exportConstructionDialogTitle')"
@@ -469,13 +470,13 @@ const handleNodeSelection = (input: any) => {
   if (selected && selected.length > 0) {
     const selectedParsed: ConstructionPath = new ConstructionPath(selected[0]);
     folderPath.value = selectedParsed.toString();
-    console.log(
-      "parsed path: " +
-        selectedParsed.toString() +
-        "\n" +
-        "got root: " +
-        selectedParsed.getRoot()
-    );
+    // console.log(
+    //   "parsed path: " +
+    //     selectedParsed.toString() +
+    //     "\n" +
+    //     "got root: " +
+    //     selectedParsed.getRoot()
+    // );
   }
 };
 
@@ -581,7 +582,7 @@ watch(
   ],
   () => {
     rotationAngleString.value = svgAnimationAngle.value + "\u{00B0}";
-    updateExportPreview();
+    updateExportPreview(selectedExportFormat.value == "JPEG");
   },
   { deep: true }
 );
@@ -694,10 +695,8 @@ onUpdated(() => {
     axisId.value = undefined;
     exportFileTypeItems.value = ["SVG", "PNG", "JPEG", "GIF", "BMP"];
   }
-
-  selectedExportFormat.value = "SVG";
-  updateExportPreview();
-
+  updateExportPreview(selectedExportFormat.value == "JPEG");
+  //selectedExportFormat.value = "SVG"; // save the last value instead of overwriting
   imageExportHeight.value = Math.min(canvasHeight.value, canvasWidth.value);
 });
 
@@ -713,8 +712,7 @@ async function doLoginOrLogout() {
   }
 }
 
-function updateExportPreview(): void {
-  // console.log("update export preview")
+function updateExportPreview(forJpegExport?: boolean): void {
   let svgBlock = "";
   const nonScalingOptions = {
     stroke: svgNonScaling.value.includes("stroke"),
@@ -739,7 +737,13 @@ function updateExportPreview(): void {
       animateOptions
     );
   } else {
-    svgBlock = Command.dumpSVG(imageExportHeight.value, nonScalingOptions);
+    svgBlock = Command.dumpSVG(
+      imageExportHeight.value,
+      nonScalingOptions,
+      undefined, //animate options
+      undefined, // svg for icon
+      forJpegExport // svg for jpeg export (changes the background to white instead of transparent)
+    );
   }
 
   let svgBlob = new Blob([svgBlock], { type: "image/svg+xml;charset=utf-8" });
@@ -863,14 +867,22 @@ function checkAnimationRepeatRule(): void {
 }
 function doExport() {
   /* dump the command history into SVG using the nonScaling options and the animated SVG option */
-  updateExportPreview();
+  updateExportPreview(selectedExportFormat.value == "JPEG");
+  const pos = privateConstructions.value.findIndex(
+    (c: SphericalConstruction) => c.id === constructionDocId.value
+  );
+  const constructionName =
+    pos >= 0 ? privateConstructions.value[pos].description : "";
+  console.log("construction name?", constructionName);
 
   if (
     selectedExportFormat.value === "SVG" ||
     selectedExportFormat.value === "Animated SVG"
   ) {
-    // await nextTick()
-    FileSaver.saveAs(currentConstructionPreview.value, "construction.svg");
+    FileSaver.saveAs(
+      currentConstructionPreview.value,
+      constructionName + ".svg"
+    );
   } else {
     mergeIntoImageUrl(
       [currentConstructionPreview.value],
@@ -878,7 +890,10 @@ function doExport() {
       imageExportHeight.value,
       selectedExportFormat.value
     ).then((imageUrl: string) => {
-      FileSaver.saveAs(imageUrl, "construction." + selectedExportFormat.value);
+      FileSaver.saveAs(
+        imageUrl,
+        constructionName + "." + selectedExportFormat.value.toLowerCase()
+      );
     });
   }
 }

@@ -464,7 +464,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
 
   /** Get the current style state of the Nodule */
   currentStyleState(mode: StyleCategory): StyleOptions {
-    console.log("current style state of ", this.name, this.styleOptions.get(mode))
+    // console.log("current style state of ", this.name, this.styleOptions.get(mode))
     return this.styleOptions.get(mode) ?? {};
   }
   /**
@@ -473,7 +473,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
    * @param options The style options
    */
   updateStyle(mode: StyleCategory, options: StyleOptions): void {
-    console.debug("Update style of plottable", this, "using", options);
+    // console.log("Update style of plottable", this, "using", options);
     const currentOptions = this.styleOptions.get(mode);
     // console.log(
     //   "mode",

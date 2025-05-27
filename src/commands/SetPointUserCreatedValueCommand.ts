@@ -35,7 +35,7 @@ export class SetPointUserCreatedValueCommand extends Command {
   }
 
   do(): void {
-    // console.debug(
+    // console.log(
     //   `SetPointUserCreated: DO changed ${this.seIntersectionOrAntipodePoint.name} to user created:${this.userCreatedValue}`
     // );
     // if (this.userCreatedValue) {

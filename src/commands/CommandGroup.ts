@@ -35,8 +35,8 @@ export class CommandGroup extends Command {
     });
   }
 
-  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
-    const group: Array<[SENodule, SELabel]> = [];
+  getSVGObjectLabelPairs(): [SENodule, SELabel|null][] {
+    const group: Array<[SENodule, SELabel|null]> = [];
    this.subCommands.forEach((cmd: Command) => {
       const converted = cmd.getSVGObjectLabelPairs();
       // We all all add the command to the group when

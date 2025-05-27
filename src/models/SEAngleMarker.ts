@@ -1,4 +1,4 @@
-import { SEExpression, SEPoint, SELine, SESegment, SELabel } from "./internal";
+import { SEExpression, SEPoint, SELine, SESegment, SELabel, SENodule } from "./internal";
 import AngleMarker from "@/plottables/AngleMarker";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
@@ -901,7 +901,7 @@ export class SEAngleMarker
         this._endVector
       );
       // Set the measure in the plottable anglemarker so that export to SVG works correctly
-      this.ref.angleMarkerValue = this._measure
+      this.ref.angleMarkerValue = this._measure;
 
       // display the new angleMarker
       this.ref.updateDisplay();
@@ -909,7 +909,7 @@ export class SEAngleMarker
 
     // When this updates send its value to the label of the angleMarker
     if (this.label && this._exists) {
-      super.shallowUpdate()
+      super.shallowUpdate();
       this.label.ref.value = [this.value];
     }
 
@@ -1178,40 +1178,90 @@ export class SEAngleMarker
    * Return the vector near the SEAngleMarkers (within SETTINGS.angleMarker.maxLabelDistance) that is closest to the idealUnitSphereVector
    * @param idealUnitSphereVector A vector on the unit sphere
    */
-  public closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3 {
-    // First find the closest point on the angleMarker to the idealUnitSphereVector
-    this.tmpVector1.copy(this.closestVector(idealUnitSphereVector));
+  // This one doesn't work well when the angle is bigger than 180 see issue #87 on github
+  // public closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3 {
+  //   // First find the closest point on the angleMarker to the idealUnitSphereVector
+  //   this.tmpVector1.copy(this.closestVector(idealUnitSphereVector));
 
-    // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane
-    //  of the idealUnitSphereVector and the closest point that is at the tolerance distance away.
-    if (
-      this.tmpVector1.angleTo(idealUnitSphereVector) <
-      SETTINGS.angleMarker.maxLabelDistance / this.zoomMagnificationFactor
-    ) {
-      return idealUnitSphereVector;
+  //   // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane
+  //   //  of the idealUnitSphereVector and the closest point that is at the tolerance distance away.
+  //   if (
+  //     this.tmpVector1.angleTo(idealUnitSphereVector) <
+  //     SETTINGS.angleMarker.maxLabelDistance / this.zoomMagnificationFactor
+  //   ) {
+  //     return idealUnitSphereVector;
+  //   } else {
+  //     // tmpVector2 is the normal to the plane of the closest point vector and the idealUnitVector
+  //     // This can't be zero because tmpVector1 can be the closest on the circle to idealUnitSphereVector and parallel with ideanUnitSphereVector
+  //     this.tmpVector2
+  //       .crossVectors(idealUnitSphereVector, this.tmpVector1)
+  //       .normalize();
+  //     // compute the toVector (so that tmpVector2= toVector, tmpVector1= fromVector, tmpVector2 form an orthonormal frame)
+  //     this.tmpVector3.crossVectors(this.tmpVector1, this.tmpVector2).normalize;
+  //     // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
+  //     this.tmpVector3.multiplyScalar(
+  //       Math.sin(
+  //         SETTINGS.angleMarker.maxLabelDistance / this.zoomMagnificationFactor
+  //       )
+  //     );
+  //     this.tmpVector3
+  //       .addScaledVector(
+  //         this.tmpVector1,
+  //         Math.cos(
+  //           SETTINGS.angleMarker.maxLabelDistance / this.zoomMagnificationFactor
+  //         )
+  //       )
+  //       .normalize();
+  //     return this.tmpVector3;
+  //   }
+  // }
+  public closestLabelLocationVector(
+    currentLabelLocationVector: Vector3,
+    zoomMagnificationFactor: number
+  ): Vector3 {
+    // The current magnification level
+    const mag = zoomMagnificationFactor;
+    // If the idealUnitSphereVector is within the tolerance of the vertex of the angle, do nothing, otherwise return the vector in the plane of the idealUnitSphereVector and the point that is at the tolerance distance away.
+    const maxDist =
+      ((this.ref.angleMarkerRadiusPercent / 100) *
+        (SETTINGS.angleMarker.maxLabelDistance +
+          AngleMarker.currentRadiusDoubleArc)) /
+      mag;
+    if (this._vertexVector.angleTo(currentLabelLocationVector) < maxDist) {
+      return currentLabelLocationVector;
     } else {
-      // tmpVector2 is the normal to the plane of the closest point vector and the idealUnitVector
-      // This can't be zero because tmpVector1 can be the closest on the circle to idealUnitSphereVector and parallel with ideanUnitSphereVector
-      this.tmpVector2
-        .crossVectors(idealUnitSphereVector, this.tmpVector1)
-        .normalize();
-      // compute the toVector (so that tmpVector2= toVector, tmpVector1= fromVector, tmpVector2 form an orthonormal frame)
-      this.tmpVector3.crossVectors(this.tmpVector1, this.tmpVector2).normalize;
-      // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
-      this.tmpVector3.multiplyScalar(
-        Math.sin(
-          SETTINGS.angleMarker.maxLabelDistance / this.zoomMagnificationFactor
-        )
+      // tmpVector1 is the normal to the plane of the point vector and the idealUnitVector
+      this.tmpVector1.crossVectors(
+        currentLabelLocationVector,
+        this._vertexVector
       );
-      this.tmpVector3
-        .addScaledVector(
-          this.tmpVector1,
-          Math.cos(
-            SETTINGS.angleMarker.maxLabelDistance / this.zoomMagnificationFactor
-          )
-        )
+
+      if (this.tmpVector1.isZero(SETTINGS.nearlyAntipodalIdeal)) {
+        // The idealUnitSphereVector and location of the point are parallel (well antipodal because the case of being on top of each other is covered)
+        // Use the north pole because any point will do as long at the cross product with the _locationVector is not zero.
+        this.tmpVector1.set(0, 0, 1);
+
+        if (
+          this.tmpVector2
+            .crossVectors(this._vertexVector, this.tmpVector1)
+            .isZero(SETTINGS.nearlyAntipodalIdeal)
+        ) {
+          this.tmpVector1.set(0, 1, 0);
+        }
+      } else {
+        // normalize the tmpVector1
+        this.tmpVector1.normalize();
+      }
+      // compute the toVector (so that tmpVector2= toVector, this._vertexVector, tmpVector1 form an orthonormal frame)
+      this.tmpVector2
+        .crossVectors(this._vertexVector, this.tmpVector1)
         .normalize();
-      return this.tmpVector3;
+
+      this.tmpVector2.multiplyScalar(Math.sin(maxDist));
+      this.tmpVector2
+        .addScaledVector(this._vertexVector, Math.cos(maxDist))
+        .normalize();
+      return this.tmpVector2;
     }
   }
 
@@ -1348,7 +1398,7 @@ export class SEAngleMarker
   }
 
   public getLabel(): SELabel | null {
-    return (this as Labelable).label!
+    return (this as Labelable).label!;
   }
 
   public isMeasurable(): boolean {

@@ -16,29 +16,52 @@ export class StyleNoduleCommand extends Command {
     pastStyles: StyleOptions[]
   ) {
     super();
-    // console.debug("Creating StyleNoduleCommand");
     this.nodules.push(...nodules);
-
     this.panel = panel;
     // Carefully clone so that we create new objects and no pointer from the inputs are carried to the variables of this command
-    currentStyles.forEach(obj => {
-      // console.log("current", obj);
-      this.currentStyles.push({ ...obj });
-    });
+
+    // switch (panel) {
+    //   case 0:
+    //     console.log("Creating - Target Label");
+    //     break;
+    //   case 1:
+    //     console.log("Creating - Target Front");
+    //     break;
+    //   case 2:
+    //     console.log("Creating - Target Back");
+    //     break;
+    // }
+
     pastStyles.forEach(obj => {
-      // console.log("past", obj);
+      // console.log("Creating - past", obj);
       this.pastStyles.push({ ...obj });
+    });
+
+    currentStyles.forEach(obj => {
+      // console.log("Creating - current", obj);
+      this.currentStyles.push({ ...obj });
     });
   }
 
   do(): void {
     for (let i = 0; i < this.nodules.length; i++) {
-      // console.debug(
-      //   "Do effect of StyleNoduleCommand on ",
-      //   this.nodules[i],
-      //   "with payload old",
-      //   this.pastStyles[i]
+      // console.log(
+      //   "CMD- Do effect of StyleNoduleCommand on ",
+      //   this.nodules[i].name,
+      //   "to",
+      //   this.currentStyles[i]
       // );
+      // switch (this.panel) {
+      //   case 0:
+      //     console.log("CMD - Target Label");
+      //     break;
+      //   case 1:
+      //     console.log("CMD - Target Front");
+      //     break;
+      //   case 2:
+      //     console.log("CMD - Target Back");
+      //     break;
+      // }
 
       this.nodules[i].updateStyle(this.panel, this.currentStyles[i]);
 
@@ -52,13 +75,24 @@ export class StyleNoduleCommand extends Command {
 
   restoreState(): void {
     for (let i = 0; i < this.nodules.length; i++) {
-      // console.debug(
-      //   "Restore effect of StyleNoduleCommand to ",
-      //   this.nodules[i],
-      //   "with payload",
-      //   this.pastStyles[i]
-      // );
-      this.nodules[i].updateStyle(this.panel,this.pastStyles[i]);
+    //   console.log(
+    //     "CMD - Restore effect of StyleNoduleCommand on ",
+    //     this.nodules[i].name,
+    //     " to ",
+    //     this.pastStyles[i]
+    //   );
+    //   switch(this.panel){
+    //   case 0:
+    //     console.log("CMD - Target Label")
+    //     break;
+    //   case 1:
+    //     console.log("CMD - Target Front")
+    //     break;
+    //   case 2:
+    //     console.log("CMD - Target Back")
+    //     break;
+    // }
+      this.nodules[i].updateStyle(this.panel, this.pastStyles[i]);
     }
   }
 

@@ -52,6 +52,8 @@ import { AddLatitudeCommand } from "./AddLatitudeCommand";
 import { AddLongitudeCommand } from "./AddLongitudeCommand";
 import { UpdateTwoJSCommand } from "./UpdateTwoJSCommand";
 import { AddTextCommand } from "./AddTextCommand";
+import { ChangeFillStyleCommand } from "./ChangeFillStyleCommand";
+import { ChangeBackStyleContrastCommand } from "./ChangeBackstyleContrastCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -179,7 +181,11 @@ function executeIndividual(command: string): Command {
     case "SetValueDisplayMode":
       return SetValueDisplayModeCommand.parse(command, noduleDictionary);
     case "AddText":
-      return AddTextCommand.parse(command, noduleDictionary)
+      return AddTextCommand.parse(command, noduleDictionary);
+    case "ChangeGlobalFillStyle":
+      return ChangeFillStyleCommand.parse(command, noduleDictionary);
+    case "ChangeBackStyleContrast":
+      return ChangeBackStyleContrastCommand.parse(command, noduleDictionary);
     default: {
       const errMsg = `Not yet implemented: ${command}`;
       EventBus.fire("show-alert", {
@@ -205,18 +211,21 @@ function interpret(command: string | Array<string>): void {
   } else {
     // This is a CommandGroup, interpret each command individually
     const group = new CommandGroup();
-    const updateTwoJS = new UpdateTwoJSCommand()
+    const updateTwoJS = new UpdateTwoJSCommand();
     command
       // Remove leading and training quotes
       .map((s: string) => s.replace(/^"/, "").replace(/"$/, ""))
       .forEach((c: string /*, gPos: number*/) => {
         group.addCommand(executeIndividual(c));
-        // There are commands which depend on the correct rendering
-        // state of TwoJS.
-        // The following "no-op" command allows TwoJS to update
-        // its internal states
-        group.addCommand(updateTwoJS)
       });
+    // There are commands which depend on the correct rendering
+    // state of TwoJS.
+    // The following "no-op" command allows TwoJS to update
+    // its internal states I moved this outside of the for each loop 
+    // because I think this only needs to be forced once when loading
+    // It is a display only issue not an un-updated object issue that needs to 
+    // fix before other objects render properly.
+    group.addCommand(updateTwoJS);
     // Then execute as a group
     group.execute();
   }

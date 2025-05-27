@@ -199,7 +199,6 @@ export class SECircle
 
     this.setOutOfDate(false);
     this.shallowUpdate();
-
     // These circles are completely determined by their point parents and an update on the parents
     // will cause this circle to be put into the correct location.So we don't store any additional information
     if (objectState && orderedSENoduleList) {

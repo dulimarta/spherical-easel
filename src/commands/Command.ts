@@ -19,9 +19,12 @@ import {
   toSVGType
 } from "@/types/index";
 import SETTINGS, { LAYER } from "@/global-settings";
-import { SELabel, SENodule } from "@/models/internal";
+import { SELabel, SENodule} from "@/models/internal";
 //import { aN } from "vitest/dist/reporters-yx5ZTtEV";
 import { nextTick } from "vue";
+import { CommandGroup } from "./CommandGroup";
+import { DisplayStyle } from "@/plottables/Nodule";
+import { StyleCategory } from "@/types/Styles";
 
 export abstract class Command {
   protected static store: SEStoreType;
@@ -41,7 +44,7 @@ export abstract class Command {
     if (Command.commandHistory.length === 0) return;
     // Pop the last command from the history stack
     const lastAction: Command | undefined = Command.commandHistory.pop();
-    console.log("undo last", lastAction);
+    // console.log("undo last", lastAction);
     // Run is restore state logic
     if (lastAction) {
       Command.redoHistory.push(lastAction);
@@ -54,6 +57,17 @@ export abstract class Command {
     EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
     EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
     this.store.updateSelectedSENodules([]);
+    // The display of the gradient fill is not updated correctly so for
+    // any filled object call the stylize method
+    // this.store.seNodules
+    //   .filter(
+    //     seNodule =>
+    //       seNodule instanceof SEPolygon || seNodule instanceof SEAngleMarker
+    //   )
+    //   .map(polyOrAM => {for (const styleCat in StyleCategory){
+    //     const t1 = StyleCategory[styleCat] 
+    //     polyOrAM.ref.updateStyle(t1 as unknown as StyleCategory,{})}}
+    //   );
   }
   //#endregion undo
 
@@ -72,6 +86,17 @@ export abstract class Command {
     // not have to update the display in the middle of undoing or redoing a command (this middle stuff causes
     // problems with the move *redo*)
     Command.store?.updateDisplay();
+    // The display of the gradient fill is not updated correctly so for
+    // any filled object call the stylize method
+    // this.store.seNodules
+    //   .filter(
+    //     seNodule =>
+    //       seNodule instanceof SEPolygon || seNodule instanceof SEAngleMarker
+    //   )
+    //   .map(polyOrAM => {for (const styleCat in StyleCategory){
+    //     const t1 = StyleCategory[styleCat] 
+    //     polyOrAM.ref.updateStyle(t1 as unknown as StyleCategory,{})}}
+    //   );
   }
   //#endregion redo
 
@@ -205,7 +230,8 @@ export abstract class Command {
         Command.allowedAngleMarkerAttributes.includes(attribute)) ||
       (name.toLowerCase().includes("polygon") &&
         Command.allowedPolygonAttributes.includes(attribute)) ||
-      (name.toLowerCase().includes("label") &&
+      ((name.toLowerCase().includes("label") ||
+        name.toLowerCase().includes("text")) &&
         Command.allowedLabelAttributes.includes(attribute))
     ) {
       if (
@@ -245,7 +271,7 @@ export abstract class Command {
    * returns the empty array if nothing to process
    * override this method if there are geometric objects to convert to SVG
    */
-  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+  getSVGObjectLabelPairs(): [SENodule, SELabel | null][] {
     return []; // returns the empty array if nothing to process; override this method if there are geometric objects to convert to SVG
   }
 
@@ -264,7 +290,8 @@ export abstract class Command {
       frames: number;
       repeat: number; // 0 is indefinite
     },
-    svgForIcon?: boolean
+    svgForIcon?: boolean,
+    svgForJpeg?: boolean // When exporting to jpeg, transparent background is not supported so you must use white.
   ): string {
     function gradientDictionariesEqual(
       d1: Map<svgGradientType, string | Map<svgStopType, string>[]>,
@@ -329,10 +356,6 @@ export abstract class Command {
       }
       return true;
     }
-    if (svgForIcon == undefined) {
-      svgForIcon = false;
-    }
-
     // Build the header string for the SVG
     let svgHeaderReturnString =
       '<svg width="' +
@@ -341,7 +364,9 @@ export abstract class Command {
       'height="' +
       (svgForIcon ? 2 * SETTINGS.boundaryCircle.radius : width) +
       'px" ' +
-      'xmlns="http://www.w3.org/2000/svg" style="background-color:transparent" overflow="visible" >\n';
+      'xmlns="http://www.w3.org/2000/svg" style="background-color:' +
+      (svgForJpeg ? "white" : "transparent") +
+      '" overflow="visible" >\n';
 
     // Record the gradients (which will be radial gradients for us) for the SVG in a dictionary
     // key: names like circleFrontGradient1 and polygonBackGradient2, etc.
@@ -393,13 +418,15 @@ export abstract class Command {
     //    backgroundFills,3 --> contains circles (fills only), ellipse (fills only), polygon
     //    background,4 --> contains lines, segments, circles (edges only), parametric, ellipse, edges only
     //    backgroundPoints,6 --> only contains points
-    //    backgroundText,8 --> only contains labels
+    //    backgroundLabel,8 --> only contains labels
     //    foregroundFills,13 --> contains circles (fills only), ellipse (fills only), polygon
     //    midground,9 --> contains only the boundary circle
     //    foregroundAngleMarkers,11 --> contains only angle markers (edges and fill)
     //    foreground,14 --> contains lines, segments, circles (edges only), parametric, ellipse, edges only
     //    foregroundPoints,16 --> only contains points
-    //    foregroundText, 18 --> only contains labels
+    //    foregroundLabel, 18 --> only contains labels
+    //    foregroundText, 20 --> only contains text objects
+    //
     //
     //  Initially contains the boundary circle in the midground layer (The only object in the midground)
     const layerDictionaryArray: Map<LAYER, [string, string][]>[] = [];
@@ -423,7 +450,7 @@ export abstract class Command {
         m.makeRotationAxis(animate.axis, animate.degrees / numFrames);
 
         Command.store.rotateSphere(m);
-        Command.store.updateTwoJS()
+        Command.store.updateTwoJS();
       }
       // wait 1/60 of a second so that the two-instance updates
       // sleep(1000 / 60).then(() => {
@@ -436,16 +463,16 @@ export abstract class Command {
       let backStyleCount = 0;
       Command.commandHistory.forEach((c: Command) => {
         ///// former toSVG on each command is the same
-        const objectPairs = c.getSVGObjectLabelPairs(); // returns the empty array if nothing to process
+        const objectPairs = c.getSVGObjectLabelPairs(); // returns the empty array if nothing to process or all the pairs [SENodule, SELabel] that might need to be converted to SVG. [SEText, null] is the return for text objects. This is the only return where the SELabel part is null
         const svgTypeArray: toSVGType[] = [];
         objectPairs.forEach(pair => {
           if (pair[0].exists && pair[0].showing) {
             if (pair[0].ref != undefined) {
               svgTypeArray.push(...pair[0].ref.toSVG(nonScaling, svgForIcon));
             }
-            // now check the label (if the point is deleted the label is also so check this inside the first conditional statement)
-            // labels are never deleted only hidden
-            if (pair[1].exists && pair[1].showing) {
+            // now check the label (if the point is deleted the label is also - so check this inside the first conditional statement)
+            // labels are never deleted only hidden and never used in an icon
+            if (pair[1] && pair[1].exists && pair[1].showing) {
               svgTypeArray.push(...pair[1].ref.toSVG(nonScaling));
             }
           }
@@ -651,10 +678,17 @@ export abstract class Command {
     // Create the CSS style part of the SVG return string
     var styleSVGReturnString = '\t<style type="text/css">\n'; //<![CDATA[\n';
     for (let [name, styleDict] of styleDictionary.entries()) {
-      if (!(svgForIcon && name.toLowerCase().includes("label"))) {
+      if (
+        !(
+          svgForIcon &&
+          (name.toLowerCase().includes("label") ||
+            name.toLowerCase().includes("text"))
+        )
+      ) {
         // no text/label in icon SVG
         styleSVGReturnString += "\t\t\t." + name + " { ";
         //Add the list of attributes, but make sure it is not the default
+
         for (let [attribute, value] of styleDict) {
           if (Command.includeStyleOption(name, attribute, value)) {
             styleSVGReturnString += attribute + ":" + value + "; ";
@@ -668,7 +702,10 @@ export abstract class Command {
       }
     }
     //add the close of the style string
-    if (styleSVGReturnString.includes("label")) {
+    if (
+      styleSVGReturnString.includes("label") ||
+      styleSVGReturnString.includes("text")
+    ) {
       styleSVGReturnString += textStyleString;
     }
     // remove the last newline character
@@ -722,11 +759,18 @@ export abstract class Command {
         const itemList = layerDictionary.get(Number(layerNumber));
         if (itemList != undefined) {
           if (
-            !(svgForIcon && LAYER[layerNumber].toLowerCase().includes("text")) // there is no text in icon SVG){
+            !(
+              svgForIcon &&
+              (LAYER[layerNumber].toLowerCase().includes("text") ||
+                LAYER[layerNumber].toLowerCase().includes("label"))
+            ) // there is no text in icon SVG){
           ) {
             // This layer is not empty
             // Flip the orientation for text layers
-            if (LAYER[layerNumber].toLowerCase().includes("text")) {
+            if (
+              LAYER[layerNumber].toLowerCase().includes("text") ||
+              LAYER[layerNumber].toLowerCase().includes("label")
+            ) {
               layerSVGReturnString +=
                 '\t\t\t<g id="' +
                 LAYER[layerNumber].replace("ground", "") +
@@ -739,7 +783,10 @@ export abstract class Command {
             }
             for (let [styleID, svgString] of itemList) {
               // insert the style ID class into the svgString using the first space
-              if (svgString.toLowerCase().includes("text")) {
+              if (
+                svgString.toLowerCase().includes("text") ||
+                svgString.toLowerCase().includes("label")
+              ) {
                 layerSVGReturnString +=
                   "\t\t\t\t" +
                   svgString.replace(
@@ -788,9 +835,7 @@ export abstract class Command {
         animationSVGString += 'begin="0s" ';
         animationSVGString += 'repeatCount="' + repeat + '" ';
         animationSVGString +=
-          frameNum == 0
-            ? 'fill="remove" />\n'
-            : 'fill="freeze" />\n'; // set the animation to display the first frame when it is done
+          frameNum == 0 ? 'fill="remove" />\n' : 'fill="freeze" />\n'; // set the animation to display the first frame when it is done
 
         // add the animation string only if there are more than 1 frame
         if (numFrames > 0) {
@@ -826,7 +871,7 @@ export abstract class Command {
       m.makeRotationAxis(animate.axis, -animate.degrees); // + 1 / animate.degrees);
       Command.store.rotateSphere(m);
       // We need to update the two-instance so that the fills can be correctly calculated
-      Command.store.updateTwoJS()
+      Command.store.updateTwoJS();
       EventBus.fire("update-fill-objects", {});
     }
     return returnString.replace(/[\t]/gm, "   ");

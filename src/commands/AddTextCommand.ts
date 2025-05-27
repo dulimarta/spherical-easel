@@ -2,8 +2,9 @@
 import { SEText } from "@/models/SEText";
 import { Command } from "./Command";
 import { SavedNames } from "@/types";
-import { SENodule } from "@/models/internal";
+import { SELabel, SENodule } from "@/models/internal";
 import { Vector2, Vector3 } from "three";
+import { StyleCategory } from "@/types/Styles";
 
 export class AddTextCommand extends Command {
   private seText: SEText;
@@ -11,16 +12,23 @@ export class AddTextCommand extends Command {
     super();
     this.seText = txt;
   }
-  restoreState(): void {
-    Command.store.removeText(this.seText.id);
-    // for undo.
-  }
-  saveState(): void {
-    this.lastState = this.seText.id;
-  }
+
   do(): void {
     Command.store.addText(this.seText);
   }
+
+  saveState(): void {
+    this.lastState = this.seText.id;
+  }
+
+  restoreState(): void {
+    Command.store.removeText(this.seText.id);
+  }
+  
+  getSVGObjectLabelPairs(): [SENodule, SELabel|null][] {
+      return [[this.seText, null]];
+    }
+
   toOpcode(): null | string | Array<string> {
     return [
       "AddText",
@@ -29,22 +37,15 @@ export class AddTextCommand extends Command {
       "objectName=" + Command.symbolToASCIIDec(this.seText.name),
       "objectExists=" + this.seText.exists, // should always be true
       "objectShowing=" + this.seText.showing,
-      // Maybe we will need this if we edit the text using the style editor
-      // "objectFrontStyle=" +
-      //   Command.symbolToASCIIDec(
-      //     JSON.stringify(
-      //       this.seText.ref.currentStyleState(StyleCategory.Front)
-      //     )
-      //   ),
-      // "objectBackStyle=" +
-      //   Command.symbolToASCIIDec(
-      //     JSON.stringify(this.seText.ref.currentStyleState(StyleCategory.Back))
-      //   ),
-      // No label for text objects
-
+      "textStyle=" +
+      Command.symbolToASCIIDec(
+        JSON.stringify(
+          this.seText.ref.currentStyleState(StyleCategory.Label)
+        )
+        ), //textStyle include the current string that is displayed
       // Object specific attributes
       "pointVector=" + this.seText.locationVector.toFixed(9),
-      "textObjectText=" + Command.symbolToASCIIDec(this.seText.text)
+      //"textObjectText=" + Command.symbolToASCIIDec(this.seText.text)//This is now stored in the label style
     ].join("&");
   }
 
@@ -64,33 +65,31 @@ export class AddTextCommand extends Command {
     // const pointFrontStyleString = propMap.get("objectFrontStyle");
     // const pointBackStyleString = propMap.get("objectBackStyle");
     seText.locationVector = seTextLocation;
-    const tempText = propMap.get("textObjectText");
-    if (tempText != undefined) {
-      seText.text = tempText;
-    } else {
-      throw new Error("AddTextCommand: Undefined text ");
-    }
-    // When SEText is edited in the style panel this will be needed
-    // console.debug(`Point front style string ${pointFrontStyleString}`);
-    // if (textFrontStyleString !== undefined) {
-    //   seText.updatePlottableStyle(
-    //     StyleCategory.Front,
-    //     JSON.parse(textFrontStyleString)
-    //   );
+    // const tempText = propMap.get("textObjectText");
+    // if (tempText != undefined) {
+    //   seText.text = tempText;
+    // } else {
+    //   throw new Error("AddTextCommand: Undefined text ");
     // }
+    // textStyleString stores the text-string of the text object and the styling.
+    const textStyleString = propMap.get("textStyle");
+    // console.debug(`Point front style string ${pointFrontStyleString}`);
+    if (textStyleString !== undefined) {
+      seText.updatePlottableStyle(
+        StyleCategory.Label,
+        JSON.parse(textStyleString)
+      ); // this updates the displayed text
+    }  else {
+      throw new Error("AddTextCommand: No text style string.");
+    }
 
     // text has no children so no need to put the text in the object map
     if (propMap.get("objectName") !== undefined) {
-      // console.debug(
-      //   `old name ${seText.name}, new name ${propMap.get("objectName")}`
-      // );
       seText.name = propMap.get("objectName") ?? "";
       seText.showing = propMap.get("objectShowing") === "true";
       seText.exists = propMap.get("objectExists") === "true";
-      seText.text = propMap.get("textObjectText") ?? "";
-      //objMap.set(seText.name, seText);
     }  else {
-      throw new Error("AddTextCommand: Undefined Object Name ");
+      throw new Error("AddTextCommand: Undefined Object Name");
     }
 
     return new AddTextCommand(seText);

@@ -444,7 +444,7 @@ export const useSEStore = defineStore("se", () => {
   const twojsLayers = computed(() => layers);
 
   function init(): void {
-    actionMode.value = "rotate";
+    actionMode.value = "segment"; //The default tool when started and reset canvas cleared
     // this.activeToolName = "RotateDisplayedName";
     // Do not clear the layers array!
     // Replace clear() with splice(0). Since clear() is an extension function
@@ -501,7 +501,6 @@ export const useSEStore = defineStore("se", () => {
   function updateTwoJS() {
     twoInstance.value!.update();
   }
-
   function setCanvas(c: HTMLDivElement | null): void {
     console.debug("Set canvas in SE store");
     svgCanvas.value = c;
@@ -513,15 +512,7 @@ export const useSEStore = defineStore("se", () => {
   function setRotationMatrix(mat: Matrix4): void {
     inverseTotalRotationMatrix.value.copy(mat);
   }
-  // setSphereRadius(r: number): void {
-  //   // TODO
-  // },
-
-  // setButton(buttonSelection: ToolButtonType): void {
-  //   this.buttonSelection = buttonSelection;
-  // },
-
-  function setActionMode(mode: ActionMode): void {
+   function setActionMode(mode: ActionMode): void {
     // console.debug("Changing action mode in SE store to", mode);
     // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
     if (
@@ -561,6 +552,7 @@ export const useSEStore = defineStore("se", () => {
       });
     });
     seLabels.value.forEach((x: SELabel) => x.ref.removeFromLayers(layers));
+    seTexts.value.forEach((x: SEText) => x.ref.removeFromLayers(layers));
   }
   // Update the display of all free SEPoints to update the entire display
   function updateDisplay(): void {
@@ -708,7 +700,6 @@ export const useSEStore = defineStore("se", () => {
     hasUnsavedNodules.value = true;
     updateDisabledTools("segment");
   }
-
   function removeSegment(segId: number): void {
     const victimSegment = seSegmentMap.get(segId);
     if (victimSegment) {
@@ -778,36 +769,13 @@ export const useSEStore = defineStore("se", () => {
     seNodules.value.push(text);
     text.ref.addToLayers(layers);
     hasUnsavedNodules.value = true;
-    // this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
   }
   function moveText(move: { textId: number; location: Vector2 }): void {
-    // console.log(`se.moveText(): textId: ${move.textId}, location: ${move.location.toFixed(3)}`);
-    // const textMoverVisitor = new TextMoverVisitor();
-    // textMoverVisitor.setNewLocation(move.location);
     const aText = seTextMap.get(move.textId);
-    // console.log(`se.moveText() aText = ${aText?.id}, ${aText?.locationVector.toFixed(3)}`);
-    // if (aText) aText.accept(textMoverVisitor);
     if (aText) {
       aText.locationVector = move.location;
     }
   }
-  function changeText(change: { textId: number; newText: string }): void {
-    // console.log(`se.changeText(): textId: ${change.textId}, newText: "${change.newText}"`);
-
-    // Retrieve the SEText object from the map using textId
-    const aText = seTextMap.get(change.textId);
-
-    // console.log(`se.changeText() aText = ${aText?.id}, currentText: "${aText?.text}"`);
-
-    if (aText) {
-      // Change the text content of the SEText object
-      aText.text = change.newText;
-
-      // Log the change operation
-      // console.log(`se.changeText(): Text content updated for textId: ${change.textId}`);
-    }
-  }
-
   function removeText(textId: number): void {
     const victimText = seTextMap.get(textId);
 
@@ -820,7 +788,6 @@ export const useSEStore = defineStore("se", () => {
       seTextIds.value.splice(pos, 1);
       seNodules.value.splice(pos2, 1);
       hasUnsavedNodules.value = true;
-      //this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
     }
   }
   function addAngleMarkerAndExpression(angleMarker: SEAngleMarker): void {
@@ -870,7 +837,6 @@ export const useSEStore = defineStore("se", () => {
     hasUnsavedNodules.value = true;
     updateDisabledTools("parametric");
   }
-
   function removeParametric(parametricId: number): void {
     const victim = seParametricMap.get(parametricId);
     if (victim) {
@@ -1014,6 +980,23 @@ export const useSEStore = defineStore("se", () => {
       addCandidatesFrom(target);
     }
 
+    // //update the display of all objects with a fill 
+    // sePolygons.value.forEach(p => {
+    //   p.ref.updateDisplay(); // sets the location of the vertices for the front/back fills
+    //   p.ref.normalDisplay(); // displays the correct fills depending on where the polygon is
+    // });
+    // seAngleMarkers.value.forEach(a => {
+    //   a.ref.updateDisplay(); // sets the location of the vertices for the front/back fills
+    //   a.ref.normalDisplay(); // displays the correct fills depending on where the polygon is
+    // });
+    // seEllipses.value.forEach(e => {
+    //   e.ref.updateDisplay(); // sets the location of the vertices for the front/back fills
+    //   e.ref.normalDisplay(); // displays the correct fills depending on where the polygon is
+    // });
+    // seCircles.value.forEach(c => {
+    //   c.ref.updateDisplay(); // sets the location of the vertices for the front/back fills
+    //   c.ref.normalDisplay(); // displays the correct fills depending on where the polygon is
+    // });
     // console.debug(
     //   `Update candidate has ${updateCandidates.length} items`,
     //   updateCandidates.map((n: SENodule) => n.name).join(", ")
@@ -1025,21 +1008,18 @@ export const useSEStore = defineStore("se", () => {
   function clearUnsavedFlag(): void {
     hasUnsavedNodules.value = false;
   }
-
   function changeBackContrast(newContrast: number) {
     Nodule.setBackStyleContrast(newContrast);
     seNodules.value.forEach(n => {
       n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
     });
   }
-
   function changeGradientFill(useGradientFill: boolean) {
     Nodule.setGradientFill(useGradientFill);
     seNodules.value.forEach(n => {
       n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
     });
   }
-
   function changeSegmentNormalVectorArcLength(change: {
     segmentId: number;
     normal: Vector3;
@@ -1405,7 +1385,7 @@ export const useSEStore = defineStore("se", () => {
    *  (SELine,SELine), (SELine,SESegment), (SELine,SECircle), (SELine,SEEllipse), (SESegment, SESegment),
    *      (SESegment, SECircle), (SESegment, SEEllipse),(SECircle, SECircle), (SECircle, SEEllipse)
    *      (SEEllipse, SEEllipse)
-   * If they have the same type put them in alphabetical order. (old then new)
+   * If they have the same type put them in lexicographic order. (old then new)
    * The creation of the intersection objects automatically follows this convention in assigning parents.
    */
   function createAllIntersectionsWithLine(
@@ -1448,8 +1428,6 @@ export const useSEStore = defineStore("se", () => {
     const intersectionPointList: SEIntersectionReturnType[] = [];
     // Intersect this new line with all old lines
     seLines.value
-      //   .map(x => x as SELine)
-      //          .filter((line: SELine) => line.id !== newLine.id) // ignore self
       .forEach((oldLine: SELine) => {
         if (oldLine.id === newLine.id) {
           return;
@@ -1948,12 +1926,8 @@ export const useSEStore = defineStore("se", () => {
     if (existingNewSEPoints) {
       existingSEPoints.push(...existingNewSEPoints);
     }
-    // // First add the two parent points of the newLine, if they are new, then
-    // //  they won't have been added to the state.points array yet so add them first
-    // existingSEPoints.push(newSegment.startSEPoint);
-    // existingSEPoints.push(newSegment.endSEPoint);
+    // First add *all* non-zero points not on in the existingSEPoint list already
     for (let pt of sePoints.value) {
-      // sePoints.value.forEach(pt => {
       if (
         !pt.locationVector.isZero() &&
         !existingSEPoints.some(aPt => aPt.name === pt.name) // add only new SEPoints to the existingSEPoints array
@@ -1978,10 +1952,10 @@ export const useSEStore = defineStore("se", () => {
       let indexOfExistingSEIntersectionPoint = -1;
       intersectionInfo.forEach((info, index) => {
         // Options
-        //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection)
-        //  1) The intersection point is new so create a new intersection point
-        //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore)
-        //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore)
+        //  0) The intersection point is on the list of sePoints, but the sePoint is not an intersection point (so do nothing with this intersection). Think about a segment with one (or both) endpoint glued to a line.
+        //  1) The intersection point is new so create a new intersection point. Think about a segment crossing a line.
+        //  2) The intersection point is old and the intersection point was created before this command (on the existingSEPoints array with index less than numberOfExistingSEPointsBefore) Think about a concurrence in a triangle where this is the third segment to be drawn (the first was a segment, the second was a line)
+        //  3) The intersection point is old and intersection point was created earlier in this command (on the existingSEPoints array with index greater than or equal to numberOfExistingSEPointsBefore).  Think about a concurrence in a triangle where this is the third segment to be drawn (the first was a line, the second was a line) and we are intersecting with the second line.
 
         if (
           !existingSEPoints.some((pt, ind) => {
@@ -2041,7 +2015,7 @@ export const useSEStore = defineStore("se", () => {
               }
             } else {
               // the intersection vector (info.vector) is at an existing SEIntersection point that *was* created with this command (Option #3 above)
-              // this mean that the old one dimensional object should be a new parent of this intersection point
+              // this means that the old one dimensional object should be a new parent of this intersection point
               intersectionPointList.push({
                 SEIntersectionPoint: existingSEIntersectionPoint,
                 parent1: oldLine, // this is the new parent of the intersection point
@@ -4052,7 +4026,6 @@ export const useSEStore = defineStore("se", () => {
     changeGradientFill,
     changeLineNormalVector,
     changeSegmentNormalVectorArcLength,
-    changeText,
     clearUnsavedFlag,
     createAllIntersectionsWithCircle,
     createAllIntersectionsWithEllipse,

@@ -27,9 +27,9 @@
     "MeasurePolygonDisplayedName": "Create Polygon",
     "MeasurePolygonToolTipMessage": "Measure the angles and sides of a polygon.",
     "MeasurePolygonToolUseMessage": "Select three or more line segments that make a polygon with out crossing. The measurement is found in the object tab.",
-    "CreateAngleDisplayedName": "Measure Angle",
-    "CreateAngleToolTipMessage": "Calculate Angle",
-    "CreateAngleToolUseMessage": "Select two lines, three points or two segments with an endpoint in common to measure an angle. The measurement is found in the object tab.",
+    "CreateAngleDisplayedName": "Measure angle",
+    "CreateAngleToolTipMessage": "Create and measure an angle",
+    "CreateAngleToolUseMessage": "Select two lines, three points or two segments with a common endpoint to measure an angle. The measurement is found in the object tab.",
     "CreateAntipodalPointDisplayedName": "Antipodal Point",
     "CreateAntipodalPointToolTipMessage": "Create Antipode",
     "CreateAntipodalPointToolUseMessage": "Select a location to create a point (if necessary) and its antipode.",
@@ -232,9 +232,10 @@
     "selectObjectsToShow": "Select Objects to Show",
     "labelVisible": "Label Visible",
     "objectVisible": "Object Visible",
-    "cannotSelectLabels": "Labels are not selectable. To style a label, select and style the object it labels and use the Label Style panel."
+    "cannotSelectLabels": "Labels are not selectable. To style a label, select the object it labels and use the Label Style panel."
   },
   "handlers": {
+    "emptyTextObjectWarning": "Empty text objects are not allowed.",
     "transformCreatesSecondPoint": "Transforming point {preimagePt} using {type} {trans} would create a second point on top of point {existingPt}.",
     "pointDoesNotMoveUnderTransformation": "Applying {type} {trans} to point {pt} will never move it to a different location.",
     "duplicateTransformedObject": "The {object} {name} has already been transformed by {type} {trans} or transforming {object} {name} using {type} {trans} would create a second {object} on top of {name}.",

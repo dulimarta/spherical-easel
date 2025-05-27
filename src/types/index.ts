@@ -233,7 +233,12 @@ export type SavedNames =
   | "pointVisibleBefore"
   | "earthLatitude"
   | "earthLongitude"
-  | "textObjectText";
+  | "textObjectText"
+  | "textStyle"
+  | "currentGlobalFillStyle"
+  | "pastGlobalFillStyle"
+  | "currentGlobalBackStyleContrast"
+  | "pastGlobalBackStyleContrast";
 
 export type ActionMode =
   | "angle"
@@ -524,7 +529,8 @@ export type plottableType =
   | "angleMarkerDouble"
   | "angleMarkerEdge"
   | "angleMarkerArrowHead"
-  | "angleMarker";
+  | "angleMarker"
+  | "text";
 
 export type sides = "front" | "back" | "mid";
 
@@ -644,7 +650,7 @@ export interface ObjectState {
   object: SENodule;
   normalVector?: Vector3;
   arcLength?: number;
-  locationVector?: Vector3 | Vector2;
+  locationVector?: Vector3 | Vector2; // Vector2 is only used for the SeText objects
   sliderValue?: number;
 }
 

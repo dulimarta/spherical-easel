@@ -76,5 +76,6 @@
     "titleBar.inactiveBackground": "#86da4399",
     "titleBar.inactiveForeground": "#15202b99"
   },
-  "peacock.color": "#86da43"
+  "peacock.color": "#86da43",
+  "workbench.editor.enablePreview": false
 }

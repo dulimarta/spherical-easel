@@ -18,7 +18,7 @@ export class AddIntersectionPointOtherParent extends Command {
 
   do(): void {
     // Add the parent to the list of parents in the SEIntersectionPoint
-    // console.debug(
+    // console.log(
     //   `AddIntersectionPointOtherParentCommand: DO For intersection point ${this.seIntersectionPoint.name}, add ${this.seOtherParent.name}`
     // );
     this.seIntersectionPoint.addIntersectionOtherParent(this.seOtherParent);

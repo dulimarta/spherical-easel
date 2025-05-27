@@ -9,35 +9,31 @@ import { Visitor } from "@/visitors/Visitor";
 import Text from "@/plottables/Text";
 import { DisplayStyle } from "@/plottables/Nodule";
 import {
-  DEFAULT_TEXT_BACK_STYLE,
-  DEFAULT_TEXT_FRONT_STYLE,
+  // DEFAULT_TEXT_BACK_STYLE,
+  // DEFAULT_TEXT_FRONT_STYLE,
   DEFAULT_TEXT_TEXT_STYLE
 } from "@/types/Styles";
 const { t } = i18n.global;
 
 const styleSet = new Set([
-  ...Object.getOwnPropertyNames(DEFAULT_TEXT_FRONT_STYLE),
-  ...Object.getOwnPropertyNames(DEFAULT_TEXT_BACK_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_TEXT_TEXT_STYLE)
 ]);
 
 export class SEText extends SENodule {
-  public declare ref: Text; //<- plottable Text
+  public declare ref: Text; //<- plottable Text object in TwoJS
 
-  private _text: string = ""; // string text
   protected _locationVector = new Vector2();
 
-  constructor() {
+  constructor(initialText: string="Default Text") {
     super();
-
     this.name = `T${SENodule.TEXT_COUNT}`;
     this.ref = new Text(this.name);
+    this.ref.text = initialText;
+    this.ref.setDefaultText(initialText);
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
-    this.ref.adjustSize();
-
-    SENodule.TEXT_COUNT++;
     // Set the size for zoom
     this.ref.adjustSize();
+    SENodule.TEXT_COUNT++;
   }
 
   public shallowUpdate(): void {
@@ -118,24 +114,24 @@ export class SEText extends SENodule {
   }
 
   public get noduleItemText(): string {
-    return this._text;
+    return this.ref.text;
   }
   public get noduleDescription(): string {
     return String(i18n.global.t(`objectTree.textObject`));
   }
-  // Setter/Getter for the private variable text
-  public get text(): string {
-    return this._text;
-  }
-  public set text(newText: string) {
-    this._text = newText;
-    this.ref.text = newText; // Update the Two.js text instance
-  }
+  // Setter/Getter for the private variable text // This is handled in the style now
+  // public get text(): string {
+  //   return this._text;
+  // }
+  // public set text(newText: string) {
+  //   this._text = newText;
+  //   this.ref.text = newText; // Update the Two.js text instance
+  // }
 
-  public setDefaultName(txt:string):void{
-    // console.log("set default name of ", this.name, "to", txt)
-    this.ref.setDefaultText(txt)
-  }
+  // public setDefaultName(txt:string):void{
+  //   // console.log("set default name of ", this.name, "to", txt)
+  //   this.ref.setDefaultText(txt)
+  // }
   public accept(v: Visitor): boolean {
     return false;
   }

@@ -141,8 +141,8 @@ export const SETTINGS = {
       ]
     ],
     selectedColor: {
-      front: "#ff000080",
-      back: "#ff00004d"
+      front: "#FF000080",
+      back: "#FF00004D"
     },
     fill: {
       // offset for the color fill. At this percent of the radius (boundaryCircle) the fill becomes all the fill color and not a bleed from the center color.
@@ -159,8 +159,8 @@ export const SETTINGS = {
         x: 0,
         y: 0
       },
-      frontWhite: "#e6e6e633", // The light source location on the front is this shade of gray (white)
-      backGray: "#d9d9d933" // The antipode of the light source on the back is this shade of gray
+      frontWhite: "#E6E6E633", // The light source location on the front is this shade of gray (white)
+      backGray: "#D9D9D933" // The antipode of the light source on the back is this shade of gray
     }
   },
   zoom: {
@@ -181,7 +181,7 @@ export const SETTINGS = {
   boundaryCircle: {
     radius: 250 /* default radius */,
     color: "#000000FF",
-    lineWidth: 3
+    lineWidth: 4
   },
   // #endregion boundarycircle
   point: {
@@ -207,12 +207,12 @@ export const SETTINGS = {
         back: 3 // The default radius of the point drawn on the back,
       },
       fillColor: {
-        front: "#ff8080FF",
-        back: "#ff8080FF"
+        front: "#FF8080FF",
+        back: "#FF8080FF"
       },
       strokeColor: {
-        front: "#4d4dcbFF",
-        back: "#9c9ce2ff"
+        front: "#4D4DCDFF",
+        back: "#9C9CE2FF"
       },
       pointStrokeWidth: { front: 2, back: 2 } // The thickness of the edge of the point when drawn
       // No dashing for points
@@ -221,13 +221,13 @@ export const SETTINGS = {
     glowing: {
       annularWidth: 3, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
       fillColor: {
-        front: "#ff0000ff",
-        back: "#ff8080b5"
+        front: "#FF0000FF",
+        back: "#FF8080B5"
       },
       strokeColor: {
         // is this ever used?
-        front: "#b30000ff",
-        back: "#e60000b3"
+        front: "#B30000FF",
+        back: "#E60000B3"
       }
       // No dashing - this is highlighting the object
     },
@@ -235,12 +235,12 @@ export const SETTINGS = {
     temp: {
       // The radius is the same as the default for drawn points
       fillColor: {
-        front: "#808080ff",
-        back: "#bfbfbfff"
+        front: "#808080FF",
+        back: "#BFBFBFFF"
       },
       strokeColor: {
         front: "#000000FF",
-        back: "#808080ff"
+        back: "#808080FF"
       }
       // The temp stroke width is the same as the default drawn stroke width
       // No dashing for points
@@ -248,12 +248,12 @@ export const SETTINGS = {
     nonFree: {
       scalePercent: 90, // The percent that the size of the (free) points are scaled by to get the size of the nonFreePoint
       fillColor: {
-        front: "#df9f9fff",
-        back: "#cfafafff"
+        front: "#DF9F9FFF",
+        back: "#CFAFAFFF"
       },
       strokeColor: {
-        front: "#6a6aafff",
-        back: "#a9a9d6ff"
+        front: "#6A6AAFFF",
+        back: "#A9A9D6FF"
       },
       pointStrokeWidth: { front: 2, back: 2 } // The thickness of the edge of the point when drawn
       // No dashing for points
@@ -275,8 +275,8 @@ export const SETTINGS = {
     drawn: {
       // No fill for line segments
       strokeColor: {
-        front: "#4287f5ff",
-        back: "#9ec1faff"
+        front: "#4287F5FF",
+        back: "#9EC1FAFF"
       },
       strokeWidth: {
         front: 2.5,
@@ -285,16 +285,18 @@ export const SETTINGS = {
       dashArray: {
         reverse: { front: false, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
-      } // An empty array means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], 
+        back: [5, 10] 
+      } 
     },
     //The properties of the region around a segment when it is glowing
     glowing: {
       // No fill for line segments
       strokeColor: {
-        front: "#ff0000ff",
-        back: "#ff8080b8"
+        front: "#FF0000FF",
+        back: "#FF8080B8"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the segment that shows the glow
       // the dashing pattern is copied from the drawn version
@@ -303,8 +305,8 @@ export const SETTINGS = {
     temp: {
       // No fill for line segments
       strokeColor: {
-        front: "#6b6b6bff",
-        back: "#b5b5b5ff"
+        front: "#6B6B6BFF",
+        back: "#B5B5B5FF"
       }
       // The width is the same as the default drawn version
       // The dashing pattern is copied from the default drawn version
@@ -312,16 +314,18 @@ export const SETTINGS = {
     nonFree: {
       // No fill for lines
       strokeColor: {
-        front: "#42b9f5ff",
-        back: "#9edbfaff"
+        front: "#42B9F5FF",
+        back: "#9EBDFAFF"
       },
       // The thickness reduction of the nonFree line when drawn
       scalePercent: 85, // The percent that the size of the (free) lines are scaled by to get the thickness of the nonFreeLine
       dashArray: {
         reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], 
+        back: [5, 10] 
       }
     }
   },
@@ -340,8 +344,8 @@ export const SETTINGS = {
     drawn: {
       // No fill for lines
       strokeColor: {
-        front: "#4287f5ff",
-        back: "#9ec1faff"
+        front: "#4287F5FF",
+        back: "#9EC1FAFF"
       },
       // The thickness of the line when drawn
       strokeWidth: {
@@ -351,16 +355,18 @@ export const SETTINGS = {
       dashArray: {
         reverse: { front: false, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], 
+        back: [5, 10]
       }
     },
     //The properties of the region around a line when it is glowing
     glowing: {
       // No fill for lines
       strokeColor: {
-        front: "#ff0000ff",
-        back: "#ff8080ba"
+        front: "#FF0000FF",
+        back: "#FF8080BA"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the line that shows the glow
       // Dashing is the same as the drawn version
@@ -369,8 +375,8 @@ export const SETTINGS = {
     temp: {
       // No fill for lines
       strokeColor: {
-        front: "#6b6b6bff",
-        back: "#b5b5b5ff"
+        front: "#6B6B6BFF",
+        back: "#B5B5B5FF"
       }
       // The width is the same as the default drawn version
       // Dashing is the same as the default drawn version
@@ -378,16 +384,18 @@ export const SETTINGS = {
     nonFree: {
       // No fill for lines
       strokeColor: {
-        front: "#42b9f5ff",
-        back: "#9edbfaff"
+        front: "#42B9F5FF",
+        back: "#9EBDFAFF"
       },
       // The thickness reduction of the nonFree line when drawn
       scalePercent: 85, // The percent that the size of the (free) lines are scaled by to get the thickness of the nonFreeLine
       dashArray: {
         reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], 
+        back: [5, 10]
       }
     }
   },
@@ -405,12 +413,12 @@ export const SETTINGS = {
     //The properties of the circle when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "#d8ccff33",
-        back: "#ff2b0026"
+        front: "#D8CCFF33",
+        back: "#FF2B0026"
       },
       strokeColor: {
-        front: "#4287f5ff",
-        back: "#9ec1faff"
+        front: "#4287F5FF",
+        back: "#9EC1FAFF"
       },
       strokeWidth: {
         // The thickness of the circle when drawn front/back
@@ -420,16 +428,18 @@ export const SETTINGS = {
       dashArray: {
         reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
-      } // An empty array means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], 
+        back: [5, 10] 
+      } 
     },
     //The properties of the region around a circle when it is glowing
     glowing: {
       // There is no fill for highlighting objects
       strokeColor: {
-        front: "#ff0000ff",
-        back: "#ff8080bd"
+        front: "#FF0000FF",
+        back: "#FF8080BD"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the circle (on each side) that shows the glow
       // The dash pattern will always be the same as the drawn version
@@ -449,20 +459,22 @@ export const SETTINGS = {
     },
     nonFree: {
       fillColor: {
-        front: "#d8ccff33",
-        back: "#ff2b001a"
+        front: "#D8CCFF33",
+        back: "#FF2B001A"
       },
       strokeColor: {
-        front: "#42b9f5ff",
-        back: "#9edbfaff"
+        front: "#42B9F5FF",
+        back: "#9EDBFAFF"
       },
       // The thickness reduction of the nonFree circles when drawn
       scalePercent: 85, // The percent that the size of the (free) circles are scaled by to get the thickness of the nonFreeCircle
       dashArray: {
         reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], 
+        back: [5, 10]
       }
     }
   },
@@ -480,12 +492,12 @@ export const SETTINGS = {
     //The properties of the ellipse when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "#d8ccff33",
-        back: "#ff2b001a"
+        front: "#D8CCFF33",
+        back: "#FF2b001A"
       },
       strokeColor: {
-        front: "#4287f5ff",
-        back: "#9ec1faff"
+        front: "#4287F5FF",
+        back: "#9EC1FAFF"
       },
       strokeWidth: {
         // The thickness of the ellipse when drawn front/back
@@ -495,16 +507,18 @@ export const SETTINGS = {
       dashArray: {
         reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
-      } // An empty array means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], 
+        back: [5, 10] 
+      } 
     },
     //The properties of the region around a ellipse when it is glowing
     glowing: {
       // There is no fill for highlighting objects
       strokeColor: {
-        front: "#ff0000ff",
-        back: "#ff8080bd"
+        front: "#FF0000FF",
+        back: "#FF8080BD"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the ellipse (on each side) that shows the glow
       // The dash pattern will always be the same as the drawn version
@@ -512,32 +526,34 @@ export const SETTINGS = {
     //The properties of the ellipse when it is temporarily shown by the ellipse tool while drawing
     temp: {
       fillColor: {
-        front: "#e6e6e64d",
-        back: "#8080804d"
+        front: "#E6E6E64D",
+        back: "#8080804D"
       },
       strokeColor: {
         front: "#000000FF",
-        back: "#0000001a"
+        back: "#0000001A"
       }
       // The width is the same as the default drawn version
       // The dash pattern will always be the same as the default drawn version
     },
     nonFree: {
       fillColor: {
-        front: "#d8ccff33",
-        back: "#ff2b001a"
+        front: "#D8CCFF33",
+        back: "#FF2B001A"
       },
       strokeColor: {
-        front: "#42b9f5ff",
-        back: "#9edbfaff"
+        front: "#42B9F5FF",
+        back: "#9EBDFAFF"
       },
       // The thickness reduction of the nonFree circles when drawn
       scalePercent: 85, // The percent that the size of the (free) circles are scaled by to get the thickness of the nonFreeCircle
       dashArray: {
         reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], 
+        back: [5, 10]
       }
     }
   },
@@ -556,12 +572,12 @@ export const SETTINGS = {
     //The properties of the parametric curve when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "#d8ccff33",
-        back: "#ff2b001a"
+        front: "#D8CCFF33",
+        back: "#FF2B001A"
       },
       strokeColor: {
-        front: "#4287f5ff",
-        back: "#9ec1faff"
+        front: "#4287F5FF",
+        back: "#9EC1FAFF"
       },
       strokeWidth: {
         // The thickness of the parametric curve when drawn front/back
@@ -571,16 +587,18 @@ export const SETTINGS = {
       dashArray: {
         reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
-        back: [5, 10] // An empty array means no dashing.
-      } // An empty array means no dashing.
+        useOnFront: false,
+        useOnBack: true,
+        front: [2, 8], 
+        back: [5, 10] 
+      } 
     },
     //The properties of the region around a parametric curve when it is glowing
     glowing: {
       // There is no fill for highlighting objects
       strokeColor: {
-        front: "#ff0000ff",
-        back: "#ff8080bd"
+        front: "#FF0000FF",
+        back: "#FF8080BD"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the parametric curve (on each side) that shows the glow
       // The dash pattern will always be the same as the drawn version
@@ -588,12 +606,12 @@ export const SETTINGS = {
     //The properties of the parametric curve when it is temporarily shown by the parametric curve tool while drawing
     temp: {
       fillColor: {
-        front: "#e6e6e64d",
-        back: "#8080804d"
+        front: "#E6E6E64D",
+        back: "#8080804D"
       },
       strokeColor: {
         front: "#000000FF",
-        back: "#0000001a"
+        back: "#0000001A"
       }
       // The width is the same as the default drawn version
       // The dash pattern will always be the same as the default drawn version
@@ -614,8 +632,8 @@ export const SETTINGS = {
     //The properties of the polygon when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "#d8ccff99",
-        back: "#ff2b001a"
+        front: "#D8CCFF99",
+        back: "#FF2B001A"
       }
       //  strokeColor is determined by each edge
       // strokeWidth is determined by each edge
@@ -631,7 +649,7 @@ export const SETTINGS = {
     fontSize: 15,
     fillColor: {
       front: "#000000FF",
-      back: "#0000001a"
+      back: "#0000001A"
     },
     style: "normal",
     family: "sans-serif",
@@ -639,8 +657,8 @@ export const SETTINGS = {
     rotation: 0,
     glowingStrokeWidth: { front: 3, back: 3 },
     glowingStrokeColor: {
-      front: "#b3b3b3ff",
-      back: "#d9d9d9ff"
+      front: "#B3B3B3FF",
+      back: "#D9D9D9FF"
     }
   },
   text: {
@@ -653,12 +671,12 @@ export const SETTINGS = {
     decoration: "none",
     rotation: 0,
     glowingStrokeWidth: 3,
-    glowingStrokeColor: "#b3b3b3ff"
+    glowingStrokeColor: "#FF8080FF"
   },
   angleMarker: {
     initialValueDisplayMode: ValueDisplayMode.DegreeDecimals, // Set the initial display of the values for the measurement of the angle
     showLabelsInitially: true, // Should the labels be show upon creating the angleMarker
-    maxLabelDistance: 0.25, // The maximum distance that a label is allowed to get away from the angleMarker
+    maxLabelDistance: 0.2, // The maximum distance that a label is allowed to get away from the angleMarker
     initialLabelOffset: 0.2, // When making point labels this is initially how far (roughly) they are from the angleMarker
     defaultLabelMode: LabelDisplayMode.ValueOnly, // The default way of displaying this objects label
     turnOffVertexLabelOnCreation: true, // When an angle marker is created with a label at the vertex, that label is turned off if this is set.
@@ -688,12 +706,12 @@ export const SETTINGS = {
     //The properties of the angleMarker when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "#d8ccff99",
-        back: "#ff2b0066"
+        front: "#D8CCFF99",
+        back: "#FF2B0066"
       },
       strokeColor: {
         front: "#00000080",
-        back: "#0000004d"
+        back: "#0000004D"
       },
       strokeWidth: {
         circular: {
@@ -712,16 +730,18 @@ export const SETTINGS = {
       dashArray: {
         reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [0, 0], // An empty array or [0,0] means no dashing.
-        back: [0, 0] // An empty array or [0,0] means no dashing.
-      } // An empty array means no dashing.
+        useOnFront: false,
+        useOnBack: false,
+        front: [2, 8], 
+        back: [5 , 10] 
+      } 
     },
     //The properties of the region around an angle when it is glowing
     glowing: {
       // There is no fill for highlighting objects
       strokeColor: {
-        front: "#ff0000ff",
-        back: "#ff8080bf"
+        front: "#FF0000FF",
+        back: "#FF8080BF"
       },
       circular: { edgeWidth: 5 }, // edgeWidth/2 is the width of the region around the angle (on all sides) that shows the glow
       straight: { edgeWidth: 2 },
