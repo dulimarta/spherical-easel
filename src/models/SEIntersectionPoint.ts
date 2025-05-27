@@ -213,17 +213,12 @@ export class SEIntersectionPoint extends SEPoint {
       return false;
     }
     // Check that we can add n as an other parent of this intersection point
+    // One condition is that the DAG must be maintained - so both proposed new parents cannot be descendants of the intersection.
     // One condition is that the DAG must be maintained - so both proposed new parents cannot be descendants of the intersection. (This is covered by the next condition because, if one parent is a descendant of the intersection point, then the ancestors of the parent include the parents of the intersection point )
     // Central question: If one of the current principle parents was deleted could this new pair step in and be parents of the intersection point?
     // Condition: This means that the ancestors of both proposed parents must not include the parent that is being deleted. That is, both principle parents can not be in the ancestors of both parents.
-    //
-    // const descendants = getDescendants([this]).map(nod => nod.name);
-    // console.log(`Descendants of ${this.name} `, descendants);
+
     const ancestors = getAncestors([n.parent1, n.parent2]).map(nod => nod.name);
-    // console.log(
-    //   `Ancestors of ${n.parent1.name} and ${n.parent2.name} `,
-    //   ancestors
-    // );
     if (
       !(
         ancestors.includes(this.principleParent1.name) &&
@@ -306,6 +301,8 @@ export class SEIntersectionPoint extends SEPoint {
         this.locationVector = updatedIntersectionInfo[this.order].vector;
       } else if (this._otherParentsInfoArray.length > 0) {
         // if this point is not an intersection between the two principle parents, check to see if the existence is true for other parent info.  If so, update the principle parents.
+      } else if (this._otherParentsInfoArray.length > 0) {
+        // if this point is not an intersection between the two principle parents, check to see if the existence is true for other parent info.  If so, update the principle parents.
         for (const info of this._otherParentsInfoArray) {
           info.parent1.shallowUpdate();
           info.parent2.shallowUpdate();
@@ -329,7 +326,6 @@ export class SEIntersectionPoint extends SEPoint {
               info.parent2.registerChild(this);
               this._exists = true;
               this.locationVector = intersectionInfo.vector;
-              break; // exit the search after the first successful one
             }
           }
         }
@@ -342,6 +338,7 @@ export class SEIntersectionPoint extends SEPoint {
       }
     }
   }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]
