@@ -16,11 +16,11 @@ import {
 import SETTINGS from "@/global-settings";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { ChangeIntersectionPointPrincipleParents } from "@/commands/ChangeIntersectionPointPrincipleParents";
-import { SENodule } from "@/models/SENodule";
 import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
+import { SENodule } from "@/models/SENodule";
 const { t } = i18n.global;
 export class SEIntersectionPoint extends SEPoint {
   /**
@@ -202,11 +202,16 @@ export class SEIntersectionPoint extends SEPoint {
     );
     let returnValue: boolean;
     // Check that we can add n as an other parent of this
+    // One condition is that the DAG must be maintained - so both proposed new parents cannot be descendants of the intersection. 
     const descendants = getDescendants([this]).map(nod => nod.name);
+    console.log("Descendants of ", descendants)
     if (
       !descendants.includes(n.parent1.name) &&
       !descendants.includes(n.parent2.name)
     ) {
+       // Next central question: If one of the current principle parents was deleted could this new pair step in and be parents of the intersection point?
+    // This means that the ancestors of both proposed parents must not include the parent that is being deleted. 
+    //
       this._otherParentsInfoArray.push(n);
       returnValue = true;
       console.log(`Added!`);
@@ -273,9 +278,13 @@ export class SEIntersectionPoint extends SEPoint {
         // this is the best outcome
         this._exists = true;
         this.locationVector = updatedIntersectionInfo[this.order].vector;
-      } else {
-        // if this point is not an intersection between the two principle parents, check to see if the existence is true for parent info.  If so, update the principle parents.
+      } else if (this._otherParentsInfoArray.length > 0) {
+        // if this point is not an intersection between the two principle parents, check to see if the existence is true for other parent info.  If so, update the principle parents.
         for (const info of this._otherParentsInfoArray) {
+          if (info.parent1.canUpdateNow() && info.parent2.canUpdateNow()) {
+            info.parent1.shallowUpdate();
+            info.parent2.shallowUpdate();
+          }
           if (info.parent1.exists && info.parent1.exists) {
             const intersectionInfo = intersectTwoObjects(
               info.parent1,
@@ -293,12 +302,12 @@ export class SEIntersectionPoint extends SEPoint {
             }
           }
         }
-        // Update visibility
-        if (this._exists && this._isUserCreated && this.showing) {
-          this.ref.setVisible(true);
-        } else {
-          this.ref.setVisible(false);
-        }
+      }
+      // Update visibility
+      if (this._exists && this._isUserCreated && this.showing) {
+        this.ref.setVisible(true);
+      } else {
+        this.ref.setVisible(false);
       }
     }
   }

@@ -253,6 +253,8 @@ export abstract class SENodule implements Visitable {
     n.removeParent(this);
   }
 
+
+
   // public removeSelfSafely(): void {
   //   if (this._kids.length == 0) {
   //     // const pars = this._parents.map(p => p.name).join(", ");

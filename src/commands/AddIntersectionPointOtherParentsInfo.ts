@@ -127,9 +127,10 @@ export class AddIntersectionPointOtherParentsInfo extends Command {
         parent1: firstParent,
         parent2: secondParent,
         existingIntersectionPoint: true,
-        createAntipodalPoint:
+        createAntipodalPoint: !(
           (firstParent instanceof SELine || firstParent instanceof SESegment) &&
-          (secondParent instanceof SELine || secondParent instanceof SESegment),
+          (secondParent instanceof SELine || secondParent instanceof SESegment)
+        ),
         order: order
       });
     }
