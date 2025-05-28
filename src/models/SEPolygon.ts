@@ -83,7 +83,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     super();
     SENodule.POLYGON_COUNT++;
     this._polygonNumber = SENodule.POLYGON_COUNT;
-    this.name = `Poly-${this._polygonNumber}`
+    // this.name = `Poly-${this._polygonNumber}`
     this.ref = new Polygon(this.name, edges, flippedBooleans);
     this._seEdgeSegments.push(...edges);
     this._segmentIsFlipped.push(...flippedBooleans);
@@ -144,9 +144,9 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   public get noduleItemText(): string {
     return (
       this.name +
-      " - " +
+      ": " +
       this.label?.ref.shortUserName +
-      `: ${this.prettyValue()}`
+      ` ${this.prettyValue()}`
     );
   }
 
