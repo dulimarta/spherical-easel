@@ -1032,9 +1032,6 @@ export const useSEStore = defineStore("se", () => {
         n.ref?.updateDisplay();
       }
       n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
-      // if (n.isFillable()) {
-      //   updateTwoJS();
-      // }
     });
   }
   function changeSegmentNormalVectorArcLength(change: {
@@ -1417,23 +1414,30 @@ export const useSEStore = defineStore("se", () => {
       //  1) The intersection point is new so create a new intersection point
       //  2) The intersection point is old so the intersection information might be added to the otherSEParents array of the intersection point
 
-      if (
-        !existingSEPoints.some(pt => {
-          if (
-            tmpVector.subVectors(info.vector, pt.locationVector).isZero() &&
-            !pt.locationVector.isZero() //Never happens if a line and line don't initially intersect the intersection is the zero vector,
-            //but if some other intersection like line circle doesn't initially intersection, this still needs to be avoided
-            //The default is that when two objects don't intersect the vector is zero
-          ) {
-            if (pt instanceof SEIntersectionPoint) {
-              existingSEIntersectionPoint = pt;
-            }
-            return true;
-          } else {
-            return false;
+      //clear the existingSEIntersectionPoint
+      existingSEIntersectionPoint = null;
+      let isOnExistingPointList = false;
+      // Search the existing (and newly created points and newly created --i.e. earlier in this command group) intersection points for these intersections
+      existingSEPoints.forEach(pt => {
+        // if (pt.locationVector.isZero()) {
+        //   console.warn(
+        //     `Intersection point with zero vector encountered ${pt.name}/${pt.label?.ref.shortUserName}/${pt.noduleDescription}`
+        //   );
+        // }
+        if (
+          tmpVector.subVectors(info.vector, pt.locationVector).isZero() &&
+          !pt.locationVector.isZero() //Never happens for a line and line as they always *initially* intersect.  However for a line and circle, if they
+          // don't initially intersect then the intersection vectors are zero.
+          //The default is that when two objects don't intersect initially the vector is zero
+        ) {
+          if (pt instanceof SEIntersectionPoint) {
+            existingSEIntersectionPoint = pt;
           }
-        })
-      ) {
+          isOnExistingPointList = true;
+        }
+      });
+
+      if (!isOnExistingPointList) {
         // info.vector is not on the existing SE points array, so create an intersection (Option #1 above)
         const newSEIntersectionPt = new SEIntersectionPoint(
           firstParent,
