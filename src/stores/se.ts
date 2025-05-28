@@ -1401,11 +1401,7 @@ export const useSEStore = defineStore("se", () => {
   ): {
     intersections: SEIntersectionReturnType[];
   } {
-  ): {
-    intersections: SEIntersectionReturnType[];
-  } {
     const returnArray: SEIntersectionReturnType[] = [];
-    const createAntipodal = !(
     const createAntipodal = !(
       (firstParent instanceof SELine || firstParent instanceof SESegment) &&
       (secondParent instanceof SELine || secondParent instanceof SESegment)
@@ -1467,7 +1463,6 @@ export const useSEStore = defineStore("se", () => {
       } else {
         // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an seIntersection point) so do nothing with these intersection points
         if (existingSEIntersectionPoint != null) {
-        if (existingSEIntersectionPoint != null) {
           // the intersection vector (info.vector) is at an existing SEIntersection point (Option #2 above)
           // this means that the parents might new parents of this intersection point check later
           // this means that the parents might new parents of this intersection point check later
@@ -1484,9 +1479,6 @@ export const useSEStore = defineStore("se", () => {
       //clear the existingSEIntersectionPoint
       existingSEIntersectionPoint = null;
     });
-    return {
-      intersections: returnArray
-    };
     return {
       intersections: returnArray
     };
@@ -1541,17 +1533,6 @@ export const useSEStore = defineStore("se", () => {
     } else if (newSENodule instanceof SEParametric) {
       newSENodule = newSENodule as SEParametric;
     }
-    if (newSENodule instanceof SELine) {
-      newSENodule = newSENodule as SELine;
-    } else if (newSENodule instanceof SESegment) {
-      newSENodule = newSENodule as SESegment;
-    } else if (newSENodule instanceof SECircle) {
-      newSENodule = newSENodule as SECircle;
-    } else if (newSENodule instanceof SEEllipse) {
-      newSENodule = newSENodule as SEEllipse;
-    } else if (newSENodule instanceof SEParametric) {
-      newSENodule = newSENodule as SEParametric;
-    }
     const rank1 = rank_of_type(newSENodule);
 
     const computedRefArray = [
@@ -1590,6 +1571,7 @@ export const useSEStore = defineStore("se", () => {
           object2 = newSENodule;
           object1 = oldSENodule;
         }
+        // now intersect them
         if (object1 instanceof SELine && object2 instanceof SELine) {
           if (object1.name != object2.name) {
             intersectionInfo = intersectLineWithLine(
@@ -1649,7 +1631,12 @@ export const useSEStore = defineStore("se", () => {
           );
         } else if (object1 instanceof SECircle && object2 instanceof SECircle) {
           if (object1.name != object2.name) {
-            intersectionInfo = intersectCircleWithCircle(object1, object2);
+            intersectionInfo = intersectCircles(
+              object1.centerSEPoint.locationVector,
+              object1.circleRadius,
+              object2.centerSEPoint.locationVector,
+              object2.circleRadius
+            );
           }
         } else if (
           object1 instanceof SECircle &&
@@ -1696,7 +1683,7 @@ export const useSEStore = defineStore("se", () => {
           object1,
           object2
         );
-        existingSEPoints.push(...info.updatedSEPoints);
+        // existingSEPoints.push(...info.updatedSEPoints);
         intersectionPointReturnArray.push(...info.intersections);
       });
     });

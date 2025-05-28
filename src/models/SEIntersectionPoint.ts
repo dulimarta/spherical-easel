@@ -262,9 +262,6 @@ export class SEIntersectionPoint extends SEPoint {
     this.sePrincipleParent1 = newInfo.parent1;
     this.sePrincipleParent2 = newInfo.parent2;
     this.order = newInfo.order;
-    // console.log(
-    //   `Principle parents are now ${this.principleParent1.name} and ${this.principleParent2.name}`
-    // );
   }
 
   public shallowUpdate(): void {
@@ -280,9 +277,7 @@ export class SEIntersectionPoint extends SEPoint {
       }
     } else {
       // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
-      // console.log(
-      //   `shallow update intersection between ${this.principleParent1.name} and ${this.principleParent2.name}`
-      // );
+      // console.log(`shallow update intersection between ${this.principleParent1.name} and ${this.principleParent2.name}`);
       const updatedIntersectionInfo: IntersectionReturnType[] =
         intersectTwoObjects(
           this.sePrincipleParent1,
@@ -298,14 +293,14 @@ export class SEIntersectionPoint extends SEPoint {
         // this is the best outcome
         this._exists =
           this.principleParent1.exists && this.principleParent2.exists;
+        this._exists =
+          this.principleParent1.exists && this.principleParent2.exists;
         this.locationVector = updatedIntersectionInfo[this.order].vector;
       } else if (this._otherParentsInfoArray.length > 0) {
         // if this point is not an intersection between the two principle parents, check to see if the existence is true for other parent info.  If so, update the principle parents.
       } else if (this._otherParentsInfoArray.length > 0) {
         // if this point is not an intersection between the two principle parents, check to see if the existence is true for other parent info.  If so, update the principle parents.
         for (const info of this._otherParentsInfoArray) {
-          info.parent1.shallowUpdate();
-          info.parent2.shallowUpdate();
           if (info.parent1.canUpdateNow() && info.parent2.canUpdateNow()) {
             info.parent1.shallowUpdate();
             info.parent2.shallowUpdate();
@@ -328,18 +323,15 @@ export class SEIntersectionPoint extends SEPoint {
               this.principleParent2.unregisterChild(this);
               info.parent1.registerChild(this);
               info.parent2.registerChild(this);
+              // new ChangeIntersectionPointPrincipleParents(info).execute();
+              this.changePrincipleParents(info);
+              // update the DAG
+              this.principleParent1.unregisterChild(this);
+              this.principleParent2.unregisterChild(this);
+              info.parent1.registerChild(this);
+              info.parent2.registerChild(this);
               this._exists = true;
               this.locationVector = intersectionInfo.vector;
-              break; // exit the search after the first successful one
-            }
-          }
-        }
-      }
-      // Update visibility
-      if (this._exists && this._isUserCreated && this.showing) {
-        this.ref.setVisible(true);
-      } else {
-        this.ref.setVisible(false);
             }
           }
         }
@@ -369,6 +361,7 @@ export class SEIntersectionPoint extends SEPoint {
 
     this.setOutOfDate(false);
     this.shallowUpdate();
+
     // Intersection Points are completely determined by their parents and an update on the parents
     // will cause this point to be put into the correct location.So we don't store any additional information
     if (objectState && orderedSENoduleList) {
