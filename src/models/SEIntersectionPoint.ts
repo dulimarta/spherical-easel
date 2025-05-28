@@ -201,20 +201,40 @@ export class SEIntersectionPoint extends SEPoint {
       `Intersection point ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription} attempt add other parents ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
     );
     let returnValue: boolean;
-    // Check that we can add n as an other parent of this
-    // One condition is that the DAG must be maintained - so both proposed new parents cannot be descendants of the intersection. 
-    const descendants = getDescendants([this]).map(nod => nod.name);
-    console.log("Descendants of ", descendants)
+    // First check that this other parent info is not already in the info array
     if (
-      !descendants.includes(n.parent1.name) &&
-      !descendants.includes(n.parent2.name)
+      this._otherParentsInfoArray.some(
+        info =>
+          info.parent1.name == n.parent1.name &&
+          info.parent2.name == n.parent2.name &&
+          info.order == n.order
+      )
     ) {
-       // Next central question: If one of the current principle parents was deleted could this new pair step in and be parents of the intersection point?
-    // This means that the ancestors of both proposed parents must not include the parent that is being deleted. 
+      return false;
+    }
+    // Check that we can add n as an other parent of this intersection point
+    // One condition is that the DAG must be maintained - so both proposed new parents cannot be descendants of the intersection. (This is covered by the next condition because, if one parent is a descendant of the intersection point, then the ancestors of the parent include the parents of the intersection point )
+    // Central question: If one of the current principle parents was deleted could this new pair step in and be parents of the intersection point?
+    // Condition: This means that the ancestors of both proposed parents must not include the parent that is being deleted. That is, both principle parents can not be in the ancestors of both parents.
     //
+    // const descendants = getDescendants([this]).map(nod => nod.name);
+    // console.log(`Descendants of ${this.name} `, descendants);
+    const ancestors = getAncestors([n.parent1, n.parent2]).map(nod => nod.name);
+    console.log(
+      `Ancestors of ${n.parent1.name} and ${n.parent2.name} `,
+      ancestors
+    );
+    if (
+      !(
+        ancestors.includes(this.principleParent1.name) &&
+        ancestors.includes(this.principleParent2.name)
+      )
+    ) {
       this._otherParentsInfoArray.push(n);
       returnValue = true;
       console.log(`Added!`);
+      // Once another set of parents are added, update the exists variable with an update
+      this.shallowUpdate();
     } else {
       console.warn(`Not Added!`);
       returnValue = false;
@@ -247,6 +267,9 @@ export class SEIntersectionPoint extends SEPoint {
     this.sePrincipleParent1 = newInfo.parent1;
     this.sePrincipleParent2 = newInfo.parent2;
     this.order = newInfo.order;
+    console.log(
+      `Principle parents are now ${this.principleParent1.name} and ${this.principleParent2.name}`
+    );
   }
 
   public shallowUpdate(): void {
@@ -262,7 +285,9 @@ export class SEIntersectionPoint extends SEPoint {
       }
     } else {
       // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
-      // console.log(`shallow update intersection between ${this.principleParent1.name} and ${this.principleParent2.name}`);
+      console.log(
+        `shallow update intersection between ${this.principleParent1.name} and ${this.principleParent2.name}`
+      );
       const updatedIntersectionInfo: IntersectionReturnType[] =
         intersectTwoObjects(
           this.sePrincipleParent1,
@@ -276,15 +301,14 @@ export class SEIntersectionPoint extends SEPoint {
       this._exists = false; // this will be set to true if possible
       if (updatedIntersectionInfo[this.order].exists) {
         // this is the best outcome
-        this._exists = true;
+        this._exists =
+          this.principleParent1.exists && this.principleParent2.exists;
         this.locationVector = updatedIntersectionInfo[this.order].vector;
       } else if (this._otherParentsInfoArray.length > 0) {
         // if this point is not an intersection between the two principle parents, check to see if the existence is true for other parent info.  If so, update the principle parents.
         for (const info of this._otherParentsInfoArray) {
-          if (info.parent1.canUpdateNow() && info.parent2.canUpdateNow()) {
-            info.parent1.shallowUpdate();
-            info.parent2.shallowUpdate();
-          }
+          info.parent1.shallowUpdate();
+          info.parent2.shallowUpdate();
           if (info.parent1.exists && info.parent1.exists) {
             const intersectionInfo = intersectTwoObjects(
               info.parent1,
@@ -296,9 +320,16 @@ export class SEIntersectionPoint extends SEPoint {
                 `Changing principle parents of ${this.name}/${this.label?.ref.shortUserName}/${this.noduleDescription} to ${info.parent1.name} and ${info.parent2.name}`
               );
               // This means that info should be the new parents
-              new ChangeIntersectionPointPrincipleParents(info).execute();
+              // new ChangeIntersectionPointPrincipleParents(info).execute();
+              this.changePrincipleParents(info);
+              // update the DAG
+              this.principleParent1.unregisterChild(this);
+              this.principleParent2.unregisterChild(this);
+              info.parent1.registerChild(this);
+              info.parent2.registerChild(this);
               this._exists = true;
               this.locationVector = intersectionInfo.vector;
+              break; // exit the search after the first successful one
             }
           }
         }
@@ -327,7 +358,7 @@ export class SEIntersectionPoint extends SEPoint {
 
     this.setOutOfDate(false);
     this.shallowUpdate();
-
+    console.log("Intersection point honest update");
     // Intersection Points are completely determined by their parents and an update on the parents
     // will cause this point to be put into the correct location.So we don't store any additional information
     if (objectState && orderedSENoduleList) {

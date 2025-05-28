@@ -31,7 +31,7 @@ export class ChangeIntersectionPointPrincipleParents extends Command {
       ),
       order: newInfo.SEIntersectionPoint.intersectionOrder
     };
-    this.newParentInfo = newInfo;
+    this.newParentInfo = {...newInfo};
   }
 
   do(): void {
