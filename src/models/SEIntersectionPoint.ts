@@ -326,6 +326,7 @@ export class SEIntersectionPoint extends SEPoint {
               info.parent2.registerChild(this);
               this._exists = true;
               this.locationVector = intersectionInfo.vector;
+              break; // exit the search after the first successful one
             }
           }
         }
