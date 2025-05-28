@@ -200,6 +200,9 @@ export class SEIntersectionPoint extends SEPoint {
     // console.log(
     //   `Intersection point ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription} attempt add other parents ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
     // );
+    // console.log(
+    //   `Intersection point ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription} attempt add other parents ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
+    // );
     let returnValue: boolean;
     // First check that this other parent info is not already in the info array
     if (
@@ -219,6 +222,14 @@ export class SEIntersectionPoint extends SEPoint {
     // Condition: This means that the ancestors of both proposed parents must not include the parent that is being deleted. That is, both principle parents can not be in the ancestors of both parents.
 
     const ancestors = getAncestors([n.parent1, n.parent2]).map(nod => nod.name);
+    // console.log(
+    //   `Ancestors of ${n.parent1.name} and ${n.parent2.name} `,
+    //   ancestors
+    // );
+    // console.log(
+    //   `Ancestors of ${n.parent1.name} and ${n.parent2.name} `,
+    //   ancestors
+    // );
     if (
       !(
         ancestors.includes(this.principleParent1.name) &&
@@ -227,6 +238,7 @@ export class SEIntersectionPoint extends SEPoint {
     ) {
       this._otherParentsInfoArray.push(n);
       returnValue = true;
+      // console.log(`Added!`);
       // console.log(`Added!`);
       // Once another set of parents are added, update the exists variable with an update
       this.shallowUpdate();
@@ -262,6 +274,9 @@ export class SEIntersectionPoint extends SEPoint {
     this.sePrincipleParent1 = newInfo.parent1;
     this.sePrincipleParent2 = newInfo.parent2;
     this.order = newInfo.order;
+    // console.log(
+    //   `Principle parents are now ${this.principleParent1.name} and ${this.principleParent2.name}`
+    // );
   }
 
   public shallowUpdate(): void {
@@ -278,6 +293,9 @@ export class SEIntersectionPoint extends SEPoint {
     } else {
       // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
       // console.log(`shallow update intersection between ${this.principleParent1.name} and ${this.principleParent2.name}`);
+      // console.log(
+      //   `shallow update intersection between ${this.principleParent1.name} and ${this.principleParent2.name}`
+      // );
       const updatedIntersectionInfo: IntersectionReturnType[] =
         intersectTwoObjects(
           this.sePrincipleParent1,
@@ -312,6 +330,9 @@ export class SEIntersectionPoint extends SEPoint {
               SENodule.store.inverseTotalRotationMatrix
             )[info.order];
             if (intersectionInfo.exists) {
+              // console.log(
+              //   `Changing principle parents of ${this.name}/${this.label?.ref.shortUserName}/${this.noduleDescription} to ${info.parent1.name} and ${info.parent2.name}`
+              // );
               // console.log(
               //   `Changing principle parents of ${this.name}/${this.label?.ref.shortUserName}/${this.noduleDescription} to ${info.parent1.name} and ${info.parent2.name}`
               // );
@@ -361,7 +382,6 @@ export class SEIntersectionPoint extends SEPoint {
 
     this.setOutOfDate(false);
     this.shallowUpdate();
-
     // Intersection Points are completely determined by their parents and an update on the parents
     // will cause this point to be put into the correct location.So we don't store any additional information
     if (objectState && orderedSENoduleList) {

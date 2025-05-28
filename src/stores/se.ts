@@ -1420,11 +1420,11 @@ export const useSEStore = defineStore("se", () => {
       let isOnExistingPointList = false;
       // Search the existing (and newly created points and newly created --i.e. earlier in this command group) intersection points for these intersections
       existingSEPoints.forEach(pt => {
-        if (pt.locationVector.isZero()) {
-          console.warn(
-            `Intersection point with zero vector encountered ${pt.name}/${pt.label?.ref.shortUserName}/${pt.noduleDescription}`
-          );
-        }
+        // if (pt.locationVector.isZero()) {
+        //   console.warn(
+        //     `Intersection point with zero vector encountered ${pt.name}/${pt.label?.ref.shortUserName}/${pt.noduleDescription}`
+        //   );
+        // }
         if (
           tmpVector.subVectors(info.vector, pt.locationVector).isZero() &&
           !pt.locationVector.isZero() //Never happens for a line and line as they always *initially* intersect.  However for a line and circle, if they
