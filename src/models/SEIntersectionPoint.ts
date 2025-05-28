@@ -201,29 +201,17 @@ export class SEIntersectionPoint extends SEPoint {
     //   `Intersection point ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription} attempt add other parents ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
     // );
     let returnValue: boolean;
-    // First check that this other parent info is not already in the info array
+    // Check that we can add n as an other parent of this
+    // One condition is that the DAG must be maintained - so both proposed new parents cannot be descendants of the intersection.
+    const descendants = getDescendants([this]).map(nod => nod.name);
+    console.log("Descendants of ", descendants);
     if (
-      this._otherParentsInfoArray.some(
-        info =>
-          info.parent1.name == n.parent1.name &&
-          info.parent2.name == n.parent2.name &&
-          info.order == n.order
-      )
+      !descendants.includes(n.parent1.name) &&
+      !descendants.includes(n.parent2.name)
     ) {
-      return false;
-    }
-    // Check that we can add n as an other parent of this intersection point
-    // One condition is that the DAG must be maintained - so both proposed new parents cannot be descendants of the intersection. (This is covered by the next condition because, if one parent is a descendant of the intersection point, then the ancestors of the parent include the parents of the intersection point )
-    // Central question: If one of the current principle parents was deleted could this new pair step in and be parents of the intersection point?
-    // Condition: This means that the ancestors of both proposed parents must not include the parent that is being deleted. That is, both principle parents can not be in the ancestors of both parents.
-
-    const ancestors = getAncestors([n.parent1, n.parent2]).map(nod => nod.name);
-    if (
-      !(
-        ancestors.includes(this.principleParent1.name) &&
-        ancestors.includes(this.principleParent2.name)
-      )
-    ) {
+      // Next central question: If one of the current principle parents was deleted could this new pair step in and be parents of the intersection point?
+      // This means that the ancestors of both proposed parents must not include the parent that is being deleted.
+      //
       this._otherParentsInfoArray.push(n);
       returnValue = true;
       // Once another set of parents are added, update the exists variable with an update
