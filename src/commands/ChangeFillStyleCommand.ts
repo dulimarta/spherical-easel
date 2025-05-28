@@ -16,6 +16,7 @@ export class ChangeFillStyleCommand extends Command {
   }
 
   do(): void {
+    console.log("change fill style")
     Nodule.setFillStyle(this.currentFillStyle);
     Command.store.changeFillStyle(this.currentFillStyle);
   }

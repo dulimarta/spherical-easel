@@ -55,10 +55,10 @@ export class AddIntersectionPointOtherParentsInfo extends Command {
         this.otherParentsInfo.SEIntersectionPoint.addIntersectionOtherParentInfo(
           this.otherParentsInfo
         );
-      console.log(
-        `Use this Command in the future`,
-        this.useThisAddIntersectionPointCommand
-      );
+      // console.log(
+      //   `Use this Command in the future`,
+      //   this.useThisAddIntersectionPointCommand
+      // );
     }
   }
 

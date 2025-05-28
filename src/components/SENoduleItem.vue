@@ -51,7 +51,7 @@
       <template v-slot:activator="{ props }">
         <v-icon
           data-testid="toggle_visibility"
-          v-if="isPlottable"
+          v-if="isPlottable && isNotPolygonWithNoFill"
           v-bind="props"
           @click="toggleVisibility"
           size="small"
@@ -119,7 +119,7 @@ import { SECalculation } from "../models/SECalculation";
 import { SEPointDistance } from "@/models/SEPointDistance";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
-import { ValueDisplayMode } from "@/types";
+import { FillStyle, ValueDisplayMode } from "@/types";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 import { SEEllipse } from "@/models/SEEllipse";
@@ -158,6 +158,9 @@ import { SELatitude } from "@/models/SELatitude";
 import { SELongitude } from "@/models/SELongitude";
 import { Vector3 } from "three";
 import { SEText } from "@/models/SEText";
+import Nodule from "../plottables/Nodule";
+import { CommandGroup } from "@/commands/CommandGroup";
+import { ChangeFillStyleCommand } from "@/commands/ChangeFillStyleCommand";
 const seStore = useSEStore();
 const { actionMode, isEarthMode, inverseTotalRotationMatrix } =
   storeToRefs(seStore);
@@ -373,7 +376,7 @@ onMounted((): void => {
 watch(() => props.node.noduleItemText, updateVisibilityKeys);
 // Without this, the display/label icon doesn't change between the two showing and not showing variants and the display cycle mode doesn't update
 function updateVisibilityKeys() {
-  console.log("UPDATE seNoduleItem Visibility keys");
+  // console.log("UPDATE seNoduleItem Visibility keys");
   visibilityUpdateKey.value = 1 - visibilityUpdateKey.value;
   labelVisibilityUpdateKey.value = visibilityUpdateKey.value;
   displayCycleValueUpdateKey.value = visibilityUpdateKey.value;
@@ -446,7 +449,20 @@ function selectMe(): void {
 }
 
 function toggleVisibility(): void {
-  new SetNoduleDisplayCommand(props.node, !props.node.showing).execute();
+  const cmdGroup = new CommandGroup();
+  // console.log(`${props.node.name} is showing? ${props.node.showing}`)
+  // if (
+  //   (props.node instanceof SEPolygon|| props.node instanceof SECircle) &&
+  //   Nodule.getFillStyle() == FillStyle.NoFill && !props.node.showing
+  // ) {
+  //   // turn on the fill
+  //   cmdGroup.addCommand(
+  //     new ChangeFillStyleCommand(FillStyle.ShadeFill, FillStyle.NoFill)
+  //   );
+  // }
+  cmdGroup
+    .addCommand(new SetNoduleDisplayCommand(props.node, !props.node.showing))
+    .execute();
   updateVisibilityKeys(); // Without this, the display/label icon doesn't change between the two showing and not showing variants.
   //NP
   if (isNorthPole) {
@@ -656,6 +672,12 @@ const isParametric = computed((): boolean => {
   return false;
 });
 
+const isNotPolygonWithNoFill = computed((): boolean => {
+  return !(
+    props.node instanceof SEPolygon && Nodule.getFillStyle() == FillStyle.NoFill
+  );
+});
+
 const isPlottable = computed((): boolean => {
   return (
     props.node instanceof SEPoint ||
@@ -742,8 +764,14 @@ const shakeTransformationDisplay = computed((): string => {
   }
 }
 .invisibleNode {
-  color: gray;
-  font-style: italic;
+  color: rgb(0, 0, 0);
+  padding-left: 8px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 .nodeItem,
 .visibleNode {
@@ -793,7 +821,6 @@ const shakeTransformationDisplay = computed((): string => {
   "angleMarker": "Angle Marker",
   "triangle": "Triangle",
   "measurement": "Measurement",
-  "polygon":"Polygon"
-
+  "polygon": "Polygon"
 }
 </i18n>

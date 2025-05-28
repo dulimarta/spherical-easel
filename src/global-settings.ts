@@ -261,7 +261,7 @@ export const SETTINGS = {
   },
   segment: {
     showLabelsInitially: false, // Should the labels be show upon creating the segment
-    maxLabelDistance: 0.15, // The maximum distance that a label is allowed to get away from the segment
+    maxLabelDistance: 0.2, // The maximum distance that a label is allowed to get away from the segment
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     measuringChangesLabelModeTo: LabelDisplayMode.NameAndValue,
     initialValueDisplayMode: ValueDisplayMode.MultipleOfPi, // Set the initial display of the values for the measurement of the angle
