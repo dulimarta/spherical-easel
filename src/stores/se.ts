@@ -1660,7 +1660,7 @@ export const useSEStore = defineStore("se", () => {
           object1,
           object2
         );
-        existingSEPoints.push(...info.updatedSEPoints);
+        // existingSEPoints.push(...info.updatedSEPoints);
         intersectionPointReturnArray.push(...info.intersections);
       });
     });
