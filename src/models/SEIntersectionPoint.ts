@@ -200,9 +200,6 @@ export class SEIntersectionPoint extends SEPoint {
     // console.log(
     //   `Intersection point ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription} attempt add other parents ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
     // );
-    // console.log(
-    //   `Intersection point ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription} attempt add other parents ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
-    // );
     let returnValue: boolean;
     // First check that this other parent info is not already in the info array
     if (
@@ -280,7 +277,6 @@ export class SEIntersectionPoint extends SEPoint {
       }
     } else {
       // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
-      // console.log(`shallow update intersection between ${this.principleParent1.name} and ${this.principleParent2.name}`);
       // console.log(
       //   `shallow update intersection between ${this.principleParent1.name} and ${this.principleParent2.name}`
       // );

@@ -1032,6 +1032,9 @@ export const useSEStore = defineStore("se", () => {
         n.ref?.updateDisplay();
       }
       n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
+      // if (n.isFillable()) {
+      //   updateTwoJS();
+      // }
     });
   }
   function changeSegmentNormalVectorArcLength(change: {
@@ -1620,10 +1623,7 @@ export const useSEStore = defineStore("se", () => {
           );
         } else if (object1 instanceof SECircle && object2 instanceof SECircle) {
           if (object1.name != object2.name) {
-            intersectionInfo = intersectCircleWithCircle(
-              object1,
-              object2
-            );
+            intersectionInfo = intersectCircleWithCircle(object1, object2);
           }
         } else if (
           object1 instanceof SECircle &&
