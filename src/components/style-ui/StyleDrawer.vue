@@ -1,17 +1,11 @@
 <template>
-  <div v-bind="$attrs">
+  <div id="styleDrawerContainer" v-bind="$attrs">
     <v-btn
+      ripple
       id="style-icon"
       icon
-      v-if="minified"
-      :style="{
-        position: 'fixed',
-        right: '4px',
-        borderRadius: '8px',
-        backgroundColor: '#002108',
-        color: 'white'
-      }"
-      @click="minified = !minified">
+      v-if="!showDrawer"
+      @click="showDrawer = !showDrawer">
       <v-tooltip activator="parent" location="bottom">
         {{ t("showDrawer") }}
       </v-tooltip>
@@ -24,8 +18,26 @@
       </v-badge>
       <v-icon v-else>mdi-palette</v-icon>
     </v-btn>
-    <transition>
-      <div v-if="!minified" class="vertical-nav-drawer">
+    <!-- locationStrategy='connected' means that the overlay is to be positioned relative to the 'target' (#styleDrawerContainer) -->
+    <!-- location and origin control the relative placement of the overlay and its activator.
+     Location is point on the overlay and origin is a point on the activator. 
+     In our case, the midpoint of the start side of the activator (button) is lined up with
+     the midpoint of the end side of the overlay
+      -->
+    <v-overlay
+      v-model="showDrawer"
+      ref="drawerOverlay"
+      persistent
+      location-strategy="connected"
+      target="#styleDrawerContainer"
+      location="start center"
+      origin="end center"
+      id="style-overlay"
+      :scrim="false"
+>
+      This is just a filler text
+    <!--transition!-->
+      <!--div v-if="!showDrawer" class="vertical-nav-drawer"-->
         <v-item-group
           v-model="styleSelection"
           :style="{
@@ -36,18 +48,18 @@
           <v-item v-slot="labelVSlotObject">
             <v-tooltip activator="#lab-icon" :text="labelTooltip"></v-tooltip>
             <div id="lab-icon" ref="labelPanelIcon">
-              <!-- the div is required for tooltip to work -->
-              <v-badge
+    <!-- the div is required for tooltip to work -->
+    <v-badge
                 v-if="selectedLabels.size > 0"
                 :content="selectedLabels.size"
                 :color="labelPanelShowing ? 'primary' : 'secondary'">
-                <v-icon @click="styleIconAction('label', labelVSlotObject)">
+                <v-icon @click="() => { }/*styleIconAction('label', labelVSlotObject )*/">
                   mdi-label
                 </v-icon>
               </v-badge>
               <v-icon v-else @click="activateSelectionTool">mdi-label</v-icon>
             </div>
-            <div ref="labelPanel">
+            <!--div-- ref="labelPanel">
               <LabelStyle
                 :show-popup="labelPanelShowing"
                 v-model="styleSelection"
@@ -58,7 +70,7 @@
                   labelPanelShowing = false;
                   styleSelection = undefined;
                 "></LabelStyle>
-            </div>
+            </!--div-->
           </v-item>
           <v-item v-slot="frontVSlotObject">
             <v-tooltip activator="#front-icon" :text="frontTooltip"></v-tooltip>
@@ -68,7 +80,7 @@
                 :content="selectedPlottables.size"
                 :color="frontPanelShowing ? 'primary' : 'secondary'">
                 <v-icon
-                  @click="styleIconAction('front', frontVSlotObject)"
+                  @click="() => { } /*styleIconAction('front', frontVSlotObject)*/"
                   :disabled="selectedPlottables.size === 0">
                   mdi-arrange-bring-forward
                 </v-icon>
@@ -78,7 +90,7 @@
               </v-icon>
             </div>
             <div ref="frontPanel">
-              <FrontBackStyle
+              <!--FrontBackStyle
                 :show-popup="frontVSlotObject.isSelected"
                 :panel="StyleCategory.Front"
                 @undo-styles="undoStyleChanges"
@@ -86,7 +98,7 @@
                 @pop-up-hidden="
                   frontPanelShowing = false;
                   styleSelection = undefined;
-                "></FrontBackStyle>
+                "></!--FrontBackStyle-->
             </div>
           </v-item>
           <v-item v-slot="backVSlotObject">
@@ -97,7 +109,7 @@
                 :content="selectedPlottables.size"
                 :color="backPanelShowing ? 'primary' : 'secondary'">
                 <v-icon
-                  @click="styleIconAction('back', backVSlotObject)"
+                  @click="() => { } /*styleIconAction('back', backVSlotObject) */"
                   :disabled="selectedPlottables.size === 0">
                   mdi-arrange-send-backward
                 </v-icon>
@@ -107,7 +119,7 @@
               </v-icon>
             </div>
             <div ref="backPanel">
-              <FrontBackStyle
+              <!--FrontBackStyle
                 :show-popup="backVSlotObject.isSelected"
                 :panel="StyleCategory.Back"
                 @undo-styles="undoStyleChanges"
@@ -115,15 +127,15 @@
                 @pop-up-hidden="
                   backPanelShowing = false;
                   styleSelection = undefined;
-                "></FrontBackStyle>
+                "></!--FrontBackStyle-->
             </div>
           </v-item>
           <v-item v-slot="globalVSlotObject">
             <v-tooltip
               activator="#global-contrast-icon"
               :text="t('globalBackStyleContrastToolTip')"></v-tooltip>
-            <!-- Count only visible objects -->
-            <div id="global-contrast-icon" ref="globalOptionsPanelIcon">
+    <!-- Count only visible objects -->
+    <div id="global-contrast-icon" ref="globalOptionsPanelIcon">
               <v-badge
                 v-if="hasObjects"
                 :content="visibleNodulesCount"
@@ -131,13 +143,14 @@
                 <v-icon
                   id="back-contrast-icon"
                   :class="globalOptionsPanelShowing ? '' : 'back-contrast'"
-                  @click="styleIconAction('global', globalVSlotObject)">
+                  @click="() => { } /*styleIconAction('global', globalVSlotObject)*/">
                   mdi-contrast-box
                 </v-icon>
               </v-badge>
-              <!-- <v-icon v-else class="back-contrast">mdi-contrast-box</v-icon> -->
+             
+              <v-icon v-else class="back-contrast">mdi-contrast-box</v-icon>
             </div>
-            <div ref="globalOptionsPanel">
+    <!--div ref="globalOptionsPanel">
               <v-sheet
                 v-if="globalVSlotObject.isSelected"
                 position="fixed"
@@ -150,12 +163,12 @@
                   flexDirection: 'column'
                 }">
                 <!-- Global contrast slider -->
-                <v-tooltip
+    <!--v-tooltip
                   location="bottom"
                   max-width="500px"
                   activator="#global-contrast">
                   <span>{{ t("backStyleContrastToolTip") }}</span>
-                </v-tooltip>
+                </!--v-tooltip>
                 <p id="global-contrast">
                   <span class="text-subtitle-2" style="color: red">
                     {{ t("globalBackStyleContrast") + " " }}
@@ -181,12 +194,12 @@
                 </p>
                 <v-divider></v-divider>
                 <!-- Global fill option -->
-                <v-tooltip
+    <!--v-tooltip
                   location="bottom"
                   max-width="400px"
                   activator="#global-fill-choice">
                   <span>{{ t("globalFillStyleToolTip") }}</span>
-                </v-tooltip>
+                </!--v-tooltip>
                 <div id="global-fill-choice">
                   <span class="text-subtitle-2" style="color: red">
                     {{ t("globalFillStyle") + " " }}
@@ -214,7 +227,7 @@
                     "></v-btn>
                 </div>
               </v-sheet>
-            </div>
+            </!--div-->
           </v-item>
         </v-item-group>
         <template v-if="selectedLabels.size > 0">
@@ -235,12 +248,31 @@
         <v-btn icon size="x-small" @click="closeStyleDrawer" class="my-2">
           <v-icon>$closePanelRight</v-icon>
         </v-btn>
-      </div>
-    </transition>
+      <!-- </div> -->
+    </v-overlay>
   </div>
 </template>
 
 <style scoped>
+#styleDrawerContainer {
+  background: red;
+  padding: 1em;
+  position: fixed;
+  top: 120px;
+  /* add 64px to the top (or the height of the bottom panel) */
+  bottom: 184px;
+  right: 8px;
+  /* height: calc(100vh - 64px); */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: auto;
+  z-index: 1000;
+}
+#style-overlay {
+  left: 400px;
+  border: 3px solid red;
+}
 .vertical-nav-drawer {
   /* white background is required to override "transparent".
      Otherwise, when the display is zoomed in the boundary circle
@@ -290,8 +322,9 @@ import { SEText } from "@/models/SEText";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { FillStyle } from "@/types";
-
-const minified = ref(true);
+import { useTemplateRef } from "vue";
+const styleDrawerRef = useTemplateRef("drawerOverlay");
+const showDrawer = ref(false);
 const { t } = useI18n();
 const seStore = useSEStore();
 const styleStore = useStylingStore();
@@ -415,7 +448,7 @@ watch(
 );
 
 watch(
-  () => minified.value,
+  () => showDrawer.value,
   isDrawerMinified => {
     // When the style drawer is expanded, automatically switch
     // to the selection tool
@@ -540,6 +573,11 @@ function styleIconAction(
 onMounted((): void => {
   document.addEventListener("mousedown", handleClick); //MUST be mousedown because, if is it mouse up or click, then the other event handlers process this event first. For example, if this was mouseup or click, and the user clicks in the sphere, then the selection tool clears the selection *before* the user style choices can be recorded (which defeats the whole purpose of this listener).
   fillStyle.value = Nodule.getFillStyle();
+  console.debug(
+    "Content Element ",
+    styleDrawerRef.value?.globalTop,
+    styleDrawerRef.value?.scrimEl
+  );
 });
 onBeforeUpdate((): void => {
   fillStyle.value = Nodule.getFillStyle();
@@ -602,7 +640,7 @@ const nonTextSelectedLabelsCount = computed(() => {
 });
 
 function closeStyleDrawer() {
-  minified.value = !minified.value;
+  showDrawer.value = !showDrawer.value;
 }
 
 function undoStyleChanges() {

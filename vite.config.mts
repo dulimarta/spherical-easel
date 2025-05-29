@@ -1,6 +1,6 @@
 /// <reference types="vitest" />
 import { defineConfig } from "vite";
-import { resolve } from "path";
+import { resolve, dirname } from "path";
 import Vue from "@vitejs/plugin-vue";
 import { fileURLToPath, URL } from "node:url";
 
@@ -39,10 +39,10 @@ export default defineConfig({
       }
     }),
     VueI18nPlugin({
-      include: [resolve(__dirname, "./src/assets/languages/**")],
+      include: resolve(dirname(fileURLToPath(import.meta.url)), "./src/assets/languages/**"),
       strictMessage: true /* messages should not contain HTML tags */,
       allowDynamic: true,
-      bridge: false /* specify custom blocks to  work under both v8 and v9 */
+      // bridge: false /* specify custom blocks to  work under both v8 and v9 */
     })
   ],
   server: {

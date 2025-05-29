@@ -44,7 +44,9 @@
     "tests/*.ts", // This is needed to enable path mapping $/* above
     "src/**/*.tsx",
     "src/**/*.vue",
-    "vitest.d.ts"],
+    "vitest.d.ts",
+    "src/assets/languages/*.json" // this is needed by import in i18n.ts
+  ],
   "verbose": true
   // "globals": {
   //   "ts-jest": {

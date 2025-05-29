@@ -1,13 +1,13 @@
 <template>
-  <div
+  <!-- <div
     style="
-      position: fixed;
+      position: absolute;
       /* Use the following background-color for debugging purposes */
-      /* background-color: #77acddc4; */
+      background-color: #77acddc4;
       right: 8px;
       width: 80px;
       margin-top: 120px;
-      margin-bottom: 180px;
+      margin-bottom: 120px;
       top: 0;
       bottom: 0;
       display: flex;
@@ -15,8 +15,7 @@
       justify-content: center;
       z-index: 1;
     ">
-    <StyleDrawer></StyleDrawer>
-  </div>
+  </div> -->
   <!--v-navigation-drawer location="end" width="80" permanent floating style="height: 70vh; margin: auto;
   background-color: transparent;">
   </!--v-navigation-drawer-->
@@ -42,6 +41,7 @@
           :available-width="availWidth"
           :available-height="availHeight"
           :is-earth-mode="localIsEarthMode" />
+        <StyleDrawer></StyleDrawer>
       </div>
       <div
         v-if="svgDataImage.length !== 0"
@@ -75,7 +75,8 @@
               constructionInfo.id.substring(0, 6).toUpperCase()
             }}
             <span v-if="constructionInfo.publicDocId">
-              Public ID: {{ constructionInfo.publicDocId?.substring(0, 6).toUpperCase() }}
+              Public ID:
+              {{ constructionInfo.publicDocId?.substring(0, 6).toUpperCase() }}
             </span>
             )
           </div>
@@ -157,11 +158,13 @@ import Label from "@/plottables/Label";
 import Segment from "@/plottables/Segment";
 import Ellipse from "@/plottables/Ellipse";
 import { SENodule } from "@/models/SENodule";
-import { SphericalConstruction } from "@/types";
+import {
+  SphericalConstruction,
+  ConstructionScript
+} from "@/types/ConstructionTypes";
 import AngleMarker from "@/plottables/AngleMarker";
 
 import { run } from "@/commands/CommandInterpreter";
-import { ConstructionScript } from "@/types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import { useConstructionStore } from "@/stores/construction";

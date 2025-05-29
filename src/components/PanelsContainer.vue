@@ -105,7 +105,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, Ref, ref, onMounted, watch, toRefs, computed } from "vue";
+import { Ref, ref, onMounted, watch, toRefs, computed } from "vue";
 import { useIdle } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
