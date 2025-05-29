@@ -2,9 +2,9 @@
   "prettier.htmlWhitespaceSensitivity": "ignore",
   "prettier.useEditorConfig": false,
   "prettier.requireConfig": false,
-  "i18n-ally.localesPaths": [
-    "./src/assets/languages"
-  ],
+  "i18n-ally.localesPaths": ["src/assets/languages"],
+  "i18n-ally.disablePathParsing": false,
+  "i18n-ally.pathMatcher": "{locale}.{ext}",
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -66,5 +66,5 @@
     "titleBar.inactiveForeground": "#15202b99"
   },
   "peacock.color": "#86da43",
-  "workbench.editor.enablePreview": false
+  "workbench.editor.enablePreview": true
 }

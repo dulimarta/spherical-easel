@@ -109,7 +109,6 @@
           item-title="text"
           item-value="value"
           ref="labelTextFamily"
-          @mousedown="emits('ignore-mouse-down')"
           :class="{
             shake: animatedInput.labelTextFamily,
             conflict: conflictItems.labelTextFamily
@@ -127,7 +126,6 @@
           item-title="text"
           item-value="value"
           ref="labelTextStyle"
-          @mousedown="emits('ignore-mouse-down')"
           :class="{
             shake: animatedInput.labelTextStyle,
             conflict: conflictItems.labelTextStyle
@@ -145,7 +143,6 @@
           item-title="text"
           item-value="value"
           ref="labelTextDecorations"
-          @mousedown="emits('ignore-mouse-down')"
           :class="{
             shake: animatedInput.labelTextDecoration,
             conflict: conflictItems.labelTextDecoration
@@ -172,7 +169,6 @@
           item-title="text"
           item-value="value"
           variant="outlined"
-          @mousedown="emits('ignore-mouse-down')"
           density="compact"></v-select>
         <DisagreementOverride
           :style-properties="[
@@ -223,6 +219,10 @@
           justifyContent: 'flex-end',
           gap: '8px'
         }">
+        <v-switch
+          :style="{ justifySelf: 'flex-start' }"
+          :label="t('showHideLabels')"
+          @click="toggleLabelVisibility"></v-switch>
         <v-tooltip activator="#restore-btn" :text="t('undoStyles')"></v-tooltip>
         <v-tooltip
           activator="#default-btn"
@@ -291,7 +291,7 @@ type LabelStyleProps = {
   showPopup: boolean;
 };
 const emits = defineEmits([
-  "ignore-mouse-down", //this tells the mousedown handler in StyleDrawer to ignore this event when it happens in the pull down menus of these styling options.
+  // "ignore-mouse-down", //this tells the mousedown handler in StyleDrawer to ignore this event when it happens in the pull down menus of these styling options.
   "undo-styles",
   "apply-default-styles"
 ]);
@@ -319,6 +319,7 @@ const labelDisplayCaptionErrorMessageKey = "";
 //step is Pi/8 from -pi to pi is 17 steps
 const textRotationSelectorThumbStrings: Array<string> = [];
 const filteredLabelDisplayModeItems: Ref<Array<LabelDisplayModeItem>> = ref([]);
+const hasVisibleLabels = ref(true);
 
 watch(
   () => measurableSelections.value,
@@ -470,6 +471,27 @@ function displayAllLabels() {
       const newCmd = new SetNoduleDisplayCommand(lab, true);
       cmdGroup.addCommand(newCmd);
       subCommandCount++;
+    }
+  });
+  if (subCommandCount > 0) {
+    cmdGroup.execute();
+  }
+}
+
+function toggleLabelVisibility() {
+  hasVisibleLabels.value = !hasVisibleLabels.value;
+  const cmdGroup = new CommandGroup();
+  let subCommandCount = 0;
+
+  selectedLabels.value.forEach(labName => {
+    // Searching for the plottable; must use 'z.ref.name' (and not z.name)
+    const lab = seLabels.value.find(z => z.ref.name === labName);
+    if (lab) {
+      if (lab.ref.showing != hasVisibleLabels.value) {
+        const newCmd = new SetNoduleDisplayCommand(lab, hasVisibleLabels.value);
+        cmdGroup.addCommand(newCmd);
+        subCommandCount++;
+      }
     }
   });
   if (subCommandCount > 0) {
@@ -690,7 +712,8 @@ const conflictItems: ConflictItems = {
     "normal": "Normal"
   },
   "defaultStyles": "Restore Default Styles (ALL)",
-  "undoStyles": "Undo Recent Style Changes (ALL)"
+  "undoStyles": "Undo Recent Style Changes (ALL)",
+  "showHideLabels": "Show/Hide Labels"
 }
 </i18n>
 <i18n lang="json" locale="id">

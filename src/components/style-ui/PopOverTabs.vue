@@ -18,7 +18,7 @@
     v-if="showPopup && menu"
     position="fixed"
     elevation="4"
-    :style="{ right: '80px' }"
+    :style="{ right: '80px', minWidth: '350px' }"
     >
     <v-tabs v-model="currentTab">
       <slot name="tabs"></slot>

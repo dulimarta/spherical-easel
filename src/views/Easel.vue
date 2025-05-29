@@ -1,24 +1,4 @@
 <template>
-  <!-- <div
-    style="
-      position: absolute;
-      /* Use the following background-color for debugging purposes */
-      background-color: #77acddc4;
-      right: 8px;
-      width: 80px;
-      margin-top: 120px;
-      margin-bottom: 120px;
-      top: 0;
-      bottom: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      z-index: 1;
-    ">
-  </div> -->
-  <!--v-navigation-drawer location="end" width="80" permanent floating style="height: 70vh; margin: auto;
-  background-color: transparent;">
-  </!--v-navigation-drawer-->
   <div id="toolbox-and-sphere">
     <AppNavigation
       @drawer-width-changed="
