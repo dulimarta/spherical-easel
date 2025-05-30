@@ -47,6 +47,9 @@ export default class PointReflectionTransformationHandler extends Highlighter {
   private tmpVector = new Vector3();
   private tmpVector1 = new Vector3();
 
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
+
   constructor(layers: Group[]) {
     super(layers);
 
@@ -60,10 +63,11 @@ export default class PointReflectionTransformationHandler extends Highlighter {
   mousePressed(_event: MouseEvent): void {
     // First decide if the location of the event is on the sphere
     if (this.isOnSphere) {
+      this.updateFilteredPointsList();
       // Check to see if the current location is near any points
-      if (this.hitSEPoints.length > 0) {
+      if (this.filteredIntersectionPointsList.length > 0) {
         // Pick the top most selected point
-        const selected = this.hitSEPoints[0];
+        const selected = this.filteredIntersectionPointsList[0];
         let transformationName = "";
         if (
           PointReflectionTransformationHandler.store.seTransformations.some(
@@ -109,7 +113,8 @@ export default class PointReflectionTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay =
+          this.rotationVector;
         this.rotationSEPoint = null;
       } else if (this.hitSELines.length > 0) {
         // The center of the rotation will be a point on a line
@@ -120,7 +125,8 @@ export default class PointReflectionTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay =
+          this.rotationVector;
         this.rotationSEPoint = null;
       } else if (this.hitSECircles.length > 0) {
         // The center of the rotation will be a point on a circle
@@ -131,7 +137,8 @@ export default class PointReflectionTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay =
+          this.rotationVector;
         this.rotationSEPoint = null;
       } else if (this.hitSEEllipses.length > 0) {
         // The center of the rotation will be a point on a ellipse
@@ -142,7 +149,8 @@ export default class PointReflectionTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay =
+          this.rotationVector;
         this.rotationSEPoint = null;
       } else if (this.hitSEParametrics.length > 0) {
         // The center of the rotation will be a point on a parametric
@@ -153,7 +161,8 @@ export default class PointReflectionTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay =
+          this.rotationVector;
         this.rotationSEPoint = null;
       } else if (this.hitSEPolygons.length > 0) {
         // The center of the rotation will be a point on a polygon
@@ -164,7 +173,8 @@ export default class PointReflectionTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay =
+          this.rotationVector;
         this.rotationSEPoint = null;
       } else {
         // The mouse press is not near an existing point or one dimensional object.
@@ -191,35 +201,6 @@ export default class PointReflectionTransformationHandler extends Highlighter {
     }
   }
 
-  // mouseMoved(event: MouseEvent): void {
-  //   // Find all the nearby (hitSE... objects) and update location vectors
-  //   super.mouseMoved(event);
-
-  //   const pointList = this.hitSEPoints.filter(pt => {
-  //     if (
-  //       PointReflectionTransformationHandler.store.seTransformations.some(trans => {
-  //         if (
-  //           trans instanceof SEPointReflection &&
-  //           trans.sePointOfReflection.name === pt.name
-  //         ) {
-  //           return true;
-  //         } else {
-  //           return false;
-  //         }
-  //       })
-  //     ) {
-  //       return false;
-  //     } else {
-  //       return true;
-  //     }
-  //   });
-  //   if (pointList.length > 0) {
-  //     // Glow the first SESegment that hasn't been measured
-  //     pointList[0].glowing = true;
-  //     this.targetPointOfReflection = pointList[0];
-  //   }
-  // }
-
   mouseMoved(event: MouseEvent): void {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
@@ -227,11 +208,12 @@ export default class PointReflectionTransformationHandler extends Highlighter {
     // Make sure that the event is on the sphere
     // The user has not selected a rotation point
     if (this.isOnSphere) {
+      this.updateFilteredPointsList();
       // Only object can be interacted with at a given time, so set the first point nearby to glowing
       // The user can create points on ellipses, circles, segments, and lines, so
       // highlight those as well (but only one) if they are nearby also
       // Also set the snap objects
-      const pointList = this.hitSEPoints.filter(pt => {
+      const pointList = this.filteredIntersectionPointsList.filter(pt => {
         if (
           PointReflectionTransformationHandler.store.seTransformations.some(
             trans => {
@@ -333,6 +315,12 @@ export default class PointReflectionTransformationHandler extends Highlighter {
   mouseLeave(event: MouseEvent): void {
     this.prepareForNextRotation();
     super.mouseLeave(event);
+  }
+
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(
+      pt => pt.showing // you can only reflect over existing and showing points
+    );
   }
 
   prepareForNextRotation(): void {

@@ -158,6 +158,7 @@
   "objects": {
     "objects": "Objects | Object | object | objects",
     "texts": "Texts | Text | text | texts",
+    "points": "Points | Point | point | points",
     "circles": "Circles | Circle | circle | circles",
     "lines": "Lines | Line | line | lines",
     "segments": "Segments | Segment | segment | segments",
@@ -165,6 +166,7 @@
     "triangles": "Triangles | Triangle | triangle | triangles",
     "polygons": "Polygons | Polygon | polygon | polygons",
     "angleMarkers": "Angle Markers | Angle Marker | angle marker |angle markers",
+    "parametrics": "Parametrics | Parametric | parametric |parametrics",
     "translations": "Translations | Translation | translation | translations",
     "rotations": "Rotations | Rotation | rotation | rotations",
     "reflections": "Reflections | Reflection | reflection | reflections",
@@ -283,6 +285,7 @@
     "circleCenterSelected": "Center of circle selected. Now select a point on the circle.",
     "duplicatePointMessage": "Duplicate point. Select another.",
     "pointDistanceHandlerNoPoint": "Before using this tool you must create at least two points.",
+    "pointDistancePointMessage":"You can only select existing points to measure.",
     "pointDistanceMeasurementAdded": "Distance measurement {measurementName} from {p0Name} to {p1Name} added.",
     "duplicatePointDistanceMeasurement": "The distance between points {pt0Name} and {pt1Name} has already been measured. This distance is measurement {measurementName}.",
     "newMeasurementAdded": "New measurement {name} added.",

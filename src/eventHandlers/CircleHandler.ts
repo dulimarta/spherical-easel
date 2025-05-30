@@ -56,6 +56,8 @@ export default class CircleHandler extends Highlighter {
    */
   protected temporaryEndMarker: Point;
 
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
   /* temporary vector and matrix to help with computations */
   private tmpVector = new Vector3();
   private tmpMatrix = new Matrix4();
@@ -93,9 +95,11 @@ export default class CircleHandler extends Highlighter {
       // The user is making a circle
       this.centerLocationSelected = true;
       // Check to see if the current location is near any points
-      if (this.hitSEPoints.length > 0) {
+
+      this.updateFilteredPointsList();
+      if (this.filteredIntersectionPointsList.length > 0) {
         // Pick the top most selected point
-        const selected = this.hitSEPoints[0];
+        const selected = this.filteredIntersectionPointsList[0];
         // Record the center vector of the circle so it can be past to the non-temporary circle
         this.centerVector.copy(selected.locationVector);
         // Record the model object as the center of the circle
@@ -213,8 +217,11 @@ export default class CircleHandler extends Highlighter {
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
     let possiblyGlowing: SEPoint | SEOneOrTwoDimensional | null = null;
-    if (this.hitSEPoints.length > 0) {
-      possiblyGlowing = this.hitSEPoints[0];
+  // Filter the hitSEPoints appropriately for this handler
+    this.updateFilteredPointsList();
+
+    if (this.filteredIntersectionPointsList.length > 0) {
+      possiblyGlowing = this.filteredIntersectionPointsList[0];
     } else if (this.hitSESegments.length > 0) {
       possiblyGlowing = this.hitSESegments[0];
     } else if (this.hitSELines.length > 0) {
@@ -496,8 +503,11 @@ export default class CircleHandler extends Highlighter {
 
     // Check to see if the release location is near any points
     // fromActivate = true means that this.circleSEPoint is already set
-    if (this.hitSEPoints.length > 0 && !fromActivate) {
-      this.circleSEPoint = this.hitSEPoints[0];
+
+  // Filter the hitSEPoints appropriately for this handler
+    this.updateFilteredPointsList();
+    if (this.filteredIntersectionPointsList.length > 0 && !fromActivate) {
+      this.circleSEPoint = this.filteredIntersectionPointsList[0];
       //compute the radius of the temporary circle using the hit point
       this.arcRadius = this.temporaryCircle.centerVector.angleTo(
         this.circleSEPoint.locationVector
@@ -764,6 +774,28 @@ export default class CircleHandler extends Highlighter {
     return true;
   }
 
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return true;
+        }
+      }
+      return pt.showing;
+    });
+  }
   activate(): void {
     // If there are exactly two SEPoints selected, create a circle with the first as the center
     // and the second as the circle point

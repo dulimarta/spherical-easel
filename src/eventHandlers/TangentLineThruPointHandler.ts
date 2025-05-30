@@ -86,6 +86,9 @@ export default class TangentLineThruPointHandler extends Highlighter {
    */
   private numberOfTangents = 1;
 
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
+
   constructor(layers: Group[]) {
     super(layers);
 
@@ -119,11 +122,12 @@ export default class TangentLineThruPointHandler extends Highlighter {
       // If we don't have selectOneObjectAtATime clicking on a point on a line/segment/circle/ellipse selects both the point and the line/segment/circle/ellipse
       this.selectOneObjectAtATime = true;
       // Attempt to fill the point
+      this.updateFilteredPointsList()
       if (
         this.sePoint === null &&
         this.sePointOneDimensionalParent === null &&
         this.sePointVector.isZero() &&
-        (this.hitSEPoints.length !== 0 ||
+        (this.filteredIntersectionPointsList.length !== 0 ||
           this.hitSESegments.length !== 0 ||
           this.hitSELines.length !== 0 ||
           this.oneDimensional !== null ||
@@ -131,8 +135,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
       ) {
         // Fill the point object first by the nearby points, then by nearby intersection points,
         // then point on one-dimensional object, then by creating a new point
-        if (this.hitSEPoints.length > 0) {
-          this.sePoint = this.hitSEPoints[0];
+        if (this.filteredIntersectionPointsList.length > 0) {
+          this.sePoint = this.filteredIntersectionPointsList[0];
           this.sePoint.selected = true;
           this.sePointVector.copy(this.sePoint.locationVector);
           // if the point is an intersection point and is not user created add a temporary marker
@@ -354,7 +358,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
     //   this.sePointVector.isZero(),
     //   this.oneDimensional === null
     // );
-
+    this.updateFilteredPointsList()
     if (
       this.sePoint === null &&
       this.sePointOneDimensionalParent === null &&
@@ -363,9 +367,9 @@ export default class TangentLineThruPointHandler extends Highlighter {
     ) {
       // console.log("1 both point and one-d not set");
       // glow the one-dimensional when point is not set
-      if (this.hitSEPoints.length > 0) {
-        this.hitSEPoints[0].glowing = true;
-        this.snapToTemporaryPoint = this.hitSEPoints[0];
+      if (this.filteredIntersectionPointsList.length > 0) {
+        this.filteredIntersectionPointsList[0].glowing = true;
+        this.snapToTemporaryPoint = this.filteredIntersectionPointsList[0];
         this.snapToTemporaryOneDimensional = null;
       } else if (this.hitSESegments.length > 0) {
         this.hitSESegments[0].glowing = true;
@@ -426,9 +430,9 @@ export default class TangentLineThruPointHandler extends Highlighter {
     ) {
       // console.log("3 point is not set and one-d is set");
       // in this case the one dimensional is set and the point is not, so glow all the one-dimensional objects and points
-      if (this.hitSEPoints.length > 0) {
-        this.hitSEPoints[0].glowing = true;
-        this.snapToTemporaryPoint = this.hitSEPoints[0];
+      if (this.filteredIntersectionPointsList.length > 0) {
+        this.filteredIntersectionPointsList[0].glowing = true;
+        this.snapToTemporaryPoint = this.filteredIntersectionPointsList[0];
         this.snapToTemporaryOneDimensional = null;
       } else if (this.hitSESegments.length > 0) {
         this.hitSESegments[0].glowing = true;
@@ -629,6 +633,28 @@ export default class TangentLineThruPointHandler extends Highlighter {
     this.snapToTemporaryPoint = null;
   }
 
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return true;
+        }
+      }
+      return pt.showing;
+    });
+  }
   private createTangent(
     oneDimensional: SEOneDimensionalNotStraight,
     sePointOneDimensionalParent: SEOneOrTwoDimensional | null,

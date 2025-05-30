@@ -357,9 +357,10 @@ export abstract class SENodule implements Visitable {
       this.isNonFreeSegment() ||
       this.isNonFreeEllipse()
     ) {
-      // don't let this fall through because if a line or object has an empty parents array the .every method returns true even for non-free lines
       return false;
     }
+
+    
     return this._parents.every(n => n.isFreePoint());
   }
   // only returns true for SENodules that can be measured (

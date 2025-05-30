@@ -1,4 +1,3 @@
-
 import Highlighter from "./Highlighter";
 import { SELabel } from "@/models/SELabel";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
@@ -12,12 +11,18 @@ import { Group } from "two.js/src/group";
 import { Command } from "@/commands/Command";
 import { randInt } from "three/src/math/MathUtils";
 import EventBus from "./EventBus";
+import { SEPoint } from "@/models/SEPoint";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
 export default class ToggleLabelDisplayHandler extends Highlighter {
   /**
    * Object to hide - the victim!
    */
   private label: SELabel | null = null;
+
+  private seNodule: SENodule | null = null;
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
 
   constructor(layers: Group[]) {
     super(layers);
@@ -86,7 +91,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
         .filter(
           // no objects whose labels are already hidden
           (object: SENodule) => {
-            const objLabel = object.getLabel()
+            const objLabel = object.getLabel();
             if (objLabel) {
               return objLabel.showing;
             } else {
@@ -96,7 +101,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
         )
         .forEach(object => {
           // Do the toggling on labelable objects via command so it will be undoable
-          const objLabel = object.getLabel()
+          const objLabel = object.getLabel();
           if (objLabel) {
             labelToggleDisplayCommandGroup.addCommand(
               new SetNoduleDisplayCommand(objLabel!, false)
@@ -110,17 +115,11 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     //Select an object to delete
     if (this.isOnSphere) {
-      if (
-        this.hitSEPoints.length > 0 &&
-        !(
-          (this.hitSEPoints[0] instanceof SEIntersectionPoint &&
-            !this.hitSEPoints[0].isUserCreated) ||
-          (this.hitSEPoints[0] instanceof SEAntipodalPoint &&
-            !this.hitSEPoints[0].isUserCreated)
-        )
-      ) {
-        if (this.hitSEPoints[0].label != null) {
-          this.label = this.hitSEPoints[0].label;
+      this.updateFilteredPointsList();
+      if (this.filteredIntersectionPointsList.length > 0) {
+        if (this.filteredIntersectionPointsList[0].label != null) {
+          this.seNodule = this.filteredIntersectionPointsList[0];
+          this.label = this.filteredIntersectionPointsList[0].label;
         }
       } else if (this.hitSESegments.length > 0) {
         if (this.hitSESegments[0].label != null) {
@@ -156,8 +155,37 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
 
       if (this.label != null) {
         // Do the hiding via command so it will be undoable
-        new SetNoduleDisplayCommand(this.label, !this.label.showing).execute();
+        const cmdGroup = new CommandGroup();
+        // Check if the selected seNodule is a non-user created point, if so
+        // since the user interacted with it, make it user created
+        if (
+          (this.seNodule instanceof SEIntersectionPoint ||
+            this.seNodule instanceof SEAntipodalPoint) &&
+          !this.seNodule.isUserCreated
+        ) {
+          cmdGroup.addCommand(
+            new SetPointUserCreatedValueCommand(
+              this.seNodule,
+              !this.seNodule.isUserCreated,
+              true
+            )
+          );
+        }
+        // Check if the selected seNodule is showing, if so
+        // since the user interacted with it, make it show
+        if (this.seNodule != null && !this.seNodule.showing) {
+          cmdGroup.addCommand(
+            new SetNoduleDisplayCommand(this.seNodule, !this.seNodule.showing)
+          );
+        }
+        // Check toggle the showing of the label
+        cmdGroup
+          .addCommand(
+            new SetNoduleDisplayCommand(this.label, !this.label.showing)
+          )
+          .execute();
         this.label = null;
+        this.seNodule = null
       }
     }
   }
@@ -168,17 +196,10 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     // Only one point can be processed at a time, so set the first point nearby to glowing
     // The user can create points (with the antipode) on ellipses, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
-    if (
-      this.hitSEPoints.length > 0 &&
-      !(
-        (this.hitSEPoints[0] instanceof SEIntersectionPoint &&
-          !this.hitSEPoints[0].isUserCreated) ||
-        (this.hitSEPoints[0] instanceof SEAntipodalPoint &&
-          !this.hitSEPoints[0].isUserCreated)
-      )
-    ) {
+    this.updateFilteredPointsList();
+    if (this.filteredIntersectionPointsList.length > 0) {
       // never highlight non user created intersection points
-      this.hitSEPoints[0].glowing = true;
+      this.filteredIntersectionPointsList[0].glowing = true;
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
     } else if (this.hitSELines.length > 0) {
@@ -196,6 +217,28 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     }
   }
 
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return true;
+        }
+      }
+      return pt.showing;
+    });
+  }
   // eslint-disable-next-line
   mouseReleased(event: MouseEvent): void {}
 
@@ -219,7 +262,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
         )
         .forEach(object => {
           // Do the toggling on labelable objects via command so it will be undoable
-          const objLabel = object.getLabel()
+          const objLabel = object.getLabel();
           if (objLabel) {
             labelToggleDisplayCommandGroup.addCommand(
               new SetNoduleDisplayCommand(objLabel, objLabel.showing)

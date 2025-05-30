@@ -78,6 +78,9 @@ export default class EllipseHandler extends Highlighter {
     null;
   protected snapTemporaryPointMarkerToPoint: SEPoint | null = null;
 
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
+
   constructor(layers: Group[]) {
     super(layers);
     this.focus1Vector = new Vector3();
@@ -102,11 +105,12 @@ export default class EllipseHandler extends Highlighter {
     // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
     //super.mouseMoved(event);
     // First decide if the location of the event is on the sphere
+    this.updateFilteredPointsList();
     if (this.isOnSphere && !this.focus2LocationSelected) {
       // Check to see if the current location is near any points
-      if (this.hitSEPoints.length > 0) {
+      if (this.filteredIntersectionPointsList.length > 0) {
         // Pick the top most selected point
-        const selected = this.hitSEPoints[0];
+        const selected = this.filteredIntersectionPointsList[0];
         if (!this.focus1LocationSelected) {
           // Record the foci1 vector of the ellipse so it can be past to the non-temporary ellipse
           this.focus1Vector.copy(selected.locationVector);
@@ -395,9 +399,10 @@ export default class EllipseHandler extends Highlighter {
     // The user can create points on ellipses, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
+    this.updateFilteredPointsList();
     let possiblyGlowing: SEPoint | SEOneOrTwoDimensional | null = null;
-    if (this.hitSEPoints.length > 0) {
-      possiblyGlowing = this.hitSEPoints[0];
+    if (this.filteredIntersectionPointsList.length > 0) {
+      possiblyGlowing = this.filteredIntersectionPointsList[0];
     } else if (this.hitSESegments.length > 0) {
       possiblyGlowing = this.hitSESegments[0];
     } else if (this.hitSELines.length > 0) {
@@ -639,6 +644,7 @@ export default class EllipseHandler extends Highlighter {
   }
 
   mouseReleased(event: MouseEvent): void {
+    this.updateFilteredPointsList();
     if (this.isOnSphere && this.focus2LocationSelected) {
       if (
         this.currentSphereVector.angleTo(this.focus1Vector) >
@@ -791,10 +797,9 @@ export default class EllipseHandler extends Highlighter {
       newSELabel.locationVector = this.tmpVector;
       this.focus1SEPoint = vtx;
     } else if (
-      (this.focus1SEPoint instanceof SEIntersectionPoint &&
-        !this.focus1SEPoint.isUserCreated) ||
-      (this.focus1SEPoint instanceof SEAntipodalPoint &&
-        !this.focus1SEPoint.isUserCreated)
+      (this.focus1SEPoint instanceof SEIntersectionPoint ||
+        this.focus1SEPoint instanceof SEAntipodalPoint) &&
+      !this.focus1SEPoint.isUserCreated
     ) {
       // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       ellipseCommandGroup.addCommand(
@@ -858,10 +863,9 @@ export default class EllipseHandler extends Highlighter {
       newSELabel.locationVector = this.tmpVector;
       this.focus2SEPoint = vtx;
     } else if (
-      (this.focus2SEPoint instanceof SEIntersectionPoint &&
-        !this.focus2SEPoint.isUserCreated) ||
-      (this.focus2SEPoint instanceof SEAntipodalPoint &&
-        !this.focus2SEPoint.isUserCreated)
+      (this.focus2SEPoint instanceof SEIntersectionPoint ||
+        this.focus2SEPoint instanceof SEAntipodalPoint) &&
+      !this.focus2SEPoint.isUserCreated
     ) {
       // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       ellipseCommandGroup.addCommand(
@@ -875,8 +879,8 @@ export default class EllipseHandler extends Highlighter {
     // the foci.
 
     // Check to see if the release location is near any points
-    if (this.hitSEPoints.length > 0 && !fromActivate) {
-      this.ellipseSEPoint = this.hitSEPoints[0];
+    if (this.filteredIntersectionPointsList.length > 0 && !fromActivate) {
+      this.ellipseSEPoint = this.filteredIntersectionPointsList[0];
       // We shouldn't need this because this has already happened in mouse move
       // //compute the radius of the temporary circle using the hit point
       // this.a = this.temporaryEllipse.centerVector.angleTo(
@@ -1160,6 +1164,28 @@ export default class EllipseHandler extends Highlighter {
     return true;
   }
 
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return true;
+        }
+      }
+      return pt.showing;
+    });
+  }
   activate(): void {
     // If there are exactly two SEPoints selected, create a circle with the first as the center
     // and the second as the circle point

@@ -66,6 +66,9 @@ export default class RotationTransformationHandler extends Highlighter {
   private tmpVector = new Vector3();
   private tmpVector1 = new Vector3();
 
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
+
   constructor(layers: Group[]) {
     super(layers);
 
@@ -97,13 +100,13 @@ export default class RotationTransformationHandler extends Highlighter {
         RotationTransformationHandler.store.setActionMode("segment");
         return;
       }
-
+      this.updateFilteredPointsList();
       // The user is making a rotation
       this.rotationCenterLocationSelected = true;
       // Check to see if the current location is near any points
-      if (this.hitSEPoints.length > 0) {
+      if (this.filteredIntersectionPointsList.length > 0) {
         // Pick the top most selected point
-        const selected = this.hitSEPoints[0];
+        const selected = this.filteredIntersectionPointsList[0];
         // Record the rotation vector of the rotation so it can be past to the rotation
         this.rotationVector.copy(selected.locationVector);
         // Record the model object as the center of the circle
@@ -123,7 +126,8 @@ export default class RotationTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay =
+          this.rotationVector;
         this.rotationSEPoint = null;
       } else if (this.hitSELines.length > 0) {
         // The center of the rotation will be a point on a line
@@ -134,7 +138,8 @@ export default class RotationTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay =
+          this.rotationVector;
         this.rotationSEPoint = null;
       } else if (this.hitSECircles.length > 0) {
         // The center of the rotation will be a point on a circle
@@ -145,7 +150,8 @@ export default class RotationTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay =
+          this.rotationVector;
         this.rotationSEPoint = null;
       } else if (this.hitSEEllipses.length > 0) {
         // The center of the rotation will be a point on a ellipse
@@ -156,7 +162,8 @@ export default class RotationTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay =
+          this.rotationVector;
         this.rotationSEPoint = null;
       } else if (this.hitSEParametrics.length > 0) {
         // The center of the rotation will be a point on a parametric
@@ -167,7 +174,8 @@ export default class RotationTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay =
+          this.rotationVector;
         this.rotationSEPoint = null;
       } else if (this.hitSEPolygons.length > 0) {
         // The center of the rotation will be a point on a polygon
@@ -178,7 +186,8 @@ export default class RotationTransformationHandler extends Highlighter {
             this.currentSphereVector
           )
         );
-        this.temporaryRotationPointMarker.positionVectorAndDisplay = this.rotationVector;
+        this.temporaryRotationPointMarker.positionVectorAndDisplay =
+          this.rotationVector;
         this.rotationSEPoint = null;
       } else {
         // The mouse press is not near an existing point or one dimensional object.
@@ -211,9 +220,10 @@ export default class RotationTransformationHandler extends Highlighter {
       // The user can create points on ellipses, circles, segments, and lines, so
       // highlight those as well (but only one) if they are nearby also
       // Also set the snap objects
+      this.updateFilteredPointsList();
       let possiblyGlowing: SEPoint | SEOneOrTwoDimensional | null = null;
-      if (this.hitSEPoints.length > 0) {
-        possiblyGlowing = this.hitSEPoints[0];
+      if (this.filteredIntersectionPointsList.length > 0) {
+        possiblyGlowing = this.filteredIntersectionPointsList[0];
       } else if (this.hitSESegments.length > 0) {
         possiblyGlowing = this.hitSESegments[0];
       } else if (this.hitSELines.length > 0) {
@@ -596,6 +606,11 @@ export default class RotationTransformationHandler extends Highlighter {
     return true;
   }
 
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(
+      pt => pt.showing // you can rotate only around showing points
+    );
+  }
   activate(): void {
     // Unselect the selected objects and clear the selectedObject array
     super.activate();
