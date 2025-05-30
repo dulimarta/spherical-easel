@@ -107,6 +107,9 @@ export default class SegmentHandler extends Highlighter {
    */
   private turnOffLongerThanPi = false;
 
+  // Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
+
   /**
    * Make a segment handler
    * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
