@@ -385,6 +385,7 @@ export class SEIntersectionPoint extends SEPoint {
     return true;
   }
   public isFreePoint(): boolean {
+    console.log("non free point query")
     return false;
   }
 }
