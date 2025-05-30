@@ -54,6 +54,8 @@ export default class ThreePointCircleHandler extends Highlighter {
   private point1LocationSelected = false;
   private point2LocationSelected = false;
 
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
   /**
    * A temporary plottable (TwoJS) points created while the user is making the ellipse. These can't be the same because the user
    * might select two new points (leaving the Focus Markers behind) and then the ellipse Point maker is displayed at the currentLocation
@@ -116,10 +118,11 @@ export default class ThreePointCircleHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     // First decide if the location of the event is on the sphere
     if (this.isOnSphere && !this.point2LocationSelected) {
+      this.updateFilteredPointsList();
       // Check to see if the current location is near any points
-      if (this.hitSEPoints.length > 0) {
+      if (this.filteredIntersectionPointsList.length > 0) {
         // Pick the top most selected point
-        const selected = this.hitSEPoints[0];
+        const selected = this.filteredIntersectionPointsList[0];
         if (!this.point1LocationSelected) {
           // Record the vector of the point so it can be past to the non-temporary three point circle center
           this.point1Vector.copy(selected.locationVector);
@@ -412,9 +415,10 @@ export default class ThreePointCircleHandler extends Highlighter {
     // The user can create points on ellipses, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
+    this.updateFilteredPointsList();
     let possiblyGlowing: SEPoint | SEOneOrTwoDimensional | null = null;
-    if (this.hitSEPoints.length > 0) {
-      possiblyGlowing = this.hitSEPoints[0];
+    if (this.filteredIntersectionPointsList.length > 0) {
+      possiblyGlowing = this.filteredIntersectionPointsList[0];
     } else if (this.hitSESegments.length > 0) {
       possiblyGlowing = this.hitSESegments[0];
     } else if (this.hitSELines.length > 0) {
@@ -483,8 +487,10 @@ export default class ThreePointCircleHandler extends Highlighter {
           // glowing when the user select that location and then moves the mouse away - see line 128) we don't
           // remove the temporary start marker from the scene, instead we move it to the location of the intersection point
           if (
-            this.snapTemporaryPointMarkerToPoint instanceof
-              SEIntersectionPoint &&
+            (this.snapTemporaryPointMarkerToPoint instanceof
+              SEIntersectionPoint ||
+              this.snapTemporaryPointMarkerToPoint instanceof
+                SEAntipodalPoint) &&
             !this.snapTemporaryPointMarkerToPoint.isUserCreated
           ) {
             this.temporaryPoint1Marker.positionVectorAndDisplay =
@@ -518,8 +524,10 @@ export default class ThreePointCircleHandler extends Highlighter {
           // glowing when the user select that location and then moves the mouse away - see line 128) we don't
           // remove the temporary start marker from the scene, instead we move it to the location of the intersection point
           if (
-            this.snapTemporaryPointMarkerToPoint instanceof
-              SEIntersectionPoint &&
+            (this.snapTemporaryPointMarkerToPoint instanceof
+              SEIntersectionPoint ||
+              this.snapTemporaryPointMarkerToPoint instanceof
+                SEAntipodalPoint) &&
             !this.snapTemporaryPointMarkerToPoint.isUserCreated
           ) {
             this.temporaryPoint2Marker.positionVectorAndDisplay =
@@ -889,8 +897,8 @@ export default class ThreePointCircleHandler extends Highlighter {
     // the this.temporaryPoint3Marker.positionVector is not either of the previous two vectors.
 
     // Check to see if the release location is near any points
-    if (this.hitSEPoints.length > 0 && !fromActivate) {
-      this.point3SEPoint = this.hitSEPoints[0];
+    if (this.filteredIntersectionPointsList.length > 0 && !fromActivate) {
+      this.point3SEPoint = this.filteredIntersectionPointsList[0];
 
       if (
         (this.point3SEPoint instanceof SEIntersectionPoint &&
@@ -1139,6 +1147,29 @@ export default class ThreePointCircleHandler extends Highlighter {
       newSEThreePointCircleCenter.update();
     }
     return true;
+  }
+
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return true;
+        }
+      }
+      return pt.showing;
+    });
   }
 
   activate(): void {

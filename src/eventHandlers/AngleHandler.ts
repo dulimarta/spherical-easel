@@ -77,6 +77,9 @@ export default class AngleHandler extends Highlighter {
   private sePointOneDimensionalParents: (SEOneOrTwoDimensional | null)[] = [];
   private pointLocations: Vector3[] = [];
 
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
+
   /**
    * Temporary Vectors to hold the locations of the three points making up the angle
    * In the case of an angle from three points, these three vectors will always the
@@ -268,22 +271,26 @@ export default class AngleHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     //Select an object
     if (this.isOnSphere) {
+    // Filter the hitSEPoints appropriately for this handler
+      this.updateFilteredPointsList();
       switch (this.angleMode) {
         case AngleMode.NONE:
-          if (this.hitSEPoints.length > 0) {
+          if (this.filteredIntersectionPointsList.length > 0) {
             this.angleMode = AngleMode.POINTS;
-            this.targetPoints.push(this.hitSEPoints[0]);
+            this.targetPoints.push(this.filteredIntersectionPointsList[0]);
             this.sePointOneDimensionalParents.push(null);
             this.pointLocations.push(
-              this.tmpPointVector1.copy(this.hitSEPoints[0].locationVector)
+              this.tmpPointVector1.copy(
+                this.filteredIntersectionPointsList[0].locationVector
+              )
             );
             this.temporaryAngleMarker.startVector =
-              this.hitSEPoints[0].locationVector;
-            this.temporaryFirstPoint.positionVectorAndDisplay
-              this.hitSEPoints[0].locationVector;
+              this.filteredIntersectionPointsList[0].locationVector;
+            this.temporaryFirstPoint.positionVectorAndDisplay;
+            this.filteredIntersectionPointsList[0].locationVector;
             // select (to prevent unglowing by highlighter.ts)  and glow the point
-            this.hitSEPoints[0].glowing = true;
-            this.hitSEPoints[0].selected = true;
+            this.filteredIntersectionPointsList[0].glowing = true;
+            this.filteredIntersectionPointsList[0].selected = true;
           } else if (this.hitSELines.length > 0) {
             // The user selected a line and is going to create an angle with another line or segment
             this.angleMode = AngleMode.SEGMENTSORLINEANDSEGMENT;
@@ -371,38 +378,48 @@ export default class AngleHandler extends Highlighter {
               this.tmpPointVector1.copy(this.currentSphereVector)
             );
             this.temporaryAngleMarker.startVector = this.currentSphereVector;
-            this.temporaryFirstPoint.positionVectorAndDisplay = this.currentSphereVector;
+            this.temporaryFirstPoint.positionVectorAndDisplay =
+              this.currentSphereVector;
           }
           this.makingAnAngleMarker = true;
           break;
         case AngleMode.POINTS:
           // There is one point/location selected, the length of
           // this.targetPoints/sePointOneDimensionalParent/pointLocations are equal (and equal to 1 or 2)
-          if (this.hitSEPoints.length > 0) {
+
+          if (this.filteredIntersectionPointsList.length > 0) {
             // The user continued to add more points to make the angle
-            if (this.allowPointLocation(this.hitSEPoints[0].locationVector)) {
-              this.targetPoints.push(this.hitSEPoints[0]);
+            if (
+              this.allowPointLocation(
+                this.filteredIntersectionPointsList[0].locationVector
+              )
+            ) {
+              this.targetPoints.push(this.filteredIntersectionPointsList[0]);
               this.sePointOneDimensionalParents.push(null);
               if (this.targetPoints.length == 2) {
                 this.temporaryAngleMarker.vertexVector =
-                  this.hitSEPoints[0].locationVector;
+                  this.filteredIntersectionPointsList[0].locationVector;
                 this.temporarySecondPoint.positionVectorAndDisplay =
-                  this.hitSEPoints[0].locationVector;
+                  this.filteredIntersectionPointsList[0].locationVector;
                 this.pointLocations.push(
-                  this.tmpPointVector2.copy(this.hitSEPoints[0].locationVector)
+                  this.tmpPointVector2.copy(
+                    this.filteredIntersectionPointsList[0].locationVector
+                  )
                 );
               } else {
                 this.temporaryAngleMarker.endVector =
-                  this.hitSEPoints[0].locationVector;
+                  this.filteredIntersectionPointsList[0].locationVector;
                 this.temporaryThirdPoint.positionVectorAndDisplay =
-                  this.hitSEPoints[0].locationVector;
+                  this.filteredIntersectionPointsList[0].locationVector;
                 this.pointLocations.push(
-                  this.tmpPointVector3.copy(this.hitSEPoints[0].locationVector)
+                  this.tmpPointVector3.copy(
+                    this.filteredIntersectionPointsList[0].locationVector
+                  )
                 );
               }
               // select (to prevent unglowing by highlighter.ts)  and glow the point
-              this.hitSEPoints[0].glowing = true;
-              this.hitSEPoints[0].selected = true;
+              this.filteredIntersectionPointsList[0].glowing = true;
+              this.filteredIntersectionPointsList[0].selected = true;
             }
           } else if (this.hitSELines.length > 0) {
             // The user wants to create a point on a line to make an angle
@@ -414,13 +431,15 @@ export default class AngleHandler extends Highlighter {
               this.sePointOneDimensionalParents.push(this.hitSELines[0]);
               if (this.targetPoints.length == 2) {
                 this.temporaryAngleMarker.vertexVector = this.tmpVector;
-                this.temporarySecondPoint.positionVectorAndDisplay = this.tmpVector;
+                this.temporarySecondPoint.positionVectorAndDisplay =
+                  this.tmpVector;
                 this.pointLocations.push(
                   this.tmpPointVector2.copy(this.tmpVector)
                 );
               } else {
                 this.temporaryAngleMarker.endVector = this.tmpVector;
-                this.temporaryThirdPoint.positionVectorAndDisplay = this.tmpVector;
+                this.temporaryThirdPoint.positionVectorAndDisplay =
+                  this.tmpVector;
                 this.pointLocations.push(
                   this.tmpPointVector3.copy(this.tmpVector)
                 );
@@ -436,13 +455,15 @@ export default class AngleHandler extends Highlighter {
               this.sePointOneDimensionalParents.push(this.hitSESegments[0]);
               if (this.targetPoints.length == 2) {
                 this.temporaryAngleMarker.vertexVector = this.tmpVector;
-                this.temporarySecondPoint.positionVectorAndDisplay = this.tmpVector;
+                this.temporarySecondPoint.positionVectorAndDisplay =
+                  this.tmpVector;
                 this.pointLocations.push(
                   this.tmpPointVector2.copy(this.tmpVector)
                 );
               } else {
                 this.temporaryAngleMarker.endVector = this.tmpVector;
-                this.temporaryThirdPoint.positionVectorAndDisplay = this.tmpVector;
+                this.temporaryThirdPoint.positionVectorAndDisplay =
+                  this.tmpVector;
                 this.pointLocations.push(
                   this.tmpPointVector3.copy(this.tmpVector)
                 );
@@ -458,13 +479,15 @@ export default class AngleHandler extends Highlighter {
               this.sePointOneDimensionalParents.push(this.hitSECircles[0]);
               if (this.targetPoints.length == 2) {
                 this.temporaryAngleMarker.vertexVector = this.tmpVector;
-                this.temporarySecondPoint.positionVectorAndDisplay = this.tmpVector;
+                this.temporarySecondPoint.positionVectorAndDisplay =
+                  this.tmpVector;
                 this.pointLocations.push(
                   this.tmpPointVector2.copy(this.tmpVector)
                 );
               } else {
                 this.temporaryAngleMarker.endVector = this.tmpVector;
-                this.temporaryThirdPoint.positionVectorAndDisplay = this.tmpVector;
+                this.temporaryThirdPoint.positionVectorAndDisplay =
+                  this.tmpVector;
                 this.pointLocations.push(
                   this.tmpPointVector3.copy(this.tmpVector)
                 );
@@ -480,13 +503,15 @@ export default class AngleHandler extends Highlighter {
               this.sePointOneDimensionalParents.push(this.hitSEEllipses[0]);
               if (this.targetPoints.length == 2) {
                 this.temporaryAngleMarker.vertexVector = this.tmpVector;
-                this.temporarySecondPoint.positionVectorAndDisplay = this.tmpVector;
+                this.temporarySecondPoint.positionVectorAndDisplay =
+                  this.tmpVector;
                 this.pointLocations.push(
                   this.tmpPointVector2.copy(this.tmpVector)
                 );
               } else {
                 this.temporaryAngleMarker.endVector = this.tmpVector;
-                this.temporaryThirdPoint.positionVectorAndDisplay = this.tmpVector;
+                this.temporaryThirdPoint.positionVectorAndDisplay =
+                  this.tmpVector;
                 this.pointLocations.push(
                   this.tmpPointVector3.copy(this.tmpVector)
                 );
@@ -502,13 +527,15 @@ export default class AngleHandler extends Highlighter {
               this.sePointOneDimensionalParents.push(this.hitSEParametrics[0]);
               if (this.targetPoints.length == 2) {
                 this.temporaryAngleMarker.vertexVector = this.tmpVector;
-                this.temporarySecondPoint.positionVectorAndDisplay = this.tmpVector;
+                this.temporarySecondPoint.positionVectorAndDisplay =
+                  this.tmpVector;
                 this.pointLocations.push(
                   this.tmpPointVector2.copy(this.tmpVector)
                 );
               } else {
                 this.temporaryAngleMarker.endVector = this.tmpVector;
-                this.temporaryThirdPoint.positionVectorAndDisplay = this.tmpVector;
+                this.temporaryThirdPoint.positionVectorAndDisplay =
+                  this.tmpVector;
                 this.pointLocations.push(
                   this.tmpPointVector3.copy(this.tmpVector)
                 );
@@ -524,13 +551,15 @@ export default class AngleHandler extends Highlighter {
               this.sePointOneDimensionalParents.push(this.hitSEPolygons[0]);
               if (this.targetPoints.length == 2) {
                 this.temporaryAngleMarker.vertexVector = this.tmpVector;
-                this.temporarySecondPoint.positionVectorAndDisplay = this.tmpVector;
+                this.temporarySecondPoint.positionVectorAndDisplay =
+                  this.tmpVector;
                 this.pointLocations.push(
                   this.tmpPointVector2.copy(this.tmpVector)
                 );
               } else {
                 this.temporaryAngleMarker.endVector = this.tmpVector;
-                this.temporaryThirdPoint.positionVectorAndDisplay = this.tmpVector;
+                this.temporaryThirdPoint.positionVectorAndDisplay =
+                  this.tmpVector;
                 this.pointLocations.push(
                   this.tmpPointVector3.copy(this.tmpVector)
                 );
@@ -663,14 +692,15 @@ export default class AngleHandler extends Highlighter {
     super.mouseMoved(event);
 
     if (this.isOnSphere) {
+      this.updateFilteredPointsList();
       //Glow the appropriate object and set the appropriate snap objects
       switch (this.angleMode) {
         case AngleMode.NONE:
           //Then highlight the one nearby object point> segment >line >circles > ellipse -- snapping only to points, circles and lines!
-          if (this.hitSEPoints.length > 0) {
-            this.hitSEPoints[0].glowing = true;
+          if (this.filteredIntersectionPointsList.length > 0) {
+            this.filteredIntersectionPointsList[0].glowing = true;
             this.snapOneDimensional = null;
-            this.snapPoint = this.hitSEPoints[0];
+            this.snapPoint = this.filteredIntersectionPointsList[0];
           } else if (this.hitSESegments.length > 0) {
             this.hitSESegments[0].glowing = true;
             this.snapPoint = null;
@@ -698,9 +728,9 @@ export default class AngleHandler extends Highlighter {
         case AngleMode.POINTS:
           // The use has selected or created a point
           // Highlight and snap to the nearby object
-          if (this.hitSEPoints.length > 0) {
-            this.hitSEPoints[0].glowing = true;
-            this.snapPoint = this.hitSEPoints[0];
+          if (this.filteredIntersectionPointsList.length > 0) {
+            this.filteredIntersectionPointsList[0].glowing = true;
+            this.snapPoint = this.filteredIntersectionPointsList[0];
             this.snapOneDimensional = null;
           } else if (this.hitSESegments.length > 0) {
             this.hitSESegments[0].glowing = true;
@@ -754,22 +784,25 @@ export default class AngleHandler extends Highlighter {
               this.temporaryFirstPoint.addToLayers(this.layers);
             }
             //Update its location to the mouse
-            this.temporaryFirstPoint.positionVectorAndDisplay = this.currentSphereVector;
+            this.temporaryFirstPoint.positionVectorAndDisplay =
+              this.currentSphereVector;
 
             //If there is a nearby *visible* point, line or segment turn off the temporary point marker, but leave in for circles and ellipses because the user can create a point on circles or ellipses
-            if (this.hitSEPoints[0] instanceof SEPoint) {
+            if (this.filteredIntersectionPointsList[0] instanceof SEPoint) {
               if (
-                this.hitSEPoints[0] instanceof SEIntersectionPoint ||
-                this.hitSEPoints[0] instanceof SEAntipodalPoint
+                this.filteredIntersectionPointsList[0] instanceof
+                  SEIntersectionPoint ||
+                this.filteredIntersectionPointsList[0] instanceof
+                  SEAntipodalPoint
               ) {
-                if (this.hitSEPoints[0].isUserCreated) {
+                if (this.filteredIntersectionPointsList[0].isUserCreated) {
                   // remove the temporary point
                   this.temporaryFirstPoint.removeFromLayers();
                   this.isTemporaryFirstPointAdded = false;
                 } else {
                   // snap the temporary point to the uncreated location
                   this.temporaryFirstPoint.positionVectorAndDisplay =
-                    this.hitSEPoints[0].locationVector;
+                    this.filteredIntersectionPointsList[0].locationVector;
                 }
               } else {
                 // remove the temporary point
@@ -941,6 +974,29 @@ export default class AngleHandler extends Highlighter {
     this.snapPoint = null;
   }
 
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return true;
+        }
+      }
+      return pt.showing;
+    });
+  }  
+
   private makeAngleMarkerFromThreePoints(): boolean {
     // make sure that this triple of points has not been measured already
     // this is only possible if all three points are existing points
@@ -994,11 +1050,13 @@ export default class AngleHandler extends Highlighter {
 
         // Create an SELabel and link it to the plottable object
         vtx.locationVector = this.pointLocations[i];
-        const newSELabel = vtx.attachLabelWithOffset(new Vector3(
-          2 * SETTINGS.point.initialLabelOffset,
-          SETTINGS.point.initialLabelOffset,
-          0
-        ))
+        const newSELabel = vtx.attachLabelWithOffset(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
+        );
         angleMarkerCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneOrTwoDimensional,
@@ -1021,11 +1079,13 @@ export default class AngleHandler extends Highlighter {
         // Create an SELabel and link it to the plottable object
         // const newSELabel = new SELabel("point", vtx);
 
-        const newSELabel = vtx.attachLabelWithOffset(new Vector3(
-          2 * SETTINGS.point.initialLabelOffset,
-          SETTINGS.point.initialLabelOffset,
-          0
-        ))
+        const newSELabel = vtx.attachLabelWithOffset(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
+        );
         angleMarkerCommandGroup.addCommand(
           new AddPointCommand(vtx, newSELabel)
         );
@@ -1105,14 +1165,13 @@ export default class AngleHandler extends Highlighter {
     angleMarkerCommandGroup.execute();
 
     // Update the display of the new angle marker
-    AngleHandler.store.updateTwoJS() // without this, when creating a new angle marker, the fill is not displayed
+    AngleHandler.store.updateTwoJS(); // without this, when creating a new angle marker, the fill is not displayed
     newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
     // The labels on any newly created points will be incorrect unless we update all the parents.
-    newSEAngleMarker.parents.forEach((par:SENodule)=>{
-      par.markKidsOutOfDate()
-      par.update()
-    })
-
+    newSEAngleMarker.parents.forEach((par: SENodule) => {
+      par.markKidsOutOfDate();
+      par.update();
+    });
 
     return true;
   }
@@ -1230,7 +1289,7 @@ export default class AngleHandler extends Highlighter {
       this.targetLines[1]
     ).execute();
     // Update the display of the new angle marker
-    AngleHandler.store.updateTwoJS()// without this, when creating a new angle marker, the fill is not displayed
+    AngleHandler.store.updateTwoJS(); // without this, when creating a new angle marker, the fill is not displayed
     newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
 
     return true;
@@ -1340,7 +1399,7 @@ export default class AngleHandler extends Highlighter {
     ).execute();
 
     // Update the display of the new angle marker
-    AngleHandler.store.updateTwoJS()// without this, when creating a new angle marker, the fill is not displayed
+    AngleHandler.store.updateTwoJS(); // without this, when creating a new angle marker, the fill is not displayed
     newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
     return true;
   }
@@ -1479,7 +1538,7 @@ export default class AngleHandler extends Highlighter {
       this.targetSegments[0]
     ).execute();
     // Update the display of the new angle marker
-    AngleHandler.store.updateTwoJS()// without this, when creating a new angle marker, the fill is not displayed
+    AngleHandler.store.updateTwoJS(); // without this, when creating a new angle marker, the fill is not displayed
     newSEAngleMarker.ref.updateDisplay(); // The newly created angle marker will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
     return true;
   }

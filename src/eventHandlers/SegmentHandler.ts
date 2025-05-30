@@ -103,6 +103,9 @@ export default class SegmentHandler extends Highlighter {
    */
   private turnOffLongerThanPi = false;
 
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
+
   /**
    * Make a segment handler
    * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
@@ -131,13 +134,13 @@ export default class SegmentHandler extends Highlighter {
     if (this.isOnSphere && !this.startLocationSelected) {
       // The user is making a segment
       this.startLocationSelected = true;
-
+      this.updateFilteredPointsList()
       // Decide if the starting location is near an already existing SEPoint or near a oneDimensional SENodule
-      if (this.hitSEPoints.length > 0) {
+      if (this.filteredIntersectionPointsList.length > 0) {
         // Use an existing SEPoint to start the line
-        const selected = this.hitSEPoints[0];
+        const selected = this.filteredIntersectionPointsList[0];
         this.startVector.copy(selected.locationVector);
-        this.startSEPoint = this.hitSEPoints[0];
+        this.startSEPoint = this.filteredIntersectionPointsList[0];
         // Set the start of the temp segment and the startMarker at the location of the selected point
         this.temporaryStartMarker.positionVectorAndDisplay =
           selected.locationVector;
@@ -248,19 +251,19 @@ export default class SegmentHandler extends Highlighter {
     // The user can create points  on ellipse, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
-
-    if (this.hitSEPoints.length > 0) {
-      this.hitSEPoints[0].glowing = true;
+this.updateFilteredPointsList()
+    if (this.filteredIntersectionPointsList.length > 0) {
+      this.filteredIntersectionPointsList[0].glowing = true;
       if (!this.startLocationSelected) {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = null;
-        this.snapStartMarkerToTemporaryPoint = this.hitSEPoints[0];
+        this.snapStartMarkerToTemporaryPoint = this.filteredIntersectionPointsList[0];
         this.snapEndMarkerToTemporaryPoint = null;
       } else {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = this.hitSEPoints[0];
+        this.snapEndMarkerToTemporaryPoint = this.filteredIntersectionPointsList[0];
       }
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
@@ -454,6 +457,7 @@ export default class SegmentHandler extends Highlighter {
     // console.debug(`SegmentHandler::mouseReleased() (${event.clientX},${event.clientY})`)
     if (this.isOnSphere) {
       // Make sure the user didn't trigger the mouse leave event and is actually making a segment
+      this.updateFilteredPointsList()
       if (this.startLocationSelected) {
         // Before making a new segment make sure that the user has dragged a non-trivial distance
         if (
@@ -490,6 +494,29 @@ export default class SegmentHandler extends Highlighter {
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
     this.prepareForNextSegment();
+  }
+
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return true;
+        }
+      }
+      return pt.showing;
+    });
   }
   prepareForNextSegment(): void {
     this.temporarySegment.removeFromLayers();
@@ -588,9 +615,9 @@ export default class SegmentHandler extends Highlighter {
       );
     }
     // Look for an endpoint at the mouse release location
-    if (this.hitSEPoints.length > 0 && !fromActivate) {
+    if (this.filteredIntersectionPointsList.length > 0 && !fromActivate) {
       // The end point is an existing point
-      this.endSEPoint = this.hitSEPoints[0];
+      this.endSEPoint = this.filteredIntersectionPointsList[0];
 
       // move the endpoint of the segment to the location of the endpoint
       // This ensures that the initial display of the segment is nice and the endpoint
@@ -851,7 +878,9 @@ export default class SegmentHandler extends Highlighter {
         .createAllIntersectionsWith(newSESegment, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
-            segmentGroup.addCommand(new AddIntersectionPointOtherParentsInfo(item));
+            segmentGroup.addCommand(
+              new AddIntersectionPointOtherParentsInfo(item)
+            );
           } else {
             // Create the plottable label
             const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(

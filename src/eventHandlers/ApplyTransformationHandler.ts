@@ -83,6 +83,9 @@ export default class ApplyTransformationHandler extends Highlighter {
   private possiblyGlowing: SEPoint | SEOneDimensional | null = null;
   private lastPossiblyGlowingID = 0;
 
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
+
   /* temporary vector and matrix to help with computations */
   private tmpVector = new Vector3();
   private tmpVector1 = new Vector3();
@@ -132,10 +135,11 @@ export default class ApplyTransformationHandler extends Highlighter {
     if (this.isOnSphere) {
       // determine if the user has selected a transformation
       if (this.transformationSEParent != null) {
+        this.updateFilteredPointsList();
         // For all transformations the way points are handled is the same so deal with them first
-        if (this.hitSEPoints.length > 0) {
+        if (this.filteredIntersectionPointsList.length > 0) {
           if (
-            this.hitSEPoints[0].kids.some(kid => {
+            this.filteredIntersectionPointsList[0].kids.some(kid => {
               return (
                 kid instanceof SETransformedPoint &&
                 this.transformationSEParent &&
@@ -149,7 +153,8 @@ export default class ApplyTransformationHandler extends Highlighter {
               key: `handlers.duplicateTransformedObject`,
               keyOptions: {
                 object: i18n.global.t(`objects.points`, 3),
-                name: this.hitSEPoints[0].label?.ref.shortUserName,
+                name: this.filteredIntersectionPointsList[0].label?.ref
+                  .shortUserName,
                 type: this.transformationType,
                 trans: this.transformationSEParent.name
               },
@@ -158,13 +163,13 @@ export default class ApplyTransformationHandler extends Highlighter {
             return;
           }
           const transformedLocation = this.transformationSEParent.f(
-            this.hitSEPoints[0].locationVector
+            this.filteredIntersectionPointsList[0].locationVector
           );
           if (
             this.tmpVector
               .subVectors(
                 transformedLocation,
-                this.hitSEPoints[0].locationVector
+                this.filteredIntersectionPointsList[0].locationVector
               )
               .isZero()
           ) {
@@ -174,7 +179,8 @@ export default class ApplyTransformationHandler extends Highlighter {
               keyOptions: {
                 type: this.transformationType,
                 trans: this.transformationSEParent.name,
-                pt: this.hitSEPoints[0].label?.ref.shortUserName
+                pt: this.filteredIntersectionPointsList[0].label?.ref
+                  .shortUserName
               },
               type: "error"
             });
@@ -200,7 +206,9 @@ export default class ApplyTransformationHandler extends Highlighter {
             EventBus.fire("show-alert", {
               key: "handlers.transformCreatesSecondPoint",
               keyOptions: {
-                preimagePt: this.hitSEPoints[0].label?.ref.shortUserName,
+                preimagePt:
+                  this.filteredIntersectionPointsList[0].label?.ref
+                    .shortUserName,
                 type: this.transformationType,
                 trans: this.transformationSEParent.name,
                 existingPt: existingPointName
@@ -215,7 +223,7 @@ export default class ApplyTransformationHandler extends Highlighter {
           this.addTransformedPointCommands(
             transformedPointCommandGroup,
             this.transformationSEParent,
-            this.hitSEPoints[0],
+            this.filteredIntersectionPointsList[0],
             true
           );
           transformedPointCommandGroup.execute();
@@ -651,6 +659,7 @@ export default class ApplyTransformationHandler extends Highlighter {
               });
             }
           } else if (this.hitSEEllipses.length > 0) {
+            console.error("Transformations of ellipses not implemented yet!");
             // not implemented yet
             // if (
             //   !this.hitSEEllipses[0].kids.some(kid => {
@@ -752,8 +761,9 @@ export default class ApplyTransformationHandler extends Highlighter {
         // Only object can be interacted with at a given time, so set the first point nearby to glowing
         // The user can create points on ellipses, circles, segments, and lines, so
         // highlight those as well (but only one) if they are nearby also
-        if (this.hitSEPoints.length > 0) {
-          this.possiblyGlowing = this.hitSEPoints[0];
+        this.updateFilteredPointsList();
+        if (this.filteredIntersectionPointsList.length > 0) {
+          this.possiblyGlowing = this.filteredIntersectionPointsList[0];
         } else if (this.hitSESegments.length > 0) {
           this.possiblyGlowing = this.hitSESegments[0];
         } else if (this.hitSELines.length > 0) {
@@ -795,7 +805,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                     .subVectors(
                       pt.locationVector,
                       this.transformationSEParent.f(
-                        this.hitSEPoints[0].locationVector
+                        this.filteredIntersectionPointsList[0].locationVector
                       )
                     )
                     .isZero()
@@ -1375,6 +1385,13 @@ export default class ApplyTransformationHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
+  }
+
+  updateFilteredPointsList(): void {
+    // you can only transform showing points
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(
+      pt => pt.showing
+    );
   }
 
   prepareForNextGeometricObject(): void {

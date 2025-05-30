@@ -1,6 +1,5 @@
 /** @format */
 
-
 import { Matrix4, Vector2, Vector3 } from "three";
 import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
@@ -26,7 +25,7 @@ import { SetNoduleExistCommand } from "@/commands/SetNoduleExistCommand";
 import { SESlider } from "@/models/SESlider";
 import { ChangeSliderCommand } from "@/commands/ChangeSliderCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { SEText} from "@/models/SEText";
+import { SEText } from "@/models/SEText";
 
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
@@ -133,9 +132,7 @@ export default class MoveHandler extends Highlighter {
         return;
       }
 
-      const texts = this.hitSETexts.filter(
-        n => n.isFreeToMove() && n.showing
-      );
+      const texts = this.hitSETexts.filter(n => n.isFreeToMove() && n.showing);
       if (texts.length > 0) {
         //console.log("Found a Text to move");
         this.moveTarget = texts[0];
@@ -303,23 +300,23 @@ export default class MoveHandler extends Highlighter {
     // and only the highlight the object that will be moved when the user clicks and drags
     if (!this.movingSomething && !this.rotateSphere) {
       if (this.hitSEPoints.filter(n => n.isFreeToMove()).length > 0) {
-        this.hitSEPoints[0].glowing = true;
+        this.hitSEPoints.filter(n => n.isFreeToMove())[0].glowing = true;
       } else if (this.hitSELabels.filter(n => n.isFreeToMove()).length > 0) {
-        this.hitSELabels[0].glowing = true;
+        this.hitSELabels.filter(n => n.isFreeToMove())[0].glowing = true;
       } else if (this.hitSETexts.filter(n => n.isFreeToMove()).length > 0) {
-       // console.log("Hovering over SEText");
-        this.hitSETexts[0].glowing = true;
-      } else if (this.hitSEPoints.length == 0) {
+        // console.log("Hovering over SEText");
+        this.hitSETexts.filter(n => n.isFreeToMove())[0].glowing = true;
+      } else if (this.hitSEPoints.filter(n => n.isFreeToMove()).length == 0) {
         if (this.hitSESegments.filter(n => n.isFreeToMove()).length > 0) {
-          this.hitSESegments[0].glowing = true;
+          this.hitSESegments.filter(n => n.isFreeToMove())[0].glowing = true;
         } else if (this.hitSELines.filter(n => n.isFreeToMove()).length > 0) {
-          this.hitSELines[0].glowing = true;
+          this.hitSELines.filter(n => n.isFreeToMove())[0].glowing = true;
         } else if (this.hitSECircles.filter(n => n.isFreeToMove()).length > 0) {
-          this.hitSECircles[0].glowing = true;
+          this.hitSECircles.filter(n => n.isFreeToMove())[0].glowing = true;
         } else if (
           this.hitSEEllipses.filter(n => n.isFreeToMove()).length > 0
         ) {
-          this.hitSEEllipses[0].glowing = true;
+          this.hitSEEllipses.filter(n => n.isFreeToMove())[0].glowing = true;
         }
       }
     }
@@ -626,8 +623,14 @@ export default class MoveHandler extends Highlighter {
                 //console.log("Moving SEText in mouseReleased.");
                 //console.log(`seNoduleBeforeState.locationVector = x: ${seNoduleBeforeState.locationVector.x}, y: ${seNoduleBeforeState.locationVector.y}`);
                 //console.log(`seNoduleAfterState.locationVector = x: ${seNoduleAfterState.locationVector.x}, y: ${seNoduleAfterState.locationVector.y}`);
-                const beforeVector = new Vector2(seNoduleBeforeState.locationVector.x,seNoduleBeforeState.locationVector.y)
-                const afterVector = new Vector2(seNoduleAfterState.locationVector.x,seNoduleAfterState.locationVector.y)
+                const beforeVector = new Vector2(
+                  seNoduleBeforeState.locationVector.x,
+                  seNoduleBeforeState.locationVector.y
+                );
+                const afterVector = new Vector2(
+                  seNoduleAfterState.locationVector.x,
+                  seNoduleAfterState.locationVector.y
+                );
                 moveCommandGroup.addCommand(
                   new MoveTextCommand(
                     seNoduleAfterState.object as SEText,
@@ -675,6 +678,7 @@ export default class MoveHandler extends Highlighter {
     // Make sure that the last move gets recorded in the command structure so it can be undone/redone
     this.mouseReleased(event);
   }
+
   // activate(): void {}
   // deactivate(): void {}
   private doRotateSphere(): void {

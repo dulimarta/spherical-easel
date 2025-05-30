@@ -76,6 +76,9 @@ export default class MeasuredCircleHandler extends Highlighter {
     null;
   protected snapTemporaryPointMarkerToPoint: SEPoint | null = null;
 
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
+
   /* temporary vector and matrix to help with computations */
   private tmpVector = new Vector3();
   private tmpVector1 = new Vector3();
@@ -116,10 +119,11 @@ export default class MeasuredCircleHandler extends Highlighter {
       }
       // The user is making a circle
       this.centerLocationSelected = true;
+      this.updateFilteredPointsList();
       // Check to see if the current location is near any points
-      if (this.hitSEPoints.length > 0) {
+      if (this.filteredIntersectionPointsList.length > 0) {
         // Pick the top most selected point
-        const selected = this.hitSEPoints[0];
+        const selected = this.filteredIntersectionPointsList[0];
         // Record the center vector of the circle so it can be past to the non-temporary circle
         this.centerVector.copy(selected.locationVector);
         // Record the model object as the center of the circle
@@ -247,9 +251,10 @@ export default class MeasuredCircleHandler extends Highlighter {
       // The user can create points on ellipses, circles, segments, and lines, so
       // highlight those as well (but only one) if they are nearby also
       // Also set the snap objects
+      this.updateFilteredPointsList();
       let possiblyGlowing: SEPoint | SEOneOrTwoDimensional | null = null;
-      if (this.hitSEPoints.length > 0) {
-        possiblyGlowing = this.hitSEPoints[0];
+      if (this.filteredIntersectionPointsList.length > 0) {
+        possiblyGlowing = this.filteredIntersectionPointsList[0];
       } else if (this.hitSESegments.length > 0) {
         possiblyGlowing = this.hitSESegments[0];
       } else if (this.hitSELines.length > 0) {
@@ -406,6 +411,29 @@ export default class MeasuredCircleHandler extends Highlighter {
     super.mouseLeave(event);
   }
 
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return true;
+        }
+      }
+      return pt.showing;
+    });
+  }
+
   prepareForNextCircle(): void {
     // Remove the temporary objects from the scene and mark the temporary object
     //  not added to the scene clear snap objects
@@ -531,10 +559,9 @@ export default class MeasuredCircleHandler extends Highlighter {
       newSELabel.locationVector = this.tmpVector;
       this.centerSEPoint = vtx;
     } else if (
-      (this.centerSEPoint instanceof SEIntersectionPoint &&
-        !this.centerSEPoint.isUserCreated) ||
-      (this.centerSEPoint instanceof SEAntipodalPoint &&
-        !this.centerSEPoint.isUserCreated)
+      (this.centerSEPoint instanceof SEIntersectionPoint ||
+        this.centerSEPoint instanceof SEAntipodalPoint) &&
+      !this.centerSEPoint.isUserCreated
     ) {
       // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       circleCommandGroup.addCommand(

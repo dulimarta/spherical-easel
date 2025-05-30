@@ -39,6 +39,8 @@ export default class DeleteHandler extends Highlighter {
 
   private beforeDeleteStateMap: Map<number, ObjectState> = new Map(); //number is the SENodule.id
   private beforeDeleteSENoduleIDList: number[] = [];
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
 
   constructor(layers: Group[]) {
     super(layers);
@@ -50,21 +52,16 @@ export default class DeleteHandler extends Highlighter {
     //if (this.isOnSphere) {           //Commented Out For now
     // In the case of multiple selections prioritize texts > points > lines > segments > circles > ellipses > parametrics > labels > angle markers > polygons
     // Deleting an object deletes all objects that depend on that object including the label
+    this.updateFilteredPointsList();
     if (this.hitSETexts.length > 0) {
       this.victim = this.hitSETexts[0];
       this.victimName = this.hitSETexts[0].name;
       this.victimType = i18n.global.t(`objects.texts`, 3);
-    } else if (this.hitSEPoints.length > 0) {
-      if (
-        (!(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
-          this.hitSEPoints[0].isUserCreated) &&
-        (!(this.hitSEPoints[0] instanceof SEAntipodalPoint) ||
-          this.hitSEPoints[0].isUserCreated)
-      ) {
-        this.victim = this.hitSEPoints[0];
-        this.victimName = this.hitSEPoints[0].label?.ref.shortUserName;
-        this.victimType = i18n.global.t(`objects.points`, 3);
-      }
+    } else if (this.filteredIntersectionPointsList.length > 0) {
+      this.victim = this.filteredIntersectionPointsList[0];
+      this.victimName =
+        this.filteredIntersectionPointsList[0].label?.ref.shortUserName;
+      this.victimType = i18n.global.t(`objects.points`, 3);
     } else if (this.hitSELines.length > 0) {
       this.victim = this.hitSELines[0];
       this.victimName = this.hitSELines[0].label?.ref.shortUserName;
@@ -129,19 +126,9 @@ export default class DeleteHandler extends Highlighter {
     super.mouseMoved(event);
     // only one object at a time can be deleted so only glow the potential victim
     // prioritize points, if there is a point nearby, assume the user wants it to be the selection to delete
-    if (this.hitSEPoints.length > 0) {
-      // never highlight non user created intersection points
-      const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
-        if (
-          p instanceof SEIntersectionPoint ||
-          (p instanceof SEAntipodalPoint && !p.isUserCreated)
-        ) {
-          return false;
-        } else {
-          return true;
-        }
-      });
-      if (filteredPoints.length > 0) filteredPoints[0].glowing = true;
+    this.updateFilteredPointsList();
+    if (this.filteredIntersectionPointsList.length > 0) {
+      this.filteredIntersectionPointsList[0].glowing = true;
     } else if (this.hitSELines.length > 0) {
       this.hitSELines[0].glowing = true;
     } else if (this.hitSESegments.length > 0) {
@@ -220,6 +207,18 @@ export default class DeleteHandler extends Highlighter {
     super.deactivate();
   }
 
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint || pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return false;
+        }
+      }
+      return pt.showing;
+    });
+  }
   public delete(victim: SENodule): number[] {
     const deletedNodeIds: number[] = [];
     // Reset the beforeDeleteStateMap and SENoduleISList

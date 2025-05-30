@@ -38,6 +38,9 @@ export default class LineHandler extends Highlighter {
   private endSEPoint: SEPoint | null = null;
   private startSEPointOneDimensionalParent: SEOneOrTwoDimensional | null = null;
 
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
+
   /** Has the temporary line/tempStartMarker/tempEndMarker been added to the scene?*/
   private isTemporaryLineAdded = false;
   private isTemporaryStartMarkerAdded = false;
@@ -103,13 +106,13 @@ export default class LineHandler extends Highlighter {
     if (this.isOnSphere && !this.startLocationSelected) {
       // The user is making a line
       this.startLocationSelected = true;
-
+      this.updateFilteredPointsList();
       // Decide if the starting location is near an already existing SEPoint or near a oneDimensional SENodule
-      if (this.hitSEPoints.length > 0) {
+      if (this.filteredIntersectionPointsList.length > 0) {
         // Use an existing SEPoint to start the line
-        const selected = this.hitSEPoints[0];
+        const selected = this.filteredIntersectionPointsList[0];
         this.startVector.copy(selected.locationVector);
-        this.startSEPoint = this.hitSEPoints[0];
+        this.startSEPoint = this.filteredIntersectionPointsList[0];
         this.temporaryStartMarker.positionVectorAndDisplay =
           selected.locationVector;
         // Glow the selected point and select it so the highlighter.ts doesn't unglow it with the mouseMoved method
@@ -202,18 +205,21 @@ export default class LineHandler extends Highlighter {
     // The user can create points  on , ellipses, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
-    if (this.hitSEPoints.length > 0) {
-      this.hitSEPoints[0].glowing = true;
+    this.updateFilteredPointsList();
+    if (this.filteredIntersectionPointsList.length > 0) {
+      this.filteredIntersectionPointsList[0].glowing = true;
       if (!this.startLocationSelected) {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = null;
-        this.snapStartMarkerToTemporaryPoint = this.hitSEPoints[0];
+        this.snapStartMarkerToTemporaryPoint =
+          this.filteredIntersectionPointsList[0];
         this.snapEndMarkerToTemporaryPoint = null;
       } else {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = this.hitSEPoints[0];
+        this.snapEndMarkerToTemporaryPoint =
+          this.filteredIntersectionPointsList[0];
       }
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
@@ -489,6 +495,30 @@ export default class LineHandler extends Highlighter {
     // call an unglow all command
     LineHandler.store.unglowAllSENodules();
   }
+
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return true;
+        }
+      }
+      return pt.showing;
+    });
+  }
+
   // Create a new line from the mouse event information
   private makeLine(fromActivate = false): boolean {
     //Create a command group so this can be undone
@@ -543,10 +573,9 @@ export default class LineHandler extends Highlighter {
       newSELabel.locationVector = this.tmpVector;
       this.startSEPoint = vtx;
     } else if (
-      (this.startSEPoint instanceof SEIntersectionPoint &&
-        !this.startSEPoint.isUserCreated) ||
-      (this.startSEPoint instanceof SEAntipodalPoint &&
-        !this.startSEPoint.isUserCreated)
+      (this.startSEPoint instanceof SEIntersectionPoint ||
+        this.startSEPoint instanceof SEAntipodalPoint) &&
+      !this.startSEPoint.isUserCreated
     ) {
       // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       lineGroup.addCommand(
@@ -555,13 +584,12 @@ export default class LineHandler extends Highlighter {
     }
 
     // Check to see if the release location is near any points
-    if (this.hitSEPoints.length > 0 && !fromActivate) {
-      this.endSEPoint = this.hitSEPoints[0];
+    if (this.filteredIntersectionPointsList.length > 0 && !fromActivate) {
+      this.endSEPoint = this.filteredIntersectionPointsList[0];
       if (
-        (this.endSEPoint instanceof SEIntersectionPoint &&
-          !this.endSEPoint.isUserCreated) ||
-        (this.endSEPoint instanceof SEAntipodalPoint &&
-          !this.endSEPoint.isUserCreated)
+        (this.endSEPoint instanceof SEIntersectionPoint ||
+          this.endSEPoint instanceof SEAntipodalPoint) &&
+        !this.endSEPoint.isUserCreated
       ) {
         // Mark the intersection point as created, the display style is changed and the glowing style is set up
         lineGroup.addCommand(

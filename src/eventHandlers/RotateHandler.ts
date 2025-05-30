@@ -13,7 +13,6 @@ import i18n from "../i18n";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SECircle } from "@/models/SECircle";
 
-
 const desiredZAxis = new Vector3();
 const deltaT = 1000 / SETTINGS.rotate.momentum.framesPerSecond; // The momentum rotation is refreshed every deltaT milliseconds
 const endTime = Math.max(
@@ -92,6 +91,9 @@ export default class RotateHandler extends Highlighter {
   // private tempVector2 = new Vector3();
   // private _disableKeyHandler = false;
 
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
+
   constructor(layers: Group[]) {
     super(layers);
   }
@@ -153,19 +155,21 @@ export default class RotateHandler extends Highlighter {
       // if the user is over a line, point, or segment and clicks on it, rotate about it. (unless it is the one from a previous click, then move into the free rotation mode)
       let rotationObjectTypeKey: string | undefined = "";
       let rotationObjectName: string | undefined = "";
-
-      if (this.hitSEPoints.length > 0) {
+      this.updateFilteredPointsList();
+      if (this.filteredIntersectionPointsList.length > 0) {
         // never highlight non user created intersection points
-        const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
-          if (
-            (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
-            (p instanceof SEAntipodalPoint && !p.isUserCreated)
-          ) {
-            return false;
-          } else {
-            return true;
+        const filteredPoints = this.filteredIntersectionPointsList.filter(
+          (p: SEPoint) => {
+            if (
+              (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+              (p instanceof SEAntipodalPoint && !p.isUserCreated)
+            ) {
+              return false;
+            } else {
+              return true;
+            }
           }
-        });
+        );
         if (filteredPoints.length > 0) {
           // if the rotation object is null or the rotation object id is not the first filtered point id then
           // create a new point of rotation
@@ -348,9 +352,16 @@ export default class RotateHandler extends Highlighter {
     this.previousTime = event.timeStamp;
   }
 
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(
+      pt => pt.showing // you can rotate only around showing points
+    );
+  }
+
   mouseMoved(event: MouseEvent): void {
     // Determine the current location on the sphere (on on screen) and highlight objects
     this.trackMouseLocation(event);
+    this.updateFilteredPointsList();
 
     if (
       this.rotationObject !== null &&
@@ -383,19 +394,8 @@ export default class RotateHandler extends Highlighter {
     // if the user is not rotating highlight lines, segments and points that the user can rotate about
     if (!this.userIsRotating) {
       super.mouseMoved(event);
-      if (this.hitSEPoints.length > 0) {
-        // never highlight non user created intersection points
-        const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
-          if (
-            (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
-            (p instanceof SEAntipodalPoint && !p.isUserCreated)
-          ) {
-            return false;
-          } else {
-            return true;
-          }
-        });
-        if (filteredPoints.length > 0) filteredPoints[0].glowing = true;
+      if (this.filteredIntersectionPointsList.length > 0) {
+        this.filteredIntersectionPointsList[0].glowing = true;
       } else if (this.hitSESegments.length > 0) {
         this.hitSESegments[0].glowing = true;
       } else if (this.hitSELines.length > 0) {
