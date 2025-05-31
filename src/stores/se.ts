@@ -1021,6 +1021,7 @@ export const useSEStore = defineStore("se", () => {
     Nodule.setBackStyleContrast(newContrast);
     seNodules.value.forEach(n => {
       n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
+      n.ref?.adjustSize()
     });
   }
   function changeFillStyle(newFillStyle: FillStyle) {

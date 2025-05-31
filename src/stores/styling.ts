@@ -91,8 +91,8 @@ export const useStylingStore = defineStore("style", () => {
   let updateTargets: Nodule[] = [];
   let preUpdateStyleOptionsArray: StyleOptions[] = [];
   let postUpdateStyleOptions: StyleOptions = {};
-  let backStyleContrastCopy: number = NaN;
-  let fillStyleCopy: FillStyle = FillStyle.NoFill;
+  let backStyleContrastCopy = ref(NaN);
+  let fillStyleCopy = ref(FillStyle.NoFill);
 
   // This variable is used to direct a function to modify only those
   // style options are that are on the Label/Front/Back/Global panel
@@ -372,16 +372,16 @@ export const useStylingStore = defineStore("style", () => {
     // );
     // console.log("Default style map size = ", defaultStyleMap.size);
 
-    backStyleContrastCopy = Nodule.getBackStyleContrast();
-    fillStyleCopy = Nodule.getFillStyle();
+    backStyleContrastCopy.value = Nodule.getBackStyleContrast();
+    fillStyleCopy.value = Nodule.getFillStyle();
   }
 
   function recordGlobalContrast() {
-    backStyleContrastCopy = Nodule.getBackStyleContrast();
+    backStyleContrastCopy.value = Nodule.getBackStyleContrast();
   }
 
   function recordFillStyle() {
-    fillStyleCopy = Nodule.getFillStyle();
+    fillStyleCopy.value = Nodule.getFillStyle();
   }
 
   function recordCurrentStyleProperties(category: StyleCategory) {
@@ -461,12 +461,12 @@ export const useStylingStore = defineStore("style", () => {
       if (count === selectedPlottables.value.size)
         commonProperties.add(propName);
     });
+    // record the contrast and fill style in the case that the
+    // user goes directly from the global panel to the label/front/back
+    // this prevents the change in these values from being recorded twice
+    recordGlobalContrast();
+    recordFillStyle();
     // console.log("Common properties", commonProperties);
-  }
-
-  function deselectActiveGroup() {
-    persistUpdatedStyleOptions();
-    activeStyleGroup = null;
   }
 
   function hasDisagreement(prop: string) {
@@ -523,7 +523,9 @@ export const useStylingStore = defineStore("style", () => {
   }
 
   function changeFillStyle(newFillStyle: FillStyle): void {
+    console.log("before change fill style", newFillStyle)
     Nodule.setFillStyle(newFillStyle);
+    console.log("after change fill style", newFillStyle)
     // update all objects display
     seNodules.value.forEach(n => {
       // The fillable types must be recomputed in order to display the change
@@ -546,10 +548,9 @@ export const useStylingStore = defineStore("style", () => {
     if (tempActiveStyleGroup == null) {
       tempActiveStyleGroup = activeStyleGroup;
     }
-    // console.log("set targets and pre style", tempActiveStyleGroup);
-    if (tempActiveStyleGroup == null) {
-      return;
-    }
+
+    console.log("target group", tempActiveStyleGroup);
+
     if (tempActiveStyleGroup === StyleCategory.Label) {
       updateTargets = Array.from(selectedLabels.value).map(selectedName => {
         const label = seLabels.value.find(
@@ -587,7 +588,10 @@ export const useStylingStore = defineStore("style", () => {
         console.error("No label or text was found for update target");
         return new Label("This Should Never Happen", "point"); //Dummy label to make the linter happy
       });
-    } else {
+    } else if (
+      tempActiveStyleGroup === StyleCategory.Front ||
+      tempActiveStyleGroup === StyleCategory.Back
+    ) {
       updateTargets = Array.from(selectedPlottables.value).map(pair => {
         const styleOptions = initialStyleMap.get(
           tempActiveStyleGroup + ":" + pair[0]
@@ -616,22 +620,26 @@ export const useStylingStore = defineStore("style", () => {
 
     // Check if back style contrast was modified (the first time through backStyleContrast is a NaN)
     if (
-      !Number.isNaN(backStyleContrastCopy) &&
-      backStyleContrastCopy !== Nodule.getBackStyleContrast()
+      !Number.isNaN(backStyleContrastCopy.value) &&
+      backStyleContrastCopy.value !== Nodule.getBackStyleContrast()
     ) {
+      console.log("after contrast", Nodule.getBackStyleContrast());
+      console.log("before contrast", backStyleContrastCopy.value);
       const contrastCommand = new ChangeBackStyleContrastCommand(
         Nodule.getBackStyleContrast(),
-        backStyleContrastCopy
+        backStyleContrastCopy.value
       );
       cmdGroup.addCommand(contrastCommand);
       subCommandCount++;
     }
 
     // Check if the fill style was modified
-    if (fillStyleCopy !== Nodule.getFillStyle()) {
+    if (fillStyleCopy.value !== Nodule.getFillStyle()) {
+      console.log("after fillstyle", Nodule.getFillStyle());
+      console.log("before fillstyle", fillStyleCopy.value);
       const fillCommand = new ChangeFillStyleCommand(
         Nodule.getFillStyle(),
-        fillStyleCopy
+        fillStyleCopy.value
       );
       cmdGroup.addCommand(fillCommand);
       subCommandCount++;
@@ -645,15 +653,20 @@ export const useStylingStore = defineStore("style", () => {
     // useful because a user can change a value and then change it back to
     // the original value. This needs to be detected in order to update
     // the screen, but doesn't need to be recorded in a style command.
-    setUpdateTargetsAndPreUpdateStyleOptionsArrays(tempActiveStyleGroup);
 
     // if tempActiveStyleGroup is null, then get the activeStyleGroup (This allows us to force a check on the style values from a particular styleCategory)
     if (tempActiveStyleGroup == null) {
       tempActiveStyleGroup = activeStyleGroup;
     }
+
+    setUpdateTargetsAndPreUpdateStyleOptionsArrays(tempActiveStyleGroup);
+
     let styleChangeDetected = false;
     preUpdateStyleOptionsArray.forEach(opt => {
-      styleChangeDetected = differentStyle(postUpdateStyleOptions, opt); //order of arguments is important! opt is the larger complete set of styleOptions and postUpdateStyleOptions is only those that have been changed by the user (which is different than the ones that the user has manipulated because a user can change a value and then change it back to its original value which is exactly what would happen for a user exploring an toggle switch and then don't like the change they observe )
+      if (differentStyle(postUpdateStyleOptions, opt)) {
+        //order of arguments is important! opt is the larger complete set of styleOptions and postUpdateStyleOptions is only those that have been changed by the user (which is different than the ones that the user has manipulated because a user can change a value and then change it back to its original value which is exactly what would happen for a user exploring an toggle switch and then don't like the change they observe )
+        styleChangeDetected = true;
+      }
     });
     if (
       styleChangeDetected &&
@@ -668,9 +681,9 @@ export const useStylingStore = defineStore("style", () => {
         new Array(updateTargets.length).fill(postUpdateStyleOptions),
         preUpdateStyleOptionsArray
       );
-      // console.log("target", updateTargets);
-      // console.log("after style", postUpdateStyleOptions);
-      // console.log("before style", preUpdateStyleOptionsArray);
+      console.log("target", updateTargets);
+      console.log("after style", postUpdateStyleOptions);
+      console.log("before style", preUpdateStyleOptionsArray);
       cmdGroup.addCommand(styleCommand);
       subCommandCount++;
     }
@@ -725,7 +738,6 @@ export const useStylingStore = defineStore("style", () => {
         }
       });
     }
-    // setUpdateTargetsAndPreUpdateStyleOptionsArrays();
 
     let combinedStyle: StyleOptions = {};
     styleMap.forEach((style: StyleOptions, name: string) => {
@@ -801,7 +813,9 @@ export const useStylingStore = defineStore("style", () => {
         containsFillableSENodule = true;
       }
     });
-    return Nodule.getFillStyle() == FillStyle.NoFill && containsFillableSENodule;
+    return (
+      Nodule.getFillStyle() == FillStyle.NoFill && containsFillableSENodule
+    );
   }
 
   return {
@@ -810,6 +824,8 @@ export const useStylingStore = defineStore("style", () => {
     styleOptions,
     conflictingProperties,
     forceAgreement,
+    backStyleContrastCopy,
+    fillStyleCopy,
     showFillColorPicker,
     hasDisagreement,
     hasLabelObject,
@@ -821,13 +837,12 @@ export const useStylingStore = defineStore("style", () => {
     recordCurrentStyleProperties,
     recordGlobalContrast,
     recordFillStyle,
-    deselectActiveGroup,
-    persistUpdatedStyleOptions,
     restoreDefaultStyles,
     restoreInitialStyles,
     resetInitialAndDefaultStyleMaps,
     isCommonProperty,
     hasSomeProperties,
+    persistUpdatedStyleOptions,
     measurableSelections
   };
 });

@@ -291,7 +291,6 @@ type LabelStyleProps = {
   showPopup: boolean;
 };
 const emits = defineEmits([
-  // "ignore-mouse-down", //this tells the mousedown handler in StyleDrawer to ignore this event when it happens in the pull down menus of these styling options.
   "undo-styles",
   "apply-default-styles"
 ]);
@@ -310,16 +309,16 @@ const minLabelTextScalePercent = SETTINGS.style.minLabelTextScalePercent;
 //step is 20 from 60 to 200 is 8 steps
 const textScaleSelectorThumbStrings: Array<string> = [];
 const maxLabelDisplayTextLength = SETTINGS.label.maxLabelDisplayTextLength;
-const labelDisplayTextErrorMessageKey = "";
+const labelDisplayTextErrorMessageKey = "empty";
 const lastValidDisplayText = ref("");
 const maxLabelDisplayCaptionLength =
   SETTINGS.label.maxLabelDisplayCaptionLength;
-const labelDisplayCaptionErrorMessageKey = "";
+const labelDisplayCaptionErrorMessageKey = "empty";
 
 //step is Pi/8 from -pi to pi is 17 steps
 const textRotationSelectorThumbStrings: Array<string> = [];
 const filteredLabelDisplayModeItems: Ref<Array<LabelDisplayModeItem>> = ref([]);
-const hasVisibleLabels = ref(true);
+const allLabelsAreVisible = ref(true);
 
 watch(
   () => measurableSelections.value,
@@ -461,6 +460,7 @@ function hasCaption(opt: LabelStyleOptions | undefined): boolean {
 }
 
 function displayAllLabels() {
+  // if there are hidden labels turn them on
   const cmdGroup = new CommandGroup();
   let subCommandCount = 0;
   selectedLabels.value.forEach(labName => {
@@ -479,7 +479,7 @@ function displayAllLabels() {
 }
 
 function toggleLabelVisibility() {
-  hasVisibleLabels.value = !hasVisibleLabels.value;
+  allLabelsAreVisible.value = !allLabelsAreVisible.value;
   const cmdGroup = new CommandGroup();
   let subCommandCount = 0;
 
@@ -487,8 +487,8 @@ function toggleLabelVisibility() {
     // Searching for the plottable; must use 'z.ref.name' (and not z.name)
     const lab = seLabels.value.find(z => z.ref.name === labName);
     if (lab) {
-      if (lab.ref.showing != hasVisibleLabels.value) {
-        const newCmd = new SetNoduleDisplayCommand(lab, hasVisibleLabels.value);
+      if (lab.ref.showing != allLabelsAreVisible.value) {
+        const newCmd = new SetNoduleDisplayCommand(lab, allLabelsAreVisible.value);
         cmdGroup.addCommand(newCmd);
         subCommandCount++;
       }
@@ -666,6 +666,7 @@ const conflictItems: ConflictItems = {
   "clickToMakeLabelsVisible": "Click the button below to make labels visible",
   "commonCaptionText": "Common Caption Text",
   "commonLabelText": "Common Label Text",
+  "captionText":"Label Caption",
   "enableCommonStyle": "Enable Common Style",
   "fonts": {
     "cursive": "Cursive Font",
@@ -713,7 +714,8 @@ const conflictItems: ConflictItems = {
   },
   "defaultStyles": "Restore Default Styles (ALL)",
   "undoStyles": "Undo Recent Style Changes (ALL)",
-  "showHideLabels": "Show/Hide Labels"
+  "showHideLabels": "Show/Hide Labels",
+  "empty":""
 }
 </i18n>
 <i18n lang="json" locale="id">

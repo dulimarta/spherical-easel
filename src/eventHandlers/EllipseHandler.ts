@@ -150,7 +150,7 @@ export default class EllipseHandler extends Highlighter {
             this.mouseMoved(event);
           } else {
             EventBus.fire("show-alert", {
-              key: `handlers.ellipseAntipodalSelected`,
+              key: `ellipseAntipodalSelected`,
               keyOptions: {},
               type: "info"
             });
@@ -376,7 +376,7 @@ export default class EllipseHandler extends Highlighter {
         this.temporaryFocus2Marker.positionVectorAndDisplay =
           this.currentSphereVector;
         EventBus.fire("show-alert", {
-          key: `handlers.ellipseFocus1Selected`,
+          key: `ellipseFocus1Selected`,
           keyOptions: {},
           type: "info"
         });
@@ -384,7 +384,7 @@ export default class EllipseHandler extends Highlighter {
         this.temporaryEllipsePointMarker.positionVectorAndDisplay =
           this.currentSphereVector;
         EventBus.fire("show-alert", {
-          key: `handlers.ellipseFocus2Selected`,
+          key: `ellipseFocus2Selected`,
           keyOptions: {},
           type: "info"
         });
@@ -672,7 +672,7 @@ export default class EllipseHandler extends Highlighter {
         ) {
           if (!this.makeEllipse()) {
             EventBus.fire("show-alert", {
-              key: `handlers.ellipseCreationAttemptDuplicate`,
+              key: `ellipseCreationAttemptDuplicate`,
               keyOptions: {},
               type: "error"
             });
@@ -682,7 +682,7 @@ export default class EllipseHandler extends Highlighter {
         }
       } else {
         EventBus.fire("show-alert", {
-          key: `handlers.ellipseInitiallyToSmall`,
+          key: `ellipseInitiallyToSmall`,
           keyOptions: {},
           type: "info"
         });
@@ -1206,7 +1206,7 @@ export default class EllipseHandler extends Highlighter {
         this.ellipseSEPoint = object3;
         if (!this.makeEllipse(true)) {
           EventBus.fire("show-alert", {
-            key: `handlers.ellipseCreationAttemptDuplicate`,
+            key: `ellipseCreationAttemptDuplicate`,
             keyOptions: {},
             type: "error"
           });

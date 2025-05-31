@@ -325,7 +325,7 @@ export default class PolygonHandler extends Highlighter {
 
         if (measuredBefore) {
           EventBus.fire("show-alert", {
-            key: `handlers.previouslyMeasuredPolygon`,
+            key: `previouslyMeasuredPolygon`,
             keyOptions: { token: token },
             type: "error"
           });
@@ -411,7 +411,7 @@ export default class PolygonHandler extends Highlighter {
         vtx.ref.stylize(DisplayStyle.ApplyCurrentVariables);
 
         EventBus.fire("show-alert", {
-          key: `handlers.newPolygonAdded`,
+          key: `newPolygonAdded`,
           keyOptions: {},
           type: "success"
         });

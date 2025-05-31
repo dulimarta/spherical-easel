@@ -200,7 +200,7 @@ export default class CircleHandler extends Highlighter {
       this.temporaryEndMarker.positionVectorAndDisplay =
         this.currentSphereVector;
       EventBus.fire("show-alert", {
-        key: `handlers.circleCenterSelected`,
+        key: `circleCenterSelected`,
         keyOptions: {},
         type: "info"
       });

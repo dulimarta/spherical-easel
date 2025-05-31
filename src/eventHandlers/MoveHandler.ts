@@ -281,7 +281,7 @@ export default class MoveHandler extends Highlighter {
       this.rotateSphere = true;
       this.beforeMoveVector.copy(this.currentSphereVector);
       EventBus.fire("show-alert", {
-        key: `handlers.moveHandlerNothingSelected`,
+        key: `moveHandlerNothingSelected`,
         keyOptions: {},
         type: "warning"
       });

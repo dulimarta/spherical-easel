@@ -18,8 +18,7 @@
     v-if="showPopup && menu"
     position="fixed"
     elevation="4"
-    :style="{ right: '80px', minWidth: '350px' }"
-    >
+    :style="{ right: '80px', minWidth: '350px' }">
     <v-tabs v-model="currentTab">
       <slot name="tabs"></slot>
       <!-- we assume this value will not be used-->
@@ -48,7 +47,7 @@ type Props = {
 const elementProps = withDefaults(defineProps<Props>(), {
   name: ""
 });
-const emit = defineEmits(["popUpShown", "popUpHidden", "loseFocus"]);
+const emit = defineEmits(["popUpShown", "popUpHidden"]);
 const LAST_TAB_MARKER = 99999;
 const currentTab = ref(0);
 const menu = ref(false);
@@ -56,8 +55,11 @@ watch(
   () => elementProps.showPopup,
   show => {
     menu.value = show;
-    if (show) emit("popUpShown");
-    else emit("popUpHidden");
+    if (show) {
+      emit("popUpShown");
+    } else {
+      emit("popUpHidden");
+    }
   }
 );
 watch(
@@ -69,5 +71,4 @@ watch(
     }
   }
 );
-
 </script>

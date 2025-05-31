@@ -245,13 +245,13 @@ export default class SelectionHandler extends Highlighter {
 
       if (SelectionHandler.store.selectedSENodules.length === 0) {
         EventBus.fire("show-alert", {
-          key: `handlers.selectionUpdateNothingSelected`,
+          key: `selectionUpdateNothingSelected`,
           keyOptions: {},
           type: "error"
         });
       } else {
         EventBus.fire("show-alert", {
-          key: `handlers.selectionUpdate`,
+          key: `selectionUpdate`,
           keyOptions: {
             number: `${SelectionHandler.store.selectedSENodules.length}`
           },

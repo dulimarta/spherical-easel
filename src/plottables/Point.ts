@@ -185,8 +185,6 @@ export default class Point extends Nodule {
   }
 
   frontNormalDisplay(): void {
-    // if (!this.showing){
-    // console.log("Turned point display on when showing is ", this.showing, this._locationVector.toFixed(2),this)}
     this.frontPoint.visible = true;
     this.glowingFrontPoint.visible = false;
     this.backPoint.visible = false;
@@ -223,15 +221,11 @@ export default class Point extends Nodule {
   }
 
   updateDisplay(): void {
-    // console.log("update point display")
     this.normalDisplay();
   }
 
   setVisible(flag: boolean): void {
-    // console.log("Set point visible method")
     if (!flag) {
-      // if (this._locationVector.z>0){
-      // console.log("Turn off point display when showing is ", this.showing,this._locationVector.toFixed(2))}
       this.frontPoint.visible = false;
       this.glowingFrontPoint.visible = false;
       this.backPoint.visible = false;
@@ -371,6 +365,8 @@ export default class Point extends Nodule {
           ? Nodule.contrastPointRadiusPercent(radiusPercentFront)
           : radiusPercentBack)) /
       100;
+
+      this.backPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.back;  // if this line is not here then the width of the back stroke shrinks to zero when you set the back contrast to zero and then undo it.
   }
   /**
    * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the point

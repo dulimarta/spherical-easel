@@ -66,5 +66,6 @@
     "titleBar.inactiveForeground": "#15202b99"
   },
   "peacock.color": "#86da43",
-  "workbench.editor.enablePreview": true
+  "workbench.editor.enablePreview": true,
+  "i18n-ally.keystyle": "nested"
 }

@@ -5,7 +5,10 @@
       id="style-icon"
       icon
       v-if="!showDrawer"
-      @click="showDrawer = !showDrawer">
+      @click="
+        showDrawer = !showDrawer;
+        activateSelectionTool();
+      ">
       <v-tooltip activator="parent" location="bottom">
         {{ t("showDrawer") }}
       </v-tooltip>
@@ -24,9 +27,7 @@
      In our case, the midpoint of the start side of the activator (button) is lined up with
      the midpoint of the end side of the overlay
       -->
-    <!-- scrim setting is required to make the overlay persistent (stay open when user clicks outside)
-     scrim: when styleSelection is undefine, use no scrim color, 
-       otherwise use a very pale green-->
+    <!-- scrim setting is required to make the overlay persistent (stay open when user clicks outside), but if we don't set this value to false, the default is a grey scrim, but since we want the user to clearly see the results of their choices while styling, we set the opacity to zero (the scrim must be true in order for click outside to be absorbed (and the stop option prevents bubbling))-->
     <v-overlay
       v-model="showDrawer"
       ref="drawerOverlay"
@@ -37,7 +38,10 @@
       target="#styleDrawerContainer"
       location="start center"
       origin="end center"
-      :scrim="styleSelection === undefined ? false : 'green-lighten-3'">
+      :opacity="0"
+      @click:outside.stop="styleSelection = undefined"
+      :scrim="styleSelection === undefined ? false : true">
+      <!-- @click:outside ="" -->
       <!-- transition! -->
       <!--div v-if="!showDrawer" class="vertical-nav-drawer"-->
       <v-item-group
@@ -69,10 +73,7 @@
               v-model="styleSelection"
               @undo-styles="undoStyleChanges"
               @apply-default-styles="restoreDefaultStyles"
-              @pop-up-hidden="
-                // labelPanelShowing = false;
-                styleSelection = undefined
-              "></LabelStyle>
+              @pop-up-hidden="styleSelection = undefined"></LabelStyle>
           </div>
         </v-item>
         <v-item value="front" v-slot="{ isSelected, toggle, value }">
@@ -98,10 +99,7 @@
               :panel="StyleCategory.Front"
               @undo-styles="undoStyleChanges"
               @apply-default-styles="restoreDefaultStyles"
-              @pop-up-hidden="
-                // frontPanelShowing = false;
-                styleSelection = undefined
-              "></FrontBackStyle>
+              @pop-up-hidden="styleSelection = undefined"></FrontBackStyle>
           </div>
         </v-item>
         <v-item value="back" v-slot="{ isSelected, toggle, value }">
@@ -127,10 +125,7 @@
               :panel="StyleCategory.Back"
               @undo-styles="undoStyleChanges"
               @apply-default-styles="restoreDefaultStyles"
-              @pop-up-hidden="
-                // backPanelShowing = false;
-                styleSelection = undefined
-              "></FrontBackStyle>
+              @pop-up-hidden="styleSelection = undefined"></FrontBackStyle>
           </div>
         </v-item>
         <v-item value="global" v-slot="{ isSelected, toggle, value }">
@@ -157,7 +152,7 @@
             <v-sheet
               v-if="isSelected"
               position="fixed"
-              class="pa-3"
+              class="pa-2 ma-4"
               elevation="4"
               rounded
               :style="{
@@ -166,6 +161,25 @@
                 minWidth: '300px',
                 flexDirection: 'column'
               }">
+              <!-- Top row - close button-->
+              <p
+                class="ma-1"
+                :style="{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'flex-end',
+                  gap: '8px'
+                }">
+                <v-btn
+                  :style="{
+                    alignSelf: 'flex-end'
+                  }"
+                  variant="text"
+                  @click="styleIconAction(value, toggle!)">
+                  Global
+                  <v-icon>mdi-chevron-double-right</v-icon>
+                </v-btn>
+              </p>
               <!-- Global contrast slider -->
               <v-tooltip
                 location="bottom"
@@ -173,7 +187,7 @@
                 activator="#global-contrast">
                 <span>{{ t("backStyleContrastToolTip") }}</span>
               </v-tooltip>
-              <p id="global-contrast">
+              <div id="global-contrast" class="custom-slider-container">
                 <span class="text-subtitle-2" :style="{ color: 'red' }">
                   {{ t("globalBackStyleContrast") + " " }}
                 </span>
@@ -186,6 +200,7 @@
                   :min="0"
                   :step="0.1"
                   :max="1"
+                  variant="outlined"
                   density="compact">
                   <template v-slot:thumb-label="{ modelValue }">
                     {{
@@ -195,16 +210,16 @@
                     }}
                   </template>
                 </v-slider>
-              </p>
-              <v-divider></v-divider>
+              </div>
+
               <!-- Global fill option -->
               <v-tooltip
-                location="bottom"
+                location="top"
                 max-width="400px"
                 activator="#global-fill-choice">
                 <span>{{ t("globalFillStyleToolTip") }}</span>
               </v-tooltip>
-              <div id="global-fill-choice">
+              <div id="global-fill-choice" class="custom-slider-container">
                 <span
                   class="text-subtitle-2"
                   :style="{
@@ -220,15 +235,32 @@
                   item-value="value"
                   variant="outlined"
                   density="compact"></v-select>
-
-                <v-btn
-                  :style="{
-                    alignSelf: 'flex-end'
-                  }"
-                  icon="mdi-check"
-                  size="small"
-                  @click="styleIconAction(value, toggle!)"></v-btn>
               </div>
+              <p
+                class="ma-1"
+                :style="{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  justifyContent: 'flex-end',
+                  gap: '8px'
+                }">
+                <v-tooltip
+                  activator="#restore-btn"
+                  :text="t('undoStyles')"></v-tooltip>
+                <v-tooltip
+                  activator="#default-btn"
+                  :text="t('defaultStyles')"></v-tooltip>
+                <v-btn
+                  id="restore-btn"
+                  @click="undoGlobalVariables"
+                  icon="mdi-undo"
+                  size="small"></v-btn>
+                <v-btn
+                  id="default-btn"
+                  @click="restoreGlobalVariables"
+                  icon="mdi-backup-restore"
+                  size="small"></v-btn>
+              </p>
             </v-sheet>
           </div>
         </v-item>
@@ -318,14 +350,21 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { FillStyle } from "@/types";
 import { useTemplateRef } from "vue";
+import SETTINGS from "@/global-settings";
+import { SENodule } from "@/models/SENodule";
 const styleDrawerRef = useTemplateRef("drawerOverlay");
 const showDrawer = ref(false);
 const { t } = useI18n();
 const seStore = useSEStore();
 const styleStore = useStylingStore();
 const { hasObjects, seNodules, seLabels } = storeToRefs(seStore);
-const { selectedPlottables, selectedLabels } = storeToRefs(styleStore);
-const { i18nMessageSelector, hasLabelObject, resetInitialAndDefaultStyleMaps } =
+const {
+  selectedPlottables,
+  selectedLabels,
+  backStyleContrastCopy,
+  fillStyleCopy
+} = storeToRefs(styleStore);
+const { i18nMessageSelector, hasLabelObject, persistUpdatedStyleOptions } =
   styleStore;
 const styleSelection = ref<string | undefined>(undefined);
 // const { hasStyle, hasDisagreement } = styleStore;
@@ -359,22 +398,6 @@ const backStyleContrastSelectorThumbStrings = [
   "90%",
   "Same"
 ];
-// variables to control the display of the style panels
-// const labelPanelShowing = ref(false);
-// const frontPanelShowing = ref(false);
-// const backPanelShowing = ref(false);
-// const globalOptionsPanelShowing = ref(false);
-// HTML elements to determine the location of a mouse click (to close the panel and save the style state)
-
-const labelPanel = ref<HTMLElement | null>(null);
-const labelPanelIcon = ref<HTMLElement | null>(null);
-const backPanel = ref<HTMLElement | null>(null);
-const backPanelIcon = ref<HTMLElement | null>(null);
-const frontPanel = ref<HTMLElement | null>(null);
-const frontPanelIcon = ref<HTMLElement | null>(null);
-const globalOptionsPanel = ref<HTMLElement | null>(null);
-const globalOptionsPanelIcon = ref<HTMLElement | null>(null);
-// const ignoreMouseDown = ref(false);
 
 watch(
   () => backStyleContrast.value,
@@ -392,52 +415,51 @@ watch(
   }
 );
 
-watch(
-  () => selectedLabels.value,
-  labels => {
-    // hasVisibleLabels.value = false;
-    if (labels.size === 0) {
-      styleSelection.value = undefined;
-    }
-    // Update hasVisibleLabels to true if at least
-    // one of the selected labels is visible
-    labels.forEach(labname => {
-      // selectedLabels is both labels and text so search both, but this only
-      // set a variable for labels so we don't have to search text
-      const lab = seLabels.value.find(z => z.name === labname);
-      if (lab && lab.ref.showing) {
-        // hasVisibleLabels.value = true;
-      }
-    });
-  },
-  { deep: true }
-);
+// watch(
+//   () => selectedLabels.value,
+//   labels => {
+//     // hasVisibleLabels.value = false;
+//     if (labels.size === 0) {
+//       styleSelection.value = undefined;
+//     }
+//     // Update hasVisibleLabels to true if at least
+//     // one of the selected labels is visible
+//     labels.forEach(labname => {
+//       // selectedLabels is both labels and text so search both, but this only
+//       // set a variable for labels so we don't have to search text
+//       const lab = seLabels.value.find(z => z.name === labname);
+//       if (lab && lab.ref.showing) {
+//         // hasVisibleLabels.value = true;
+//       }
+//     });
+//   },
+//   { deep: true }
+// );
 
 watch(
   () => styleSelection.value,
-  (selectedTab: string | undefined, prevTab: string | undefined) => {
-    if (typeof prevTab === "string" && selectedTab === undefined) {
-      styleStore.deselectActiveGroup();
-    } else {
-      switch (selectedTab) {
-        case "label":
-          styleStore.recordCurrentStyleProperties(StyleCategory.Label);
-          break;
-        case "front":
-          styleStore.recordCurrentStyleProperties(StyleCategory.Front);
-          break;
-        case "back":
-          styleStore.recordCurrentStyleProperties(StyleCategory.Back);
-          break;
-        case "global":
-          styleStore.recordGlobalContrast();
-          styleStore.recordFillStyle();
-          break;
-        default:
-          // TODO: should we deselect or do nothing?
-          styleStore.deselectActiveGroup();
-      }
+  (selectedTab: string | undefined) => {
+    console.log("watcher style selection", selectedTab);
+    switch (selectedTab) {
+      case "label":
+        styleStore.recordCurrentStyleProperties(StyleCategory.Label);
+        break;
+      case "front":
+        styleStore.recordCurrentStyleProperties(StyleCategory.Front);
+        break;
+      case "back":
+        styleStore.recordCurrentStyleProperties(StyleCategory.Back);
+        break;
+      case "global":
+        console.log("updated contrast and fill style");
+        styleStore.recordGlobalContrast();
+        styleStore.recordFillStyle();
+        break;
+      default:
+        // When styleStore (i.e the pop up styling panel) is set to undefined this executes
+        persistUpdatedStyleOptions();
     }
+    // }
   }
 );
 
@@ -450,54 +472,38 @@ watch(
   }
 );
 
-function styleIconAction(
-  panel: string | unknown,
-  // vSlotObject: {
-  //   isSelected: boolean;
-  //   selectedClass: boolean | string[];
-  //   select: (value: boolean) => void;
-  toggle: () => void
-  //   value: unknown;
-  //   disabled: boolean;
-  // }
-) {
-  // show the panel
-  switch (panel) {
-    case "label":
-      // Every time the user opens a panel, record the state of the selected objects
-      resetInitialAndDefaultStyleMaps(StyleCategory.Label);
-      break;
-    case "front":
-      // Every time the user opens a panel, record the state of the selected objects
-      resetInitialAndDefaultStyleMaps(StyleCategory.Front);
-      break;
-    case "back":
-      // Every time the user opens a panel, record the state of the selected objects
-      resetInitialAndDefaultStyleMaps(StyleCategory.Back);
-      break;
-    default:
-      console.error("No such panel to show!");
+function undoGlobalVariables(): void {
+  fillStyle.value = fillStyleCopy.value;
+  backStyleContrast.value = backStyleContrastCopy.value;
+}
+
+function restoreGlobalVariables(): void {
+  fillStyle.value = SETTINGS.style.fill.fillStyle;
+  backStyleContrast.value = SETTINGS.style.backStyleContrast;
+}
+
+function styleIconAction(panel: string | unknown, toggle: () => void) {
+  console.log("styleIconAction before toggle", styleSelection.value);
+
+  if (styleSelection.value !== undefined && styleSelection.value !== panel) {
+    // the styleSelection.value panel is open and we are changing directly to the panel panel (which is different) so save the old panel first then change panels
+    persistUpdatedStyleOptions();
   }
   // set the isSelected value for the v-item
+  // if styleSelection.value is undefined then after toggle it will be the panel icon from which this was called
+  // if styleSection.value is panel, then this toggle will make style selection undefined
   toggle();
+
+  console.log("styleIconAction after toggle", styleSelection.value);
 }
 
 onMounted((): void => {
-  // document.addEventListener("mousedown", handleClick); //MUST be mousedown because, if is it mouse up or click, then the other event handlers process this event first. For example, if this was mouseup or click, and the user clicks in the sphere, then the selection tool clears the selection *before* the user style choices can be recorded (which defeats the whole purpose of this listener).
   fillStyle.value = Nodule.getFillStyle();
-  console.debug(
-    "Content Element ",
-    styleDrawerRef.value?.globalTop,
-    styleDrawerRef.value?.scrimEl
-  );
 });
+
 onBeforeUpdate((): void => {
   fillStyle.value = Nodule.getFillStyle();
   backStyleContrast.value = Nodule.getBackStyleContrast(); // If these lines are removed when you load a construction that doesn't have the default fill (shading) or default global back style (50%) then when you initially open the global options panel the fill type/contrast is displayed incorrectly
-});
-
-onBeforeUnmount((): void => {
-  // document.removeEventListener("mousedown", handleClick);
 });
 
 const labelTooltip = computed((): string => {
@@ -564,11 +570,20 @@ function restoreDefaultStyles() {
   styleStore.restoreDefaultStyles();
 }
 
-
 function activateSelectionTool() {
   seStore.setActionMode("select");
 }
 </script>
+
+<style scoped>
+.custom-slider-container {
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  opacity: 50;
+  border-radius: 4px;
+  padding: 4px;
+  margin: 4px;
+}
+</style>
 <i18n lang="json" locale="en">
 {
   "showDrawer": "Show Style Drawer",
@@ -592,7 +607,10 @@ function activateSelectionTool() {
   "plainFill": "Solid",
   "noFill": "No Fill",
   "showHideLabels": "Show/Hide Labels",
-  "textHasNoLabel": "Text objects have no labels"
+  "textHasNoLabel": "Text objects have no labels",
+  "selectionUpdateNothingSelected": "No objects selected.",
+  "defaultStyles": "Restore Default Styles (ALL)",
+  "undoStyles": "Undo Recent Style Changes (ALL)"
 }
 </i18n>
 <i18n lang="json" locale="id">
