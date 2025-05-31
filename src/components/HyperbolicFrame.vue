@@ -78,6 +78,7 @@ let renderer: WebGLRenderer;
 let cameraController: CameraControls;
 CameraControls.install({ THREE });
 const xyGrid = new GridHelper();
+xyGrid.translateZ(1)
 xyGrid.rotateX(Math.PI / 2);
 scene.add(xyGrid);
 
@@ -133,7 +134,7 @@ const rayIntersectionPoint = new Mesh(
 );
 
 const auxLineIntersectionPoints: Array<Mesh> = [];
-for (let k = 0; k < 4; k++) {
+for (let k = 0; k < 10; k++) {
   const p = rayIntersectionPoint.clone(true);
   // cloning the mesh does not automatically clone the material
   // so we have to clone the material properties
@@ -148,8 +149,7 @@ mouseNormalArrow.setLength(1, 0.2, 0.2);
 // Attach the arrowhelper of the mouse normal to the intersectionpoint itself
 rayIntersectionPoint.add(mouseNormalArrow);
 
-const auxLinePath = new LineCurve3(new Vector3(0, 0, 0), new Vector3(3, 3, 3));
-const auxLineTube = new TubeGeometry(auxLinePath, 20, 0.03, 16, true);
+// const auxLinePath = new LineCurve3(new Vector3(0, 0, 0), new Vector3(3, 3, 3));
 const auxLineDirection = new Vector3();
 const auxLine = new Mesh(
   new CylinderGeometry(0.01, 0.01, 100),
@@ -199,11 +199,9 @@ const upperHyperboloidToPlaneMatrix = new THREE.Matrix4()
   .invert()
   .multiply(upperHyperboloidMesh.matrixWorld);
 
-// const intersectionLines: Array<Line3> = [];
-// const intersectionLineCurves: Array<LineCurve3> = [];
-// const intersectionCurvePath = new CurvePath<Vector3>();
 const aLine: Line3 = new Line3();
-const intersectionGroup = new Group()
+// Use a Group to host the TubeGeometries which make up the intersection between the plane and the upper hyperboloid
+const intersectionGroup = new Group();
 planeGeometry.boundsTree?.bvhcast(
   upperHyperboloidGeometry.boundsTree!,
   upperHyperboloidToPlaneMatrix,
@@ -242,14 +240,14 @@ planeGeometry.boundsTree?.bvhcast(
           intersectionTubeGeo,
           new MeshStandardMaterial({ color: "yellow" })
         );
-        intersectionGroup.add(intersectionTube)
+        intersectionGroup.add(intersectionTube);
       }
       return false;
     }
   }
 );
-intersectionGroup.applyMatrix4(randomPlane.matrixWorld)
-scene.add(intersectionGroup)
+intersectionGroup.applyMatrix4(randomPlane.matrixWorld);
+scene.add(intersectionGroup);
 // console.debug("Plane Hyperboloid intersection", intersectionLines.length);
 // intersectionLineCurves.forEach((c, idx) => {
 //   console.debug(`Curve ${idx} ${c.v1.toFixed(2)} to ${c.v2.toFixed(2)}`);
@@ -301,12 +299,6 @@ onUpdated(() => {
 
 function mouseTracker(ev: MouseEvent) {
   // ev.stopPropagation()
-  // console.debug(`Mouse move to (${ev.clientX},${ev.clientY})`
-  //  + ` Event offset ${ev.offsetX} ${ev.offsetY}`
-  //   + ` ClientLeft ${webglCanvas.value?.clientLeft}`
-  //   + ` Container ${webglCanvas.value?.clientWidth}x${webglCanvas.value?.clientHeight}`
-  //   + ` Renderer ${renderer.domElement.clientWidth}x${renderer.domElement.clientHeight}`
-  // )
   mouseCoord.value.x = ev.offsetX;
   mouseCoord.value.y = ev.offsetY;
   mouseCoordNormalized.value.x =
@@ -322,37 +314,30 @@ function mouseTracker(ev: MouseEvent) {
       z => z.object.name.length > 0 // we are interested only in named objects
     );
     if (namedIntersections.length > 0) {
-      console.debug(`First intersection ${namedIntersections[0].object.name}`);
-      rayIntersectionPoint.position.copy(namedIntersections[0].point);
+      const firstIntersection = namedIntersections[0];
+      console.debug(`First intersection ${firstIntersection.object.name}`);
+      rayIntersectionPoint.position.copy(firstIntersection.point);
       scene.add(rayIntersectionPoint);
       // mouseNormalArrow.position.copy(rayIntersectionPoint.position)
-      if (namedIntersections[0].object.name.endsWith("Plane")) {
+      if (firstIntersection.object.name.endsWith("Plane")) {
         // Using the normal from the intersection returned by RayCaster
         // does not give us the correct normal vector direction
         // Must take it from the face normal and then apply the world transformation matrix
-        const n = namedIntersections[0].face?.normal.clone();
-        n?.transformDirection(namedIntersections[0].object.matrixWorld);
+        const n = firstIntersection.face?.normal.clone();
+        n?.transformDirection(firstIntersection.object.matrixWorld);
         console.debug(`with normal vector ${n!.toFixed(2)}`);
         mouseNormalArrow.setDirection(n!);
-      } else mouseNormalArrow.setDirection(namedIntersections[0].normal!);
-      // Show auxiliary line with shift-key
+      } else {
+        mouseNormalArrow.setDirection(firstIntersection.normal!);
+      }
       auxLineIntersectionPoints.forEach(p => scene.remove(p));
       if (ev.shiftKey) {
-        // auxLinePath.v1.set(0, 0, 0)
-        // auxLinePath.v2.copy(rayIntersectionPoint.position)
-        // auxLinePath.updateArcLengths()
-        // const pts = auxLinePath.getPoints();
-        // console.debug("First point", pts[0], "Last point ", pts[pts.length - 1])
-        // auxLineTube.attributes.position.needsUpdate = true
-        // auxLineTube.scale(1, 1, 1)
-        // auxLineTube.refresh()
-        // const b = auxLineTube.boundingBox
-        // console.debug("Bounding box", b?.min, b?.max)
-        // auxLine.updateMatrix()
+        // Show auxiliary line with shift-key
         const hypotenuse = Math.sqrt(
           Math.pow(rayIntersectionPoint.position.x, 2) +
             Math.pow(rayIntersectionPoint.position.y, 2)
         );
+        // Reorient the line to follow the mouse (in 3D)
         auxLine.rotation.set(0, 0, 0);
         auxLine.rotateZ(
           Math.PI / 2 +
@@ -365,30 +350,42 @@ function mouseTracker(ev: MouseEvent) {
           -Math.atan2(rayIntersectionPoint.position.z, hypotenuse)
         );
         scene.add(auxLine);
+
+        // Find other intersection points between the auxiliary line and the sphere and/or hyperboloids)
         auxLineDirection.copy(rayIntersectionPoint.position);
         auxRaycasterStart.copy(rayIntersectionPoint.position);
         auxRaycasterStart.multiplyScalar(-10);
         auxLineRayCaster.set(auxRaycasterStart, auxLineDirection.normalize());
-        const x = auxLineRayCaster
+        const otherIntersects = auxLineRayCaster
           .intersectObjects(scene.children, true)
-          .filter(obj => obj.object.name.length > 0);
-        if (x.length > 0) {
+          .filter(obj => obj.object.name.length > 0); // ignore unnamed objects
+        if (otherIntersects.length > 0) {
           console.debug(
-            `Mouse at ${rayIntersectionPoint.position.toFixed(3)} with ${
-              x.length
-            } auxiliary intersections`
+            `Mouse on ${firstIntersection.object.name} at ${rayIntersectionPoint.position.toFixed(3)} with ${
+              otherIntersects.length
+            } auxiliary intersections with projective line`
           );
-          x.forEach((z, idx) => {
-            const dist = z.point.distanceToSquared(
-              rayIntersectionPoint.position
-            );
-            // console.debug(
-            //   `AuxLine intersection ${idx} with ${
-            //     z.object.name
-            //   } at ${z.point.toFixed(3)} ${dist} away from mouse intersection`
-            // );
-            if (dist > 1e-4) {
-              auxLineIntersectionPoints[idx].position.copy(z.point);
+          otherIntersects.forEach((ptx, idx) => {
+            // Check each intersection points on the auxiliary line
+            const { x, y, z } = otherIntersects[idx].point;
+
+            if (ptx.object.name.endsWith("Sphere")) {
+              console.debug(
+                `Intersection with sphere at ${ptx.point.toFixed(2)} with metric ${(x * x + y * y + z * z).toFixed(1)}`
+              );
+            } else if (ptx.object.name.endsWith("Sheet")) {
+              console.debug(
+                `Intersection with hyperboloid at ${ptx.point.toFixed(2)} with metric ${(x * x + y * y - z * z).toFixed(1)}`
+              );
+            } else if (ptx.object.name.endsWith("Plane")) {
+              const sx = firstIntersection.point.x / firstIntersection.point.z
+              const sy = firstIntersection.point.y / firstIntersection.point.z
+              console.debug(
+                `Intersection with plane Z = 1  at ${ptx.point.toFixed(2)} with metric ${(sx * sx + sy * sy).toFixed(1)}`
+              );
+            }
+            if (firstIntersection.object.name !== ptx.object.name) {
+              auxLineIntersectionPoints[idx].position.copy(ptx.point);
               scene.add(auxLineIntersectionPoints[idx]);
             }
           });
@@ -423,8 +420,3 @@ function hyperboloidMinus(u: number, v: number, pt: Vector3) {
   pt.set(x, y, z);
 }
 </script>
-<!-- <style scoped>
-#webglCanvas {
-  border: 2px solid red
-}
-</style> -->
