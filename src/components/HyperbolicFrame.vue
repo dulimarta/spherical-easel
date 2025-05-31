@@ -33,20 +33,27 @@ import {
   TubeGeometry,
   CylinderGeometry,
   Line3,
-  CurvePath
+  CurvePath,
+  Group
 } from "three";
 import * as THREE from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import { LineCurve3 } from "three/src/extras/curves/LineCurve3";
 import { onUpdated, onMounted, Ref, ref } from "vue";
 import CameraControls from "camera-controls";
-import { acceleratedRaycast, computeBoundsTree, disposeBoundsTree, ExtendedTriangle, MeshBVHHelper } from "three-mesh-bvh"
+import {
+  acceleratedRaycast,
+  computeBoundsTree,
+  disposeBoundsTree,
+  ExtendedTriangle,
+  MeshBVHHelper
+} from "three-mesh-bvh";
 import { degToRad } from "three/src/math/MathUtils";
 
-// Inject new BVH functions into current THREE-JS Mesh/BufferGeometry definitions 
-THREE.Mesh.prototype.raycast = acceleratedRaycast
-THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree
-THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree
+// Inject new BVH functions into current THREE-JS Mesh/BufferGeometry definitions
+THREE.Mesh.prototype.raycast = acceleratedRaycast;
+THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
+THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
 
 type ComponentProps = {
   availableHeight: number;
@@ -61,7 +68,7 @@ const webglCanvas: Ref<HTMLCanvasElement | null> = ref(null);
 const scene = new Scene();
 const clock = new Clock(); // used by camera control animation
 const rayCaster = new Raycaster();
-rayCaster.firstHitOnly = true
+rayCaster.firstHitOnly = true;
 const auxLineRayCaster = new Raycaster();
 const auxRaycasterStart = new Vector3(0, 0, 0);
 const mouseCoord: Ref<THREE.Vector2> = ref(new THREE.Vector2());
@@ -88,8 +95,12 @@ scene.add(arrowX);
 scene.add(arrowY);
 scene.add(arrowZ);
 
-const upperHyperboloidGeometry = new ParametricGeometry(hyperboloidPlus, 30, 30);
-upperHyperboloidGeometry.computeBoundsTree()
+const upperHyperboloidGeometry = new ParametricGeometry(
+  hyperboloidPlus,
+  30,
+  30
+);
+upperHyperboloidGeometry.computeBoundsTree({ maxLeafTris: 2 });
 const upperHyperboloidMesh = new Mesh(
   upperHyperboloidGeometry,
   new MeshStandardMaterial({
@@ -98,10 +109,14 @@ const upperHyperboloidMesh = new Mesh(
     roughness: 0.2
   })
 );
-const upperBVHHelper = new MeshBVHHelper(upperHyperboloidMesh)
+// const upperBVHHelper = new MeshBVHHelper(upperHyperboloidMesh);
 
-const lowerHyperboloidGeometry = new ParametricGeometry(hyperboloidMinus, 30, 30)
-lowerHyperboloidGeometry.computeBoundsTree()
+const lowerHyperboloidGeometry = new ParametricGeometry(
+  hyperboloidMinus,
+  30,
+  30
+);
+lowerHyperboloidGeometry.computeBoundsTree();
 const lowerHyperboloidMesh = new Mesh(
   lowerHyperboloidGeometry,
   new MeshStandardMaterial({
@@ -110,7 +125,7 @@ const lowerHyperboloidMesh = new Mesh(
     roughness: 0.2
   })
 );
-const lowerBVHHelper = new MeshBVHHelper(lowerHyperboloidMesh)
+// const lowerBVHHelper = new MeshBVHHelper(lowerHyperboloidMesh);
 
 const rayIntersectionPoint = new Mesh(
   new SphereGeometry(0.05),
@@ -122,7 +137,7 @@ for (let k = 0; k < 4; k++) {
   const p = rayIntersectionPoint.clone(true);
   // cloning the mesh does not automatically clone the material
   // so we have to clone the material properties
-  p.material = rayIntersectionPoint.material.clone()
+  p.material = rayIntersectionPoint.material.clone();
   p.material.color.setColorName("black");
   auxLineIntersectionPoints.push(p);
 }
@@ -146,9 +161,9 @@ scene.add(auxLine);
 lowerHyperboloidMesh.name = "Lower Sheet";
 upperHyperboloidMesh.name = "Upper Sheet";
 scene.add(upperHyperboloidMesh);
-scene.add(upperBVHHelper)
+// scene.add(upperBVHHelper);
 scene.add(lowerHyperboloidMesh);
-scene.add(lowerBVHHelper)
+// scene.add(lowerBVHHelper);
 const centerSphere = new Mesh(
   new SphereGeometry(1),
   new MeshStandardMaterial({ color: "green", side: DoubleSide, roughness: 0.3 })
@@ -156,57 +171,90 @@ const centerSphere = new Mesh(
 centerSphere.name = "Center Sphere";
 scene.add(centerSphere);
 
-const planeGeometry = new THREE.PlaneGeometry(6, 10, 20, 20)
-planeGeometry.computeBoundsTree()
+const planeGeometry = new THREE.PlaneGeometry(6, 10, 20, 20);
+planeGeometry.computeBoundsTree({
+  verbose: true,
+  maxLeafTris: 0,
+  maxDepth: 10
+});
 const randomPlane = new Mesh(
   planeGeometry,
-  new MeshStandardMaterial({color: "darkred", roughness: 0.4, side: DoubleSide})
-)
-const planeBVHHelper = new MeshBVHHelper(randomPlane)
-scene.add(planeBVHHelper)
-randomPlane.name = "RedPlane"
-randomPlane.matrixAutoUpdate = true
-randomPlane.rotation.set(degToRad(-55), 0, 0)
-randomPlane.updateMatrixWorld() // This is needed to before bvhcast can do its work
-scene.add(randomPlane)
+  new MeshStandardMaterial({
+    color: "darkred",
+    roughness: 0.4,
+    side: DoubleSide
+  })
+);
+// const planeBVHHelper = new MeshBVHHelper(randomPlane);
+// planeBVHHelper.color.set("cyan");
+// scene.add(planeBVHHelper);
+randomPlane.name = "RedPlane";
+randomPlane.matrixAutoUpdate = true;
+randomPlane.rotation.set(degToRad(-55), 0, 0);
+randomPlane.updateMatrixWorld(); // This is needed to before bvhcast can do its work
+scene.add(randomPlane);
 
 const upperHyperboloidToPlaneMatrix = new THREE.Matrix4()
-  .copy(randomPlane.matrixWorld).invert()
-  .multiply(upperHyperboloidMesh.matrixWorld)
+  .copy(randomPlane.matrixWorld)
+  .invert()
+  .multiply(upperHyperboloidMesh.matrixWorld);
 
-const intersectionLines: Array<Line3> = []
-const intersectionLineCurves: Array<LineCurve3> = []
-const intersectionCurvePath = new CurvePath<Vector3>()
-const aLine: Line3 = new Line3()
-planeGeometry.boundsTree?.bvhcast(upperHyperboloidGeometry.boundsTree!, upperHyperboloidToPlaneMatrix, {
-  intersectsRanges(t1Offset: number, t1Count: number, t2Offset: number, t2Count: number): boolean {
-    console.debug(`Checking intersection ranges T1: offset ${t1Offset} count ${t1Count} T2: offset ${t2Offset} count ${t2Count}`)
-    return false
-   },
-  intersectsTriangles(t1: ExtendedTriangle, t2: ExtendedTriangle, i1: number, i2: number, t1depth: number, t1Index: number, t2depth: number, t2Index: number): boolean {
-    // console.debug(`Check intersection between triangle`, t1, "and", t2)
-    if (t1.intersectsTriangle(t2, aLine)) {
-      // const { start, end } = aLine
-      console.debug("Triangle intersection", aLine.start.toFixed(2), aLine.end.toFixed(2))
-      const lc = new LineCurve3(aLine.start.clone(), aLine.end.clone())
-      intersectionLineCurves.push(lc)
-      intersectionCurvePath.add(lc)
-      intersectionLines.push(aLine.clone())
+// const intersectionLines: Array<Line3> = [];
+// const intersectionLineCurves: Array<LineCurve3> = [];
+// const intersectionCurvePath = new CurvePath<Vector3>();
+const aLine: Line3 = new Line3();
+const intersectionGroup = new Group()
+planeGeometry.boundsTree?.bvhcast(
+  upperHyperboloidGeometry.boundsTree!,
+  upperHyperboloidToPlaneMatrix,
+  {
+    // intersectsRanges(
+    //   t1Offset: number,
+    //   t1Count: number,
+    //   t2Offset: number,
+    //   t2Count: number
+    // ): boolean {
+    //   console.debug(
+    //     `Checking intersection ranges T1: offset ${t1Offset} count ${t1Count} T2: offset ${t2Offset} count ${t2Count}`
+    //   );
+    //   return false;
+    // },
+    intersectsTriangles(
+      t1: ExtendedTriangle,
+      t2: ExtendedTriangle,
+      i1: number,
+      i2: number,
+      t1depth: number,
+      t1Index: number,
+      t2depth: number,
+      t2Index: number
+    ): boolean {
+      // console.debug(`Check intersection between triangle`, t1, "and", t2)
+      if (t1.intersectsTriangle(t2, aLine)) {
+        // console.debug(
+        //   "Triangle intersection",
+        //   aLine.start.toFixed(2),
+        //   aLine.end.toFixed(2)
+        // );
+        const lc = new LineCurve3(aLine.start.clone(), aLine.end.clone());
+        const intersectionTubeGeo = new TubeGeometry(lc, 10, 0.03, 10, false);
+        const intersectionTube = new Mesh(
+          intersectionTubeGeo,
+          new MeshStandardMaterial({ color: "yellow" })
+        );
+        intersectionGroup.add(intersectionTube)
+      }
+      return false;
     }
-    return false
   }
-})
-console.debug("Plane Hyperboloid intersection", intersectionLines.length)
-intersectionLineCurves.forEach((c, idx) => {
-  console.debug(`Curve ${idx} ${c.v1.toFixed(2)} to ${c.v2.toFixed(2)}`)
-})
-const intersectionTubeGeo = new TubeGeometry(intersectionCurvePath, 10, 0.04, 10, false)
-const intersectionTube = new Mesh(
-  intersectionTubeGeo,
-  new MeshStandardMaterial({color: "pink"})
-)
-intersectionTube.applyMatrix4(randomPlane.matrixWorld)
-scene.add(intersectionTube)
+);
+intersectionGroup.applyMatrix4(randomPlane.matrixWorld)
+scene.add(intersectionGroup)
+// console.debug("Plane Hyperboloid intersection", intersectionLines.length);
+// intersectionLineCurves.forEach((c, idx) => {
+//   console.debug(`Curve ${idx} ${c.v1.toFixed(2)} to ${c.v2.toFixed(2)}`);
+// });
+// scene.add(intersectionTube)
 const ambientLight = new AmbientLight(0xffffff, 1.5);
 const pointLight = new PointLight(0xffffff, 100);
 pointLight.position.set(3, 3, 5);
@@ -274,7 +322,7 @@ function mouseTracker(ev: MouseEvent) {
       z => z.object.name.length > 0 // we are interested only in named objects
     );
     if (namedIntersections.length > 0) {
-      console.debug(`First intersection ${namedIntersections[0].object.name}`)
+      console.debug(`First intersection ${namedIntersections[0].object.name}`);
       rayIntersectionPoint.position.copy(namedIntersections[0].point);
       scene.add(rayIntersectionPoint);
       // mouseNormalArrow.position.copy(rayIntersectionPoint.position)
@@ -282,12 +330,11 @@ function mouseTracker(ev: MouseEvent) {
         // Using the normal from the intersection returned by RayCaster
         // does not give us the correct normal vector direction
         // Must take it from the face normal and then apply the world transformation matrix
-        const n = namedIntersections[0].face?.normal.clone()
-        n?.transformDirection(namedIntersections[0].object.matrixWorld)
-        console.debug(`with normal vector ${n!.toFixed(2)}`)
+        const n = namedIntersections[0].face?.normal.clone();
+        n?.transformDirection(namedIntersections[0].object.matrixWorld);
+        console.debug(`with normal vector ${n!.toFixed(2)}`);
         mouseNormalArrow.setDirection(n!);
-      } else
-        mouseNormalArrow.setDirection(namedIntersections[0].normal!);
+      } else mouseNormalArrow.setDirection(namedIntersections[0].normal!);
       // Show auxiliary line with shift-key
       auxLineIntersectionPoints.forEach(p => scene.remove(p));
       if (ev.shiftKey) {
@@ -327,10 +374,14 @@ function mouseTracker(ev: MouseEvent) {
           .filter(obj => obj.object.name.length > 0);
         if (x.length > 0) {
           console.debug(
-            `Mouse at ${rayIntersectionPoint.position.toFixed(3)} with ${x.length} auxiliary intersections`
+            `Mouse at ${rayIntersectionPoint.position.toFixed(3)} with ${
+              x.length
+            } auxiliary intersections`
           );
           x.forEach((z, idx) => {
-            const dist = z.point.distanceToSquared(rayIntersectionPoint.position)
+            const dist = z.point.distanceToSquared(
+              rayIntersectionPoint.position
+            );
             // console.debug(
             //   `AuxLine intersection ${idx} with ${
             //     z.object.name
