@@ -302,7 +302,9 @@ function cancelDeleteMessages() {
   "ellipseCreationAttemptDuplicate": "There is already an ellipse with these foci and angle sum.",
   "newPolygonAdded": "A new polygon was created.",
   "previouslyMeasuredPolygon": "This polygon was measured previously.  See measurement {token}.",
-  "duplicateSegmentAngleMeasurement": "The angle between segments {seg0Name} and {seg1Name} has already been measured. This angle is measurement {measurementName}.","duplicateSegmentLineAngleMeasurement": "The angle between segment {segName} and line {lineName} has already been measured. This angle is measurement {measurementName}."
+  "duplicateSegmentAngleMeasurement": "The angle between segments {seg0Name} and {seg1Name} has already been measured. This angle is measurement {measurementName}.","duplicateSegmentLineAngleMeasurement": "The angle between segment {segName} and line {lineName} has already been measured. This angle is measurement {measurementName}.",
+  "selectMorePoints": "Select {needed} more point(s).",
+  "newAngleAdded": "New angle measure added."
 }
 </i18n>
 <i18n locale="id" lang="json">

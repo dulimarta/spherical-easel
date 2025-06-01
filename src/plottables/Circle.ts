@@ -366,8 +366,8 @@ export default class Circle extends Nodule {
       if (Nodule.globalFillStyle != FillStyle.NoFill) {
         // Begin to set the frontFill that is common to both cases
         // Bring all the front anchor points to a common pool
-        console.log("this.fillStorageAnchors", this.fillStorageAnchors)
-        console.log("this._frontFill.vertices", this._frontFill.vertices.splice(0))
+        // console.log("this.fillStorageAnchors", this.fillStorageAnchors)
+        // console.log("this._frontFill.vertices", this._frontFill.vertices.splice(0))
         this.fillStorageAnchors.push(...this._frontFill.vertices.splice(0));
         // don't dump the anchors of the back fill into the common pool if there is a chance that the backFill is the entire back and might not need to be updated.
         if (!this._backFillIsEntireBack) {

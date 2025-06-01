@@ -523,9 +523,9 @@ export const useStylingStore = defineStore("style", () => {
   }
 
   function changeFillStyle(newFillStyle: FillStyle): void {
-    console.log("before change fill style", newFillStyle)
+    console.log("before change fill style", newFillStyle);
     Nodule.setFillStyle(newFillStyle);
-    console.log("after change fill style", newFillStyle)
+    console.log("after change fill style", newFillStyle);
     // update all objects display
     seNodules.value.forEach(n => {
       // The fillable types must be recomputed in order to display the change
@@ -806,17 +806,21 @@ export const useStylingStore = defineStore("style", () => {
     return arr.some(p => commonProperties.has(p));
   }
 
-  function showFillColorPicker() {
-    let containsFillableSENodule = false;
-    selectedSENodules.value.forEach(n => {
-      if (n.isFillable()) {
-        containsFillableSENodule = true;
-      }
-    });
-    return (
-      Nodule.getFillStyle() == FillStyle.NoFill && containsFillableSENodule
-    );
-  }
+  // function showFillColorPicker() {
+  //   let containsFillableSENodule = false;
+  //   selectedSENodules.value.forEach(n => {
+  //     if (n.isFillable()) {
+  //       containsFillableSENodule = true;
+  //     }
+  //   });
+  //   console.log(
+  //     "show fill color picker",
+  //     Nodule.getFillStyle() == FillStyle.NoFill && containsFillableSENodule
+  //   );
+  //   return (
+  //     Nodule.getFillStyle() == FillStyle.NoFill && containsFillableSENodule
+  //   );
+  // }
 
   return {
     selectedLabels,
@@ -826,7 +830,6 @@ export const useStylingStore = defineStore("style", () => {
     forceAgreement,
     backStyleContrastCopy,
     fillStyleCopy,
-    showFillColorPicker,
     hasDisagreement,
     hasLabelObject,
     hasTextObject,
