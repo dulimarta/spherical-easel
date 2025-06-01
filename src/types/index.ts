@@ -357,6 +357,9 @@ export type ParametricIntersectionType = {
   t: number;
   vector: Vector3;
 };
+
+export type CommandReturnType = { success: boolean };
+
 /**
  * Intersection and if that intersection exists
  */

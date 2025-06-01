@@ -58,7 +58,7 @@ export default class IntersectionPointHandler extends Highlighter {
           this.oneDimensional1.glowing = true;
           this.oneDimensional1.selected = true;
           EventBus.fire("show-alert", {
-            key: `handlers.intersectionOneDimensionalSelected`,
+            key: `intersectionOneDimensionalSelected`,
             keyOptions: {
               name: `${this.oneDimensional1.label?.ref.shortUserName}`
             },
@@ -258,7 +258,7 @@ export default class IntersectionPointHandler extends Highlighter {
               new SetPointUserCreatedValueCommand(element, true)
             );
             EventBus.fire("show-alert", {
-              key: `handlers.intersectionOneDimensionalPointCreated`,
+              key: `intersectionOneDimensionalPointCreated`,
               keyOptions: {},
               type: "success"
             });

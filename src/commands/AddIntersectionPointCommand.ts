@@ -1,12 +1,16 @@
 import { Command } from "./Command";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SavedNames, SEOneDimensional, SEOneOrTwoDimensional } from "@/types";
+import {
+  CommandReturnType,
+  SavedNames,
+  SEOneDimensional,
+  SEOneOrTwoDimensional
+} from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { toSVGType } from "@/types";
-
 
 export class AddIntersectionPointCommand extends Command {
   private seIntersectionPoint: SEIntersectionPoint;
@@ -27,7 +31,7 @@ export class AddIntersectionPointCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): void {
+  do(): CommandReturnType {
     // console.debug(
     //   `Add intersection point ${this.seIntersectionPoint.name} with parents ${
     //     this.principleParent1.name
@@ -40,6 +44,7 @@ export class AddIntersectionPointCommand extends Command {
     this.seIntersectionPoint.registerChild(this.seLabel);
     Command.store.addPoint(this.seIntersectionPoint);
     Command.store.addLabel(this.seLabel);
+    return { success: true };
   }
 
   saveState(): void {
@@ -71,9 +76,7 @@ export class AddIntersectionPointCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seIntersectionPoint.ref.currentStyleState(
-              StyleCategory.Front
-            )
+            this.seIntersectionPoint.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
@@ -192,7 +195,7 @@ export class AddIntersectionPointCommand extends Command {
       const seLabel = new SELabel("point", seIntersectionPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
-      seLabel.locationVector = seLabelLocation;// Don't use copy() on a prop
+      seLabel.locationVector = seLabelLocation; // Don't use copy() on a prop
       //style the label
       const labelStyleString = propMap.get("labelStyle");
 

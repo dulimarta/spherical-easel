@@ -5,7 +5,7 @@ import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
-import { SavedNames } from "@/types";
+import { CommandReturnType, SavedNames } from "@/types";
 import { toSVGType } from "@/types";
 
 
@@ -27,12 +27,13 @@ export class AddCircleCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): void {
+  do(): CommandReturnType {
     this.centerSEPoint.registerChild(this.seCircle);
     this.circleSEPoint.registerChild(this.seCircle);
     this.seCircle.registerChild(this.seLabel);
     Command.store.addCircle(this.seCircle);
     Command.store.addLabel(this.seLabel);
+    return { success: true };
   }
 
   saveState(): void {

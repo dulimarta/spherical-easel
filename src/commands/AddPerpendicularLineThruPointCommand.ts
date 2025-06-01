@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
-import { SavedNames, SEOneDimensional } from "@/types";
+import { CommandReturnType, SavedNames, SEOneDimensional } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
@@ -26,12 +26,13 @@ export class AddPerpendicularLineThruPointCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): void {
+  do(): CommandReturnType {
     this.parentSEPoint.registerChild(this.sePerpendicularLineThruPoint);
     this.parentOneDimensional.registerChild(this.sePerpendicularLineThruPoint);
     this.sePerpendicularLineThruPoint.registerChild(this.seLabel);
     Command.store.addLine(this.sePerpendicularLineThruPoint);
     Command.store.addLabel(this.seLabel);
+    return { success: true };
   }
 
   saveState(): void {

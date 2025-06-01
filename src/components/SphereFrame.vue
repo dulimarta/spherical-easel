@@ -766,7 +766,7 @@ function deleteNode(e: {
   const deletedNodeIds = deleteTool.delete(e.victim);
   //deletedNodes: "Successfully deleted {type} {name} and {number} {objects} that depend on it.",
   EventBus.fire("show-alert", {
-    key: `handlers.deletedNodes`,
+    key: `deletedNodes`,
     keyOptions: {
       type: e.victimType,
       name: e.victimName,

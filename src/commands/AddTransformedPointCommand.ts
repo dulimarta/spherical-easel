@@ -4,7 +4,7 @@ import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
-import { SavedNames } from "@/types";
+import { CommandReturnType, SavedNames } from "@/types";
 import { SETransformation } from "@/models/SETransformation";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { toSVGType } from "@/types";
@@ -35,7 +35,7 @@ export class AddTransformedPointCommand extends Command {
     }
   }
 
-  do(): void {
+  do(): CommandReturnType {
     this.preimageSEPoint.registerChild(this.transformedSEPoint);
     this.parentTransformation.registerChild(this.transformedSEPoint);
     this.transformedSEPoint.registerChild(this.transformedSEPointLabel);
@@ -47,6 +47,7 @@ export class AddTransformedPointCommand extends Command {
     if (this.transformedSEPoint.label && this.useVisiblePointCountToRename) {
       this.transformedSEPoint.label.ref.shortUserName = `P${this.transformedSEPoint.visiblePointCount}`;
     }
+    return { success: true };
   }
 
   saveState(): void {

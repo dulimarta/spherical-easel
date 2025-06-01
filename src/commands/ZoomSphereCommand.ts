@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import EventBus from "@/eventHandlers/EventBus";
-import { toSVGReturnType, toSVGType } from "@/types";
+import { CommandReturnType, toSVGReturnType, toSVGType } from "@/types";
 
 export class ZoomSphereCommand extends Command {
   private magnificationFactor: number;
@@ -32,10 +32,11 @@ export class ZoomSphereCommand extends Command {
       this.translationVector[i] = transVec[i];
     }
   }
-  do(): void {
+  do(): CommandReturnType {
     Command.store.setZoomMagnificationFactor(this.magnificationFactor);
     Command.store.setZoomTranslation(this.translationVector);
     EventBus.fire("zoom-updated", {});
+    return { success: true };
   }
 
   saveState(): void {

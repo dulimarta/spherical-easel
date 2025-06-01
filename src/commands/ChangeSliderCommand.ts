@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SESlider } from "@/models/SESlider";
-import { toSVGType } from "@/types";
+import { CommandReturnType, toSVGType } from "@/types";
 
 export class ChangeSliderCommand extends Command {
   private seSlider: SESlider;
@@ -18,8 +18,9 @@ export class ChangeSliderCommand extends Command {
     this.newSliderValue = newSliderValue;
   }
 
-  do(): void {
+  do(): CommandReturnType {
     this.seSlider.value = this.newSliderValue;
+    return { success: true };
   }
 
   saveState(): void {

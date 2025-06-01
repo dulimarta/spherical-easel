@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SEExpression } from "@/models/SEExpression";
-import { toSVGType } from "@/types";
+import { CommandReturnType, toSVGType } from "@/types";
 
 
 export abstract class AddExpressionCommand extends Command {
@@ -19,9 +19,10 @@ export abstract class AddExpressionCommand extends Command {
     }
   }
 
-  do(): void {
+  do(): CommandReturnType {
     this.parents.forEach(nodule => nodule.registerChild(this.seExpression));
     Command.store.addExpression(this.seExpression);
+  return { success: true };
   }
 
   saveState(): void {

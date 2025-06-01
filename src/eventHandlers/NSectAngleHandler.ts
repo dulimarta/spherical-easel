@@ -192,7 +192,7 @@ export default class NSectAngleHandler extends Highlighter {
         this.mouseLeave(event);
         if (this.selectedNValue === 2) {
           EventBus.fire("show-alert", {
-            key: `handlers.angleSuccessfullyBisected`,
+            key: `angleSuccessfullyBisected`,
             keyOptions: {
               angle: candidateAngle.label?.ref.shortUserName
             },
@@ -340,7 +340,7 @@ export default class NSectAngleHandler extends Highlighter {
           endSEPoint.showing = false; // this never changes
           endSEPoint.exists = true; // this never changes
           endSEPoint.locationVector = endPointVector; // this gets updated
-          console.log("endpoint name", endSEPoint.name);
+          // console.log("endpoint name", endSEPoint.name);
 
           // Create the model object for the new point and link them
           const nSectingLine = new SENSectLine(
@@ -351,12 +351,12 @@ export default class NSectAngleHandler extends Highlighter {
             i,
             this.selectedNValue
           );
-          console.log(
-            "endpoint coords",
-            endPointVector
-              .multiplyScalar(SETTINGS.boundaryCircle.radius)
-              .toFixed(2)
-          );
+          // console.log(
+          //   "endpoint coords",
+          //   endPointVector
+          //     .multiplyScalar(SETTINGS.boundaryCircle.radius)
+          //     .toFixed(2)
+          // );
           // Create plottable for the Label
           const newSELabel2 = new SELabel("line", nSectingLine);
           // Set the initial label location

@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
-import { SavedNames } from "@/types";
+import { CommandReturnType, SavedNames } from "@/types";
 import { toSVGType } from "@/types";
 
 export class SetEarthModeCommand extends Command {
@@ -11,8 +11,9 @@ export class SetEarthModeCommand extends Command {
     this.showing = showing;
   }
 
-  do(): void {
+  do(): CommandReturnType {
     Command.store.isEarthMode = this.showing;
+    return { success: true };
   }
 
   saveState(): void {}

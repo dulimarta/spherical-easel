@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
-import { toSVGType } from "@/types";
+import { CommandReturnType, toSVGType } from "@/types";
 
 export class MoveLabelCommand extends Command {
   private seLabel: SELabel;
@@ -19,11 +19,12 @@ export class MoveLabelCommand extends Command {
     this.newLocationVector.copy(newLocationVector);
   }
 
-  do(): void {
+  do(): CommandReturnType {
     Command.store.moveLabel({
       labelId: this.seLabel.id,
       location: this.newLocationVector
     });
+    return { success: true };
   }
 
   saveState(): void {

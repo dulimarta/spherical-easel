@@ -3,7 +3,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { SavedNames } from "@/types";
+import { CommandReturnType, SavedNames } from "@/types";
 import { StyleCategory } from "@/types/Styles";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { toSVGType } from "@/types";
@@ -24,7 +24,7 @@ export class AddAntipodalPointCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): void {
+  do(): CommandReturnType {
     // console.debug(
     //   `AddAntipodalPoint: DO added the point ${this.seAntipodalPoint.name} as the antipode to parent ${this.parentSEPoint.name} it is userCreated: ${this.seAntipodalPoint.isUserCreated}`
     // );
@@ -34,6 +34,7 @@ export class AddAntipodalPointCommand extends Command {
     Command.store.addLabel(this.seLabel);
     // this.seAntipodalPoint.markKidsOutOfDate();
     // this.seAntipodalPoint.update();
+  return { success: true };
   }
 
   saveState(): void {
