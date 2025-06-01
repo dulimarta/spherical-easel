@@ -3,7 +3,7 @@ import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
-import { SavedNames, SEIsometry } from "@/types";
+import { CommandReturnType, SavedNames, SEIsometry } from "@/types";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SEIsometrySegment } from "@/models/SEIsometrySegment";
 import { SEReflection } from "@/models/SEReflection";
@@ -29,12 +29,13 @@ export class AddIsometrySegmentCommand extends Command {
     this.isometrySESegmentLabel = isometrySESegmentLabel;
   }
 
-  do(): void {
+  do(): CommandReturnType {
     this.preimageSESegment.registerChild(this.isometrySESegment);
     this.parentIsometry.registerChild(this.isometrySESegment);
     this.isometrySESegment.registerChild(this.isometrySESegmentLabel);
     Command.store.addSegment(this.isometrySESegment);
     Command.store.addLabel(this.isometrySESegmentLabel);
+  return { success: true };
   }
 
   saveState(): void {

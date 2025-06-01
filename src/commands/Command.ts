@@ -13,6 +13,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import { Matrix4, Vector3 } from "three";
 import { SEStoreType } from "@/stores/se";
 import {
+  CommandReturnType,
   svgGradientType,
   svgStopType,
   svgStyleType as svgStyleType,
@@ -886,7 +887,7 @@ export abstract class Command {
    * restoreState: Perform necessary action to restore the app state.
    * The operation(s) implemented in restoreState() are usually opposite of the
    * operation(s) implemented in do()*/
-  abstract restoreState(): void;
+  abstract restoreState(preventGraphicalUpdate?:boolean): void;
 
   // TODO: consider merging saveState() and do(). They are always invoked one after the other
 
@@ -897,7 +898,7 @@ export abstract class Command {
   abstract saveState(): void;
 
   /**  do: Perform necessary action to alter the app state*/
-  abstract do(): void;
+  abstract do(preventGraphicalUpdate?:boolean): CommandReturnType;
 
   /** Generate an opcode ("assembly code") that can be saved as an executable script
    * and interpreted at runtime by calling the constructor of Command subclasses.

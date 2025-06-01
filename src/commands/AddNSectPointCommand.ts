@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import { SavedNames } from "@/types";
+import { CommandReturnType, SavedNames } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
@@ -31,7 +31,7 @@ export class AddNSectPointCommand extends Command {
     }
   }
 
-  do(): void {
+  do(): CommandReturnType {
     this.parentSegment.registerChild(this.seNSectPoint);
     this.seNSectPoint.registerChild(this.seLabel);
     if (SETTINGS.point.showLabelsOfNonFreePointsInitially) {
@@ -49,6 +49,7 @@ export class AddNSectPointCommand extends Command {
     }
     // this.seNSectPoint.markKidsOutOfDate();
     // this.seNSectPoint.update();
+    return { success: true };
   }
 
   saveState(): void {

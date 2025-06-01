@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import Nodule from "@/plottables/Nodule";
 import { StyleOptions, StyleCategory } from "../types/Styles";
-import { toSVGType } from "@/types";
+import { CommandReturnType, toSVGType } from "@/types";
 
 export class StyleNoduleCommand extends Command {
   private nodules: Nodule[] = [];
@@ -43,7 +43,7 @@ export class StyleNoduleCommand extends Command {
     });
   }
 
-  do(): void {
+  do(): CommandReturnType {
     for (let i = 0; i < this.nodules.length; i++) {
       // console.log(
       //   "CMD- Do effect of StyleNoduleCommand on ",
@@ -67,6 +67,7 @@ export class StyleNoduleCommand extends Command {
 
       // console.debug("new", this.currentStyles[i]);
     }
+    return { success: true };
   }
 
   saveState(): void {
@@ -75,23 +76,23 @@ export class StyleNoduleCommand extends Command {
 
   restoreState(): void {
     for (let i = 0; i < this.nodules.length; i++) {
-    //   console.log(
-    //     "CMD - Restore effect of StyleNoduleCommand on ",
-    //     this.nodules[i].name,
-    //     " to ",
-    //     this.pastStyles[i]
-    //   );
-    //   switch(this.panel){
-    //   case 0:
-    //     console.log("CMD - Target Label")
-    //     break;
-    //   case 1:
-    //     console.log("CMD - Target Front")
-    //     break;
-    //   case 2:
-    //     console.log("CMD - Target Back")
-    //     break;
-    // }
+      //   console.log(
+      //     "CMD - Restore effect of StyleNoduleCommand on ",
+      //     this.nodules[i].name,
+      //     " to ",
+      //     this.pastStyles[i]
+      //   );
+      //   switch(this.panel){
+      //   case 0:
+      //     console.log("CMD - Target Label")
+      //     break;
+      //   case 1:
+      //     console.log("CMD - Target Front")
+      //     break;
+      //   case 2:
+      //     console.log("CMD - Target Back")
+      //     break;
+      // }
       this.nodules[i].updateStyle(this.panel, this.pastStyles[i]);
     }
   }

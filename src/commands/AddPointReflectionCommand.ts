@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SETranslation } from "@/models/SETranslation";
 import { SESegment } from "@/models/SESegment";
-import { SavedNames } from "@/types";
+import { CommandReturnType, SavedNames } from "@/types";
 import { AddTranslationCommand } from "./AddTranslationCommand";
 import { SEPointReflection } from "@/models/SEPointReflection";
 import { SEPoint } from "@/models/SEPoint";
@@ -17,9 +17,10 @@ export class AddPointReflectionCommand extends Command {
     this.sePointReflection = sePointReflection;
     this.sePointOfReflection = parent;
   }
-  do(): void {
+  do(): CommandReturnType {
     Command.store.addTransformation(this.sePointReflection);
     this.sePointOfReflection.registerChild(this.sePointReflection);
+    return { success: true };
   }
 
   saveState(): void {

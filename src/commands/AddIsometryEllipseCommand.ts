@@ -28,12 +28,13 @@ export class AddIsometryEllipseCommand extends Command {
     this.isometrySEEllipseLabel = isometrySEEllipseLabel;
   }
 
-  do(): void {
+  do(): CommandReturnType {
     this.preimageSEEllipse.registerChild(this.isometrySEEllipse);
     this.parentIsometry.registerChild(this.isometrySEEllipse);
     this.isometrySEEllipse.registerChild(this.isometrySEEllipseLabel);
     Command.store.addEllipse(this.isometrySEEllipse);
     Command.store.addLabel(this.isometrySEEllipseLabel);
+  return { success: true };
   }
 
   saveState(): void {

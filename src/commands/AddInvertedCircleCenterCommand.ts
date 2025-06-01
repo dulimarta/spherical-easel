@@ -3,7 +3,7 @@ import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
-import { SavedNames } from "@/types";
+import { CommandReturnType, SavedNames } from "@/types";
 import { SECircle } from "@/models/SECircle";
 import { SELine } from "@/models/SELine";
 import { SEInversion } from "@/models/SEInversion";
@@ -36,7 +36,7 @@ export class AddInvertedCircleCenterCommand extends Command {
     }
   }
 
-  do(): void {
+  do(): CommandReturnType {
     this.preimageSECircleOrLine.registerChild(this.invertedSECircleCenter);
     this.parentInversion.registerChild(this.invertedSECircleCenter);
     this.invertedSECircleCenter.registerChild(this.invertedSECircleCenterLabel);
@@ -51,6 +51,7 @@ export class AddInvertedCircleCenterCommand extends Command {
       this.invertedSECircleCenter.incrementVisiblePointCount();
       this.invertedSECircleCenter.label.ref.shortUserName = `P${this.invertedSECircleCenter.visiblePointCount}`;
     }
+  return { success: true };
   }
 
   saveState(): void {

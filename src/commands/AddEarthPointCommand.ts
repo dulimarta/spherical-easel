@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
-import { SavedNames } from "@/types";
+import { CommandReturnType, SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleCategory } from "@/types/Styles";
 import { SEEarthPoint } from "@/models/SEEarthPoint";
@@ -31,7 +31,7 @@ export class AddEarthPointCommand extends Command {
     }
   }
 
-  do(): void {
+  do(): CommandReturnType {
     Command.store.addLabel(this.seLabel);
     this.seEarthPoint.registerChild(this.seLabel);
     Command.store.addPoint(this.seEarthPoint);
@@ -41,6 +41,7 @@ export class AddEarthPointCommand extends Command {
     if (this.seEarthPoint.label && this.useVisiblePointCountToRename) {
       this.seEarthPoint.label.ref.shortUserName = `P${this.seEarthPoint.visiblePointCount}`;
     }
+    return { success: true };
   }
 
   saveState(): void {

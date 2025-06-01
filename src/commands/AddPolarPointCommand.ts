@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import { SavedNames, SEOneOrTwoDimensional } from "@/types";
+import { CommandReturnType, SavedNames, SEOneOrTwoDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
@@ -35,7 +35,7 @@ export class AddPolarPointCommand extends Command {
     }
   }
 
-  do(): void {
+  do(): CommandReturnType {
     this.parent.registerChild(this.sePolarPoint);
     this.sePolarPoint.registerChild(this.seLabel);
     if (SETTINGS.point.showLabelsOfPolarPointInitially) {
@@ -53,6 +53,7 @@ export class AddPolarPointCommand extends Command {
     }
     // this.sePolarPoint.markKidsOutOfDate();
     // this.sePolarPoint.update();
+    return { success: true };
   }
 
   saveState(): void {

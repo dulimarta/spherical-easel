@@ -275,18 +275,18 @@ export class SESegment
     }
     const normalOut: Array<NormalAndPerpendicularPoint> = [];
     // CAUTION: Calling onSegment will destroy this.tmpVector
-    if (this.onSegment(this.tmpVector2)) {
+   // if (this.onSegment(this.tmpVector2)) {
       normalOut.push({
         normal: this.tmpVector1.normalize(),
         normalAt: this.tmpVector2.normalize()
       });
-    }
-    if (this.onSegment(this.tmpVector3)) {
+   // }
+   // if (this.onSegment(this.tmpVector3)) {
       normalOut.push({
         normal: this.tmpVector1.normalize(),
         normalAt: this.tmpVector3.normalize()
       });
-    }
+  //  }
     return normalOut;
   }
 

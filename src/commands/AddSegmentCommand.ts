@@ -5,7 +5,7 @@ import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
 import { SENodule } from "@/models/SENodule";
 import { StyleCategory } from "@/types/Styles";
-import { SavedNames } from "@/types";
+import { CommandReturnType, SavedNames } from "@/types";
 import { toSVGType } from "@/types";
 
 export class AddSegmentCommand extends Command {
@@ -26,12 +26,13 @@ export class AddSegmentCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): void {
+  do(): CommandReturnType {
     this.startSEPoint.registerChild(this.seSegment);
     this.endSEPoint.registerChild(this.seSegment);
     this.seSegment.registerChild(this.seLabel);
     Command.store.addSegment(this.seSegment);
     Command.store.addLabel(this.seLabel);
+    return { success: true };
   }
 
   saveState(): void {

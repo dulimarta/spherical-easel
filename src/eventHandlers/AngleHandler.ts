@@ -678,7 +678,7 @@ export default class AngleHandler extends Highlighter {
             break;
           case AngleMode.SEGMENTSORLINEANDSEGMENT:
             EventBus.fire("show-alert", {
-              key: `handlers.selectAnotherLineOrSegment`,
+              key: `selectAnotherLineOrSegment`,
               keyOptions: {},
               type: "info"
             });

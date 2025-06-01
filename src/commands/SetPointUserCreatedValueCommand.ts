@@ -8,7 +8,7 @@ import SETTINGS from "@/global-settings";
 // import { SavedNames } from "@/types";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import EventBus from "@/eventHandlers/EventBus";
-import { toSVGType } from "@/types";
+import { CommandReturnType, toSVGType } from "@/types";
 
 /**
  * This is used when an intersection point was automatically created and the user
@@ -34,21 +34,21 @@ export class SetPointUserCreatedValueCommand extends Command {
     }
   }
 
-  do(): void {
+  do(): CommandReturnType {
     // console.log(
     //   `SetPointUserCreated: DO changed ${this.seIntersectionOrAntipodePoint.name} to user created:${this.userCreatedValue}`
     // );
     // if (this.userCreatedValue) {
     this.seIntersectionOrAntipodePoint.isUserCreated = this.userCreatedValue;
     // Set the display to the default values
-    if (this.userCreatedValue){
-    this.seIntersectionOrAntipodePoint.ref.stylize(
-      DisplayStyle.ApplyCurrentVariables
-    );}
-    else{
+    if (this.userCreatedValue) {
       this.seIntersectionOrAntipodePoint.ref.stylize(
-      DisplayStyle.ApplyTemporaryVariables
-    );
+        DisplayStyle.ApplyCurrentVariables
+      );
+    } else {
+      this.seIntersectionOrAntipodePoint.ref.stylize(
+        DisplayStyle.ApplyTemporaryVariables
+      );
     }
     // Set the size for the current zoom magnification factor
     this.seIntersectionOrAntipodePoint.ref.adjustSize();
@@ -83,6 +83,7 @@ export class SetPointUserCreatedValueCommand extends Command {
     this.seIntersectionOrAntipodePoint.markKidsOutOfDate();
     this.seIntersectionOrAntipodePoint.update();
     EventBus.fire("update-points-user-created", {});
+    return { success: true };
   }
 
   saveState(): void {
@@ -124,14 +125,14 @@ export class SetPointUserCreatedValueCommand extends Command {
     // hide the point
     this.seIntersectionOrAntipodePoint.showing = !this.userCreatedValue;
     // revert to temporary status
-    if (!this.userCreatedValue){
-    this.seIntersectionOrAntipodePoint.ref.stylize(
-      DisplayStyle.ApplyCurrentVariables
-    );}
-    else{
+    if (!this.userCreatedValue) {
       this.seIntersectionOrAntipodePoint.ref.stylize(
-      DisplayStyle.ApplyTemporaryVariables
-    );
+        DisplayStyle.ApplyCurrentVariables
+      );
+    } else {
+      this.seIntersectionOrAntipodePoint.ref.stylize(
+        DisplayStyle.ApplyTemporaryVariables
+      );
     }
     // set back to automatically created
     this.seIntersectionOrAntipodePoint.isUserCreated = !this.userCreatedValue;

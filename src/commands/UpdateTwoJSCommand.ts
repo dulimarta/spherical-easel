@@ -1,8 +1,10 @@
+import { CommandReturnType } from "@/types";
 import { Command } from "./Command";
 
 export class UpdateTwoJSCommand extends Command {
-  do(): void {
-    Command.store.updateTwoJS()
+  do(): CommandReturnType {
+    Command.store.updateTwoJS();
+    return { success: true };
   }
 
   saveState(): void {}

@@ -1,7 +1,7 @@
 // Use the following template as a starter for a new Command
 import { SEText } from "@/models/SEText";
 import { Command } from "./Command";
-import { SavedNames } from "@/types";
+import { CommandReturnType, SavedNames } from "@/types";
 import { Vector2, Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { SENodule } from "@/models/SENodule";
@@ -14,8 +14,9 @@ export class AddTextCommand extends Command {
     this.seText = txt;
   }
 
-  do(): void {
+  do(): CommandReturnType {
     Command.store.addText(this.seText);
+    return { success: true };
   }
 
   saveState(): void {
@@ -25,10 +26,10 @@ export class AddTextCommand extends Command {
   restoreState(): void {
     Command.store.removeText(this.seText.id);
   }
-  
-  getSVGObjectLabelPairs(): [SENodule, SELabel|null][] {
-      return [[this.seText, null]];
-    }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel | null][] {
+    return [[this.seText, null]];
+  }
 
   toOpcode(): null | string | Array<string> {
     return [
@@ -39,13 +40,11 @@ export class AddTextCommand extends Command {
       "objectExists=" + this.seText.exists, // should always be true
       "objectShowing=" + this.seText.showing,
       "textStyle=" +
-      Command.symbolToASCIIDec(
-        JSON.stringify(
-          this.seText.ref.currentStyleState(StyleCategory.Label)
-        )
+        Command.symbolToASCIIDec(
+          JSON.stringify(this.seText.ref.currentStyleState(StyleCategory.Label))
         ), //textStyle include the current string that is displayed
       // Object specific attributes
-      "pointVector=" + this.seText.locationVector.toFixed(9),
+      "pointVector=" + this.seText.locationVector.toFixed(9)
       //"textObjectText=" + Command.symbolToASCIIDec(this.seText.text)//This is now stored in the label style
     ].join("&");
   }
@@ -80,7 +79,7 @@ export class AddTextCommand extends Command {
         StyleCategory.Label,
         JSON.parse(textStyleString)
       ); // this updates the displayed text
-    }  else {
+    } else {
       throw new Error("AddTextCommand: No text style string.");
     }
 
@@ -89,7 +88,7 @@ export class AddTextCommand extends Command {
       seText.name = propMap.get("objectName") ?? "";
       seText.showing = propMap.get("objectShowing") === "true";
       seText.exists = propMap.get("objectExists") === "true";
-    }  else {
+    } else {
       throw new Error("AddTextCommand: Undefined Object Name");
     }
 

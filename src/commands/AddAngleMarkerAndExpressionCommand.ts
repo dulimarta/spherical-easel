@@ -6,7 +6,12 @@ import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { AngleMode, SavedNames, ValueDisplayMode } from "@/types";
+import {
+  AngleMode,
+  CommandReturnType,
+  SavedNames,
+  ValueDisplayMode
+} from "@/types";
 import { StyleCategory } from "@/types/Styles";
 import { toSVGType } from "@/types";
 
@@ -53,7 +58,7 @@ export class AddAngleMarkerCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): void {
+  do(): CommandReturnType {
     this._firstSEParent.registerChild(this.seAngleMarker);
     this._secondSEParent.registerChild(this.seAngleMarker);
     if (this._thirdSEParent !== undefined) {
@@ -64,6 +69,7 @@ export class AddAngleMarkerCommand extends Command {
     Command.store.addLabel(this.seLabel);
     // this.seAngleMarker.markKidsOutOfDate();
     // this.seAngleMarker.update();
+    return { success: true };
   }
 
   saveState(): void {
@@ -200,8 +206,8 @@ export class AddAngleMarkerCommand extends Command {
       seAngleMarker.valueDisplayMode = valueDisplayMode;
 
       // These calls are needed so angle measurement value is updated
-      seAngleMarker.shallowUpdate()
-      seLabel.shallowUpdate()
+      seAngleMarker.shallowUpdate();
+      seLabel.shallowUpdate();
       //put the angleMarker in the object map
       if (propMap.get("objectName") !== undefined) {
         seAngleMarker.name = propMap.get("objectName") ?? "";
