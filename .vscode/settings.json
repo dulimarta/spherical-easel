@@ -2,6 +2,7 @@
   "prettier.htmlWhitespaceSensitivity": "ignore",
   "prettier.useEditorConfig": false,
   "prettier.requireConfig": false,
+  "i18n-ally.pathMatcher": "{locale}.{ext}",
   "i18n-ally.localesPaths": [
     "./src/assets/languages"
   ],

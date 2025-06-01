@@ -3,9 +3,10 @@
     :style="{
       position: 'fixed'
     }">
-    ThreeJS {{ props.availableWidth }}x{{ props.availableHeight }} Mouse @ ({{
-      mouseCoord.toFixed(2)
-    }}) {{ mouseCoordNormalized.toFixed(3) }}
+    ThreeJS Mouse @ ({{ mouseCoord.toFixed(2) }})
+    {{ mouseCoordNormalized.toFixed(3) }}
+
+    {{ rayIntersectionPoint.position.toFixed(2) }}
   </p>
   <canvas
     ref="webglCanvas"
@@ -48,7 +49,7 @@ import {
   ExtendedTriangle,
   MeshBVHHelper
 } from "three-mesh-bvh";
-import { degToRad } from "three/src/math/MathUtils";
+import { degToRad, radToDeg } from "three/src/math/MathUtils";
 
 // Inject new BVH functions into current THREE-JS Mesh/BufferGeometry definitions
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
@@ -78,7 +79,7 @@ let renderer: WebGLRenderer;
 let cameraController: CameraControls;
 CameraControls.install({ THREE });
 const xyGrid = new GridHelper();
-xyGrid.translateZ(1)
+xyGrid.translateZ(1);
 xyGrid.rotateX(Math.PI / 2);
 scene.add(xyGrid);
 
@@ -98,8 +99,8 @@ scene.add(arrowZ);
 
 const upperHyperboloidGeometry = new ParametricGeometry(
   hyperboloidPlus,
-  30,
-  30
+  120,
+  300
 );
 upperHyperboloidGeometry.computeBoundsTree({ maxLeafTris: 2 });
 const upperHyperboloidMesh = new Mesh(
@@ -114,8 +115,8 @@ const upperHyperboloidMesh = new Mesh(
 
 const lowerHyperboloidGeometry = new ParametricGeometry(
   hyperboloidMinus,
-  30,
-  30
+  120,
+  300
 );
 lowerHyperboloidGeometry.computeBoundsTree();
 const lowerHyperboloidMesh = new Mesh(
@@ -171,26 +172,29 @@ const centerSphere = new Mesh(
 centerSphere.name = "Center Sphere";
 scene.add(centerSphere);
 
-const planeGeometry = new THREE.PlaneGeometry(6, 10, 20, 20);
-planeGeometry.computeBoundsTree({
+// const randomPlane = new Group()
+const upperPlaneGeometry = new THREE.PlaneGeometry(6, 10, 20, 20);
+upperPlaneGeometry.computeBoundsTree({
   verbose: true,
   maxLeafTris: 0,
   maxDepth: 10
 });
 const randomPlane = new Mesh(
-  planeGeometry,
+  upperPlaneGeometry,
   new MeshStandardMaterial({
     color: "darkred",
     roughness: 0.4,
     side: DoubleSide
   })
 );
-// const planeBVHHelper = new MeshBVHHelper(randomPlane);
+// randomPlane.add(upperPlane)
+const planeBVHHelper = new MeshBVHHelper(randomPlane);
 // planeBVHHelper.color.set("cyan");
-// scene.add(planeBVHHelper);
+scene.add(planeBVHHelper);
 randomPlane.name = "RedPlane";
-randomPlane.matrixAutoUpdate = true;
-randomPlane.rotation.set(degToRad(-55), 0, 0);
+// randomPlane.matrixAutoUpdate = true;
+// randomPlane.rotateX(degToRad(125));
+// randomPlane.translateY(5)
 randomPlane.updateMatrixWorld(); // This is needed to before bvhcast can do its work
 scene.add(randomPlane);
 
@@ -200,51 +204,36 @@ const upperHyperboloidToPlaneMatrix = new THREE.Matrix4()
   .multiply(upperHyperboloidMesh.matrixWorld);
 
 const aLine: Line3 = new Line3();
+const bvhCastCallback = {
+  intersectsTriangles(
+    t1: ExtendedTriangle,
+    t2: ExtendedTriangle,
+    i1: number,
+    i2: number,
+    t1depth: number,
+    t1Index: number,
+    t2depth: number,
+    t2Index: number
+  ): boolean {
+    // console.debug(`Check intersection between triangle`, t1, "and", t2)
+    if (t1.intersectsTriangle(t2, aLine)) {
+      const lc = new LineCurve3(aLine.start, aLine.end);
+      const intersectionTubeGeo = new TubeGeometry(lc, 10, 0.03, 10, false);
+      const intersectionTube = new Mesh(
+        intersectionTubeGeo,
+        new MeshStandardMaterial({ color: "yellow" })
+      );
+      intersectionGroup.add(intersectionTube);
+    }
+    return false;
+  }
+};
 // Use a Group to host the TubeGeometries which make up the intersection between the plane and the upper hyperboloid
 const intersectionGroup = new Group();
-planeGeometry.boundsTree?.bvhcast(
+upperPlaneGeometry.boundsTree?.bvhcast(
   upperHyperboloidGeometry.boundsTree!,
   upperHyperboloidToPlaneMatrix,
-  {
-    // intersectsRanges(
-    //   t1Offset: number,
-    //   t1Count: number,
-    //   t2Offset: number,
-    //   t2Count: number
-    // ): boolean {
-    //   console.debug(
-    //     `Checking intersection ranges T1: offset ${t1Offset} count ${t1Count} T2: offset ${t2Offset} count ${t2Count}`
-    //   );
-    //   return false;
-    // },
-    intersectsTriangles(
-      t1: ExtendedTriangle,
-      t2: ExtendedTriangle,
-      i1: number,
-      i2: number,
-      t1depth: number,
-      t1Index: number,
-      t2depth: number,
-      t2Index: number
-    ): boolean {
-      // console.debug(`Check intersection between triangle`, t1, "and", t2)
-      if (t1.intersectsTriangle(t2, aLine)) {
-        // console.debug(
-        //   "Triangle intersection",
-        //   aLine.start.toFixed(2),
-        //   aLine.end.toFixed(2)
-        // );
-        const lc = new LineCurve3(aLine.start.clone(), aLine.end.clone());
-        const intersectionTubeGeo = new TubeGeometry(lc, 10, 0.03, 10, false);
-        const intersectionTube = new Mesh(
-          intersectionTubeGeo,
-          new MeshStandardMaterial({ color: "yellow" })
-        );
-        intersectionGroup.add(intersectionTube);
-      }
-      return false;
-    }
-  }
+  bvhCastCallback
 );
 intersectionGroup.applyMatrix4(randomPlane.matrixWorld);
 scene.add(intersectionGroup);
@@ -315,7 +304,7 @@ function mouseTracker(ev: MouseEvent) {
     );
     if (namedIntersections.length > 0) {
       const firstIntersection = namedIntersections[0];
-      console.debug(`First intersection ${firstIntersection.object.name}`);
+      // console.debug(`First intersection ${firstIntersection.object.name}`);
       rayIntersectionPoint.position.copy(firstIntersection.point);
       scene.add(rayIntersectionPoint);
       // mouseNormalArrow.position.copy(rayIntersectionPoint.position)
@@ -325,7 +314,7 @@ function mouseTracker(ev: MouseEvent) {
         // Must take it from the face normal and then apply the world transformation matrix
         const n = firstIntersection.face?.normal.clone();
         n?.transformDirection(firstIntersection.object.matrixWorld);
-        console.debug(`with normal vector ${n!.toFixed(2)}`);
+        // console.debug(`with normal vector ${n!.toFixed(2)}`);
         mouseNormalArrow.setDirection(n!);
       } else {
         mouseNormalArrow.setDirection(firstIntersection.normal!);
@@ -361,7 +350,9 @@ function mouseTracker(ev: MouseEvent) {
           .filter(obj => obj.object.name.length > 0); // ignore unnamed objects
         if (otherIntersects.length > 0) {
           console.debug(
-            `Mouse on ${firstIntersection.object.name} at ${rayIntersectionPoint.position.toFixed(3)} with ${
+            `Mouse on ${
+              firstIntersection.object.name
+            } at ${rayIntersectionPoint.position.toFixed(3)} with ${
               otherIntersects.length
             } auxiliary intersections with projective line`
           );
@@ -371,17 +362,23 @@ function mouseTracker(ev: MouseEvent) {
 
             if (ptx.object.name.endsWith("Sphere")) {
               console.debug(
-                `Intersection with sphere at ${ptx.point.toFixed(2)} with metric ${(x * x + y * y + z * z).toFixed(1)}`
+                `Intersection with sphere at ${ptx.point.toFixed(
+                  2
+                )} with metric ${(x * x + y * y + z * z).toFixed(1)}`
               );
             } else if (ptx.object.name.endsWith("Sheet")) {
               console.debug(
-                `Intersection with hyperboloid at ${ptx.point.toFixed(2)} with metric ${(x * x + y * y - z * z).toFixed(1)}`
+                `Intersection with hyperboloid at ${ptx.point.toFixed(
+                  2
+                )} with metric ${(x * x + y * y - z * z).toFixed(1)}`
               );
             } else if (ptx.object.name.endsWith("Plane")) {
-              const sx = firstIntersection.point.x / firstIntersection.point.z
-              const sy = firstIntersection.point.y / firstIntersection.point.z
+              const sx = firstIntersection.point.x / firstIntersection.point.z;
+              const sy = firstIntersection.point.y / firstIntersection.point.z;
               console.debug(
-                `Intersection with plane Z = 1  at ${ptx.point.toFixed(2)} with metric ${(sx * sx + sy * sy).toFixed(1)}`
+                `Intersection with plane Z = 1  at ${ptx.point.toFixed(
+                  2
+                )} with metric ${(sx * sx + sy * sy).toFixed(1)}`
               );
             }
             if (firstIntersection.object.name !== ptx.object.name) {
@@ -393,6 +390,34 @@ function mouseTracker(ev: MouseEvent) {
         }
       } else {
         scene.remove(auxLine);
+      }
+      if (ev.ctrlKey) {
+        // Need to use mouse intersection with a non-plane object
+        const nonPlane = namedIntersections.find(obj => {
+          // console.debug("Check ctrl intersect", obj.object.name);
+          return !obj.object.name.endsWith("Plane");
+        });
+        if (nonPlane) {
+          const planeXRotation = Math.atan2(nonPlane.point.y, nonPlane.point.z);
+          // console.debug(`Red plane rotation ${radToDeg(planeXRotation)}`);
+          randomPlane.rotation.set(0, 0, 0);
+          randomPlane.rotateX(Math.PI / 2 - planeXRotation);
+          // randomPlane.updateMatrix()
+          randomPlane.updateMatrixWorld();
+          intersectionGroup.clear();
+          intersectionGroup.rotation.set(0,0,0)
+          upperHyperboloidToPlaneMatrix
+            .copy(randomPlane.matrixWorld)
+            .invert()
+            .multiply(upperHyperboloidMesh.matrixWorld);
+
+          upperPlaneGeometry.boundsTree?.bvhcast(
+            upperHyperboloidGeometry.boundsTree!,
+            upperHyperboloidToPlaneMatrix,
+            bvhCastCallback
+          );
+          intersectionGroup.rotateX(Math.PI/2 - planeXRotation)
+        }
       }
     } else {
       scene.remove(rayIntersectionPoint);
