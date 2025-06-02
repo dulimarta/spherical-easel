@@ -164,7 +164,7 @@ export class SEPointCoordinate extends SEExpression {
     // will cause this point update correctly. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        // `Point Coordinate with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules a the same time in the MoveHandler.`
+        // `Point Coordinate with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

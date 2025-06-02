@@ -55,7 +55,7 @@ export class SEText extends SENodule {
 
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        // `Text with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules a the same time in the MoveHandler.`
+        // `Text with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       //console.log(`this.id = ${this.id}`);

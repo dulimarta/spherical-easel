@@ -831,7 +831,7 @@ export class SEParametric
     // will cause this parametric to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        // `Parametric with id ${this.id} has been visited twice proceed no further down this branch of the DAG because we are moving two SENodules a the same time.
+        // `Parametric with id ${this.id} has been visited twice proceed no further down this branch of the DAG because we are moving two SENodules at the same time.
         return;
       }
       orderedSENoduleList.push(this.id);

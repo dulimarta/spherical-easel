@@ -150,7 +150,7 @@ export class SEIsometrySegment extends SESegment {
     // Both of these quantities could change during a move therefore store normal vector and arcLength
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        // `Isometry Segment with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules a the same time in the MoveHandler.`
+        // `Isometry Segment with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

@@ -164,7 +164,7 @@ export class SEParametricEndPoint extends SEPoint {
     // will cause this point to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        // `Parametric End Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules a the same time in the MoveHandler.`
+        // `Parametric End Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);
