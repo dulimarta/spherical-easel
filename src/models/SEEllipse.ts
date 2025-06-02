@@ -33,7 +33,7 @@ export class SEEllipse
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public declare ref: Ellipse;
+  declare public ref: Ellipse;
   /**
    * Pointer to the label of this SESegment
    */
@@ -353,9 +353,7 @@ export class SEEllipse
     // will cause this ellipse to be put into the correct location.So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Ellipse with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Ellipse with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules a the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

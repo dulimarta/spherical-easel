@@ -25,11 +25,14 @@ const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LINE_BACK_STYLE)
 ]);
 const { t } = i18n.global;
-export class SELine extends SENodule implements Visitable, OneDimensional, Labelable {
+export class SELine
+  extends SENodule
+  implements Visitable, OneDimensional, Labelable
+{
   /**
    * The corresponding plottable TwoJS object
    */
-  public declare ref: Line;
+  declare public ref: Line;
   /**
    * Pointer to the label of this SESegment
    */
@@ -69,7 +72,9 @@ export class SELine extends SENodule implements Visitable, OneDimensional, Label
     super();
     SELine.LINE_COUNT++;
     this.name = `Li${SELine.LINE_COUNT}`;
-    this.ref = createNonFreeLine ? new NonFreeLine(this.name) : new Line(this.name);
+    this.ref = createNonFreeLine
+      ? new NonFreeLine(this.name)
+      : new Line(this.name);
     this.ref.normalVector = normalVector;
     this.ref.updateDisplay();
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
@@ -77,7 +82,6 @@ export class SELine extends SENodule implements Visitable, OneDimensional, Label
     this._startSEPoint = lineStartSEPoint;
     this._normalVector.copy(normalVector);
     this._endSEPoint = lineEndSEPoint;
-
   }
 
   customStyles(): Set<string> {
@@ -288,6 +292,7 @@ export class SELine extends SENodule implements Visitable, OneDimensional, Label
     // plane of the line.
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
+        // `Line with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules a the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);
@@ -420,7 +425,7 @@ export class SELine extends SENodule implements Visitable, OneDimensional, Label
   }
 
   public getLabel(): SELabel | null {
-    return (this as Labelable).label!
+    return (this as Labelable).label!;
   }
 
   public isLineWithAntipodalPoints(): boolean {

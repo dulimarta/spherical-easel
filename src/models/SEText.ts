@@ -20,11 +20,11 @@ const styleSet = new Set([
 ]);
 
 export class SEText extends SENodule {
-  public declare ref: Text; //<- plottable Text object in TwoJS
+  declare public ref: Text; //<- plottable Text object in TwoJS
 
   protected _locationVector = new Vector2();
 
-  constructor(initialText: string="Default Text") {
+  constructor(initialText: string = "Default Text") {
     super();
     this.name = `T${SENodule.TEXT_COUNT}`;
     this.ref = new Text(this.name);
@@ -55,9 +55,7 @@ export class SEText extends SENodule {
 
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `		Text with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Text with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules a the same time in the MoveHandler.`
         return;
       }
       //console.log(`this.id = ${this.id}`);

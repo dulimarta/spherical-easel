@@ -55,9 +55,7 @@ export class SEReflection extends SETransformation {
     // will cause this reflection to be correct. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Reflection with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Reflection with id ${this.id} has been visited twice proceed no further down this branch of the DAG because we are moving two
         return;
       }
       orderedSENoduleList.push(this.id);

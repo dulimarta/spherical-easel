@@ -34,7 +34,7 @@ export class SESegment
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public declare ref: Segment;
+  declare public ref: Segment;
   /**
    * Pointer to the label of this SESegment import { SELabel } from "@/models/SELabel";
    */
@@ -105,7 +105,7 @@ export class SESegment
     this._endSEPoint = segmentEndSEPoint;
     // The following line(s) are needed to have the path
     // show correctly upon constructor call
-    this.ref.updateDisplay()
+    this.ref.updateDisplay();
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
     this.ref.adjustSize();
   }
@@ -275,18 +275,18 @@ export class SESegment
     }
     const normalOut: Array<NormalAndPerpendicularPoint> = [];
     // CAUTION: Calling onSegment will destroy this.tmpVector
-   // if (this.onSegment(this.tmpVector2)) {
-      normalOut.push({
-        normal: this.tmpVector1.normalize(),
-        normalAt: this.tmpVector2.normalize()
-      });
-   // }
-   // if (this.onSegment(this.tmpVector3)) {
-      normalOut.push({
-        normal: this.tmpVector1.normalize(),
-        normalAt: this.tmpVector3.normalize()
-      });
-  //  }
+    // if (this.onSegment(this.tmpVector2)) {
+    normalOut.push({
+      normal: this.tmpVector1.normalize(),
+      normalAt: this.tmpVector2.normalize()
+    });
+    // }
+    // if (this.onSegment(this.tmpVector3)) {
+    normalOut.push({
+      normal: this.tmpVector1.normalize(),
+      normalAt: this.tmpVector3.normalize()
+    });
+    //  }
     return normalOut;
   }
 
@@ -415,9 +415,7 @@ export class SESegment
     // Both of these quantities could change during a move therefore store normal vector and arcLength
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Segment with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Segment with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules a the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

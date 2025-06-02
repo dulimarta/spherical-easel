@@ -34,7 +34,7 @@ export class SELabel extends SENodule implements Visitable {
   // protected store = AppStore;
 
   /* This should be the only reference to the plotted version of this SELabel */
-  public declare ref: Label;
+  declare public ref: Label;
   /**
    * The  parent of this SELabel
    */
@@ -69,7 +69,7 @@ export class SELabel extends SENodule implements Visitable {
       // and the angleMarkerNumber.
       label.shortUserName = `Am${this.parent.angleMarkerNumber}`;
       label.defaultName = `Am${this.parent.angleMarkerNumber}`;
-      label.value = [this.parent.value]
+      label.value = [this.parent.value];
     } else if (this.parent instanceof SEPolygon) {
       // polygons are an exception which are both plottable and an expression.
       // As expressions MUST have a name of a measurement token (ie. M###), we can't
@@ -131,8 +131,7 @@ export class SELabel extends SENodule implements Visitable {
     } else if (parent instanceof SEPolygon) {
       this.ref.initialLabelDisplayMode = SETTINGS.polygon.defaultLabelMode;
       this.showing = SETTINGS.polygon.showLabelsInitially;
-    }
-    else {
+    } else {
       this.showing = true;
     }
   }
@@ -201,9 +200,7 @@ export class SELabel extends SENodule implements Visitable {
     // Labels are NOT completely determined by their parents so we store additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Label with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Label with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules a the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);
@@ -299,5 +296,4 @@ export class SELabel extends SENodule implements Visitable {
   public isFreeToMove(): boolean {
     return true;
   }
-
 }

@@ -126,7 +126,7 @@ export default class RotateHandler extends Highlighter {
     if (this.altKeyDown) {
       this.momentumMode = false;
       EventBus.fire("show-alert", {
-        key: `handlers.rotationNoObjectUpdate`,
+        key: `rotationNoObjectUpdate`,
         keyOptions: {},
         type: "warning"
       });
@@ -335,7 +335,7 @@ export default class RotateHandler extends Highlighter {
         } else {
           // the object of rotation has been just removed
           EventBus.fire("show-alert", {
-            key: `handlers.rotationNoObjectUpdate`,
+            key: `rotationNoObjectUpdate`,
             keyOptions: {},
             type: "warning"
           });
@@ -378,7 +378,7 @@ export default class RotateHandler extends Highlighter {
         this.rotationObject.glowing = false;
         this.rotationObject.selected = false;
         EventBus.fire("show-alert", {
-          key: `handlers.rotationNoObjectUpdate`,
+          key: `rotationNoObjectUpdate`,
           keyOptions: {},
           type: "warning"
         });
