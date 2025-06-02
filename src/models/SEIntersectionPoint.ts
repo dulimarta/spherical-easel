@@ -362,9 +362,7 @@ export class SEIntersectionPoint extends SEPoint {
     // will cause this point to be put into the correct location.So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Intersection point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Intersection point with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules a the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

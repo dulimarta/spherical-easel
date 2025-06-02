@@ -92,9 +92,7 @@ export class SEInversion extends SETransformation {
     // will cause this inversion to be correct. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Inversion with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Inversion with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules a the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

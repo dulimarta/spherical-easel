@@ -25,7 +25,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public declare ref: Polygon;
+  declare public ref: Polygon;
   /**
    * Pointer to the label of this SEPolygon
    */
@@ -402,7 +402,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     this._exists = this._seEdgeSegments.every(seg => seg.exists === true);
 
     if (this._exists) {
-      super.shallowUpdate()
+      super.shallowUpdate();
       // All vertices must be far enough away from any nonadjacent edge to exist
       for (let i = 0; i < this._n; i++) {
         let nextVertex: Vector3; // the next vertex is common to segment i and i+1
@@ -520,9 +520,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     // will cause this polygon to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Polygon with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Polygon with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules a the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);
@@ -612,7 +610,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   }
 
   public getLabel(): SELabel | null {
-    return (this as Labelable).label!
+    return (this as Labelable).label!;
   }
   public isPolygon(): boolean {
     return true;

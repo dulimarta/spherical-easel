@@ -1,4 +1,4 @@
-import { SEPoint } from "./SEPoint"
+import { SEPoint } from "./SEPoint";
 import { SESegment } from "./SESegment";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
@@ -107,9 +107,7 @@ export class SENSectPoint extends SEPoint {
     // will cause this point to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `nSectPoint with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `nSectPoint with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules a the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);
