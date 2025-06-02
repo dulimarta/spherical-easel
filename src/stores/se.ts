@@ -1413,21 +1413,15 @@ export const useSEStore = defineStore("se", () => {
       //  0) The intersection point is on the list of sePoints, but the sePoint is not an seIntersection point (so do nothing with this intersection)
       //  1) The intersection point is new so create a new intersection point
       //  2) The intersection point is old so the intersection information might be added to the otherSEParents array of the intersection point
-      //  2) The intersection point is old so the intersection information might be added to the otherSEParents array of the intersection point
 
       //clear the existingSEIntersectionPoint
       existingSEIntersectionPoint = null;
       let isOnExistingPointList = false;
       // Search the existing (and newly created points and newly created --i.e. earlier in this command group) intersection points for these intersections
       existingSEPoints.forEach(pt => {
-        // if (pt.locationVector.isZero()) {
-        //   console.warn(
-        //     `Intersection point with zero vector encountered ${pt.name}/${pt.label?.ref.shortUserName}/${pt.noduleDescription}`
-        //   );
-        // }
         if (
           tmpVector.subVectors(info.vector, pt.locationVector).isZero() &&
-          !pt.locationVector.isZero() //Never happens for a line and line as they always *initially* intersect.  However for a line and circle, if they
+          !pt.locationVector.isZero() //isZero is never true happens for a line and line as they always *initially* intersect.  However for a line and circle, if they
           // don't initially intersect then the intersection vectors are zero.
           //The default is that when two objects don't intersect initially the vector is zero
         ) {
@@ -1512,12 +1506,6 @@ export const useSEStore = defineStore("se", () => {
         existingSEPoints.push(pt);
       }
     }
-    // console.log(
-    //   `Number of points before intersection ${existingSEPoints.length}`
-    // );
-    // console.log(
-    //   `Number of points before intersection ${existingSEPoints.length}`
-    // );
     // The intersectionPointList to return
     const intersectionPointReturnArray: SEIntersectionReturnType[] = [];
 
@@ -1683,19 +1671,9 @@ export const useSEStore = defineStore("se", () => {
           object1,
           object2
         );
-        // existingSEPoints.push(...info.updatedSEPoints);
         intersectionPointReturnArray.push(...info.intersections);
       });
     });
-
-    // console.log(
-    //   `Number of points after intersection ${existingSEPoints.length}`
-    // );
-    // existingSEPoints.forEach((pt,index) => {
-    //   console.log( index,
-    //     `${pt.name}/${pt.label?.ref.shortUserName}/${pt.noduleDescription}`
-    //   );
-    // });
     return intersectionPointReturnArray;
   }
 
