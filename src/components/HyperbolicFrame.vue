@@ -35,7 +35,8 @@ import {
   CylinderGeometry,
   Line3,
   CurvePath,
-  Group
+  Group,
+  Curve
 } from "three";
 import * as THREE from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
@@ -50,6 +51,41 @@ import {
   MeshBVHHelper
 } from "three-mesh-bvh";
 import { degToRad, radToDeg } from "three/src/math/MathUtils";
+
+class HyperbolaCurve extends Curve<Vector3> {
+  // Compute the points of a hyperbola on a plane
+  // rotated on the X-axis
+  v1: Vector3 = new Vector3();
+  v2: Vector3 = new Vector3();
+  outVec = new Vector3();
+  a: number = 1;
+  b: number = 1;
+  constructor(v1: Vector3) {
+    super();
+    this.v1.copy(v1); // Must be a vector perpendicular to X-axis
+    if (Math.abs(v1.x) > 1e-3) throw "The direction vector of hyperbola must be perpendiclar to the X-axis"
+    this.v2.set(1, 0, 0);
+    const innerA = v1.x * v1.x + v1.y * v1.y - v1.z * v1.z;
+    this.a = Math.sqrt(-1.0 / innerA);
+  }
+
+  getPoint(t: number, optionalTarget: Vector3 = new Vector3()): Vector3 {
+    const theta = 4 * t - 2;
+    const lambda = this.a * Math.cosh(theta);
+    const mu = this.b * Math.sinh(theta);
+    // const out = optionalTarget ?? this.outVec;
+    optionalTarget.set(0, 0, 0);
+    optionalTarget
+      .addScaledVector(this.v1, lambda)
+      .addScaledVector(this.v2, mu);
+    // console.debug(
+    //   `Get 3D point of hyperbola at time ${t} mu=${mu.toFixed(
+    //     3
+    //   )} lambda=${lambda.toFixed(3)}==> ${optionalTarget.toFixed(3)}`
+    // );
+    return optionalTarget;
+  }
+}
 
 // Inject new BVH functions into current THREE-JS Mesh/BufferGeometry definitions
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
@@ -93,9 +129,9 @@ arrowY.setLength(2, 0.2, 0.2);
 const arrowZ = new ArrowHelper(new Vector3(0, 0, 1));
 arrowZ.setColor(0x0000ff);
 arrowZ.setLength(2, 0.2, 0.2);
-scene.add(arrowX);
-scene.add(arrowY);
-scene.add(arrowZ);
+// scene.add(arrowX);
+// scene.add(arrowY);
+// scene.add(arrowZ);
 
 const upperHyperboloidGeometry = new ParametricGeometry(
   hyperboloidPlus,
@@ -187,17 +223,30 @@ const randomPlane = new Mesh(
     side: DoubleSide
   })
 );
+const planeDir1 = new Vector3(1, 0, 0);
+const planeDir2 = new Vector3();
+const planeDirArrow = new ArrowHelper();
+planeDirArrow.setColor("cyan");
+planeDirArrow.setLength(4, 0.8, 0.4);
 // randomPlane.add(upperPlane)
 const planeBVHHelper = new MeshBVHHelper(randomPlane);
 // planeBVHHelper.color.set("cyan");
-scene.add(planeBVHHelper);
+// scene.add(planeBVHHelper);
 randomPlane.name = "RedPlane";
 // randomPlane.matrixAutoUpdate = true;
 // randomPlane.rotateX(degToRad(125));
 // randomPlane.translateY(5)
 randomPlane.updateMatrixWorld(); // This is needed to before bvhcast can do its work
 scene.add(randomPlane);
+scene.add(planeDirArrow);
 
+const path = new HyperbolaCurve(new Vector3(0, 0, 1));
+
+let hyperTube = new Mesh(
+  new TubeGeometry(path, 50, 0.05, 12, false),
+  new THREE.MeshStandardMaterial({ color: "greenyellow" })
+);
+scene.add(hyperTube);
 const upperHyperboloidToPlaneMatrix = new THREE.Matrix4()
   .copy(randomPlane.matrixWorld)
   .invert()
@@ -399,24 +448,46 @@ function mouseTracker(ev: MouseEvent) {
         });
         if (nonPlane) {
           const planeXRotation = Math.atan2(nonPlane.point.y, nonPlane.point.z);
+          planeDir2.set(0, Math.sin(planeXRotation), Math.cos(planeXRotation)).normalize();
+          const newPath = new HyperbolaCurve(planeDir2);
+          hyperTube.geometry.dispose();
+          hyperTube.material.dispose();
+          scene.remove(hyperTube);
+          hyperTube = new Mesh(
+            new TubeGeometry(newPath, 50, 0.03, 12, false),
+            new THREE.MeshStandardMaterial({ color: "greenyellow" })
+          );
+          scene.add(hyperTube)
+          const innerB =
+            planeDir1.x * planeDir1.x +
+            planeDir1.y * planeDir1.y -
+            planeDir1.z * planeDir1.z;
+          const innerA =
+            planeDir2.x * planeDir2.x +
+            planeDir2.y * planeDir2.y -
+            planeDir2.z * planeDir2.z;
+          const lambdaCoeff = Math.sqrt(-1 / innerA);
+          // console.debug("Diag metrics", innerA, innerB, lambdaCoeff);
+          planeDirArrow.setDirection(planeDir2);
+
           // console.debug(`Red plane rotation ${radToDeg(planeXRotation)}`);
           randomPlane.rotation.set(0, 0, 0);
           randomPlane.rotateX(Math.PI / 2 - planeXRotation);
-          // randomPlane.updateMatrix()
           randomPlane.updateMatrixWorld();
-          intersectionGroup.clear();
-          intersectionGroup.rotation.set(0,0,0)
-          upperHyperboloidToPlaneMatrix
-            .copy(randomPlane.matrixWorld)
-            .invert()
-            .multiply(upperHyperboloidMesh.matrixWorld);
+          // intersectionGroup.clear();
+          // intersectionGroup.rotation.set(0, 0, 0);
+          // upperHyperboloidToPlaneMatrix
+          //   .copy(randomPlane.matrixWorld)
+          //   .invert()
+          //   .multiply(upperHyperboloidMesh.matrixWorld);
 
-          upperPlaneGeometry.boundsTree?.bvhcast(
-            upperHyperboloidGeometry.boundsTree!,
-            upperHyperboloidToPlaneMatrix,
-            bvhCastCallback
-          );
-          intersectionGroup.rotateX(Math.PI/2 - planeXRotation)
+          // WARNING: the boundary volume casting call is expensive!
+          // upperPlaneGeometry.boundsTree?.bvhcast(
+          //   upperHyperboloidGeometry.boundsTree!,
+          //   upperHyperboloidToPlaneMatrix,
+          //   bvhCastCallback
+          // );
+          // intersectionGroup.rotateX(Math.PI / 2 - planeXRotation);
         }
       }
     } else {
