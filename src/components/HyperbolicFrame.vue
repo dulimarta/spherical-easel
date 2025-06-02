@@ -3,10 +3,9 @@
     :style="{
       position: 'fixed'
     }">
-    ThreeJS Mouse @ ({{ mouseCoord.toFixed(2) }})
-    {{ mouseCoordNormalized.toFixed(3) }}
-
+    Mouse @ {{ mouseCoordNormalized.toFixed(3) }}
     {{ rayIntersectionPoint.position.toFixed(2) }}
+    Keys: Shift/Ctrl
   </p>
   <canvas
     ref="webglCanvas"
@@ -63,7 +62,8 @@ class HyperbolaCurve extends Curve<Vector3> {
   constructor(v1: Vector3) {
     super();
     this.v1.copy(v1); // Must be a vector perpendicular to X-axis
-    if (Math.abs(v1.x) > 1e-3) throw "The direction vector of hyperbola must be perpendiclar to the X-axis"
+    if (Math.abs(v1.x) > 1e-3)
+      throw "The direction vector of hyperbola must be perpendiclar to the X-axis";
     this.v2.set(1, 0, 0);
     const innerA = v1.x * v1.x + v1.y * v1.y - v1.z * v1.z;
     this.a = Math.sqrt(-1.0 / innerA);
@@ -108,7 +108,7 @@ const rayCaster = new Raycaster();
 rayCaster.firstHitOnly = true;
 const auxLineRayCaster = new Raycaster();
 const auxRaycasterStart = new Vector3(0, 0, 0);
-const mouseCoord: Ref<THREE.Vector2> = ref(new THREE.Vector2());
+const mouseCoord: THREE.Vector2 = new THREE.Vector2();
 const mouseCoordNormalized: Ref<THREE.Vector2> = ref(new THREE.Vector2()); // used by RayCaster
 let camera: PerspectiveCamera;
 let renderer: WebGLRenderer;
@@ -225,20 +225,20 @@ const randomPlane = new Mesh(
 );
 const planeDir1 = new Vector3(1, 0, 0);
 const planeDir2 = new Vector3();
-const planeDirArrow = new ArrowHelper();
-planeDirArrow.setColor("cyan");
-planeDirArrow.setLength(4, 0.8, 0.4);
+// const planeDirArrow = new ArrowHelper();
+// planeDirArrow.setColor("cyan");
+// planeDirArrow.setLength(4, 0.8, 0.4);
 // randomPlane.add(upperPlane)
 const planeBVHHelper = new MeshBVHHelper(randomPlane);
 // planeBVHHelper.color.set("cyan");
 // scene.add(planeBVHHelper);
 randomPlane.name = "RedPlane";
 // randomPlane.matrixAutoUpdate = true;
-// randomPlane.rotateX(degToRad(125));
+randomPlane.rotateX(degToRad(90));
 // randomPlane.translateY(5)
 randomPlane.updateMatrixWorld(); // This is needed to before bvhcast can do its work
 scene.add(randomPlane);
-scene.add(planeDirArrow);
+// scene.add(planeDirArrow);
 
 const path = new HyperbolaCurve(new Vector3(0, 0, 1));
 
@@ -285,7 +285,7 @@ upperPlaneGeometry.boundsTree?.bvhcast(
   bvhCastCallback
 );
 intersectionGroup.applyMatrix4(randomPlane.matrixWorld);
-scene.add(intersectionGroup);
+// scene.add(intersectionGroup);
 // console.debug("Plane Hyperboloid intersection", intersectionLines.length);
 // intersectionLineCurves.forEach((c, idx) => {
 //   console.debug(`Curve ${idx} ${c.v1.toFixed(2)} to ${c.v2.toFixed(2)}`);
@@ -337,8 +337,7 @@ onUpdated(() => {
 
 function mouseTracker(ev: MouseEvent) {
   // ev.stopPropagation()
-  mouseCoord.value.x = ev.offsetX;
-  mouseCoord.value.y = ev.offsetY;
+  mouseCoord.set(ev.offsetX, ev.offsetY);
   mouseCoordNormalized.value.x =
     2 * (ev.offsetX / renderer.domElement.clientWidth) - 1;
   mouseCoordNormalized.value.y =
@@ -448,27 +447,23 @@ function mouseTracker(ev: MouseEvent) {
         });
         if (nonPlane) {
           const planeXRotation = Math.atan2(nonPlane.point.y, nonPlane.point.z);
-          planeDir2.set(0, Math.sin(planeXRotation), Math.cos(planeXRotation)).normalize();
-          const newPath = new HyperbolaCurve(planeDir2);
+          planeDir2
+            .set(0, Math.sin(planeXRotation), Math.cos(planeXRotation))
+            .normalize();
           hyperTube.geometry.dispose();
           hyperTube.material.dispose();
           scene.remove(hyperTube);
-          hyperTube = new Mesh(
-            new TubeGeometry(newPath, 50, 0.03, 12, false),
-            new THREE.MeshStandardMaterial({ color: "greenyellow" })
-          );
-          scene.add(hyperTube)
-          const innerB =
-            planeDir1.x * planeDir1.x +
-            planeDir1.y * planeDir1.y -
-            planeDir1.z * planeDir1.z;
-          const innerA =
-            planeDir2.x * planeDir2.x +
-            planeDir2.y * planeDir2.y -
-            planeDir2.z * planeDir2.z;
-          const lambdaCoeff = Math.sqrt(-1 / innerA);
-          // console.debug("Diag metrics", innerA, innerB, lambdaCoeff);
-          planeDirArrow.setDirection(planeDir2);
+          if (Math.abs(planeXRotation) < Math.PI / 4) {
+            // When rotation is larger than 45 degrees, there no intersection between
+            // the plane and hyperboloid
+            const newPath = new HyperbolaCurve(planeDir2);
+            hyperTube = new Mesh(
+              new TubeGeometry(newPath, 50, 0.03, 12, false),
+              new THREE.MeshStandardMaterial({ color: "greenyellow" })
+            );
+            scene.add(hyperTube);
+          }
+          // planeDirArrow.setDirection(planeDir2);
 
           // console.debug(`Red plane rotation ${radToDeg(planeXRotation)}`);
           randomPlane.rotation.set(0, 0, 0);
