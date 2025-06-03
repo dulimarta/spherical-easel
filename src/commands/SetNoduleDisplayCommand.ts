@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
-import { Labelable, SavedNames } from "@/types";
+import { CommandReturnType, Labelable, SavedNames } from "@/types";
 import SETTINGS from "@/global-settings";
 import { toSVGType } from "@/types";
 
@@ -14,13 +14,13 @@ export class SetNoduleDisplayCommand extends Command {
     super();
     this.seNodule = seNodule;
     this.showing = showing;
-    const theLabel = this.seNodule.getLabel()
+    const theLabel = this.seNodule.getLabel();
     if (theLabel) {
-      this.initialLabelShowingValue = theLabel.showing
+      this.initialLabelShowingValue = theLabel.showing;
     }
   }
 
-  do(): void {
+  do(): CommandReturnType {
     //console.debug(`nodule ${this.seNodule.name}, show value ${this.showing}`);
     this.seNodule.showing = this.showing;
     // Check the global variable that indicates if when hiding an object we should hide the label (and similar for showing)
@@ -39,6 +39,7 @@ export class SetNoduleDisplayCommand extends Command {
       }
       // Add case for SEtext
     }
+    return { success: true };
   }
 
   saveState(): void {

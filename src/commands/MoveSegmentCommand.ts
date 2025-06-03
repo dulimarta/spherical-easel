@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { Vector3 } from "three";
 import { SESegment } from "@/models/SESegment";
-import { toSVGType } from "@/types";
+import { CommandReturnType, toSVGType } from "@/types";
 
 export class MoveSegmentCommand extends Command {
   private seSegment: SESegment;
@@ -25,12 +25,13 @@ export class MoveSegmentCommand extends Command {
     this.newArcLength = newArcLength;
   }
 
-  do(): void {
+  do(): CommandReturnType {
     Command.store.changeSegmentNormalVectorArcLength({
       segmentId: this.seSegment.id,
       normal: this.newNormalVector,
       arcLength: this.newArcLength
     });
+    return { success: true };
   }
 
   saveState(): void {

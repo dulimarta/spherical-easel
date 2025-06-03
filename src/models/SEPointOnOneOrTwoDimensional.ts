@@ -1,4 +1,4 @@
-import { SEPoint } from "./SEPoint"
+import { SEPoint } from "./SEPoint";
 import { Vector3 } from "three";
 import { ObjectState, SEOneOrTwoDimensional } from "@/types";
 import i18n from "@/i18n";
@@ -139,9 +139,7 @@ export class SEPointOnOneOrTwoDimensional extends SEPoint {
     // These are free points on their parent and so we store additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Point On One or Two Dimensional with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        `Point On One or Two Dimensional with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`;
         return;
       }
       orderedSENoduleList.push(this.id);

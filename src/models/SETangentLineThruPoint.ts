@@ -109,9 +109,7 @@ export class SETangentLineThruPoint extends SELine {
     if (objectState && orderedSENoduleList) {
       orderedSENoduleList.push(this.id);
       if (objectState.has(this.id)) {
-        console.log(
-          `Tangent Line Though Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Tangent Line Though Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

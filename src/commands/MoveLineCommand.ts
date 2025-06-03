@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { SELine } from "@/models/SELine";
 import { Vector3 } from "three";
-import { toSVGType } from "@/types";
+import { CommandReturnType, toSVGType } from "@/types";
 
 export class MoveLineCommand extends Command {
   private seLine: SELine;
@@ -19,11 +19,12 @@ export class MoveLineCommand extends Command {
     this.newNormalVector.copy(newNormalVector);
   }
 
-  do(): void {
+  do(): CommandReturnType {
     Command.store.changeLineNormalVector({
       lineId: this.seLine.id,
       normal: this.newNormalVector
     });
+    return { success: true };
   }
 
   saveState(): void {

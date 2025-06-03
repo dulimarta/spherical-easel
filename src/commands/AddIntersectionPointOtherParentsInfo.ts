@@ -1,5 +1,6 @@
 import { Command } from "./Command";
 import {
+  CommandReturnType,
   SavedNames,
   SEIntersectionReturnType,
   SEOneDimensional,
@@ -37,29 +38,30 @@ export class AddIntersectionPointOtherParentsInfo extends Command {
   // Li1 passes through P3 (and P4) always, however P3 is a parent of Li1 and it is only after adding Li1 to the DAG that we can effectively figure out that Li1 is a descendent of P3 (and P4) so (Li1,C1) (and Li1, C2) should *not* be other parent info of P3 (or P4)
   //
   // So create this flag to so that this command is used or not
-  private useThisAddIntersectionPointCommand = true;
+  private commandSuccessful = true;
 
   constructor(seIntersectionPointInfo: SEIntersectionReturnType) {
     super();
     this.otherParentsInfo = seIntersectionPointInfo;
   }
 
-  do(): void {
-    // Add the info to the list of parents info the SEIntersectionPoint, as long as neither parent is a descendent of the SEIntersectionPoint
+  do(): CommandReturnType {
+    // Add the info to the list of parents info the SEIntersectionPoint, as long as  both principle parents are not in the ancestor's list of both parents.
     // console.log(
     //   `AddIntersectionPointOtherParentCommand: DO For intersection point ${this.seIntersectionPoint.name}, add ${this.seOtherParent.name}`
     // );
-    if (this.useThisAddIntersectionPointCommand) {
-      // addIntersectionOtherParentInfo return a boolean that indicates if it was possible to actually add the parent. If so this command is useful, If not this command is ignored. The inside of this conditional is always reached once.
-      this.useThisAddIntersectionPointCommand =
-        this.otherParentsInfo.SEIntersectionPoint.addIntersectionOtherParentInfo(
-          this.otherParentsInfo
-        );
-      // console.log(
-      //   `Use this Command in the future`,
-      //   this.useThisAddIntersectionPointCommand
-      // );
-    }
+
+    // addIntersectionOtherParentInfo return a boolean that indicates if it was possible to actually add the parent. If so this command is useful, If not this command is removed from its group.
+    this.commandSuccessful =
+      this.otherParentsInfo.SEIntersectionPoint.addIntersectionOtherParentInfo(
+        this.otherParentsInfo
+      );
+    // console.log(
+    //   `Use this Command in the future`,
+    //   this.useThisAddIntersectionPointCommand
+    // );
+
+    return { success: this.commandSuccessful };
   }
 
   saveState(): void {
@@ -70,7 +72,7 @@ export class AddIntersectionPointOtherParentsInfo extends Command {
     // console.debug(
     //   `AddIntersectionPointOtherParentCommand: restoreState For intersection point ${this.seIntersectionPoint.name}, remove ${this.seOtherParent.name}`
     // );
-    if (this.useThisAddIntersectionPointCommand) {
+    if (this.commandSuccessful) {
       this.otherParentsInfo.SEIntersectionPoint.removeIntersectionOtherParentInfo(
         this.otherParentsInfo
       );
@@ -78,21 +80,16 @@ export class AddIntersectionPointOtherParentsInfo extends Command {
   }
 
   toOpcode(): null | string | Array<string> {
-    if (this.useThisAddIntersectionPointCommand) {
-      return [
-        "AddIntersectionPointOtherParentsInfo",
-        // Object specific attributes
-        "intersectionPointName=" +
-          this.otherParentsInfo.SEIntersectionPoint.name,
-        "intersectionPointOtherParentInfoName1=" +
-          this.otherParentsInfo.parent1.name,
-        "intersectionPointOtherParentInfoName2=" +
-          this.otherParentsInfo.parent2.name,
-        "intersectionPointOtherParentInfoOrder=" + this.otherParentsInfo.order
-      ].join("&");
-    } else {
-      return null;
-    }
+    return [
+      "AddIntersectionPointOtherParentsInfo",
+      // Object specific attributes
+      "intersectionPointName=" + this.otherParentsInfo.SEIntersectionPoint.name,
+      "intersectionPointOtherParentInfoName1=" +
+        this.otherParentsInfo.parent1.name,
+      "intersectionPointOtherParentInfoName2=" +
+        this.otherParentsInfo.parent2.name,
+      "intersectionPointOtherParentInfoOrder=" + this.otherParentsInfo.order
+    ].join("&");
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {

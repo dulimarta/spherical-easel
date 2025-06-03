@@ -28,7 +28,7 @@ export class SEAngleMarker
   /**
    * The plottable (TwoJS) AngleMarker associated with this model AngleMarker
    */
-  public declare ref: AngleMarker;
+  declare public ref: AngleMarker;
   /**
    * Pointer to the label of this SEAngleMarker
    */
@@ -359,9 +359,7 @@ export class SEAngleMarker
     // will cause this angleMarker to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Anglemarker with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Anglemarker with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

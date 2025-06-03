@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import { SavedNames } from "@/types";
+import { CommandReturnType, SavedNames } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
@@ -31,7 +31,7 @@ export class AddParametricTracePointCommand extends Command {
     }
   }
 
-  do(): void {
+  do(): CommandReturnType {
     this.parametricParent.registerChild(this.seTracePoint);
     this.seTracePoint.registerChild(this.seTraceLabel);
     if (SETTINGS.point.showLabelsOfParametricEndPointsInitially) {
@@ -49,6 +49,7 @@ export class AddParametricTracePointCommand extends Command {
     }
     // this.seTracePoint.markKidsOutOfDate();
     // this.seTracePoint.update();
+    return { success: true };
   }
 
   saveState(): void {
@@ -139,9 +140,7 @@ export class AddParametricTracePointCommand extends Command {
 
     if (parametricParent !== undefined) {
       // make the Trace Point
-      const seTracePoint = new SEParametricTracePoint(
-        parametricParent
-      );
+      const seTracePoint = new SEParametricTracePoint(parametricParent);
       const seTracePointLocation = new Vector3();
       seTracePointLocation.from(
         propMap.get("parametricEndPointseTracePointLocationVector")

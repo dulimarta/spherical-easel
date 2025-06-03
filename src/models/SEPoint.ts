@@ -25,7 +25,7 @@ const styleSet = new Set([
 
 export class SEPoint extends SENodule implements Visitable, Labelable {
   /* This should be the only reference to the plotted version of this SEPoint */
-  public declare ref: Point;
+  declare public ref: Point;
 
   /**
    * This determines if a point has been visible before so that the
@@ -95,9 +95,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     //#region saveState
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        `Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`;
         return;
       }
       const location = new Vector3();

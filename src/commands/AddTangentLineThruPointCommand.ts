@@ -2,7 +2,11 @@ import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
-import { SavedNames, SEOneDimensionalNotStraight } from "@/types";
+import {
+  CommandReturnType,
+  SavedNames,
+  SEOneDimensionalNotStraight
+} from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
@@ -27,12 +31,13 @@ export class AddTangentLineThruPointCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): void {
+  do(): CommandReturnType {
     this.parentSEPoint.registerChild(this.seTangentLineThruPoint);
     this.parentOneDimensional.registerChild(this.seTangentLineThruPoint);
     this.seTangentLineThruPoint.registerChild(this.seLabel);
     Command.store.addLine(this.seTangentLineThruPoint);
     Command.store.addLabel(this.seLabel);
+    return { success: true };
   }
 
   saveState(): void {

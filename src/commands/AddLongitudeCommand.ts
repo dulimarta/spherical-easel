@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
-import { SavedNames } from "@/types";
+import { CommandReturnType, SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleCategory } from "@/types/Styles";
 import { SELongitude } from "@/models/SELongitude";
@@ -19,10 +19,11 @@ export class AddLongitudeCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): void {
+  do(): CommandReturnType {
     Command.store.addLabel(this.seLabel);
     this.seLongitude.registerChild(this.seLabel);
     Command.store.addSegment(this.seLongitude);
+  return { success: true };
   }
 
   saveState(): void {

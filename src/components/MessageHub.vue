@@ -302,7 +302,21 @@ function cancelDeleteMessages() {
   "ellipseCreationAttemptDuplicate": "There is already an ellipse with these foci and angle sum.",
   "newPolygonAdded": "A new polygon was created.",
   "previouslyMeasuredPolygon": "This polygon was measured previously.  See measurement {token}.",
-  "duplicateSegmentAngleMeasurement": "The angle between segments {seg0Name} and {seg1Name} has already been measured. This angle is measurement {measurementName}.","duplicateSegmentLineAngleMeasurement": "The angle between segment {segName} and line {lineName} has already been measured. This angle is measurement {measurementName}."
+  "duplicateSegmentAngleMeasurement": "The angle between segments {seg0Name} and {seg1Name} has already been measured. This angle is measurement {measurementName}.",
+  "duplicateSegmentLineAngleMeasurement": "The angle between segment {segName} and line {lineName} has already been measured. This angle is measurement {measurementName}.",
+  "selectMorePoints": "Select {needed} more point(s).",
+  "newAngleAdded": "New angle measure added.",
+  "segmentSuccessfullyBisected": "Segment {segment} has be successfully bisected",
+  "segmentSuccessfullyNSected": "Segment {segment} has be successfully divided into {number} equal pieces.",
+  "objects": "Objects | Object | object | objects",
+  "deletedNodes": "Successfully deleted {type} {name} and {number} {objects} that depend on it.",
+  "selectAnotherLineOrSegment": "Select 1 more line or segment.",
+  "angleSuccessfullyBisected": "Angle {angle} has be successfully bisected",
+  "angleSuccessfullyNSected": "Angle {angle} has be successfully divided into {number} equal pieces.",
+  "intersectionOneDimensionalPointCreated": "One intersection point successfully created.",
+  "lineThruPointSegmentSelected": "Segment {name} selected. Now select a location to create a new point or to create a point on an object.",
+  "intersectionOneDimensionalSelected": "One dimensional object {name} selected. Select another.",
+  "rotationNoObjectUpdate": "Mouse location determines the rotation. No object selected to rotate about."
 }
 </i18n>
 <i18n locale="id" lang="json">

@@ -5,7 +5,7 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SEEllipse } from "@/models/SEEllipse";
 import { StyleCategory } from "@/types/Styles";
-import { SavedNames } from "@/types";
+import { CommandReturnType, SavedNames } from "@/types";
 import { toSVGType } from "@/types";
 
 export class AddEllipseCommand extends Command {
@@ -29,13 +29,14 @@ export class AddEllipseCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): void {
+  do(): CommandReturnType {
     this.focus1SEPoint.registerChild(this.seEllipse);
     this.focus2SEPoint.registerChild(this.seEllipse);
     this.ellipseSEPoint.registerChild(this.seEllipse);
     this.seEllipse.registerChild(this.seLabel);
     Command.store.addEllipse(this.seEllipse);
     Command.store.addLabel(this.seLabel);
+  return { success: true };
   }
 
   saveState(): void {

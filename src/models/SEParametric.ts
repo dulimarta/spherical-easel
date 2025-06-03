@@ -60,7 +60,7 @@ export class SEParametric
   /**
    * The corresponding plottable TwoJS object
    */
-  public declare ref: Parametric;
+  declare public ref: Parametric;
 
   /**
    * Pointer to the label of this SEParametric
@@ -831,9 +831,7 @@ export class SEParametric
     // will cause this parametric to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Parametric with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Parametric with id ${this.id} has been visited twice proceed no further down this branch of the DAG because we are moving two SENodules at the same time.
         return;
       }
       orderedSENoduleList.push(this.id);

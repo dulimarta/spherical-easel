@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { SEExpression } from "../models/SEExpression";
 
-import { SavedNames, ValueDisplayMode } from "../types";
+import { CommandReturnType, SavedNames, ValueDisplayMode } from "../types";
 import { SENodule } from "@/models/SENodule";
 import { toSVGType } from "@/types";
 
@@ -21,8 +21,9 @@ export class SetValueDisplayModeCommand extends Command {
     this.newValueDisplayMode = newVal;
   }
 
-  do(): void {
+  do(): CommandReturnType {
     this.seExpression.valueDisplayMode = this.newValueDisplayMode;
+    return { success: true };
   }
 
   saveState(): void {

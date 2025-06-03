@@ -107,8 +107,8 @@ export default class DeleteHandler extends Highlighter {
           number: deletedNodeIds.length - 1,
           objects:
             deletedNodeIds.length === 2
-              ? i18n.global.t(`objects.objects`, 4)
-              : i18n.global.t(`objects.objects`, 3)
+              ? i18n.global.t(`objects`, 4)
+              : i18n.global.t(`objects`, 3)
         },
         type: "success"
       });
@@ -191,8 +191,8 @@ export default class DeleteHandler extends Highlighter {
           number: deletedObjectIDs.length,
           objects:
             deletedObjectIDs.length === 1
-              ? i18n.global.t(`objects.objects`, 4)
-              : i18n.global.t(`objects.objects`, 3)
+              ? i18n.global.t(`objects`, 4)
+              : i18n.global.t(`objects`, 3)
         },
         type: "success"
       });

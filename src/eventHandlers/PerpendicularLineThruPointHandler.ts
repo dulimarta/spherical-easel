@@ -265,7 +265,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             this.sePointVector.isZero()
           ) {
             EventBus.fire("show-alert", {
-              key: `handlers.lineThruPointSegmentSelected`,
+              key: `lineThruPointSegmentSelected`,
               keyOptions: {
                 name: `${this.oneDimensional.label?.ref.shortUserName}`
               },

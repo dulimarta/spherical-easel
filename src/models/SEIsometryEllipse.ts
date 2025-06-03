@@ -109,9 +109,7 @@ export class SEIsometryEllipse extends SEEllipse {
     // will cause this ellipse to be put into the correct location.So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `IsometryEllipse with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `IsometryEllipse with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

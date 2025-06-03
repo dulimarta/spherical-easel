@@ -216,14 +216,8 @@ export class SEIntersectionPoint extends SEPoint {
     // One condition is that the DAG must be maintained - so both proposed new parents cannot be descendants of the intersection. (This is covered by the next condition because, if one parent is a descendant of the intersection point, then the ancestors of the parent include the parents of the intersection point )
     // Central question: If one of the current principle parents was deleted could this new pair step in and be parents of the intersection point?
     // Condition: This means that the ancestors of both proposed parents must not include the parent that is being deleted. That is, both principle parents can not be in the ancestors of both parents.
-    //
-    // const descendants = getDescendants([this]).map(nod => nod.name);
-    // console.log(`Descendants of ${this.name} `, descendants);
+
     const ancestors = getAncestors([n.parent1, n.parent2]).map(nod => nod.name);
-    // console.log(
-    //   `Ancestors of ${n.parent1.name} and ${n.parent2.name} `,
-    //   ancestors
-    // );
     if (
       !(
         ancestors.includes(this.principleParent1.name) &&
@@ -232,11 +226,9 @@ export class SEIntersectionPoint extends SEPoint {
     ) {
       this._otherParentsInfoArray.push(n);
       returnValue = true;
-      // console.log(`Added!`);
       // Once another set of parents are added, update the exists variable with an update
       this.shallowUpdate();
     } else {
-      // console.warn(`Not Added!`);
       returnValue = false;
     }
     return returnValue;
@@ -316,11 +308,7 @@ export class SEIntersectionPoint extends SEPoint {
               SENodule.store.inverseTotalRotationMatrix
             )[info.order];
             if (intersectionInfo.exists) {
-              // console.log(
-              //   `Changing principle parents of ${this.name}/${this.label?.ref.shortUserName}/${this.noduleDescription} to ${info.parent1.name} and ${info.parent2.name}`
-              // );
               // This means that info should be the new parents
-              // new ChangeIntersectionPointPrincipleParents(info).execute();
               this.changePrincipleParents(info);
               // update the DAG
               this.principleParent1.unregisterChild(this);
@@ -342,6 +330,7 @@ export class SEIntersectionPoint extends SEPoint {
       }
     }
   }
+
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]
@@ -362,9 +351,7 @@ export class SEIntersectionPoint extends SEPoint {
     // will cause this point to be put into the correct location.So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Intersection point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Intersection point with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);
@@ -387,6 +374,7 @@ export class SEIntersectionPoint extends SEPoint {
     return true;
   }
   public isFreePoint(): boolean {
+    console.log("non free point query");
     return false;
   }
 }

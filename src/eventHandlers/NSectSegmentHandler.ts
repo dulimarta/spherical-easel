@@ -167,7 +167,7 @@ export default class NSectSegmentHandler extends Highlighter {
         this.mouseLeave(event);
         if (this.selectedNValue === 2) {
           EventBus.fire("show-alert", {
-            key: `handlers.segmentSuccessfullyBisected`,
+            key: `segmentSuccessfullyBisected`,
             keyOptions: {
               segment: candidateSegment.label?.ref.shortUserName
             },
@@ -175,7 +175,7 @@ export default class NSectSegmentHandler extends Highlighter {
           });
         } else {
           EventBus.fire("show-alert", {
-            key: `handlers.segmentSuccessfullyNSected`,
+            key: `segmentSuccessfullyNSected`,
             keyOptions: {
               segment: candidateSegment.label?.ref.shortUserName,
               number: this.selectedNValue

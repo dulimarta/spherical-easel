@@ -2,10 +2,9 @@ import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
-import { SavedNames, toSVGType } from "@/types";
+import { CommandReturnType, SavedNames, toSVGType } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleCategory } from "@/types/Styles";
-
 
 //#region addPointCommand
 export class AddPointCommand extends Command {
@@ -27,7 +26,7 @@ export class AddPointCommand extends Command {
     }
   }
 
-  do(): void {
+  do(): CommandReturnType {
     Command.store.addLabel(this.seLabel);
     this.sePoint.registerChild(this.seLabel);
     Command.store.addPoint(this.sePoint);
@@ -38,6 +37,7 @@ export class AddPointCommand extends Command {
       this.sePoint.label.ref.shortUserName = `P${this.sePoint.visiblePointCount}`;
       this.sePoint.label.ref.defaultName = `P${this.sePoint.visiblePointCount}`;
     }
+    return { success: true };
   }
 
   saveState(): void {

@@ -26,9 +26,7 @@ export class SECalculation extends SEExpression {
       // vars.push(v[0]);
       // Find the SENodule parents of this calculation
       // SEStore.expressions.forEach(n => console.log(n.name));
-      const pos = SENodule.store.seExpressions.findIndex(
-        z => z.name === v[0]
-      );
+      const pos = SENodule.store.seExpressions.findIndex(z => z.name === v[0]);
       // add it to the calculationParents if it is not already added
       if (pos > -1) {
         const pos2 = this._calculationParents.findIndex(
@@ -43,7 +41,7 @@ export class SECalculation extends SEExpression {
 
       // if (pos > -1) this._calculationParents.push(SEStore.expressions[pos]);
     }
-    this.recalculate() /* force the first calculation, so value is evaluated */
+    this.recalculate(); /* force the first calculation, so value is evaluated */
     // DO not register parents here. That is done the in the command
 
     // This might not be necessary because all expressions have the name "M####" and should be caught by the above
@@ -135,7 +133,7 @@ export class SECalculation extends SEExpression {
     this.exists = this._calculationParents.every(parent => parent.exists);
     if (this.exists) {
       this.recalculate();
-      super.shallowUpdate()
+      super.shallowUpdate();
     }
   }
 
@@ -151,9 +149,7 @@ export class SECalculation extends SEExpression {
     // This object and any of its children have no presence on the sphere canvas So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Calculation with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Calculation with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

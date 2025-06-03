@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { Vector3 } from "three";
-import { toSVGType } from "@/types";
+import { CommandReturnType, toSVGType } from "@/types";
 
 export class MovePointCommand extends Command {
   private sePoint: SEPoint;
@@ -19,11 +19,12 @@ export class MovePointCommand extends Command {
     this.newLocationVector.copy(newLocationVector);
   }
 
-  do(): void {
+  do(): CommandReturnType {
     Command.store.movePoint({
       pointId: this.sePoint.id,
       location: this.newLocationVector
     });
+    return { success: true };
   }
 
   saveState(): void {

@@ -1,8 +1,7 @@
 import Nodule from "@/plottables/Nodule";
 import { Command } from "./Command";
-import { FillStyle, SavedNames } from "@/types";
+import { CommandReturnType, FillStyle, SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
-
 
 export class ChangeFillStyleCommand extends Command {
   private currentFillStyle: FillStyle;
@@ -15,10 +14,11 @@ export class ChangeFillStyleCommand extends Command {
     this.pastFillStyle = pastFillStyle;
   }
 
-  do(): void {
-    console.log("change fill style")
+  do(): CommandReturnType {
+    console.log("change fill style");
     Nodule.setFillStyle(this.currentFillStyle);
     Command.store.changeFillStyle(this.currentFillStyle);
+    return { success: true };
   }
 
   saveState(): void {
@@ -55,7 +55,7 @@ export class ChangeFillStyleCommand extends Command {
       | undefined;
     if (currentFillStyle != undefined && pastFillStyle != undefined) {
       return new ChangeFillStyleCommand(currentFillStyle, pastFillStyle);
-    }else {
+    } else {
       throw new Error(
         `ChangeFillStyleCommand: past or current fill is undefined`
       );

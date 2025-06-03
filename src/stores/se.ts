@@ -1021,7 +1021,7 @@ export const useSEStore = defineStore("se", () => {
     Nodule.setBackStyleContrast(newContrast);
     seNodules.value.forEach(n => {
       n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
-      n.ref?.adjustSize()
+      n.ref?.adjustSize();
     });
   }
   function changeFillStyle(newFillStyle: FillStyle) {
@@ -1409,7 +1409,6 @@ export const useSEStore = defineStore("se", () => {
       (firstParent instanceof SELine || firstParent instanceof SESegment) &&
       (secondParent instanceof SELine || secondParent instanceof SESegment)
     ); // This is only false when the parents are two straight objects and doesn't matter when existingIntersectionPoint is true
-    
 
     let existingSEIntersectionPoint: SEIntersectionPoint | null = null;
     intersectionInfo.forEach((info, index) => {
@@ -1423,14 +1422,9 @@ export const useSEStore = defineStore("se", () => {
       let isOnExistingPointList = false;
       // Search the existing (and newly created points and newly created --i.e. earlier in this command group) intersection points for these intersections
       existingSEPoints.forEach(pt => {
-        // if (pt.locationVector.isZero()) {
-        //   console.warn(
-        //     `Intersection point with zero vector encountered ${pt.name}/${pt.label?.ref.shortUserName}/${pt.noduleDescription}`
-        //   );
-        // }
         if (
           tmpVector.subVectors(info.vector, pt.locationVector).isZero() &&
-          !pt.locationVector.isZero() //Never happens for a line and line as they always *initially* intersect.  However for a line and circle, if they
+          !pt.locationVector.isZero() //isZero is never true happens for a line and line as they always *initially* intersect.  However for a line and circle, if they
           // don't initially intersect then the intersection vectors are zero.
           //The default is that when two objects don't intersect initially the vector is zero
         ) {
@@ -1451,7 +1445,7 @@ export const useSEStore = defineStore("se", () => {
         );
         //put the new intersection point on the existing list
         existingSEPoints.push(newSEIntersectionPt);
-  
+
         //copy the location and existence information into the new intersection point and put it on the list to be returned
         newSEIntersectionPt.locationVector = info.vector;
         newSEIntersectionPt.exists = info.exists;
@@ -1467,6 +1461,7 @@ export const useSEStore = defineStore("se", () => {
         // if existingSEIntersection Point is null here then we are in Option #0 above (means that the intersection vector is on the sePoint list, but the point is not an seIntersection point) so do nothing with these intersection points
         if (existingSEIntersectionPoint != null) {
           // the intersection vector (info.vector) is at an existing SEIntersection point (Option #2 above)
+          // this means that the parents might new parents of this intersection point check later
           // this means that the parents might new parents of this intersection point check later
           returnArray.push({
             SEIntersectionPoint: existingSEIntersectionPoint,
@@ -1628,10 +1623,7 @@ export const useSEStore = defineStore("se", () => {
           );
         } else if (object1 instanceof SECircle && object2 instanceof SECircle) {
           if (object1.name != object2.name) {
-            intersectionInfo = intersectCircleWithCircle(
-              object1,
-              object2
-            );
+            intersectionInfo = intersectCircleWithCircle(object1, object2);
           }
         } else if (
           object1 instanceof SECircle &&
@@ -1681,15 +1673,6 @@ export const useSEStore = defineStore("se", () => {
         intersectionPointReturnArray.push(...info.intersections);
       });
     });
-
-    // console.log(
-    //   `Number of points after intersection ${existingSEPoints.length}`
-    // );
-    // existingSEPoints.forEach((pt,index) => {
-    //   console.log( index, 
-    //     `${pt.name}/${pt.label?.ref.shortUserName}/${pt.noduleDescription}`
-    //   );
-    // });
     return intersectionPointReturnArray;
   }
 

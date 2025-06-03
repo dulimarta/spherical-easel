@@ -620,7 +620,7 @@ export default class AngleHandler extends Highlighter {
       if (this.targetPoints.length === 3) {
         if (this.makeAngleMarkerFromThreePoints()) {
           EventBus.fire("show-alert", {
-            key: `handlers.newAngleAdded`,
+            key: `newAngleAdded`,
             keyOptions: {},
             type: "success"
           });
@@ -635,7 +635,7 @@ export default class AngleHandler extends Highlighter {
           ])
         ) {
           EventBus.fire("show-alert", {
-            key: `handlers.newAngleAdded`,
+            key: `newAngleAdded`,
             keyOptions: {},
             type: "success"
           });
@@ -645,7 +645,7 @@ export default class AngleHandler extends Highlighter {
       } else if (this.targetSegments.length === 2) {
         if (this.makeAngleMarkerFromTwoSegments()) {
           EventBus.fire("show-alert", {
-            key: `handlers.newAngleAdded`,
+            key: `newAngleAdded`,
             keyOptions: {},
             type: "success"
           });
@@ -658,7 +658,7 @@ export default class AngleHandler extends Highlighter {
       ) {
         if (this.makeAngleMarkerFromLineAndSegment()) {
           EventBus.fire("show-alert", {
-            key: `handlers.newAngleAdded`,
+            key: `newAngleAdded`,
             keyOptions: {},
             type: "success"
           });
@@ -671,14 +671,14 @@ export default class AngleHandler extends Highlighter {
           case AngleMode.POINTS:
             needed = 3 - this.pointLocations.length;
             EventBus.fire("show-alert", {
-              key: `handlers.selectMorePoints`,
+              key: `selectMorePoints`,
               keyOptions: { needed: `${needed}` },
               type: "info"
             });
             break;
           case AngleMode.SEGMENTSORLINEANDSEGMENT:
             EventBus.fire("show-alert", {
-              key: `handlers.selectAnotherLineOrSegment`,
+              key: `selectAnotherLineOrSegment`,
               keyOptions: {},
               type: "info"
             });

@@ -39,7 +39,7 @@ export class SECircle
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public declare ref: Circle;
+  declare public ref: Circle;
   /**
    * Pointer to the label of this SESegment
    */
@@ -81,7 +81,9 @@ export class SECircle
     this._circleSEPoint = circlePoint;
     SECircle.CIRCLE_COUNT++;
     this.name = `C${SECircle.CIRCLE_COUNT}`;
-    this.ref = createNonFreeCircle ? new NonFreeCircle(this.name) : new Circle(this.name);
+    this.ref = createNonFreeCircle
+      ? new NonFreeCircle(this.name)
+      : new Circle(this.name);
     this.ref.centerVector = centerPoint.locationVector;
     this.ref.circleRadius = this.circleRadius;
     this.ref.updateDisplay();
@@ -201,9 +203,7 @@ export class SECircle
     // will cause this circle to be put into the correct location.So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Circle with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Circle with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);
@@ -460,13 +460,12 @@ export class SECircle
   }
 
   public getLabel(): SELabel | null {
-    return (this as Labelable).label!
-
+    return (this as Labelable).label!;
   }
   public isMeasurable(): boolean {
     return true;
   }
-    public isFillable(): boolean {
+  public isFillable(): boolean {
     return true;
   }
 }

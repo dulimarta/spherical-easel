@@ -1,5 +1,6 @@
 import { Command } from "./Command";
 import {
+  CommandReturnType,
   SavedNames,
   SEIntersectionReturnType,
   SEOneDimensional
@@ -18,13 +19,14 @@ export class RemoveIntersectionPointOtherParentsInfo extends Command {
     this.otherParentsInfo = otherParentsInfo;
   }
 
-  do(): void {
+  do(): CommandReturnType {
     // console.debug(
     //   `RemoveIntersectionPointOtherParent: DO Remove intersection point parent, ${this.seOtherParent.name}`
     // );
     this.otherParentsInfo.SEIntersectionPoint.removeIntersectionOtherParentInfo(
       this.otherParentsInfo
     );
+    return { success: true };
   }
 
   saveState(): void {
