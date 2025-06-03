@@ -465,7 +465,7 @@ export default class SelectionHandler extends Highlighter {
           possibleAdditions.push(this.hitSEPolygons[0]);
         }
 
-        if (event.altKey) {
+        if (event.altKey && possibleAdditions[0]) {
           // Add current hit object list to the current selection
           possibleAdditions[0].selected = !possibleAdditions[0].selected;
           if (possibleAdditions[0].selected) {

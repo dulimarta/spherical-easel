@@ -29,7 +29,7 @@
         location="top"
         offset="32">
         <v-card class="pa-1">
-          <v-card-title v-t="'selectMsgType'"></v-card-title>
+          <v-card-title>{{ t("selectMsgType") }}</v-card-title>
           <v-card-text>
             <v-checkbox
               :label="t('selectAll')"
@@ -317,7 +317,9 @@ function cancelDeleteMessages() {
   "lineThruPointSegmentSelected": "Segment {name} selected. Now select a location to create a new point or to create a point on an object.",
   "intersectionOneDimensionalSelected": "One dimensional object {name} selected. Select another.",
   "emptyTextObjectWarning": "Empty text objects are not allowed.",
-  "rotationNoObjectUpdate": "Mouse location determines the rotation. No object selected to rotate about."
+  "rotationNoObjectUpdate": "Mouse location determines the rotation. No object selected to rotate about.",
+  "firestoreConstructionSaved": "Construction {docId} successfully saved.",
+  "newSegmentMeasurementAdded": "New measurement {name} added."
 }
 </i18n>
 <i18n locale="id" lang="json">

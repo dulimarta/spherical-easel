@@ -223,7 +223,7 @@ export default class TranslationTransformationHandler extends Highlighter {
         // the segment has not been measured so create new SEEXpression for the measurement
         measurementSEExpression = new SESegmentLength(this.measurementSEParent);
         EventBus.fire("show-alert", {
-          key: `handlers.newSegmentMeasurementAdded`,
+          key: `newSegmentMeasurementAdded`,
           keyOptions: { name: `${measurementSEExpression.name}` },
           type: "success"
         });

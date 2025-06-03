@@ -64,11 +64,13 @@
                     color="#40A082"
                     density="compact"
                     return-object>
-                    <template #prepend="{item, isActive}">
+                    <template #prepend="{ item, isActive }">
                       <template v-if="!item.leaf">
-                      <v-icon v-if="isActive && item.children">mdi-folder-open</v-icon>
-                      <v-icon v-else>mdi-folder</v-icon>
-                    </template>
+                        <v-icon v-if="isActive && item.children">
+                          mdi-folder-open
+                        </v-icon>
+                        <v-icon v-else>mdi-folder</v-icon>
+                      </template>
                       <v-icon v-else>mdi-file</v-icon>
                     </template>
                   </v-treeview>
@@ -105,12 +107,17 @@
                     color="#40A082"
                     active-strategy="single-independent"
                     return-object>
-                    <template #append="{item}">
-                      <v-btn icon="mdi-folder-plus" variant="tonal" size="small" @click="() => {
-                        targetFolder.push(item.id)
-                        newPathDialog?.show()
-                      }">
-                      </v-btn>
+                    <template #append="{ item }">
+                      <v-btn
+                        icon="mdi-folder-plus"
+                        variant="tonal"
+                        size="small"
+                        @click="
+                          () => {
+                            targetFolder.push(item.id);
+                            newPathDialog?.show();
+                          }
+                        "></v-btn>
                     </template>
                   </v-treeview>
                 </div>
@@ -128,21 +135,25 @@
           color="#40A082"
           class="mr-2"
           @click="confirmLoad">
-          LOAD SELECTED
+          {{ t("loadSelectedFolder") }}
         </v-btn>
         <v-btn color="#40A082" variant="outlined" @click="visible = false">
-          CLOSE
+          {{ t("close") }}
         </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <Dialog width="60%" ref="newPathDialog" title="Create a New Destination Path" yes-text="Create" no-text="Cancel"
-  :yes-action="addNewPath">
+  <Dialog
+    width="60%"
+    ref="newPathDialog"
+    title="Create a New Destination Path"
+    yes-text="Create"
+    no-text="Cancel"
+    :yes-action="addNewPath">
     <v-text-field
-    v-model="destinationPath"
+      v-model="destinationPath"
       label="New Path"
-      id="id"
-    ></v-text-field>
+      id="id"></v-text-field>
   </Dialog>
 </template>
 
@@ -158,7 +169,7 @@ import Dialog, { DialogAction } from "./Dialog.vue";
 const { t } = useI18n();
 
 /** v-model that controls visibility of the overall component */
-const visible = defineModel<boolean>("visible", {default: false});
+const visible = defineModel<boolean>("visible", { default: false });
 
 /** v-model that passes the selected folder to load in and out of this component */
 const loadFolder = defineModel("loadFolder");
@@ -166,11 +177,11 @@ const loadFolder = defineModel("loadFolder");
 /** stores the index of the currently selected v-tab */
 const selectedTab = ref(0);
 
-const destinationPath: Ref<string|null> = ref(null)
+const destinationPath: Ref<string | null> = ref(null);
 /** reference to the construction store's properties and functions */
 const constructionStore = useConstructionStore();
-const open = ref([])
-const newPathDialog: Ref<DialogAction|null> = ref(null)
+const open = ref([]);
+const newPathDialog: Ref<DialogAction | null> = ref(null);
 //
 // move functionality
 //
@@ -205,8 +216,10 @@ function confirmMove() {
 
 function addNewPath() {
   if (destinationPath.value) {
-    console.debug(`Create ${destinationPath.value} under ${targetFolder.value}`)
-    constructionStore.addPath(targetFolder.value[0], destinationPath.value)    
+    console.debug(
+      `Create ${destinationPath.value} under ${targetFolder.value}`
+    );
+    constructionStore.addPath(targetFolder.value[0], destinationPath.value);
   }
 }
 
@@ -264,8 +277,8 @@ const confirmLoad = () => {
 
 const updateTreeviews = () => {
   /* recalculate and filter out public branches from all trees */
-  const z = constructionStore.constructionTree.getFolders()
-  console.debug("updateTreeView ", z)
+  const z = constructionStore.constructionTree.getFolders();
+  console.debug("updateTreeView ", z);
   loadFolders.value = constructionStore.constructionTree
     .getFolders()
     .filter(folder => folder.title !== "Public Constructions");
@@ -280,7 +293,7 @@ const updateTreeviews = () => {
 watchDebounced(
   () => constructionStore.constructionTree.updateCounter,
   _ => {
-    console.debug("watchDebounced is calling updateTreeView()")
+    console.debug("watchDebounced is calling updateTreeView()");
     updateTreeviews();
   },
   { debounce: 500, maxWait: 1000 }
@@ -360,6 +373,8 @@ onMounted(updateTreeviews);
 <i18n locale="en" lang="json">
 {
   "selectConstructionsLabel": "SELECT CONSTRUCTIONS",
-  "destinationFolderLabel": "DESTINATION FOLDER"
+  "destinationFolderLabel": "DESTINATION FOLDER",
+  "loadSelectedFolder": "LOAD SELECTED FOLDER",
+  "close": "CLOSE"
 }
 </i18n>

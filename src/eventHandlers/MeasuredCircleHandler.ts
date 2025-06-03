@@ -76,7 +76,7 @@ export default class MeasuredCircleHandler extends Highlighter {
     null;
   protected snapTemporaryPointMarkerToPoint: SEPoint | null = null;
 
-// Filter the hitSEPoints appropriately for this handler
+  // Filter the hitSEPoints appropriately for this handler
   protected filteredIntersectionPointsList: SEPoint[] = [];
 
   /* temporary vector and matrix to help with computations */
@@ -588,10 +588,10 @@ export default class MeasuredCircleHandler extends Highlighter {
           }
         })
       ) {
-        // the segment has not been measured so create new SEEXpression for the measurement
+        // the segment has not been measured so create new SEExpression for the measurement
         measurementSEExpression = new SESegmentLength(this.measurementSEParent);
         EventBus.fire("show-alert", {
-          key: `handlers.newSegmentMeasurementAdded`,
+          key: `newSegmentMeasurementAdded`,
           keyOptions: { name: `${measurementSEExpression.name}` },
           type: "success"
         });

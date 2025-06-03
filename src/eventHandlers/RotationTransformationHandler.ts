@@ -66,7 +66,7 @@ export default class RotationTransformationHandler extends Highlighter {
   private tmpVector = new Vector3();
   private tmpVector1 = new Vector3();
 
-// Filter the hitSEPoints appropriately for this handler
+  // Filter the hitSEPoints appropriately for this handler
   protected filteredIntersectionPointsList: SEPoint[] = [];
 
   constructor(layers: Group[]) {
@@ -480,7 +480,7 @@ export default class RotationTransformationHandler extends Highlighter {
         // the segment has not been measured so create new SEEXpression for the measurement
         measurementSEExpression = new SESegmentLength(this.measurementSEParent);
         EventBus.fire("show-alert", {
-          key: `handlers.newSegmentMeasurementAdded`,
+          key: `newSegmentMeasurementAdded`,
           keyOptions: { name: `${measurementSEExpression.name}` },
           type: "success"
         });

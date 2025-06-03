@@ -8,7 +8,7 @@
         @click="showDialog = true"
         block
         max-width="300px">
-        Construction Organization
+        {{ t("constructionOrganization") }}
       </v-btn>
     </div>
 
@@ -16,7 +16,7 @@
     <ConstructionTreeDialog
       v-if="firebaseUid && firebaseUid.length > 0"
       v-model:visible="showDialog"
-      v-model:loadFolder="folderToLoad"/>
+      v-model:loadFolder="folderToLoad" />
 
     <!-- Panels for Constructions -->
     <PanelsContainer :selected-folder="folderToLoad" />
@@ -29,6 +29,8 @@ import ConstructionTreeDialog from "@/components/ConstructionTreeDialog.vue";
 import PanelsContainer from "@/components/PanelsContainer.vue";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 // Store Setup
 const acctStore = useAccountStore();
@@ -38,3 +40,8 @@ const { firebaseUid } = storeToRefs(acctStore);
 const showDialog = ref(false);
 const folderToLoad: Ref<string> = ref("");
 </script>
+<i18n locale="en" lang="json">
+{
+  "constructionOrganization": "Construction Organization"
+}
+</i18n>

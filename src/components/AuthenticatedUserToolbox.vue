@@ -497,7 +497,7 @@ async function doSave(): Promise<void> {
           privateConstructions.value = [...privateConstructions.value];
         }, 500);
         EventBus.fire("show-alert", {
-          key: "constructions.firestoreConstructionSaved",
+          key: "firestoreConstructionSaved",
           keyOptions: { docId },
           type: "info"
         });

@@ -13,7 +13,6 @@ import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { LabelDisplayMode, ValueDisplayMode } from "@/types";
 import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
 
-
 export default class SegmentLengthHandler extends Highlighter {
   constructor(layers: Group[]) {
     super(layers);
@@ -87,7 +86,7 @@ export default class SegmentLengthHandler extends Highlighter {
     } else {
       const lenMeasure = new SESegmentLength(targetSegment);
       EventBus.fire("show-alert", {
-        key: `handlers.newSegmentMeasurementAdded`,
+        key: `newSegmentMeasurementAdded`,
         keyOptions: { name: `${lenMeasure.name}` },
         type: "success"
       });
