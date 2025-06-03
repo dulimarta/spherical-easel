@@ -396,8 +396,9 @@ export const useConstructionStore = defineStore("construction", () => {
       })
       .then(async ([docId, scriptData, svgData]) => {
         const constructionDoc = doc(appDB, collectionPath, docId);
-        // Pass on the document ID to be included in the alert message
-        const parsedScript = JSON.parse(scriptData) as ConstructionScript;
+        // IMPORTANT: DO NOT JSON.parse scriptData because it may contain
+        // a URL to Firebase Storage instead of a valid JSON representation of the Opcode dump
+        const parsedScript = JSON.parse(scriptOut) as ConstructionScript;
         const objectCount = parsedScript.flatMap(s =>
           Array.isArray(s) ? s : [s]
         ).length;
@@ -434,6 +435,7 @@ export const useConstructionStore = defineStore("construction", () => {
           privateConstructions.value.push(localCopy);
           constructionTree.setOwnedConstructions(privateConstructions.value);
         }
+        // Pass on the document ID to be included in the alert message
         return docId;
       });
   }
@@ -541,8 +543,8 @@ export const useConstructionStore = defineStore("construction", () => {
     targetArr: Array<SphericalConstruction>
   ): Promise<void> {
     /* get a snapshot of the owner's constructions list */
-    if (!owner) return
-    console.debug("Parse owned collections of", owner)
+    if (!owner) return;
+    console.debug("Parse owned collections of", owner);
     const qs: QuerySnapshot = await getDocs(
       collection(appDB, "users", owner, "constructions")
     );
@@ -1010,14 +1012,12 @@ export const useConstructionStore = defineStore("construction", () => {
   }
 
   function addPath(root: string, newPath: string) {
-    let fullPath = root
-    if (newPath.startsWith("/"))
-      fullPath += newPath
-    else
-      fullPath += '/' + newPath
-    const path: ConstructionPath = new ConstructionPath(fullPath)
-    constructionTree.addFolder(path)
-    console.debug("Tree", constructionTree)
+    let fullPath = root;
+    if (newPath.startsWith("/")) fullPath += newPath;
+    else fullPath += "/" + newPath;
+    const path: ConstructionPath = new ConstructionPath(fullPath);
+    constructionTree.addFolder(path);
+    console.debug("Tree", constructionTree);
   }
 
   return {
