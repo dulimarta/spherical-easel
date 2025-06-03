@@ -80,12 +80,12 @@
           <v-tooltip activator="#front-icon" :text="frontTooltip"></v-tooltip>
           <div id="front-icon" ref="frontPanelIcon">
             <v-badge
-              v-if="selectedPlottables.size > 0"
+              v-if="selectedPlottables.size > 0 && !hasTextObject()"
               :content="selectedPlottables.size"
               :color="isSelected ? 'primary' : 'secondary'">
               <v-icon
                 @click="styleIconAction(value, toggle!)"
-                :disabled="selectedPlottables.size === 0">
+                :disabled="selectedPlottables.size === 0 || hasTextObject()">
                 mdi-arrange-bring-forward
               </v-icon>
             </v-badge>
@@ -106,12 +106,12 @@
           <v-tooltip activator="#back-icon" :text="backTooltip"></v-tooltip>
           <div id="back-icon" ref="backPanelIcon">
             <v-badge
-              v-if="selectedPlottables.size > 0"
+              v-if="selectedPlottables.size > 0 && !hasTextObject()"
               :content="selectedPlottables.size"
               :color="isSelected ? 'primary' : 'secondary'">
               <v-icon
                 @click="styleIconAction(value, toggle!)"
-                :disabled="selectedPlottables.size === 0">
+                :disabled="selectedPlottables.size === 0 || hasTextObject()">
                 mdi-arrange-send-backward
               </v-icon>
             </v-badge>
@@ -306,7 +306,9 @@
      will see thru the style drawer */
   background: white;
   border: solid 1px lightgray;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
 
   border-radius: 0.5em;
   height: 50vh;
@@ -364,8 +366,12 @@ const {
   backStyleContrastCopy,
   fillStyleCopy
 } = storeToRefs(styleStore);
-const { i18nMessageSelector, hasLabelObject, persistUpdatedStyleOptions } =
-  styleStore;
+const {
+  i18nMessageSelector,
+  hasLabelObject,
+  persistUpdatedStyleOptions,
+  hasTextObject
+} = styleStore;
 const styleSelection = ref<string | undefined>(undefined);
 // const { hasStyle, hasDisagreement } = styleStore;
 const fillStyle = ref(Nodule.getFillStyle());
@@ -516,7 +522,9 @@ const labelTooltip = computed((): string => {
 
 const backTooltip = computed((): string => {
   let text = t("backgroundTooltip");
-  if (selectedPlottables.value.size <= 0) {
+  if (hasTextObject()) {
+    text += " " + t("disabledTooltipWithText");
+  } else if (selectedPlottables.value.size <= 0) {
     text += " " + t("disabledTooltip");
   }
   return text;
@@ -524,7 +532,9 @@ const backTooltip = computed((): string => {
 
 const frontTooltip = computed((): string => {
   let text = t("foregroundTooltip");
-  if (selectedPlottables.value.size <= 0) {
+  if (hasTextObject()) {
+    text += " " + t("disabledTooltipWithText");
+  } else if (selectedPlottables.value.size <= 0) {
     text += " " + t("disabledTooltip");
   }
   return text;
@@ -596,6 +606,7 @@ function activateSelectionTool() {
   "foregroundTooltip": "Foreground Style",
   "textObjectsAndForeground": "Text objects have no foreground style to edit",
   "disabledTooltip": "Disabled: no editable object selected",
+  "disabledTooltipWithText": "Disabled: to edit a text object use label style.",
   "backStyleContrast": "Back Style Contrast",
   "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of Global Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is invisible and its size reduction is maximized.",
   "globalBackStyleContrast": "Global Back Style Contrast",

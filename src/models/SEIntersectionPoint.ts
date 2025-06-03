@@ -338,13 +338,6 @@ export class SEIntersectionPoint extends SEPoint {
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) return;
 
-    //Add a warning if some other parent is out of date
-    // if (this.otherParentArray.some(item => item.isOutOfDate())) {
-    //   console.warn(
-    //     `SEIntersectionPoint: The intersection point ${this.name} has an other parent that is out of date and the existence might not update correctly.`
-    //   );
-    // }
-
     this.setOutOfDate(false);
     this.shallowUpdate();
     // Intersection Points are completely determined by their parents and an update on the parents
@@ -374,7 +367,6 @@ export class SEIntersectionPoint extends SEPoint {
     return true;
   }
   public isFreePoint(): boolean {
-    console.log("non free point query");
     return false;
   }
 }

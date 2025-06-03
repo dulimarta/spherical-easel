@@ -316,6 +316,7 @@ function cancelDeleteMessages() {
   "intersectionOneDimensionalPointCreated": "One intersection point successfully created.",
   "lineThruPointSegmentSelected": "Segment {name} selected. Now select a location to create a new point or to create a point on an object.",
   "intersectionOneDimensionalSelected": "One dimensional object {name} selected. Select another.",
+  "emptyTextObjectWarning": "Empty text objects are not allowed.",
   "rotationNoObjectUpdate": "Mouse location determines the rotation. No object selected to rotate about."
 }
 </i18n>

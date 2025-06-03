@@ -39,6 +39,8 @@ export default class TextHandler extends Highlighter {
   activate(): void {
     // Set up the listener for text submission
     EventBus.listen("text-data-submitted", this.handleTextInput.bind(this));
+    // clear all selected seNodules and unhighlight them
+    super.activate();
   }
   deactivate(): void {
     EventBus.unlisten("text-data-submitted");
@@ -104,7 +106,7 @@ export default class TextHandler extends Highlighter {
     } else {
       //Warn the user that they can't have an empty text object
       EventBus.fire("show-alert", {
-        key: `handlers.emptyTextObjectWarning`,
+        key: `emptyTextObjectWarning`,
         keyOptions: {},
         type: "warning"
       });

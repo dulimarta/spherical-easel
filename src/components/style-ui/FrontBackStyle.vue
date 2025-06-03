@@ -48,7 +48,11 @@
           :title="t('fillColor')"
           :numSelected="selectedPlottables.size"
           :conflict="hasDisagreement('fillColor')"
-          v-if="isCommonProperty('fillColor') && !hasDisagreement('fillColor')"
+          v-if="
+            isCommonProperty('fillColor') &&
+            !hasDisagreement('fillColor') &&
+            showFillColorPickerForFillable()
+          "
           style-name="fillColor"
           v-model="styleOptions.fillColor" />
         <DisagreementOverride
@@ -292,8 +296,13 @@ const emits = defineEmits(["undo-styles", "apply-default-styles"]);
 const props = defineProps<ComponentProps>();
 const styleStore = useStylingStore();
 const { selectedPlottables, styleOptions } = storeToRefs(styleStore);
-const { hasStyle, hasDisagreement, isCommonProperty, hasSomeProperties } =
-  styleStore;
+const {
+  hasStyle,
+  hasDisagreement,
+  isCommonProperty,
+  hasSomeProperties,
+  showFillColorPickerForFillable
+} = styleStore;
 const { t } = useI18n({ useScope: "local" });
 
 const maxStrokeWidthPercent = SETTINGS.style.maxStrokeWidthPercent;

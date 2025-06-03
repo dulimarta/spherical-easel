@@ -16,6 +16,7 @@ import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackstyleContra
 import { SEText } from "@/models/SEText";
 import EventBus from "@/eventHandlers/EventBus";
 import { FillStyle } from "@/types";
+import SETTINGS from "@/global-settings";
 
 function isArrayEqual(a: Array<any>, b: Array<any>) {
   if (a.length !== b.length) return false;
@@ -242,15 +243,6 @@ export const useStylingStore = defineStore("style", () => {
               label.ref.updateStyle(StyleCategory.Label, {
                 labelDynamicBackStyle: false
               });
-            } else {
-              const text = seTexts.value.find(
-                text => text.ref.name === selectedName
-              );
-              if (text) {
-                text.ref.updateStyle(StyleCategory.Label, {
-                  labelDynamicBackStyle: false
-                });
-              }
             }
           });
         }
@@ -266,6 +258,18 @@ export const useStylingStore = defineStore("style", () => {
           selectedPlottables.value.forEach(plot => {
             plot.updateStyle(activeStyleGroup!!, { dynamicBackStyle: false });
           });
+        }
+
+        if (
+          (activeStyleGroup === StyleCategory.Front ||
+            activeStyleGroup === StyleCategory.Back) &&
+          conflictingProperties.value.has("dynamicBackStyle") &&
+          conflictingProperties.value.has("fillColor") &&
+          selectionContainsAFillable() &&
+          fillStyleCopy.value != FillStyle.NoFill
+        ) {
+          // The user attempts to update fill color but the dynamic back styles disagree AND at least one of the selected is a fillable SENodule (a SECircle, SEEllipse or SEPolygon) turn on the fill
+          changeFillStyle(FillStyle.ShadeFill);
         }
       }
     }
@@ -523,9 +527,7 @@ export const useStylingStore = defineStore("style", () => {
   }
 
   function changeFillStyle(newFillStyle: FillStyle): void {
-    console.log("before change fill style", newFillStyle);
     Nodule.setFillStyle(newFillStyle);
-    console.log("after change fill style", newFillStyle);
     // update all objects display
     seNodules.value.forEach(n => {
       // The fillable types must be recomputed in order to display the change
@@ -534,10 +536,17 @@ export const useStylingStore = defineStore("style", () => {
       }
       n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
     });
-    // // to apply fill style we have to update the two instance
-    // updateTwoJS()
   }
 
+  function selectionContainsAFillable(): boolean {
+    let containsFillableSENodule = false;
+    selectedSENodules.value.forEach(element => {
+      if (element.isFillable()) {
+        containsFillableSENodule = true;
+      }
+    });
+    return containsFillableSENodule;
+  }
   function setUpdateTargetsAndPreUpdateStyleOptionsArrays(
     tempActiveStyleGroup: StyleCategory | null = null
   ): void {
@@ -623,8 +632,8 @@ export const useStylingStore = defineStore("style", () => {
       !Number.isNaN(backStyleContrastCopy.value) &&
       backStyleContrastCopy.value !== Nodule.getBackStyleContrast()
     ) {
-      console.log("after contrast", Nodule.getBackStyleContrast());
-      console.log("before contrast", backStyleContrastCopy.value);
+      // console.log("after contrast", Nodule.getBackStyleContrast());
+      // console.log("before contrast", backStyleContrastCopy.value);
       const contrastCommand = new ChangeBackStyleContrastCommand(
         Nodule.getBackStyleContrast(),
         backStyleContrastCopy.value
@@ -635,8 +644,8 @@ export const useStylingStore = defineStore("style", () => {
 
     // Check if the fill style was modified
     if (fillStyleCopy.value !== Nodule.getFillStyle()) {
-      console.log("after fillstyle", Nodule.getFillStyle());
-      console.log("before fillstyle", fillStyleCopy.value);
+      // console.log("after fillstyle", Nodule.getFillStyle());
+      // console.log("before fillstyle", fillStyleCopy.value);
       const fillCommand = new ChangeFillStyleCommand(
         Nodule.getFillStyle(),
         fillStyleCopy.value
@@ -806,21 +815,24 @@ export const useStylingStore = defineStore("style", () => {
     return arr.some(p => commonProperties.has(p));
   }
 
-  // function showFillColorPicker() {
-  //   let containsFillableSENodule = false;
-  //   selectedSENodules.value.forEach(n => {
-  //     if (n.isFillable()) {
-  //       containsFillableSENodule = true;
-  //     }
-  //   });
-  //   console.log(
-  //     "show fill color picker",
-  //     Nodule.getFillStyle() == FillStyle.NoFill && containsFillableSENodule
-  //   );
-  //   return (
-  //     Nodule.getFillStyle() == FillStyle.NoFill && containsFillableSENodule
-  //   );
-  // }
+  function showFillColorPickerForFillable() {
+    // If there are no fillables (SECircle,SEEllipse,SEPolygon) in the selection
+    if (!selectionContainsAFillable()) {
+      return true; // This allows SEPoints, SEAngleMarkers that have a fill but are not fillable to be edited as usual
+    }
+    // If every SENodule in the selection is fillable
+    if (selectedSENodules.value.every(node => node.isFillable())) {
+      return Nodule.getFillStyle() != FillStyle.NoFill; // allows the display of the fill color select when all selected are fillable AND the fill style is not noFill
+    }
+
+    // There is a mix of fillable and not fillable in the selection
+    // Either the fills of them disagree (in which case the picker is not displayed because hasDisagreement('fillColor') is true) or they agree.
+    // if they agree then only display the picker when the fill style is
+    // not noFill, so that a user will not become frustrated when they
+    // pick a fill and it is not display (because the fill style is noFill)
+
+    return Nodule.getFillStyle() != FillStyle.NoFill;
+  }
 
   return {
     selectedLabels,
@@ -830,6 +842,7 @@ export const useStylingStore = defineStore("style", () => {
     forceAgreement,
     backStyleContrastCopy,
     fillStyleCopy,
+    showFillColorPickerForFillable,
     hasDisagreement,
     hasLabelObject,
     hasTextObject,

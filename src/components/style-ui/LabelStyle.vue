@@ -38,6 +38,7 @@
             labelDisplayTextTruncate(styleOptions)
           ]"></v-text-field>
         <v-text-field
+          v-if="!hasTextObject()"
           :disabled="
             selectedLabels.size < 1 ||
             hasDisagreement('labelDisplayCaption') ||
@@ -152,6 +153,7 @@
           density="compact"></v-select>
         <!-- Label Display Mode Selections -->
         <v-select
+          v-if="!hasTextObject()"
           :disabled="
             selectedLabels.size < 1 || hasDisagreement('labelDisplayMode')
           "
@@ -220,6 +222,7 @@
           gap: '8px'
         }">
         <v-switch
+          v-if="!hasTextObject()"
           :style="{ justifySelf: 'flex-start' }"
           :label="t('showHideLabels')"
           @click="toggleLabelVisibility"></v-switch>
@@ -290,10 +293,7 @@ type ConflictItems = {
 type LabelStyleProps = {
   showPopup: boolean;
 };
-const emits = defineEmits([
-  "undo-styles",
-  "apply-default-styles"
-]);
+const emits = defineEmits(["undo-styles", "apply-default-styles"]);
 const props = defineProps<LabelStyleProps>();
 const seStore = useSEStore();
 const styleStore = useStylingStore();
@@ -488,7 +488,10 @@ function toggleLabelVisibility() {
     const lab = seLabels.value.find(z => z.ref.name === labName);
     if (lab) {
       if (lab.ref.showing != allLabelsAreVisible.value) {
-        const newCmd = new SetNoduleDisplayCommand(lab, allLabelsAreVisible.value);
+        const newCmd = new SetNoduleDisplayCommand(
+          lab,
+          allLabelsAreVisible.value
+        );
         cmdGroup.addCommand(newCmd);
         subCommandCount++;
       }
@@ -666,7 +669,7 @@ const conflictItems: ConflictItems = {
   "clickToMakeLabelsVisible": "Click the button below to make labels visible",
   "commonCaptionText": "Common Caption Text",
   "commonLabelText": "Common Label Text",
-  "captionText":"Label Caption",
+  "captionText": "Label Caption",
   "enableCommonStyle": "Enable Common Style",
   "fonts": {
     "cursive": "Cursive Font",
@@ -715,7 +718,7 @@ const conflictItems: ConflictItems = {
   "defaultStyles": "Restore Default Styles (ALL)",
   "undoStyles": "Undo Recent Style Changes (ALL)",
   "showHideLabels": "Show/Hide Labels",
-  "empty":""
+  "empty": ""
 }
 </i18n>
 <i18n lang="json" locale="id">

@@ -1102,16 +1102,6 @@ export const useSEStore = defineStore("se", () => {
       // });
     }
   }
-  // function setOldSelection(payload: SENodule[]): void {
-  //   // clear the last old selection
-  //   oldSelectedSENodules.clear();
-  //   oldSelectedSENoduleIds.value.splice(0);
-  //   // set the new selection
-  //   payload.forEach(seNodule => {
-  //     oldSelectedSENoduleIds.value.push(seNodule.id);
-  //     oldSelectedSENodules.set(seNodule.id, seNodule);
-  //   });
-  // }
 
   // The temporary nodules are added to the store when a handler is constructed, when are they removed? Do I need a removeTemporaryNodule?
   function unglowAllSENodules(): void {
@@ -1395,7 +1385,7 @@ export const useSEStore = defineStore("se", () => {
     }
   }
 
-  // Takes the intersection info from an intersectXXXWithXXX command, compares it against the existing points and returns the intersections as either new (option 1) or old (option 2) with addition information or not an intersection point (option 0)
+  // Takes the intersection info from an intersectXXXWithXXX command, compares it against the existing points and returns the intersections as either new (option 1) or old (option 2) with addition information and ignores those that are not an intersection point - say they are just an SEPoint, like the endpoint of a segment (option 0)
   function classifyIntersections(
     intersectionInfo: IntersectionReturnType[],
     existingSEPoints: SEPoint[],

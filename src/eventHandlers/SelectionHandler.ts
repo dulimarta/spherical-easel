@@ -276,7 +276,7 @@ export default class SelectionHandler extends Highlighter {
         this.highlightTimer !== null
       ) {
         // interval timer is running and we have no selections, then stop timer
-        this.clearAllTimers()
+        this.clearAllTimers();
       }
       this.mouseDownLocation.splice(0);
       this.dragging = false;
@@ -558,7 +558,7 @@ export default class SelectionHandler extends Highlighter {
     this.selectionRectangleAdded = false;
     this.selectionRectangleSelection.splice(0);
   }
-    // Filter the hitSEPoints appropriately for this handler
+  // Filter the hitSEPoints appropriately for this handler
   protected filteredIntersectionPointsList: SEPoint[] = [];
 
   updateFilteredPointsList(): void {
@@ -582,7 +582,7 @@ export default class SelectionHandler extends Highlighter {
       }
       return pt.showing;
     });
-  }  
+  }
   activate(): void {
     window.addEventListener("keydown", this.keyPressHandler);
     this.currentSelection.splice(0);
@@ -598,12 +598,12 @@ export default class SelectionHandler extends Highlighter {
     //   obj.selected = false;
     // });
 
-    // Do not clear the selections array here! If the right items are selected, then other tools automatically do their thing!
+    // Do *NOT* clear the selections array here! If the right items are selected, then other tools automatically do their thing!
     //  For example, if a point is selected with the selection tool, then when the antipode tool is
     //  activated, it automatically creates the antipode of the selected point. The last thing each
     //  tool does in its activate method is clear the selected array in the store.
-    //this.store.commit.updateSelectedSENodules([]);
-    //this.currentSelection.clear();
+    // clear all selected seNodules and unhighlight them
+    //super.activate();
 
     // Remove the listener
     window.removeEventListener("keydown", this.keyPressHandler);
