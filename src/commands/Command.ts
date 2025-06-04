@@ -67,7 +67,7 @@ export abstract class Command {
     //       seNodule instanceof SEPolygon || seNodule instanceof SEAngleMarker
     //   )
     //   .map(polyOrAM => {for (const styleCat in StyleCategory){
-    //     const t1 = StyleCategory[styleCat] 
+    //     const t1 = StyleCategory[styleCat]
     //     polyOrAM.ref.updateStyle(t1 as unknown as StyleCategory,{})}}
     //   );
   }
@@ -96,7 +96,7 @@ export abstract class Command {
     //       seNodule instanceof SEPolygon || seNodule instanceof SEAngleMarker
     //   )
     //   .map(polyOrAM => {for (const styleCat in StyleCategory){
-    //     const t1 = StyleCategory[styleCat] 
+    //     const t1 = StyleCategory[styleCat]
     //     polyOrAM.ref.updateStyle(t1 as unknown as StyleCategory,{})}}
     //   );
   }
@@ -887,7 +887,7 @@ export abstract class Command {
    * restoreState: Perform necessary action to restore the app state.
    * The operation(s) implemented in restoreState() are usually opposite of the
    * operation(s) implemented in do()*/
-  abstract restoreState(preventGraphicalUpdate?:boolean): void;
+  abstract restoreState(preventGraphicalUpdate?: boolean): void;
 
   // TODO: consider merging saveState() and do(). They are always invoked one after the other
 
@@ -898,7 +898,7 @@ export abstract class Command {
   abstract saveState(): void;
 
   /**  do: Perform necessary action to alter the app state*/
-  abstract do(preventGraphicalUpdate?:boolean): CommandReturnType;
+  abstract do(preventGraphicalUpdate?: boolean): CommandReturnType;
 
   /** Generate an opcode ("assembly code") that can be saved as an executable script
    * and interpreted at runtime by calling the constructor of Command subclasses.

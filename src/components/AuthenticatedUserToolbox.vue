@@ -48,7 +48,7 @@
       color="green-lighten-2"
       v-if="constructionDocId"
       @click="() => exportConstructionDialog?.show()"
-      tooltip="Export Construction">
+      :tooltip="t('exportConstructionDialogTitle')">
       <template #icon>mdi-export</template>
     </HintButton>
   </div>
@@ -353,6 +353,10 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { VTreeview } from "vuetify/labs/VTreeview";
 import { shallowRef } from "vue";
+import { SEPoint } from "@/models/SEPoint";
+import { SESegment } from "@/models/SESegment";
+import { SECircle } from "@/models/SECircle";
+import { SELine } from "@/models/SELine";
 
 enum SecretKeyState {
   NONE,
@@ -377,7 +381,8 @@ const {
   sePoints,
   seLines,
   seCircles,
-  seSegments
+  seSegments,
+  selectedSENodules
 } = storeToRefs(seStore);
 const { t } = useI18n();
 
@@ -388,7 +393,7 @@ const constructionDescription = ref("");
 const saveConstructionDialog: Ref<DialogAction | null> = ref(null);
 const exportConstructionDialog: Ref<DialogAction | null> = ref(null);
 const isSavedAsPublicConstruction = ref(false);
-const shouldSaveOverwrite = ref(false);
+const shouldSaveOverwrite = ref(true);
 
 type possibleExportFileTypes =
   | "SVG"
@@ -682,7 +687,6 @@ onUpdated(() => {
   });
 
   if (possibleAxisItems.value.length > 0) {
-    axisId.value = possibleAxisItems.value[0].value;
     exportFileTypeItems.value = [
       "SVG",
       "Animated SVG",
@@ -691,6 +695,19 @@ onUpdated(() => {
       "GIF",
       "BMP"
     ];
+    // Set the initial axis of the animated SVG with the first object selected
+    if (selectedSENodules.value.length > 0) {
+      if (
+        selectedSENodules.value[0] instanceof SEPoint ||
+        selectedSENodules.value[0] instanceof SESegment ||
+        selectedSENodules.value[0] instanceof SELine ||
+        selectedSENodules.value[0] instanceof SECircle
+      ) {
+        axisId.value = selectedSENodules.value[0].id;
+      } else {
+        axisId.value = possibleAxisItems.value[0].value;
+      }
+    }
   } else {
     axisId.value = undefined;
     exportFileTypeItems.value = ["SVG", "PNG", "JPEG", "GIF", "BMP"];
@@ -710,6 +727,22 @@ async function doLoginOrLogout() {
   } else {
     router.replace({ path: "/account" });
   }
+}
+
+function showExportDialog() {
+  // // Set the initial axis of the animated SVG with the first object selected
+  // if (selectedSENodules.value.length > 0) {
+  //   if (
+  //     selectedSENodules.value[0] instanceof SEPoint ||
+  //     selectedSENodules.value[0] instanceof SESegment ||
+  //     selectedSENodules.value[0] instanceof SELine ||
+  //     selectedSENodules.value[0] instanceof SECircle
+  //   ) {
+  //     axisId.value = selectedSENodules.value[0].id;
+  //   }
+  // }
+  // Show the dialog
+  exportConstructionDialog.value?.show();
 }
 
 function updateExportPreview(forJpegExport?: boolean): void {

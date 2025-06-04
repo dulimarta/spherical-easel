@@ -383,7 +383,7 @@ export default class Label extends Nodule {
   //   this.stylize(DisplayStyle.ApplyCurrentVariables);
   // }
 
-  toSVG( nonScaling?: {
+  toSVG(nonScaling?: {
     stroke: boolean;
     text: boolean;
     pointRadius: boolean;
@@ -418,7 +418,9 @@ export default class Label extends Nodule {
         "<text " +
         Label.svgTransformMatrixString(
           this.frontText.rotation,
-          nonScaling?.text ? 1/nonScaling.scaleFactor : (this.frontText.scale as number),
+          nonScaling?.text
+            ? 1 / nonScaling.scaleFactor
+            : (this.frontText.scale as number),
           this.frontText.position.x,
           this.frontText.position.y
         );
@@ -449,13 +451,18 @@ export default class Label extends Nodule {
         "<text " +
         Label.svgTransformMatrixString(
           this.backText.rotation,
-          nonScaling?.text ? 1/nonScaling.scaleFactor : (this.backText.scale as number),
+          nonScaling?.text
+            ? 1 / nonScaling.scaleFactor
+            : (this.backText.scale as number),
           this.backText.position.x,
           this.backText.position.y
         );
 
       svgBackString += ">" + this.backText.value + "</text>";
-      returnSVGObject.layerSVGArray.push([LAYER.backgroundLabel, svgBackString]);
+      returnSVGObject.layerSVGArray.push([
+        LAYER.backgroundLabel,
+        svgBackString
+      ]);
     }
     return [returnSVGObject];
   }

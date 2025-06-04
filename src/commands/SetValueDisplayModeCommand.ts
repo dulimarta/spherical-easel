@@ -61,14 +61,18 @@ export class SetValueDisplayModeCommand extends Command {
     const seExpression = objMap.get(propMap.get("objectName") ?? "") as
       | SEExpression
       | undefined;
-    const oldVal = propMap.get("setValueDisplayModeOldValue") as
+    const oldVal = Number(propMap.get("setValueDisplayModeOldValue")) as
       | ValueDisplayMode
       | undefined;
 
-    const newVal = propMap.get("setValueDisplayModeNewValue") as
+    const newVal = Number(propMap.get("setValueDisplayModeNewValue")) as
       | ValueDisplayMode
       | undefined;
-    if (seExpression && oldVal && newVal) {
+    if (
+      seExpression &&
+      typeof oldVal === "number" &&
+      typeof newVal === "number"
+    ) {
       return new SetValueDisplayModeCommand(seExpression, oldVal, newVal);
     }
     throw new Error(

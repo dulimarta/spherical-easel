@@ -14,7 +14,7 @@ export class SESegmentLength extends SEExpression {
   constructor(parent: SESegment) {
     super(); // this.name is set to a measurement token M### in the super constructor
     this.seSegment = parent;
-    this.valueDisplayMode = SETTINGS.segment.initialValueDisplayMode;
+    this._valueDisplayMode = SETTINGS.segment.initialValueDisplayMode;
   }
   public customStyles = (): Set<string> => emptySet;
   public get value(): number {

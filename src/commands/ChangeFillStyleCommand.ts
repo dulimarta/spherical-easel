@@ -53,7 +53,10 @@ export class ChangeFillStyleCommand extends Command {
     const pastFillStyle = Number(propMap.get("pastGlobalFillStyle")) as
       | FillStyle
       | undefined;
-    if (currentFillStyle != undefined && pastFillStyle != undefined) {
+    if (
+      typeof currentFillStyle === "number" &&
+      typeof pastFillStyle === "number"
+    ) {
       return new ChangeFillStyleCommand(currentFillStyle, pastFillStyle);
     } else {
       throw new Error(

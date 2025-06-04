@@ -166,7 +166,7 @@ export class AddAngleMarkerCommand extends Command {
     if (
       firstParent &&
       secondParent &&
-      mode &&
+      typeof mode === "number" &&
       typeof valueDisplayMode === "number"
     ) {
       const seAngleMarker = new SEAngleMarker(
