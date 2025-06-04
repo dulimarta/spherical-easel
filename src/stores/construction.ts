@@ -337,7 +337,7 @@ export const useConstructionStore = defineStore("construction", () => {
       description: constructionDescription,
       rotationMatrix: JSON.stringify(rotationMat.elements),
       tools: includedTools.value,
-      aspectRatio: canvasWidth.value / canvasHeight.value,
+      aspectRatio: canvasWidth.value / canvasHeight.value, // this number is not useful for displaying a preview image
       // Use an empty string (for type checking only)
       // the actual script will be determine below
       script: "",
@@ -520,9 +520,8 @@ export const useConstructionStore = defineStore("construction", () => {
     );
 
     /* wait for all of the constructions to be fully parsed */
-    const constructionArr: Array<SphericalConstruction> = await Promise.all(
-      parseTasks
-    );
+    const constructionArr: Array<SphericalConstruction> =
+      await Promise.all(parseTasks);
     /* add the parsed constructions to the input list given by the user */
     targetArr.push(...constructionArr);
 
@@ -558,9 +557,8 @@ export const useConstructionStore = defineStore("construction", () => {
     );
 
     /* wait for all of the constructions to be downloaded and parsed */
-    const constructionArray: Array<SphericalConstruction> = await Promise.all(
-      parseTask
-    );
+    const constructionArray: Array<SphericalConstruction> =
+      await Promise.all(parseTask);
     /* clear the existing targetArr list */
     targetArr.splice(0);
     /* push the newly parsed and downloaded constructions into the array */

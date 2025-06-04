@@ -64,7 +64,7 @@
         <img
           id="previewImage"
           :src="svgDataImage"
-          :width="0.9 * overlayHeight * svgDataImageAspectRatio"
+          :width="0.9 * overlayHeight"
           :height="0.9 * overlayHeight" />
       </div>
       <div id="msghub">
@@ -179,7 +179,9 @@ const {
   temporaryNodules,
   hasObjects,
   zoomMagnificationFactor,
-  isEarthMode
+  isEarthMode,
+  canvasWidth,
+  canvasHeight
 } = storeToRefs(seStore);
 const { constructionDocId } = storeToRefs(acctStore);
 const props = defineProps<{
@@ -206,7 +208,7 @@ let attemptedToRoute: RouteLocationNormalized | null = null;
 const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
 const clearConstructionWarning = ref(false);
 const svgDataImage = ref("");
-const svgDataImageAspectRatio = ref(1);
+// const svgDataImageAspectRatio = ref(1); // not needed because the svg has an aspect ratio of 1 and the ratio of the canvas width/height doesn't matter!
 let constructionClearTimer: any;
 
 //#region magnificationUpdate
@@ -226,7 +228,7 @@ const showConstructionPreview = (s: SphericalConstruction | null) => {
     // );
     previewClass.value = "preview-fadein";
     svgDataImage.value = s.preview;
-    svgDataImageAspectRatio.value = s.aspectRatio ?? 1;
+    // svgDataImageAspectRatio.value = s.aspectRatio ?? 1;
     constructionInfo.value = s;
   } else {
     previewClass.value = "preview-fadeout";
@@ -486,7 +488,9 @@ onBeforeRouteLeave(
   border-radius: 8px;
   border: solid white;
   background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 #toolbox-and-sphere {
