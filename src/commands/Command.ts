@@ -405,7 +405,12 @@ export abstract class Command {
           Number("0x" + String(SETTINGS.boundaryCircle.color).slice(7)) / 255
         )
       ],
-      ["stroke-width", String(SETTINGS.boundaryCircle.lineWidth)]
+      [
+        "stroke-width",
+        String(
+          SETTINGS.boundaryCircle.lineWidth / this.store.zoomMagnificationFactor
+        )
+      ]
     ]);
     styleDictionary.set("boundaryCircleStyle", boundaryCircleStyleDict);
 
