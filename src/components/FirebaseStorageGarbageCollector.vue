@@ -79,6 +79,10 @@
               <span v-if="value.length > 0">{{ value.substring(0, 40) }}</span>
               <span v-else>NONE</span>
             </template>
+            <template #item.dateCreated="{ value }">
+              {{ dateFormatter.format(new Date(value)) }}
+            </template>
+
             <template #item.actions="childItem">
               <span>
                 <v-icon
@@ -90,6 +94,11 @@
                     )
                   ">
                   mdi-delete
+                </v-icon>
+                <v-icon
+                  v-if="!isPublicRefValid(childItem.item.publicDocId)"
+                  @click="unpublish(item.owner, childItem.item.docId)">
+                  mdi-publish-off
                 </v-icon>
               </span>
             </template>
@@ -119,18 +128,23 @@ import {
 import {
   collection,
   deleteDoc,
+  deleteField,
   doc,
   DocumentSnapshot,
   Firestore,
+  getDoc,
   getDocs,
   getFirestore,
-  QuerySnapshot
+  QuerySnapshot,
+  updateDoc
 } from "firebase/firestore";
 import { UserProfile } from "@/types";
 import { ConstructionInFirestore } from "@/types/ConstructionTypes";
 let appStorage: FirebaseStorage;
 let appDB: Firestore;
-
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  dateStyle: "medium"
+});
 const tableHeaders = [
   {
     title: "Filename",
@@ -165,10 +179,10 @@ const userTableHeaders = [
 ];
 
 const constructionHeaders = [
-  {title: "Doc ID", key: "docId"},
+  { title: "Doc ID", key: "docId" },
   { title: "Description", key: "description" },
   { title: "Created", key: "dateCreated" },
-  { title: "Public", key: "publicDocId" },
+  { title: "Published", key: "publicDocId" },
   { title: "Command Script", key: "script" },
   { title: "Action", key: "actions" }
 ];
@@ -190,9 +204,8 @@ const scriptFiles: Ref<CloudFile[]> = ref([]);
 // const userToConstructionMap: Map<string, ConstructionInFirestore[]> = new Map();
 const ownedConstruction: Ref<OwnDocs[]> = ref([]);
 const userProfiles: Ref<Map<string, UserProfile>> = ref(new Map());
+const knownPublicDocRef: Ref<Set<string>> = ref(new Set());
 const tab = ref("SVG");
-
-const constructionDetails: Ref<CIF[]> = ref([]);
 
 onMounted(async () => {
   appStorage = getStorage();
@@ -202,16 +215,33 @@ onMounted(async () => {
   // const promiseOwner: Map<string, Promise<QuerySnapshot>> = new Map();
   qsUsers.docs.forEach(async (qdUser: DocumentSnapshot) => {
     const uDetails = qdUser.data() as UserProfile;
-    console.debug(`Profile of ${qdUser.id}`, uDetails);
+    // console.debug(`Profile of ${qdUser.id}`, uDetails);
     userProfiles.value.set(qdUser.id, uDetails);
     const uColl = collection(qdUser.ref, "constructions");
-    console.debug("Pulling constructions from ", uColl.path);
+    // console.debug("Pulling constructions from ", uColl.path);
     const uDocs = await getDocs(uColl);
-    const ddd = await uDocs.docs.map(d => ({
-      ...(d.data() as ConstructionInFirestore),
-      docId: d.id
-    }));
-    console.debug(`Constructions of ${qdUser.id}`, ddd);
+    const ddd = await uDocs.docs.map(d => {
+      const cDoc = d.data() as ConstructionInFirestore;
+      if (cDoc.script.startsWith("https://")) {
+        const s1 = cDoc.script.indexOf("%2F");
+        const s2 = cDoc.script.indexOf("?");
+        const scriptFileName = cDoc.script.substring(s1 + 3, s2);
+        scriptSet.add(scriptFileName);
+        console.debug(scriptFileName);
+      }
+      if (cDoc.preview.startsWith("https://")) {
+        const p1 = cDoc.preview.indexOf("%2F");
+        const p2 = cDoc.preview.indexOf("?");
+        const previewFileName = cDoc.preview.substring(p1 + 3, p2);
+        svgSet.add(previewFileName);
+      }
+
+      return {
+        ...cDoc,
+        docId: d.id
+      };
+    });
+    // console.debug(`Constructions of ${qdUser.id}`, ddd);
     ownedConstruction.value.push({ owner: qdUser.id, constructions: ddd });
     // userToConstructionMap.set(qdUser.id,ddd)
   });
@@ -219,39 +249,7 @@ onMounted(async () => {
   // ownedConstruction.value = Array.from(userToConstructionMap).map(([owner, val]) =>({owner, constructions: val}))
   const svgSet: Set<string> = new Set();
   const scriptSet: Set<string> = new Set();
-  // await Promise.all(task);
-  // await promiseOwner.forEach(async (pDocs, owner) => {
-  //   queryOwner.value.push({ owner, query: await pDocs });
-  // });
 
-  // queryOwner.value
-  //   .filter(z => z.query.docs.length > 0)
-  //   .flatMap(z => z.query.docs)
-  //   .map(qds => {
-  //     const details = qds.data();
-  //     let preview = "N/A";
-  //     let script = "N/A";
-  //     if (details.preview.startsWith("https://")) {
-  //       const p1 = details.preview.indexOf("%2F");
-  //       const p2 = details.preview.indexOf("?");
-  //       preview = details.preview.substring(p1 + 3, p2);
-  //       svgSet.add(preview);
-  //     }
-  //     if (details.script.startsWith("https://")) {
-  //       const s1 = details.script.indexOf("%2F");
-  //       const s2 = details.script.indexOf("?");
-  //       script = details.script.substring(s1 + 3, s2);
-  //       scriptSet.add(script);
-  //     }
-  //     return {
-  //       docId: qds.id,
-  //       preview,
-  //       script
-  //     } as Construction;
-  //   })
-  //   .filter((c: Construction) => c.preview !== "N/A" || c.script !== "N/A");
-  // console.debug("SVG set", svgSet);
-  // console.debug("Script set", scriptSet);
   const svgRef = storageRef(appStorage, "construction-svg");
   const svgResult = await listAll(svgRef);
   const z = await svgResult.items.map(async (aFile: StorageReference) => {
@@ -290,7 +288,7 @@ function deleteFromStorage(
 }
 
 function deleteDocumentFromFirestore(UID: string, docId: string) {
-  const path = `users/${UID}/constructions/${docId}`
+  const path = `users/${UID}/constructions/${docId}`;
   console.debug(`About to delete ${path}`);
   const uIdx = ownedConstruction.value.findIndex(z => z.owner === UID);
   if (uIdx >= 0) {
@@ -298,9 +296,41 @@ function deleteDocumentFromFirestore(UID: string, docId: string) {
       c => c.docId === docId
     );
     if (pIdx >= 0) {
-      ownedConstruction.value[uIdx].constructions.splice(pIdx, 1)
-      const victimDoc = doc(appDB, path)
-      deleteDoc(victimDoc)
+      ownedConstruction.value[uIdx].constructions.splice(pIdx, 1);
+      const victimDoc = doc(appDB, path);
+      deleteDoc(victimDoc);
+    }
+  }
+}
+
+function isPublicRefValid(docId: string | undefined): boolean {
+  if (!docId) return true; // Undefined public doc id is considered valid
+  // First check if this public docId has been checked earlier
+  let registered = knownPublicDocRef.value.has(docId);
+  if (!registered) {
+    setTimeout(async () => {
+      const d1 = await getDoc(doc(appDB, `constructions/${docId}`));
+      const found = await d1.exists();
+      // Record in the cache if the document reference is valid
+      if (found) knownPublicDocRef.value.add(docId);
+    }, 100);
+  }
+  return registered;
+}
+
+async function unpublish(uid: string, docId: string | undefined) {
+  const uIdx = ownedConstruction.value.findIndex(z => z.owner === uid);
+  if (uIdx >= 0) {
+    const cIdx = ownedConstruction.value[uIdx].constructions.findIndex(
+      c => c.docId === docId
+    );
+    if (cIdx >= 0) {
+      console.debug("here");
+      ownedConstruction.value[uIdx].constructions[cIdx].publicDocId = undefined;
+      const docRef = doc(appDB, `users/${uid}/constructions/${docId}`);
+      await updateDoc(docRef, {
+        publicDocId: deleteField()
+      });
     }
   }
 }
