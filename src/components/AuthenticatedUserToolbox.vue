@@ -2,7 +2,6 @@
   <div
     id="authToolbox"
     class="my-1"
-    v-if="loginEnabled"
     :style="{
       alignItems: 'flex-start',
       rowGap: '8px'
@@ -24,7 +23,9 @@
       <v-icon size="x-large" v-else>mdi-account</v-icon>
       <v-tooltip
         activator="parent"
-        :text="firebaseUid ? 'Logout' : 'Login'"></v-tooltip>
+        :text="
+          firebaseUid ? `Logout ${firebaseUid.substring(0, 8)}` : 'Login'
+        "></v-tooltip>
     </v-btn>
     <router-link to="/settings/" v-if="firebaseUid">
       <v-btn icon size="x-small" color="green-lighten-1">
@@ -40,8 +41,12 @@
     </HintButton>
     <HintButton
       color="green-lighten-2"
-      tooltip="Share saved cons"
-      v-if="constructionDocId /*&& isPublicConstruction(constructionDocId)*/">
+      :tooltip="`Share this construction ${constructionStore
+        .publishedDocId(constructionDocId)
+        ?.substring(0, 8)}`"
+      v-if="
+        constructionDocId && constructionStore.publishedDocId(constructionDocId)
+      ">
       <template #icon>mdi-share-variant</template>
     </HintButton>
     <HintButton
@@ -367,7 +372,7 @@ const acctStore = useAccountStore();
 const seStore = useSEStore();
 const constructionStore = useConstructionStore();
 const {
-  loginEnabled,
+  // loginEnabled,
   userProfilePictureURL,
   userDisplayedName,
   constructionDocId,
@@ -437,30 +442,30 @@ type ComponentProps = {
 const props = defineProps<ComponentProps>();
 /* User account feature is initially disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
-onKeyDown(
-  true, // true: accept all keys
-  (event: KeyboardEvent) => {
-    if (!event.ctrlKey || !event.altKey) {
-      state.value = SecretKeyState.NONE;
-      return false;
-    }
-    if (event.code === "KeyS" && state.value === SecretKeyState.NONE) {
-      state.value = SecretKeyState.ACCEPT_S;
-      event.preventDefault();
-    } else if (
-      event.code === "KeyE" &&
-      state.value === SecretKeyState.ACCEPT_S
-    ) {
-      state.value = SecretKeyState.COMPLETE;
-      loginEnabled.value = true;
-      event.preventDefault();
-    } else {
-      state.value = SecretKeyState.NONE;
-      event.preventDefault();
-    }
-  },
-  { dedupe: true } // ignore repeated key events when keys are held down
-);
+// onKeyDown(
+//   true, // true: accept all keys
+//   (event: KeyboardEvent) => {
+//     if (!event.ctrlKey || !event.altKey) {
+//       state.value = SecretKeyState.NONE;
+//       return false;
+//     }
+//     if (event.code === "KeyS" && state.value === SecretKeyState.NONE) {
+//       state.value = SecretKeyState.ACCEPT_S;
+//       event.preventDefault();
+//     } else if (
+//       event.code === "KeyE" &&
+//       state.value === SecretKeyState.ACCEPT_S
+//     ) {
+//       state.value = SecretKeyState.COMPLETE;
+//       // loginEnabled.value = true;
+//       event.preventDefault();
+//     } else {
+//       state.value = SecretKeyState.NONE;
+//       event.preventDefault();
+//     }
+//   },
+//   { dedupe: true } // ignore repeated key events when keys are held down
+// );
 
 const folderPath = ref("");
 

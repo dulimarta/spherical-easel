@@ -9,11 +9,11 @@
         <span
           class="text-body-1 ml-1"
           v-if="actionMode != 'applyTransformation'">
-          {{ $t(`buttons.${activeToolName}`, {}) }}
+          {{ t(`buttons.${activeToolName}`, {}) }}
         </span>
         <template v-else>
           <div class="text-body-1">
-            {{ $t(`buttons.${activeToolName}`, {}) }}
+            {{ t(`buttons.${activeToolName}`, {}) }}
           </div>
           <div class="text-body-2">
             {{ t("objects.selectTransformation") }}
@@ -33,7 +33,7 @@
     </v-container>
   </span>
   <span class="text-body-1" v-else>
-    {{ $t(`buttons.NoToolSelected`, {}).toString() }}
+    {{ t(`buttons.NoToolSelected`, {}).toString() }}
   </span>
 </template>
 
@@ -105,7 +105,7 @@ const ACTION_MODE_MAP: Map<ActionMode, string> = new Map([
 const seStore = useSEStore();
 const { actionMode } = storeToRefs(seStore);
 const { t } = useI18n();
-const toolHint = ref<string|null>(null);
+const toolHint = ref<string | null>(null);
 const iconSize = ref(SETTINGS.icons.currentToolSectionIconSize);
 const rowHeight = ref(
   "min-height:" + SETTINGS.icons.currentToolSectionIconSize + "px"

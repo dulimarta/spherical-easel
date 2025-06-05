@@ -49,7 +49,7 @@ const DEFAULT_TOOL_NAMES: Array<Array<ActionMode>> = [[], []];
 export const useAccountStore = defineStore("acct", () => {
   const appDB = getFirestore();
   const appAuth = getAuth();
-  const loginEnabled = ref(false); // true when the secret key combination is detected
+  // const loginEnabled = ref(false); // true when the secret key combination is detected
   const temporaryProfilePicture = ref("");
   const userDisplayedName: Ref<string | undefined> = ref(undefined);
   const userEmail: Ref<string | undefined> = ref(undefined);
@@ -66,7 +66,7 @@ export const useAccountStore = defineStore("acct", () => {
   appAuth.onAuthStateChanged(async (u: User | null) => {
     if (u) {
       firebaseUid.value = u.uid;
-      loginEnabled.value = true;
+      // loginEnabled.value = true;
       await parseUserProfile(u);
       if (u.email && !userEmail.value) userEmail.value = u.email;
       if (u.displayName && !userDisplayedName.value)
@@ -223,7 +223,7 @@ export const useAccountStore = defineStore("acct", () => {
     favoriteTools,
     firebaseUid,
     includedTools,
-    loginEnabled,
+    // loginEnabled,
     starredConstructionIDs,
     temporaryProfilePicture,
     userDisplayedName,

@@ -520,8 +520,9 @@ export const useConstructionStore = defineStore("construction", () => {
     );
 
     /* wait for all of the constructions to be fully parsed */
-    const constructionArr: Array<SphericalConstruction> =
-      await Promise.all(parseTasks);
+    const constructionArr: Array<SphericalConstruction> = await Promise.all(
+      parseTasks
+    );
     /* add the parsed constructions to the input list given by the user */
     targetArr.push(...constructionArr);
 
@@ -557,8 +558,9 @@ export const useConstructionStore = defineStore("construction", () => {
     );
 
     /* wait for all of the constructions to be downloaded and parsed */
-    const constructionArray: Array<SphericalConstruction> =
-      await Promise.all(parseTask);
+    const constructionArray: Array<SphericalConstruction> = await Promise.all(
+      parseTask
+    );
     /* clear the existing targetArr list */
     targetArr.splice(0);
     /* push the newly parsed and downloaded constructions into the array */
@@ -1018,6 +1020,24 @@ export const useConstructionStore = defineStore("construction", () => {
     console.debug("Tree", constructionTree);
   }
 
+  // Given a (private) docId, get its publicDocId (if exist)
+  function publishedDocId(docId: string): string | null {
+    const privateIdx = privateConstructions.value.findIndex(
+      x => x.id === docId
+    );
+    if (privateIdx >= 0) {
+      return privateConstructions.value[privateIdx].publicDocId ?? null;
+    } /*else {
+      const publicIdx = publicConstructions.value.findIndex(
+        x => x.id === docId
+      );
+      if (publicIdx >= 0)
+        return (
+          (publicConstructions.value[publicIdx].publicDocId?.length ?? 0) > 0
+        );
+    }*/
+    return null;
+  }
   return {
     /* state */
     currentConstructionPreview,
@@ -1032,6 +1052,7 @@ export const useConstructionStore = defineStore("construction", () => {
     loadPublicConstruction,
     makePrivate,
     makePublic,
+    publishedDocId,
     saveConstruction,
     starConstruction,
     unstarConstruction,
