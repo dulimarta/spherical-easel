@@ -101,7 +101,6 @@ export default class Point extends Nodule {
     this.backPoint.visible = false;
     this.glowingBackPoint.visible = false;
 
-
     // Set the properties of the points that never change - stroke width and glowing options
     this.frontPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.front;
     this.backPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.back;
@@ -113,9 +112,9 @@ export default class Point extends Nodule {
     this.styleOptions.set(StyleCategory.Back, DEFAULT_POINT_BACK_STYLE);
   }
 
-  set positionVectorAndDisplay(idealUnitSphereVectorLocation: Vector3){
-    this.positionVector = idealUnitSphereVectorLocation
-    this.updateDisplay()
+  set positionVectorAndDisplay(idealUnitSphereVectorLocation: Vector3) {
+    this.positionVector = idealUnitSphereVectorLocation; // uses the setter below
+    this.updateDisplay();
   }
 
   /**
@@ -154,7 +153,7 @@ export default class Point extends Nodule {
     const radiusPercentFront = frontStyle.pointRadiusPercent ?? 100;
     const radiusPercentBack = backStyle?.pointRadiusPercent ?? 90;
     if (this._locationVector.z < 0) {
-      return backStyle?.dynamicBackStyle ?? false
+      return (backStyle?.dynamicBackStyle ?? false)
         ? Nodule.contrastPointRadiusPercent(radiusPercentFront)
         : radiusPercentBack;
     } else {
@@ -351,7 +350,7 @@ export default class Point extends Nodule {
 
     this.backPoint.scale =
       (Point.pointScaleFactor *
-        (backStyle?.dynamicBackStyle ?? false
+        ((backStyle?.dynamicBackStyle ?? false)
           ? Nodule.contrastPointRadiusPercent(radiusPercentFront)
           : radiusPercentBack)) /
       100;
@@ -361,12 +360,12 @@ export default class Point extends Nodule {
 
     this.glowingBackPoint.scale =
       (Point.pointScaleFactor *
-        (backStyle?.dynamicBackStyle ?? false
+        ((backStyle?.dynamicBackStyle ?? false)
           ? Nodule.contrastPointRadiusPercent(radiusPercentFront)
           : radiusPercentBack)) /
       100;
 
-      this.backPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.back;  // if this line is not here then the width of the back stroke shrinks to zero when you set the back contrast to zero and then undo it.
+    this.backPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.back; // if this line is not here then the width of the back stroke shrinks to zero when you set the back contrast to zero and then undo it.
   }
   /**
    * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the point

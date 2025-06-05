@@ -15,7 +15,7 @@ import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
-import Two from "two.js";
+// import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
@@ -29,21 +29,19 @@ export default class SegmentHandler extends Highlighter {
   private startVector = new Vector3();
 
   /**
+   * The unit normal vector to the plane of containing the segment
+   */
+  private normalVector = new Vector3(0, 0, 0);
+  /**
    * The starting and ending SEPoints of the line. The possible parent of the startSEPoint
    */
   private startSEPoint: SEPoint | null = null;
   private endSEPoint: SEPoint | null = null;
   private startSEPointOneDimensionalParent: SEOneOrTwoDimensional | null = null;
 
-  /**
-   * The arcLength of the segment
-   */
-  private arcLength = 0;
+  // Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
 
-  /**
-   * A temporary plottable (TwoJS) segment to display while the user is creating a segment
-   */
-  private temporarySegment: Segment;
   /**
    * This indicates if the temporary segment/end/start marker has been added to the scene and made permanent
    */
@@ -60,6 +58,16 @@ export default class SegmentHandler extends Highlighter {
     null;
   protected snapStartMarkerToTemporaryPoint: SEPoint | null = null;
   protected snapEndMarkerToTemporaryPoint: SEPoint | null = null;
+
+  /**
+   * The arcLength of the segment
+   */
+  private arcLength = 0;
+
+  /**
+   * A temporary plottable (TwoJS) segment to display while the user is creating a segment
+   */
+  private temporarySegment: Segment;
   /**
    * A temporary plottable (TwoJS) point created while the user is making segments
    */
@@ -85,10 +93,6 @@ export default class SegmentHandler extends Highlighter {
    */
   private nearlyAntipodal = false;
 
-  /**
-   * The unit normal vector to the plane of containing the segment
-   */
-  private normalVector = new Vector3(0, 0, 0);
   /**;
    * A temporary vector to help with normal vector computations
    */
@@ -102,9 +106,6 @@ export default class SegmentHandler extends Highlighter {
    * turnOffLongerThanPi is set to true the first time the ctrl key is pushed and the mouse is moved.
    */
   private turnOffLongerThanPi = false;
-
-// Filter the hitSEPoints appropriately for this handler
-  protected filteredIntersectionPointsList: SEPoint[] = [];
 
   /**
    * Make a segment handler
@@ -134,7 +135,7 @@ export default class SegmentHandler extends Highlighter {
     if (this.isOnSphere && !this.startLocationSelected) {
       // The user is making a segment
       this.startLocationSelected = true;
-      this.updateFilteredPointsList()
+      this.updateFilteredPointsList();
       // Decide if the starting location is near an already existing SEPoint or near a oneDimensional SENodule
       if (this.filteredIntersectionPointsList.length > 0) {
         // Use an existing SEPoint to start the line
@@ -251,19 +252,21 @@ export default class SegmentHandler extends Highlighter {
     // The user can create points  on ellipse, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
-this.updateFilteredPointsList()
+    this.updateFilteredPointsList();
     if (this.filteredIntersectionPointsList.length > 0) {
       this.filteredIntersectionPointsList[0].glowing = true;
       if (!this.startLocationSelected) {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = null;
-        this.snapStartMarkerToTemporaryPoint = this.filteredIntersectionPointsList[0];
+        this.snapStartMarkerToTemporaryPoint =
+          this.filteredIntersectionPointsList[0];
         this.snapEndMarkerToTemporaryPoint = null;
       } else {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = this.filteredIntersectionPointsList[0];
+        this.snapEndMarkerToTemporaryPoint =
+          this.filteredIntersectionPointsList[0];
       }
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
@@ -419,17 +422,12 @@ this.updateFilteredPointsList()
         }
 
         //now set the normal and arcLength variables with the appropriate vector
-        if (this.snapEndMarkerToTemporaryPoint === null) {
-          this.setArcLengthAndNormalVector(
-            event.ctrlKey,
-            this.temporaryEndMarker.positionVector
-          );
-        } else {
-          this.setArcLengthAndNormalVector(
-            event.ctrlKey,
-            this.snapEndMarkerToTemporaryPoint.locationVector
-          );
-        }
+        this.setArcLengthAndNormalVector(
+          event.ctrlKey,
+          this.snapEndMarkerToTemporaryPoint === null
+            ? this.temporaryEndMarker.positionVector
+            : this.snapEndMarkerToTemporaryPoint.locationVector
+        );
 
         // Finally set the values for the unit vectors defining the segment and update the display
         this.temporarySegment.arcLength = this.arcLength;
@@ -457,7 +455,7 @@ this.updateFilteredPointsList()
     // console.debug(`SegmentHandler::mouseReleased() (${event.clientX},${event.clientY})`)
     if (this.isOnSphere) {
       // Make sure the user didn't trigger the mouse leave event and is actually making a segment
-      this.updateFilteredPointsList()
+      this.updateFilteredPointsList();
       if (this.startLocationSelected) {
         // Before making a new segment make sure that the user has dragged a non-trivial distance
         if (
@@ -785,7 +783,7 @@ this.updateFilteredPointsList()
       );
       if (this.normalVector === undefined) {
         console.error(
-          "The normal vector in segment handler was not set properly. 1"
+          "The normal vector in segment handler was not set properly."
         );
         return false;
       } //There are some situations in which the mouse actions (hard to duplicate) lead to an undefined normal vector and I'm hoping this will prevent the program from entering an error state.

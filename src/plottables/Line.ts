@@ -133,12 +133,11 @@ export default class Line extends Nodule {
   }
 
   /**
-   * This is the only vector that needs to be set in order to render the line.  This also updates the display
+   * This is the only vector that needs to be set in order to render the line.
+   * This only updates the display
    */
   set normalVector(dir: Vector3) {
     this._normalVector.copy(dir).normalize();
-    this._halfMinorAxis = this._normalVector.z;
-    this._rotation = -Math.atan2(this._normalVector.x, this._normalVector.y); // not a typo because we are measuring off of the positive y axis in the screen plane
     this.updateDisplay();
   }
 
@@ -175,6 +174,9 @@ export default class Line extends Nodule {
    * call this method once that vector is updated.
    */
   public updateDisplay(): void {
+    this._halfMinorAxis = this._normalVector.z;
+    this._rotation = -Math.atan2(this._normalVector.x, this._normalVector.y); // not a typo because we are measuring off of the positive y axis in the screen plane
+
     this._frontHalf.rotation = this._rotation;
     this._glowingFrontHalf.rotation = this._rotation;
     this._backHalf.rotation = this._rotation;
