@@ -30,7 +30,6 @@ export default class LineHandler extends Highlighter {
    * The plottable object needs only the normal vector to render the line. This is the normalVector of the temporary line
    */
   private normalVector = new Vector3(0, 0, 0);
-
   /**
    * The starting and ending SEPoints of the line. The possible parent of the startSEPoint
    */
@@ -38,7 +37,7 @@ export default class LineHandler extends Highlighter {
   private endSEPoint: SEPoint | null = null;
   private startSEPointOneDimensionalParent: SEOneOrTwoDimensional | null = null;
 
-// Filter the hitSEPoints appropriately for this handler
+  // Filter the hitSEPoints appropriately for this handler
   protected filteredIntersectionPointsList: SEPoint[] = [];
 
   /** Has the temporary line/tempStartMarker/tempEndMarker been added to the scene?*/
@@ -360,15 +359,13 @@ export default class LineHandler extends Highlighter {
           this.isTemporaryEndMarkerAdded = false;
         }
         // Set the location of the temporary endMarker by snapping to appropriate object (if any)
-        if (this.snapEndMarkerToTemporaryOneDimensional !== null) {
-          this.temporaryEndMarker.positionVectorAndDisplay =
-            this.snapEndMarkerToTemporaryOneDimensional.closestVector(
-              this.currentSphereVector
-            );
-        } else {
-          this.temporaryEndMarker.positionVectorAndDisplay =
-            this.currentSphereVector;
-        }
+
+        this.temporaryEndMarker.positionVectorAndDisplay =
+          this.snapEndMarkerToTemporaryOneDimensional !== null
+            ? this.snapEndMarkerToTemporaryOneDimensional.closestVector(
+                this.currentSphereVector
+              )
+            : this.currentSphereVector;
 
         // If the temporary line has *not* been added to the scene do so now (only once)
         if (!this.isTemporaryLineAdded) {
@@ -377,17 +374,16 @@ export default class LineHandler extends Highlighter {
         }
         // Compute the normal vector from the this.startVector, the (old) normal vector and this.temporaryEndMarker vector
         // Compute a temporary normal from the two points' vectors
-        if (this.snapEndMarkerToTemporaryPoint === null) {
-          this.tmpVector.crossVectors(
-            this.startVector,
-            this.temporaryEndMarker.positionVector
-          );
-        } else {
-          this.tmpVector.crossVectors(
-            this.startVector,
-            this.snapEndMarkerToTemporaryPoint.locationVector
-          );
-        }
+        this.tmpVector.crossVectors(
+          this.startVector,
+          this.snapEndMarkerToTemporaryPoint === null
+            ? this.tmpVector
+                .copy(this.temporaryEndMarker.positionVector)
+                .normalize()
+            : // ? this.temporaryEndMarker.positionVector
+              this.snapEndMarkerToTemporaryPoint.locationVector
+        );
+
         // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
         // nearly antipodal or in the same direction)
         if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
@@ -409,8 +405,9 @@ export default class LineHandler extends Highlighter {
         }
         this.normalVector.copy(this.tmpVector).normalize();
 
-        // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
+        // Set the normal vector to the line in the plottable object, update the display
         this.temporaryLine.normalVector = this.normalVector;
+        // this.temporaryLine.updateDisplay();
       }
     } else if (this.isTemporaryStartMarkerAdded) {
       // Remove the temporary objects from the display.
@@ -755,8 +752,9 @@ export default class LineHandler extends Highlighter {
       //   return false;
       // } //There are some situations in which the mouse actions (hard to duplicate) lead to an undefined normal vector and I'm hoping this will prevent the program from entering an error state.
 
-      // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
+      // Set the normal vector to the line in the plottable object this also updates the display
       this.temporaryLine.normalVector = this.normalVector;
+      // this.temporaryLine.updateDisplay();
 
       // check to make sure that this line doesn't already exist by checking that no existing line has normal or -1*normal equal to the new proposed normal
       if (
