@@ -43,43 +43,57 @@
     </v-tabs-window-item>
     <v-tabs-window-item value="User" class="mx-3">
       <h2>User Created Constructions</h2>
-      {{ ownedConstruction.length }} {{ userProfiles.size }}
       <v-data-table
         :items="ownedConstruction"
         :headers="userTableHeaders"
         item-value="owner"
         density="compact"
-        hover show-expand>
+        hover
+        show-expand>
         <template #item.owner="{ value }">
-          <div class="text-h6">
-          {{ userProfiles.get(value)?.displayName ?? "<NONAME>" }} / {{ userProfiles.get(value)?.role }} </div>
-            <div>
-               (ID {{ value }})
-            {{ userProfiles.get(value)?.location }}        
-            </div>
+          <span v-html="showOwnerDetail(value)"></span>
         </template>
         <template #item.constructions="{ value }">
           {{ value.length }} files
         </template>
-        <template #item.data-table-expand="{ internalItem, isExpanded, toggleExpand}">
+        <template
+          #item.data-table-expand="{ internalItem, isExpanded, toggleExpand }">
           <template v-if="internalItem.columns.constructions.length > 0">
-          <v-icon v-if="isExpanded(internalItem)" @click="toggleExpand(internalItem)">mdi-chevron-up</v-icon>
-          <v-icon v-else @click="toggleExpand(internalItem)">mdi-chevron-down</v-icon>
+            <v-icon
+              v-if="isExpanded(internalItem)"
+              @click="toggleExpand(internalItem)">
+              mdi-chevron-up
+            </v-icon>
+            <v-icon v-else @click="toggleExpand(internalItem)">
+              mdi-chevron-down
+            </v-icon>
           </template>
         </template>
-        <template #expanded-row="{columns, item}">
-          <!-- <table border="1">
-            <tr><th>PubID</th><th>Author</th><th>Description</th><th>Created</th><th>Star Count</th></tr>
-            <tr v-for="c in item.constructions">
-              <td>{{ c.publicDocId }}</td>
-              <td>{{ c.author }}</td>
-              <td>{{ c.description }}</td>
-              <td>{{ c.dateCreated }}</td>
-              <td>{{ c.starCount }}</td>
-            </tr>
-          </table> -->
-          <v-data-table :items="item.constructions" :headers="constructionHeaders" item-value="description"
-          density="compact"></v-data-table>
+        <template #expanded-row="{ columns, item }">
+          <v-data-table
+            :items="item.constructions"
+            :headers="constructionHeaders"
+            item-value="docId"
+            density="compact">
+            <template #item.script="{ value }">
+              <span v-if="value.length > 0">{{ value.substring(0, 40) }}</span>
+              <span v-else>NONE</span>
+            </template>
+            <template #item.actions="childItem">
+              <span>
+                <v-icon
+                  v-if="childItem.item.script.length === 0"
+                  @click="
+                    deleteDocumentFromFirestore(
+                      item.owner,
+                      childItem.item.docId
+                    )
+                  ">
+                  mdi-delete
+                </v-icon>
+              </span>
+            </template>
+          </v-data-table>
         </template>
         <!--template #item.actions="{item}">
           <v-icon >mdi-delete</v-icon>
@@ -143,7 +157,7 @@ const userTableHeaders = [
   {
     title: "Constructions Count",
     key: "constructions"
-  },
+  }
   // {
   //   title: "Actions",
   //   key: "actions"
@@ -151,24 +165,24 @@ const userTableHeaders = [
 ];
 
 const constructionHeaders = [
-  {title: "Description", key: "description"},
+  {title: "Doc ID", key: "docId"},
+  { title: "Description", key: "description" },
   { title: "Created", key: "dateCreated" },
-  {title: "Public", key: "publicDocId"}
-]
+  { title: "Public", key: "publicDocId" },
+  { title: "Command Script", key: "script" },
+  { title: "Action", key: "actions" }
+];
 type CloudFile = {
   path: string;
   size: number;
   used: boolean;
 };
-type Construction = {
-  user: string;
+interface CIF extends ConstructionInFirestore {
   docId: string;
-  preview: string;
-  script: string;
-};
+}
 type OwnDocs = {
   owner: string;
-  constructions: ConstructionInFirestore[];
+  constructions: CIF[];
 };
 const svgFiles: Ref<CloudFile[]> = ref([]);
 const scriptFiles: Ref<CloudFile[]> = ref([]);
@@ -178,7 +192,7 @@ const ownedConstruction: Ref<OwnDocs[]> = ref([]);
 const userProfiles: Ref<Map<string, UserProfile>> = ref(new Map());
 const tab = ref("SVG");
 
-const constructionDetails: Ref<Construction[]> = ref([]);
+const constructionDetails: Ref<CIF[]> = ref([]);
 
 onMounted(async () => {
   appStorage = getStorage();
@@ -193,7 +207,10 @@ onMounted(async () => {
     const uColl = collection(qdUser.ref, "constructions");
     console.debug("Pulling constructions from ", uColl.path);
     const uDocs = await getDocs(uColl);
-    const ddd = await uDocs.docs.map(d => d.data() as ConstructionInFirestore);
+    const ddd = await uDocs.docs.map(d => ({
+      ...(d.data() as ConstructionInFirestore),
+      docId: d.id
+    }));
     console.debug(`Constructions of ${qdUser.id}`, ddd);
     ownedConstruction.value.push({ owner: qdUser.id, constructions: ddd });
     // userToConstructionMap.set(qdUser.id,ddd)
@@ -272,6 +289,21 @@ function deleteFromStorage(
   }
 }
 
+function deleteDocumentFromFirestore(UID: string, docId: string) {
+  const path = `users/${UID}/constructions/${docId}`
+  console.debug(`About to delete ${path}`);
+  const uIdx = ownedConstruction.value.findIndex(z => z.owner === UID);
+  if (uIdx >= 0) {
+    const pIdx = ownedConstruction.value[uIdx].constructions.findIndex(
+      c => c.docId === docId
+    );
+    if (pIdx >= 0) {
+      ownedConstruction.value[uIdx].constructions.splice(pIdx, 1)
+      const victimDoc = doc(appDB, path)
+      deleteDoc(victimDoc)
+    }
+  }
+}
 function deleteUserCollection(uid: string) {
   const uDoc = doc(appDB, "users", uid);
   console.debug(`Removing user ${uid}`);
@@ -282,5 +314,12 @@ function deleteUserCollection(uid: string) {
     //   queryOwner.value.splice(pos, 1)
     // }
   });
+}
+
+function showOwnerDetail(uid: string) {
+  const name = userProfiles.value.get(uid)?.displayName ?? "<NONAME>";
+  const role = userProfiles.value.get(uid)?.role;
+  const location = userProfiles.value.get(uid)?.location;
+  return `<span class='text-body-1'>${name} (UID ${uid})</span><br/> <span class='text-body-2'>${role}</span>`;
 }
 </script>
