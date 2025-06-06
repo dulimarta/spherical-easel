@@ -15,7 +15,7 @@ import { AddCalculationCommand } from "./AddCalculationCommand";
 import { AddPointCoordinateMeasurementCommand } from "./AddPointCoordinateMeasurementCommand";
 import { AddPointDistanceMeasurementCommand } from "./AddPointDistanceMeasurementCommand";
 import { AddLengthMeasurementCommand } from "./AddLengthMeasurementCommand";
-import { ConstructionScript } from "@/types";
+import { ConstructionScript } from "@/types/ConstructionTypes";
 import { AddEllipseCommand } from "./AddEllipseCommand";
 import { AddPolarPointCommand } from "./AddPolarPointCommand";
 import { AddParametricCommand } from "./AddParametricCommand";
@@ -78,7 +78,10 @@ function executeIndividual(command: string): Command {
     case "AddIntersectionPoint":
       return AddIntersectionPointCommand.parse(command, noduleDictionary);
     case "AddIntersectionPointOtherParentsInfo":
-      return AddIntersectionPointOtherParentsInfo.parse(command, noduleDictionary);
+      return AddIntersectionPointOtherParentsInfo.parse(
+        command,
+        noduleDictionary
+      );
     case "RemoveIntersectionPointOtherParentsInfo":
       return RemoveIntersectionPointOtherParentsInfo.parse(
         command,
@@ -221,9 +224,9 @@ function interpret(command: string | Array<string>): void {
     // There are commands which depend on the correct rendering
     // state of TwoJS.
     // The following "no-op" command allows TwoJS to update
-    // its internal states I moved this outside of the for each loop 
+    // its internal states I moved this outside of the for each loop
     // because I think this only needs to be forced once when loading
-    // It is a display only issue not an un-updated object issue that needs to 
+    // It is a display only issue not an un-updated object issue that needs to
     // fix before other objects render properly.
     group.addCommand(updateTwoJS);
     // Then execute as a group
@@ -231,7 +234,10 @@ function interpret(command: string | Array<string>): void {
   }
 }
 
-export function run(script: ConstructionScript): void {
+// Rename run to runScript so it is distinct enough when we do
+// global search for this function call.
+// The word "run" itself is used so many times in code comments
+export function runScript(script: ConstructionScript): void {
   // Reset the command history before interpreting a new script
   noduleDictionary.clear();
   Command.commandHistory.splice(0);
@@ -239,4 +245,7 @@ export function run(script: ConstructionScript): void {
   script.forEach((s: string | Array<string>) => {
     interpret(s);
   });
+  // Save the baseline command history length use this
+  // length to check if the construction has been modified
+  Command.saveHistoryLength();
 }

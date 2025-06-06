@@ -202,7 +202,7 @@ import { useAccountStore } from "@/stores/account";
 import { Ref, ref } from "vue";
 import { storeToRefs } from "pinia";
 import EventBus from "@/eventHandlers/EventBus";
-import { run } from "@/commands/CommandInterpreter";
+import { runScript } from "@/commands/CommandInterpreter";
 import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
 import { useConstructionStore } from "@/stores/construction";
@@ -315,7 +315,7 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
     // It looks like we have to apply the rotation matrix
     // before running the script
     seStore.setRotationMatrix(rotationMatrix);
-    run(script);
+    runScript(script);
     //seStore.rotateSphere(rotationMatrix!.invert());
     seStore.clearUnsavedFlag();
     EventBus.fire("construction-loaded", {});
@@ -328,9 +328,9 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
 
     // include this so that filled objects (circles, ellipses, polygons, angleMarkers) display correctly after loading
     seNodules.value.forEach(obj => {
-      obj.update()
-    // obj.ref?.stylize(DisplayStyle.ApplyCurrentVariables)
-    })
+      obj.update();
+      // obj.ref?.stylize(DisplayStyle.ApplyCurrentVariables)
+    });
   }
 }
 

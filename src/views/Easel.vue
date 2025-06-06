@@ -144,7 +144,7 @@ import {
 } from "@/types/ConstructionTypes";
 import AngleMarker from "@/plottables/AngleMarker";
 
-import { run } from "@/commands/CommandInterpreter";
+import { runScript } from "@/commands/CommandInterpreter";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import { useConstructionStore } from "@/stores/construction";
@@ -254,7 +254,7 @@ function loadDocument(docId: string): void {
     .loadPublicConstruction(docId)
     .then((script: ConstructionScript | null) => {
       if (script !== null) {
-        run(script);
+        runScript(script);
         seStore.updateDisplay();
       } else {
         EventBus.fire("show-alert", {
@@ -285,30 +285,9 @@ onBeforeUnmount((): void => {
   window.removeEventListener("keydown", handleKeyDown);
 });
 
-/**
- * Split pane resize handler
- * @param event an array of numeric triplets {min: ____, max: ____, size: ____}
- */
-// function dividerMoved(
-//   event: Array<{ min: number; max: number; size: number }>
-// ): void {
-//   // event[0].size is the width of the left panel (in percentage)
-//   // 80px is the width of the right navigation drawer
-//   availWidth.value =
-//     display.width.value - mainRect.value.left - mainRect.value.right - 80;
-//   availHeight.value =
-//     display.height.value - mainRect.value.top - mainRect.value.bottom - 90;
-//   // currentCanvasSize.value = Math.min(availWidth.value, availHeight.value);
-// }
-
 function setActionModeToSelectTool(): void {
   seStore.setActionMode("select");
 }
-
-// function onWindowResized(): void {
-//   console.debug("onWindowResized()");
-//   adjustCanvasSize();
-// }
 
 function handleResetSphere(): void {
   clearConstructionWarning.value = true;
@@ -317,6 +296,7 @@ function handleResetSphere(): void {
     seStore.init();
     Command.commandHistory.splice(0);
     Command.redoHistory.splice(0);
+    Command.saveHistoryLength();
     SENodule.resetAllCounters();
     constructionDocId.value = null;
     EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
@@ -332,6 +312,7 @@ function cancelClearConstruction() {
   }
   clearConstructionWarning.value = false;
 }
+
 function handleKeyDown(keyEvent: KeyboardEvent): void {
   // TO DO: test this on PC
   if (navigator.userAgent.indexOf("Mac OS X") !== -1) {
@@ -404,7 +385,12 @@ onBeforeRouteLeave(
     // eslint-disable-next-line no-unused-vars
     _: RouteLocationNormalized
   ): boolean => {
-    if (hasObjects.value && !confirmedLeaving) {
+    console.debug(`BeforeRouteLeave`, Command.isConstructionModified());
+    if (
+      hasObjects.value &&
+      Command.isConstructionModified() &&
+      !confirmedLeaving
+    ) {
       unsavedWorkDialog.value?.show();
       attemptedToRoute = toRoute;
       return false;
@@ -488,9 +474,7 @@ onBeforeRouteLeave(
   border-radius: 8px;
   border: solid white;
   background-color: white;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.12),
-    0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 #toolbox-and-sphere {

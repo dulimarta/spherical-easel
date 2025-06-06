@@ -37,6 +37,7 @@ export abstract class Command {
   static commandHistory: Command[] = []; // stack of executed commands
   static redoHistory: Command[] = []; // stack of undone commands
   //#endregion commandArrays
+  static historyLength = 0;
 
   //eslint-disable-next-line
   protected lastState: any; // The state can be of ANY type
@@ -101,6 +102,14 @@ export abstract class Command {
     //   );
   }
   //#endregion redo
+
+  static saveHistoryLength() {
+    this.historyLength = this.commandHistory.length;
+  }
+
+  static isConstructionModified() {
+    return this.commandHistory.length !== this.historyLength;
+  }
 
   execute(fromRedo?: boolean): void {
     // Keep this command in the history stack
