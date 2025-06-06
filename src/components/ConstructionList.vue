@@ -19,6 +19,7 @@
           @mouseover="onItemHover(r)"
           data-testid="constructionItem"
           class="constructionDetails mb-1 pa-1"
+          :color="r.publicDocId ? 'green-accent-2' : 'transparent'"
           v-bind="props"
           elevation="4">
           <v-img

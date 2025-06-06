@@ -192,14 +192,18 @@ export const useConstructionStore = defineStore("construction", () => {
   const { firebaseUid, starredConstructionIDs, userEmail, includedTools } =
     storeToRefs(acctStore);
   let currentUID: string | undefined = undefined;
-  let publicParsed: boolean = false;
+  // let publicParsed: boolean = false;
 
   // watch for changes in the firebase collection
   watchDebounced(
     firebaseUid,
     async uid => {
-      // console.debug("Firebase UID watcher", uid);
+      console.debug("firesebaseUid watcher");
       if (uid) {
+        console.debug(
+          `User with Firebase UID ${firebaseUid.value} just login`,
+          uid
+        );
         await parseOwnedCollection(uid, privateConstructions.value);
         // Identify published owned constructions
         const myPublicSet: Set<string> = new Set();
@@ -217,6 +221,8 @@ export const useConstructionStore = defineStore("construction", () => {
         });
         publicConstructions.value = theirs;
       } else {
+        console.debug("User just logged out", uid);
+
         privateConstructions.value.splice(0);
         publicConstructions.value = allPublicConstructions.slice(0);
       }
@@ -467,7 +473,9 @@ export const useConstructionStore = defineStore("construction", () => {
             const scriptText = await getDownloadURL(constructionStorage)
               .then((url: string) => axios.get(url))
               .then((r: AxiosResponse) => r.data);
-            return JSON.parse(scriptText) as ConstructionScript;
+            // Axios automatically parses the JSON string into JS object
+            // so we don't have to call JSON.parse() here
+            return scriptText as ConstructionScript;
           } else {
             // The script is inline
             return JSON.parse(script) as ConstructionScript;
@@ -484,10 +492,8 @@ export const useConstructionStore = defineStore("construction", () => {
    * @param targetArr array to fill with the publically visible constructions
    * @return nothing - the passed array is directly modified.
    */
-  async function parsePublicCollection(
-    targetArr: Array<SphericalConstruction>
-  ): Promise<void> {
-    targetArr.splice(0);
+  async function parsePublicCollection(): Promise<void> {
+    allPublicConstructions.splice(0);
     /* get a snapshot of the current public constructions */
     const qs: QuerySnapshot = await getDocs(collection(appDB, "constructions"));
 
@@ -497,8 +503,8 @@ export const useConstructionStore = defineStore("construction", () => {
       into a list of full constructions that we can push into the consumer-provided
       array object.
      */
-    const parseTasks: Array<Promise<SphericalConstruction>> = qs.docs.map(
-      async (qd: QueryDocumentSnapshot) => {
+    const parseTasks: Array<Promise<SphericalConstruction | null>> =
+      qs.docs.map(async (qd: QueryDocumentSnapshot) => {
         /* get and parse each public construction object */
         const remoteData = qd.data();
         const constructionRef = remoteData as PublicConstructionInFirestore;
@@ -511,25 +517,37 @@ export const useConstructionStore = defineStore("construction", () => {
           constructionRef.constructionDocId
         );
         const ownedDoc = await getDoc(ownedDocRef);
-        /* parse the actual construction into a construction type */
-        return parseDocument(
-          constructionRef.constructionDocId,
-          ownedDoc.data() as ConstructionInFirestore
-        );
-      }
-    );
+        if (ownedDoc.exists()) {
+          /* parse the actual construction into a construction type */
+          return parseDocument(
+            constructionRef.constructionDocId,
+            ownedDoc.data() as ConstructionInFirestore
+          );
+        } else {
+          if (firebaseUid.value === constructionRef.author) {
+            console.debug(
+              `Public construction ${qd.id} refers to a non-existing construction own by me (${firebaseUid.value})`
+            );
+          } else {
+            console.debug(
+              `Public construction ${qd.id} refers to a non-existing construction own other user`
+            );
+          }
+          return null;
+        }
+      });
 
     /* wait for all of the constructions to be fully parsed */
-    const constructionArr: Array<SphericalConstruction> = await Promise.all(
-      parseTasks
-    );
+    const constructionArr: Array<SphericalConstruction | null> =
+      await Promise.all(parseTasks);
     /* add the parsed constructions to the input list given by the user */
-    targetArr.push(...constructionArr);
+    allPublicConstructions.push(...constructionArr.filter(z => z !== null));
+    publicConstructions.value = allPublicConstructions.slice(0);
 
-    if (!publicParsed) {
-      parseStarredConstructions(starredConstructionIDs.value);
-      publicParsed = true;
-    }
+    // if (!publicParsed) {
+    //   parseStarredConstructions(starredConstructionIDs.value);
+    //   publicParsed = true;
+    // }
   }
 
   /**
@@ -580,51 +598,51 @@ export const useConstructionStore = defineStore("construction", () => {
    * @param fromArr array of firebase public construction IDs to parse
    */
   async function parseStarredConstructions(fromArr: string[]) {
-    if (publicParsed) {
-      console.debug("List of favorite items", fromArr);
-      /* parse fromArr into a combination of ID and path */
-      const stars: Array<StarredConstruction> = fromArr.map(parseStarredID);
+    // if (publicParsed) {
+    console.debug("List of favorite items", fromArr);
+    /* parse fromArr into a combination of ID and path */
+    const stars: Array<StarredConstruction> = fromArr.map(parseStarredID);
 
-      console.debug("parsed stars: " + JSON.stringify(stars));
+    console.debug("parsed stars: " + JSON.stringify(stars));
 
-      /*
-       * build list of starred and unstarred constructions, setting the path of the starred constructions
-       * to that of the star item rather than the constructions's owned path.
-       */
-      var starred: Array<SphericalConstruction> = [];
-      var unstarred: Array<SphericalConstruction> = [];
-      allPublicConstructions.forEach(s => {
-        const matchingStar = stars.find(star => star.id === s.publicDocId);
-        if (matchingStar != undefined) {
-          s.path = matchingStar.path;
-          starred.push(s);
-        } else {
-          unstarred.push(s);
-        }
-      });
-      starredConstructions.value = starred;
-      publicConstructions.value = unstarred;
-
-      /* if the starred length is not as expected, filter the stars to only include existing
-         constructions and upload the cleaned list to firebase */
-      if (starred.length !== stars.length) {
-        EventBus.fire("show-alert", {
-          type: "info",
-          key: "Some of your starred constructions are not available anymore"
-        });
-        /* filter the stars list to only those that reference an existing public construction,
-           then convert to an array of strings based on the id/path combination of the StarredConstruction object */
-        const cleanStarred: Array<string> = stars
-          .filter(star =>
-            allPublicConstructions.some(z => star.id === z.publicDocId)
-          )
-          .map(x => x.id + (x.path.length > 0 ? "/" + x.path : ""));
-
-        await updateStarredArrayInFirebase(cleanStarred);
+    /*
+     * build list of starred and unstarred constructions, setting the path of the starred constructions
+     * to that of the star item rather than the constructions's owned path.
+     */
+    var starred: Array<SphericalConstruction> = [];
+    var unstarred: Array<SphericalConstruction> = [];
+    allPublicConstructions.forEach(s => {
+      const matchingStar = stars.find(star => star.id === s.publicDocId);
+      if (matchingStar != undefined) {
+        s.path = matchingStar.path;
+        starred.push(s);
+      } else {
+        unstarred.push(s);
       }
-    } else {
-      publicConstructions.value = allPublicConstructions;
+    });
+    starredConstructions.value = starred;
+    publicConstructions.value = unstarred;
+
+    /* if the starred length is not as expected, filter the stars to only include existing
+         constructions and upload the cleaned list to firebase */
+    if (starred.length !== stars.length) {
+      EventBus.fire("show-alert", {
+        type: "info",
+        key: "Some of your starred constructions are not available anymore"
+      });
+      /* filter the stars list to only those that reference an existing public construction,
+           then convert to an array of strings based on the id/path combination of the StarredConstruction object */
+      const cleanStarred: Array<string> = stars
+        .filter(star =>
+          allPublicConstructions.some(z => star.id === z.publicDocId)
+        )
+        .map(x => x.id + (x.path.length > 0 ? "/" + x.path : ""));
+
+      await updateStarredArrayInFirebase(cleanStarred);
     }
+    // } else {
+    //   publicConstructions.value = allPublicConstructions;
+    // }
   }
 
   async function initialize() {
@@ -633,18 +651,16 @@ export const useConstructionStore = defineStore("construction", () => {
     appStorage = getStorage();
     appAuth = getAuth();
 
-    await parsePublicCollection(allPublicConstructions);
-    sortConstructionArray(allPublicConstructions);
-    await parseStarredConstructions(starredConstructionIDs.value);
-    publicConstructions.value = allPublicConstructions.slice(0);
-    /* only update tree view if UID exists since it isn't displayed otherwise */
-    if (firebaseUid) {
-      await parseOwnedCollection(
-        firebaseUid.value!,
-        privateConstructions.value
-      );
-      constructionTree.fromArrays(privateConstructions, starredConstructions);
-    }
+    await parsePublicCollection();
+    // await parseStarredConstructions(starredConstructionIDs.value);
+    // /* only update tree view if UID exists since it isn't displayed otherwise */
+    // if (firebaseUid) {
+    //   await parseOwnedCollection(
+    //     firebaseUid.value!,
+    //     privateConstructions.value
+    //   );
+    //   constructionTree.fromArrays(privateConstructions, starredConstructions);
+    // }
   }
 
   /**
@@ -802,7 +818,7 @@ export const useConstructionStore = defineStore("construction", () => {
   async function updateStarredArrayInFirebase(
     arr: Array<string>
   ): Promise<void> {
-    if (firebaseUid.value && publicParsed) {
+    if (firebaseUid.value) {
       const userDocRef = doc(appDB, "users", firebaseUid.value);
       await updateDoc(userDocRef, {
         userStarredConstructions: arr

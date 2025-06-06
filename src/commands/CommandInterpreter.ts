@@ -247,5 +247,5 @@ export function runScript(script: ConstructionScript): void {
   });
   // Save the baseline command history length use this
   // length to check if the construction has been modified
-  Command.saveHistoryLength();
+  Command.rememberHistoryLength();
 }

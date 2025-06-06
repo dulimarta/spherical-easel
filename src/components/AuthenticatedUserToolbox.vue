@@ -39,7 +39,7 @@
       tooltip="Save construction">
       <template #icon>mdi-content-save</template>
     </HintButton>
-    <HintButton
+    <!-- <HintButton
       color="green-lighten-2"
       :tooltip="`Share this construction ${constructionStore
         .publishedDocId(constructionDocId)
@@ -48,7 +48,7 @@
         constructionDocId && constructionStore.publishedDocId(constructionDocId)
       ">
       <template #icon>mdi-share-variant</template>
-    </HintButton>
+    </HintButton> -->
     <HintButton
       color="green-lighten-2"
       v-if="constructionDocId"

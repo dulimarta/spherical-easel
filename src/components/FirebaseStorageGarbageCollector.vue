@@ -62,7 +62,13 @@
             <template #item.dateCreated="{ value }">
               {{ dateFormatter.format(new Date(value)) }}
             </template>
+            <template #item.publicDocId="{ value }">
+              <v-icon v-if="!isPublicRefValid(value)" color="red">
+                mdi-alert
+              </v-icon>
 
+              <span>{{ value }}</span>
+            </template>
             <template #item.actions="childItem">
               <span>
                 <v-icon
