@@ -1,10 +1,103 @@
 <template>
   <v-tabs v-model="tab">
+    <v-tab value="User">Users</v-tab>
     <v-tab value="SVG">SVG Files</v-tab>
     <v-tab value="Script">Script Files</v-tab>
-    <v-tab value="User">Users</v-tab>
   </v-tabs>
   <v-tabs-window v-model="tab">
+    <v-tabs-window-item value="User" class="mx-3">
+      <h2>User Created Constructions</h2>
+      <v-data-table
+        :items="ownedConstruction"
+        :headers="userTableHeaders"
+        item-value="owner"
+        density="compact"
+        hover
+        show-expand>
+        <template #item.owner="{ value }">
+          <span v-html="showOwnerDetail(value)"></span>
+        </template>
+        <template #item.constructions="{ value }">
+          {{ value.length }} files
+        </template>
+        <template
+          #item.data-table-expand="{ internalItem, isExpanded, toggleExpand }">
+          <template v-if="internalItem.columns.constructions.length > 0">
+            <v-icon
+              v-if="isExpanded(internalItem)"
+              @click="toggleExpand(internalItem)">
+              mdi-chevron-up
+            </v-icon>
+            <v-icon v-else @click="toggleExpand(internalItem)">
+              mdi-chevron-down
+            </v-icon>
+          </template>
+        </template>
+        <template #expanded-row="{ columns, item }">
+          <v-data-table
+            :items="item.constructions"
+            :headers="constructionHeaders"
+            item-value="docId"
+            density="compact">
+            <template #item.script="{ value, item }">
+              <v-icon
+                color="green"
+                v-if="isScriptValid(item.docId, item.script)">
+                mdi-check
+              </v-icon>
+              <v-icon color="red" v-else>mdi-alert</v-icon>
+              <span v-if="value.length > 0">
+                {{ value.substring(0, 20) }}
+              </span>
+            </template>
+            <template #item.preview="{ value, item }">
+              <v-icon
+                color="green"
+                v-if="isPreviewValid(item.docId, item.preview)">
+                mdi-check
+              </v-icon>
+              <v-icon color="red" v-else>mdi-alert</v-icon>
+              <span v-if="value.length > 0">{{ value.substring(0, 20) }}</span>
+            </template>
+            <template #item.dateCreated="{ value }">
+              {{ dateFormatter.format(new Date(value)) }}
+            </template>
+
+            <template #item.actions="childItem">
+              <span>
+                <v-icon
+                  v-if="
+                    !isScriptValid(
+                      childItem.item.docId,
+                      childItem.item.script
+                    ) ||
+                    !isPreviewValid(
+                      childItem.item.docId,
+                      childItem.item.preview
+                    )
+                  "
+                  @click="
+                    deleteDocumentFromFirestore(
+                      item.owner,
+                      childItem.item.docId
+                    )
+                  ">
+                  mdi-delete
+                </v-icon>
+                <v-icon
+                  v-if="!isPublicRefValid(childItem.item.publicDocId)"
+                  @click="unpublish(item.owner, childItem.item.docId)">
+                  mdi-publish-off
+                </v-icon>
+              </span>
+            </template>
+          </v-data-table>
+        </template>
+        <!--template #item.actions="{item}">
+          <v-icon >mdi-delete</v-icon>
+        </!--template> -->
+      </v-data-table>
+    </v-tabs-window-item>
     <v-tabs-window-item value="SVG" class="mx-3">
       <h2>SVG Files</h2>
       <v-data-table
@@ -41,74 +134,6 @@
         </template>
       </v-data-table>
     </v-tabs-window-item>
-    <v-tabs-window-item value="User" class="mx-3">
-      <h2>User Created Constructions</h2>
-      <v-data-table
-        :items="ownedConstruction"
-        :headers="userTableHeaders"
-        item-value="owner"
-        density="compact"
-        hover
-        show-expand>
-        <template #item.owner="{ value }">
-          <span v-html="showOwnerDetail(value)"></span>
-        </template>
-        <template #item.constructions="{ value }">
-          {{ value.length }} files
-        </template>
-        <template
-          #item.data-table-expand="{ internalItem, isExpanded, toggleExpand }">
-          <template v-if="internalItem.columns.constructions.length > 0">
-            <v-icon
-              v-if="isExpanded(internalItem)"
-              @click="toggleExpand(internalItem)">
-              mdi-chevron-up
-            </v-icon>
-            <v-icon v-else @click="toggleExpand(internalItem)">
-              mdi-chevron-down
-            </v-icon>
-          </template>
-        </template>
-        <template #expanded-row="{ columns, item }">
-          <v-data-table
-            :items="item.constructions"
-            :headers="constructionHeaders"
-            item-value="docId"
-            density="compact">
-            <template #item.script="{ value }">
-              <span v-if="value.length > 0">{{ value.substring(0, 40) }}</span>
-              <span v-else>NONE</span>
-            </template>
-            <template #item.dateCreated="{ value }">
-              {{ dateFormatter.format(new Date(value)) }}
-            </template>
-
-            <template #item.actions="childItem">
-              <span>
-                <v-icon
-                  v-if="childItem.item.script.length === 0"
-                  @click="
-                    deleteDocumentFromFirestore(
-                      item.owner,
-                      childItem.item.docId
-                    )
-                  ">
-                  mdi-delete
-                </v-icon>
-                <v-icon
-                  v-if="!isPublicRefValid(childItem.item.publicDocId)"
-                  @click="unpublish(item.owner, childItem.item.docId)">
-                  mdi-publish-off
-                </v-icon>
-              </span>
-            </template>
-          </v-data-table>
-        </template>
-        <!--template #item.actions="{item}">
-          <v-icon >mdi-delete</v-icon>
-        </!--template> -->
-      </v-data-table>
-    </v-tabs-window-item>
     <!-- <v-data-table :items="constructionDetails" /> -->
   </v-tabs-window>
 </template>
@@ -123,7 +148,8 @@ import {
   StorageReference,
   getMetadata,
   // FullMetadata,
-  deleteObject
+  deleteObject,
+  getDownloadURL
 } from "firebase/storage";
 import {
   collection,
@@ -183,8 +209,9 @@ const constructionHeaders = [
   { title: "Description", key: "description" },
   { title: "Created", key: "dateCreated" },
   { title: "Published", key: "publicDocId" },
-  { title: "Command Script", key: "script" },
-  { title: "Action", key: "actions" }
+  { title: "Command Script", key: "script", align: "center" as any },
+  { title: "Image Preview", key: "preview", align: "center" },
+  { title: "Action", key: "actions", align: "center" }
 ];
 type CloudFile = {
   path: string;
@@ -204,8 +231,9 @@ const scriptFiles: Ref<CloudFile[]> = ref([]);
 // const userToConstructionMap: Map<string, ConstructionInFirestore[]> = new Map();
 const ownedConstruction: Ref<OwnDocs[]> = ref([]);
 const userProfiles: Ref<Map<string, UserProfile>> = ref(new Map());
-const knownPublicDocRef: Ref<Set<string>> = ref(new Set());
-const tab = ref("SVG");
+const verifiedPublicDocRef: Ref<Set<string>> = ref(new Set());
+const verifiedStorageURL: Ref<Set<string>> = ref(new Set());
+const tab = ref("User");
 
 onMounted(async () => {
   appStorage = getStorage();
@@ -227,7 +255,6 @@ onMounted(async () => {
         const s2 = cDoc.script.indexOf("?");
         const scriptFileName = cDoc.script.substring(s1 + 3, s2);
         scriptSet.add(scriptFileName);
-        console.debug(scriptFileName);
       }
       if (cDoc.preview.startsWith("https://")) {
         const p1 = cDoc.preview.indexOf("%2F");
@@ -306,18 +333,57 @@ function deleteDocumentFromFirestore(UID: string, docId: string) {
 function isPublicRefValid(docId: string | undefined): boolean {
   if (!docId) return true; // Undefined public doc id is considered valid
   // First check if this public docId has been checked earlier
-  let registered = knownPublicDocRef.value.has(docId);
+  let registered = verifiedPublicDocRef.value.has(docId);
   if (!registered) {
     setTimeout(async () => {
       const d1 = await getDoc(doc(appDB, `constructions/${docId}`));
       const found = await d1.exists();
       // Record in the cache if the document reference is valid
-      if (found) knownPublicDocRef.value.add(docId);
+      if (found) verifiedPublicDocRef.value.add(docId);
     }, 100);
   }
   return registered;
 }
 
+function isScriptValid(docId: string, script: string): boolean {
+  if (script.length === 0) return false;
+  if (!script.startsWith("https")) return true;
+  let registered = verifiedStorageURL.value.has(script);
+  if (!registered) {
+    console.debug(`NOT YET verified ${script}`);
+    setTimeout(async () => {
+      const scriptStorageRef = storageRef(appStorage, script);
+      try {
+        await getDownloadURL(scriptStorageRef);
+        console.debug(`URL valid ${script}`);
+        verifiedStorageURL.value.add(script);
+      } catch (err) {
+        console.debug(`${script} is not found`);
+      }
+    }, 100);
+  }
+  return registered;
+}
+
+function isPreviewValid(docId: string, previewURL: string): boolean {
+  if (previewURL.length === 0) return false;
+  if (previewURL.startsWith("data:image")) return true;
+  let registered = verifiedStorageURL.value.has(previewURL);
+  if (!registered) {
+    console.debug(`NOT YET verified ${previewURL.substring(0, 50)}`);
+    setTimeout(async () => {
+      const scriptStorageRef = storageRef(appStorage, previewURL);
+      try {
+        await getDownloadURL(scriptStorageRef);
+        console.debug(`URL valid ${previewURL.substring(0, 50)}`);
+        verifiedStorageURL.value.add(previewURL);
+      } catch (err) {
+        console.debug(`${previewURL.substring(0, 50)} is not found`);
+      }
+    }, 100);
+  }
+  return registered;
+}
 async function unpublish(uid: string, docId: string | undefined) {
   const uIdx = ownedConstruction.value.findIndex(z => z.owner === uid);
   if (uIdx >= 0) {
