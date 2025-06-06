@@ -101,6 +101,7 @@ export default class RotationTransformationHandler extends Highlighter {
         return;
       }
       this.updateFilteredPointsList();
+      this.updateFilteredPointsList();
       // The user is making a rotation
       this.rotationCenterLocationSelected = true;
       // Check to see if the current location is near any points

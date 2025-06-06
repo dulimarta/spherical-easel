@@ -200,6 +200,9 @@ export class SEIntersectionPoint extends SEPoint {
     // console.log(
     //   `Intersection point ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription} attempt add other parents ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
     // );
+    // console.log(
+    //   `Intersection point ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription} attempt add other parents ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
+    // );
     let returnValue: boolean;
     // Check that we can add n as an other parent of this
     // One condition is that the DAG must be maintained - so both proposed new parents cannot be descendants of the intersection.
@@ -355,7 +358,7 @@ export class SEIntersectionPoint extends SEPoint {
     return true;
   }
   public isFreePoint(): boolean {
-    console.log("non free point query")
+    console.log("non free point query");
     return false;
   }
 }
