@@ -398,7 +398,7 @@ const constructionDescription = ref("");
 const saveConstructionDialog: Ref<DialogAction | null> = ref(null);
 const exportConstructionDialog: Ref<DialogAction | null> = ref(null);
 const isSavedAsPublicConstruction = ref(false);
-const shouldSaveOverwrite = ref(true);
+const shouldSaveOverwrite = ref(false);
 
 type possibleExportFileTypes =
   | "SVG"

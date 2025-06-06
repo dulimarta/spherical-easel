@@ -98,9 +98,11 @@ export default class SegmentLengthHandler extends Highlighter {
       );
       // Set the selected segment's Label to display and to show NameAndValue in an undoable way
       if (targetSegment.label) {
-        segmentCommandGroup.addCommand(
-          new SetNoduleDisplayCommand(targetSegment.label, true)
-        );
+        if (!targetSegment.label.showing) {
+          segmentCommandGroup.addCommand(
+            new SetNoduleDisplayCommand(targetSegment.label, true)
+          );
+        }
         segmentCommandGroup.addCommand(
           new StyleNoduleCommand(
             [targetSegment.label.ref],
