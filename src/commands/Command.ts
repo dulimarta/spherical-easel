@@ -37,7 +37,12 @@ export abstract class Command {
   static commandHistory: Command[] = []; // stack of executed commands
   static redoHistory: Command[] = []; // stack of undone commands
   //#endregion commandArrays
-  static historyLength = 0;
+
+  // This variable is a trick to check if a construction has been modified.
+  // After a construction is loaded from Firebase we memorize the height
+  // of the command history stack and when changes made to the construction
+  // the stack height will be different from the baseline height.
+  static baselineHistoryLength = 0;
 
   //eslint-disable-next-line
   protected lastState: any; // The state can be of ANY type
@@ -103,12 +108,12 @@ export abstract class Command {
   }
   //#endregion redo
 
-  static saveHistoryLength() {
-    this.historyLength = this.commandHistory.length;
+  static rememberHistoryLength() {
+    this.baselineHistoryLength = this.commandHistory.length;
   }
 
   static isConstructionModified() {
-    return this.commandHistory.length !== this.historyLength;
+    return this.commandHistory.length !== this.baselineHistoryLength;
   }
 
   execute(fromRedo?: boolean): void {

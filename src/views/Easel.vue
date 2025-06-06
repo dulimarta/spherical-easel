@@ -296,7 +296,7 @@ function handleResetSphere(): void {
     seStore.init();
     Command.commandHistory.splice(0);
     Command.redoHistory.splice(0);
-    Command.saveHistoryLength();
+    Command.rememberHistoryLength();
     SENodule.resetAllCounters();
     constructionDocId.value = null;
     EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
