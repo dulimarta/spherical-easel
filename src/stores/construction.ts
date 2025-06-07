@@ -191,8 +191,7 @@ export const useConstructionStore = defineStore("construction", () => {
   } = storeToRefs(seStore);
   const { firebaseUid, starredConstructionIDs, userEmail, includedTools } =
     storeToRefs(acctStore);
-  let currentUID: string | undefined = undefined;
-  // let publicParsed: boolean = false;
+  const myPublicSet: Set<string> = new Set();
 
   // watch for changes in the firebase collection
   watchDebounced(
@@ -204,9 +203,8 @@ export const useConstructionStore = defineStore("construction", () => {
           `User with Firebase UID ${firebaseUid.value} just login`,
           uid
         );
-        await parseOwnedCollection(uid, privateConstructions.value);
+        await parseOwnedCollection(uid);
         // Identify published owned constructions
-        const myPublicSet: Set<string> = new Set();
         privateConstructions.value.forEach(s => {
           if (s.publicDocId) myPublicSet.add(s.publicDocId);
         });
@@ -222,8 +220,10 @@ export const useConstructionStore = defineStore("construction", () => {
         publicConstructions.value = theirs;
       } else {
         console.debug("User just logged out", uid);
-
+        myPublicSet.clear();
         privateConstructions.value.splice(0);
+        starredConstructionIDs.value.splice(0);
+        starredConstructions.value.splice(0);
         publicConstructions.value = allPublicConstructions.slice(0);
       }
     },
@@ -543,11 +543,6 @@ export const useConstructionStore = defineStore("construction", () => {
     /* add the parsed constructions to the input list given by the user */
     allPublicConstructions.push(...constructionArr.filter(z => z !== null));
     publicConstructions.value = allPublicConstructions.slice(0);
-
-    // if (!publicParsed) {
-    //   parseStarredConstructions(starredConstructionIDs.value);
-    //   publicParsed = true;
-    // }
   }
 
   /**
@@ -556,10 +551,7 @@ export const useConstructionStore = defineStore("construction", () => {
    * @param owner firebase id of the user whose constructions are being queried
    * @param targetArr array to fill with owned constructions
    */
-  async function parseOwnedCollection(
-    owner: string,
-    targetArr: Array<SphericalConstruction>
-  ): Promise<void> {
+  async function parseOwnedCollection(owner: string): Promise<void> {
     /* get a snapshot of the owner's constructions list */
     if (!owner) return;
     console.debug("Parse owned collections of", owner);
@@ -568,28 +560,31 @@ export const useConstructionStore = defineStore("construction", () => {
     );
 
     /* convert the firebase objects into construction types */
-    const parseTask: Array<Promise<SphericalConstruction>> = qs.docs.map(
+    const parseTask: Array<Promise<SphericalConstruction | null>> = qs.docs.map(
       (qd: QueryDocumentSnapshot) => {
-        const remoteData = qd.data();
-        return parseDocument(qd.id, remoteData as ConstructionInFirestore);
+        if (qd.exists()) {
+          const remoteData = qd.data();
+          return parseDocument(qd.id, remoteData as ConstructionInFirestore);
+        } else {
+          return Promise.resolve(null);
+        }
       }
     );
 
     /* wait for all of the constructions to be downloaded and parsed */
-    const constructionArray: Array<SphericalConstruction> = await Promise.all(
-      parseTask
-    );
+    const constructionArray: Array<SphericalConstruction | null> =
+      await Promise.all(parseTask);
     /* clear the existing targetArr list */
-    targetArr.splice(0);
+    privateConstructions.value.splice(0);
     /* push the newly parsed and downloaded constructions into the array */
-    targetArr.push(
-      ...constructionArray.filter(
-        (s: SphericalConstruction) => s.parsedScript.length > 0
-      )
+    privateConstructions.value.push(
+      ...constructionArray
+        .filter(s => s !== null)
+        .filter((s: SphericalConstruction) => s.parsedScript.length > 0)
     );
 
     /* refresh the constructiontree */
-    constructionTree.setOwnedConstructions(targetArr);
+    constructionTree.setOwnedConstructions(privateConstructions.value);
   }
 
   /**
@@ -598,7 +593,6 @@ export const useConstructionStore = defineStore("construction", () => {
    * @param fromArr array of firebase public construction IDs to parse
    */
   async function parseStarredConstructions(fromArr: string[]) {
-    // if (publicParsed) {
     console.debug("List of favorite items", fromArr);
     /* parse fromArr into a combination of ID and path */
     const stars: Array<StarredConstruction> = fromArr.map(parseStarredID);
@@ -609,29 +603,20 @@ export const useConstructionStore = defineStore("construction", () => {
      * build list of starred and unstarred constructions, setting the path of the starred constructions
      * to that of the star item rather than the constructions's owned path.
      */
-    var starred: Array<SphericalConstruction> = [];
-    var unstarred: Array<SphericalConstruction> = [];
-    allPublicConstructions.forEach(s => {
-      const matchingStar = stars.find(star => star.id === s.publicDocId);
-      if (matchingStar != undefined) {
-        s.path = matchingStar.path;
-        starred.push(s);
-      } else {
-        unstarred.push(s);
-      }
+    const [starred, unstarred] = allPublicConstructions.partition(pub => {
+      const matchingStar = stars.find(mine => mine.id === pub.publicDocId);
+      return matchingStar !== undefined;
     });
-    starredConstructions.value = starred;
-    publicConstructions.value = unstarred;
 
     /* if the starred length is not as expected, filter the stars to only include existing
-         constructions and upload the cleaned list to firebase */
+           constructions and upload the cleaned list to firebase */
     if (starred.length !== stars.length) {
       EventBus.fire("show-alert", {
         type: "info",
         key: "Some of your starred constructions are not available anymore"
       });
       /* filter the stars list to only those that reference an existing public construction,
-           then convert to an array of strings based on the id/path combination of the StarredConstruction object */
+             then convert to an array of strings based on the id/path combination of the StarredConstruction object */
       const cleanStarred: Array<string> = stars
         .filter(star =>
           allPublicConstructions.some(z => star.id === z.publicDocId)
@@ -640,9 +625,14 @@ export const useConstructionStore = defineStore("construction", () => {
 
       await updateStarredArrayInFirebase(cleanStarred);
     }
-    // } else {
-    //   publicConstructions.value = allPublicConstructions;
-    // }
+    starredConstructions.value = starred;
+
+    // Exclude my own construction from the unstarred
+    const [unStarredTheirs, unStarredMine] = unstarred.partition(s => {
+      const myOwnPublic = myPublicSet.has(s.publicDocId!);
+      return !myOwnPublic;
+    });
+    publicConstructions.value = unStarredTheirs;
   }
 
   async function initialize() {
@@ -652,15 +642,6 @@ export const useConstructionStore = defineStore("construction", () => {
     appAuth = getAuth();
 
     await parsePublicCollection();
-    // await parseStarredConstructions(starredConstructionIDs.value);
-    // /* only update tree view if UID exists since it isn't displayed otherwise */
-    // if (firebaseUid) {
-    //   await parseOwnedCollection(
-    //     firebaseUid.value!,
-    //     privateConstructions.value
-    //   );
-    //   constructionTree.fromArrays(privateConstructions, starredConstructions);
-    // }
   }
 
   /**

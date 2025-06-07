@@ -130,7 +130,7 @@ type MessageType = {
 onMounted((): void => {
   setIconSize();
   EventBus.listen("show-alert", (m: MessageType) => {
-    console.debug("Incoming message", m);
+    // console.debug("Incoming message", m);
     if (m.type === "directive") {
       toolHint.value = "";
       setTimeout(() => {
