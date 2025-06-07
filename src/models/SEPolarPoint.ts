@@ -18,23 +18,28 @@ export class SEPolarPoint extends SEPoint {
    * @param polarLineOrSegmentParent The SELine parent of this SEPoint
    * @param index Which point is this?  There are two polar points associated with each line
    */
-  constructor(
-    // point: NonFreePoint,
-    polarLineOrSegmentParent: SELine | SESegment,
-    index: number
-  ) {
+  constructor(polarLineOrSegmentParent: SELine | SESegment, index: number) {
     super(true);
     this._polarLineOrSegmentParent = polarLineOrSegmentParent;
     this.index = index;
   }
 
   public get noduleDescription(): string {
-    return String(
-      i18n.global.t(`objectTree.aPolarPointOf`, {
-        line: this._polarLineOrSegmentParent.label?.ref.shortUserName,
-        index: this.index
-      })
-    );
+    if (this._polarLineOrSegmentParent instanceof SELine) {
+      return String(
+        i18n.global.t(`objectTree.aPolarPointOfLine`, {
+          line: this._polarLineOrSegmentParent.label?.ref.shortUserName,
+          index: this.index
+        })
+      );
+    } else {
+      return String(
+        i18n.global.t(`objectTree.aPolarPointOfSegment`, {
+          line: this._polarLineOrSegmentParent.label?.ref.shortUserName,
+          index: this.index
+        })
+      );
+    }
   }
 
   public shallowUpdate(): void {

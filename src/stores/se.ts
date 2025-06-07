@@ -1435,7 +1435,6 @@ export const useSEStore = defineStore("se", () => {
         );
         //put the new intersection point on the existing list
         existingSEPoints.push(newSEIntersectionPt);
-
         //copy the location and existence information into the new intersection point and put it on the list to be returned
         newSEIntersectionPt.locationVector = info.vector;
         newSEIntersectionPt.exists = info.exists;
@@ -1660,6 +1659,7 @@ export const useSEStore = defineStore("se", () => {
           object1,
           object2
         );
+        // existingSEPoints.push(...info.updatedSEPoints);
         intersectionPointReturnArray.push(...info.intersections);
       });
     });
