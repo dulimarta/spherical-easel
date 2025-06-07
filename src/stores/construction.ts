@@ -353,8 +353,10 @@ export const useConstructionStore = defineStore("construction", () => {
       starCount: 0
     };
 
+    let saveAsNew: boolean;
     // Task #1
     if (constructionDocId !== null) {
+      saveAsNew = false;
       const targetDoc = doc(
         appDB,
         collectionPath.concat("/" + constructionDocId)
@@ -370,6 +372,7 @@ export const useConstructionStore = defineStore("construction", () => {
       );
     } else {
       // Task #1b: save as a new construction
+      saveAsNew = true;
       saveTask = addDoc(collection(appDB, collectionPath), constructionDetails);
     }
 
@@ -413,34 +416,56 @@ export const useConstructionStore = defineStore("construction", () => {
           parsedScript,
           sphereRotationMatrix: rotationMat.clone(),
           objectCount,
-          ...constructionDetails
+          ...constructionDetails,
+          preview: svgData
         };
         if (saveAsPublic) {
-          const publicConstructionDoc = await addDoc(
-            collection(appDB, "/constructions/"),
-            {
-              author: userUid,
-              constructionDocId: docId // construction document under the user sub-collection
-            }
-          );
-          await updateDoc(constructionDoc, {
-            script: scriptData,
-            preview: svgData,
-            publicDocId: publicConstructionDoc.id
-          });
-          privateConstructions.value.push({
-            ...localCopy,
-            publicDocId: publicConstructionDoc.id
-          });
-          constructionTree.setOwnedConstructions(privateConstructions.value);
+          let existingIdx;
+          if (saveAsNew) {
+            // Saving a new construction
+            existingIdx = -1;
+            const publicConstructionDoc = await addDoc(
+              collection(appDB, "/constructions/"),
+              {
+                author: userUid,
+                constructionDocId: docId // construction document under the user sub-collection
+              }
+            );
+
+            await updateDoc(constructionDoc, {
+              script: scriptData,
+              preview: svgData,
+              publicDocId: publicConstructionDoc.id
+            });
+            privateConstructions.value.push({
+              ...localCopy,
+              publicDocId: publicConstructionDoc.id
+            });
+          } else {
+            // Overwrite an existing construction
+            await updateDoc(constructionDoc, {
+              script: scriptData,
+              preview: svgData
+            });
+            existingIdx = privateConstructions.value.findIndex(
+              oldDoc => oldDoc.id === docId
+            );
+            privateConstructions.value[existingIdx] = localCopy;
+          }
         } else {
+          // Save as private construction
           await updateDoc(constructionDoc, {
             script: scriptData,
             preview: svgData
           });
-          privateConstructions.value.push(localCopy);
-          constructionTree.setOwnedConstructions(privateConstructions.value);
+          const existingIdx = privateConstructions.value.findIndex(
+            oldDoc => oldDoc.id === docId
+          );
+          if (existingIdx >= 0)
+            privateConstructions.value[existingIdx] = localCopy;
+          else privateConstructions.value.push(localCopy);
         }
+        constructionTree.setOwnedConstructions(privateConstructions.value);
         // Pass on the document ID to be included in the alert message
         return docId;
       });
