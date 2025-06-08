@@ -821,6 +821,7 @@ const shakeTransformationDisplay = computed((): string => {
   "angleMarker": "Angle Marker",
   "triangle": "Triangle",
   "measurement": "Measurement",
-  "polygon": "Polygon"
+  "polygon": "Polygon",
+  "calculation": "Calculation"
 }
 </i18n>

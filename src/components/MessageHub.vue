@@ -319,7 +319,9 @@ function cancelDeleteMessages() {
   "emptyTextObjectWarning": "Empty text objects are not allowed.",
   "rotationNoObjectUpdate": "Mouse location determines the rotation. No object selected to rotate about.",
   "firestoreConstructionSaved": "Construction {docId} successfully saved.",
-  "newSegmentMeasurementAdded": "New measurement {name} added."
+  "newSegmentMeasurementAdded": "New measurement {name} added.",
+  "constructionDeleted": "Construction {docId} is successfully removed",
+  "constructionLoaded": "Construction {docId} is successfully loaded to canvas"
 }
 </i18n>
 <i18n locale="id" lang="json">
