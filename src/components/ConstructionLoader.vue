@@ -42,6 +42,6 @@ const folderToLoad: Ref<string> = ref("");
 </script>
 <i18n locale="en" lang="json">
 {
-  "constructionOrganization": "Construction Organization"
+  "constructionOrganization": "Organize Constructions"
 }
 </i18n>

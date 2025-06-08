@@ -56,7 +56,7 @@
             }}
             <span v-if="constructionInfo.publicDocId">
               Public ID:
-              {{ constructionInfo.publicDocId?.substring(0, 6).toUpperCase() }}
+              {{ constructionInfo.publicDocId?.substring(0, 6) }}
             </span>
             )
           </div>
@@ -274,7 +274,10 @@ onMounted((): void => {
   window.addEventListener("resize", adjustCanvasSize);
   adjustCanvasSize();
 
-  if (props.documentId) loadDocument(props.documentId);
+  if (props.documentId) {
+    console.debug(`Easel component has a query argument ${props.documentId}`);
+    loadDocument(props.documentId);
+  }
   EventBus.listen("set-action-mode-to-select-tool", setActionModeToSelectTool);
   EventBus.listen("initiate-clear-construction", handleResetSphere);
   window.addEventListener("keydown", handleKeyDown);
@@ -296,7 +299,7 @@ function handleResetSphere(): void {
     seStore.init();
     Command.commandHistory.splice(0);
     Command.redoHistory.splice(0);
-    Command.saveHistoryLength();
+    Command.rememberHistoryLength();
     SENodule.resetAllCounters();
     constructionDocId.value = null;
     EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });

@@ -15,10 +15,15 @@
         v-slot:default="{ isHovering, props }"
         :close-delay="50"
         :open-delay="100">
+        <!-- Change sheet background color to accent when sharing is allowed and 
+         construction is public -->
         <v-sheet
           @mouseover="onItemHover(r)"
           data-testid="constructionItem"
           class="constructionDetails mb-1 pa-1"
+          :color="
+            r.publicDocId && allowSharing ? 'green-accent-2' : 'transparent'
+          "
           v-bind="props"
           elevation="4">
           <v-img
@@ -207,7 +212,6 @@ import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
 import { useConstructionStore } from "@/stores/construction";
 import { useClipboard } from "@vueuse/core";
-import { DisplayStyle } from "@/plottables/Nodule";
 import { SENodule } from "@/models/SENodule";
 
 const props = defineProps<{

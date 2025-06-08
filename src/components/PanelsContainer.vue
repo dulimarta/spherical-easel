@@ -76,7 +76,7 @@
     <v-expansion-panel
       value="public"
       data-testid="publicPanel"
-      v-if="!selectedVisible">
+      v-if="!selectedVisible && filteredPublicConstructions.length > 0">
       <v-expansion-panel-title>
         {{ t(`publicConstructions`) }} ({{
           filteredPublicConstructions.length

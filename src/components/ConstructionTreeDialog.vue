@@ -278,7 +278,7 @@ const confirmLoad = () => {
 const updateTreeviews = () => {
   /* recalculate and filter out public branches from all trees */
   const z = constructionStore.constructionTree.getFolders();
-  console.debug("updateTreeView ", z);
+  // console.debug("updateTreeView ", z);
   loadFolders.value = constructionStore.constructionTree
     .getFolders()
     .filter(folder => folder.title !== "Public Constructions");
