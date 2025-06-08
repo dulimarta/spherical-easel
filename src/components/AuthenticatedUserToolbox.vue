@@ -985,3 +985,49 @@ function doExport() {
   "circle": "Circle: "
 }
 </i18n>
+<i18n locale="id" lang="json">
+{
+  "savePrivateConstructionDialogTitle": "Simpan Konstruksi Privat",
+  "savePublicConstructionDialogTitle": "Simpan Konstruksi Publik",
+  "exportConstructionDialogTitle": "Ekspor Konstruksi",
+  "exportAction": "Export",
+  "saveAction": "Simpan",
+  "cancelAction": "Batal",
+  "unknownEmail": "Unknown email",
+  "construction": {
+    "saveDescription": "Deskripsi",
+    "saveOverwrite": "Simpan and timpa konstruksi yang sudah ada {docId}",
+    "makePublic": "Simpan untuk publik",
+    "firestoreSaveError": "Koonstruksi tidak tersimpan: {error}",
+    "pathError": {
+      "tooLong": "Name file melebihi panjang maksimum ({limit})",
+      "emptyFolders": "Name direktori tidak sahih"
+    }
+  },
+  "sliderFileDimensions": "Ukuran file untik ekspor {widthHeight} pixel",
+  "exportFormat": "Format Gambar",
+  "nonScalingStroke": "Jangan gunakan skala garis SVG",
+  "nonScalingPointRadius": "Jangan gunakan skala garis",
+  "nonScalingText": "Jangan gunakan skala teks",
+
+  "svgAnimationAxis": "Pilih sumbu putar",
+  "svgAnimationDuration": "Durasi",
+  "svgAnimationFrames": "Banyaknya bingkai animasi",
+  "svgAnimationRepeat": "Ulang berapa kali",
+  "exportHeightErrorMessage": "Masukan bilangan bulat 50-1500",
+  "rotationAngle": "Sudut putara {angle}",
+  "rotationAngleErrorMessage": "Masukan sudut 5-350 derajat",
+  "animationDuration": "Durasi animasi (detik)",
+  "animatedDurationErrorMessage": "Masukan durasi 0.1 - 1000 detik.",
+  "animationFrames": "Banyaknya bingkai animasi",
+  "animatedFramesErrorMessage": "Masukan bilangan bulat 1-200",
+  "animationRepeat": "Ulang berapa kali (0 ulang nirhenti)",
+  "animatedNumberOfFramesErrorMessage": "Masukan jumlah ulangan (1-200) atau (0 untuk nirhenti)",
+  "animatedSVGOptions": "Opsi Animasi SVG",
+  "animatedSVGBestViewed": "Gunakan Chrome untuk melihat file yang diekspor.",
+  "line": "Garis: ",
+  "segment": "Segmen: ",
+  "point": "Titik: ",
+  "circle": "Lingkaran: "
+}
+</i18n>

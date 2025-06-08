@@ -48,6 +48,9 @@
               :style="{
                 alignSelf: 'flex-end'
               }">
+              <v-icon v-if="r.publicDocId" class="mr-1">
+                mdi-share-variant
+              </v-icon>
               {{ r.dateCreated.substring(0, 10) }}
               <v-icon size="x-small">mdi-star</v-icon>
               {{ r.starCount }}
@@ -162,7 +165,12 @@
     :yesAction="doShareConstruction"
     no-text="Cancel"
     max-width="50%">
-    {{ t("copyURL", { docId: sharedDocId }) }}
+    {{
+      t("copyURL", {
+        host: targetHost(),
+        docId: sharedDocId
+      })
+    }}
   </Dialog>
 
   <v-snackbar
@@ -453,7 +461,13 @@ async function handleUpdateUnstarred(docId: string | undefined): Promise<void> {
 }
 
 function doShareConstruction() {
-  clipboardAPI.copy(`https://easelgeo.app/construction/${sharedDocId.value}`);
+  clipboardAPI.copy(`${targetHost()}/construction/${sharedDocId.value}`);
+}
+
+function targetHost() {
+  return import.meta.env.MODE === "production"
+    ? "https://easelgeo.app"
+    : "http://localhost:8080";
 }
 </script>
 
@@ -543,7 +557,7 @@ function doShareConstruction() {
   "updateStarFailed": "Unable to update star list",
   "constructionLoaded": "Construction {docId} is successfully loaded to canvas",
   "confirmationRequired": "Confirmation Required",
-  "copyURL": "Copy URL https://easelgeo.app/construction/{docId} to clipboard?",
+  "copyURL": "Copy URL {host}/construction/{docId} to clipboard?",
   "unsavedObjects": "Loading a new construction will delete the unsaved work",
   "undo": "Undo"
 }
