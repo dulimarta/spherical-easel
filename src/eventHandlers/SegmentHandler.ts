@@ -15,7 +15,7 @@ import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
-// import Two from "two.js";
+import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
@@ -29,19 +29,21 @@ export default class SegmentHandler extends Highlighter {
   private startVector = new Vector3();
 
   /**
-   * The unit normal vector to the plane of containing the segment
-   */
-  private normalVector = new Vector3(0, 0, 0);
-  /**
    * The starting and ending SEPoints of the line. The possible parent of the startSEPoint
    */
   private startSEPoint: SEPoint | null = null;
   private endSEPoint: SEPoint | null = null;
   private startSEPointOneDimensionalParent: SEOneOrTwoDimensional | null = null;
 
-  // Filter the hitSEPoints appropriately for this handler
-  protected filteredIntersectionPointsList: SEPoint[] = [];
+  /**
+   * The arcLength of the segment
+   */
+  private arcLength = 0;
 
+  /**
+   * A temporary plottable (TwoJS) segment to display while the user is creating a segment
+   */
+  private temporarySegment: Segment;
   /**
    * This indicates if the temporary segment/end/start marker has been added to the scene and made permanent
    */
@@ -58,16 +60,6 @@ export default class SegmentHandler extends Highlighter {
     null;
   protected snapStartMarkerToTemporaryPoint: SEPoint | null = null;
   protected snapEndMarkerToTemporaryPoint: SEPoint | null = null;
-
-  /**
-   * The arcLength of the segment
-   */
-  private arcLength = 0;
-
-  /**
-   * A temporary plottable (TwoJS) segment to display while the user is creating a segment
-   */
-  private temporarySegment: Segment;
   /**
    * A temporary plottable (TwoJS) point created while the user is making segments
    */
@@ -93,6 +85,10 @@ export default class SegmentHandler extends Highlighter {
    */
   private nearlyAntipodal = false;
 
+  /**
+   * The unit normal vector to the plane of containing the segment
+   */
+  private normalVector = new Vector3(0, 0, 0);
   /**;
    * A temporary vector to help with normal vector computations
    */
@@ -135,114 +131,112 @@ export default class SegmentHandler extends Highlighter {
     if (this.isOnSphere && !this.startLocationSelected) {
       // The user is making a segment
       this.startLocationSelected = true;
-      this.updateFilteredPointsList();
+
       // Decide if the starting location is near an already existing SEPoint or near a oneDimensional SENodule
-      if (this.filteredIntersectionPointsList.length > 0) {
-        if (this.filteredIntersectionPointsList.length > 0) {
-          // Use an existing SEPoint to start the line
-          const selected = this.filteredIntersectionPointsList[0];
-          this.startVector.copy(selected.locationVector);
-          this.startSEPoint = this.filteredIntersectionPointsList[0];
-          // Set the start of the temp segment and the startMarker at the location of the selected point
-          this.temporaryStartMarker.positionVectorAndDisplay =
-            selected.locationVector;
-          this.temporarySegment.startVector = selected.locationVector;
-          // Glow the selected point and select it so the highlighter.ts doesn't unglow it with the mouseMoved method
-          this.startSEPoint.glowing = true;
-          this.startSEPoint.selected = true;
-        } else if (this.hitSESegments.length > 0) {
-          // The start of the line will be a point on a segment
-          //  Eventually, we will create a new SEPointOneDimensional and Point
-          this.startSEPointOneDimensionalParent = this.hitSESegments[0];
-          this.startVector.copy(
-            this.startSEPointOneDimensionalParent.closestVector(
-              this.currentSphereVector
-            )
-          );
-          this.temporarySegment.startVector = this.startVector;
-          this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
-          this.startSEPoint = null;
-        } else if (this.hitSELines.length > 0) {
-          // The start of the line will be a point on a line
-          //  Eventually, we will create a new SEPointOneDimensional and Point
-          this.startSEPointOneDimensionalParent = this.hitSELines[0];
-          this.startVector.copy(
-            this.startSEPointOneDimensionalParent.closestVector(
-              this.currentSphereVector
-            )
-          );
-          this.temporarySegment.startVector = this.startVector;
-          this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
-          this.startSEPoint = null;
-        } else if (this.hitSECircles.length > 0) {
-          // The start of the line will be a point on a circle
-          //  Eventually, we will create a new SEPointOneDimensional and Point
-          this.startSEPointOneDimensionalParent = this.hitSECircles[0];
-          this.startVector.copy(
-            this.startSEPointOneDimensionalParent.closestVector(
-              this.currentSphereVector
-            )
-          );
-          this.temporarySegment.startVector = this.startVector;
-          this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
-          this.startSEPoint = null;
-        } else if (this.hitSEEllipses.length > 0) {
-          // The start of the line will be a point on a Ellipse
-          //  Eventually, we will create a new SEPointOneDimensional and Point
-          this.startSEPointOneDimensionalParent = this.hitSEEllipses[0];
-          this.startVector.copy(
-            this.startSEPointOneDimensionalParent.closestVector(
-              this.currentSphereVector
-            )
-          );
-          this.temporarySegment.startVector = this.startVector;
-          this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
-          this.startSEPoint = null;
-        } else if (this.hitSEParametrics.length > 0) {
-          // The start of the line will be a point on a Ellipse
-          //  Eventually, we will create a new SEPointOneDimensional and Point
-          this.startSEPointOneDimensionalParent = this.hitSEParametrics[0];
-          this.startVector.copy(
-            this.startSEPointOneDimensionalParent.closestVector(
-              this.currentSphereVector
-            )
-          );
-          this.temporarySegment.startVector = this.startVector;
-          this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
-          this.startSEPoint = null;
-        } else if (this.hitSEPolygons.length > 0) {
-          // The start of the line will be a point on a Ellipse
-          //  Eventually, we will create a new SEPointOneDimensional and Point
-          this.startSEPointOneDimensionalParent = this.hitSEPolygons[0];
-          this.startVector.copy(
-            this.startSEPointOneDimensionalParent.closestVector(
-              this.currentSphereVector
-            )
-          );
-          this.temporarySegment.startVector = this.startVector;
-          this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
-          this.startSEPoint = null;
-        } else {
-          // The mouse press is not near an existing point or one dimensional object.
-          //  Record the location in a temporary point (startMarker found in MouseHandler).
-          //  Eventually, we will create a new SEPoint and Point
+      if (this.hitSEPoints.length > 0) {
+        // Use an existing SEPoint to start the line
+        const selected = this.hitSEPoints[0];
+        this.startVector.copy(selected.locationVector);
+        this.startSEPoint = this.hitSEPoints[0];
+        // Set the start of the temp segment and the startMarker at the location of the selected point
+        this.temporaryStartMarker.positionVectorAndDisplay =
+          selected.locationVector;
+        this.temporarySegment.startVector = selected.locationVector;
+        // Glow the selected point and select it so the highlighter.ts doesn't unglow it with the mouseMoved method
+        this.startSEPoint.glowing = true;
+        this.startSEPoint.selected = true;
+      } else if (this.hitSESegments.length > 0) {
+        // The start of the line will be a point on a segment
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSESegments[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporarySegment.startVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
+        this.startSEPoint = null;
+      } else if (this.hitSELines.length > 0) {
+        // The start of the line will be a point on a line
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSELines[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporarySegment.startVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
+        this.startSEPoint = null;
+      } else if (this.hitSECircles.length > 0) {
+        // The start of the line will be a point on a circle
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSECircles[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporarySegment.startVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
+        this.startSEPoint = null;
+      } else if (this.hitSEEllipses.length > 0) {
+        // The start of the line will be a point on a Ellipse
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSEEllipses[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporarySegment.startVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
+        this.startSEPoint = null;
+      } else if (this.hitSEParametrics.length > 0) {
+        // The start of the line will be a point on a Ellipse
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSEParametrics[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporarySegment.startVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
+        this.startSEPoint = null;
+      } else if (this.hitSEPolygons.length > 0) {
+        // The start of the line will be a point on a Ellipse
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSEPolygons[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporarySegment.startVector = this.startVector;
+        this.temporaryStartMarker.positionVectorAndDisplay = this.startVector;
+        this.startSEPoint = null;
+      } else {
+        // The mouse press is not near an existing point or one dimensional object.
+        //  Record the location in a temporary point (startMarker found in MouseHandler).
+        //  Eventually, we will create a new SEPoint and Point
 
-          // The start vector of the temporary segment and the start marker are
-          //  also the the current location on the sphere
-          this.temporarySegment.startVector = this.currentSphereVector;
-          this.temporaryStartMarker.positionVectorAndDisplay =
-            this.currentSphereVector;
-          this.startVector.copy(this.currentSphereVector);
-          this.startSEPoint = null;
-        }
-        this.temporaryEndMarker.positionVectorAndDisplay =
+        // The start vector of the temporary segment and the start marker are
+        //  also the the current location on the sphere
+        this.temporarySegment.startVector = this.currentSphereVector;
+        this.temporaryStartMarker.positionVectorAndDisplay =
           this.currentSphereVector;
-
-        // Set the booleans for describing the segment
-        this.nearlyAntipodal = false;
-        this.longerThanPi = false;
-        this.arcLength = 0;
+        this.startVector.copy(this.currentSphereVector);
+        this.startSEPoint = null;
       }
+      this.temporaryEndMarker.positionVectorAndDisplay =
+        this.currentSphereVector;
+
+      // Set the booleans for describing the segment
+      this.nearlyAntipodal = false;
+      this.longerThanPi = false;
+      this.arcLength = 0;
     }
   }
 
@@ -254,21 +248,19 @@ export default class SegmentHandler extends Highlighter {
     // The user can create points  on ellipse, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
-    this.updateFilteredPointsList();
-    if (this.filteredIntersectionPointsList.length > 0) {
-      this.filteredIntersectionPointsList[0].glowing = true;
+
+    if (this.hitSEPoints.length > 0) {
+      this.hitSEPoints[0].glowing = true;
       if (!this.startLocationSelected) {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = null;
-        this.snapStartMarkerToTemporaryPoint =
-          this.filteredIntersectionPointsList[0];
+        this.snapStartMarkerToTemporaryPoint = this.hitSEPoints[0];
         this.snapEndMarkerToTemporaryPoint = null;
       } else {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint =
-          this.filteredIntersectionPointsList[0];
+        this.snapEndMarkerToTemporaryPoint = this.hitSEPoints[0];
       }
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
@@ -424,12 +416,17 @@ export default class SegmentHandler extends Highlighter {
         }
 
         //now set the normal and arcLength variables with the appropriate vector
-        this.setArcLengthAndNormalVector(
-          event.ctrlKey,
-          this.snapEndMarkerToTemporaryPoint === null
-            ? this.temporaryEndMarker.positionVector
-            : this.snapEndMarkerToTemporaryPoint.locationVector
-        );
+        if (this.snapEndMarkerToTemporaryPoint === null) {
+          this.setArcLengthAndNormalVector(
+            event.ctrlKey,
+            this.temporaryEndMarker.positionVector
+          );
+        } else {
+          this.setArcLengthAndNormalVector(
+            event.ctrlKey,
+            this.snapEndMarkerToTemporaryPoint.locationVector
+          );
+        }
 
         // Finally set the values for the unit vectors defining the segment and update the display
         this.temporarySegment.arcLength = this.arcLength;
@@ -457,7 +454,6 @@ export default class SegmentHandler extends Highlighter {
     // console.debug(`SegmentHandler::mouseReleased() (${event.clientX},${event.clientY})`)
     if (this.isOnSphere) {
       // Make sure the user didn't trigger the mouse leave event and is actually making a segment
-      this.updateFilteredPointsList();
       if (this.startLocationSelected) {
         // Before making a new segment make sure that the user has dragged a non-trivial distance
         if (
@@ -495,27 +491,19 @@ export default class SegmentHandler extends Highlighter {
     super.mouseLeave(event);
     this.prepareForNextSegment();
   }
+  // list all points except those intersection points whose parents are not showing
+  protected filteredIntersectionPointsList: SEPoint[] = [];
 
   updateFilteredPointsList(): void {
     this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
       if (pt instanceof SEIntersectionPoint) {
-        if (pt.isUserCreated) {
-          return pt.showing;
-        } else {
-          if (pt.principleParent1.showing && pt.principleParent2.showing) {
-            return true;
-          } else {
-            return false;
-          }
-        }
-      } else if (pt instanceof SEAntipodalPoint) {
-        if (pt.isUserCreated) {
-          return pt.showing;
-        } else {
+        if (pt.principleParent1.showing && pt.principleParent2.showing) {
           return true;
+        } else {
+          return pt.showing;
         }
       }
-      return pt.showing;
+      return true;
     });
   }
   prepareForNextSegment(): void {
@@ -615,9 +603,9 @@ export default class SegmentHandler extends Highlighter {
       );
     }
     // Look for an endpoint at the mouse release location
-    if (this.filteredIntersectionPointsList.length > 0 && !fromActivate) {
+    if (this.hitSEPoints.length > 0 && !fromActivate) {
       // The end point is an existing point
-      this.endSEPoint = this.filteredIntersectionPointsList[0];
+      this.endSEPoint = this.hitSEPoints[0];
 
       // move the endpoint of the segment to the location of the endpoint
       // This ensures that the initial display of the segment is nice and the endpoint
@@ -785,7 +773,7 @@ export default class SegmentHandler extends Highlighter {
       );
       if (this.normalVector === undefined) {
         console.error(
-          "The normal vector in segment handler was not set properly."
+          "The normal vector in segment handler was not set properly. 1"
         );
         return false;
       } //There are some situations in which the mouse actions (hard to duplicate) lead to an undefined normal vector and I'm hoping this will prevent the program from entering an error state.

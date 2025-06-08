@@ -96,6 +96,9 @@ export class SEIntersectionPoint extends SEPoint {
       // Hide automatically created intersections
       this.showing = false;
     }
+    // console.log(
+    //   `Creating SEIntersection point ${this.name} with parents ${this.principleParent1.name} and ${this.principleParent2.name} `
+    // );
   }
 
   public set antipodalPointId(seIntersectionPointID: number) {
@@ -200,26 +203,42 @@ export class SEIntersectionPoint extends SEPoint {
     // console.log(
     //   `Intersection point ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription} attempt add other parents ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
     // );
-    // console.log(
-    //   `Intersection point ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription} attempt add other parents ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
-    // );
     let returnValue: boolean;
-    // Check that we can add n as an other parent of this
-    // One condition is that the DAG must be maintained - so both proposed new parents cannot be descendants of the intersection.
-    const descendants = getDescendants([this]).map(nod => nod.name);
-    console.log("Descendants of ", descendants);
+    // First check that this other parent info is not already in the info array
+    // console.log(
+    //   `SEIntersection Point ${this.name}: Attempting to add info ${n.parent1.name} and ${n.parent2.name} to ${this.name}, ${this._otherParentsInfoArray.length}`
+    // );
     if (
-      !descendants.includes(n.parent1.name) &&
-      !descendants.includes(n.parent2.name)
+      this._otherParentsInfoArray.some(
+        info =>
+          info.parent1.name == n.parent1.name &&
+          info.parent2.name == n.parent2.name &&
+          info.order == n.order
+      )
     ) {
-      // Next central question: If one of the current principle parents was deleted could this new pair step in and be parents of the intersection point?
-      // This means that the ancestors of both proposed parents must not include the parent that is being deleted.
-      //
+      // console.log("info already on the other parents info array");
+      return false;
+    }
+    // Check that we can add n as an other parent of this intersection point
+    // One condition is that the DAG must be maintained - so both proposed new parents cannot be descendants of the intersection. (This is covered by the next condition because, if one parent is a descendant of the intersection point, then the ancestors of the parent include the parents of the intersection point )
+    // Central question: If one of the current principle parents was deleted could this new pair step in and be parents of the intersection point?
+    // Condition: This means that the ancestors of both proposed parents must not include the parent that is being deleted. That is, both principle parents can not be in the ancestors of both parents.
+    // What if n.parent1 or n.parent2 is this.principleParent1 or this.principleParent2? This is
+
+    const ancestors = getAncestors([n.parent1, n.parent2]).map(nod => nod.name);
+    if (
+      !(
+        ancestors.includes(this.principleParent1.name) &&
+        ancestors.includes(this.principleParent2.name)
+      )
+    ) {
+      // console.log("added other parent info", this.name);
       this._otherParentsInfoArray.push(n);
       returnValue = true;
       // Once another set of parents are added, update the exists variable with an update
       this.shallowUpdate();
     } else {
+      // console.log("info fails the ancestor test");
       returnValue = false;
     }
     return returnValue;
@@ -236,12 +255,12 @@ export class SEIntersectionPoint extends SEPoint {
     );
     if (index > -1) {
       this._otherParentsInfoArray.splice(index, 1);
-      // console.debug(
-      //   `Removed other parent ${n.name} to intersection point ${this.name}`
+      // console.log(
+      //   `Actually Removed other parents ${n.parent1.name} and ${n.parent2.name} to intersection point ${this.name}`
       // );
     } else {
       console.warn(
-        `SEIntersection Point ${this.name}: Attempted to remove info ${n} that was not on the other parent info array.`
+        `SEIntersection Point ${this.name}: Attempted to remove info ${n.parent1.name} and ${n.parent2.name}that was not on the other parent info array.`
       );
     }
   }
@@ -251,7 +270,7 @@ export class SEIntersectionPoint extends SEPoint {
     this.sePrincipleParent2 = newInfo.parent2;
     this.order = newInfo.order;
     // console.log(
-    //   `Principle parents are now ${this.principleParent1.name} and ${this.principleParent2.name}`
+    //   `Actually Principle parents of ${this.name} are now ${this.principleParent1.name} and ${this.principleParent2.name}`
     // );
   }
 
@@ -299,8 +318,6 @@ export class SEIntersectionPoint extends SEPoint {
               SENodule.store.inverseTotalRotationMatrix
             )[info.order];
             if (intersectionInfo.exists) {
-              // This means that info should be the new parents
-              this.changePrincipleParents(info);
               // update the DAG
               this.principleParent1.unregisterChild(this);
               this.principleParent2.unregisterChild(this);
@@ -308,6 +325,11 @@ export class SEIntersectionPoint extends SEPoint {
               info.parent2.registerChild(this);
               this._exists = true;
               this.locationVector = intersectionInfo.vector;
+
+              // This means that info should be the new parents
+              this.changePrincipleParents(info);
+
+              // console.log("Changed principle parents for ", this.name);
               break; // exit the search after the first successful one
             }
           }
@@ -358,7 +380,6 @@ export class SEIntersectionPoint extends SEPoint {
     return true;
   }
   public isFreePoint(): boolean {
-    console.log("non free point query");
     return false;
   }
 }

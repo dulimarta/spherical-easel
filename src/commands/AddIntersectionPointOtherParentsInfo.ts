@@ -48,7 +48,7 @@ export class AddIntersectionPointOtherParentsInfo extends Command {
   do(): CommandReturnType {
     // Add the info to the list of parents info the SEIntersectionPoint, as long as  both principle parents are not in the ancestor's list of both parents.
     // console.log(
-    //   `AddIntersectionPointOtherParentCommand: DO For intersection point ${this.seIntersectionPoint.name}, add ${this.seOtherParent.name}`
+    //   `AddIntersectionPointOtherParentCommand: DO For intersection point ${this.otherParentsInfo.SEIntersectionPoint.name}, add ${this.otherParentsInfo.parent1.name} and ${this.otherParentsInfo.parent2.name}`
     // );
 
     // addIntersectionOtherParentInfo return a boolean that indicates if it was possible to actually add the parent. If so this command is useful, If not this command is removed from its group.
@@ -56,10 +56,7 @@ export class AddIntersectionPointOtherParentsInfo extends Command {
       this.otherParentsInfo.SEIntersectionPoint.addIntersectionOtherParentInfo(
         this.otherParentsInfo
       );
-    // console.log(
-    //   `Use this Command in the future`,
-    //   this.useThisAddIntersectionPointCommand
-    // );
+    // console.log(`Use this Command in the future`, this.commandSuccessful);
 
     return { success: this.commandSuccessful };
   }
@@ -69,8 +66,8 @@ export class AddIntersectionPointOtherParentsInfo extends Command {
   }
 
   restoreState(): void {
-    // console.debug(
-    //   `AddIntersectionPointOtherParentCommand: restoreState For intersection point ${this.seIntersectionPoint.name}, remove ${this.seOtherParent.name}`
+    // console.log(
+    //   `AddIntersectionPointOtherParentCommand: restoreState For intersection point ${this.otherParentsInfo.SEIntersectionPoint.name}, remove ${this.otherParentsInfo.parent1.name} and ${this.otherParentsInfo.parent2.name}`
     // );
     if (this.commandSuccessful) {
       this.otherParentsInfo.SEIntersectionPoint.removeIntersectionOtherParentInfo(

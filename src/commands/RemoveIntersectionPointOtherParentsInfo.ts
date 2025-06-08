@@ -20,8 +20,8 @@ export class RemoveIntersectionPointOtherParentsInfo extends Command {
   }
 
   do(): CommandReturnType {
-    // console.debug(
-    //   `RemoveIntersectionPointOtherParent: DO Remove intersection point parent, ${this.seOtherParent.name}`
+    // console.log(
+    //   `RemoveIntersectionPointOtherParent: DO Remove intersection point parent, ${this.otherParentsInfo.parent1.name} & ${this.otherParentsInfo.parent2.name}`
     // );
     this.otherParentsInfo.SEIntersectionPoint.removeIntersectionOtherParentInfo(
       this.otherParentsInfo
