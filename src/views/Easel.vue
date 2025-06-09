@@ -248,7 +248,8 @@ function adjustCanvasSize(): void {
 
 function loadDocument(docId: string): void {
   seStore.removeAllFromLayers();
-  seStore.init();
+  seStore.init(true); // true prevents the clearing of the temporary nodules so that the initial tool's temporary nodules are not clear and then never resized properly
+  seStore.setActionMode("rotate"); // after loading this should be the active tool
   SENodule.resetAllCounters();
   constructionStore
     .loadPublicConstruction(docId)
@@ -477,7 +478,9 @@ onBeforeRouteLeave(
   border-radius: 8px;
   border: solid white;
   background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 #toolbox-and-sphere {

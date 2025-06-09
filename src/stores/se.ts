@@ -452,8 +452,9 @@ export const useSEStore = defineStore("se", () => {
 
   const twojsLayers = computed(() => layers);
 
-  function init(): void {
-    actionMode.value = "segment"; //The default tool when started and reset canvas cleared
+  function init(fromLoading?: boolean): void {
+    actionMode.value = "segment"; //The default/initial tool when started and reset canvas cleared, when loading the default tool should be rotate
+
     // this.activeToolName = "RotateDisplayedName";
     // Do not clear the layers array!
     // Replace clear() with splice(0). Since clear() is an extension function
@@ -491,7 +492,9 @@ export const useSEStore = defineStore("se", () => {
     // initialStyleStates.splice(0);
     // defaultStyleStates.splice(0);
     hasUnsavedNodules.value = false;
-    temporaryNodules.value.splice(0);
+    if (fromLoading === undefined) {
+      temporaryNodules.value.splice(0);
+    } // when loading, the temporary nodules are cleared in SphereFrame in onBeforeMount (where init is called), if we don't have the fromLoading variable to prevent this clearing then the clearing of the temporary nodules would occur *after* the initial tool handler (currently "segment") is constructed and the temporary nodules (a segment and two points) would be removed permanently from the temporary nodule array and never properly resized (when loading)
     inverseTotalRotationMatrix.value.identity();
     isEarthMode.value = false;
 
@@ -522,7 +525,7 @@ export const useSEStore = defineStore("se", () => {
     inverseTotalRotationMatrix.value.copy(mat);
   }
   function setActionMode(mode: ActionMode): void {
-    // console.debug("Changing action mode in SE store to", mode);
+    console.debug("Changing action mode in SE store to", mode);
     // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
     if (
       !(actionMode.value === "zoomFit" || actionMode.value === "iconFactory")
@@ -1070,6 +1073,7 @@ export const useSEStore = defineStore("se", () => {
     nodule.stylize(DisplayStyle.ApplyTemporaryVariables);
     nodule.adjustSize(); //since the tools are created on demand, the size of the canvas and zoom factor will be different so update the size of the temporary plottable
     temporaryNodules.value.push(nodule);
+    console.log("here in add temp nodule", temporaryNodules.value.length);
   }
   function updateSelectedSENodules(payload: SENodule[]): void {
     function diffArray(prev: SENodule[], curr: SENodule[]): boolean {

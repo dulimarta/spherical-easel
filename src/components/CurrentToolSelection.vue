@@ -54,6 +54,7 @@ import { ActionMode } from "@/types";
 import { storeToRefs } from "pinia";
 import SETTINGS from "@/global-settings";
 import EventBus from "@/eventHandlers/EventBus";
+import { TOOL_DICTIONARY } from "./tooldictionary";
 
 // Associate each ActionMode with the corresponding I18N key
 
@@ -138,6 +139,11 @@ onMounted((): void => {
       }, 300);
     }
   });
+  //Added to make the initial action mode show when app is loaded for the first time or the clear button is clicked
+  const associatedButton = TOOL_DICTIONARY.get(actionMode.value);
+  if (associatedButton) {
+    toolHint.value = t(associatedButton.toolUseMessage);
+  }
 });
 
 watch(

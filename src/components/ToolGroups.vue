@@ -6,8 +6,9 @@
       justifyContent: 'space-between',
       paddingBottom: '4px'
     }">
-    <CurrentToolSelection/>
-    <v-btn :style="{position: 'absolute', right: '16px'}"
+    <CurrentToolSelection />
+    <v-btn
+      :style="{ position: 'absolute', right: '16px' }"
       icon
       v-if="userRole && userRole === 'instructor'"
       size="x-small"
@@ -139,6 +140,16 @@ onBeforeMount((): void => {
   if (appFeature !== "beta") {
   }
   currentToolset.push(...includedTools.value);
+  //Added to make the initial action mode show when app is loaded for the first time or the clear button is clicked
+  selectedTool.value = actionMode.value;
+  const activeGroup = permissibleButtonGroup.findIndex(group => {
+    return group.children.some(
+      (ch: ToolButtonType) => ch.action === actionMode.value
+    );
+  });
+  if (activeGroup !== expandedPanel.value) {
+    expandedPanel.value = activeGroup;
+  }
 });
 
 watch(
