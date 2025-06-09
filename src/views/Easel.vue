@@ -248,8 +248,8 @@ function adjustCanvasSize(): void {
 
 function loadDocument(docId: string): void {
   seStore.removeAllFromLayers();
-  seStore.init(true); // true prevents the clearing of the temporary nodules so that the initial tool's temporary nodules are not clear and then never resized properly
-  seStore.setActionMode("rotate"); // after loading this should be the active tool
+  seStore.init(true); // true prevents the clearing of the temporary nodules so that the initial tool's temporary nodules are not cleared and then never resized properly
+  seStore.setActionMode("move"); // after loading this should be the active tool
   SENodule.resetAllCounters();
   constructionStore
     .loadPublicConstruction(docId)

@@ -121,32 +121,47 @@ export default abstract class Highlighter extends MouseHandler {
       .filter(obj => obj instanceof SEPolygon)
       .map(obj => obj as SEPolygon);
 
-    // Pull the name field from all these objects into one array of strings
-    const text = [
-      ...this.hitSEPoints,
-      ...this.hitSELines,
-      ...this.hitSESegments,
-      ...this.hitSECircles,
-      ...this.hitSEEllipses,
-      ...this.hitSEAngleMarkers,
-      ...this.hitSEParametrics,
-      ...this.hitSEPolygons,
-      ...this.hitSETexts
-    ]
-      // .map(n => n.label?.ref.shortUserName)
-      .map(n => n.name) //use internal names
-      .join(", ");
+    // only display text if we are not in production mode
+    if (import.meta.env.MODE !== "production") {
+      // Pull the name field from all these objects into one array of strings
+      const text = [
+        ...this.hitSEPoints,
+        ...this.hitSELines,
+        ...this.hitSESegments,
+        ...this.hitSECircles,
+        ...this.hitSEEllipses,
+        ...this.hitSEAngleMarkers,
+        ...this.hitSEParametrics,
+        ...this.hitSEPolygons,
+        ...this.hitSETexts
+      ]
+        // .map(n => n.label?.ref.shortUserName)
+        .map(n => {
+          if (n instanceof SEIntersectionPoint) {
+            return (
+              n.name +
+              "(" +
+              n.principleParent1.name +
+              "," +
+              n.principleParent2.name +
+              ")"
+            );
+          } else {
+            return n.name;
+          }
+        }) //use internal names
+        .join(", ");
 
-    if (text.length > 0) {
-      this.infoText.hide(); // hide the old box
-      // Show the names temporarily
-      this.infoText.showWithDelay(this.layers[LAYER.foregroundLabel], 300);
-      // Textbox is set to handle a ???? How does this work????
-      this.infoText.text = text;
-      this.infoText.translation.set(
-        this.currentScreenVector.x,
-        -this.currentScreenVector.y + 16
-      );
+      if (text.length > 0) {
+        this.infoText.hide(); // hide the old box
+        // Show the names temporarily
+        this.infoText.showWithDelay(this.layers[LAYER.foregroundLabel], 300);
+        this.infoText.text = text;
+        this.infoText.translation.set(
+          this.currentScreenVector.x,
+          -this.currentScreenVector.y + 21
+        );
+      }
     }
   }
 

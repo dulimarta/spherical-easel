@@ -3,7 +3,7 @@ import colors from "vuetify/util/colors";
 export const SETTINGS = {
   nearlyAntipodalIdeal: 0.01, // Two unit vectors, U and V, are nearly antipodal or nearly parallel (the) if crossVectors(U,V).isZero(nearlyAntipodalIdeal) is true. June 2024 - when this was 0.005 it was hard to draw a segment of length bigger than pi using the update method in SESegment
   tolerance: 0.00000000001, // Any number less that this tolerance is considered zero
-  intersectionTolerance: 0.00000001, // If, when checking the difference between the current intersection location, and the location between two potentially new principle parents intersection the difference is less than this, they are the same
+  intersectionTolerance: 0.00001, // If, when checking the difference between the current intersection location, and an existing point location, the difference is less than this, then they are regarded as the same point.
   hideObjectHidesLabel: true, // hiding an object hides the label of that object automatically if this is true
   showObjectShowsLabel: false, // showing an object (via the object tree) automatically shows the label if this is true
   decimalPrecision: 3, // The number decimal places to display when numerically measuring or computing a value
@@ -287,9 +287,9 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], 
-        back: [5, 10] 
-      } 
+        front: [2, 8],
+        back: [5, 10]
+      }
     },
     //The properties of the region around a segment when it is glowing
     glowing: {
@@ -324,8 +324,8 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], 
-        back: [5, 10] 
+        front: [2, 8],
+        back: [5, 10]
       }
     }
   },
@@ -357,7 +357,7 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], 
+        front: [2, 8],
         back: [5, 10]
       }
     },
@@ -394,7 +394,7 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], 
+        front: [2, 8],
         back: [5, 10]
       }
     }
@@ -430,9 +430,9 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], 
-        back: [5, 10] 
-      } 
+        front: [2, 8],
+        back: [5, 10]
+      }
     },
     //The properties of the region around a circle when it is glowing
     glowing: {
@@ -473,7 +473,7 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], 
+        front: [2, 8],
         back: [5, 10]
       }
     }
@@ -509,9 +509,9 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], 
-        back: [5, 10] 
-      } 
+        front: [2, 8],
+        back: [5, 10]
+      }
     },
     //The properties of the region around a ellipse when it is glowing
     glowing: {
@@ -552,7 +552,7 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], 
+        front: [2, 8],
         back: [5, 10]
       }
     }
@@ -589,9 +589,9 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: true,
-        front: [2, 8], 
-        back: [5, 10] 
-      } 
+        front: [2, 8],
+        back: [5, 10]
+      }
     },
     //The properties of the region around a parametric curve when it is glowing
     glowing: {
@@ -732,9 +732,9 @@ export const SETTINGS = {
         offset: { front: 0, back: 0 },
         useOnFront: false,
         useOnBack: false,
-        front: [2, 8], 
-        back: [5 , 10] 
-      } 
+        front: [2, 8],
+        back: [5, 10]
+      }
     },
     //The properties of the region around an angle when it is glowing
     glowing: {

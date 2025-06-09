@@ -89,7 +89,10 @@ export default class SegmentHandler extends Highlighter {
    * The unit normal vector to the plane of containing the segment
    */
   private normalVector = new Vector3(0, 0, 0);
-  /**;
+
+  // Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
+  /**
    * A temporary vector to help with normal vector computations
    */
   private tmpVector = new Vector3();
@@ -131,13 +134,14 @@ export default class SegmentHandler extends Highlighter {
     if (this.isOnSphere && !this.startLocationSelected) {
       // The user is making a segment
       this.startLocationSelected = true;
+      this.updateFilteredPointsList();
 
       // Decide if the starting location is near an already existing SEPoint or near a oneDimensional SENodule
-      if (this.hitSEPoints.length > 0) {
+      if (this.filteredIntersectionPointsList.length > 0) {
         // Use an existing SEPoint to start the line
-        const selected = this.hitSEPoints[0];
+        const selected = this.filteredIntersectionPointsList[0];
         this.startVector.copy(selected.locationVector);
-        this.startSEPoint = this.hitSEPoints[0];
+        this.startSEPoint = this.filteredIntersectionPointsList[0];
         // Set the start of the temp segment and the startMarker at the location of the selected point
         this.temporaryStartMarker.positionVectorAndDisplay =
           selected.locationVector;
@@ -248,19 +252,22 @@ export default class SegmentHandler extends Highlighter {
     // The user can create points  on ellipse, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
+    this.updateFilteredPointsList();
 
-    if (this.hitSEPoints.length > 0) {
-      this.hitSEPoints[0].glowing = true;
+    if (this.filteredIntersectionPointsList.length > 0) {
+      this.filteredIntersectionPointsList[0].glowing = true;
       if (!this.startLocationSelected) {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = null;
-        this.snapStartMarkerToTemporaryPoint = this.hitSEPoints[0];
+        this.snapStartMarkerToTemporaryPoint =
+          this.filteredIntersectionPointsList[0];
         this.snapEndMarkerToTemporaryPoint = null;
       } else {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = this.hitSEPoints[0];
+        this.snapEndMarkerToTemporaryPoint =
+          this.filteredIntersectionPointsList[0];
       }
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
@@ -491,8 +498,6 @@ export default class SegmentHandler extends Highlighter {
     super.mouseLeave(event);
     this.prepareForNextSegment();
   }
-  // list all points except those intersection points whose parents are not showing
-  protected filteredIntersectionPointsList: SEPoint[] = [];
 
   updateFilteredPointsList(): void {
     this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
@@ -506,6 +511,7 @@ export default class SegmentHandler extends Highlighter {
       return true;
     });
   }
+
   prepareForNextSegment(): void {
     this.temporarySegment.removeFromLayers();
     this.temporaryStartMarker.removeFromLayers();
@@ -603,9 +609,9 @@ export default class SegmentHandler extends Highlighter {
       );
     }
     // Look for an endpoint at the mouse release location
-    if (this.hitSEPoints.length > 0 && !fromActivate) {
+    if (this.filteredIntersectionPointsList.length > 0 && !fromActivate) {
       // The end point is an existing point
-      this.endSEPoint = this.hitSEPoints[0];
+      this.endSEPoint = this.filteredIntersectionPointsList[0];
 
       // move the endpoint of the segment to the location of the endpoint
       // This ensures that the initial display of the segment is nice and the endpoint
