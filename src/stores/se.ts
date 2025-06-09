@@ -119,7 +119,7 @@ function findCycles(segs: Array<SESegment>): number[] {
   function findNewCycles(path: number[]): void {
     const start_node = path[0];
     let next_node: null | number = null;
-    let sub = [];
+    let sub: number[] = [];
     //visit each edge and each node of each edge
     for (const edge of graph) {
       const node1 = edge[0];

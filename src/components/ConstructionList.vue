@@ -48,7 +48,7 @@
               :style="{
                 alignSelf: 'flex-end'
               }">
-              <v-icon v-if="r.publicDocId" class="mr-1">
+              <v-icon v-if="r.publicDocId && allowSharing" class="mr-1">
                 mdi-share-variant
               </v-icon>
               {{ r.dateCreated.substring(0, 10) }}

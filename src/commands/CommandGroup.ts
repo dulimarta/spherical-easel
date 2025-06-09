@@ -11,7 +11,6 @@ import { AddIntersectionPointOtherParentsInfo } from "./AddIntersectionPointOthe
 
 export class CommandGroup extends Command {
   public subCommands: Command[] = [];
-
   // Make command group like a transaction in data base management:
   // Try the command in a dry-run, then if there are
   // any errors, edit the command group and try again until
@@ -22,6 +21,35 @@ export class CommandGroup extends Command {
   // boolean success (other properties can be added later to diagnose other
   // issues if necessary). In this case if a command is not successful it is removed
   // from the group.
+  private transactionIndices: Array<number> = [];
+
+  beginTransaction() {
+    this.transactionIndices.push(this.subCommands.length);
+  }
+
+  commit() {
+    if (this.transactionIndices.length > 0) {
+      this.transactionIndices.pop();
+    } else {
+      throw "Not inside a CommandGroup transaction";
+    }
+  }
+
+  commitIf(predicate: () => boolean) {
+    if (predicate()) this.commit();
+    else this.rollback();
+  }
+
+  rollback() {
+    if (this.transactionIndices.length > 0) {
+      const mostRecentIndex = this.transactionIndices.pop();
+      while (this.subCommands.length > mostRecentIndex!) {
+        this.subCommands.pop()?.restoreState();
+      }
+    } else {
+      throw "Not inside a CommandGroup transaction";
+    }
+  }
 
   // execute is responsible for putting the corrected (if necessary) group into the
   // command history and also for calling the do() method on all subcommands
@@ -52,7 +80,6 @@ export class CommandGroup extends Command {
           // console.log("Command Removed",this.subCommands[errorIndex])
           // In this case remove this command from the group
           this.subCommands.splice(errorIndex, 1);
-          
         }
       } else {
         // all subcommands are now successful and have been performed and saved
