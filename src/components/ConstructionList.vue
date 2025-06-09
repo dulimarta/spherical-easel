@@ -339,10 +339,7 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
     // becomes unnecessary
 
     // include this so that filled objects (circles, ellipses, polygons, angleMarkers) display correctly after loading
-    seNodules.value.forEach(obj => {
-      obj.update();
-      // obj.ref?.stylize(DisplayStyle.ApplyCurrentVariables)
-    });
+    seStore.updateDisplay();
   }
 }
 

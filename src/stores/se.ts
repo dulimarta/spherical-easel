@@ -1073,7 +1073,6 @@ export const useSEStore = defineStore("se", () => {
     nodule.stylize(DisplayStyle.ApplyTemporaryVariables);
     nodule.adjustSize(); //since the tools are created on demand, the size of the canvas and zoom factor will be different so update the size of the temporary plottable
     temporaryNodules.value.push(nodule);
-    console.log("here in add temp nodule", temporaryNodules.value.length);
   }
   function updateSelectedSENodules(payload: SENodule[]): void {
     function diffArray(prev: SENodule[], curr: SENodule[]): boolean {
