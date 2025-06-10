@@ -22,7 +22,6 @@ import {
 import SETTINGS, { LAYER } from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { SELabel } from "@/models/SELabel";
-// import { TransactionMarkerCommand } from "./TransactionMarkerCommand";
 
 export abstract class Command {
   protected static store: SEStoreType;
