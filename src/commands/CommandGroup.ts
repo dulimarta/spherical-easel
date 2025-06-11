@@ -11,11 +11,17 @@ import { AddIntersectionPointOtherParentsInfo } from "./AddIntersectionPointOthe
 
 type TxBeginMarker = {
   commandIndex: number;
-  nestingLevel: number; // Must be positive, 1 = outermost
+  nestingLevel: number; // Must be positive, 1 = outermost. May not be needed?
 };
 
 type TxCommitMarker = TxBeginMarker & {
+  // Use predicate so it can be evaluated at runtime (inside execute())
   predicate: () => boolean;
+};
+type RollbackRange = {
+  startAt: number /* inclusive */;
+  endAt: number /* exclusive */;
+  nestingLevel: number;
 };
 export class CommandGroup extends Command {
   public subCommands: Command[] = [];
@@ -34,7 +40,7 @@ export class CommandGroup extends Command {
   private txCommits: Array<TxCommitMarker> = [];
   /** commitIndices is an array that records the commitIf event */
   private nestingLevel = 0; // initially no nesting
-  // private sequence = 0
+
   public addTransaction() {
     this.nestingLevel++;
     this.txBegins.push({
@@ -78,20 +84,23 @@ export class CommandGroup extends Command {
       super.execute(); // Invoke superclass method to execute without transaction
     } else if (this.txBegins.length == this.txCommits.length) {
       const rollbackTarget: Array<number> = [];
+      const purgeCandidates: Array<RollbackRange> = [];
       let beginIdx = 0;
-      let txLevel = 0;
+      let txLevel = 0; // transaction nesting depth
+      // Remember the (implied) index of
       let nextBeginCommandAt = this.txBegins[0].commandIndex;
       let nextCommitCommandAt = this.txCommits[0].commandIndex;
       let commitIdx = 0;
-      let cmdPos = 0;
+      let cmdPos = 0; // index to the current command being executed
       // The while-loop upperbound is intentionally made inclusive to handle the case
       // when commitIf() is the very last event to execute in the command group
       while (cmdPos <= this.subCommands.length) {
-        if (cmdPos === nextBeginCommandAt) {
+        // Use a loop, in case we have a nested transaction which begins at the same index
+        while (cmdPos === nextBeginCommandAt) {
           // Are we at beginTransaction()
-          rollbackTarget.push(cmdPos);
-          beginIdx++;
-          txLevel++;
+          rollbackTarget.push(cmdPos); // Remember the position to rollback to
+          beginIdx++; // prepare for the next beginTrasaction()
+          txLevel++; // we are now one level deeper in nesting depth
           console.debug(
             `Begin of level ${txLevel} transaction ${beginIdx} at command index ${cmdPos}`
           );
@@ -100,14 +109,17 @@ export class CommandGroup extends Command {
           } else {
             nextBeginCommandAt = -1;
           }
-        } else if (cmdPos === nextCommitCommandAt) {
+        }
+        // Use a loop, in case we have a nested transaction which ends at the same index
+        while (cmdPos === nextCommitCommandAt) {
           // Are we at commitIf()?
           const thisCommit = this.txCommits[commitIdx];
           console.debug(
             `End of level ${txLevel} (${thisCommit.nestingLevel}) at ${cmdPos}`
           );
-          const rollbackTo = rollbackTarget.pop()!;
+          const rollbackTo = rollbackTarget.pop()!; // index in commandHistory to rollback to
           if (thisCommit.predicate() === false) {
+            // If the commit condition is not satisfied, we have to rollback
             let purgeCount = 0;
             for (let rb = cmdPos - 1; rb >= rollbackTo; rb--) {
               purgeCount++;
@@ -117,26 +129,63 @@ export class CommandGroup extends Command {
             console.debug(
               `Purging ${purgeCount} or ${cmdPos - rollbackTo} failed commands`
             );
-            this.subCommands.splice(rollbackTo, cmdPos - rollbackTo);
-            cmdPos = rollbackTo;
+            if (purgeCount > 0)
+              purgeCandidates.push({
+                startAt: rollbackTo,
+                endAt: cmdPos,
+                nestingLevel: txLevel
+              });
+            // this.subCommands.splice(rollbackTo, cmdPos - rollbackTo);
+            // cmdPos = rollbackTo;
           }
-          txLevel--;
+          txLevel--; // we are now one level shallower in nesting depth
+          // Get the command index of the next commit (if any)
           commitIdx++;
           if (commitIdx < this.txCommits.length) {
-            nextCommitCommandAt = this.txBegins[commitIdx].commandIndex;
+            nextCommitCommandAt = this.txCommits[commitIdx].commandIndex;
           } else {
             nextCommitCommandAt = -1;
           }
         }
         if (cmdPos < this.subCommands.length) {
+          console.debug(`Executing command at position ${cmdPos}`);
           this.subCommands[cmdPos].saveState();
           this.subCommands[cmdPos].do();
         }
         cmdPos++;
       }
+      if (purgeCandidates.length > 0) {
+        // Since commit are handled in increasing index in the command history
+        // The entries in purgeCandidates are already sorted
+        // increasing by their end index & decreasing by their nesting depth
+        // When a nested failing) transaction is enclosed by another failing
+        // transaction, we need to remove only once (i.e. the enclosing range)
+        // For instance [3,8] failed and is enclosed in [2,11] which also failed.
+        // It is unnecessary to purge [3,8], we just need to purge [2,11]
+        const purgeVictims: Array<RollbackRange> = [];
+        let currentRange = purgeCandidates.pop()!;
+        purgeVictims.push(currentRange);
+        let rangeStart = currentRange.startAt;
+        let rangeEnd = currentRange.endAt;
+        while (purgeCandidates.length > 0) {
+          const thisRange = purgeCandidates.pop()!;
+          if (thisRange.startAt < rangeStart || thisRange.endAt > rangeEnd) {
+            // thisRange is not enclosed in the current range
+            purgeVictims.push(thisRange);
+            rangeStart = thisRange.startAt;
+            rangeEnd = thisRange.endAt;
+          } else {
+            // Overlapping range and can be ignored
+          }
+        }
+        purgeVictims.forEach(v => {
+          const len = v.endAt - v.startAt + 1;
+          this.subCommands.splice(v.startAt, len);
+        });
+      }
     } else {
       const missing = this.txBegins.length - this.txCommits.length;
-      throw `You have ${missing} missing commits`;
+      throw `You are missing ${missing} commits`;
     }
   }
 
