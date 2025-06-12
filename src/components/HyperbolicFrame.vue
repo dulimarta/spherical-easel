@@ -1,13 +1,26 @@
 <template>
-  <p
+  <span
     :style="{
-      position: 'fixed'
+      position: 'fixed',
+      backgroundColor: '#FFF7'
     }">
-    ThreeJS Mouse @ ({{ mouseCoord.toFixed(2) }})
-    {{ mouseCoordNormalized.toFixed(3) }}
-
-    {{ rayIntersectionPoint.position.toFixed(2) }}
-  </p>
+    <span class="mx-2">
+      Keys
+      <v-icon :color="shiftKey ? 'black' : 'grey'">
+        mdi-apple-keyboard-shift
+      </v-icon>
+      <v-icon :color="controlKey ? 'black' : 'grey'">
+        mdi-apple-keyboard-control
+      </v-icon>
+    </span>
+    <span class="mr-2">
+      Mouse @ <span :style="{
+        color: isOutside ? 'red':'black'
+      }">({{ elementX}}, {{elementX }})</span>
+      {{ mouseCoordNormalized.toFixed(3) }}
+      {{ rayIntersectionPoint.position.toFixed(2) }}
+    </span>
+  </span>
   <canvas
     ref="webglCanvas"
     id="webglCanvas"
@@ -41,7 +54,7 @@ import {
 import * as THREE from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import { LineCurve3 } from "three/src/extras/curves/LineCurve3";
-import { onUpdated, onMounted, Ref, ref } from "vue";
+import { onUpdated, onMounted, Ref, ref, useTemplateRef } from "vue";
 import CameraControls from "camera-controls";
 import {
   acceleratedRaycast,
@@ -50,6 +63,9 @@ import {
   ExtendedTriangle,
   MeshBVHHelper
 } from "three-mesh-bvh";
+import type { UseMouseEventExtractor } from '@vueuse/core'
+
+import { useKeyModifier, useMouse, useMousePressed, useParentElement, useMouseInElement } from "@vueuse/core";
 import { degToRad, radToDeg } from "three/src/math/MathUtils";
 
 class HyperbolaCurve extends Curve<Vector3> {
@@ -63,7 +79,8 @@ class HyperbolaCurve extends Curve<Vector3> {
   constructor(v1: Vector3) {
     super();
     this.v1.copy(v1); // Must be a vector perpendicular to X-axis
-    if (Math.abs(v1.x) > 1e-3) throw "The direction vector of hyperbola must be perpendiclar to the X-axis"
+    if (Math.abs(v1.x) > 1e-3)
+      throw "The direction vector of hyperbola must be perpendiclar to the X-axis";
     this.v2.set(1, 0, 0);
     const innerA = v1.x * v1.x + v1.y * v1.y - v1.z * v1.z;
     this.a = Math.sqrt(-1.0 / innerA);
@@ -100,15 +117,26 @@ const props = withDefaults(defineProps<ComponentProps>(), {
   availableHeight: 240,
   availableWidth: 240
 });
+const shiftKey = useKeyModifier("Shift");
+const controlKey = useKeyModifier("Control")
 
-const webglCanvas: Ref<HTMLCanvasElement | null> = ref(null);
+const parentEl = useParentElement()
+
+const extractor: UseMouseEventExtractor = event => (
+  event instanceof MouseEvent
+    ? [event.offsetX, event.offsetY]
+    : null
+)
+
+// const { x, y, sourceType } = useMouse({ target: parentEl, type: extractor, touch: true })
+const webglCanvas = useTemplateRef<HTMLCanvasElement>("webglCanvas");
+const {elementX, elementY, isOutside} = useMouseInElement(webglCanvas)
 const scene = new Scene();
 const clock = new Clock(); // used by camera control animation
 const rayCaster = new Raycaster();
 rayCaster.firstHitOnly = true;
 const auxLineRayCaster = new Raycaster();
 const auxRaycasterStart = new Vector3(0, 0, 0);
-const mouseCoord: Ref<THREE.Vector2> = ref(new THREE.Vector2());
 const mouseCoordNormalized: Ref<THREE.Vector2> = ref(new THREE.Vector2()); // used by RayCaster
 let camera: PerspectiveCamera;
 let renderer: WebGLRenderer;
@@ -227,14 +255,14 @@ const planeDir1 = new Vector3(1, 0, 0);
 const planeDir2 = new Vector3();
 const planeDirArrow = new ArrowHelper();
 planeDirArrow.setColor("cyan");
-planeDirArrow.setLength(4, 0.8, 0.4);
+planeDirArrow.setLength(3, 0.5, 0.25);
 // randomPlane.add(upperPlane)
 const planeBVHHelper = new MeshBVHHelper(randomPlane);
 // planeBVHHelper.color.set("cyan");
 // scene.add(planeBVHHelper);
 randomPlane.name = "RedPlane";
 // randomPlane.matrixAutoUpdate = true;
-// randomPlane.rotateX(degToRad(125));
+randomPlane.rotateX(degToRad(90));
 // randomPlane.translateY(5)
 randomPlane.updateMatrixWorld(); // This is needed to before bvhcast can do its work
 scene.add(randomPlane);
@@ -272,7 +300,7 @@ const bvhCastCallback = {
         intersectionTubeGeo,
         new MeshStandardMaterial({ color: "yellow" })
       );
-      intersectionGroup.add(intersectionTube);
+      // intersectionGroup.add(intersectionTube);
     }
     return false;
   }
@@ -336,15 +364,15 @@ onUpdated(() => {
 });
 
 function mouseTracker(ev: MouseEvent) {
-  // ev.stopPropagation()
-  mouseCoord.value.x = ev.offsetX;
-  mouseCoord.value.y = ev.offsetY;
   mouseCoordNormalized.value.x =
-    2 * (ev.offsetX / renderer.domElement.clientWidth) - 1;
+    2 * (elementX.value / renderer.domElement.clientWidth) - 1;
   mouseCoordNormalized.value.y =
-    1 - 2 * (ev.offsetY / renderer.domElement.clientHeight);
+    1 - 2 * (elementY.value / renderer.domElement.clientHeight);
   rayCaster.setFromCamera(mouseCoordNormalized.value, camera);
   const allIntersections = rayCaster.intersectObjects(scene.children, true);
+  allIntersections.forEach((itx, seq) => {
+    console.debug(`Intersection ${seq } ${itx.point.toFixed(2)} ${itx.distance}`)
+  })
   if (allIntersections.length > 0) {
     // console.debug(`Number of all intersections ${allIntersections.length}`)
     // We are interested only in intersection with named objects
@@ -369,7 +397,7 @@ function mouseTracker(ev: MouseEvent) {
         mouseNormalArrow.setDirection(firstIntersection.normal!);
       }
       auxLineIntersectionPoints.forEach(p => scene.remove(p));
-      if (ev.shiftKey) {
+      if (shiftKey.value) {
         // Show auxiliary line with shift-key
         const hypotenuse = Math.sqrt(
           Math.pow(rayIntersectionPoint.position.x, 2) +
@@ -440,7 +468,7 @@ function mouseTracker(ev: MouseEvent) {
       } else {
         scene.remove(auxLine);
       }
-      if (ev.ctrlKey) {
+      if (controlKey.value) {
         // Need to use mouse intersection with a non-plane object
         const nonPlane = namedIntersections.find(obj => {
           // console.debug("Check ctrl intersect", obj.object.name);
@@ -448,7 +476,9 @@ function mouseTracker(ev: MouseEvent) {
         });
         if (nonPlane) {
           const planeXRotation = Math.atan2(nonPlane.point.y, nonPlane.point.z);
-          planeDir2.set(0, Math.sin(planeXRotation), Math.cos(planeXRotation)).normalize();
+          planeDir2
+            .set(0, Math.sin(planeXRotation), Math.cos(planeXRotation))
+            .normalize();
           const newPath = new HyperbolaCurve(planeDir2);
           hyperTube.geometry.dispose();
           hyperTube.material.dispose();
@@ -457,7 +487,7 @@ function mouseTracker(ev: MouseEvent) {
             new TubeGeometry(newPath, 50, 0.03, 12, false),
             new THREE.MeshStandardMaterial({ color: "greenyellow" })
           );
-          scene.add(hyperTube)
+          scene.add(hyperTube);
           const innerB =
             planeDir1.x * planeDir1.x +
             planeDir1.y * planeDir1.y -
