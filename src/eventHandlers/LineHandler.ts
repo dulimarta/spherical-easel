@@ -813,9 +813,13 @@ export default class LineHandler extends Highlighter {
           // );
           // i += 1;
           if (item.existingIntersectionPoint) {
+            lineGroup.addCondition(() =>
+              item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+            );
             lineGroup.addCommand(
               new AddIntersectionPointOtherParentsInfo(item)
             );
+            lineGroup.addEndCondition();
           } else {
             // Create the plottable label
             const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(

@@ -86,7 +86,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
    */
   private numberOfTangents = 1;
 
-// Filter the hitSEPoints appropriately for this handler
+  // Filter the hitSEPoints appropriately for this handler
   protected filteredIntersectionPointsList: SEPoint[] = [];
 
   constructor(layers: Group[]) {
@@ -122,7 +122,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
       // If we don't have selectOneObjectAtATime clicking on a point on a line/segment/circle/ellipse selects both the point and the line/segment/circle/ellipse
       this.selectOneObjectAtATime = true;
       // Attempt to fill the point
-      this.updateFilteredPointsList()
+      this.updateFilteredPointsList();
       if (
         this.sePoint === null &&
         this.sePointOneDimensionalParent === null &&
@@ -358,7 +358,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
     //   this.sePointVector.isZero(),
     //   this.oneDimensional === null
     // );
-    this.updateFilteredPointsList()
+    this.updateFilteredPointsList();
     if (
       this.sePoint === null &&
       this.sePointOneDimensionalParent === null &&
@@ -823,9 +823,13 @@ export default class TangentLineThruPointHandler extends Highlighter {
         .createAllIntersectionsWith(newSETangentLine, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
+            addTangentLineGroup.addCondition(() =>
+              item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+            );
             addTangentLineGroup.addCommand(
               new AddIntersectionPointOtherParentsInfo(item)
             );
+            addTangentLineGroup.addEndCondition();
           } else {
             // Create the plottable label
             const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(

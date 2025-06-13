@@ -866,9 +866,13 @@ export default class SegmentHandler extends Highlighter {
         .createAllIntersectionsWith(newSESegment, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
+            segmentGroup.addCondition(() =>
+              item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+            );
             segmentGroup.addCommand(
               new AddIntersectionPointOtherParentsInfo(item)
             );
+            segmentGroup.addEndCondition();
           } else {
             // Create the plottable label
             const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(

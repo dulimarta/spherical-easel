@@ -54,7 +54,7 @@ export default class ThreePointCircleHandler extends Highlighter {
   private point1LocationSelected = false;
   private point2LocationSelected = false;
 
-// Filter the hitSEPoints appropriately for this handler
+  // Filter the hitSEPoints appropriately for this handler
   protected filteredIntersectionPointsList: SEPoint[] = [];
   /**
    * A temporary plottable (TwoJS) points created while the user is making the ellipse. These can't be the same because the user
@@ -1110,9 +1110,13 @@ export default class ThreePointCircleHandler extends Highlighter {
         .createAllIntersectionsWith(newSECircle, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
+            threePointCircleCommandGroup.addCondition(() =>
+              item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+            );
             threePointCircleCommandGroup.addCommand(
               new AddIntersectionPointOtherParentsInfo(item)
             );
+            threePointCircleCommandGroup.addEndCondition();
           } else {
             // Create the plottable and model label
             const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(

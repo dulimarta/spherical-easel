@@ -384,9 +384,15 @@ export default class NSectAngleHandler extends Highlighter {
             .createAllIntersectionsWith(nSectingLine, [])
             .forEach((item: SEIntersectionReturnType) => {
               if (item.existingIntersectionPoint) {
+                nSectingLinesCommandGroup.addCondition(() =>
+                  item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(
+                    item
+                  )
+                );
                 nSectingLinesCommandGroup.addCommand(
                   new AddIntersectionPointOtherParentsInfo(item)
                 );
+                nSectingLinesCommandGroup.addEndCondition();
               } else {
                 // Create the plottable label
                 const newSELabel =

@@ -256,7 +256,12 @@ export class CommandGroup extends Command {
           }
         }
         if (cmdPos < this.subCommands.length) {
-          console.debug(`Executing command at position ${cmdPos}`);
+          const opString = this.subCommands[cmdPos].toOpcode();
+          console.debug(
+            `Executing command at position ${cmdPos} ${opString
+              ?.toString()
+              .substring(0, 40)}`
+          );
           this.subCommands[cmdPos].saveState();
           this.subCommands[cmdPos].do();
         }
