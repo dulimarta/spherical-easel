@@ -52,12 +52,10 @@ import { Matrix4, Vector2, Vector3 } from "three";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { computed } from "vue";
-import { Vector } from "two.js/src/vector";
 import SETTINGS from "@/global-settings";
 import Two from "two.js";
 import { SEText } from "@/models/SEText";
-import { ComputedRef } from "vue";
-import { getDescendants, rank_of_type } from "@/utils/helpingfunctions";
+import { rank_of_type } from "@/utils/helpingfunctions";
 
 const sePencils: Array<SEPencil> = [];
 const oldSelectedSENodules: Map<number, SENodule> = new Map();
@@ -544,7 +542,7 @@ export const useSEStore = defineStore("se", () => {
     seAngleMarkers.value.forEach((x: SEAngleMarker) =>
       x.ref.removeFromLayers()
     );
-    seCircles.value.forEach((x: SECircle) => x.ref.removeFromLayers());
+    seCircles.value.forEach((x: SECircle) => x.ref!.removeFromLayers());
     seEllipses.value.forEach((x: SEEllipse) => x.ref.removeFromLayers());
     seLines.value.forEach((x: SELine) => x.ref.removeFromLayers());
     sePoints.value.forEach((x: SEPoint) => x.ref.removeFromLayers());
@@ -664,7 +662,7 @@ export const useSEStore = defineStore("se", () => {
     seCircleIds.value.push(circle.id);
     seCircleMap.set(circle.id, circle);
     seNodules.value.push(circle);
-    circle.ref.addToLayers(layers);
+    circle.ref!.addToLayers(layers);
     hasUnsavedNodules.value = true;
     updateDisabledTools("circle");
   }
@@ -672,7 +670,7 @@ export const useSEStore = defineStore("se", () => {
     const victimCircle = seCircleMap.get(circleId);
     if (victimCircle) {
       /* victim line is found */
-      victimCircle.ref.removeFromLayers();
+      victimCircle.ref!.removeFromLayers();
       const pos = seCircleIds.value.findIndex(c => c === circleId);
       const pos2 = seNodules.value.findIndex(x => x.id === circleId);
       seCircleIds.value.splice(pos, 1); // Remove the circle from the list

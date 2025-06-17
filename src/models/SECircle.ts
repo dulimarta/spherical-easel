@@ -39,7 +39,7 @@ export class SECircle
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  declare public ref: Circle;
+  // declare public ref: Circle;
   /**
    * Pointer to the label of this SESegment
    */
@@ -81,9 +81,11 @@ export class SECircle
     this._circleSEPoint = circlePoint;
     SECircle.CIRCLE_COUNT++;
     this.name = `C${SECircle.CIRCLE_COUNT}`;
-    this.ref = createNonFreeCircle ? new NonFreeCircle(this.name) : new Circle(this.name);
-    this.ref.centerVector = centerPoint.locationVector;
-    this.ref.circleRadius = this.circleRadius;
+    this.ref = createNonFreeCircle
+      ? new NonFreeCircle(this.name)
+      : new Circle(this.name);
+    (this.ref as Circle).centerVector = centerPoint.locationVector;
+    (this.ref as Circle).circleRadius = this.circleRadius;
     this.ref.updateDisplay();
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
     this.ref.adjustSize();
@@ -176,16 +178,16 @@ export class SECircle
       const newRadius = this._centerSEPoint.locationVector.angleTo(
         this._circleSEPoint.locationVector
       );
-      this.ref.circleRadius = newRadius;
-      this.ref.centerVector = this._centerSEPoint.locationVector;
+      (this.ref as Circle).circleRadius = newRadius;
+      (this.ref as Circle).centerVector = this._centerSEPoint.locationVector;
       // display the new circle with the updated values
-      this.ref.updateDisplay();
+      (this.ref as Circle).updateDisplay();
     }
 
     if (this.showing && this._exists) {
-      this.ref.setVisible(true);
+      this.ref!.setVisible(true);
     } else {
-      this.ref.setVisible(false);
+      this.ref!.setVisible(false);
     }
   }
   public update(
@@ -458,13 +460,12 @@ export class SECircle
   }
 
   public getLabel(): SELabel | null {
-    return (this as Labelable).label!
-
+    return (this as Labelable).label!;
   }
   public isMeasurable(): boolean {
     return true;
   }
-    public isFillable(): boolean {
+  public isFillable(): boolean {
     return true;
   }
 }

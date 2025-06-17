@@ -119,7 +119,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   ): number[][] {
     const xAxisVector = new Vector3(startPt[0], startPt[1], 0).normalize();
     const yAxisVector = new Vector3(yAxis[0], yAxis[1], 0).normalize();
-    const returnArray = [];
+    const returnArray: Array<Array<number>> = [];
     const tmpVector = new Vector3();
 
     for (let i = 0; i < numPoints; i++) {

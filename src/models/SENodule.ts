@@ -253,8 +253,6 @@ export abstract class SENodule implements Visitable {
     n.removeParent(this);
   }
 
-
-
   // public removeSelfSafely(): void {
   //   if (this._kids.length == 0) {
   //     // const pars = this._parents.map(p => p.name).join(", ");
@@ -360,7 +358,6 @@ export abstract class SENodule implements Visitable {
       return false;
     }
 
-    
     return this._parents.every(n => n.isFreePoint());
   }
   // only returns true for SENodules that can be measured (
@@ -706,7 +703,7 @@ export abstract class SENodule implements Visitable {
     fPrime?: (t: number) => number // not used if bisection method is used
   ): number[] {
     // now we need to find all the places that d changes sign so we know where to start Newton's method
-    const signChangeIndices = [];
+    const signChangeIndices: number[] = [];
     const tZeroes: number[] = [];
 
     // Locate the zeros and zero-crossings
