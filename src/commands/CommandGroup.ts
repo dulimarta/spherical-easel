@@ -58,7 +58,6 @@ export class CommandGroup extends Command {
   private ifNestingLevel = 0;
   /** commitIndices is an array that records the commitIf event */
   private mostRecentBegin = -1;
-  private mostRecentIf = -1;
 
   public addTransaction() {
     this.txNestingLevel++;
@@ -91,18 +90,20 @@ export class CommandGroup extends Command {
   }
 
   public addCondition(predicate: () => boolean) {
-    this.ifNestingLevel++;
+    this.ifNestingLevel++; // One if-level deeper
     this.pendingIfConditions.push({
       commandIndex: this.subCommands.length,
       predicate
     });
-    this.mostRecentIf = this.subCommands.length;
   }
 
   public addEndCondition() {
     if (this.pendingIfConditions.length > 0) {
+      // We must have a prior call to addCondition()
       const { commandIndex, predicate } = this.pendingIfConditions.pop()!;
       if (commandIndex < this.subCommands.length) {
+        // Must confirm that addCondition() and addEndCondition() are
+        // not enclosing an empty block of commands
         this.ifConditions.push({
           startAt: commandIndex,
           endAt: this.subCommands.length,
@@ -112,32 +113,39 @@ export class CommandGroup extends Command {
       } else {
         console.debug(`Conditional block with empty commands, ignored`);
       }
-      this.ifNestingLevel--;
+      this.ifNestingLevel--; // One if-level shallower
     } else
       throw `No matching condition for end condition at ${this.subCommands.length}`;
   }
 
   execute(fromRedo?: boolean): void {
     if (
-      this.txBegins.length === 0 &&
-      this.ifConditions.length === 0 &&
-      this.pendingIfConditions.length === 0
+      this.txBegins.length === 0 && // No transactions
+      this.ifConditions.length === 0 && // No if-blocks
+      this.pendingIfConditions.length === 0 // If-blocks pair up 1-to-1 with their Endif
     ) {
-      super.execute(); // Invoke superclass method to execute without transaction
+      super.execute(fromRedo); // Invoke superclass method to execute without transaction
     } else if (this.txNestingLevel === 0 && this.ifNestingLevel === 0) {
+      // Transaction and IF nesting level must be zero at time of command execution
       const rollbackTarget: Array<number> = [];
+      // Keep track of command scope that must be purged later
+      // These command scopes originate from both transactions/IF-blocks
       const purgeCandidates: Array<CommandScope> = [];
       let beginIdx = 0;
       let txLevel = 0; // transaction nesting depth
       // Remember the (implied) index of
-      let nextBeginCommandAt = -1;
-      let nextCommitCommandAt = -1;
+      let nextBeginCommandAt = -1; // In absence of commit points, use -1 so
+      let nextCommitCommandAt = -1; // comparison with cmdPos is always false
       if (this.txCommits.length > 0) {
         nextBeginCommandAt = this.txBegins[0].commandIndex;
         nextCommitCommandAt = this.txCommits[0].commandIndex;
       }
       let nextIfCommandAt = -1;
       let nextEndIfCommandAt = -1;
+      // Ensure that ifConditions are sorted (descending) by their start position
+      // When two IF begins at the same start position, break the tie using
+      // their nesting level.
+      // In the following loop, the ifConditions array will be treated as a stack
       this.ifConditions.sort((a, b) => {
         if (a.startAt !== b.startAt) return b.startAt - a.startAt;
         return b.nestingLevel - a.nestingLevel;
@@ -148,7 +156,6 @@ export class CommandGroup extends Command {
         nextEndIfCommandAt = nextCondition.endAt;
       }
       let commitIdx = 0;
-      // let conditionIdx = 0;
       let cmdPos = 0; // index to the current command being executed
       // The while-loop upperbound is intentionally made inclusive to handle the case
       // when commitIf() is the very last event to execute in the command group
@@ -159,9 +166,6 @@ export class CommandGroup extends Command {
           rollbackTarget.push(cmdPos); // Remember the position to rollback to
           beginIdx++; // prepare for the next beginTrasaction()
           txLevel++; // we are now one level deeper in nesting depth
-          console.debug(
-            `Begin of level ${txLevel} transaction ${beginIdx} at command index ${cmdPos}`
-          );
           if (beginIdx < this.txBegins.length) {
             nextBeginCommandAt = this.txBegins[beginIdx].commandIndex;
           } else {
@@ -172,9 +176,6 @@ export class CommandGroup extends Command {
         while (cmdPos === nextCommitCommandAt) {
           // Are we at commitIf()?
           const thisCommit = this.txCommits[commitIdx];
-          console.debug(
-            `End of level ${txLevel} (${thisCommit.nestingLevel}) at ${cmdPos}`
-          );
           const rollbackTo = rollbackTarget.pop()!; // index in commandHistory to rollback to
           if (thisCommit.predicate() === false) {
             // If the commit condition is not satisfied, we have to rollback
@@ -184,9 +185,6 @@ export class CommandGroup extends Command {
               this.subCommands[rb].restoreState();
             }
             // purge failed commands from the history
-            console.debug(
-              `Purging ${purgeCount} or ${cmdPos - rollbackTo} failed commands`
-            );
             // We don't want to splice() the subcommands array now, because it will
             // mess up the index numberings recorded in the txBegins and txCommits arrays
             // So we keep the purge details in an array and splice() the subcommands
@@ -210,9 +208,9 @@ export class CommandGroup extends Command {
         while (cmdPos === nextIfCommandAt) {
           // We are at the beginning of an IF-block
           if (nextCondition!.predicate!() === false) {
-            console.debug(
-              `Condition at ${cmdPos} evaluates to false, removing if-blocked enclosed by [${nextIfCommandAt},${nextEndIfCommandAt}]`
-            );
+            // console.debug(
+            //   `Condition at ${cmdPos} evaluates to false, removing if-blocked enclosed by [${nextIfCommandAt},${nextEndIfCommandAt}]`
+            // );
             // Keep a record of what command range that must be removed (later)
             purgeCandidates.push({
               startAt: nextCondition!.startAt,
@@ -257,11 +255,11 @@ export class CommandGroup extends Command {
         }
         if (cmdPos < this.subCommands.length) {
           const opString = this.subCommands[cmdPos].toOpcode();
-          console.debug(
-            `Executing command at position ${cmdPos} ${opString
-              ?.toString()
-              .substring(0, 40)}`
-          );
+          // console.debug(
+          //   `Executing command at position ${cmdPos} ${opString
+          //     ?.toString()
+          //     .substring(0, 40)}`
+          // );
           this.subCommands[cmdPos].saveState();
           this.subCommands[cmdPos].do();
         }
