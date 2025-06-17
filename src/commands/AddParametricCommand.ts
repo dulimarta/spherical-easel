@@ -5,7 +5,6 @@ import { Matrix4, Vector3 } from "three";
 import { SEParametric } from "@/models/SEParametric";
 import { SEExpression } from "@/models/SEExpression";
 import {
-  CommandReturnType,
   CoordExpression,
   MinMaxExpression,
   MinMaxNumber,
@@ -30,14 +29,13 @@ export class AddParametricCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     this.seExpressionParents.forEach(par =>
       par.registerChild(this.seParametric)
     );
     this.seParametric.registerChild(this.seLabel);
     Command.store.addParametric(this.seParametric);
     Command.store.addLabel(this.seLabel);
-    return { success: true };
   }
 
   saveState(): void {

@@ -1,6 +1,5 @@
 import { Command } from "./Command";
 import {
-  CommandReturnType,
   SavedNames,
   SEIntersectionReturnType,
   SEOneDimensional
@@ -35,7 +34,7 @@ export class ChangeIntersectionPointPrincipleParents extends Command {
     this.newParentInfo = { ...newInfo };
   }
 
-  do(): CommandReturnType {
+  do(): void {
     // change the principle parents of this.commonSEIntersectionPoint in that class
     this.commonSEIntersectionPoint.changePrincipleParents(this.newParentInfo);
     // update the DAG
@@ -43,7 +42,6 @@ export class ChangeIntersectionPointPrincipleParents extends Command {
     this.oldParentInfo.parent2.unregisterChild(this.commonSEIntersectionPoint);
     this.newParentInfo.parent1.registerChild(this.commonSEIntersectionPoint);
     this.newParentInfo.parent2.registerChild(this.commonSEIntersectionPoint);
-    return { success: true };
   }
 
   saveState(): void {

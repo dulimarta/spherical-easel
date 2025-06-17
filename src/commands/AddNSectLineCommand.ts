@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
-import { CommandReturnType, SavedNames } from "@/types";
+import { SavedNames } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
@@ -25,7 +25,7 @@ export class AddNSectLineCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     this.parentAngle.registerChild(this.seNSectLine);
     this.seNSectLine.registerChild(this.seLabel);
     if (SETTINGS.line.showLabelsOfNonFreeLinesInitially) {
@@ -35,7 +35,6 @@ export class AddNSectLineCommand extends Command {
     }
     Command.store.addLine(this.seNSectLine);
     Command.store.addLabel(this.seLabel);
-    return { success: true };
   }
 
   saveState(): void {

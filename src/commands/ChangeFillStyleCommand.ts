@@ -1,6 +1,6 @@
 import Nodule from "@/plottables/Nodule";
 import { Command } from "./Command";
-import { CommandReturnType, FillStyle, SavedNames } from "@/types";
+import { FillStyle, SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 
 export class ChangeFillStyleCommand extends Command {
@@ -14,11 +14,10 @@ export class ChangeFillStyleCommand extends Command {
     this.pastFillStyle = pastFillStyle;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     console.log("change fill style");
     Nodule.setFillStyle(this.currentFillStyle);
     Command.store.changeFillStyle(this.currentFillStyle);
-    return { success: true };
   }
 
   saveState(): void {

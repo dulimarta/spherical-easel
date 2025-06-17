@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import { CommandReturnType, SavedNames } from "@/types";
+import { SavedNames } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
@@ -31,7 +31,7 @@ export class AddParametricTracePointCommand extends Command {
     }
   }
 
-  do(): CommandReturnType {
+  do(): void {
     this.parametricParent.registerChild(this.seTracePoint);
     this.seTracePoint.registerChild(this.seTraceLabel);
     if (SETTINGS.point.showLabelsOfParametricEndPointsInitially) {
@@ -49,7 +49,6 @@ export class AddParametricTracePointCommand extends Command {
     }
     // this.seTracePoint.markKidsOutOfDate();
     // this.seTracePoint.update();
-    return { success: true };
   }
 
   saveState(): void {

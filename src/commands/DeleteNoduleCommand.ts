@@ -14,7 +14,7 @@ import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SETransformation } from "@/models/SETransformation";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { CommandReturnType, SavedNames } from "@/types";
+import { SavedNames } from "@/types";
 import { toSVGType } from "@/types";
 import { SEText } from "@/models/SEText";
 import { DisplayStyle } from "@/plottables/Nodule";
@@ -35,7 +35,7 @@ export class DeleteNoduleCommand extends Command {
     return 1; //this.seNodule.id
   }
 
-  do(): CommandReturnType {
+  do(): void {
     // Remove from the Data Structure (DAG)
     // Notice that this makes the parents array empty so that is why we stored the parents ids in a separate
     // array for restore state. Also notice that we can *not* do this with
@@ -102,7 +102,6 @@ export class DeleteNoduleCommand extends Command {
     } else if (this.seNodule instanceof SETransformation) {
       Command.store.removeTransformation(this.seNodule.id);
     }
-    return { success: true };
   }
 
   saveState(): void {

@@ -1,6 +1,6 @@
 import Nodule from "@/plottables/Nodule";
 import { Command } from "./Command";
-import { CommandReturnType, SavedNames, toSVGType } from "@/types";
+import { SavedNames, toSVGType } from "@/types";
 import { SENodule } from "@/models/SENodule";
 
 export class ChangeBackStyleContrastCommand extends Command {
@@ -14,9 +14,8 @@ export class ChangeBackStyleContrastCommand extends Command {
     this.pastBackStyleContrast = pastBackStyleContrast;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     Command.store.changeBackContrast(this.currentBackStyleContrast);
-    return { success: true };
   }
 
   saveState(): void {

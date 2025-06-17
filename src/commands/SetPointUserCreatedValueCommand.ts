@@ -8,7 +8,7 @@ import SETTINGS from "@/global-settings";
 // import { SavedNames } from "@/types";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import EventBus from "@/eventHandlers/EventBus";
-import { CommandReturnType, toSVGType } from "@/types";
+import { toSVGType } from "@/types";
 
 /**
  * This is used when an intersection point was automatically created and the user
@@ -34,7 +34,7 @@ export class SetPointUserCreatedValueCommand extends Command {
     }
   }
 
-  do(): CommandReturnType {
+  do(): void {
     // console.log(
     //   `SetPointUserCreated: DO changed ${this.seIntersectionOrAntipodePoint.name} to user created:${this.userCreatedValue}`
     // );
@@ -83,7 +83,6 @@ export class SetPointUserCreatedValueCommand extends Command {
     this.seIntersectionOrAntipodePoint.markKidsOutOfDate();
     this.seIntersectionOrAntipodePoint.update();
     EventBus.fire("update-points-user-created", {});
-    return { success: true };
   }
 
   saveState(): void {

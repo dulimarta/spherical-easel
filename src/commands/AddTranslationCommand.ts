@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SETranslation } from "@/models/SETranslation";
 import { SESegment } from "@/models/SESegment";
-import { CommandReturnType, SavedNames } from "@/types";
+import { SavedNames } from "@/types";
 import { SELine } from "@/models/SELine";
 import { SEExpression } from "@/models/SEExpression";
 import { toSVGType } from "@/types";
@@ -22,11 +22,10 @@ export class AddTranslationCommand extends Command {
     this.seLineOrSegment = parent;
     this.seTranslationDistanceExpression = distanceParent;
   }
-  do(): CommandReturnType {
+  do(): void {
     Command.store.addTransformation(this.seTranslation);
     this.seLineOrSegment.registerChild(this.seTranslation);
     this.seTranslationDistanceExpression.registerChild(this.seTranslation);
-    return { success: true };
   }
 
   saveState(): void {

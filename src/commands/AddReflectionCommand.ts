@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SETranslation } from "@/models/SETranslation";
 import { SESegment } from "@/models/SESegment";
-import { CommandReturnType, SavedNames } from "@/types";
+import { SavedNames } from "@/types";
 import { AddTranslationCommand } from "./AddTranslationCommand";
 import { SEReflection } from "@/models/SEReflection";
 import { SELine } from "@/models/SELine";
@@ -17,10 +17,9 @@ export class AddReflectionCommand extends Command {
     this.seReflection = seReflection;
     this.seLineOrSegment = parent;
   }
-  do(): CommandReturnType {
+  do(): void {
     Command.store.addTransformation(this.seReflection);
     this.seLineOrSegment.registerChild(this.seReflection);
-    return { success: true };
   }
 
   saveState(): void {

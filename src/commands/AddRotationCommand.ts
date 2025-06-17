@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SETranslation } from "@/models/SETranslation";
 import { SESegment } from "@/models/SESegment";
-import { CommandReturnType, SavedNames } from "@/types";
+import { SavedNames } from "@/types";
 import { AddTranslationCommand } from "./AddTranslationCommand";
 import { SERotation } from "@/models/SERotation";
 import { SEPoint } from "@/models/SEPoint";
@@ -25,11 +25,10 @@ export class AddRotationCommand extends Command {
     this.sePointOfRotation = pointOfRotation;
     this.seAngleExpression = angle;
   }
-  do(): CommandReturnType {
+  do(): void {
     Command.store.addTransformation(this.seRotation);
     this.sePointOfRotation.registerChild(this.seRotation);
     this.seAngleExpression.registerChild(this.seRotation);
-    return { success: true };
   }
 
   saveState(): void {

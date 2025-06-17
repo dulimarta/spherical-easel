@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import Nodule from "@/plottables/Nodule";
 import { StyleOptions, StyleCategory } from "../types/Styles";
-import { CommandReturnType, toSVGType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class StyleNoduleCommand extends Command {
   private nodules: Nodule[] = [];
@@ -43,7 +43,7 @@ export class StyleNoduleCommand extends Command {
     });
   }
 
-  do(): CommandReturnType {
+  do(): void {
     for (let i = 0; i < this.nodules.length; i++) {
       // console.log(
       //   "CMD- Do effect of StyleNoduleCommand on ",
@@ -67,7 +67,6 @@ export class StyleNoduleCommand extends Command {
 
       // console.debug("new", this.currentStyles[i]);
     }
-    return { success: true };
   }
 
   saveState(): void {

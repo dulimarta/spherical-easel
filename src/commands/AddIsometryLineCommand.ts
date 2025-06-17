@@ -3,7 +3,7 @@ import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
-import { CommandReturnType, SavedNames, SEIsometry } from "@/types";
+import { SavedNames, SEIsometry } from "@/types";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SELine } from "@/models/SELine";
 import { SEIsometryLine } from "@/models/SEIsometryLine";
@@ -28,13 +28,12 @@ export class AddIsometryLineCommand extends Command {
     this.isometrySELineLabel = isometrySELineLabel;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     this.preimageSELine.registerChild(this.isometrySELine);
     this.parentIsometry.registerChild(this.isometrySELine);
     this.isometrySELine.registerChild(this.isometrySELineLabel);
     Command.store.addLine(this.isometrySELine);
     Command.store.addLabel(this.isometrySELineLabel);
-  return { success: true };
   }
 
   saveState(): void {
@@ -78,9 +77,7 @@ export class AddIsometryLineCommand extends Command {
       "labelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.isometrySELineLabel.ref.currentStyleState(
-              StyleCategory.Label
-            )
+            this.isometrySELineLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
       "labelVector=" + this.isometrySELineLabel.ref._locationVector.toFixed(9),

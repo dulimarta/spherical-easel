@@ -1,6 +1,5 @@
 import { Command } from "./Command";
 import { SEText } from "@/models/SEText";
-import { CommandReturnType } from "@/types";
 import { Vector2, Vector3 } from "three";
 
 export class MoveTextCommand extends Command {
@@ -22,12 +21,11 @@ export class MoveTextCommand extends Command {
     // console.log(`newLocationVector = ${newLocationVector.toFixed(3)}`);
   }
 
-  do(): CommandReturnType {
+  do(): void {
     Command.store.moveText({
       textId: this.seText.id,
       location: this.newLocationVector
     });
-    return { success: true };
   }
 
   saveState(): void {

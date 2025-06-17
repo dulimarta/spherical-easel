@@ -20,7 +20,7 @@
                 </template>
 
                 <v-list-item-title
-                  v-text="$t(tool.displayedName)"></v-list-item-title>
+                  v-text="t(tool.displayedName)"></v-list-item-title>
               </v-list-item>
             </v-list>
           </v-card-text>

@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { Matrix4 } from "three";
-import { CommandReturnType, toSVGType } from "@/types";
+import { toSVGType } from "@/types";
 import { DisplayStyle } from "@/plottables/Nodule";
 
 export class RotateSphereCommand extends Command {
@@ -13,11 +13,10 @@ export class RotateSphereCommand extends Command {
     this.inverseRotation.copy(this.rotationMat).invert();
   }
 
-  do(): CommandReturnType {
+  do(): void {
     // console.log(this.rotationMat.toArray())
     Command.store.rotateSphere(this.rotationMat);
     Command.store.updateTwoJS(); //update the display of all objects with a fill. Without this when undoing a rotation of a fill object the fill doesn't display correctly when doing or undoing
-    return { success: true };
   }
 
   saveState(): void {

@@ -3,7 +3,7 @@ import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
-import { CommandReturnType, SavedNames, SEIsometry } from "@/types";
+import { SavedNames, SEIsometry } from "@/types";
 import { SETransformedPoint } from "@/models/SETransformedPoint";
 import { SECircle } from "@/models/SECircle";
 import { SEIsometryCircle } from "@/models/SEIsometryCircle";
@@ -28,13 +28,12 @@ export class AddIsometryCircleCommand extends Command {
     this.isometrySECircleLabel = isometrySECircleLabel;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     this.preimageSECircle.registerChild(this.isometrySECircle);
     this.parentIsometry.registerChild(this.isometrySECircle);
     this.isometrySECircle.registerChild(this.isometrySECircleLabel);
     Command.store.addCircle(this.isometrySECircle);
     Command.store.addLabel(this.isometrySECircleLabel);
-  return { success: true };
   }
 
   saveState(): void {

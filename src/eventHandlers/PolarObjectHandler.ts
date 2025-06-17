@@ -86,7 +86,7 @@ export default class PolarObjectHandler extends Highlighter {
   private temporaryPolarPointMarkersAdded = false;
   private temporaryPointAdded = false;
 
-// Filter the hitSEPoints appropriately for this handler
+  // Filter the hitSEPoints appropriately for this handler
   protected filteredIntersectionPointsList: SEPoint[] = [];
 
   constructor(layers: Group[]) {
@@ -670,9 +670,13 @@ export default class PolarObjectHandler extends Highlighter {
       .createAllIntersectionsWith(newPolarLine, newlyCreatedSEPoints)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
+          polarLineCommandGroup.addCondition(() =>
+            item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+          );
           polarLineCommandGroup.addCommand(
             new AddIntersectionPointOtherParentsInfo(item)
           );
+          polarLineCommandGroup.addEndCondition();
         } else {
           // Create the plottable label
           const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(

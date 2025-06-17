@@ -5,7 +5,7 @@ import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
-import { CommandReturnType, SavedNames } from "@/types";
+import { SavedNames } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { SEMeasuredCircle } from "@/models/SEMeasuredCircle";
 import { toSVGType } from "@/types";
@@ -29,13 +29,12 @@ export class AddMeasuredCircleCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     this.centerSEPoint.registerChild(this.seCircle);
     this.measurementSEExpression.registerChild(this.seCircle);
     this.seCircle.registerChild(this.seLabel);
     Command.store.addCircle(this.seCircle);
     Command.store.addLabel(this.seLabel);
-  return { success: true };
   }
 
   saveState(): void {

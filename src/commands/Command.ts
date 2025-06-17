@@ -13,18 +13,12 @@ import EventBus from "@/eventHandlers/EventBus";
 import { Matrix4, Vector3 } from "three";
 import { SEStoreType } from "@/stores/se";
 import {
-  CommandReturnType,
   svgGradientType,
   svgStopType,
   svgStyleType as svgStyleType,
   toSVGType
 } from "@/types/index";
 import SETTINGS, { LAYER } from "@/global-settings";
-//import { aN } from "vitest/dist/reporters-yx5ZTtEV";
-import { nextTick } from "vue";
-import { CommandGroup } from "./CommandGroup";
-import { DisplayStyle } from "@/plottables/Nodule";
-import { StyleCategory } from "@/types/Styles";
 import { SENodule } from "@/models/SENodule";
 import { SELabel } from "@/models/SELabel";
 
@@ -43,6 +37,11 @@ export abstract class Command {
   // of the command history stack and when changes made to the construction
   // the stack height will be different from the baseline height.
   static baselineHistoryLength = 0;
+
+  // An array that keeps the indices of the command History where
+  // a (new transaction begins), i.e. If the array holds a value 5
+  // then commandHistory[5] is the first Command of a new transaction
+  static transactionIndices: Array<number> = [];
 
   //eslint-disable-next-line
   protected lastState: any; // The state can be of ANY type
@@ -114,6 +113,40 @@ export abstract class Command {
 
   static isConstructionModified() {
     return this.commandHistory.length !== this.baselineHistoryLength;
+  }
+
+  static beginTransaction() {
+    this.transactionIndices.push(this.commandHistory.length);
+    console.debug(
+      `Transaction ${this.transactionIndices.length} begins at index ${this.commandHistory.length}`
+    );
+  }
+
+  static commit() {
+    if (this.transactionIndices.length > 0) {
+      this.transactionIndices.pop();
+    } else {
+      throw "Not inside a Command transaction";
+    }
+  }
+
+  static commitIf(predicate: () => boolean) {
+    if (predicate()) this.commit();
+    else this.rollBack();
+  }
+
+  static rollBack() {
+    if (this.transactionIndices.length > 0) {
+      const mostRecentIndex = this.transactionIndices.pop();
+      console.debug(`Purge to first command at ${mostRecentIndex}`);
+      while (this.commandHistory.length > mostRecentIndex!) {
+        this.commandHistory.pop()?.restoreState();
+        // Can we implement this without store dependency?
+        // Command.store.updateDisplay();
+      }
+    } else {
+      throw "Not inside a Command transaction";
+    }
   }
 
   execute(fromRedo?: boolean): void {
@@ -917,7 +950,7 @@ export abstract class Command {
   abstract saveState(): void;
 
   /**  do: Perform necessary action to alter the app state*/
-  abstract do(preventGraphicalUpdate?: boolean): CommandReturnType;
+  abstract do(preventGraphicalUpdate?: boolean): void;
 
   /** Generate an opcode ("assembly code") that can be saved as an executable script
    * and interpreted at runtime by calling the constructor of Command subclasses.

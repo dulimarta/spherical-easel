@@ -75,7 +75,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
    */
   private sePointVector = new Vector3(0, 0, 0);
 
-// Filter the hitSEPoints appropriately for this handler
+  // Filter the hitSEPoints appropriately for this handler
   protected filteredIntersectionPointsList: SEPoint[] = [];
 
   /* temporary vector to help with computation */
@@ -124,7 +124,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     //Select the objects to create the perpendicular
     if (this.isOnSphere) {
-      this.updateFilteredPointsList()
+      this.updateFilteredPointsList();
       // If we don't have selectOneObjectAtATime clicking on a point on a line/segment/circle/ellipse selects both the point and the line/segment/circle/ellipse
       this.selectOneObjectAtATime = true;
       // Attempt to fill the point
@@ -365,7 +365,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     // The user can create points  on circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
-    this.updateFilteredPointsList()
+    this.updateFilteredPointsList();
     if (
       this.sePoint === null &&
       this.sePointOneDimensionalParent === null &&
@@ -857,8 +857,20 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             const addIntersectionCmd = new AddIntersectionPointOtherParentsInfo(
               item
             );
-            if (usePencil) addPencilGroup.addCommand(addIntersectionCmd);
-            else addPerpendicularLineGroup.addCommand(addIntersectionCmd);
+
+            if (usePencil) {
+              addPencilGroup.addCondition(() =>
+                item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+              );
+              addPencilGroup.addCommand(addIntersectionCmd);
+              addPencilGroup.addEndCondition();
+            } else {
+              addPerpendicularLineGroup.addCondition(() =>
+                item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+              );
+              addPerpendicularLineGroup.addCommand(addIntersectionCmd);
+              addPerpendicularLineGroup.addEndCondition();
+            }
           } else {
             // console.debug(
             //   "Got intersection point at",

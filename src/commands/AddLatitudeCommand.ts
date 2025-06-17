@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
-import { CommandReturnType, SavedNames } from "@/types";
+import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleCategory } from "@/types/Styles";
 import { SELatitude } from "@/models/SELatitude";
@@ -19,11 +19,10 @@ export class AddLatitudeCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     Command.store.addLabel(this.seLabel);
     this.seLatitude.registerChild(this.seLabel);
     Command.store.addCircle(this.seLatitude);
-  return { success: true };
   }
 
   saveState(): void {
