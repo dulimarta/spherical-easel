@@ -300,6 +300,17 @@ export class CommandGroup extends Command {
           this.subCommands.splice(v.startAt, len);
         });
       }
+      Command.commandHistory.push(this);
+
+      if (Command.redoHistory.length > 0 && fromRedo === undefined) {
+        Command.redoHistory.splice(0);
+      }
+      EventBus.fire("undo-enabled", {
+        value: Command.commandHistory.length > 0
+      });
+      EventBus.fire("redo-enabled", {
+        value: Command.redoHistory.length > 0
+      });
     } else {
       if (this.txNestingLevel != 0) {
         const missing = this.txBegins.length - this.txCommits.length;
@@ -320,10 +331,10 @@ export class CommandGroup extends Command {
       for (let i = 0; i < this.subCommands.length; i++) {
         this.subCommands[i].saveState();
         const result = this.subCommands[i].do();
-        if (!result.success) {
-          errorIndex = i;
-          break;
-        }
+        // if (!result.success) {
+        //   errorIndex = i;
+        //   break;
+        // }
       }
       // console.log("error index", errorIndex)
       if (errorIndex != -1) {
