@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import { CommandReturnType, SavedNames, SEOneOrTwoDimensional } from "@/types";
+import { SavedNames, SEOneOrTwoDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
@@ -30,7 +30,7 @@ export class AddPointOnOneDimensionalCommand extends Command {
     }
   }
 
-  do(): CommandReturnType {
+  do(): void {
     this.parent.registerChild(this.sePointOnOneOrTwoDimensional);
     this.sePointOnOneOrTwoDimensional.registerChild(this.seLabel);
     if (SETTINGS.point.showLabelsOfPointOnObjectInitially) {
@@ -51,7 +51,6 @@ export class AddPointOnOneDimensionalCommand extends Command {
     }
     // this.sePointOnOneOrTwoDimensional.markKidsOutOfDate();
     // this.sePointOnOneOrTwoDimensional.update();
-    return { success: true };
   }
 
   saveState(): void {

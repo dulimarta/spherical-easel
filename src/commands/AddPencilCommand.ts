@@ -3,7 +3,7 @@ import { SEPencil } from "@/models/SEPencil";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 import { Command } from "./Command";
 import { CommandGroup } from "./CommandGroup";
-import { CommandReturnType, toSVGType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddPencilCommand extends Command {
   private pencil: SEPencil;
@@ -13,14 +13,13 @@ export class AddPencilCommand extends Command {
     this.pencil = pencil;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     Command.store.addPoint(this.pencil.commonPoint);
     this.pencil.lines.forEach((line: SEPerpendicularLineThruPoint) => {
       Command.store.addLine(line);
       this.pencil.commonPoint.registerChild(line);
       this.pencil.commonParametric.registerChild(line);
     });
-    return { success: true };
   }
 
   saveState(): void {

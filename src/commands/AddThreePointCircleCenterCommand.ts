@@ -4,7 +4,7 @@ import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
-import { CommandReturnType, SavedNames } from "@/types";
+import { SavedNames } from "@/types";
 import { SEThreePointCircleCenter } from "@/models/SEThreePointCircleCenter";
 import { toSVGType } from "@/types";
 
@@ -36,7 +36,7 @@ export class AddThreePointCircleCenterCommand extends Command {
     }
   }
 
-  do(): CommandReturnType {
+  do(): void {
     this.firstSEPoint.registerChild(this.seThreePointCircleCenter);
     this.secondSEPoint.registerChild(this.seThreePointCircleCenter);
     this.thirdSEPoint.registerChild(this.seThreePointCircleCenter);
@@ -51,7 +51,6 @@ export class AddThreePointCircleCenterCommand extends Command {
       this.seThreePointCircleCenter.incrementVisiblePointCount();
       this.seThreePointCircleCenter.label.ref.shortUserName = `P${this.seThreePointCircleCenter.visiblePointCount}`;
     }
-    return { success: true };
   }
 
   saveState(): void {

@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SECircle } from "@/models/SECircle";
-import { CommandReturnType, SavedNames } from "@/types";
+import { SavedNames } from "@/types";
 import { SEInversion } from "@/models/SEInversion";
 import { toSVGType } from "@/types";
 
@@ -14,10 +14,9 @@ export class AddInversionCommand extends Command {
     this.seInversion = seInversion;
     this.seCircle = parent;
   }
-  do(): CommandReturnType {
+  do(): void {
     Command.store.addTransformation(this.seInversion);
     this.seCircle.registerChild(this.seInversion);
-  return { success: true };
   }
 
   saveState(): void {

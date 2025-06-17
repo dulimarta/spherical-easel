@@ -1,7 +1,7 @@
 // Use the following template as a starter for a new Command
 import { SEText } from "@/models/SEText";
 import { Command } from "./Command";
-import { CommandReturnType, SavedNames } from "@/types";
+import { SavedNames } from "@/types";
 import { Vector2, Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { SENodule } from "@/models/SENodule";
@@ -14,9 +14,8 @@ export class AddTextCommand extends Command {
     this.seText = txt;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     Command.store.addText(this.seText);
-    return { success: true };
   }
 
   saveState(): void {

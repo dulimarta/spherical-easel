@@ -5,7 +5,7 @@ import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SEEllipse } from "@/models/SEEllipse";
 import { StyleCategory } from "@/types/Styles";
-import { CommandReturnType, SavedNames } from "@/types";
+import { SavedNames } from "@/types";
 import { toSVGType } from "@/types";
 
 export class AddEllipseCommand extends Command {
@@ -29,14 +29,13 @@ export class AddEllipseCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     this.focus1SEPoint.registerChild(this.seEllipse);
     this.focus2SEPoint.registerChild(this.seEllipse);
     this.ellipseSEPoint.registerChild(this.seEllipse);
     this.seEllipse.registerChild(this.seLabel);
     Command.store.addEllipse(this.seEllipse);
     Command.store.addLabel(this.seLabel);
-  return { success: true };
   }
 
   saveState(): void {
@@ -145,7 +144,7 @@ export class AddEllipseCommand extends Command {
       const seLabel = new SELabel("ellipse", seEllipse);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
-      seLabel.locationVector = seLabelLocation;  // Don't use copy() on is a prop
+      seLabel.locationVector = seLabelLocation; // Don't use copy() on is a prop
       //style the label
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)

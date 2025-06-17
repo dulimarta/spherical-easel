@@ -1,11 +1,6 @@
 import { Command } from "./Command";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import {
-  CommandReturnType,
-  SavedNames,
-  SEOneDimensional,
-  SEOneOrTwoDimensional
-} from "@/types";
+import { SavedNames, SEOneDimensional, SEOneOrTwoDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
@@ -31,7 +26,7 @@ export class AddIntersectionPointCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     // console.debug(
     //   `Add intersection point ${this.seIntersectionPoint.name} with parents ${
     //     this.principleParent1.name
@@ -44,7 +39,6 @@ export class AddIntersectionPointCommand extends Command {
     this.seIntersectionPoint.registerChild(this.seLabel);
     Command.store.addPoint(this.seIntersectionPoint);
     Command.store.addLabel(this.seLabel);
-    return { success: true };
   }
 
   saveState(): void {

@@ -1,9 +1,6 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
-import { SETranslation } from "@/models/SETranslation";
-import { SESegment } from "@/models/SESegment";
-import { CommandReturnType, SavedNames } from "@/types";
-import { AddTranslationCommand } from "./AddTranslationCommand";
+import { SavedNames } from "@/types";
 import { SEPointReflection } from "@/models/SEPointReflection";
 import { SEPoint } from "@/models/SEPoint";
 import { toSVGType } from "@/types";
@@ -17,10 +14,9 @@ export class AddPointReflectionCommand extends Command {
     this.sePointReflection = sePointReflection;
     this.sePointOfReflection = parent;
   }
-  do(): CommandReturnType {
+  do(): void {
     Command.store.addTransformation(this.sePointReflection);
     this.sePointOfReflection.registerChild(this.sePointReflection);
-    return { success: true };
   }
 
   saveState(): void {

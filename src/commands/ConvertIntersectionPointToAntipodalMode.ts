@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { CommandReturnType, toSVGType } from "@/types";
+import { toSVGType } from "@/types";
 // import { Labelable } from "@/types";
 // import { SEPoint } from "@/models/SEPoint";
 //import SETTINGS from "@/global-settings";
@@ -25,7 +25,7 @@ export class ConvertIntersectionPointToAntipodalMode extends Command {
     this.seIntersectionParent = seIntersectionParent;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     // console.debug(
     //   `DO: Convert intersection point ${this.seIntersectionPoint.name} to antipodal mode with parent ${this.seIntersectionParent.name}`
     // );
@@ -45,7 +45,6 @@ export class ConvertIntersectionPointToAntipodalMode extends Command {
     // ) {
     //   this.seIntersectionPoint.label.showing = true;
     // }
-    return { success: true };
   }
 
   saveState(): void {

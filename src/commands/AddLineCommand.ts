@@ -5,9 +5,8 @@ import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
-import { CommandReturnType, SavedNames } from "@/types";
+import { SavedNames } from "@/types";
 import { toSVGType } from "@/types";
-
 
 export class AddLineCommand extends Command {
   private seLine: SELine;
@@ -28,13 +27,12 @@ export class AddLineCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     this.startSEPoint.registerChild(this.seLine);
     this.endSEPoint.registerChild(this.seLine);
     this.seLine.registerChild(this.seLabel);
     Command.store.addLine(this.seLine);
     Command.store.addLabel(this.seLabel);
-  return { success: true };
   }
 
   saveState(): void {
@@ -63,15 +61,11 @@ export class AddLineCommand extends Command {
       "objectShowing=" + this.seLine.showing,
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
-          JSON.stringify(
-            this.seLine.ref.currentStyleState(StyleCategory.Front)
-          )
+          JSON.stringify(this.seLine.ref.currentStyleState(StyleCategory.Front))
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
-          JSON.stringify(
-            this.seLine.ref.currentStyleState(StyleCategory.Back)
-          )
+          JSON.stringify(this.seLine.ref.currentStyleState(StyleCategory.Back))
         ),
       // All labels have these attributes
       "labelName=" + Command.symbolToASCIIDec(this.seLabel.name),

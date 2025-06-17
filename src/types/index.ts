@@ -106,7 +106,7 @@ export type SavedNames =
   | "intersectionPointOtherParentInfoName1"
   | "intersectionPointOtherParentInfoName2"
   | "intersectionPointOtherParentInfoOrder"
-    | "intersectionPointInfoNewPrincipleParent1"
+  | "intersectionPointInfoNewPrincipleParent1"
   | "intersectionPointInfoNewPrincipleParent2"
   | "intersectionPointOtherParentInfoNewOrder"
   | "intersectionPointUserCreated"
@@ -357,8 +357,6 @@ export type ParametricIntersectionType = {
   t: number;
   vector: Vector3;
 };
-
-export type CommandReturnType = { success: boolean };
 
 /**
  * Intersection and if that intersection exists

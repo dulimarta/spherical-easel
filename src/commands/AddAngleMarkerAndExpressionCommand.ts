@@ -6,12 +6,7 @@ import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import {
-  AngleMode,
-  CommandReturnType,
-  SavedNames,
-  ValueDisplayMode
-} from "@/types";
+import { AngleMode, SavedNames, ValueDisplayMode } from "@/types";
 import { StyleCategory } from "@/types/Styles";
 import { toSVGType } from "@/types";
 
@@ -58,7 +53,7 @@ export class AddAngleMarkerCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     this._firstSEParent.registerChild(this.seAngleMarker);
     this._secondSEParent.registerChild(this.seAngleMarker);
     if (this._thirdSEParent !== undefined) {
@@ -69,7 +64,6 @@ export class AddAngleMarkerCommand extends Command {
     Command.store.addLabel(this.seLabel);
     // this.seAngleMarker.markKidsOutOfDate();
     // this.seAngleMarker.update();
-    return { success: true };
   }
 
   saveState(): void {

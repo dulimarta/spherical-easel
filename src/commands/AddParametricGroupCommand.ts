@@ -11,7 +11,7 @@ import { SEParametricGroup } from "@/models/SEParametricGroup";
 // } from "@/types";
 // import { StyleCategory } from "@/types/Styles";
 // import { CommandGroup } from "./CommandGroup";
-import { CommandReturnType, toSVGType } from "@/types";
+import { toSVGType } from "@/types";
 
 export class AddParametricGroupCommand extends Command {
   private group: SEParametricGroup;
@@ -29,7 +29,7 @@ export class AddParametricGroupCommand extends Command {
     // this.seLabel = seLabel;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     this.group.members.forEach(par =>
       // par.registerChild(this.seParametric)
       Command.store.addParametric(par)
@@ -37,7 +37,6 @@ export class AddParametricGroupCommand extends Command {
     // this.seParametric.registerChild(this.seLabel);
     // Command.store.addParametric(this.seParametric);
     // Command.store.addLabel(this.seLabel);
-    return { success: true };
   }
 
   saveState(): void {

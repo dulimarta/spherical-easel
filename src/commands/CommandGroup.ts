@@ -2,7 +2,7 @@
  * This class is needed to group several commands together so
  * one single call to undo() undoes multiple effects
  */
-import { CommandReturnType, toSVGType } from "@/types";
+import { toSVGType } from "@/types";
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SELabel } from "@/models/SELabel";
@@ -379,12 +379,11 @@ export class CommandGroup extends Command {
     });
   }
 
-  do(): CommandReturnType {
+  do(): void {
     // console.log("CG DO", this.subCommands.length, this.subCommands[0])
     this.subCommands.forEach(x => {
       x.do();
     });
-    return { success: true }; // to make the linter happy but is not used
   }
 
   getSVGObjectLabelPairs(): [SENodule, SELabel | null][] {

@@ -28,13 +28,12 @@ export class AddIsometryEllipseCommand extends Command {
     this.isometrySEEllipseLabel = isometrySEEllipseLabel;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     this.preimageSEEllipse.registerChild(this.isometrySEEllipse);
     this.parentIsometry.registerChild(this.isometrySEEllipse);
     this.isometrySEEllipse.registerChild(this.isometrySEEllipseLabel);
     Command.store.addEllipse(this.isometrySEEllipse);
     Command.store.addLabel(this.isometrySEEllipseLabel);
-  return { success: true };
   }
 
   saveState(): void {
@@ -52,7 +51,6 @@ export class AddIsometryEllipseCommand extends Command {
   getSVGObjectLabelPairs(): [SENodule, SELabel][] {
     return [[this.isometrySEEllipse, this.isometrySEEllipseLabel]];
   }
-
 
   toOpcode(): null | string | Array<string> {
     return [

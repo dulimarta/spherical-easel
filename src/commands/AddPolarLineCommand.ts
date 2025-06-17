@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
-import { CommandReturnType, SavedNames } from "@/types";
+import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SEPolarLine } from "@/models/SEPolarLine";
@@ -24,12 +24,11 @@ export class AddPolarLineCommand extends Command {
     this.seLabel = seLabel;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     this.parentSEPoint.registerChild(this.sePolarLine);
     this.sePolarLine.registerChild(this.seLabel);
     Command.store.addLine(this.sePolarLine);
     Command.store.addLabel(this.seLabel);
-    return { success: true };
   }
 
   saveState(): void {

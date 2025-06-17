@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
-import { CommandReturnType, Labelable } from "@/types";
+import { Labelable } from "@/types";
 import SETTINGS from "@/global-settings";
 import { toSVGType } from "@/types";
 
@@ -22,7 +22,7 @@ export class SetNoduleExistCommand extends Command {
     }
   }
 
-  do(): CommandReturnType {
+  do(): void {
     this.seNodule.exists = this.existing;
     this.seNodule.showing = this.showing;
     // Check the global variable that indicates if when hiding an object we should hide the label (and similar for showing)
@@ -40,7 +40,6 @@ export class SetNoduleExistCommand extends Command {
         (this.seNodule as unknown as Labelable).label!.showing = true;
       }
     }
-    return { success: true };
   }
 
   saveState(): void {

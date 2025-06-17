@@ -13,7 +13,6 @@ import EventBus from "@/eventHandlers/EventBus";
 import { Matrix4, Vector3 } from "three";
 import { SEStoreType } from "@/stores/se";
 import {
-  CommandReturnType,
   svgGradientType,
   svgStopType,
   svgStyleType as svgStyleType,
@@ -951,7 +950,7 @@ export abstract class Command {
   abstract saveState(): void;
 
   /**  do: Perform necessary action to alter the app state*/
-  abstract do(preventGraphicalUpdate?: boolean): CommandReturnType;
+  abstract do(preventGraphicalUpdate?: boolean): void;
 
   /** Generate an opcode ("assembly code") that can be saved as an executable script
    * and interpreted at runtime by calling the constructor of Command subclasses.

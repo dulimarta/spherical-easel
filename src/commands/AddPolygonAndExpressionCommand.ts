@@ -4,7 +4,7 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { CommandReturnType, SavedNames, ValueDisplayMode } from "@/types";
+import { SavedNames, ValueDisplayMode } from "@/types";
 import { SEPolygon } from "@/models/SEPolygon";
 import { StyleCategory } from "@/types/Styles";
 import { toSVGType } from "@/types";
@@ -46,7 +46,7 @@ export class AddPolygonCommand extends Command {
     this.segmentIsFlipped.push(...segmentIsFlipped);
   }
 
-  do(): CommandReturnType {
+  do(): void {
     this.seAngleMarkerParents.forEach(angMar =>
       angMar.registerChild(this.sePolygon)
     );
@@ -55,7 +55,6 @@ export class AddPolygonCommand extends Command {
     Command.store.addLabel(this.seLabel);
     // this.sePolygon.markKidsOutOfDate();
     // this.sePolygon.update();
-    return { success: true };
   }
 
   saveState(): void {

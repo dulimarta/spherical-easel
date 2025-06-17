@@ -1,6 +1,5 @@
 import { Command } from "./Command";
 import {
-  CommandReturnType,
   SavedNames,
   SEIntersectionReturnType,
   SEOneDimensional,
@@ -45,7 +44,7 @@ export class AddIntersectionPointOtherParentsInfo extends Command {
     this.otherParentsInfo = seIntersectionPointInfo;
   }
 
-  do(): CommandReturnType {
+  do(): void {
     // Add the info to the list of parents info the SEIntersectionPoint, as long as  both principle parents are not in the ancestor's list of both parents.
     // console.log(
     //   `AddIntersectionPointOtherParentCommand: DO For intersection point ${this.otherParentsInfo.SEIntersectionPoint.name}, add ${this.otherParentsInfo.parent1.name} and ${this.otherParentsInfo.parent2.name}`
@@ -57,8 +56,6 @@ export class AddIntersectionPointOtherParentsInfo extends Command {
         this.otherParentsInfo
       );
     // console.log(`Use this Command in the future`, this.commandSuccessful);
-
-    return { success: this.commandSuccessful };
   }
 
   saveState(): void {
