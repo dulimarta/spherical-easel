@@ -764,8 +764,8 @@ export default class MeasuredCircleHandler extends Highlighter {
             circleCommandGroup.addCommand(
               new AddIntersectionPointOtherParentsInfo(item)
             );
-          } else {
             circleCommandGroup.addEndCondition();
+          } else {
             // Create the plottable and model label
             const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
               new Vector3(
