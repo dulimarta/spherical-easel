@@ -14,7 +14,8 @@
     "docs:build": "vitepress build docs",
     "docs:serve": "vitepress dev docs --debug",
     "docs:preview": "vitepress preview docs",
-    "i18n:report": "vue-i18n-extract report"
+    "i18n:report": "vue-i18n-extract report",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@datastructures-js/priority-queue": "^6.1.1",
@@ -35,6 +36,7 @@
     "mitt": "^3.0.0",
     "newton-raphson-method": "^1.0.2",
     "node-gzip": "^1.1.2",
+    "patch-package": "^8.0.0",
     "pinia": "~3.0.2",
     "three": "^0.153.0",
     "two.js": "0.8.18",
