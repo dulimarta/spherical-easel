@@ -1,12 +1,31 @@
 <template>
-  <p
+  <span
     :style="{
-      position: 'fixed'
+      position: 'fixed',
+      backgroundColor: '#FFF7'
     }">
-    Mouse @ {{ mouseCoordNormalized.toFixed(3) }}
-    {{ rayIntersectionPoint.position.toFixed(2) }}
-    Keys: Shift/Ctrl
-  </p>
+    <span class="mx-2">
+      Keys
+      <v-icon :color="shiftKey ? 'black' : '#0002'">
+        mdi-apple-keyboard-shift
+      </v-icon>
+      <v-icon :color="controlKey ? 'black' : '#0002'">
+        mdi-apple-keyboard-control
+      </v-icon>
+    </span>
+    <span class="mr-2">
+      Mouse @
+      <span
+        :style="{
+          color: isOutside ? 'red' : 'black'
+        }">
+        ({{ elementX.toFixed(0) }}, {{ elementX.toFixed(0) }})
+      </span>
+      {{ mouseCoordNormalized.toFixed(3) }}
+      {{ rayIntersectionPoint.position.toFixed(2) }}
+      {{ pressed }}
+    </span>
+  </span>
   <canvas
     ref="webglCanvas"
     id="webglCanvas"
@@ -40,7 +59,7 @@ import {
 import * as THREE from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import { LineCurve3 } from "three/src/extras/curves/LineCurve3";
-import { onUpdated, onMounted, Ref, ref } from "vue";
+import { onUpdated, onMounted, Ref, ref, useTemplateRef } from "vue";
 import CameraControls from "camera-controls";
 import {
   acceleratedRaycast,
@@ -49,8 +68,20 @@ import {
   ExtendedTriangle,
   MeshBVHHelper
 } from "three-mesh-bvh";
-import { degToRad, radToDeg } from "three/src/math/MathUtils";
+import type { UseMouseEventExtractor } from "@vueuse/core";
 
+import {
+  useKeyModifier,
+  useMouse,
+  useMousePressed,
+  useParentElement,
+  useMouseInElement,
+  useEventListener
+} from "@vueuse/core";
+import { degToRad, radToDeg } from "three/src/math/MathUtils";
+import { useHyperbolicStore } from "@/stores/hyperbolic";
+import { storeToRefs } from "pinia";
+import { watch } from "vue";
 class HyperbolaCurve extends Curve<Vector3> {
   // Compute the points of a hyperbola on a plane
   // rotated on the X-axis
@@ -86,7 +117,9 @@ class HyperbolaCurve extends Curve<Vector3> {
     return optionalTarget;
   }
 }
-
+const hyperStore = useHyperbolicStore()
+const { mouseIntersections } = storeToRefs(hyperStore)
+let onHyperboloid: "UPPER" | "LOWER" | null = null
 // Inject new BVH functions into current THREE-JS Mesh/BufferGeometry definitions
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
@@ -100,15 +133,25 @@ const props = withDefaults(defineProps<ComponentProps>(), {
   availableHeight: 240,
   availableWidth: 240
 });
+const shiftKey = useKeyModifier("Shift", {initial: false});
+const controlKey = useKeyModifier("Control");
 
-const webglCanvas: Ref<HTMLCanvasElement | null> = ref(null);
+// const parentEl = useParentElement();
+
+// const extractor: UseMouseEventExtractor = event =>
+  // event instanceof MouseEvent ? [event.offsetX, event.offsetY] : null;
+
+// const { x, y, sourceType } = useMouse({ target: parentEl, type: extractor, touch: true })
+const webglCanvas = useTemplateRef<HTMLCanvasElement>("webglCanvas");
+const { elementX, elementY, isOutside } = useMouseInElement(webglCanvas);
+const { pressed } = useMousePressed({
+  drag: true, target: webglCanvas})
 const scene = new Scene();
 const clock = new Clock(); // used by camera control animation
 const rayCaster = new Raycaster();
 rayCaster.firstHitOnly = true;
 const auxLineRayCaster = new Raycaster();
 const auxRaycasterStart = new Vector3(0, 0, 0);
-const mouseCoord: THREE.Vector2 = new THREE.Vector2();
 const mouseCoordNormalized: Ref<THREE.Vector2> = ref(new THREE.Vector2()); // used by RayCaster
 let camera: PerspectiveCamera;
 let renderer: WebGLRenderer;
@@ -225,9 +268,9 @@ const randomPlane = new Mesh(
 );
 const planeDir1 = new Vector3(1, 0, 0);
 const planeDir2 = new Vector3();
-// const planeDirArrow = new ArrowHelper();
-// planeDirArrow.setColor("cyan");
-// planeDirArrow.setLength(4, 0.8, 0.4);
+const planeDirArrow = new ArrowHelper();
+planeDirArrow.setColor("cyan");
+planeDirArrow.setLength(3, 0.5, 0.25);
 // randomPlane.add(upperPlane)
 const planeBVHHelper = new MeshBVHHelper(randomPlane);
 // planeBVHHelper.color.set("cyan");
@@ -272,7 +315,7 @@ const bvhCastCallback = {
         intersectionTubeGeo,
         new MeshStandardMaterial({ color: "yellow" })
       );
-      intersectionGroup.add(intersectionTube);
+      // intersectionGroup.add(intersectionTube);
     }
     return false;
   }
@@ -302,7 +345,19 @@ function doRender() {
   const hasUpdatedControls = cameraController.update(deltaTime);
   if (hasUpdatedControls) renderer.render(scene, camera);
 }
+watch(() => pressed.value, (mousePressed) => { 
+  if (mousePressed)
+    console.debug("Handle MouseDown")
+  else
+    console.debug("Handle Mouseup")
+})
 
+watch(() => isOutside.value, (outside) => { 
+  if (outside)
+    console.debug("Handle MouseLeave")
+  else
+console.debug("Handle MouseEnter")
+})
 onMounted(() => {
   console.debug(
     `Mounted size ${props.availableWidth}x${props.availableHeight}`
@@ -325,7 +380,7 @@ onMounted(() => {
   renderer.setClearColor(0xcccccc, 1);
   renderer.setAnimationLoop(doRender);
   renderer.render(scene, camera);
-  window.addEventListener("mousemove", mouseTracker);
+  useEventListener("mousemove", (ev) => { mouseTracker(ev) });
 });
 onUpdated(() => {
   // console.debug(`onUpdated size ${props.availableWidth}x${props.availableHeight}`)
@@ -335,23 +390,37 @@ onUpdated(() => {
   renderer.render(scene, camera);
 });
 
+// function doMouseDown() {
+//   console.
+// }
+
+// function doMouseUp() {
+
+// }
+
+function doMouseMove(onCanvas: boolean, onHyperboloid: 'UPPER' | "LOWER" | null, position: Vector3 | null) {
+  console.debug("On canvas", onCanvas, " on sheet", onHyperboloid, " at ", position?.toFixed(2) )
+}
+
 function mouseTracker(ev: MouseEvent) {
-  // ev.stopPropagation()
-  mouseCoord.set(ev.offsetX, ev.offsetY);
   mouseCoordNormalized.value.x =
-    2 * (ev.offsetX / renderer.domElement.clientWidth) - 1;
+    2 * (elementX.value / renderer.domElement.clientWidth) - 1;
   mouseCoordNormalized.value.y =
-    1 - 2 * (ev.offsetY / renderer.domElement.clientHeight);
+    1 - 2 * (elementY.value / renderer.domElement.clientHeight);
   rayCaster.setFromCamera(mouseCoordNormalized.value, camera);
-  const allIntersections = rayCaster.intersectObjects(scene.children, true);
-  if (allIntersections.length > 0) {
+  mouseIntersections.value = rayCaster.intersectObjects(scene.children, true);
+  if (mouseIntersections.value.length > 0) {
     // console.debug(`Number of all intersections ${allIntersections.length}`)
     // We are interested only in intersection with named objects
-    const namedIntersections = allIntersections.filter(
+    const namedIntersections = mouseIntersections.value.filter(
       z => z.object.name.length > 0 // we are interested only in named objects
     );
     if (namedIntersections.length > 0) {
       const firstIntersection = namedIntersections[0];
+      if (firstIntersection.object.name.endsWith("Sheet"))
+        onHyperboloid = firstIntersection.object.name.substring(0, 6).toUpperCase() as "UPPER" | "LOWER"
+      else
+        onHyperboloid = null
       // console.debug(`First intersection ${firstIntersection.object.name}`);
       rayIntersectionPoint.position.copy(firstIntersection.point);
       scene.add(rayIntersectionPoint);
@@ -368,7 +437,7 @@ function mouseTracker(ev: MouseEvent) {
         mouseNormalArrow.setDirection(firstIntersection.normal!);
       }
       auxLineIntersectionPoints.forEach(p => scene.remove(p));
-      if (ev.shiftKey) {
+      if (shiftKey.value) {
         // Show auxiliary line with shift-key
         const hypotenuse = Math.sqrt(
           Math.pow(rayIntersectionPoint.position.x, 2) +
@@ -439,7 +508,7 @@ function mouseTracker(ev: MouseEvent) {
       } else {
         scene.remove(auxLine);
       }
-      if (ev.ctrlKey) {
+      if (controlKey.value) {
         // Need to use mouse intersection with a non-plane object
         const nonPlane = namedIntersections.find(obj => {
           // console.debug("Check ctrl intersect", obj.object.name);
@@ -450,20 +519,26 @@ function mouseTracker(ev: MouseEvent) {
           planeDir2
             .set(0, Math.sin(planeXRotation), Math.cos(planeXRotation))
             .normalize();
+          const newPath = new HyperbolaCurve(planeDir2);
           hyperTube.geometry.dispose();
           hyperTube.material.dispose();
           scene.remove(hyperTube);
-          if (Math.abs(planeXRotation) < Math.PI / 4) {
-            // When rotation is larger than 45 degrees, there no intersection between
-            // the plane and hyperboloid
-            const newPath = new HyperbolaCurve(planeDir2);
-            hyperTube = new Mesh(
-              new TubeGeometry(newPath, 50, 0.03, 12, false),
-              new THREE.MeshStandardMaterial({ color: "greenyellow" })
-            );
-            scene.add(hyperTube);
-          }
-          // planeDirArrow.setDirection(planeDir2);
+          hyperTube = new Mesh(
+            new TubeGeometry(newPath, 50, 0.03, 12, false),
+            new THREE.MeshStandardMaterial({ color: "greenyellow" })
+          );
+          scene.add(hyperTube);
+          const innerB =
+            planeDir1.x * planeDir1.x +
+            planeDir1.y * planeDir1.y -
+            planeDir1.z * planeDir1.z;
+          const innerA =
+            planeDir2.x * planeDir2.x +
+            planeDir2.y * planeDir2.y -
+            planeDir2.z * planeDir2.z;
+          const lambdaCoeff = Math.sqrt(-1 / innerA);
+          // console.debug("Diag metrics", innerA, innerB, lambdaCoeff);
+          planeDirArrow.setDirection(planeDir2);
 
           // console.debug(`Red plane rotation ${radToDeg(planeXRotation)}`);
           randomPlane.rotation.set(0, 0, 0);
@@ -490,9 +565,13 @@ function mouseTracker(ev: MouseEvent) {
       scene.remove(auxLine);
     }
   } else {
+    onHyperboloid = null
     scene.remove(rayIntersectionPoint);
     scene.remove(auxLine);
   }
+  doMouseMove(!isOutside.value, onHyperboloid, mouseIntersections.value.length > 0 ?
+    mouseIntersections.value[0].point : null
+  )
 }
 function hyperboloidPlus(u: number, v: number, pt: Vector3) {
   u = u * 2;

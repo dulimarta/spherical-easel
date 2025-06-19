@@ -6,8 +6,9 @@
       justifyContent: 'space-between',
       paddingBottom: '4px'
     }">
-    <CurrentToolSelection/>
-    <v-btn :style="{position: 'absolute', right: '16px'}"
+    <CurrentToolSelection />
+    <v-btn
+      :style="{ position: 'absolute', right: '16px' }"
       icon
       v-if="userRole && userRole === 'instructor'"
       size="x-small"
@@ -85,6 +86,12 @@
       </v-expansion-panel> -->
     </v-expansion-panels>
   </v-item-group>
+
+  <ul>
+    <li v-for="x in mouseIntersections.filter((_,pos) => pos < 4)">
+      {{ x.point.toFixed(2) }} at {{ x.distance.toFixed(3) }}
+    </li>
+  </ul>
 </template>
 
 <script lang="ts" setup>
@@ -101,11 +108,14 @@ import EventBus from "@/eventHandlers/EventBus";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 import { inject } from "vue";
+import { useHyperbolicStore } from "@/stores/hyperbolic";
 const { t } = useI18n();
 const acctStore = useAccountStore();
+const hyperStore = useHyperbolicStore();
 const { userRole, includedTools } = storeToRefs(acctStore);
 const seStore = useSEStore();
 const { seExpressions, seTransformations, actionMode } = storeToRefs(seStore);
+const { mouseIntersections } = storeToRefs(hyperStore);
 
 const inProductionMode = ref(false);
 const inEditMode = ref(false);
@@ -133,9 +143,9 @@ onBeforeMount((): void => {
   buttonGroup.value.push(...permissibleButtonGroup);
   //sort the button list by id so that we don't have to reorder the list each item we add a new button
 
-  buttonGroup.value.forEach((gr: ToolButtonGroup) => {
-    gr.children.sort((a: ToolButtonType, b: ToolButtonType) => a.id - b.id);
-  });
+  // buttonGroup.value.forEach((gr: ToolButtonGroup) => {
+  //   gr.children.sort((a: ToolButtonType, b: ToolButtonType) => a.id - b.id);
+  // });
   if (appFeature !== "beta") {
   }
   currentToolset.push(...includedTools.value);

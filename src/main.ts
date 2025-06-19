@@ -34,6 +34,11 @@ app.use(i18n);
 // https://stackoverflow.com/questions/77456631/why-cant-i-see-pinia-in-vue-devtools
 app.use(pinia);
 app.mount("#app");
+router.afterEach((to, from) => {
+  document.title = to.path.endsWith("hyperbolic")
+    ? "Hyperbolic Easel"
+    : "Spherical Easel";
+});
 
 const seStore = useSEStore();
 Command.setGlobalStore(seStore);
