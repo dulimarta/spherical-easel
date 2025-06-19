@@ -6,10 +6,10 @@
     }">
     <span class="mx-2">
       Keys
-      <v-icon :color="shiftKey ? 'black' : '#0002'">
+      <v-icon :color="shift ? 'black' : '#0002'">
         mdi-apple-keyboard-shift
       </v-icon>
-      <v-icon :color="controlKey ? 'black' : '#0002'">
+      <v-icon :color="control ? 'black' : '#0002'">
         mdi-apple-keyboard-control
       </v-icon>
     </span>
@@ -19,7 +19,7 @@
         :style="{
           color: isOutside ? 'red' : 'black'
         }">
-        ({{ elementX.toFixed(0) }}, {{ elementX.toFixed(0) }})
+        ({{ elementX.toFixed(0) }}, {{ elementY.toFixed(0) }})
       </span>
       {{ mouseCoordNormalized.toFixed(3) }}
       {{ rayIntersectionPoint.position.toFixed(2) }}
@@ -76,7 +76,8 @@ import {
   useMousePressed,
   useParentElement,
   useMouseInElement,
-  useEventListener
+  useEventListener,
+  useMagicKeys
 } from "@vueuse/core";
 import { degToRad, radToDeg } from "three/src/math/MathUtils";
 import { useHyperbolicStore } from "@/stores/hyperbolic";
@@ -117,9 +118,10 @@ class HyperbolaCurve extends Curve<Vector3> {
     return optionalTarget;
   }
 }
-const hyperStore = useHyperbolicStore()
-const { mouseIntersections } = storeToRefs(hyperStore)
-let onHyperboloid: "UPPER" | "LOWER" | null = null
+const hyperStore = useHyperbolicStore();
+const { mouseIntersections } = storeToRefs(hyperStore);
+type ImportantSurface = "UPPER" | "LOWER" | null;
+let onHyperboloid: ImportantSurface = null;
 // Inject new BVH functions into current THREE-JS Mesh/BufferGeometry definitions
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
@@ -133,25 +135,18 @@ const props = withDefaults(defineProps<ComponentProps>(), {
   availableHeight: 240,
   availableWidth: 240
 });
-const shiftKey = useKeyModifier("Shift", {initial: false});
-const controlKey = useKeyModifier("Control");
 
-// const parentEl = useParentElement();
-
-// const extractor: UseMouseEventExtractor = event =>
-  // event instanceof MouseEvent ? [event.offsetX, event.offsetY] : null;
-
-// const { x, y, sourceType } = useMouse({ target: parentEl, type: extractor, touch: true })
 const webglCanvas = useTemplateRef<HTMLCanvasElement>("webglCanvas");
-const { elementX, elementY, isOutside } = useMouseInElement(webglCanvas);
+const { elementX, elementY, isOutside } = useMouseInElement(webglCanvas, {});
+const { shift, control } = useMagicKeys({ passive: false });
 const { pressed } = useMousePressed({
-  drag: true, target: webglCanvas})
+  drag: true,
+  target: webglCanvas
+});
 const scene = new Scene();
 const clock = new Clock(); // used by camera control animation
 const rayCaster = new Raycaster();
 rayCaster.firstHitOnly = true;
-const auxLineRayCaster = new Raycaster();
-const auxRaycasterStart = new Vector3(0, 0, 0);
 const mouseCoordNormalized: Ref<THREE.Vector2> = ref(new THREE.Vector2()); // used by RayCaster
 let camera: PerspectiveCamera;
 let renderer: WebGLRenderer;
@@ -163,15 +158,15 @@ xyGrid.rotateX(Math.PI / 2);
 scene.add(xyGrid);
 
 // Insert the grid BEFORE the arrow helper
-const arrowX = new ArrowHelper(new Vector3(1, 0, 0));
-arrowX.setColor(0xff0000);
-arrowX.setLength(2, 0.2, 0.2);
-const arrowY = new ArrowHelper(new Vector3(0, 1, 0));
-arrowY.setColor(0x00ff00);
-arrowY.setLength(2, 0.2, 0.2);
-const arrowZ = new ArrowHelper(new Vector3(0, 0, 1));
-arrowZ.setColor(0x0000ff);
-arrowZ.setLength(2, 0.2, 0.2);
+// const arrowX = new ArrowHelper(new Vector3(1, 0, 0));
+// arrowX.setColor(0xff0000);
+// arrowX.setLength(2, 0.2, 0.2);
+// const arrowY = new ArrowHelper(new Vector3(0, 1, 0));
+// arrowY.setColor(0x00ff00);
+// arrowY.setLength(2, 0.2, 0.2);
+// const arrowZ = new ArrowHelper(new Vector3(0, 0, 1));
+// arrowZ.setColor(0x0000ff);
+// arrowZ.setLength(2, 0.2, 0.2);
 // scene.add(arrowX);
 // scene.add(arrowY);
 // scene.add(arrowZ);
@@ -214,7 +209,7 @@ const rayIntersectionPoint = new Mesh(
 );
 
 const auxLineIntersectionPoints: Array<Mesh> = [];
-for (let k = 0; k < 10; k++) {
+for (let k = 0; k < 3; k++) {
   const p = rayIntersectionPoint.clone(true);
   // cloning the mesh does not automatically clone the material
   // so we have to clone the material properties
@@ -229,7 +224,6 @@ mouseNormalArrow.setLength(1, 0.2, 0.2);
 // Attach the arrowhelper of the mouse normal to the intersectionpoint itself
 rayIntersectionPoint.add(mouseNormalArrow);
 
-// const auxLinePath = new LineCurve3(new Vector3(0, 0, 0), new Vector3(3, 3, 3));
 const auxLineDirection = new Vector3();
 const auxLine = new Mesh(
   new CylinderGeometry(0.01, 0.01, 100),
@@ -345,19 +339,21 @@ function doRender() {
   const hasUpdatedControls = cameraController.update(deltaTime);
   if (hasUpdatedControls) renderer.render(scene, camera);
 }
-watch(() => pressed.value, (mousePressed) => { 
-  if (mousePressed)
-    console.debug("Handle MouseDown")
-  else
-    console.debug("Handle Mouseup")
-})
+watch(
+  () => pressed.value,
+  mousePressed => {
+    if (mousePressed) console.debug("Handle MouseDown");
+    else console.debug("Handle Mouseup");
+  }
+);
 
-watch(() => isOutside.value, (outside) => { 
-  if (outside)
-    console.debug("Handle MouseLeave")
-  else
-console.debug("Handle MouseEnter")
-})
+watch(
+  () => isOutside.value,
+  outside => {
+    if (outside) console.debug("Handle MouseLeave");
+    else console.debug("Handle MouseEnter");
+  }
+);
 onMounted(() => {
   console.debug(
     `Mounted size ${props.availableWidth}x${props.availableHeight}`
@@ -380,7 +376,9 @@ onMounted(() => {
   renderer.setClearColor(0xcccccc, 1);
   renderer.setAnimationLoop(doRender);
   renderer.render(scene, camera);
-  useEventListener("mousemove", (ev) => { mouseTracker(ev) });
+  useEventListener("mousemove", ev => {
+    mouseTracker(ev);
+  });
 });
 onUpdated(() => {
   // console.debug(`onUpdated size ${props.availableWidth}x${props.availableHeight}`)
@@ -398,8 +396,19 @@ onUpdated(() => {
 
 // }
 
-function doMouseMove(onCanvas: boolean, onHyperboloid: 'UPPER' | "LOWER" | null, position: Vector3 | null) {
-  console.debug("On canvas", onCanvas, " on sheet", onHyperboloid, " at ", position?.toFixed(2) )
+function doMouseMove(
+  onCanvas: boolean,
+  onHyperboloid: ImportantSurface,
+  position: Vector3 | null
+) {
+  console.debug(
+    "On canvas",
+    onCanvas,
+    " on sheet",
+    onHyperboloid,
+    " at ",
+    position?.toFixed(2)
+  );
 }
 
 function mouseTracker(ev: MouseEvent) {
@@ -418,9 +427,10 @@ function mouseTracker(ev: MouseEvent) {
     if (namedIntersections.length > 0) {
       const firstIntersection = namedIntersections[0];
       if (firstIntersection.object.name.endsWith("Sheet"))
-        onHyperboloid = firstIntersection.object.name.substring(0, 6).toUpperCase() as "UPPER" | "LOWER"
-      else
-        onHyperboloid = null
+        onHyperboloid = firstIntersection.object.name
+          .substring(0, 6)
+          .toUpperCase() as "UPPER" | "LOWER";
+      else onHyperboloid = null;
       // console.debug(`First intersection ${firstIntersection.object.name}`);
       rayIntersectionPoint.position.copy(firstIntersection.point);
       scene.add(rayIntersectionPoint);
@@ -437,7 +447,7 @@ function mouseTracker(ev: MouseEvent) {
         mouseNormalArrow.setDirection(firstIntersection.normal!);
       }
       auxLineIntersectionPoints.forEach(p => scene.remove(p));
-      if (shiftKey.value) {
+      if (shift.value) {
         // Show auxiliary line with shift-key
         const hypotenuse = Math.sqrt(
           Math.pow(rayIntersectionPoint.position.x, 2) +
@@ -459,56 +469,52 @@ function mouseTracker(ev: MouseEvent) {
 
         // Find other intersection points between the auxiliary line and the sphere and/or hyperboloids)
         auxLineDirection.copy(rayIntersectionPoint.position);
-        auxRaycasterStart.copy(rayIntersectionPoint.position);
-        auxRaycasterStart.multiplyScalar(-10);
-        auxLineRayCaster.set(auxRaycasterStart, auxLineDirection.normalize());
-        const otherIntersects = auxLineRayCaster
-          .intersectObjects(scene.children, true)
-          .filter(obj => obj.object.name.length > 0); // ignore unnamed objects
-        if (otherIntersects.length > 0) {
-          console.debug(
-            `Mouse on ${
-              firstIntersection.object.name
-            } at ${rayIntersectionPoint.position.toFixed(3)} with ${
-              otherIntersects.length
-            } auxiliary intersections with projective line`
-          );
-          otherIntersects.forEach((ptx, idx) => {
-            // Check each intersection points on the auxiliary line
-            const { x, y, z } = otherIntersects[idx].point;
+        const { x: x0, y: y0, z: z0 } = rayIntersectionPoint.position;
+        let scale = 0
+        if (firstIntersection.object.name === "Center Sphere") {
+          // Antipode on the circle
+          auxLineIntersectionPoints[0].position.set(-x0, -y0, -z0);
+          scene.add(auxLineIntersectionPoints[0]);
 
-            if (ptx.object.name.endsWith("Sphere")) {
-              console.debug(
-                `Intersection with sphere at ${ptx.point.toFixed(
-                  2
-                )} with metric ${(x * x + y * y + z * z).toFixed(1)}`
-              );
-            } else if (ptx.object.name.endsWith("Sheet")) {
-              console.debug(
-                `Intersection with hyperboloid at ${ptx.point.toFixed(
-                  2
-                )} with metric ${(x * x + y * y - z * z).toFixed(1)}`
-              );
-            } else if (ptx.object.name.endsWith("Plane")) {
-              const sx = firstIntersection.point.x / firstIntersection.point.z;
-              const sy = firstIntersection.point.y / firstIntersection.point.z;
-              console.debug(
-                `Intersection with plane Z = 1  at ${ptx.point.toFixed(
-                  2
-                )} with metric ${(sx * sx + sy * sy).toFixed(1)}`
-              );
-            }
-            if (firstIntersection.object.name !== ptx.object.name) {
-              auxLineIntersectionPoints[idx].position.copy(ptx.point);
-              scene.add(auxLineIntersectionPoints[idx]);
-            }
-          });
-        } else {
+          // Calculate the scaling factor to place the point on hyperbolodi sheets
+          const scaleSquared = -1 / (x0 * x0 + y0 * y0 - z0 * z0);
+            console.debug(
+              "Scaling required to project from sphere to hyperboloid",
+              scaleSquared
+            );
+          if (scaleSquared > 0) {
+            scale = Math.sqrt(scaleSquared);
+          }
+        } else if (firstIntersection.object.name.endsWith("Sheet")) {
+          // Antipode on the hyperboloid
+          auxLineIntersectionPoints[0].position.set(-x0, -y0, -z0);
+          scene.add(auxLineIntersectionPoints[0]);
+          // Calculate the scale factor to place the point on the sphere
+          scale = Math.sqrt(1 / (x0 * x0 + y0 * y0 + z0 * z0));
+          console.debug(
+            "Scaling required to project from hyperboloid to sphere",
+            scale
+          );
+        }
+        if (scale > 0) {
+          // Draw two more points
+            auxLineIntersectionPoints[1].position.set(
+              scale * x0,
+              scale * y0,
+              scale * z0
+            );
+            scene.add(auxLineIntersectionPoints[1]);
+            auxLineIntersectionPoints[2].position.set(
+              -scale * x0,
+              -scale * y0,
+              -scale * z0
+            );
+            scene.add(auxLineIntersectionPoints[2]);
         }
       } else {
         scene.remove(auxLine);
       }
-      if (controlKey.value) {
+      if (control.value) {
         // Need to use mouse intersection with a non-plane object
         const nonPlane = namedIntersections.find(obj => {
           // console.debug("Check ctrl intersect", obj.object.name);
@@ -565,13 +571,17 @@ function mouseTracker(ev: MouseEvent) {
       scene.remove(auxLine);
     }
   } else {
-    onHyperboloid = null
+    onHyperboloid = null;
     scene.remove(rayIntersectionPoint);
     scene.remove(auxLine);
   }
-  doMouseMove(!isOutside.value, onHyperboloid, mouseIntersections.value.length > 0 ?
-    mouseIntersections.value[0].point : null
-  )
+  doMouseMove(
+    !isOutside.value,
+    onHyperboloid,
+    mouseIntersections.value.length > 0
+      ? mouseIntersections.value[0].point
+      : null
+  );
 }
 function hyperboloidPlus(u: number, v: number, pt: Vector3) {
   u = u * 2;
