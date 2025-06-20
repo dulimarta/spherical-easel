@@ -9,7 +9,6 @@ import {
   DEFAULT_POINT_FRONT_STYLE
 } from "@/types/Styles";
 import { Labelable, ObjectState } from "@/types";
-import { SELabel } from "./internal";
 // The following import creates a circular dependencies when testing SENoduleItem
 // The dependency loop is:
 // SENoduleItem.vue => SEIntersectionPoint => SEPoint => store/index.ts => se-module.ts
@@ -18,6 +17,7 @@ import { SELabel } from "./internal";
 import i18n from "@/i18n";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { DisplayStyle } from "@/plottables/Nodule";
+import { SELabel } from "./SELabel";
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_POINT_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_POINT_BACK_STYLE)
@@ -25,7 +25,7 @@ const styleSet = new Set([
 
 export class SEPoint extends SENodule implements Visitable, Labelable {
   /* This should be the only reference to the plotted version of this SEPoint */
-  public declare ref: Point;
+  declare public ref: Point;
 
   /**
    * This determines if a point has been visible before so that the
@@ -56,7 +56,9 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     super();
     /* Establish the link between this abstract object on the fixed unit sphere
     and the object that helps create the corresponding renderable object  */
-    const p = createNonFreePoint ? new NonFreePoint(this.name) : new Point(this.name);
+    const p = createNonFreePoint
+      ? new NonFreePoint(this.name)
+      : new Point(this.name);
     p.stylize(DisplayStyle.ApplyCurrentVariables);
     p.adjustSize();
     this.ref = p;
@@ -93,9 +95,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     //#region saveState
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        `Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`;
         return;
       }
       const location = new Vector3();
@@ -229,6 +229,6 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   }
 
   public getLabel(): SELabel | null {
-    return (this as Labelable).label!
+    return (this as Labelable).label!;
   }
 }

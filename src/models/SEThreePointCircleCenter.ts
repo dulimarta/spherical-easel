@@ -1,10 +1,10 @@
-import { SEPoint } from "./internal";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 const { t } = i18n.global;
 import { getThreeCircleCenter } from "@/utils/helpingfunctions";
+import { SEPoint } from "./SEPoint";
 
 export class SEThreePointCircleCenter extends SEPoint {
   /**
@@ -34,7 +34,6 @@ export class SEThreePointCircleCenter extends SEPoint {
     this._sePointParent1 = sePointParent1;
     this._sePointParent2 = sePointParent2;
     this._sePointParent3 = sePointParent3;
-
   }
 
   public get noduleDescription(): string {
@@ -153,11 +152,11 @@ export class SEThreePointCircleCenter extends SEPoint {
         this._sePointParent1.locationVector,
         this._sePointParent2.locationVector,
         this._sePointParent3.locationVector
-      ).normalize()
+      ).normalize();
       // update the display
       this.ref.positionVector = this._locationVector;
       this.ref.updateDisplay();
-   }
+    }
 
     // Update visibility
     if (this.showing && this._exists) {
@@ -184,9 +183,7 @@ export class SEThreePointCircleCenter extends SEPoint {
     // will cause this center to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Three Point Circle center with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Three Point Circle center with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

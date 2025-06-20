@@ -8,7 +8,6 @@ import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
 import { toSVGType } from "@/types";
 
-
 export class AddLineCommand extends Command {
   private seLine: SELine;
   private startSEPoint: SEPoint;
@@ -62,15 +61,11 @@ export class AddLineCommand extends Command {
       "objectShowing=" + this.seLine.showing,
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
-          JSON.stringify(
-            this.seLine.ref.currentStyleState(StyleCategory.Front)
-          )
+          JSON.stringify(this.seLine.ref.currentStyleState(StyleCategory.Front))
         ),
       "objectBackStyle=" +
         Command.symbolToASCIIDec(
-          JSON.stringify(
-            this.seLine.ref.currentStyleState(StyleCategory.Back)
-          )
+          JSON.stringify(this.seLine.ref.currentStyleState(StyleCategory.Back))
         ),
       // All labels have these attributes
       "labelName=" + Command.symbolToASCIIDec(this.seLabel.name),

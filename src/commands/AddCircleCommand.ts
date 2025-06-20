@@ -8,7 +8,6 @@ import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
 import { toSVGType } from "@/types";
 
-
 export class AddCircleCommand extends Command {
   private seCircle: SECircle;
   private centerSEPoint: SEPoint;

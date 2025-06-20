@@ -9,11 +9,11 @@
         <span
           class="text-body-1 ml-1"
           v-if="actionMode != 'applyTransformation'">
-          {{ $t(`buttons.${activeToolName}`, {}) }}
+          {{ t(`buttons.${activeToolName}`, {}) }}
         </span>
         <template v-else>
           <div class="text-body-1">
-            {{ $t(`buttons.${activeToolName}`, {}) }}
+            {{ t(`buttons.${activeToolName}`, {}) }}
           </div>
           <div class="text-body-2">
             {{ t("objects.selectTransformation") }}
@@ -33,7 +33,7 @@
     </v-container>
   </span>
   <span class="text-body-1" v-else>
-    {{ $t(`buttons.NoToolSelected`, {}).toString() }}
+    {{ t(`buttons.NoToolSelected`, {}).toString() }}
   </span>
 </template>
 
@@ -54,6 +54,7 @@ import { ActionMode } from "@/types";
 import { storeToRefs } from "pinia";
 import SETTINGS from "@/global-settings";
 import EventBus from "@/eventHandlers/EventBus";
+import { TOOL_DICTIONARY } from "./tooldictionary";
 
 // Associate each ActionMode with the corresponding I18N key
 
@@ -105,7 +106,7 @@ const ACTION_MODE_MAP: Map<ActionMode, string> = new Map([
 const seStore = useSEStore();
 const { actionMode } = storeToRefs(seStore);
 const { t } = useI18n();
-const toolHint = ref<string|null>(null);
+const toolHint = ref<string | null>(null);
 const iconSize = ref(SETTINGS.icons.currentToolSectionIconSize);
 const rowHeight = ref(
   "min-height:" + SETTINGS.icons.currentToolSectionIconSize + "px"
@@ -130,7 +131,7 @@ type MessageType = {
 onMounted((): void => {
   setIconSize();
   EventBus.listen("show-alert", (m: MessageType) => {
-    console.debug("Incoming message", m);
+    // console.debug("Incoming message", m);
     if (m.type === "directive") {
       toolHint.value = "";
       setTimeout(() => {
@@ -138,6 +139,11 @@ onMounted((): void => {
       }, 300);
     }
   });
+  //Added to make the initial action mode show when app is loaded for the first time or the clear button is clicked
+  const associatedButton = TOOL_DICTIONARY.get(actionMode.value);
+  if (associatedButton) {
+    toolHint.value = t(associatedButton.toolUseMessage);
+  }
 });
 
 watch(

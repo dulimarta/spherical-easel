@@ -100,7 +100,7 @@ import { onUnmounted } from "vue";
 const { t } = useI18n();
 const acctStore = useAccountStore();
 const { userRole } = storeToRefs(acctStore);
-const constructionStore = useConstructionStore()
+const constructionStore = useConstructionStore();
 
 const logoutDialog: Ref<DialogAction | null> = ref(null);
 // const shareConstructionDialog: Ref<DialogAction | null> = ref(null);
@@ -111,17 +111,17 @@ onBeforeMount((): void => {
 
 onMounted((): void => {
   console.log("Base URL is ", import.meta.env.BASE_URL);
-  constructionStore.initialize()
+  constructionStore.initialize();
   // SEStore.init();
   // Get the top-level SVG element
 });
 
 onUnmounted(async () => {
-  await acctStore.signOff()
-})
+  await acctStore.signOff();
+});
 
 async function doLogout(): Promise<void> {
-  await acctStore.signOff()
+  await acctStore.signOff();
   logoutDialog.value?.hide();
   userRole.value = undefined;
   acctStore.parseAndSetFavoriteTools("");

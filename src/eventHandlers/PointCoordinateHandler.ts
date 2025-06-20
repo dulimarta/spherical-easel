@@ -1,4 +1,3 @@
-
 import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
@@ -17,12 +16,15 @@ import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 export default class PointCoordinateHandler extends Highlighter {
   /**
    * Point to inspect its coordinate
    */
   private targetPoint: SEPoint | null = null;
 
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
   constructor(layers: Group[]) {
     super(layers);
   }
@@ -31,18 +33,16 @@ export default class PointCoordinateHandler extends Highlighter {
     //Select a point to examine its coordinates
     if (this.isOnSphere) {
       // only select non-user created points and not measured point coordinates
-      const userCreatedPoints = this.hitSEPoints.filter(p => {
-        if (
-          (!(p instanceof SEIntersectionPoint) || p.isUserCreated) &&
-          (!(p instanceof SEAntipodalPoint) || p.isUserCreated)
-        ) {
-          return true;
-        } else {
-          return false;
-        }
-      });
-      if (userCreatedPoints.length > 0) {
-        this.targetPoint = userCreatedPoints[0];
+      this.updateFilteredPointsList();
+      if (this.filteredIntersectionPointsList.length > 0) {
+        this.targetPoint = this.filteredIntersectionPointsList[0];
+      } else {
+        EventBus.fire("show-alert", {
+          key: `handlers.pointDistancePointMessage`,
+          keyOptions: {},
+          type: "warning"
+        });
+        return;
       }
 
       if (
@@ -86,6 +86,31 @@ export default class PointCoordinateHandler extends Highlighter {
           type: "success"
         });
         const coordinatizeCommandGroup = new CommandGroup();
+
+        if (
+          (this.targetPoint instanceof SEIntersectionPoint ||
+            this.targetPoint instanceof SEAntipodalPoint) &&
+          !this.targetPoint.isUserCreated
+        ) {
+          coordinatizeCommandGroup.addCommand(
+            new SetPointUserCreatedValueCommand(
+              this.targetPoint,
+              !this.targetPoint.isUserCreated,
+              true
+            )
+          );
+        }
+        // Check if the selected targetPoint is showing, if so
+        // since the user interacted with it, make it show
+        if (this.targetPoint != null && !this.targetPoint.showing) {
+          coordinatizeCommandGroup.addCommand(
+            new SetNoduleDisplayCommand(
+              this.targetPoint,
+              !this.targetPoint.showing
+            )
+          );
+        }
+
         coordinatizeCommandGroup.addCommand(
           new AddPointCoordinateMeasurementCommand(
             xMeasure,
@@ -147,17 +172,10 @@ export default class PointCoordinateHandler extends Highlighter {
     super.mouseMoved(event);
 
     // Do highlight only  SEPoint that are not non-user created intersection points
-    const hitPoints = this.hitSEPoints.filter(p => {
-      if (
-        (!(p instanceof SEIntersectionPoint) || p.isUserCreated) &&
-        (!(p instanceof SEAntipodalPoint) || p.isUserCreated)
-      ) {
-        return true;
-      } else {
-        return false;
-      }
-    });
-    if (hitPoints.length > 0) hitPoints[0].glowing = true;
+    this.updateFilteredPointsList();
+    if (this.filteredIntersectionPointsList.length > 0) {
+      this.filteredIntersectionPointsList[0].glowing = true;
+    }
   }
 
   // eslint-disable-next-line
@@ -167,6 +185,29 @@ export default class PointCoordinateHandler extends Highlighter {
     super.mouseLeave(event);
     // Reset the targetPoint in preparation for another deletion.
     this.targetPoint = null;
+  }
+
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return true;
+        }
+      }
+      return pt.showing;
+    });
   }
   activate(): void {
     // only add the measurements if the ONLY type of selected objects are SEPoints that are user created

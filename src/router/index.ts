@@ -52,7 +52,7 @@ if (import.meta.env.MODE !== "production") {
   routes.push({
     /* A rudimentary tool to clean up unused SVG/script files in Firebase Storage */
     path: "/firebase-cleanup",
-    component: () => import("@/components/FirebaseStorageGarbageCollector.vue")
+    component: () => import("../components/FirebaseStorageGarbageCollector.vue")
   })
 }
 

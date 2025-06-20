@@ -1,5 +1,4 @@
 import { SENodule } from "./SENodule";
-import { SEPoint, SELabel } from "./internal";
 import Ellipse from "@/plottables/Ellipse";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
@@ -20,6 +19,8 @@ import { Labelable } from "@/types";
 import i18n from "@/i18n";
 import NonFreeEllipse from "@/plottables/NonFreeEllipse";
 import { DisplayStyle } from "@/plottables/Nodule";
+import { SELabel } from "./SELabel";
+import { SEPoint } from "./SEPoint";
 const { t } = i18n.global;
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_ELLIPSE_FRONT_STYLE),
@@ -32,7 +33,7 @@ export class SEEllipse
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public declare ref: Ellipse;
+  declare public ref: Ellipse;
   /**
    * Pointer to the label of this SESegment
    */
@@ -98,7 +99,9 @@ export class SEEllipse
     this._ellipseSEPoint = ellipsePoint;
     SEEllipse.ELLIPSE_COUNT++;
     this.name = `E${SEEllipse.ELLIPSE_COUNT}`;
-    this.ref = createNonFree ? new NonFreeEllipse(this.name) : new Ellipse(this.name);
+    this.ref = createNonFree
+      ? new NonFreeEllipse(this.name)
+      : new Ellipse(this.name);
     this.ref.focus1Vector.copy(focus1Point.locationVector);
     this.ref.focus2Vector.copy(focus2Point.locationVector);
     this.ref.updateDisplay();
@@ -123,7 +126,6 @@ export class SEEllipse
     this.ref.a = this._a;
     this.ref.b = this._b;
     this.ref.updateDisplay();
-
   }
 
   customStyles(): Set<string> {
@@ -351,9 +353,7 @@ export class SEEllipse
     // will cause this ellipse to be put into the correct location.So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Ellipse with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Ellipse with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);
@@ -683,7 +683,10 @@ export class SEEllipse
     return true;
   }
 
+  public isFillable(): boolean {
+    return true;
+  }
   public getLabel(): SELabel | null {
-    return (this as Labelable).label!
+    return (this as Labelable).label!;
   }
 }

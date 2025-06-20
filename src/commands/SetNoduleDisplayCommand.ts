@@ -14,9 +14,9 @@ export class SetNoduleDisplayCommand extends Command {
     super();
     this.seNodule = seNodule;
     this.showing = showing;
-    const theLabel = this.seNodule.getLabel()
+    const theLabel = this.seNodule.getLabel();
     if (theLabel) {
-      this.initialLabelShowingValue = theLabel.showing
+      this.initialLabelShowingValue = theLabel.showing;
     }
   }
 

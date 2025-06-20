@@ -3,7 +3,6 @@ import { SENodule } from "@/models/SENodule";
 import { SEExpression } from "@/models/SEExpression";
 import { toSVGType } from "@/types";
 
-
 export abstract class AddExpressionCommand extends Command {
   protected seExpression: SEExpression;
   protected parents: SENodule[] = [];

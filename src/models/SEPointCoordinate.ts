@@ -1,8 +1,10 @@
-import { SEExpression, SENodule, SEPoint } from "./internal";
 import { Matrix4, Vector3 } from "three";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import i18n from "@/i18n";
 import EventBus from "@/eventHandlers/EventBus";
+import { SEExpression } from "./SEExpression";
+import { SEPoint } from "./SEPoint";
+import { SENodule } from "@/models/SENodule";
 const emptySet = new Set<string>();
 const { t } = i18n.global;
 
@@ -131,7 +133,7 @@ export class SEPointCoordinate extends SEExpression {
     this.exists = this.sePoint.exists;
 
     if (this.exists) {
-      super.shallowUpdate()
+      super.shallowUpdate();
       // apply the inverse of the total rotation matrix to compute the location of the point without all the sphere rotations.
       this.invMatrix = SENodule.store.inverseTotalRotationMatrix;
       this.valueVector
@@ -162,9 +164,7 @@ export class SEPointCoordinate extends SEExpression {
     // will cause this point update correctly. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Point Coordinate with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Point Coordinate with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

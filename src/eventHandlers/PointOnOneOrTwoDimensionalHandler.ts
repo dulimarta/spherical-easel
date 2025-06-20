@@ -9,6 +9,10 @@ import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { CommandGroup } from "@/commands/CommandGroup";
+import { SEPoint } from "@/models/SEPoint";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
 export default class PointOnOneDimensionalHandler extends Highlighter {
   // The temporary point displayed as the user moves the pointer
@@ -29,6 +33,8 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
 
   /* temporary vector to help with computation */
   private tmpVector = new Vector3();
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
 
   constructor(layers: Group[]) {
     super(layers);
@@ -43,8 +49,9 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
 
     //Select the oneDimensional object to put point on
     if (this.isOnSphere) {
+      this.updateFilteredPointsList();
       // to put a new point on an object you must have no points nearby
-      if (this.hitSEPoints.length === 0) {
+      if (this.filteredIntersectionPointsList.length === 0) {
         if (this.hitSESegments.length > 0) {
           this.oneDimensional = this.hitSESegments[0];
         } else if (this.hitSELines.length > 0) {
@@ -58,6 +65,22 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
         } else if (this.hitSEPolygons.length > 0) {
           this.oneDimensional = this.hitSEPolygons[0];
         }
+      } else {
+        // create an intersection point at a place where there is a non-user created intersection between two showing parents
+        if (
+          (this.filteredIntersectionPointsList[0] instanceof
+            SEIntersectionPoint ||
+            this.filteredIntersectionPointsList[0] instanceof
+              SEAntipodalPoint) &&
+          !this.filteredIntersectionPointsList[0].isUserCreated
+        ) {
+          new SetPointUserCreatedValueCommand(
+            this.filteredIntersectionPointsList[0],
+            !this.filteredIntersectionPointsList[0].isUserCreated,
+            true
+          ).execute();
+          return;
+        }
       }
       if (this.oneDimensional !== null) {
         const pointOnOneDimensionalCommandGroup = new CommandGroup();
@@ -68,12 +91,12 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
           this.currentSphereVector
         );
         const newSELabel = vtx.attachLabelWithOffset(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
-            )
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
           )
+        );
         // Create the command to create a new point for undo/redo
 
         pointOnOneDimensionalCommandGroup.addCommand(
@@ -107,7 +130,8 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
     //highlight nearby one dimensional, but only when not near any points
-    if (this.hitSEPoints.length === 0) {
+    this.updateFilteredPointsList();
+    if (this.filteredIntersectionPointsList.length === 0) {
       if (this.hitSESegments.length > 0) {
         this.hitSESegments[0].glowing = true;
         this.snapToTemporaryOneDimensional = this.hitSESegments[0];
@@ -143,11 +167,27 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
             this.currentSphereVector
           );
       }
-      // if there is a nearby point or no objects nearby remove the temporary point
-      if (this.hitSEPoints.length > 0 || this.hitSENodules.length === 0) {
-        this.startMarker.removeFromLayers();
-        this.isTemporaryPointAdded = false;
-        this.snapToTemporaryOneDimensional = null;
+
+      if (
+        this.filteredIntersectionPointsList.length > 0 ||
+        this.hitSENodules.length === 0
+      ) {
+        // if we are at a non-user created intersection with both parents showing then move the start marker to the intersection
+        if (
+          this.filteredIntersectionPointsList[0] instanceof
+            SEIntersectionPoint &&
+          !this.filteredIntersectionPointsList[0].isUserCreated &&
+          this.filteredIntersectionPointsList[0].principleParent1.showing &&
+          this.filteredIntersectionPointsList[0].principleParent2.showing
+        ) {
+          this.startMarker.positionVectorAndDisplay =
+            this.filteredIntersectionPointsList[0].locationVector;
+        } else {
+          // if there is a nearby point or no objects nearby remove the temporary point
+          this.startMarker.removeFromLayers();
+          this.isTemporaryPointAdded = false;
+          this.snapToTemporaryOneDimensional = null;
+        }
       }
     } else if (this.isTemporaryPointAdded) {
       //if not on the sphere and the temporary segment has been added remove the temporary objects
@@ -169,5 +209,28 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
     this.snapToTemporaryOneDimensional = null;
     // Reset the oneDimensional in preparation for another intersection.
     this.oneDimensional = null;
+  }
+
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return false;
+        }
+      }
+      return pt.showing;
+    });
   }
 }

@@ -13,7 +13,6 @@ import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { LabelDisplayMode, ValueDisplayMode } from "@/types";
 import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
 
-
 export default class SegmentLengthHandler extends Highlighter {
   constructor(layers: Group[]) {
     super(layers);
@@ -87,7 +86,7 @@ export default class SegmentLengthHandler extends Highlighter {
     } else {
       const lenMeasure = new SESegmentLength(targetSegment);
       EventBus.fire("show-alert", {
-        key: `handlers.newSegmentMeasurementAdded`,
+        key: `newSegmentMeasurementAdded`,
         keyOptions: { name: `${lenMeasure.name}` },
         type: "success"
       });
@@ -99,9 +98,11 @@ export default class SegmentLengthHandler extends Highlighter {
       );
       // Set the selected segment's Label to display and to show NameAndValue in an undoable way
       if (targetSegment.label) {
-        segmentCommandGroup.addCommand(
-          new SetNoduleDisplayCommand(targetSegment.label, true)
-        );
+        if (!targetSegment.label.showing) {
+          segmentCommandGroup.addCommand(
+            new SetNoduleDisplayCommand(targetSegment.label, true)
+          );
+        }
         segmentCommandGroup.addCommand(
           new StyleNoduleCommand(
             [targetSegment.label.ref],

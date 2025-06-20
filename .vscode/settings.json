@@ -1,20 +1,10 @@
 {
-  "debug.node.autoAttach": "on",
-  "peacock.color": "#905dc6",
   "prettier.htmlWhitespaceSensitivity": "ignore",
   "prettier.useEditorConfig": false,
   "prettier.requireConfig": false,
-  // "vetur.experimental.templateInterpolationService": true,
-  "vetur.format.defaultFormatter.html": "js-beautify-html",
-  "vetur.format.defaultFormatterOptions": {
-    "js-beautify-html": {
-      "wrap_attributes": "force",
-      "wrap_line_length": "75",
-      "indent_size": 2
-    }
-  },
-  "vetur.format.options.tabSize": 2,
-
+  "i18n-ally.localesPaths": ["src/assets/languages"],
+  "i18n-ally.disablePathParsing": false,
+  "i18n-ally.pathMatcher": "{locale}.{ext}",
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
@@ -23,22 +13,6 @@
   },
   "[vue]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "files.exclude": {
-    "\"**/*.js\": {\"when\": \"$(basename).ts\"}": true,
-    "**/.classpath": true,
-    "**/.factorypath": true,
-    "**/.project": true,
-    "**/.settings": true,
-    "**/*_latexmk": true,
-    "**/*.aux": true,
-    "**/*.bbl": true,
-    "**/*.blg": true,
-    "**/*.fls": true,
-    "**/*.gz": true,
-    "**/*.js.map": true,
-    "**/*.log": true,
-    "**/*.wasm": true
   },
   "cSpell.words": [
     "axios",
@@ -74,34 +48,25 @@
     "Vinicius",
     "vuetify"
   ],
-  "i18n-ally.localesPaths": ["./src/assets/languages"],
-  "files.trimFinalNewlines": true,
-  "files.trimTrailingWhitespace": true,
-  "files.readonlyFromPermissions": false,
-  "files.readonlyInclude": {
-    "node_modules/**": true
+  "eslint.validate": [
+    "vue",
+    "typescript",
+    "javascript"
+  ],
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#a1e26e",
+    "activityBar.background": "#a1e26e",
+    "activityBar.foreground": "#15202b",
+    "activityBar.inactiveForeground": "#15202b99",
+    "commandCenter.border": "#15202b99",
+    "sash.hoverBorder": "#a1e26e",
+    "titleBar.activeBackground": "#86da43",
+    "titleBar.activeForeground": "#15202b",
+    "titleBar.inactiveBackground": "#86da4399",
+    "titleBar.inactiveForeground": "#15202b99"
   },
-  "i18n-ally.annotations": true,
-  "i18n-ally.autoDetection": true,
-  "i18n-ally.disablePathParsing": false,
-  "i18n-ally.displayLanguage": "en,id",
-  "i18n-ally.sourceLanguage": "en,id",
-  "i18n-ally.extract.autoDetect": true,
-  "i18n-ally.extract.keyMaxLength": 50,
-  "i18n-ally.frameworks.ruby-rails.scopeRoot": "",
-  "i18n-ally.fullReloadOnChanged": true,
-  "i18n-ally.pathMatcher": "{locale}.json",
-  "i18n-ally.translate.promptSource": true,
-  "i18n-ally.dirStructure": "dir",
-  "i18n-ally.enabledParsers": ["ts"],
-  "i18n-ally.enabledFrameworks": ["vue-sfc", "vue"],
-  "i18n-ally.extract.keygenStyle": "camelCase",
+  "peacock.color": "#86da43",
+  "workbench.editor.enablePreview": false,
   "i18n-ally.keystyle": "nested",
-  "i18n-ally.editor.preferEditor": true,
-  "eslint.validate": ["vue", "typescript", "javascript"],
-  "editor.quickSuggestions": {
-    "other": "on",
-    "comments": "off",
-    "strings": "off"
-  }
+  "editor.formatOnSave": true
 }

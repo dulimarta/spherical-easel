@@ -49,7 +49,7 @@ import { SEInversionCircleCenter } from "@/models/SEInversionCircleCenter";
 import { AddInvertedCircleCenterCommand } from "@/commands/AddInvertedCircleCenterCommand";
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 //import { Group } from "two.js/src/group";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 import { Group } from "two.js/src/group";
@@ -82,6 +82,9 @@ export default class ApplyTransformationHandler extends Highlighter {
   /* The last possibly glowing object and the id of the last possibly glowing object*/
   private possiblyGlowing: SEPoint | SEOneDimensional | null = null;
   private lastPossiblyGlowingID = 0;
+
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
 
   /* temporary vector and matrix to help with computations */
   private tmpVector = new Vector3();
@@ -132,10 +135,11 @@ export default class ApplyTransformationHandler extends Highlighter {
     if (this.isOnSphere) {
       // determine if the user has selected a transformation
       if (this.transformationSEParent != null) {
+        this.updateFilteredPointsList();
         // For all transformations the way points are handled is the same so deal with them first
-        if (this.hitSEPoints.length > 0) {
+        if (this.filteredIntersectionPointsList.length > 0) {
           if (
-            this.hitSEPoints[0].kids.some(kid => {
+            this.filteredIntersectionPointsList[0].kids.some(kid => {
               return (
                 kid instanceof SETransformedPoint &&
                 this.transformationSEParent &&
@@ -149,7 +153,8 @@ export default class ApplyTransformationHandler extends Highlighter {
               key: `handlers.duplicateTransformedObject`,
               keyOptions: {
                 object: i18n.global.t(`objects.points`, 3),
-                name: this.hitSEPoints[0].label?.ref.shortUserName,
+                name: this.filteredIntersectionPointsList[0].label?.ref
+                  .shortUserName,
                 type: this.transformationType,
                 trans: this.transformationSEParent.name
               },
@@ -158,13 +163,13 @@ export default class ApplyTransformationHandler extends Highlighter {
             return;
           }
           const transformedLocation = this.transformationSEParent.f(
-            this.hitSEPoints[0].locationVector
+            this.filteredIntersectionPointsList[0].locationVector
           );
           if (
             this.tmpVector
               .subVectors(
                 transformedLocation,
-                this.hitSEPoints[0].locationVector
+                this.filteredIntersectionPointsList[0].locationVector
               )
               .isZero()
           ) {
@@ -174,7 +179,8 @@ export default class ApplyTransformationHandler extends Highlighter {
               keyOptions: {
                 type: this.transformationType,
                 trans: this.transformationSEParent.name,
-                pt: this.hitSEPoints[0].label?.ref.shortUserName
+                pt: this.filteredIntersectionPointsList[0].label?.ref
+                  .shortUserName
               },
               type: "error"
             });
@@ -200,7 +206,9 @@ export default class ApplyTransformationHandler extends Highlighter {
             EventBus.fire("show-alert", {
               key: "handlers.transformCreatesSecondPoint",
               keyOptions: {
-                preimagePt: this.hitSEPoints[0].label?.ref.shortUserName,
+                preimagePt:
+                  this.filteredIntersectionPointsList[0].label?.ref
+                    .shortUserName,
                 type: this.transformationType,
                 trans: this.transformationSEParent.name,
                 existingPt: existingPointName
@@ -215,7 +223,7 @@ export default class ApplyTransformationHandler extends Highlighter {
           this.addTransformedPointCommands(
             transformedPointCommandGroup,
             this.transformationSEParent,
-            this.hitSEPoints[0],
+            this.filteredIntersectionPointsList[0],
             true
           );
           transformedPointCommandGroup.execute();
@@ -651,6 +659,7 @@ export default class ApplyTransformationHandler extends Highlighter {
               });
             }
           } else if (this.hitSEEllipses.length > 0) {
+            console.error("Transformations of ellipses not implemented yet!");
             // not implemented yet
             // if (
             //   !this.hitSEEllipses[0].kids.some(kid => {
@@ -752,8 +761,9 @@ export default class ApplyTransformationHandler extends Highlighter {
         // Only object can be interacted with at a given time, so set the first point nearby to glowing
         // The user can create points on ellipses, circles, segments, and lines, so
         // highlight those as well (but only one) if they are nearby also
-        if (this.hitSEPoints.length > 0) {
-          this.possiblyGlowing = this.hitSEPoints[0];
+        this.updateFilteredPointsList();
+        if (this.filteredIntersectionPointsList.length > 0) {
+          this.possiblyGlowing = this.filteredIntersectionPointsList[0];
         } else if (this.hitSESegments.length > 0) {
           this.possiblyGlowing = this.hitSESegments[0];
         } else if (this.hitSELines.length > 0) {
@@ -795,7 +805,7 @@ export default class ApplyTransformationHandler extends Highlighter {
                     .subVectors(
                       pt.locationVector,
                       this.transformationSEParent.f(
-                        this.hitSEPoints[0].locationVector
+                        this.filteredIntersectionPointsList[0].locationVector
                       )
                     )
                     .isZero()
@@ -1053,7 +1063,8 @@ export default class ApplyTransformationHandler extends Highlighter {
                   this.temporaryPoint2.addToLayers(this.layers);
                   this.temporaryPoint2Added = true;
                 }
-                this.temporaryPoint2.positionVectorAndDisplay = centerOfInvertedCircle;
+                this.temporaryPoint2.positionVectorAndDisplay =
+                  centerOfInvertedCircle;
 
                 // add a temporary Circle and set the normal, start and arc length
                 if (!this.temporaryCircleAdded) {
@@ -1206,7 +1217,8 @@ export default class ApplyTransformationHandler extends Highlighter {
                   this.temporaryPoint2.addToLayers(this.layers);
                   this.temporaryPoint2Added = true;
                 }
-                this.temporaryPoint2.positionVectorAndDisplay = centerOfInvertedCircle;
+                this.temporaryPoint2.positionVectorAndDisplay =
+                  centerOfInvertedCircle;
 
                 // add a temporary Circle and set the normal, start and arc length
                 if (!this.temporaryCircleAdded) {
@@ -1373,6 +1385,13 @@ export default class ApplyTransformationHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
+  }
+
+  updateFilteredPointsList(): void {
+    // you can only transform showing points
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(
+      pt => pt.showing
+    );
   }
 
   prepareForNextGeometricObject(): void {
@@ -1575,13 +1594,12 @@ export default class ApplyTransformationHandler extends Highlighter {
 
     // Create the label
     const newSELabel = newTransformedSEPoint.attachLabelWithOffset(
-        new Vector3(
-          2 * SETTINGS.point.initialLabelOffset,
-          SETTINGS.point.initialLabelOffset,
-          0
-        )
+      new Vector3(
+        2 * SETTINGS.point.initialLabelOffset,
+        SETTINGS.point.initialLabelOffset,
+        0
       )
-
+    );
 
     commandGroup.addCommand(
       new AddTransformedPointCommand(
@@ -1685,12 +1703,12 @@ export default class ApplyTransformationHandler extends Highlighter {
 
     // Create the label
     const newSELabel = newIsometrySESegment.attachLabelWithOffset(
-        new Vector3(
-          2 * SETTINGS.segment.initialLabelOffset,
-          SETTINGS.segment.initialLabelOffset,
-          0
-        )
+      new Vector3(
+        2 * SETTINGS.segment.initialLabelOffset,
+        SETTINGS.segment.initialLabelOffset,
+        0
       )
+    );
 
     transformedSegmentCommandGroup.addCommand(
       new AddIsometrySegmentCommand(
@@ -1703,27 +1721,21 @@ export default class ApplyTransformationHandler extends Highlighter {
 
     // Add all the intersections with this segment
     ApplyTransformationHandler.store
-      .createAllIntersectionsWithSegment(
-        newIsometrySESegment,
-        newlyCreatedSEPoints
-      )
+      .createAllIntersectionsWith(newIsometrySESegment, newlyCreatedSEPoints)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
           transformedSegmentCommandGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              item.parent1
-            )
+            new AddIntersectionPointOtherParentsInfo(item)
           );
         } else {
           // Create the plottable label
           const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
-              new Vector3(
-                2 * SETTINGS.segment.initialLabelOffset,
-                SETTINGS.segment.initialLabelOffset,
-                0
-              )
+            new Vector3(
+              2 * SETTINGS.segment.initialLabelOffset,
+              SETTINGS.segment.initialLabelOffset,
+              0
             )
+          );
 
           transformedSegmentCommandGroup.addCommand(
             new AddIntersectionPointCommand(
@@ -1851,24 +1863,21 @@ export default class ApplyTransformationHandler extends Highlighter {
     );
     // Add all the intersections with this line
     ApplyTransformationHandler.store
-      .createAllIntersectionsWithLine(newIsometrySELine, newlyCreatedSEPoints)
+      .createAllIntersectionsWith(newIsometrySELine, newlyCreatedSEPoints)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
           transformedLineCommandGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              item.parent1
-            )
+            new AddIntersectionPointOtherParentsInfo(item)
           );
         } else {
           // Create the plottable label
           const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
-              )
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
             )
+          );
 
           transformedLineCommandGroup.addCommand(
             new AddIntersectionPointCommand(
@@ -1998,27 +2007,21 @@ export default class ApplyTransformationHandler extends Highlighter {
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the circle command so they can be undone.
     ApplyTransformationHandler.store
-      .createAllIntersectionsWithCircle(
-        newIsometrySECircle,
-        newlyCreatedSEPoints
-      )
+      .createAllIntersectionsWith(newIsometrySECircle, newlyCreatedSEPoints)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
           transformedCircleCommandGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              item.parent1
-            )
+            new AddIntersectionPointOtherParentsInfo(item)
           );
         } else {
           // Create the plottable and model label
           const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
-              )
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
             )
+          );
 
           transformedCircleCommandGroup.addCommand(
             new AddIntersectionPointCommand(
@@ -2177,27 +2180,21 @@ export default class ApplyTransformationHandler extends Highlighter {
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the ellipse command so they can be undone.
     ApplyTransformationHandler.store
-      .createAllIntersectionsWithEllipse(
-        newIsometrySEEllipse,
-        newlyCreatedSEPoints
-      )
+      .createAllIntersectionsWith(newIsometrySEEllipse, newlyCreatedSEPoints)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
           transformedEllipseCommandGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              item.parent1
-            )
+            new AddIntersectionPointOtherParentsInfo(item)
           );
         } else {
           // Create the plottable and model label
           const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
-              )
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
             )
+          );
 
           transformedEllipseCommandGroup.addCommand(
             new AddIntersectionPointCommand(
@@ -2386,12 +2383,12 @@ export default class ApplyTransformationHandler extends Highlighter {
       newlyCreatedSEPoints.push(newInvertedSECircleCenter);
       // Create the label
       const newSELabel = newInvertedSECircleCenter.attachLabelWithOffset(
-          new Vector3(
-            2 * SETTINGS.line.initialLabelOffset,
-            SETTINGS.line.initialLabelOffset,
-            0
-          )
+        new Vector3(
+          2 * SETTINGS.line.initialLabelOffset,
+          SETTINGS.line.initialLabelOffset,
+          0
         )
+      );
 
       invertedCircleOrLineCommandGroup.addCommand(
         new AddInvertedCircleCenterCommand(
@@ -2455,27 +2452,21 @@ export default class ApplyTransformationHandler extends Highlighter {
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the circle command so they can be undone.
     ApplyTransformationHandler.store
-      .createAllIntersectionsWithCircle(
-        newInvertedSECircle,
-        newlyCreatedSEPoints
-      )
+      .createAllIntersectionsWith(newInvertedSECircle, newlyCreatedSEPoints)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
           invertedCircleOrLineCommandGroup.addCommand(
-            new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              item.parent1
-            )
+            new AddIntersectionPointOtherParentsInfo(item)
           );
         } else {
           // Create the plottable and model label
           const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
-              new Vector3(
-                2 * SETTINGS.point.initialLabelOffset,
-                SETTINGS.point.initialLabelOffset,
-                0
-              )
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
             )
+          );
 
           invertedCircleOrLineCommandGroup.addCommand(
             new AddIntersectionPointCommand(

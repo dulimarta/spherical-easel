@@ -2,7 +2,6 @@
   <div
     id="authToolbox"
     class="my-1"
-    v-if="loginEnabled"
     :style="{
       alignItems: 'flex-start',
       rowGap: '8px'
@@ -24,7 +23,9 @@
       <v-icon size="x-large" v-else>mdi-account</v-icon>
       <v-tooltip
         activator="parent"
-        :text="firebaseUid ? 'Logout' : 'Login'"></v-tooltip>
+        :text="
+          firebaseUid ? `Logout ${firebaseUid.substring(0, 8)}` : 'Login'
+        "></v-tooltip>
     </v-btn>
     <router-link to="/settings/" v-if="firebaseUid">
       <v-btn icon size="x-small" color="green-lighten-1">
@@ -38,92 +39,97 @@
       tooltip="Save construction">
       <template #icon>mdi-content-save</template>
     </HintButton>
-    <HintButton
+    <!-- <HintButton
       color="green-lighten-2"
-      tooltip="Share saved cons"
-      v-if="constructionDocId /*&& isPublicConstruction(constructionDocId)*/">
+      :tooltip="`Share this construction ${constructionStore
+        .publishedDocId(constructionDocId)
+        ?.substring(0, 8)}`"
+      v-if="
+        constructionDocId && constructionStore.publishedDocId(constructionDocId)
+      ">
       <template #icon>mdi-share-variant</template>
-    </HintButton>
+    </HintButton> -->
     <HintButton
       color="green-lighten-2"
       v-if="constructionDocId"
       @click="() => exportConstructionDialog?.show()"
-      tooltip="Export Construction">
-      <template #icon>mdi-file-export</template>
+      :tooltip="t('exportConstructionDialogTitle')">
+      <template #icon>mdi-export</template>
     </HintButton>
   </div>
   <Dialog
-  ref="saveConstructionDialog"
-  :title="
-    isSavedAsPublicConstruction
-      ? t('savePublicConstructionDialogTitle')
-      : t('savePrivateConstructionDialogTitle')
-  "
-  :yes-text="t('saveAction')"
-  :no-text="t('cancelAction')"
-  :yes-action="doSave"
-  max-width="40%">
-  
-  <!-- Wrapper div to prevent scrolling in the main dialog -->
-  <div style="overflow: visible; max-height: none;">
-    <v-text-field
-      type="text"
-      density="compact"
-      clearable
-      counter
-      persistent-hint
-      :label="t('construction.saveDescription')"
-      required
-      v-model="constructionDescription"
-      @keypress.stop></v-text-field>
-    <v-switch
-      v-model="isSavedAsPublicConstruction"
-      :disabled="!firebaseUid"
-      :label="t('construction.makePublic')"></v-switch>
-    <v-switch
-      v-if="isMyOwnConstruction"
-      v-model="shouldSaveOverwrite"
-      :disabled="!firebaseUid"
-      :label="
-        t('construction.saveOverwrite', { docId: constructionDocId })
-      "></v-switch>
-
-    <!-- Folder Selection Section -->
-    <div class="my-2">
-      <v-divider class="mb-2"></v-divider>
-      <h3 class="text-subtitle-1 mb-2">Select or Enter Folder Path in Owned Constructions</h3>
-
-      <!-- Folder path input -->
+    ref="saveConstructionDialog"
+    :title="
+      isSavedAsPublicConstruction
+        ? t('savePublicConstructionDialogTitle')
+        : t('savePrivateConstructionDialogTitle')
+    "
+    :yes-text="t('saveAction')"
+    :no-text="t('cancelAction')"
+    :yes-action="doSave"
+    max-width="40%">
+    <!-- Wrapper div to prevent scrolling in the main dialog -->
+    <div style="overflow: visible; max-height: none">
       <v-text-field
-        v-model="folderPath"
-        label="Folder Path (e.g., Math/Geometry)"
+        type="text"
         density="compact"
-        hint="Enter a new or existing folder path"
-        persistent-hint
         clearable
+        counter
+        persistent-hint
+        :label="t('construction.saveDescription')"
+        required
+        v-model="constructionDescription"
         @keypress.stop></v-text-field>
+      <v-switch
+        v-model="isSavedAsPublicConstruction"
+        :disabled="!firebaseUid"
+        :label="t('construction.makePublic')"></v-switch>
+      <v-switch
+        v-if="isMyOwnConstruction"
+        v-model="shouldSaveOverwrite"
+        :disabled="!firebaseUid"
+        :label="
+          t('construction.saveOverwrite', { docId: constructionDocId })
+        "></v-switch>
 
-      <!-- Existing Folders Treeview -->
-      <p class="text-caption mt-2 mb-1">Or select an existing folder:</p>
-      <div class="folder-tree-container">
-        <v-treeview
-          :items="treeItems"
-          select-strategy="single-independent"
-          selectable
-          dense
-          item-value="id"
-          open-all
-          class="mt-1 folder-tree"
-          @update:selected="handleNodeSelection">
-          <!-- TODO add icon to TreeviewNode type -->
-          <template v-slot:prepend="{ item }">
-            <v-icon>{{ /*item.icon ||*/ "mdi-folder" }}</v-icon>
-          </template>
-        </v-treeview>
+      <!-- Folder Selection Section -->
+      <div class="my-2">
+        <v-divider class="mb-2"></v-divider>
+        <h3 class="text-subtitle-1 mb-2">
+          Select or Enter Folder Path in Owned Constructions
+        </h3>
+
+        <!-- Folder path input -->
+        <v-text-field
+          v-model="folderPath"
+          label="Folder Path (e.g., Math/Geometry)"
+          density="compact"
+          hint="Enter a new or existing folder path"
+          persistent-hint
+          clearable
+          @keypress.stop></v-text-field>
+
+        <!-- Existing Folders Treeview -->
+        <p class="text-caption mt-2 mb-1">Or select an existing folder:</p>
+        <div class="folder-tree-container">
+          <v-treeview
+            :items="treeItems"
+            select-strategy="single-independent"
+            selectable
+            dense
+            item-value="id"
+            open-all
+            class="mt-1 folder-tree"
+            @update:selected="handleNodeSelection">
+            <!-- TODO add icon to TreeviewNode type -->
+            <template v-slot:prepend="{ item }">
+              <v-icon>{{ /*item.icon ||*/ "mdi-folder" }}</v-icon>
+            </template>
+          </v-treeview>
+        </div>
       </div>
     </div>
-  </div>
-</Dialog>
+  </Dialog>
   <Dialog
     ref="exportConstructionDialog"
     :title="t('exportConstructionDialogTitle')"
@@ -352,6 +358,10 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { VTreeview } from "vuetify/labs/VTreeview";
 import { shallowRef } from "vue";
+import { SEPoint } from "@/models/SEPoint";
+import { SESegment } from "@/models/SESegment";
+import { SECircle } from "@/models/SECircle";
+import { SELine } from "@/models/SELine";
 
 enum SecretKeyState {
   NONE,
@@ -362,7 +372,7 @@ const acctStore = useAccountStore();
 const seStore = useSEStore();
 const constructionStore = useConstructionStore();
 const {
-  loginEnabled,
+  // loginEnabled,
   userProfilePictureURL,
   userDisplayedName,
   constructionDocId,
@@ -376,7 +386,8 @@ const {
   sePoints,
   seLines,
   seCircles,
-  seSegments
+  seSegments,
+  selectedSENodules
 } = storeToRefs(seStore);
 const { t } = useI18n();
 
@@ -431,30 +442,30 @@ type ComponentProps = {
 const props = defineProps<ComponentProps>();
 /* User account feature is initially disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
-onKeyDown(
-  true, // true: accept all keys
-  (event: KeyboardEvent) => {
-    if (!event.ctrlKey || !event.altKey) {
-      state.value = SecretKeyState.NONE;
-      return false;
-    }
-    if (event.code === "KeyS" && state.value === SecretKeyState.NONE) {
-      state.value = SecretKeyState.ACCEPT_S;
-      event.preventDefault();
-    } else if (
-      event.code === "KeyE" &&
-      state.value === SecretKeyState.ACCEPT_S
-    ) {
-      state.value = SecretKeyState.COMPLETE;
-      loginEnabled.value = true;
-      event.preventDefault();
-    } else {
-      state.value = SecretKeyState.NONE;
-      event.preventDefault();
-    }
-  },
-  { dedupe: true } // ignore repeated key events when keys are held down
-);
+// onKeyDown(
+//   true, // true: accept all keys
+//   (event: KeyboardEvent) => {
+//     if (!event.ctrlKey || !event.altKey) {
+//       state.value = SecretKeyState.NONE;
+//       return false;
+//     }
+//     if (event.code === "KeyS" && state.value === SecretKeyState.NONE) {
+//       state.value = SecretKeyState.ACCEPT_S;
+//       event.preventDefault();
+//     } else if (
+//       event.code === "KeyE" &&
+//       state.value === SecretKeyState.ACCEPT_S
+//     ) {
+//       state.value = SecretKeyState.COMPLETE;
+//       // loginEnabled.value = true;
+//       event.preventDefault();
+//     } else {
+//       state.value = SecretKeyState.NONE;
+//       event.preventDefault();
+//     }
+//   },
+//   { dedupe: true } // ignore repeated key events when keys are held down
+// );
 
 const folderPath = ref("");
 
@@ -469,13 +480,13 @@ const handleNodeSelection = (input: any) => {
   if (selected && selected.length > 0) {
     const selectedParsed: ConstructionPath = new ConstructionPath(selected[0]);
     folderPath.value = selectedParsed.toString();
-    console.log(
-      "parsed path: " +
-        selectedParsed.toString() +
-        "\n" +
-        "got root: " +
-        selectedParsed.getRoot()
-    );
+    // console.log(
+    //   "parsed path: " +
+    //     selectedParsed.toString() +
+    //     "\n" +
+    //     "got root: " +
+    //     selectedParsed.getRoot()
+    // );
   }
 };
 
@@ -496,7 +507,7 @@ async function doSave(): Promise<void> {
           privateConstructions.value = [...privateConstructions.value];
         }, 500);
         EventBus.fire("show-alert", {
-          key: "constructions.firestoreConstructionSaved",
+          key: "firestoreConstructionSaved",
           keyOptions: { docId },
           type: "info"
         });
@@ -581,7 +592,7 @@ watch(
   ],
   () => {
     rotationAngleString.value = svgAnimationAngle.value + "\u{00B0}";
-    updateExportPreview();
+    updateExportPreview(selectedExportFormat.value == "JPEG");
   },
   { deep: true }
 );
@@ -681,7 +692,6 @@ onUpdated(() => {
   });
 
   if (possibleAxisItems.value.length > 0) {
-    axisId.value = possibleAxisItems.value[0].value;
     exportFileTypeItems.value = [
       "SVG",
       "Animated SVG",
@@ -690,14 +700,25 @@ onUpdated(() => {
       "GIF",
       "BMP"
     ];
+    // Set the initial axis of the animated SVG with the first object selected
+    if (selectedSENodules.value.length > 0) {
+      if (
+        selectedSENodules.value[0] instanceof SEPoint ||
+        selectedSENodules.value[0] instanceof SESegment ||
+        selectedSENodules.value[0] instanceof SELine ||
+        selectedSENodules.value[0] instanceof SECircle
+      ) {
+        axisId.value = selectedSENodules.value[0].id;
+      } else {
+        axisId.value = possibleAxisItems.value[0].value;
+      }
+    }
   } else {
     axisId.value = undefined;
     exportFileTypeItems.value = ["SVG", "PNG", "JPEG", "GIF", "BMP"];
   }
-
-  selectedExportFormat.value = "SVG";
-  updateExportPreview();
-
+  updateExportPreview(selectedExportFormat.value == "JPEG");
+  //selectedExportFormat.value = "SVG"; // save the last value instead of overwriting
   imageExportHeight.value = Math.min(canvasHeight.value, canvasWidth.value);
 });
 
@@ -713,8 +734,23 @@ async function doLoginOrLogout() {
   }
 }
 
-function updateExportPreview(): void {
-  // console.log("update export preview")
+function showExportDialog() {
+  // // Set the initial axis of the animated SVG with the first object selected
+  // if (selectedSENodules.value.length > 0) {
+  //   if (
+  //     selectedSENodules.value[0] instanceof SEPoint ||
+  //     selectedSENodules.value[0] instanceof SESegment ||
+  //     selectedSENodules.value[0] instanceof SELine ||
+  //     selectedSENodules.value[0] instanceof SECircle
+  //   ) {
+  //     axisId.value = selectedSENodules.value[0].id;
+  //   }
+  // }
+  // Show the dialog
+  exportConstructionDialog.value?.show();
+}
+
+function updateExportPreview(forJpegExport?: boolean): void {
   let svgBlock = "";
   const nonScalingOptions = {
     stroke: svgNonScaling.value.includes("stroke"),
@@ -739,7 +775,13 @@ function updateExportPreview(): void {
       animateOptions
     );
   } else {
-    svgBlock = Command.dumpSVG(imageExportHeight.value, nonScalingOptions);
+    svgBlock = Command.dumpSVG(
+      imageExportHeight.value,
+      nonScalingOptions,
+      undefined, //animate options
+      undefined, // svg for icon
+      forJpegExport // svg for jpeg export (changes the background to white instead of transparent)
+    );
   }
 
   let svgBlob = new Blob([svgBlock], { type: "image/svg+xml;charset=utf-8" });
@@ -863,14 +905,22 @@ function checkAnimationRepeatRule(): void {
 }
 function doExport() {
   /* dump the command history into SVG using the nonScaling options and the animated SVG option */
-  updateExportPreview();
+  updateExportPreview(selectedExportFormat.value == "JPEG");
+  const pos = privateConstructions.value.findIndex(
+    (c: SphericalConstruction) => c.id === constructionDocId.value
+  );
+  const constructionName =
+    pos >= 0 ? privateConstructions.value[pos].description : "";
+  console.log("construction name?", constructionName);
 
   if (
     selectedExportFormat.value === "SVG" ||
     selectedExportFormat.value === "Animated SVG"
   ) {
-    // await nextTick()
-    FileSaver.saveAs(currentConstructionPreview.value, "construction.svg");
+    FileSaver.saveAs(
+      currentConstructionPreview.value,
+      constructionName + ".svg"
+    );
   } else {
     mergeIntoImageUrl(
       [currentConstructionPreview.value],
@@ -878,7 +928,10 @@ function doExport() {
       imageExportHeight.value,
       selectedExportFormat.value
     ).then((imageUrl: string) => {
-      FileSaver.saveAs(imageUrl, "construction." + selectedExportFormat.value);
+      FileSaver.saveAs(
+        imageUrl,
+        constructionName + "." + selectedExportFormat.value.toLowerCase()
+      );
     });
   }
 }
@@ -930,5 +983,51 @@ function doExport() {
   "segment": "Segment: ",
   "point": "Point: ",
   "circle": "Circle: "
+}
+</i18n>
+<i18n locale="id" lang="json">
+{
+  "savePrivateConstructionDialogTitle": "Simpan Konstruksi Privat",
+  "savePublicConstructionDialogTitle": "Simpan Konstruksi Publik",
+  "exportConstructionDialogTitle": "Ekspor Konstruksi",
+  "exportAction": "Export",
+  "saveAction": "Simpan",
+  "cancelAction": "Batal",
+  "unknownEmail": "Unknown email",
+  "construction": {
+    "saveDescription": "Deskripsi",
+    "saveOverwrite": "Simpan and timpa konstruksi yang sudah ada {docId}",
+    "makePublic": "Simpan untuk publik",
+    "firestoreSaveError": "Koonstruksi tidak tersimpan: {error}",
+    "pathError": {
+      "tooLong": "Name file melebihi panjang maksimum ({limit})",
+      "emptyFolders": "Name direktori tidak sahih"
+    }
+  },
+  "sliderFileDimensions": "Ukuran file untik ekspor {widthHeight} pixel",
+  "exportFormat": "Format Gambar",
+  "nonScalingStroke": "Jangan gunakan skala garis SVG",
+  "nonScalingPointRadius": "Jangan gunakan skala garis",
+  "nonScalingText": "Jangan gunakan skala teks",
+
+  "svgAnimationAxis": "Pilih sumbu putar",
+  "svgAnimationDuration": "Durasi",
+  "svgAnimationFrames": "Banyaknya bingkai animasi",
+  "svgAnimationRepeat": "Ulang berapa kali",
+  "exportHeightErrorMessage": "Masukan bilangan bulat 50-1500",
+  "rotationAngle": "Sudut putara {angle}",
+  "rotationAngleErrorMessage": "Masukan sudut 5-350 derajat",
+  "animationDuration": "Durasi animasi (detik)",
+  "animatedDurationErrorMessage": "Masukan durasi 0.1 - 1000 detik.",
+  "animationFrames": "Banyaknya bingkai animasi",
+  "animatedFramesErrorMessage": "Masukan bilangan bulat 1-200",
+  "animationRepeat": "Ulang berapa kali (0 ulang nirhenti)",
+  "animatedNumberOfFramesErrorMessage": "Masukan jumlah ulangan (1-200) atau (0 untuk nirhenti)",
+  "animatedSVGOptions": "Opsi Animasi SVG",
+  "animatedSVGBestViewed": "Gunakan Chrome untuk melihat file yang diekspor.",
+  "line": "Garis: ",
+  "segment": "Segmen: ",
+  "point": "Titik: ",
+  "circle": "Lingkaran: "
 }
 </i18n>

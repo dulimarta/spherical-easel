@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="visible" max-width="800px">
+  <v-dialog v-model="visible" max-width="75%">
     <v-card color="#E8F5F1" theme="light" style="overflow: hidden">
       <v-card-title class="text-mint-dark">
         {{
@@ -59,11 +59,21 @@
                     v-model:selected="checkedConstructions"
                     :items="treeItems"
                     hoverable
-                    selectable
                     item-value="id"
                     item-title="title"
                     color="#40A082"
-                    return-object></v-treeview>
+                    density="compact"
+                    return-object>
+                    <template #prepend="{ item, isActive }">
+                      <template v-if="!item.leaf">
+                        <v-icon v-if="isActive && item.children">
+                          mdi-folder-open
+                        </v-icon>
+                        <v-icon v-else>mdi-folder</v-icon>
+                      </template>
+                      <v-icon v-else>mdi-file</v-icon>
+                    </template>
+                  </v-treeview>
                 </div>
               </v-col>
 
@@ -72,6 +82,7 @@
                   color="#40A082"
                   @click="confirmMove"
                   class="square-button"
+                  :disabled="!destinationPath && targetFolder.length === 0"
                   min-width="40px"
                   width="40px"
                   height="40px">
@@ -95,7 +106,20 @@
                     item-title="title"
                     color="#40A082"
                     active-strategy="single-independent"
-                    return-object />
+                    return-object>
+                    <template #append="{ item }">
+                      <v-btn
+                        icon="mdi-folder-plus"
+                        variant="tonal"
+                        size="small"
+                        @click="
+                          () => {
+                            targetFolder.push(item.id);
+                            newPathDialog?.show();
+                          }
+                        "></v-btn>
+                    </template>
+                  </v-treeview>
                 </div>
               </v-col>
             </v-row>
@@ -111,29 +135,41 @@
           color="#40A082"
           class="mr-2"
           @click="confirmLoad">
-          LOAD SELECTED
+          {{ t("loadSelectedFolder") }}
         </v-btn>
         <v-btn color="#40A082" variant="outlined" @click="visible = false">
-          CLOSE
+          {{ t("close") }}
         </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
+  <Dialog
+    width="60%"
+    ref="newPathDialog"
+    title="Create a New Destination Path"
+    yes-text="Create"
+    no-text="Cancel"
+    :yes-action="addNewPath">
+    <v-text-field
+      v-model="destinationPath"
+      label="New Path"
+      id="id"></v-text-field>
+  </Dialog>
 </template>
 
 <script lang="ts" setup>
-import { defineEmits, ref, Ref, onMounted, watch } from "vue";
+import { ref, Ref, onMounted, watch } from "vue";
 import { VTreeview } from "vuetify/labs/VTreeview";
 import { useConstructionStore } from "@/stores/construction"; // Adjust the import path as needed
 import { ConstructionPath, TreeviewNode } from "@/types/ConstructionTypes";
 import { watchDebounced } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
-
+import Dialog, { DialogAction } from "./Dialog.vue";
 // Get the translation function
 const { t } = useI18n();
 
 /** v-model that controls visibility of the overall component */
-const visible = defineModel("visible");
+const visible = defineModel<boolean>("visible", { default: false });
 
 /** v-model that passes the selected folder to load in and out of this component */
 const loadFolder = defineModel("loadFolder");
@@ -141,9 +177,11 @@ const loadFolder = defineModel("loadFolder");
 /** stores the index of the currently selected v-tab */
 const selectedTab = ref(0);
 
+const destinationPath: Ref<string | null> = ref(null);
 /** reference to the construction store's properties and functions */
 const constructionStore = useConstructionStore();
-
+const open = ref([]);
+const newPathDialog: Ref<DialogAction | null> = ref(null);
 //
 // move functionality
 //
@@ -164,7 +202,7 @@ const treeItems: Ref<TreeviewNode[] | undefined> = ref(undefined);
 const checkedConstructions = ref([]);
 
 /** which folder is selected in the move dialog's right side */
-const targetFolder = ref([]);
+const targetFolder: Ref<string[]> = ref([]);
 
 // Confirm move action
 function confirmMove() {
@@ -173,6 +211,15 @@ function confirmMove() {
       new ConstructionPath(targetFolder.value[0]),
       checkedConstructions.value[0]
     );
+  }
+}
+
+function addNewPath() {
+  if (destinationPath.value) {
+    console.debug(
+      `Create ${destinationPath.value} under ${targetFolder.value}`
+    );
+    constructionStore.addPath(targetFolder.value[0], destinationPath.value);
   }
 }
 
@@ -195,7 +242,8 @@ watch(
         allowedMoveFoldersRoot.value = "Starred Constructions";
       }
     } else {
-      allowedMoveFoldersRoot.value = "";
+      // Should we keep the current move destination?
+      // allowedMoveFoldersRoot.value = "";
     }
   }
 );
@@ -229,6 +277,8 @@ const confirmLoad = () => {
 
 const updateTreeviews = () => {
   /* recalculate and filter out public branches from all trees */
+  const z = constructionStore.constructionTree.getFolders();
+  // console.debug("updateTreeView ", z);
   loadFolders.value = constructionStore.constructionTree
     .getFolders()
     .filter(folder => folder.title !== "Public Constructions");
@@ -243,6 +293,7 @@ const updateTreeviews = () => {
 watchDebounced(
   () => constructionStore.constructionTree.updateCounter,
   _ => {
+    console.debug("watchDebounced is calling updateTreeView()");
     updateTreeviews();
   },
   { debounce: 500, maxWait: 1000 }
@@ -322,6 +373,8 @@ onMounted(updateTreeviews);
 <i18n locale="en" lang="json">
 {
   "selectConstructionsLabel": "SELECT CONSTRUCTIONS",
-  "destinationFolderLabel": "DESTINATION FOLDER"
+  "destinationFolderLabel": "DESTINATION FOLDER",
+  "loadSelectedFolder": "LOAD SELECTED FOLDER",
+  "close": "CLOSE"
 }
 </i18n>

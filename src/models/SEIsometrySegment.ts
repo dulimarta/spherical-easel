@@ -1,21 +1,13 @@
 import { Vector3 } from "three";
-import {
-  SEPoint,
-  SETransformation,
-  SETranslation,
-  SERotation,
-  SEReflection,
-  SEPointReflection
-} from "./internal";
 import { SESegment } from "./SESegment";
 import { ObjectState, SEIsometry } from "@/types";
 import i18n from "@/i18n";
-// import { SESegment } from "./SESegment";
-// import { SETransformation } from "./SETransformation";
-// import { SETranslation } from "./SETranslation";
-// import { SERotation } from "./SERotation";
-// import { SEReflection } from "./SEReflection";
-// import { SEPointReflection } from "./SEPointReflection";
+import { SETransformation } from "./SETransformation";
+import { SETranslation } from "./SETranslation";
+import { SERotation } from "./SERotation";
+import { SEReflection } from "./SEReflection";
+import { SEPointReflection } from "./SEPointReflection";
+import { SEPoint } from "./SEPoint";
 const { t } = i18n.global;
 
 export class SEIsometrySegment extends SESegment {
@@ -158,9 +150,7 @@ export class SEIsometrySegment extends SESegment {
     // Both of these quantities could change during a move therefore store normal vector and arcLength
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Isometry Segment with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Isometry Segment with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

@@ -6,7 +6,6 @@ import { SavedNames, toSVGType } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleCategory } from "@/types/Styles";
 
-
 //#region addPointCommand
 export class AddPointCommand extends Command {
   private sePoint: SEPoint;

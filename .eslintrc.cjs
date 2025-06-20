@@ -25,7 +25,8 @@ module.exports = {
   plugins: ["vue", "prettier" /*, "@typescript-eslint" */],
   rules: {
     "vue/multi-word-component-names": "off",
-    "prettier/prettier": ["error"]
+    "prettier/prettier": ["error"],
+    "vue/valid-v-slot": ["error", {allowModifiers: true}]
   //   "vue/no-unused-vars": "error",
   //   // "space-before-function-paren": "never",
   //   "vue/multi-word-component-names":"off"

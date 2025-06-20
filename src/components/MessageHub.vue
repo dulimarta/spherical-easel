@@ -1,7 +1,11 @@
 <template>
   <div id="msghub">
     <!-- Enable/Disable notification -->
-    <v-btn icon size="small" @click="notifyMe = !notifyMe" color="green-lighten-2">
+    <v-btn
+      icon
+      size="small"
+      @click="notifyMe = !notifyMe"
+      color="green-lighten-2">
       <v-icon v-if="notifyMe">mdi-bell</v-icon>
       <v-icon v-else>mdi-bell-off</v-icon>
     </v-btn>
@@ -25,7 +29,7 @@
         location="top"
         offset="32">
         <v-card class="pa-1">
-          <v-card-title v-t="'selectMsgType'"></v-card-title>
+          <v-card-title>{{ t("selectMsgType") }}</v-card-title>
           <v-card-text>
             <v-checkbox
               :label="t('selectAll')"
@@ -116,7 +120,8 @@
       </v-card>
     </v-menu>
     <v-btn
-      icon color="green-lighten-2"
+      icon
+      color="green-lighten-2"
       size="small"
       :disabled="messages.length === 0"
       @click="tryDeleteMessages">
@@ -208,7 +213,7 @@ function shortMessage(m: MessageType): string {
 function iconType(m: MessageType): string {
   return m.type === "directive" ? "mdi-lightbulb" : (m.type as AlertType);
 }
-function alertType(m: MessageType): AlertType{
+function alertType(m: MessageType): AlertType {
   return m.type === "directive" ? "info" : (m.type as AlertType);
 }
 function pretty(m: MessageType): string {
@@ -227,7 +232,7 @@ const filteredMessages = computed(
 );
 
 function addMessage(m: MessageType): void {
-  if (m.type !== 'directive') {
+  if (m.type !== "directive") {
     m.timestamp = Date.now(); // Get the timestamp that the message occurred at so it can be deleted if needed.
     messages.value.unshift(m); // Add the new message to the beginning of the array
   }
@@ -285,7 +290,38 @@ function cancelDeleteMessages() {
   "selectMsgType": "Select Message Type",
   "success": "Success",
   "undo": "Undo",
-  "warning": "Warning"
+  "warning": "Warning",
+  "moveHandlerNothingSelected": "No object selected. Rotating Sphere.",
+  "selectionUpdateNothingSelected": "No objects selected.",
+  "selectionUpdate": "Selection Update: {number} objects selected. Hold the Alt/Option key to add or subtract from the current selection.",
+  "circleCenterSelected": "Center of circle selected. Now select a point on the circle.",
+  "ellipseInitiallyToSmall": "To create an ellipse initially you must select a point on the ellipse that is further away from each focus. Select a different location further from the foci.",
+  "ellipseFocus1Selected": "One focus of the ellipse selected. Now select a second non-antipodal focus.",
+  "ellipseAntipodalSelected": "The foci of an ellipse are not allowed to be antipodal or identical. Select another location.",
+  "ellipseFocus2Selected": "All foci of the ellipse selected. Now select a point on the ellipse.",
+  "ellipseCreationAttemptDuplicate": "There is already an ellipse with these foci and angle sum.",
+  "newPolygonAdded": "A new polygon was created.",
+  "previouslyMeasuredPolygon": "This polygon was measured previously.  See measurement {token}.",
+  "duplicateSegmentAngleMeasurement": "The angle between segments {seg0Name} and {seg1Name} has already been measured. This angle is measurement {measurementName}.",
+  "duplicateSegmentLineAngleMeasurement": "The angle between segment {segName} and line {lineName} has already been measured. This angle is measurement {measurementName}.",
+  "selectMorePoints": "Select {needed} more point(s).",
+  "newAngleAdded": "New angle measure added.",
+  "segmentSuccessfullyBisected": "Segment {segment} has be successfully bisected",
+  "segmentSuccessfullyNSected": "Segment {segment} has be successfully divided into {number} equal pieces.",
+  "objects": "Objects | Object | object | objects",
+  "deletedNodes": "Successfully deleted {type} {name} and {number} {objects} that depend on it.",
+  "selectAnotherLineOrSegment": "Select 1 more line or segment.",
+  "angleSuccessfullyBisected": "Angle {angle} has be successfully bisected",
+  "angleSuccessfullyNSected": "Angle {angle} has be successfully divided into {number} equal pieces.",
+  "intersectionOneDimensionalPointCreated": "One intersection point successfully created.",
+  "lineThruPointSegmentSelected": "Segment {name} selected. Now select a location to create a new point or to create a point on an object.",
+  "intersectionOneDimensionalSelected": "One dimensional object {name} selected. Select another.",
+  "emptyTextObjectWarning": "Empty text objects are not allowed.",
+  "rotationNoObjectUpdate": "Mouse location determines the rotation. No object selected to rotate about.",
+  "firestoreConstructionSaved": "Construction {docId} successfully saved.",
+  "newSegmentMeasurementAdded": "New measurement {name} added.",
+  "constructionDeleted": "Construction {docId} is successfully removed",
+  "constructionLoaded": "Construction {docId} is successfully loaded to canvas"
 }
 </i18n>
 <i18n locale="id" lang="json">

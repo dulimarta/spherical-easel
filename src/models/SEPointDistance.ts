@@ -1,9 +1,9 @@
-import { SEExpression, SEPoint } from "./internal";
-// import { SEPoint } from "./SEPoint";
+import { SEPoint } from "./SEPoint";
 import { ObjectState, ValueDisplayMode } from "@/types";
 // import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
 import EventBus from "@/eventHandlers/EventBus";
+import { SEExpression } from "./SEExpression";
 const { t } = i18n.global;
 const emptySet = new Set<string>();
 
@@ -47,7 +47,7 @@ export class SEPointDistance extends SEExpression {
   public shallowUpdate(): void {
     this.exists = this.firstSEPoint.exists && this.secondSEPoint.exists;
     if (this.exists) {
-      super.shallowUpdate()
+      super.shallowUpdate();
     }
   }
   public update(
@@ -65,9 +65,7 @@ export class SEPointDistance extends SEExpression {
     // will cause this measurement update correctly. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Point Distance with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Point Distance with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

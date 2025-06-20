@@ -1,10 +1,10 @@
 import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
-import { SETransformation, SESegment, SELine } from "./internal";
-// import { SESegment } from "./SESegment";
+import { SESegment } from "./SESegment";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-// import { SELine } from "./SELine";
+import { SELine } from "./SELine";
+import { SETransformation } from "./SETransformation";
 const { t } = i18n.global;
 
 export class SEReflection extends SETransformation {
@@ -55,9 +55,7 @@ export class SEReflection extends SETransformation {
     // will cause this reflection to be correct. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Reflection with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Reflection with id ${this.id} has been visited twice proceed no further down this branch of the DAG because we are moving two
         return;
       }
       orderedSENoduleList.push(this.id);

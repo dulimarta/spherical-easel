@@ -4,8 +4,8 @@ import { Vector2, Vector3 } from "three";
 
 export class MoveTextCommand extends Command {
   private seText: SEText;
-  private oldLocationVector = new Vector2;
-  private newLocationVector = new Vector2;
+  private oldLocationVector = new Vector2();
+  private newLocationVector = new Vector2();
 
   constructor(
     seText: SEText,

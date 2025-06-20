@@ -15,10 +15,15 @@
         v-slot:default="{ isHovering, props }"
         :close-delay="50"
         :open-delay="100">
+        <!-- Change sheet background color to accent when sharing is allowed and 
+         construction is public -->
         <v-sheet
           @mouseover="onItemHover(r)"
           data-testid="constructionItem"
           class="constructionDetails mb-1 pa-1"
+          :color="
+            r.publicDocId && allowSharing ? 'green-accent-2' : 'transparent'
+          "
           v-bind="props"
           elevation="4">
           <v-img
@@ -43,6 +48,9 @@
               :style="{
                 alignSelf: 'flex-end'
               }">
+              <v-icon v-if="r.publicDocId && allowSharing" class="mr-1">
+                mdi-share-variant
+              </v-icon>
               {{ r.dateCreated.substring(0, 10) }}
               <v-icon size="x-small">mdi-star</v-icon>
               {{ r.starCount }}
@@ -157,7 +165,12 @@
     :yesAction="doShareConstruction"
     no-text="Cancel"
     max-width="50%">
-    {{ t("copyURL", { docId: sharedDocId }) }}
+    {{
+      t("copyURL", {
+        host: targetHost(),
+        docId: sharedDocId
+      })
+    }}
   </Dialog>
 
   <v-snackbar
@@ -202,12 +215,13 @@ import { useAccountStore } from "@/stores/account";
 import { Ref, ref } from "vue";
 import { storeToRefs } from "pinia";
 import EventBus from "@/eventHandlers/EventBus";
-import { run } from "@/commands/CommandInterpreter";
-import { SENodule } from "@/models/internal";
+import { runScript } from "@/commands/CommandInterpreter";
 import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
 import { useConstructionStore } from "@/stores/construction";
 import { useClipboard } from "@vueuse/core";
+import { SENodule } from "@/models/SENodule";
+
 const props = defineProps<{
   items: Array<SphericalConstruction>;
   allowSharing: boolean;
@@ -313,18 +327,19 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
     // It looks like we have to apply the rotation matrix
     // before running the script
     seStore.setRotationMatrix(rotationMatrix);
-    run(script);
+    runScript(script);
     //seStore.rotateSphere(rotationMatrix!.invert());
     seStore.clearUnsavedFlag();
     EventBus.fire("construction-loaded", {});
     seStore.setActionMode("move");
     console.debug("# of objects", seNodules.value.length);
+
     // After fixing the locationVector.copy() bug in the
     // parse() functions, the following call to updateDisplay
     // becomes unnecessary
-    // seNodules.value.forEach(obj => {
-    // obj.ref?.stylize(DisplayStyle.ApplyCurrentVariables)
-    // })
+
+    // include this so that filled objects (circles, ellipses, polygons, angleMarkers) display correctly after loading
+    seStore.updateDisplay();
   }
 }
 
@@ -443,7 +458,13 @@ async function handleUpdateUnstarred(docId: string | undefined): Promise<void> {
 }
 
 function doShareConstruction() {
-  clipboardAPI.copy(`https://easelgeo.app/construction/${sharedDocId.value}`);
+  clipboardAPI.copy(`${targetHost()}/construction/${sharedDocId.value}`);
+}
+
+function targetHost() {
+  return import.meta.env.MODE === "production"
+    ? "https://easelgeo.app"
+    : "http://localhost:8080";
 }
 </script>
 
@@ -533,7 +554,7 @@ function doShareConstruction() {
   "updateStarFailed": "Unable to update star list",
   "constructionLoaded": "Construction {docId} is successfully loaded to canvas",
   "confirmationRequired": "Confirmation Required",
-  "copyURL": "Copy URL https://easelgeo.app/construction/{docId} to clipboard?",
+  "copyURL": "Copy URL {host}/construction/{docId} to clipboard?",
   "unsavedObjects": "Loading a new construction will delete the unsaved work",
   "undo": "Undo"
 }

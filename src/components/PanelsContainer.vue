@@ -76,7 +76,7 @@
     <v-expansion-panel
       value="public"
       data-testid="publicPanel"
-      v-if="!selectedVisible">
+      v-if="!selectedVisible && filteredPublicConstructions.length > 0">
       <v-expansion-panel-title>
         {{ t(`publicConstructions`) }} ({{
           filteredPublicConstructions.length
@@ -105,7 +105,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineProps, Ref, ref, onMounted, watch, toRefs, computed } from "vue";
+import { Ref, ref, onMounted, watch, toRefs, computed } from "vue";
 import { useIdle } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";

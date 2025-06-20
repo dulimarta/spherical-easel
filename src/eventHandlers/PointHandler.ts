@@ -30,6 +30,9 @@ export default class PointHandler extends Highlighter {
   /* temporary vector to help with computation */
   private tmpVector = new Vector3();
 
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
+
   constructor(layers: Group[]) {
     super(layers);
     // Create and style the temporary points marking the object being created
@@ -46,32 +49,25 @@ export default class PointHandler extends Highlighter {
     super.mouseMoved(event);
 
     if (this.isOnSphere) {
-      // If this is near any other points do not create a new point, unless the hitSEPoint is an uncreated intersection or antipodal point
-      if (this.hitSEPoints.length > 0) {
-        if (
-          (this.hitSEPoints[0] instanceof SEIntersectionPoint &&
-            !this.hitSEPoints[0].isUserCreated) ||
-          (this.hitSEPoints[0] instanceof SEAntipodalPoint &&
-            !this.hitSEPoints[0].isUserCreated)
-        ) {
+      // If this is near any other points do not create a new point, unless the hitSEPoint is an un user-created intersection or antipodal point
+      this.updateFilteredPointsList();
+      
+        if (this.filteredIntersectionPointsList.length > 0) {
           //Make it user created and turn on the display
           // set the display to visible order
-          const antipodalCommandGroup = new CommandGroup();
-          antipodalCommandGroup.addCommand(
-            new SetPointUserCreatedValueCommand(
-              this.hitSEPoints[0] as SEIntersectionPoint,
-              true
-            )
-          );
-          antipodalCommandGroup.execute();
+
+          new SetPointUserCreatedValueCommand(
+            this.filteredIntersectionPointsList[0] as SEIntersectionPoint,
+            true
+          ).execute();
           return;
-        }
-        EventBus.fire("show-alert", {
-          key: `handlers.pointCreationAttemptDuplicate`,
-          keyOptions: {},
-          type: "error"
-        });
-        return;
+        // }
+        // EventBus.fire("show-alert", {
+        //   key: `handlers.pointCreationAttemptDuplicate`,
+        //   keyOptions: {},
+        //   type: "error"
+        // });
+        // return;
       } else {
         //#region linkNoduleSENodule
         const pointCommandGroup = new CommandGroup();
@@ -216,16 +212,10 @@ export default class PointHandler extends Highlighter {
     // Only one point can be processed at a time, so set the first point that is not user created nearby to glowing
     // The user can create points on ellipse, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
-    if (this.hitSEPoints.length > 0) {
-      const filteredIntersections = this.hitSEPoints.filter(
-        p =>
-          (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
-          (p instanceof SEAntipodalPoint && !p.isUserCreated)
-      );
-      if (filteredIntersections.length > 0) {
-        filteredIntersections[0].glowing = true;
-        this.snapToTemporaryOneDimensional = null;
-      }
+    this.updateFilteredPointsList();
+    if (this.filteredIntersectionPointsList.length > 0) {
+      this.filteredIntersectionPointsList[0].glowing = true;
+      this.snapToTemporaryOneDimensional = null;
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
       this.snapToTemporaryOneDimensional = this.hitSESegments[0];
@@ -264,7 +254,7 @@ export default class PointHandler extends Highlighter {
       }
 
       // If there is a nearby (possibly user created or not) point turn off the temporary marker
-      if (this.hitSEPoints.length > 0) {
+      if (this.filteredIntersectionPointsList.length > 0) {
         if (this.isTemporaryPointAdded) {
           // Remove the temporary object
           this.startMarker.removeFromLayers();
@@ -296,6 +286,28 @@ export default class PointHandler extends Highlighter {
     this.snapToTemporaryOneDimensional = null;
   }
 
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return false;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return true;
+        }
+      }
+      return false; // do not suggest to the user they can create another point at an existing point
+    });
+  }
   activate(): void {
     // console.debug("PointHandler::activate()")
     super.activate();

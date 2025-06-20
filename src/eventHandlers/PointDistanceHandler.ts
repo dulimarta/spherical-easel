@@ -1,4 +1,3 @@
-
 import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
 import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceMeasurementCommand";
@@ -9,11 +8,16 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import SETTINGS from "@/global-settings";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
+import { CommandGroup } from "@/commands/CommandGroup";
+import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
+import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 export default class PointDistanceHandler extends Highlighter {
   /**
    * Points to measure distance
    */
   private targetPoints: SEPoint[] = [];
+// Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
 
   constructor(layers: Group[]) {
     super(layers);
@@ -21,20 +25,10 @@ export default class PointDistanceHandler extends Highlighter {
 
   mousePressed(event: MouseEvent): void {
     if (this.isOnSphere) {
-      let possibleTargetPointList: SEPoint[] = [];
-      possibleTargetPointList = this.hitSEPoints.filter(p => {
-        if (
-          (!(p instanceof SEIntersectionPoint) || p.isUserCreated) &&
-          (!(p instanceof SEAntipodalPoint) || p.isUserCreated)
-        ) {
-          return true;
-        } else {
-          return false;
-        }
-      });
-      if (possibleTargetPointList.length > 0) {
+      this.updateFilteredPointsList();
+      if (this.filteredIntersectionPointsList.length > 0) {
         const pos = this.targetPoints.findIndex(
-          (p: SEPoint) => p.id === possibleTargetPointList[0].id
+          (p: SEPoint) => p.id === this.filteredIntersectionPointsList[0].id
         );
         if (pos >= 0) {
           // console.log("here");
@@ -45,11 +39,20 @@ export default class PointDistanceHandler extends Highlighter {
           });
           return;
         }
-        this.targetPoints.push(possibleTargetPointList[0]);
+        this.targetPoints.push(this.filteredIntersectionPointsList[0]);
         // Glow and select the point, so that Highlighter.ts doesn't unglow it
-        possibleTargetPointList[0].glowing = true;
-        possibleTargetPointList[0].selected = true;
+        this.filteredIntersectionPointsList[0].glowing = true;
+        this.filteredIntersectionPointsList[0].selected = true;
+      } else {
+         EventBus.fire("show-alert", {
+            key: `handlers.pointDistancePointMessage`,
+            keyOptions: {},
+            type: "warning"
+          });
+          return;
       }
+
+
 
       if (this.targetPoints.length === 2) {
         // make sure that this pair of points has not been measured already
@@ -70,12 +73,10 @@ export default class PointDistanceHandler extends Highlighter {
     super.mouseMoved(event);
 
     // Glow only the first SEPoint (must be user created)
-    const hitPoints = this.hitSEPoints.filter(
-      p =>
-        !(p instanceof SEIntersectionPoint && !p.isUserCreated) &&
-        !(p instanceof SEAntipodalPoint && !p.isUserCreated)
-    );
-    if (hitPoints.length > 0) hitPoints[0].glowing = true;
+    this.updateFilteredPointsList();
+    if (this.filteredIntersectionPointsList.length > 0) {
+      this.filteredIntersectionPointsList[0].glowing = true;
+    }
   }
 
   // eslint-disable-next-line
@@ -92,6 +93,29 @@ export default class PointDistanceHandler extends Highlighter {
       p.glowing = false;
     });
     this.targetPoints.splice(0);
+  }
+
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return true;
+        }
+      }
+      return pt.showing;
+    });
   }
 
   addPointDistance(sePoint1: SEPoint, sePoint2: SEPoint): void {
@@ -134,10 +158,60 @@ export default class PointDistanceHandler extends Highlighter {
         },
         type: "success"
       });
-      new AddPointDistanceMeasurementCommand(distanceMeasure, [
-        sePoint1,
-        sePoint2
-      ]).execute();
+      const cmdGroup = new CommandGroup();
+      // Check if the selected sePoint1 is a non-user created point, if so
+      // since the user interacted with it, make it user created
+      if (
+        (sePoint1 instanceof SEIntersectionPoint ||
+          sePoint1 instanceof SEAntipodalPoint) &&
+        !sePoint1.isUserCreated
+      ) {
+        cmdGroup.addCommand(
+          new SetPointUserCreatedValueCommand(
+            sePoint1,
+            !sePoint1.isUserCreated,
+            true
+          )
+        );
+      }
+      // Check if the selected sePoint2 is a non-user created point, if so
+      // since the user interacted with it, make it user created
+      if (
+        (sePoint2 instanceof SEIntersectionPoint ||
+          sePoint2 instanceof SEAntipodalPoint) &&
+        !sePoint2.isUserCreated
+      ) {
+        cmdGroup.addCommand(
+          new SetPointUserCreatedValueCommand(
+            sePoint2,
+            !sePoint2.isUserCreated,
+            true
+          )
+        );
+      }
+      // Check if the selected sePoint1 is showing, if so
+      // since the user interacted with it, make it show
+      if (sePoint1 != null && !sePoint1.showing) {
+        cmdGroup.addCommand(
+          new SetNoduleDisplayCommand(sePoint1, !sePoint1.showing)
+        );
+      }
+      // Check if the selected sePoint2 is showing, if so
+      // since the user interacted with it, make it show
+      if (sePoint2 != null && !sePoint2.showing) {
+        cmdGroup.addCommand(
+          new SetNoduleDisplayCommand(sePoint2, !sePoint2.showing)
+        );
+      }
+      // add the measure
+      cmdGroup
+        .addCommand(
+          new AddPointDistanceMeasurementCommand(distanceMeasure, [
+            sePoint1,
+            sePoint2
+          ])
+        )
+        .execute();
     }
   }
 

@@ -77,9 +77,7 @@ export class AddIsometryLineCommand extends Command {
       "labelStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.isometrySELineLabel.ref.currentStyleState(
-              StyleCategory.Label
-            )
+            this.isometrySELineLabel.ref.currentStyleState(StyleCategory.Label)
           )
         ),
       "labelVector=" + this.isometrySELineLabel.ref._locationVector.toFixed(9),

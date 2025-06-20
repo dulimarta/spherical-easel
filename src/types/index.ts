@@ -103,7 +103,12 @@ export type SavedNames =
   | "intersectionPointOtherParentArrayLength"
   | "intersectionPointOtherParentArrayNameList"
   | "intersectionPointName"
-  | "intersectionPointOtherParentName"
+  | "intersectionPointOtherParentInfoName1"
+  | "intersectionPointOtherParentInfoName2"
+  | "intersectionPointOtherParentInfoOrder"
+  | "intersectionPointInfoNewPrincipleParent1"
+  | "intersectionPointInfoNewPrincipleParent2"
+  | "intersectionPointOtherParentInfoNewOrder"
   | "intersectionPointUserCreated"
   | "intersectionPointOrder"
   | "intersectionPointVector"
@@ -225,15 +230,18 @@ export type SavedNames =
   | "isometryEllipseEllipseSEPointName"
   | "invertedCircleCenterLineOrCircleParentName"
   | "invertedCircleCenterParentInversionName"
-  | "changePrincipleParentSEIntersectionPointName"
-  | "changePrincipleParentOldPrincipleName"
   | "convertToUserCreatedIntersectionPointName"
   | "setValueDisplayModeOldValue"
   | "setValueDisplayModeNewValue"
   | "pointVisibleBefore"
   | "earthLatitude"
   | "earthLongitude"
-  | "textObjectText";
+  | "textObjectText"
+  | "textStyle"
+  | "currentGlobalFillStyle"
+  | "pastGlobalFillStyle"
+  | "currentGlobalBackStyleContrast"
+  | "pastGlobalBackStyleContrast";
 
 export type ActionMode =
   | "angle"
@@ -325,6 +333,13 @@ export enum Poles {
   NORTH,
   SOUTH
 }
+
+export enum FillStyle {
+  NoFill,
+  PlainFill,
+  ShadeFill
+}
+
 export interface AntipodalPointPair {
   newPoint: SEPoint;
   newAntipode: SEAntipodalPoint | null;
@@ -342,15 +357,17 @@ export type ParametricIntersectionType = {
   t: number;
   vector: Vector3;
 };
+
 /**
  * Intersection and if that intersection exists
  */
 export interface SEIntersectionReturnType {
   SEIntersectionPoint: SEIntersectionPoint;
-  parent1: SEOneDimensional;
+  parent1: SEOneDimensional; // parents are always ordered correctly
   parent2: SEOneDimensional;
-  existingIntersectionPoint: boolean; // if this is true then the object that is receiving this SEIntersectionReturnType is a (possibly new) parent of this intersection point
-  createAntipodalPoint: boolean; // true if a *new* intersection point doesn't have an existing antipode
+  existingIntersectionPoint: boolean; // if this is true then SEIntersectionPoint exists, remember the possibility that this will be true if the SEIntersectionPoint existed before or *during* the execution of the commands adding a new SEOneDimensional object and its intersections.
+  createAntipodalPoint: boolean; // This is true if a *new* intersection point doesn't have an existing antipode, so this is only false if parent1 and parent2 are both non-straight one dimensional objects
+  order: number; // If existingIntersectionPoint is true, then this is the order of the intersection. i.e. Assuming parent1 and parent2 are in the correct order, intersectTwoObjects(parent1,parent2)[order] is this intersection point. If existingIntersectionPoint is false this number has no meaning.
 }
 
 /**
@@ -524,7 +541,8 @@ export type plottableType =
   | "angleMarkerDouble"
   | "angleMarkerEdge"
   | "angleMarkerArrowHead"
-  | "angleMarker";
+  | "angleMarker"
+  | "text";
 
 export type sides = "front" | "back" | "mid";
 
@@ -561,6 +579,7 @@ export type SEMeasurable =
 
 export type SEOneDimensionalNotStraight = SECircle | SEEllipse | SEParametric;
 
+export type SEFillable = SECircle | SEEllipse | SEPolygon;
 /**
  * There are three modes for displaying a value of a measurement.
  */
@@ -644,7 +663,7 @@ export interface ObjectState {
   object: SENodule;
   normalVector?: Vector3;
   arcLength?: number;
-  locationVector?: Vector3 | Vector2;
+  locationVector?: Vector3 | Vector2; // Vector2 is only used for the SeText objects
   sliderValue?: number;
 }
 

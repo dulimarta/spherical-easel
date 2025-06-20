@@ -8,7 +8,6 @@ import { StyleCategory } from "@/types/Styles";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { toSVGType } from "@/types";
 
-
 export class AddAntipodalPointCommand extends Command {
   private seAntipodalPoint: SEAntipodalPoint;
   private parentSEPoint: SEPoint;

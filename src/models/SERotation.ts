@@ -1,8 +1,10 @@
 import { SENodule } from "./SENodule";
 import { Matrix4, Vector3 } from "three";
-import { SETransformation, SEPoint, SEExpression } from "./internal";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
+import { SETransformation } from "./SETransformation";
+import { SEPoint } from "./SEPoint";
+import { SEExpression } from "./SEExpression";
 const { t } = i18n.global;
 
 export class SERotation extends SETransformation {
@@ -72,9 +74,7 @@ export class SERotation extends SETransformation {
     // will cause this rotation to be correct. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Rotation with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Rotation with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

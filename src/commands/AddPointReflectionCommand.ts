@@ -1,9 +1,6 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
-import { SETranslation } from "@/models/SETranslation";
-import { SESegment } from "@/models/SESegment";
 import { SavedNames } from "@/types";
-import { AddTranslationCommand } from "./AddTranslationCommand";
 import { SEPointReflection } from "@/models/SEPointReflection";
 import { SEPoint } from "@/models/SEPoint";
 import { toSVGType } from "@/types";

@@ -150,15 +150,12 @@ export class AddPolygonCommand extends Command {
     const tempPolygonSegmentParents = propMap.get("polygonSegmentParentsNames");
     const polygonSegmentParents: (SESegment | undefined)[] = [];
     if (tempPolygonSegmentParents) {
-      tempPolygonSegmentParents
-        .split("@")
-        .forEach(name => {
-          const parentSegment = objMap.get(name) as SESegment
-          if (parentSegment) {
-            polygonSegmentParents.push(parentSegment)
-          }
+      tempPolygonSegmentParents.split("@").forEach(name => {
+        const parentSegment = objMap.get(name) as SESegment;
+        if (parentSegment) {
+          polygonSegmentParents.push(parentSegment);
         }
-        );
+      });
     }
 
     const tempPolygonSegmentFlippedList = propMap.get(
@@ -219,7 +216,7 @@ export class AddPolygonCommand extends Command {
         );
       // Must be done after the SELabel is created and linked
       sePolygon.valueDisplayMode = valueDisplayMode;
-      sePolygon.ref.updateDisplay()
+      sePolygon.ref.updateDisplay();
 
       //put the Polygon in the object map
       if (propMap.get("objectName") !== undefined) {

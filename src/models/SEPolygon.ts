@@ -9,9 +9,12 @@ import {
 } from "@/types/Styles";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import { Labelable } from "@/types";
-import { SELabel, SESegment, SEExpression, SEAngleMarker } from "./internal";
 import i18n from "@/i18n";
 import Polygon from "@/plottables/Polygon";
+import { SEExpression } from "./SEExpression";
+import { SESegment } from "./SESegment";
+import { SEAngleMarker } from "./SEAngleMarker";
+import { SELabel } from "./SELabel";
 const { t } = i18n.global;
 
 const styleSet = new Set([
@@ -22,7 +25,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public declare ref: Polygon;
+  declare public ref: Polygon;
   /**
    * Pointer to the label of this SEPolygon
    */
@@ -80,7 +83,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     super();
     SENodule.POLYGON_COUNT++;
     this._polygonNumber = SENodule.POLYGON_COUNT;
-    this.name = `Poly-${this._polygonNumber}`
+    // this.name = `Poly-${this._polygonNumber}`
     this.ref = new Polygon(this.name, edges, flippedBooleans);
     this._seEdgeSegments.push(...edges);
     this._segmentIsFlipped.push(...flippedBooleans);
@@ -141,9 +144,9 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   public get noduleItemText(): string {
     return (
       this.name +
-      " - " +
+      ": " +
       this.label?.ref.shortUserName +
-      `: ${this.prettyValue()}`
+      ` ${this.prettyValue()}`
     );
   }
 
@@ -180,7 +183,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     // the user can put a point a polygon, and then move it *just* outside of the polygon (the 1000 prevents this)
     if (
       this._seEdgeSegments.some(seg =>
-        seg.isHitAt(unitIdealVector, currentMagnificationFactor, 1000)
+        seg.isHitAt(unitIdealVector, currentMagnificationFactor)
       )
     ) {
       // console.log("Here inside hit a segment");
@@ -399,7 +402,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     this._exists = this._seEdgeSegments.every(seg => seg.exists === true);
 
     if (this._exists) {
-      super.shallowUpdate()
+      super.shallowUpdate();
       // All vertices must be far enough away from any nonadjacent edge to exist
       for (let i = 0; i < this._n; i++) {
         let nextVertex: Vector3; // the next vertex is common to segment i and i+1
@@ -517,9 +520,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     // will cause this polygon to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Polygon with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Polygon with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);
@@ -609,10 +610,12 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   }
 
   public getLabel(): SELabel | null {
-    return (this as Labelable).label!
+    return (this as Labelable).label!;
   }
-
   public isPolygon(): boolean {
+    return true;
+  }
+  public isFillable(): boolean {
     return true;
   }
 }

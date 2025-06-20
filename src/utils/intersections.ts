@@ -2,7 +2,11 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SELine } from "@/models/SELine";
 import { SEEllipse } from "@/models/SEEllipse";
-import { IntersectionReturnType, ParametricIntersectionType } from "@/types";
+import {
+  IntersectionReturnType,
+  ParametricIntersectionType,
+  SEOneDimensional
+} from "@/types";
 import { Vector3, Matrix4, Vector2 } from "three";
 import { SENodule } from "@/models/SENodule";
 import SETTINGS from "@/global-settings";
@@ -10,6 +14,7 @@ import { SEParametric } from "@/models/SEParametric";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { MinHeap } from "@datastructures-js/heap";
+import { rank_of_type } from "./helpingfunctions";
 
 // const PIXEL_CLOSE_ENOUGH = 8;
 
@@ -57,7 +62,7 @@ function vectorOnList(vec: Vector3, vectorList: Vector3[]) {
 
 /**
  * Return an ordered list of IntersectionReturnType (i.e. a vector location and exists flag) for the
- * intersection of two lines. This must be called with the lines in alphabetical order in order to the
+ * intersection of two lines. This must be called with the lines in lexicographic order in order to the
  * return type correct.
  * @param lineOne An SELine
  * @param lineTwo An SELine
@@ -68,7 +73,7 @@ export function intersectLineWithLine(
   firstTimeIntersection = false
 ): IntersectionReturnType[] {
   const returnItems: IntersectionReturnType[] = [];
-  // console.debug("Create 2 new Vector3()");
+
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
     exists: true
@@ -114,7 +119,7 @@ export function intersectLineWithSegment(
   firstTimeIntersection = false
 ): IntersectionReturnType[] {
   const returnItems: IntersectionReturnType[] = [];
-  // console.debug("Create 2 new Vector3()");
+
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
     exists: true
@@ -150,6 +155,7 @@ export function intersectLineWithSegment(
     if (firstTimeIntersection) {
       return returnItems;
     }
+    console.debug(`line ${line.name} and segment ${segment.name} over lap`);
     intersection1.exists = false;
     intersection2.exists = false;
   }
@@ -205,12 +211,13 @@ export function intersectLineWithCircle(
     }
   }
   // Use the circle circle intersection
-  return intersectCircles(
+  const temp = intersectCircles(
     line.normalVector,
     Math.PI / 2, // arc radius of lines
     circle.centerSEPoint.locationVector,
     circle.circleRadius
   );
+  return temp;
 }
 
 /**
@@ -353,7 +360,6 @@ export function intersectLineWithEllipse(
   });
 
   uniqueZeros.forEach((z, ind) => {
-    // console.log("ind", ind);
     if (ind > 1) {
       console.debug(
         "Ellipse and Line Intersection still resulted in more than 2 points!",
@@ -392,13 +398,11 @@ export function intersectLineWithParametric(
     line instanceof SETangentLineThruPoint &&
     line.seParentOneDimensional.name === parametric.name
   ) {
-    // console.log("1 intersection index ", line.index);
     if (
       !(line.seParentPoint instanceof SEPointOnOneOrTwoDimensional) ||
       !(line.seParentPoint.parentOneDimensional.name === parametric.name)
       // there can be multiple tangent through the point and only one (with index 0) is locally tangent at the SEPointOnOneOrTwoDimensional
     ) {
-      // console.log("2 intersection index", line.index);
       // in this case the point on the line of tangency is not on the one dimensional non-straight, so the intersection between this line and this circle is a single point
       // find the point on the parametric that is closest to the line, that is the point of tangency
       // The cosine of the angle between the normal (to the plane) and a point E(t) is E(t).dot(n) <-- this is the function we want to find the minimum of
@@ -490,7 +494,7 @@ export function intersectLineWithParametric(
 }
 
 /**
- * Find intersection between a two segment. This must be called with the lines in alphabetical order in order to the
+ * Find intersection between a two segment. This must be called with the lines in lexicographic order in order to the
  * return type correct.
  * @param segment1 An SESegment
  * @param segment2 An SESegment
@@ -501,7 +505,7 @@ export function intersectSegmentWithSegment(
   firstTimeIntersection = false
 ): IntersectionReturnType[] {
   const returnItems: IntersectionReturnType[] = [];
-  // console.debug("Create 2 new Vector3()");
+
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
     exists: true
@@ -572,6 +576,7 @@ export function intersectSegmentWithCircle(
       item.exists = segment.onSegment(item.vector);
     }
   });
+
   return temp;
 }
 
@@ -637,7 +642,6 @@ export function intersectSegmentWithEllipse(
   });
 
   uniqueZeros.forEach((z, ind) => {
-    // console.log("ind", ind);
     if (ind > 1) {
       console.debug(
         "Ellipse and Segment Intersection still resulted in more than 2 points!",
@@ -729,14 +733,23 @@ export function intersectSegmentWithParametric(
 
 /**
  * Find intersection points between two circles.
- * The order *matter* intersectCircleWithCircle(C1,r1,C2,r2) is not intersectCircleWithCircle(C2,r2,C1,r1)
- * Always call this with the circles in alphabetical order
+ * The order *matters* intersectCircleWithCircle(C1,r1,C2,r2) is not intersectCircleWithCircle(C2,r2,C1,r1)
+ * Always call this with the circles in lexicographic order
  * The array is a list of the intersections positive then negative.
  * @param n1 center vector of the first circle
  * @param arc1 arc length radius of the first circle
  * @param n2 center vector of the second circle
  * @param arc2 arc length radius of the second circle
  */
+export function intersectCircleWithCircle(circ1: SECircle, circ2: SECircle) {
+  return intersectCircles(
+    circ1.centerSEPoint.locationVector,
+    circ1.circleRadius,
+    circ2.centerSEPoint.locationVector,
+    circ2.circleRadius
+  );
+}
+
 export function intersectCircles(
   n1: Vector3, // center
   arc1: number, // arc radius
@@ -746,7 +759,7 @@ export function intersectCircles(
 ): IntersectionReturnType[] {
   //Initialize the items and the return items
   const returnItems: IntersectionReturnType[] = [];
-  // console.debug("Create 2 new Vector3()");
+
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
     exists: true
@@ -959,7 +972,6 @@ export function intersectCircleWithEllipse(
   returnItems.push(intersection4);
 
   zeros.forEach((z, ind) => {
-    console.log("in", ind)
     returnItems[ind].vector.copy(
       ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
     );
@@ -1026,7 +1038,7 @@ export function intersectCircleWithParametric(
 
 /**
  * Find intersection between an ellipse and an ellipse,
- * Always call this with the ellipses in alphabetical order
+ * Always call this with the ellipses in lexicographic order
  * @param ellipse1 An SEEllipse
  * @param ellipse2 An SEEllipse
  */
@@ -1256,7 +1268,6 @@ export function intersectEllipseWithParametric(
     SENodule.findZerosParametrically(d, tValues, dp)
   );
 
-  // console.log("Number of Para/ellsp Intersections:", zeros.length);
   return zeros
     .filter(z => tracingTMin <= z && z <= tracingTMax)
     .map(z => ({
@@ -1545,22 +1556,31 @@ export function intersectParametricWithParametric(
  *                                         (SECircle, SECircle) ,(SECircle, SEEllipse),(SECircle, SEParametric),
  *                                                                (SEEllipse, SEEllipse),(SEEllipse, SEParametric),
  *                                                                                        (SEEllipse, SEParametric),
- * If they have the same type put them in alphabetical order.
+ * If they have the same type put them in lexicographic order.
  * The creation of the intersection objects automatically follows this convention in assigning parents.
  */
 
 export function intersectTwoObjects(
-  one: SENodule,
-  two: SENodule,
+  one: SEOneDimensional,
+  two: SEOneDimensional,
   inverseTotalRotationMatrix: Matrix4
 ): IntersectionReturnType[] {
-  // console.debug(
-  //   `Intersect two objects ${one.name} and ${two.name}. order ${
-  //     one.name < two.name
-  //   }`
-  // );
+  const rank1 = rank_of_type(one);
+  const rank2 = rank_of_type(two);
+  if (
+    rank2 < rank1 ||
+    (rank1 == rank2 && two.name < one.name)
+  ) {
+    console.error(
+      `Intersect two objects ${one.name} and ${two.name}: They are NOT in rank and/or lexicographic order! One: ${one.name} and  Two: ${two.name}`
+    );
+  }
+
   if (one instanceof SELine) {
-    if (two instanceof SELine) return intersectLineWithLine(one, two);
+    if (two instanceof SELine)
+      return one.name < two.name
+        ? intersectLineWithLine(one, two)
+        : intersectLineWithLine(two, one);
     else if (two instanceof SESegment)
       return intersectLineWithSegment(one, two);
     else if (two instanceof SECircle) return intersectLineWithCircle(one, two);
@@ -1569,7 +1589,10 @@ export function intersectTwoObjects(
     else if (two instanceof SEParametric)
       return intersectLineWithParametric(one, two, inverseTotalRotationMatrix);
   } else if (one instanceof SESegment) {
-    if (two instanceof SESegment) return intersectSegmentWithSegment(one, two);
+    if (two instanceof SESegment)
+      return one.name < two.name
+        ? intersectSegmentWithSegment(one, two)
+        : intersectSegmentWithSegment(two, one);
     else if (two instanceof SECircle)
       return intersectSegmentWithCircle(one, two);
     else if (two instanceof SEEllipse)
@@ -1582,12 +1605,19 @@ export function intersectTwoObjects(
       );
   } else if (one instanceof SECircle) {
     if (two instanceof SECircle)
-      return intersectCircles(
-        one.centerSEPoint.locationVector,
-        one.circleRadius,
-        two.centerSEPoint.locationVector,
-        two.circleRadius
-      );
+      return one.name < two.name
+        ? intersectCircles(
+            one.centerSEPoint.locationVector,
+            one.circleRadius,
+            two.centerSEPoint.locationVector,
+            two.circleRadius
+          )
+        : intersectCircles(
+            two.centerSEPoint.locationVector,
+            two.circleRadius,
+            one.centerSEPoint.locationVector,
+            one.circleRadius
+          );
     else if (two instanceof SEEllipse)
       return intersectCircleWithEllipse(one, two);
     else if (two instanceof SEParametric)
@@ -1597,7 +1627,10 @@ export function intersectTwoObjects(
         inverseTotalRotationMatrix
       );
   } else if (one instanceof SEEllipse) {
-    if (two instanceof SEEllipse) return intersectEllipseWithEllipse(one, two);
+    if (two instanceof SEEllipse)
+      return one.name < two.name
+        ? intersectEllipseWithEllipse(one, two)
+        : intersectEllipseWithEllipse(two, one);
     else if (two instanceof SEParametric)
       return intersectEllipseWithParametric(
         one,

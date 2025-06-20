@@ -1,12 +1,10 @@
 import SETTINGS from "@/global-settings";
+import { SECircle } from "@/models/SECircle";
+import { SELabel } from "@/models/SELabel";
+import { SELine } from "@/models/SELine";
 import { SENodule } from "@/models/SENodule";
-import {
-  SECircle,
-  SELabel,
-  SELine,
-  SEPoint,
-  SESegment
-} from "@/models/internal";
+import { SEPoint } from "@/models/SEPoint";
+import { SESegment } from "@/models/SESegment";
 import { LabelParentTypes } from "@/types";
 import { Vector3 } from "three";
 

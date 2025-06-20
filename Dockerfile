@@ -5,13 +5,14 @@
 # Run the following docker command to build the image (notice the DOT at the end)
 #     docker build -t dulimarta/easelgeo .
 
-FROM node:18-alpine AS build-stage
+FROM node:20-alpine AS build-stage
 
 
 WORKDIR /app
 # Copy from local into the image
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
+# RUN npm install
 COPY . .
 RUN npx vite build
 

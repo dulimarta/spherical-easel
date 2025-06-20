@@ -12,8 +12,8 @@ import { firebaseConfig } from "./firebase-config";
 import { Command } from "@/commands/Command";
 import { useSEStore } from "@/stores/se";
 import MouseHandler from "./eventHandlers/MouseHandler";
-import { SENodule } from "./models/internal";
 import Nodule from "./plottables/Nodule";
+import { SENodule } from "@/models/SENodule";
 const firebaseApp = initializeApp(firebaseConfig);
 const pinia = createPinia();
 
@@ -21,6 +21,7 @@ const pinia = createPinia();
 const app = createApp(App);
 const qp = location.search.split(/[?&]/).filter(s => s.length > 0)
 const fPos = qp.findIndex(z => z.startsWith("features"))
+// To access the beta features use http://localhost:8080/?&features=beta
 if (fPos >= 0) {
   const [key, value] = qp[fPos].split("=")
   app.provide(key, value)

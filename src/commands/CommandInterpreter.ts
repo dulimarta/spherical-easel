@@ -15,7 +15,7 @@ import { AddCalculationCommand } from "./AddCalculationCommand";
 import { AddPointCoordinateMeasurementCommand } from "./AddPointCoordinateMeasurementCommand";
 import { AddPointDistanceMeasurementCommand } from "./AddPointDistanceMeasurementCommand";
 import { AddLengthMeasurementCommand } from "./AddLengthMeasurementCommand";
-import { ConstructionScript } from "@/types";
+import { ConstructionScript } from "@/types/ConstructionTypes";
 import { AddEllipseCommand } from "./AddEllipseCommand";
 import { AddPolarPointCommand } from "./AddPolarPointCommand";
 import { AddParametricCommand } from "./AddParametricCommand";
@@ -41,10 +41,10 @@ import { AddIsometryLineCommand } from "./AddIsometryLineCommand";
 import { AddIsometryCircleCommand } from "./AddIsometryCircleCommand";
 import { AddIsometryEllipseCommand } from "./AddIsometryEllipseCommand";
 import { AddInvertedCircleCenterCommand } from "./AddInvertedCircleCenterCommand";
-import { AddIntersectionPointOtherParent } from "./AddIntersectionPointOtherParent";
-import { RemoveIntersectionPointOtherParent } from "./RemoveIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "./AddIntersectionPointOtherParentsInfo";
+import { RemoveIntersectionPointOtherParentsInfo } from "./RemoveIntersectionPointOtherParentsInfo";
 import { DeleteNoduleCommand } from "./DeleteNoduleCommand";
-import { ChangeIntersectionPointPrincipleParent } from "./ChangeIntersectionPointPrincipleParent";
+import { ChangeIntersectionPointPrincipleParents } from "./ChangeIntersectionPointPrincipleParents";
 import { SetNoduleDisplayCommand } from "./SetNoduleDisplayCommand";
 import { SetValueDisplayModeCommand } from "./SetValueDisplayModeCommand";
 import { SetEarthModeCommand } from "./SetEarthModeCommand";
@@ -52,6 +52,8 @@ import { AddLatitudeCommand } from "./AddLatitudeCommand";
 import { AddLongitudeCommand } from "./AddLongitudeCommand";
 import { UpdateTwoJSCommand } from "./UpdateTwoJSCommand";
 import { AddTextCommand } from "./AddTextCommand";
+import { ChangeFillStyleCommand } from "./ChangeFillStyleCommand";
+import { ChangeBackStyleContrastCommand } from "./ChangeBackstyleContrastCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -75,10 +77,13 @@ function executeIndividual(command: string): Command {
       return AddPointOnOneDimensionalCommand.parse(command, noduleDictionary);
     case "AddIntersectionPoint":
       return AddIntersectionPointCommand.parse(command, noduleDictionary);
-    case "AddIntersectionPointOtherParent":
-      return AddIntersectionPointOtherParent.parse(command, noduleDictionary);
-    case "RemoveIntersectionPointOtherParent":
-      return RemoveIntersectionPointOtherParent.parse(
+    case "AddIntersectionPointOtherParentsInfo":
+      return AddIntersectionPointOtherParentsInfo.parse(
+        command,
+        noduleDictionary
+      );
+    case "RemoveIntersectionPointOtherParentsInfo":
+      return RemoveIntersectionPointOtherParentsInfo.parse(
         command,
         noduleDictionary
       );
@@ -167,8 +172,8 @@ function executeIndividual(command: string): Command {
       return AddInvertedCircleCenterCommand.parse(command, noduleDictionary);
     case "DeleteNodule":
       return DeleteNoduleCommand.parse(command, noduleDictionary);
-    case "ChangeIntersectionPointPrinciplePoint":
-      return ChangeIntersectionPointPrincipleParent.parse(
+    case "ChangeIntersectionPointPrincipleParents":
+      return ChangeIntersectionPointPrincipleParents.parse(
         command,
         noduleDictionary
       );
@@ -179,7 +184,11 @@ function executeIndividual(command: string): Command {
     case "SetValueDisplayMode":
       return SetValueDisplayModeCommand.parse(command, noduleDictionary);
     case "AddText":
-      return AddTextCommand.parse(command, noduleDictionary)
+      return AddTextCommand.parse(command, noduleDictionary);
+    case "ChangeGlobalFillStyle":
+      return ChangeFillStyleCommand.parse(command, noduleDictionary);
+    case "ChangeBackStyleContrast":
+      return ChangeBackStyleContrastCommand.parse(command, noduleDictionary);
     default: {
       const errMsg = `Not yet implemented: ${command}`;
       EventBus.fire("show-alert", {
@@ -205,24 +214,30 @@ function interpret(command: string | Array<string>): void {
   } else {
     // This is a CommandGroup, interpret each command individually
     const group = new CommandGroup();
-    const updateTwoJS = new UpdateTwoJSCommand()
+    const updateTwoJS = new UpdateTwoJSCommand();
     command
       // Remove leading and training quotes
       .map((s: string) => s.replace(/^"/, "").replace(/"$/, ""))
       .forEach((c: string /*, gPos: number*/) => {
         group.addCommand(executeIndividual(c));
-        // There are commands which depend on the correct rendering
-        // state of TwoJS.
-        // The following "no-op" command allows TwoJS to update
-        // its internal states
-        group.addCommand(updateTwoJS)
       });
+    // There are commands which depend on the correct rendering
+    // state of TwoJS.
+    // The following "no-op" command allows TwoJS to update
+    // its internal states I moved this outside of the for each loop
+    // because I think this only needs to be forced once when loading
+    // It is a display only issue not an un-updated object issue that needs to
+    // fix before other objects render properly.
+    group.addCommand(updateTwoJS);
     // Then execute as a group
     group.execute();
   }
 }
 
-export function run(script: ConstructionScript): void {
+// Rename run to runScript so it is distinct enough when we do
+// global search for this function call.
+// The word "run" itself is used so many times in code comments
+export function runScript(script: ConstructionScript): void {
   // Reset the command history before interpreting a new script
   noduleDictionary.clear();
   Command.commandHistory.splice(0);
@@ -230,4 +245,7 @@ export function run(script: ConstructionScript): void {
   script.forEach((s: string | Array<string>) => {
     interpret(s);
   });
+  // Save the baseline command history length use this
+  // length to check if the construction has been modified
+  Command.rememberHistoryLength();
 }

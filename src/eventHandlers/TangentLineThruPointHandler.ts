@@ -26,7 +26,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
-import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 import { SELatitude } from "@/models/SELatitude";
@@ -86,6 +86,9 @@ export default class TangentLineThruPointHandler extends Highlighter {
    */
   private numberOfTangents = 1;
 
+  // Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
+
   constructor(layers: Group[]) {
     super(layers);
 
@@ -119,11 +122,12 @@ export default class TangentLineThruPointHandler extends Highlighter {
       // If we don't have selectOneObjectAtATime clicking on a point on a line/segment/circle/ellipse selects both the point and the line/segment/circle/ellipse
       this.selectOneObjectAtATime = true;
       // Attempt to fill the point
+      this.updateFilteredPointsList();
       if (
         this.sePoint === null &&
         this.sePointOneDimensionalParent === null &&
         this.sePointVector.isZero() &&
-        (this.hitSEPoints.length !== 0 ||
+        (this.filteredIntersectionPointsList.length !== 0 ||
           this.hitSESegments.length !== 0 ||
           this.hitSELines.length !== 0 ||
           this.oneDimensional !== null ||
@@ -131,8 +135,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
       ) {
         // Fill the point object first by the nearby points, then by nearby intersection points,
         // then point on one-dimensional object, then by creating a new point
-        if (this.hitSEPoints.length > 0) {
-          this.sePoint = this.hitSEPoints[0];
+        if (this.filteredIntersectionPointsList.length > 0) {
+          this.sePoint = this.filteredIntersectionPointsList[0];
           this.sePoint.selected = true;
           this.sePointVector.copy(this.sePoint.locationVector);
           // if the point is an intersection point and is not user created add a temporary marker
@@ -142,7 +146,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
             (this.sePoint instanceof SEAntipodalPoint &&
               !this.sePoint.isUserCreated)
           ) {
-            this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+            this.temporaryPointMarker.positionVectorAndDisplay =
+              this.sePointVector;
             this.temporaryPointMarker.addToLayers(this.layers);
             this.temporaryPointAdded = true;
           }
@@ -155,7 +160,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -168,7 +174,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -181,7 +188,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -194,7 +202,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -207,7 +216,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -216,7 +226,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
           //  Eventually, we will create a new SEPointOneDimensional and Point
           this.sePointOneDimensionalParent = this.hitSEPolygons[0];
           this.sePointVector.copy(this.currentSphereVector);
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -224,7 +235,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
           // The mouse press is not near an existing point or one dimensional object.
           //  Record the location in a temporary point (tempPointMarker found in MouseHandler).
           //  Eventually, we will create a new SEPoint and Point
-          this.temporaryPointMarker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.currentSphereVector;
           this.sePointVector.copy(this.currentSphereVector);
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
@@ -346,7 +358,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
     //   this.sePointVector.isZero(),
     //   this.oneDimensional === null
     // );
-
+    this.updateFilteredPointsList();
     if (
       this.sePoint === null &&
       this.sePointOneDimensionalParent === null &&
@@ -355,9 +367,9 @@ export default class TangentLineThruPointHandler extends Highlighter {
     ) {
       // console.log("1 both point and one-d not set");
       // glow the one-dimensional when point is not set
-      if (this.hitSEPoints.length > 0) {
-        this.hitSEPoints[0].glowing = true;
-        this.snapToTemporaryPoint = this.hitSEPoints[0];
+      if (this.filteredIntersectionPointsList.length > 0) {
+        this.filteredIntersectionPointsList[0].glowing = true;
+        this.snapToTemporaryPoint = this.filteredIntersectionPointsList[0];
         this.snapToTemporaryOneDimensional = null;
       } else if (this.hitSESegments.length > 0) {
         this.hitSESegments[0].glowing = true;
@@ -418,9 +430,9 @@ export default class TangentLineThruPointHandler extends Highlighter {
     ) {
       // console.log("3 point is not set and one-d is set");
       // in this case the one dimensional is set and the point is not, so glow all the one-dimensional objects and points
-      if (this.hitSEPoints.length > 0) {
-        this.hitSEPoints[0].glowing = true;
-        this.snapToTemporaryPoint = this.hitSEPoints[0];
+      if (this.filteredIntersectionPointsList.length > 0) {
+        this.filteredIntersectionPointsList[0].glowing = true;
+        this.snapToTemporaryPoint = this.filteredIntersectionPointsList[0];
         this.snapToTemporaryOneDimensional = null;
       } else if (this.hitSESegments.length > 0) {
         this.hitSESegments[0].glowing = true;
@@ -464,14 +476,17 @@ export default class TangentLineThruPointHandler extends Highlighter {
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
         }
-        this.temporaryPointMarker.positionVectorAndDisplay = this.currentSphereVector;
+        this.temporaryPointMarker.positionVectorAndDisplay =
+          this.currentSphereVector;
       }
 
       if (this.snapToTemporaryOneDimensional !== null) {
-         // if this is a line or segment, snap the point to it, if other one dim remove the temp point
+        // if this is a line or segment, snap the point to it, if other one dim remove the temp point
         if (
-         (this.hitSELines[0] !== undefined && this.snapToTemporaryOneDimensional.id === this.hitSELines[0].id) ||
-         (this.hitSESegments[0] !== undefined && this.snapToTemporaryOneDimensional.id === this.hitSESegments[0].id)
+          (this.hitSELines[0] !== undefined &&
+            this.snapToTemporaryOneDimensional.id === this.hitSELines[0].id) ||
+          (this.hitSESegments[0] !== undefined &&
+            this.snapToTemporaryOneDimensional.id === this.hitSESegments[0].id)
         ) {
           this.temporaryPointMarker.positionVectorAndDisplay =
             this.snapToTemporaryOneDimensional.closestVector(
@@ -525,7 +540,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             );
         } else if (this.snapToTemporaryPoint == null) {
-          this.temporaryPointMarker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.currentSphereVector;
         }
       }
       if (this.oneDimensional !== null) {
@@ -617,6 +633,28 @@ export default class TangentLineThruPointHandler extends Highlighter {
     this.snapToTemporaryPoint = null;
   }
 
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return true;
+        }
+      }
+      return pt.showing;
+    });
+  }
   private createTangent(
     oneDimensional: SEOneDimensionalNotStraight,
     sePointOneDimensionalParent: SEOneOrTwoDimensional | null,
@@ -782,15 +820,16 @@ export default class TangentLineThruPointHandler extends Highlighter {
 
       // Determine all new intersection points and add their creation to the command so it can be undone
       TangentLineThruPointHandler.store
-        .createAllIntersectionsWithLine(newSETangentLine, newlyCreatedSEPoints)
+        .createAllIntersectionsWith(newSETangentLine, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
-            addTangentLineGroup.addCommand(
-              new AddIntersectionPointOtherParent(
-                item.SEIntersectionPoint,
-                item.parent1
-              )
+            addTangentLineGroup.addCondition(() =>
+              item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
             );
+            addTangentLineGroup.addCommand(
+              new AddIntersectionPointOtherParentsInfo(item)
+            );
+            addTangentLineGroup.addEndCondition();
           } else {
             // Create the plottable label
             const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(

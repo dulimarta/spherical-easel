@@ -167,7 +167,7 @@ export default class NSectSegmentHandler extends Highlighter {
         this.mouseLeave(event);
         if (this.selectedNValue === 2) {
           EventBus.fire("show-alert", {
-            key: `handlers.segmentSuccessfullyBisected`,
+            key: `segmentSuccessfullyBisected`,
             keyOptions: {
               segment: candidateSegment.label?.ref.shortUserName
             },
@@ -175,7 +175,7 @@ export default class NSectSegmentHandler extends Highlighter {
           });
         } else {
           EventBus.fire("show-alert", {
-            key: `handlers.segmentSuccessfullyNSected`,
+            key: `segmentSuccessfullyNSected`,
             keyOptions: {
               segment: candidateSegment.label?.ref.shortUserName,
               number: this.selectedNValue
@@ -274,7 +274,6 @@ export default class NSectSegmentHandler extends Highlighter {
           .isZero()
       );
       if (index === -1) {
-
         // Create the model object for the new point and link them
         const nSectingPoint = new SENSectPoint(
           candidateSegment,
@@ -287,12 +286,12 @@ export default class NSectSegmentHandler extends Highlighter {
 
         // Create plottable for the Label
         const newSELabel2 = nSectingPoint.attachLabelWithOffset(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
-            )
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
           )
+        );
 
         nSectingPointsCommandGroup.addCommand(
           new AddNSectPointCommand(nSectingPoint, candidateSegment, newSELabel2)
@@ -309,9 +308,12 @@ export default class NSectSegmentHandler extends Highlighter {
       }
     }
     nSectingPointsCommandGroup.execute();
-    nSectingPointArray.forEach(nSectingPoint => {
-      nSectingPoint.markKidsOutOfDate();
-      nSectingPoint.update();
-    });
+    // now when you create an n-sect point it will be displayed immediately
+    candidateSegment.markKidsOutOfDate();
+    candidateSegment.update();
+    // nSectingPointArray.forEach(nSectingPoint => {
+    //   nSectingPoint.markKidsOutOfDate();
+    //   nSectingPoint.update();
+    // });
   }
 }

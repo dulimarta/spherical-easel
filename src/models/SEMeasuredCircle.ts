@@ -1,9 +1,9 @@
-import { SEPoint, SECircle, SEExpression } from "./internal";
 import { Vector3 } from "three";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-// import { SECircle } from "./SECircle";
-// import { SEExpression } from "./SEExpression";
+import { SECircle } from "./SECircle";
+import { SEExpression } from "./SEExpression";
+import { SEPoint } from "./SEPoint";
 const { t } = i18n.global;
 
 export class SEMeasuredCircle extends SECircle {
@@ -107,9 +107,7 @@ export class SEMeasuredCircle extends SECircle {
     // will cause this circle to be put into the correct location.So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Circle with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Circle with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

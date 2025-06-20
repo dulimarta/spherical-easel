@@ -88,7 +88,7 @@ export class AddLatitudeCommand extends Command {
     const pointFrontStyleString = propMap.get("objectFrontStyle");
     const pointBackStyleString = propMap.get("objectBackStyle");
     const latitude = Number(propMap.get("earthLatitude"));
-    if (latitude !== undefined) {
+    if (!Number.isNaN(latitude)) {
       const seLatitude = new SELatitude(latitude);
       // console.debug(`Point front style string ${pointFrontStyleString}`);
       if (pointFrontStyleString !== undefined) {

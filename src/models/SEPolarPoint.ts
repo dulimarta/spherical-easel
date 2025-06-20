@@ -1,6 +1,8 @@
-import { SEPoint, SELine, SESegment } from "./internal";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
+import { SEPoint } from "./SEPoint";
+import { SELine } from "./SELine";
+import { SESegment } from "./SESegment";
 const { t } = i18n.global;
 
 export class SEPolarPoint extends SEPoint {
@@ -16,23 +18,28 @@ export class SEPolarPoint extends SEPoint {
    * @param polarLineOrSegmentParent The SELine parent of this SEPoint
    * @param index Which point is this?  There are two polar points associated with each line
    */
-  constructor(
-    // point: NonFreePoint,
-    polarLineOrSegmentParent: SELine | SESegment,
-    index: number
-  ) {
+  constructor(polarLineOrSegmentParent: SELine | SESegment, index: number) {
     super(true);
     this._polarLineOrSegmentParent = polarLineOrSegmentParent;
     this.index = index;
   }
 
   public get noduleDescription(): string {
-    return String(
-      i18n.global.t(`objectTree.aPolarPointOf`, {
-        line: this._polarLineOrSegmentParent.label?.ref.shortUserName,
-        index: this.index
-      })
-    );
+    if (this._polarLineOrSegmentParent instanceof SELine) {
+      return String(
+        i18n.global.t(`objectTree.aPolarPointOfLine`, {
+          line: this._polarLineOrSegmentParent.label?.ref.shortUserName,
+          index: this.index
+        })
+      );
+    } else {
+      return String(
+        i18n.global.t(`objectTree.aPolarPointOfSegment`, {
+          line: this._polarLineOrSegmentParent.label?.ref.shortUserName,
+          index: this.index
+        })
+      );
+    }
   }
 
   public shallowUpdate(): void {
@@ -68,9 +75,7 @@ export class SEPolarPoint extends SEPoint {
     // will cause this poin t to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Polar Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Polar Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);
