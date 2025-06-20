@@ -6,10 +6,10 @@
     }">
     <span class="mx-2">
       Keys
-      <v-icon :color="shift ? 'black' : '#0002'">
+      <v-icon :color="shiftKey ? 'black' : '#0002'">
         mdi-apple-keyboard-shift
       </v-icon>
-      <v-icon :color="control ? 'black' : '#0002'">
+      <v-icon :color="controlKey ? 'black' : '#0002'">
         mdi-apple-keyboard-control
       </v-icon>
     </span>
@@ -103,7 +103,7 @@ const props = withDefaults(defineProps<ComponentProps>(), {
 
 const webglCanvas = useTemplateRef<HTMLCanvasElement>("webglCanvas");
 const { elementX, elementY, isOutside } = useMouseInElement(webglCanvas, {});
-const { shift, control } = useMagicKeys({ passive: false });
+const { shift: shiftKey, control:controlKey } = useMagicKeys({ passive: false });
 // const { pressed } = useMousePressed({
 //   drag: true,
 //   target: webglCanvas
@@ -123,18 +123,18 @@ xyGrid.rotateX(Math.PI / 2);
 scene.add(xyGrid);
 
 // Insert the grid BEFORE the arrow helper
-// const arrowX = new ArrowHelper(new Vector3(1, 0, 0));
-// arrowX.setColor(0xff0000);
-// arrowX.setLength(2, 0.2, 0.2);
-// const arrowY = new ArrowHelper(new Vector3(0, 1, 0));
-// arrowY.setColor(0x00ff00);
-// arrowY.setLength(2, 0.2, 0.2);
-// const arrowZ = new ArrowHelper(new Vector3(0, 0, 1));
-// arrowZ.setColor(0x0000ff);
-// arrowZ.setLength(2, 0.2, 0.2);
-// scene.add(arrowX);
-// scene.add(arrowY);
-// scene.add(arrowZ);
+const arrowX = new ArrowHelper(new Vector3(1, 0, 0));
+arrowX.setColor(0xff0000);
+arrowX.setLength(2, 0.2, 0.2);
+const arrowY = new ArrowHelper(new Vector3(0, 1, 0));
+arrowY.setColor(0x00ff00);
+arrowY.setLength(2, 0.2, 0.2);
+const arrowZ = new ArrowHelper(new Vector3(0, 0, 1));
+arrowZ.setColor(0x0000ff);
+arrowZ.setLength(2, 0.2, 0.2);
+scene.add(arrowX);
+scene.add(arrowY);
+scene.add(arrowZ);
 
 const upperHyperboloidGeometry = new ParametricGeometry(
   hyperboloidPlus,
@@ -239,16 +239,16 @@ randomPlane.name = "RedPlane";
 randomPlane.rotateX(degToRad(90));
 // randomPlane.translateY(5)
 randomPlane.updateMatrixWorld(); // This is needed to before bvhcast can do its work
-scene.add(randomPlane);
+// scene.add(randomPlane);
 // scene.add(planeDirArrow);
 
-const path = new HyperbolaCurve(new Vector3(0, 0, 1));
+const hyperbolaPath = new HyperbolaCurve(new Vector3(0, 0, 1));
 
 let hyperTube = new Mesh(
-  new TubeGeometry(path, 50, 0.05, 12, false),
+  new TubeGeometry(hyperbolaPath, 50, 0.05, 12, false),
   new THREE.MeshStandardMaterial({ color: "greenyellow" })
 );
-scene.add(hyperTube);
+// scene.add(hyperTube);
 const upperHyperboloidToPlaneMatrix = new THREE.Matrix4()
   .copy(randomPlane.matrixWorld)
   .invert()
@@ -306,6 +306,15 @@ function doRender() {
   if (hasUpdatedControls) renderer.render(scene, camera);
 }
 
+watch(() => controlKey.value, (ctrl) => {
+  if (ctrl) {
+    scene.add(hyperTube)
+    scene.add(randomPlane)
+  } else {
+    scene.remove(hyperTube)
+    scene.remove(randomPlane)
+  }
+})
 watch(
   () => actionMode.value,
   mode => {
@@ -423,7 +432,7 @@ function mouseTracker(ev: MouseEvent) {
         mouseNormalArrow.setDirection(firstIntersection.normal!);
       }
       auxLineIntersectionPoints.forEach(p => scene.remove(p));
-      if (shift.value) {
+      if (shiftKey.value) {
         // Show auxiliary line with shift-key
         const hypotenuse = Math.sqrt(
           Math.pow(rayIntersectionPoint.position.x, 2) +
@@ -490,7 +499,7 @@ function mouseTracker(ev: MouseEvent) {
       } else {
         scene.remove(auxLine);
       }
-      if (control.value) {
+      if (controlKey.value) {
         // Need to use mouse intersection with a non-plane object
         const nonPlane = namedIntersections.find(obj => {
           // console.debug("Check ctrl intersect", obj.object.name);
@@ -526,6 +535,7 @@ function mouseTracker(ev: MouseEvent) {
           randomPlane.rotation.set(0, 0, 0);
           randomPlane.rotateX(Math.PI / 2 - planeXRotation);
           randomPlane.updateMatrixWorld();
+          scene.add(randomPlane)
           // intersectionGroup.clear();
           // intersectionGroup.rotation.set(0, 0, 0);
           // upperHyperboloidToPlaneMatrix
@@ -541,6 +551,9 @@ function mouseTracker(ev: MouseEvent) {
           // );
           // intersectionGroup.rotateX(Math.PI / 2 - planeXRotation);
         }
+      } else {
+        scene.remove(randomPlane)
+        scene.remove(hyperTube)
       }
     } else {
       scene.remove(rayIntersectionPoint);

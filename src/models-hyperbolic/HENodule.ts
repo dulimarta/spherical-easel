@@ -6,7 +6,7 @@ export abstract class HENodule {
   protected _kids: HENodule[] = [];
   public id: number;
   public name = "";
-  protected mesh: Object3D | null = null;
+  protected mesh: Array<Object3D> = [];
   constructor() {
     this.id = NODE_COUNT++;
   }
