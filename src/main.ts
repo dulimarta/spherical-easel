@@ -14,6 +14,7 @@ import { useSEStore } from "@/stores/se";
 import MouseHandler from "./eventHandlers/MouseHandler";
 import { SENodule } from "./models/internal";
 import Nodule from "./plottables/Nodule";
+import { useHyperbolicStore } from "./stores/hyperbolic";
 const firebaseApp = initializeApp(firebaseConfig);
 const pinia = createPinia();
 
@@ -41,7 +42,8 @@ router.afterEach((to, from) => {
 });
 
 const seStore = useSEStore();
-Command.setGlobalStore(seStore);
+const heStore = useHyperbolicStore();
+Command.setGlobalStore(seStore, heStore);
 MouseHandler.setGlobalStore(seStore);
 SENodule.setGlobalStore(seStore);
 // Nodule.setGlobalStore(seStore);

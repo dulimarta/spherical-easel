@@ -22,22 +22,10 @@ export class SELatitude extends SECircle {
     rotationMatrix.copy(SENodule.store.inverseTotalRotationMatrix).invert();
 
     // North Pole - create it as a static object if it doesn't exist already
-    if (SENodule.unregisteredSEPointNorthPole === undefined) {
-      SENodule.unregisteredSEPointNorthPole = new SEPoint(true); // Should never be displayed
-      SENodule.unregisteredSEPointNorthPole.showing = false; // this never changes
-      SENodule.unregisteredSEPointNorthPole.exists = true; // this never changes
-
-      // function geoLocationToUnitSphere(
-      //   latDegree: number,
-      //   lngDegree: number
-      // ): number[] {
-      //   const latRad = latDegree.toRadians();
-      //   const lngRad = lngDegree.toRadians();
-      //   const xcor = Math.cos(latRad) * Math.cos(lngRad);
-      //   const zcor = -Math.cos(latRad) * Math.sin(lngRad);
-      //   const ycor = Math.sin(latRad);
-      //   return [xcor, ycor, zcor];
-      // }
+    if (SEPoint.unregisteredSEPointNorthPole === undefined) {
+      SEPoint.unregisteredSEPointNorthPole = new SEPoint(true); // Should never be displayed
+      SEPoint.unregisteredSEPointNorthPole.showing = false; // this never changes
+      SEPoint.unregisteredSEPointNorthPole.exists = true; // this never changes
 
       //Setup the north pole location
       const northPoleArray = geoLocationToUnitSphere(90, 0);
@@ -47,7 +35,7 @@ export class SELatitude extends SECircle {
         northPoleArray[2]
       ); // this never changes from the north pole
       northPoleVector.applyMatrix4(rotationMatrix);
-      SENodule.unregisteredSEPointNorthPole.locationVector = northPoleVector;
+      SEPoint.unregisteredSEPointNorthPole.locationVector = northPoleVector;
     }
     //Circle Point
     const circleSEPoint = new SEPoint(true); // Should never be displayed
@@ -64,7 +52,7 @@ export class SELatitude extends SECircle {
     pointLocationVector.applyMatrix4(rotationMatrix);
     circleSEPoint.locationVector = pointLocationVector;
 
-    super(SENodule.unregisteredSEPointNorthPole, circleSEPoint, true);
+    super(SEPoint.unregisteredSEPointNorthPole, circleSEPoint, true);
     this._latitude = latitude;
     //turn off the fill of the ref circle
     this.ref.updateStyle(

@@ -959,17 +959,17 @@ export const useSEStore = defineStore("se", () => {
     // If there are any SE(Latitude/Longitudes) then we need to update the north and south poles so that the
     // those objects update correctly. The north|south pole SEPoint sin SENodule will have been created in the
     //  constructor of SE(Latitude|Longitude) so if there are these objects, the appropriate SEPoint poles will be defined
-    if (SENodule.unregisteredSEPointNorthPole !== undefined) {
+    if (SEPoint.unregisteredSEPointNorthPole !== undefined) {
       const tmpVector = new Vector3();
-      tmpVector.copy(SENodule.unregisteredSEPointNorthPole.locationVector); // Copy the old vector location of the static north pole
+      tmpVector.copy(SEPoint.unregisteredSEPointNorthPole.locationVector); // Copy the old vector location of the static north pole
       tmpVector.applyMatrix4(rotationMat); // Apply the matrix
-      SENodule.unregisteredSEPointNorthPole.locationVector = tmpVector; // update the location of the north pole
+      SEPoint.unregisteredSEPointNorthPole.locationVector = tmpVector; // update the location of the north pole
     }
-    if (SENodule.unregisteredSEPointSouthPole !== undefined) {
+    if (SEPoint.unregisteredSEPointSouthPole !== undefined) {
       const tmpVector = new Vector3();
-      tmpVector.copy(SENodule.unregisteredSEPointSouthPole.locationVector); // Copy the old vector location of the static south pole
+      tmpVector.copy(SEPoint.unregisteredSEPointSouthPole.locationVector); // Copy the old vector location of the static south pole
       tmpVector.applyMatrix4(rotationMat); // Apply the matrix
-      SENodule.unregisteredSEPointSouthPole.locationVector = tmpVector; // update the location of the north pole
+      SEPoint.unregisteredSEPointSouthPole.locationVector = tmpVector; // update the location of the north pole
     }
 
     function addCandidatesFrom(parent: SENodule) {

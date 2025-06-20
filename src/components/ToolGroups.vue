@@ -89,7 +89,7 @@
 
   <ul>
     <li v-for="x in mouseIntersections.filter((_,pos) => pos < 4)">
-      {{ x.point.toFixed(2) }} at {{ x.distance.toFixed(3) }}
+      {{ x.point.toFixed(2) }} at {{ x.distance.toFixed(2) }} with {{ x.object.name }}
     </li>
   </ul>
 </template>
@@ -109,6 +109,7 @@ import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 import { inject } from "vue";
 import { useHyperbolicStore } from "@/stores/hyperbolic";
+import { useRoute } from "vue-router";
 const { t } = useI18n();
 const acctStore = useAccountStore();
 const hyperStore = useHyperbolicStore();
@@ -116,6 +117,7 @@ const { userRole, includedTools } = storeToRefs(acctStore);
 const seStore = useSEStore();
 const { seExpressions, seTransformations, actionMode } = storeToRefs(seStore);
 const { mouseIntersections } = storeToRefs(hyperStore);
+const route = useRoute();
 
 const inProductionMode = ref(false);
 const inEditMode = ref(false);
@@ -232,7 +234,9 @@ function toolSelectionChanged() {
     // console.log("Toolbutton handler, found the button", whichButton);
     if (whichButton) {
       // seStore.setButton(whichButton);
+      if (!route.path.endsWith("hyperbolic"))
       seStore.setActionMode(selectedTool.value!);
+    else hyperStore.setActionMode(selectedTool.value!)
     }
   } else {
     const toolCheck = selectedTool.value

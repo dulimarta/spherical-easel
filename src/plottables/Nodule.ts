@@ -118,7 +118,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   ): number[][] {
     const xAxisVector = new Vector3(startPt[0], startPt[1], 0).normalize();
     const yAxisVector = new Vector3(yAxis[0], yAxis[1], 0).normalize();
-    const returnArray = [];
+    const returnArray: number[][] = [];
     const tmpVector = new Vector3();
 
     for (let i = 0; i < numPoints; i++) {
@@ -464,7 +464,11 @@ export default abstract class Nodule implements Stylable, Resizeable {
 
   /** Get the current style state of the Nodule */
   currentStyleState(mode: StyleCategory): StyleOptions {
-    console.log("current style state of ", this.name, this.styleOptions.get(mode))
+    console.log(
+      "current style state of ",
+      this.name,
+      this.styleOptions.get(mode)
+    );
     return this.styleOptions.get(mode) ?? {};
   }
   /**

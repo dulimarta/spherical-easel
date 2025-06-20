@@ -12,6 +12,7 @@
 import EventBus from "@/eventHandlers/EventBus";
 import { Matrix4, Vector3 } from "three";
 import { SEStoreType } from "@/stores/se";
+import { HEStoreType } from "@/stores/hyperbolic";
 import {
   svgGradientType,
   svgStopType,
@@ -25,6 +26,7 @@ import { nextTick } from "vue";
 
 export abstract class Command {
   protected static store: SEStoreType;
+  protected static hstore: HEStoreType;
   protected static tmpVector = new Vector3();
   protected static tmpVector1 = new Vector3();
 
@@ -423,7 +425,7 @@ export abstract class Command {
         m.makeRotationAxis(animate.axis, animate.degrees / numFrames);
 
         Command.store.rotateSphere(m);
-        Command.store.updateTwoJS()
+        Command.store.updateTwoJS();
       }
       // wait 1/60 of a second so that the two-instance updates
       // sleep(1000 / 60).then(() => {
@@ -788,9 +790,7 @@ export abstract class Command {
         animationSVGString += 'begin="0s" ';
         animationSVGString += 'repeatCount="' + repeat + '" ';
         animationSVGString +=
-          frameNum == 0
-            ? 'fill="remove" />\n'
-            : 'fill="freeze" />\n'; // set the animation to display the first frame when it is done
+          frameNum == 0 ? 'fill="remove" />\n' : 'fill="freeze" />\n'; // set the animation to display the first frame when it is done
 
         // add the animation string only if there are more than 1 frame
         if (numFrames > 0) {
@@ -826,14 +826,15 @@ export abstract class Command {
       m.makeRotationAxis(animate.axis, -animate.degrees); // + 1 / animate.degrees);
       Command.store.rotateSphere(m);
       // We need to update the two-instance so that the fills can be correctly calculated
-      Command.store.updateTwoJS()
+      Command.store.updateTwoJS();
       EventBus.fire("update-fill-objects", {});
     }
     return returnString.replace(/[\t]/gm, "   ");
   }
 
-  static setGlobalStore(store: SEStoreType): void {
+  static setGlobalStore(store: SEStoreType, hstore: HEStoreType): void {
     Command.store = store;
+    Command.hstore = hstore;
   }
   // Child classes of Command must implement the following abstract methods
   /**

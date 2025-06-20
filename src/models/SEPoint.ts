@@ -48,6 +48,15 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   private tmpVector1 = new Vector3();
   private tmpVector2 = new Vector3();
 
+  // The unregistered SEPoint North/South is used in the SELatitude and SELongitude classes for either
+  // the center of the circle or the endpoints of the segment. It is updated by the rotation visitor for
+  // sphere rotations *only* (not moves because SELatitudes|Longitudes can't ever be moved).
+  // These objects will need to updated each time a rotation visitor is created in the store (se.ts) - if they exist of course
+  // We use these static objects so that every SELatitude and SELongitude doesn't have its own copy of these.
+  // These SEPoints are never displayed or put into the DAG/object tree
+  public static unregisteredSEPointNorthPole: SEPoint | undefined = undefined;
+  public static unregisteredSEPointSouthPole: SEPoint | undefined = undefined;
+
   /**
    * Create a model SEPoint using:
    * @param point The plottable TwoJS Object associated to this object
@@ -56,7 +65,9 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     super();
     /* Establish the link between this abstract object on the fixed unit sphere
     and the object that helps create the corresponding renderable object  */
-    const p = createNonFreePoint ? new NonFreePoint(this.name) : new Point(this.name);
+    const p = createNonFreePoint
+      ? new NonFreePoint(this.name)
+      : new Point(this.name);
     p.stylize(DisplayStyle.ApplyCurrentVariables);
     p.adjustSize();
     this.ref = p;
@@ -229,6 +240,6 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   }
 
   public getLabel(): SELabel | null {
-    return (this as Labelable).label!
+    return (this as Labelable).label!;
   }
 }

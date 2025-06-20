@@ -23,22 +23,10 @@ export class SELongitude extends SESegment {
 
     // North Pole - create it as a static object if it doesn't exist already
     const northPoleVector = new Vector3();
-    if (SENodule.unregisteredSEPointNorthPole === undefined) {
-      SENodule.unregisteredSEPointNorthPole = new SEPoint(true); // Should never be displayed
-      SENodule.unregisteredSEPointNorthPole.showing = false; // this never changes
-      SENodule.unregisteredSEPointNorthPole.exists = true; // this never changes
-
-      // function geoLocationToUnitSphere(
-      //   latDegree: number,
-      //   lngDegree: number
-      // ): number[] {
-      //   const latRad = latDegree.toRadians();
-      //   const lngRad = lngDegree.toRadians();
-      //   const xcor = Math.cos(latRad) * Math.cos(lngRad);
-      //   const zcor = -Math.cos(latRad) * Math.sin(lngRad);
-      //   const ycor = Math.sin(latRad);
-      //   return [xcor, ycor, zcor];
-      // }
+    if (SEPoint.unregisteredSEPointNorthPole === undefined) {
+      SEPoint.unregisteredSEPointNorthPole = new SEPoint(true); // Should never be displayed
+      SEPoint.unregisteredSEPointNorthPole.showing = false; // this never changes
+      SEPoint.unregisteredSEPointNorthPole.exists = true; // this never changes
 
       //Setup the north pole location
       const northPoleArray = geoLocationToUnitSphere(90, 0);
@@ -48,31 +36,17 @@ export class SELongitude extends SESegment {
         northPoleArray[2]
       ); // this never changes from the north pole
       northPoleVector.applyMatrix4(rotationMatrix);
-      SENodule.unregisteredSEPointNorthPole.locationVector = northPoleVector;
+      SEPoint.unregisteredSEPointNorthPole.locationVector = northPoleVector;
     } else {
-      northPoleVector.copy(
-        SENodule.unregisteredSEPointNorthPole.locationVector
-      );
+      northPoleVector.copy(SEPoint.unregisteredSEPointNorthPole.locationVector);
     }
 
     // South Pole - create it as a static object if it doesn't exist already
     const southPoleVector = new Vector3();
-    if (SENodule.unregisteredSEPointSouthPole === undefined) {
-      SENodule.unregisteredSEPointSouthPole = new SEPoint(true); // Should never be displayed
-      SENodule.unregisteredSEPointSouthPole.showing = false; // this never changes
-      SENodule.unregisteredSEPointSouthPole.exists = true; // this never changes
-
-      // function geoLocationToUnitSphere(
-      //   latDegree: number,
-      //   lngDegree: number
-      // ): number[] {
-      //   const latRad = latDegree.toRadians();
-      //   const lngRad = lngDegree.toRadians();
-      //   const xcor = Math.cos(latRad) * Math.cos(lngRad);
-      //   const zcor = -Math.cos(latRad) * Math.sin(lngRad);
-      //   const ycor = Math.sin(latRad);
-      //   return [xcor, ycor, zcor];
-      // }
+    if (SEPoint.unregisteredSEPointSouthPole === undefined) {
+      SEPoint.unregisteredSEPointSouthPole = new SEPoint(true); // Should never be displayed
+      SEPoint.unregisteredSEPointSouthPole.showing = false; // this never changes
+      SEPoint.unregisteredSEPointSouthPole.exists = true; // this never changes
 
       //Setup the South pole location
       const southPoleArray = geoLocationToUnitSphere(-90, 0);
@@ -82,11 +56,11 @@ export class SELongitude extends SESegment {
         southPoleArray[2]
       ); // this never changes from the South pole
       southPoleVector.applyMatrix4(rotationMatrix);
-      SENodule.unregisteredSEPointSouthPole.locationVector = southPoleVector;
+      SEPoint.unregisteredSEPointSouthPole.locationVector = southPoleVector;
     }
     // else {
     //   southPoleVector.copy(
-    //     SENodule.unregisteredSEPointSouthPole.locationVector
+    //     SEPoint.unregisteredSEPointSouthPole.locationVector
     //   );
     // }
 
@@ -103,28 +77,26 @@ export class SELongitude extends SESegment {
     //   "normal",
     //   segmentNormalVector.toFixed(2),
     //   "north ",
-    //   SENodule.unregisteredSEPointNorthPole.locationVector.toFixed(2),
+    //   SEPoint.unregisteredSEPointNorthPole.locationVector.toFixed(2),
     //   "south ",
-    //   SENodule.unregisteredSEPointSouthPole.locationVector.toFixed(2),
+    //   SEPoint.unregisteredSEPointSouthPole.locationVector.toFixed(2),
     //   "temp ",
     //   tempVec.toFixed(2)
     // );
 
     super(
-      SENodule.unregisteredSEPointNorthPole,
+      SEPoint.unregisteredSEPointNorthPole,
       segmentNormalVector,
       Math.PI,
-      SENodule.unregisteredSEPointSouthPole,
+      SEPoint.unregisteredSEPointSouthPole,
       true
     );
     this._longitude = longitudeDegree;
     //turn off the fill of the ref circle
-    this.ref.updateStyle(StyleCategory.Front,
-       {
-        strokeColor: "#000000ff",
-        fillColor: "#00000000"
-      }
-    )
+    this.ref.updateStyle(StyleCategory.Front, {
+      strokeColor: "#000000ff",
+      fillColor: "#00000000"
+    });
     this.update();
   }
 

@@ -1,5 +1,4 @@
 import { Vector2, Vector3 } from "three";
-import { Vector } from "two.js/src/vector";
 import Nodule from "@/plottables/Nodule";
 import {
   NormalAndPerpendicularPoint,
@@ -13,8 +12,6 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { StyleCategory, StyleOptions } from "@/types/Styles";
 import { SEStoreType } from "@/stores/se";
-import { SEEarthPoint } from "./SEEarthPoint";
-import { SEPoint } from "./SEPoint";
 import { SELabel } from "./internal";
 
 let NODE_COUNT = 0;
@@ -282,15 +279,6 @@ export abstract class SENodule implements Visitable {
       this._kids[0].removeThisNode();
     }
   }
-
-  // The unregistered SEPoint North/South is used in the SELatitude and SELongitude classes for either
-  // the center of the circle or the endpoints of the segment. It is updated by the rotation visitor for
-  // sphere rotations *only* (not moves because SELatitudes|Longitudes can't ever be moved).
-  // These objects will need to updated each time a rotation visitor is created in the store (se.ts) - if they exist of course
-  // We use these static objects so that every SELatitude and SELongitude doesn't have its own copy of these.
-  // These SEPoints are never displayed or put into the DAG/object tree
-  public static unregisteredSEPointNorthPole: SEPoint | undefined = undefined;
-  public static unregisteredSEPointSouthPole: SEPoint | undefined = undefined;
 
   public setOutOfDate(b: boolean): void {
     this._outOfDate = b;
@@ -701,7 +689,7 @@ export abstract class SENodule implements Visitable {
     fPrime?: (t: number) => number // not used if bisection method is used
   ): number[] {
     // now we need to find all the places that d changes sign so we know where to start Newton's method
-    const signChangeIndices = [];
+    const signChangeIndices: number[] = [];
     const tZeroes: number[] = [];
 
     // Locate the zeros and zero-crossings
