@@ -1,0 +1,86 @@
+diff --git a/node_modules/two.js/src/collection.js b/node_modules/two.js/src/collection.js
+index 3b9f1e9..4af6275 100644
+--- a/node_modules/two.js/src/collection.js
++++ b/node_modules/two.js/src/collection.js
+@@ -12,52 +12,52 @@ export class Collection extends Array {
+   /**
+    * @private
+    */
+-  #events = new Events();
++  events = new Events();
+   // N.B: Technique to disable enumeration on object
+   get _events() {
+-    return this.#events;
++    return this.events;
+   }
+   set _events(e) {
+-    this.#events = e;
++    this.events = e;
+   }
+ 
+   // Getters and setters aren't enumerable
+   get _bound() {
+-    return this.#events._bound;
++    return this.events._bound;
+   }
+   set _bound(v) {
+-    this.#events._bound = v;
++    this.events._bound = v;
+   }
+ 
+   addEventListener() {
+-    return this.#events.addEventListener.apply(this, arguments);
++    return this.events.addEventListener.apply(this, arguments);
+   }
+   on() {
+-    return this.#events.on.apply(this, arguments);
++    return this.events.on.apply(this, arguments);
+   }
+   bind() {
+-    return this.#events.bind.apply(this, arguments);
++    return this.events.bind.apply(this, arguments);
+   }
+   removeEventListener() {
+-    return this.#events.removeEventListener.apply(this, arguments);
++    return this.events.removeEventListener.apply(this, arguments);
+   }
+   off() {
+-    return this.#events.off.apply(this, arguments);
++    return this.events.off.apply(this, arguments);
+   }
+   unbind() {
+-    return this.#events.unbind.apply(this, arguments);
++    return this.events.unbind.apply(this, arguments);
+   }
+   dispatchEvent() {
+-    return this.#events.dispatchEvent.apply(this, arguments);
++    return this.events.dispatchEvent.apply(this, arguments);
+   }
+   trigger() {
+-    return this.#events.trigger.apply(this, arguments);
++    return this.events.trigger.apply(this, arguments);
+   }
+   listen() {
+-    return this.#events.listen.apply(this, arguments);
++    return this.events.listen.apply(this, arguments);
+   }
+   ignore() {
+-    return this.#events.ignore.apply(this, arguments);
++    return this.events.ignore.apply(this, arguments);
+   }
+ 
+   constructor() {
+diff --git a/node_modules/two.js/types.d.ts b/node_modules/two.js/types.d.ts
+index daeeda0..0718d33 100644
+--- a/node_modules/two.js/types.d.ts
++++ b/node_modules/two.js/types.d.ts
+@@ -2892,7 +2892,8 @@ declare module 'two.js/src/path' {
+      * @description A list of numbers that represent the repeated dash length and dash space applied to the stroke of the text.
+      * @see {@link https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray} for more information on the SVG stroke-dasharray attribute.
+      */
+-    dashes: { [key: number]: number; offset: number };
++    // dashes: { [key: number]: number; offset: number };
++    dashes: Array<number>
+     /**
+      * @name Two.Path#copy
+      * @function

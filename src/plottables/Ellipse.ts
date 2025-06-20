@@ -860,7 +860,7 @@ export default class Ellipse extends Nodule {
   ): number[][] {
     const xAxisVector = new Vector3(startPt[0], startPt[1], 0).normalize();
     const yAxisVector = new Vector3(yAxis[0], yAxis[1], 0).normalize();
-    const returnArray = [];
+    const returnArray: number[][] = [];
 
     for (let i = 0; i < numPoints; i++) {
       this.tmpVector.set(0, 0, 0);
