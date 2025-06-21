@@ -56,7 +56,7 @@ export default class CircleHandler extends Highlighter {
    */
   protected temporaryEndMarker: Point;
 
-// Filter the hitSEPoints appropriately for this handler
+  // Filter the hitSEPoints appropriately for this handler
   protected filteredIntersectionPointsList: SEPoint[] = [];
   /* temporary vector and matrix to help with computations */
   private tmpVector = new Vector3();
@@ -217,7 +217,7 @@ export default class CircleHandler extends Highlighter {
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
     let possiblyGlowing: SEPoint | SEOneOrTwoDimensional | null = null;
-  // Filter the hitSEPoints appropriately for this handler
+    // Filter the hitSEPoints appropriately for this handler
     this.updateFilteredPointsList();
 
     if (this.filteredIntersectionPointsList.length > 0) {
@@ -504,7 +504,7 @@ export default class CircleHandler extends Highlighter {
     // Check to see if the release location is near any points
     // fromActivate = true means that this.circleSEPoint is already set
 
-  // Filter the hitSEPoints appropriately for this handler
+    // Filter the hitSEPoints appropriately for this handler
     this.updateFilteredPointsList();
     if (this.filteredIntersectionPointsList.length > 0 && !fromActivate) {
       this.circleSEPoint = this.filteredIntersectionPointsList[0];
@@ -769,7 +769,7 @@ export default class CircleHandler extends Highlighter {
       circleCommandGroup.execute();
 
       CircleHandler.store.updateTwoJS(); // if this is not included, when you make a new circle, the fill is not displayed
-      newSECircle.ref.updateDisplay(); // The newly created circle will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
+      newSECircle.ref!.updateDisplay(); // The newly created circle will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
     }
     return true;
   }
