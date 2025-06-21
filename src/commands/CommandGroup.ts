@@ -164,7 +164,7 @@ export class CommandGroup extends Command {
         while (cmdPos === nextBeginCommandAt) {
           // Are we at beginTransaction()
           rollbackTarget.push(cmdPos); // Remember the position to rollback to
-          beginIdx++; // prepare for the next beginTrasaction()
+          beginIdx++; // prepare for the next beginTransaction()
           txLevel++; // we are now one level deeper in nesting depth
           if (beginIdx < this.txBegins.length) {
             nextBeginCommandAt = this.txBegins[beginIdx].commandIndex;
@@ -254,7 +254,7 @@ export class CommandGroup extends Command {
           }
         }
         if (cmdPos < this.subCommands.length) {
-          const opString = this.subCommands[cmdPos].toOpcode();
+          // const opString = this.subCommands[cmdPos].toOpcode();
           // console.debug(
           //   `Executing command at position ${cmdPos} ${opString
           //     ?.toString()
@@ -294,7 +294,7 @@ export class CommandGroup extends Command {
           }
         }
         purgeVictims.forEach(v => {
-          const len = v.endAt - v.startAt + 1;
+          const len = v.endAt - v.startAt;
           this.subCommands.splice(v.startAt, len);
         });
       }

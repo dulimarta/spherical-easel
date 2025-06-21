@@ -321,7 +321,8 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
     SENodule.resetAllCounters();
     // Nodule.resetIdPlottableDescriptionMap(); // Needed?
     EventBus.fire("show-alert", {
-      key: t("constructionLoaded", { docId: selectedDocId.value }),
+      key: "constructionLoaded",
+      keyOptions: { docId: selectedDocId.value },
       type: "info"
     });
     // It looks like we have to apply the rotation matrix
