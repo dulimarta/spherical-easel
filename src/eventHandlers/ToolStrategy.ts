@@ -5,7 +5,11 @@ import { Vector3 } from "three";
 // #region toolStrategy
 export interface ToolStrategy {
   mouseMoved(event: MouseEvent): void;
-  mousePressed(event: MouseEvent, at3d?: Vector3 | null): void;
+  mousePressed(
+    event: MouseEvent,
+    position?: Vector3,
+    normalDirection?: Vector3
+  ): void;
   mouseReleased(event: MouseEvent): void;
   mouseLeave(event: MouseEvent): void;
   activate(): void;

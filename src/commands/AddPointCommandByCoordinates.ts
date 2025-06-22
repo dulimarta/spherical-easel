@@ -8,7 +8,9 @@ export class AddPointCommandByCoordinates extends Command {
     super();
     this.hePoint = new HEPoint(coord);
   }
-  restoreState(): void {}
+  restoreState(): void {
+    Command.hstore.removePoint(this.hePoint);
+  }
   saveState(): void {}
   do(): void {
     Command.hstore.addPoint(this.hePoint);

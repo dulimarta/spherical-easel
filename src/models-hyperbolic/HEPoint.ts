@@ -12,12 +12,8 @@ import { applyActionCode } from "firebase/auth";
 export class HEPoint extends HENodule {
   constructor(pos: Vector3) {
     super();
-    this.mesh.push(
-      new Mesh(
-        new SphereGeometry(0.05),
-        new MeshStandardMaterial({ color: "white" })
-      )
-    );
+    const material = new MeshStandardMaterial({ color: "white" });
+    this.mesh.push(new Mesh(new SphereGeometry(0.05), material));
     this.mesh[0].position.copy(pos);
     const scale = pos.length();
     let apppliedScale = -1;
@@ -41,6 +37,9 @@ export class HEPoint extends HENodule {
       );
       this.mesh[1].position.copy(pos);
       this.mesh[1].position.divideScalar(apppliedScale);
+    } else {
+      // Points on sphere with no associated hyperbolic counterpart are colored red
+      material.color.setColorName("red");
     }
   }
 

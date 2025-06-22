@@ -19,10 +19,14 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   function addPoint(point: HEPoint) {
     point.addToScene(threeJSScene);
   }
+  function removePoint(point: HEPoint) {
+    point.removeFromScene(threeJSScene);
+  }
   return {
     mouseIntersections,
     actionMode,
     addPoint,
+    removePoint,
     setScene,
     setActionMode
   };

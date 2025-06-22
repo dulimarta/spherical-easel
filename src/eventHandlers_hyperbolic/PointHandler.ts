@@ -7,10 +7,14 @@ export class PointHandler implements ToolStrategy {
   mouseMoved(event: MouseEvent): void {
     throw new Error("Method not implemented.");
   }
-  mousePressed(event: MouseEvent, at3d?: Vector3 | null): void {
+  mousePressed(
+    event: MouseEvent,
+    position: Vector3 | null = null,
+    normalDirection: Vector3 | null = null
+  ): void {
     console.debug("Inside Point handler");
-    if (at3d) {
-      const cmd = new AddPointCommandByCoordinates(at3d);
+    if (position) {
+      const cmd = new AddPointCommandByCoordinates(position);
       cmd.execute();
     }
   }

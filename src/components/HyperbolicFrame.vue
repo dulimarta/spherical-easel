@@ -103,7 +103,9 @@ const props = withDefaults(defineProps<ComponentProps>(), {
 
 const webglCanvas = useTemplateRef<HTMLCanvasElement>("webglCanvas");
 const { elementX, elementY, isOutside } = useMouseInElement(webglCanvas, {});
-const { shift: shiftKey, control:controlKey } = useMagicKeys({ passive: false });
+const { shift: shiftKey, control: controlKey } = useMagicKeys({
+  passive: false
+});
 // const { pressed } = useMousePressed({
 //   drag: true,
 //   target: webglCanvas
@@ -298,7 +300,7 @@ const pointLight = new PointLight(0xffffff, 100);
 pointLight.position.set(3, 3, 5);
 scene.add(ambientLight);
 scene.add(pointLight);
-let currentTool: ToolStrategy | null = new PointHandler();
+let currentTool: ToolStrategy | null = null; //new PointHandler();
 let pointTool: PointHandler = new PointHandler();
 function doRender() {
   const deltaTime = clock.getDelta();
@@ -306,15 +308,18 @@ function doRender() {
   if (hasUpdatedControls) renderer.render(scene, camera);
 }
 
-watch(() => controlKey.value, (ctrl) => {
-  if (ctrl) {
-    scene.add(hyperTube)
-    scene.add(randomPlane)
-  } else {
-    scene.remove(hyperTube)
-    scene.remove(randomPlane)
+watch(
+  () => controlKey.value,
+  ctrl => {
+    if (ctrl) {
+      scene.add(hyperTube);
+      scene.add(randomPlane);
+    } else {
+      scene.remove(hyperTube);
+      scene.remove(randomPlane);
+    }
   }
-})
+);
 watch(
   () => actionMode.value,
   mode => {
@@ -351,13 +356,8 @@ onMounted(() => {
   renderer.setClearColor(0xcccccc, 1);
   renderer.setAnimationLoop(doRender);
   renderer.render(scene, camera);
-  useEventListener("mousemove", ev => {
-    mouseTracker(ev);
-  });
-  useEventListener(webglCanvas, "mousedown", ev => {
-    if (mouseIntersections.value.length > 0)
-      currentTool?.mousePressed(ev, mouseIntersections.value[0].point);
-  });
+  useEventListener("mousemove", threeMouseTracker);
+  useEventListener(webglCanvas, "mousedown", doMouseDown);
 });
 
 onUpdated(() => {
@@ -368,9 +368,14 @@ onUpdated(() => {
   renderer.render(scene, camera);
 });
 
-// function doMouseDown() {
-//   console.
-// }
+function doMouseDown(ev: MouseEvent) {
+  if (mouseIntersections.value.length > 0)
+    currentTool?.mousePressed(
+      ev,
+      mouseIntersections.value[0].point,
+      mouseIntersections.value[0].normal
+    );
+}
 
 // function doMouseUp() {
 
@@ -391,18 +396,23 @@ function doMouseMove(
   );
 }
 
-function mouseTracker(ev: MouseEvent) {
+function threeMouseTracker(ev: MouseEvent) {
   mouseCoordNormalized.value.x =
     2 * (elementX.value / renderer.domElement.clientWidth) - 1;
   mouseCoordNormalized.value.y =
     1 - 2 * (elementY.value / renderer.domElement.clientHeight);
   rayCaster.setFromCamera(mouseCoordNormalized.value, camera);
-  const reg = /(Sheet|Sphere)$/
+  const regex = /(Sheet|Sphere)$/; // For filtering cursor intersection point(s)
   mouseIntersections.value = rayCaster
     .intersectObjects(scene.children, true)
-    .filter(iSect => { 
-      console.debug("Raycast intersect", iSect.object.name, iSect.object.name.match(reg))
-      return iSect.object.name.match(reg)});
+    .filter(iSect => {
+      console.debug(
+        "Raycast intersect",
+        iSect.object.name,
+        iSect.object.name.match(regex)
+      );
+      return iSect.object.name.match(regex);
+    });
   if (mouseIntersections.value.length > 0) {
     // console.debug(`Number of all intersections ${allIntersections.length}`)
     // We are interested only in intersection with named objects
@@ -535,7 +545,7 @@ function mouseTracker(ev: MouseEvent) {
           randomPlane.rotation.set(0, 0, 0);
           randomPlane.rotateX(Math.PI / 2 - planeXRotation);
           randomPlane.updateMatrixWorld();
-          scene.add(randomPlane)
+          scene.add(randomPlane);
           // intersectionGroup.clear();
           // intersectionGroup.rotation.set(0, 0, 0);
           // upperHyperboloidToPlaneMatrix
@@ -552,8 +562,8 @@ function mouseTracker(ev: MouseEvent) {
           // intersectionGroup.rotateX(Math.PI / 2 - planeXRotation);
         }
       } else {
-        scene.remove(randomPlane)
-        scene.remove(hyperTube)
+        scene.remove(randomPlane);
+        scene.remove(hyperTube);
       }
     } else {
       scene.remove(rayIntersectionPoint);
