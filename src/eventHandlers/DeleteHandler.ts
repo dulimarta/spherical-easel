@@ -253,7 +253,7 @@ export default class DeleteHandler extends Highlighter {
         seNoduleBeforeState !== undefined &&
         seNoduleBeforeState.object instanceof SEIntersectionPoint
       ) {
-        // console.debug(
+        // console.log(
         //   `Examine intersection point ${seNoduleBeforeState.object.name} to see if it survived the deletion`
         // );
         // only delete the intersection point itself if completing this delete command will
@@ -267,6 +267,7 @@ export default class DeleteHandler extends Highlighter {
               !this.beforeDeleteStateMap.has(info.parent2.id)
           ).length > 0
         ) {
+          // console.log(` ${seNoduleBeforeState.object.name} survives!`);
           notDeletedSENoduleIDs.push(seNoduleBeforeState.object.id);
         }
       }
@@ -370,8 +371,8 @@ export default class DeleteHandler extends Highlighter {
                 new RemoveIntersectionPointOtherParentsInfo(info)
               );
             });
+            // convert it back to not user created (if it was)
             if (seNoduleBeforeState.object.isUserCreated) {
-              // convert it back to not user created (if it was)
               deleteCommandGroup.addCommand(
                 new SetPointUserCreatedValueCommand(
                   seNoduleBeforeState.object,
@@ -424,49 +425,8 @@ export default class DeleteHandler extends Highlighter {
                 deleteCommandGroup.addCommand(
                   new ChangeIntersectionPointPrincipleParents(info)
                 );
-                // so if the point is user created and the existence is now false, need to convert the intersection point to not user created
-                // Note: ChangeIntersectionPointPrincipleParent or RemoveIntersectionPointOtherParent are *not* executed so check the intersection existence manually
-                if (
-                  (seNoduleBeforeState.object as SEIntersectionPoint)
-                    .isUserCreated &&
-                  !(
-                    // This checks the existence (both parents exist and are hit)
-                    (
-                      info.parent1.exists &&
-                      info.parent1.isHitAt(
-                        (seNoduleBeforeState.object as SEIntersectionPoint)
-                          .locationVector, // this is the updated location
-                        DeleteHandler.store.zoomMagnificationFactor
-                      ) &&
-                      info.parent2.exists &&
-                      info.parent2.isHitAt(
-                        (seNoduleBeforeState.object as SEIntersectionPoint)
-                          .locationVector, // this is the updated location
-                        DeleteHandler.store.zoomMagnificationFactor
-                      )
-                    )
-                  )
-                ) {
-                  // convert it back to not user created because it doesn't exist
-                  // console.log(
-                  //   `${(seNoduleBeforeState.object as SEIntersectionPoint).name} set to `
-                  // );
-                  deleteCommandGroup.addCommand(
-                    new SetPointUserCreatedValueCommand(
-                      seNoduleBeforeState.object as SEIntersectionPoint,
-                      false
-                    )
-                  );
-                }
-              }
-              // remove the others
-              else {
-                // console.log(
-                //   `Queue up 3: Remove other parents ${info.parent1.name} and ${info.parent2.name} to intersection point ${info.SEIntersectionPoint.name}/${(seNoduleBeforeState.object as SEIntersectionPoint).name}`
-                // );
-                deleteCommandGroup.addCommand(
-                  new RemoveIntersectionPointOtherParentsInfo(info)
-                );
+                // if the existence is now false, the shallow update of the intersection point will fix the existence and change to the
+                // principle parents whose intersection makes the existence true (if possible)
               }
             });
           }
@@ -487,7 +447,6 @@ export default class DeleteHandler extends Highlighter {
               .forEach(interSEPoint => {
                 // skip any intersection point that is on the not deleted list because the
                 // other parents info has already been deleted
-
                 if (notDeletedSENoduleIDs.some(id => id === interSEPoint.id)) {
                   return;
                 }

@@ -83,7 +83,7 @@ export default class ApplyTransformationHandler extends Highlighter {
   private possiblyGlowing: SEPoint | SEOneDimensional | null = null;
   private lastPossiblyGlowingID = 0;
 
-// Filter the hitSEPoints appropriately for this handler
+  // Filter the hitSEPoints appropriately for this handler
   protected filteredIntersectionPointsList: SEPoint[] = [];
 
   /* temporary vector and matrix to help with computations */
@@ -1720,13 +1720,21 @@ export default class ApplyTransformationHandler extends Highlighter {
     );
 
     // Add all the intersections with this segment
+
+    const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
+
     ApplyTransformationHandler.store
       .createAllIntersectionsWith(newIsometrySESegment, newlyCreatedSEPoints)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
+          intersectionPointsToUpdate.push(item.SEIntersectionPoint);
+          transformedSegmentCommandGroup.addCondition(() =>
+            item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+          );
           transformedSegmentCommandGroup.addCommand(
             new AddIntersectionPointOtherParentsInfo(item)
           );
+          transformedSegmentCommandGroup.addEndCondition();
         } else {
           // Create the plottable label
           const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
@@ -1756,6 +1764,12 @@ export default class ApplyTransformationHandler extends Highlighter {
         }
       });
     transformedSegmentCommandGroup.execute();
+    // The newly added segment passes through all the
+    // intersection points on the intersectionPointsToUpdate list
+    // This segment might be a new parent to some of them
+    // shallowUpdate will check this and change parents as needed
+    intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+    intersectionPointsToUpdate.splice(0);
     EventBus.fire("show-alert", {
       key: `handlers.newIsometrySegmentAdded`,
       keyOptions: { name: `${newIsometrySESegment.label?.ref.shortUserName}` },
@@ -1862,13 +1876,21 @@ export default class ApplyTransformationHandler extends Highlighter {
       )
     );
     // Add all the intersections with this line
+
+    const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
+
     ApplyTransformationHandler.store
       .createAllIntersectionsWith(newIsometrySELine, newlyCreatedSEPoints)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
+          intersectionPointsToUpdate.push(item.SEIntersectionPoint);
+          transformedLineCommandGroup.addCondition(() =>
+            item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+          );
           transformedLineCommandGroup.addCommand(
             new AddIntersectionPointOtherParentsInfo(item)
           );
+          transformedLineCommandGroup.addEndCondition();
         } else {
           // Create the plottable label
           const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
@@ -1899,6 +1921,12 @@ export default class ApplyTransformationHandler extends Highlighter {
       });
 
     transformedLineCommandGroup.execute();
+    // The newly added line passes through all the
+    // intersection points on the intersectionPointsToUpdate list
+    // This line might be a new parent to some of them
+    // shallowUpdate will check this and change parents as needed
+    intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+    intersectionPointsToUpdate.splice(0);
     EventBus.fire("show-alert", {
       key: `handlers.newIsometryLineAdded`,
       keyOptions: { name: `${newIsometrySELine.label?.ref.shortUserName}` },
@@ -2006,13 +2034,21 @@ export default class ApplyTransformationHandler extends Highlighter {
     );
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the circle command so they can be undone.
+
+    const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
+
     ApplyTransformationHandler.store
       .createAllIntersectionsWith(newIsometrySECircle, newlyCreatedSEPoints)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
+          intersectionPointsToUpdate.push(item.SEIntersectionPoint);
+          transformedCircleCommandGroup.addCondition(() =>
+            item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+          );
           transformedCircleCommandGroup.addCommand(
             new AddIntersectionPointOtherParentsInfo(item)
           );
+          transformedCircleCommandGroup.addEndCondition();
         } else {
           // Create the plottable and model label
           const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
@@ -2042,6 +2078,12 @@ export default class ApplyTransformationHandler extends Highlighter {
         }
       });
     transformedCircleCommandGroup.execute();
+    // The newly added circle passes through all the
+    // intersection points on the intersectionPointsToUpdate list
+    // This circle might be a new parent to some of them
+    // shallowUpdate will check this and change parents as needed
+    intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+    intersectionPointsToUpdate.splice(0);
     EventBus.fire("show-alert", {
       key: `handlers.newIsometryCircleAdded`,
       keyOptions: { name: `${newIsometrySECircle.label?.ref.shortUserName}` },
@@ -2179,13 +2221,21 @@ export default class ApplyTransformationHandler extends Highlighter {
 
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the ellipse command so they can be undone.
+
+    const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
+
     ApplyTransformationHandler.store
       .createAllIntersectionsWith(newIsometrySEEllipse, newlyCreatedSEPoints)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
+          intersectionPointsToUpdate.push(item.SEIntersectionPoint);
+          transformedEllipseCommandGroup.addCondition(() =>
+            item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+          );
           transformedEllipseCommandGroup.addCommand(
             new AddIntersectionPointOtherParentsInfo(item)
           );
+          transformedEllipseCommandGroup.addEndCondition();
         } else {
           // Create the plottable and model label
           const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
@@ -2215,6 +2265,13 @@ export default class ApplyTransformationHandler extends Highlighter {
         }
       });
     transformedEllipseCommandGroup.execute();
+
+    // The newly added ellipse passes through all the
+    // intersection points on the intersectionPointsToUpdate list
+    // This ellipse might be a new parent to some of them
+    // shallowUpdate will check this and change parents as needed
+    intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+    intersectionPointsToUpdate.splice(0);
     EventBus.fire("show-alert", {
       key: `handlers.newIsometryEllipseAdded`,
       keyOptions: { name: `${newIsometrySEEllipse.label?.ref.shortUserName}` },
@@ -2451,13 +2508,21 @@ export default class ApplyTransformationHandler extends Highlighter {
     );
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the circle command so they can be undone.
+
+    const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
+
     ApplyTransformationHandler.store
       .createAllIntersectionsWith(newInvertedSECircle, newlyCreatedSEPoints)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
+          intersectionPointsToUpdate.push(item.SEIntersectionPoint);
+          invertedCircleOrLineCommandGroup.addCondition(() =>
+            item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+          );
           invertedCircleOrLineCommandGroup.addCommand(
             new AddIntersectionPointOtherParentsInfo(item)
           );
+          invertedCircleOrLineCommandGroup.addEndCondition();
         } else {
           // Create the plottable and model label
           const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
@@ -2488,6 +2553,14 @@ export default class ApplyTransformationHandler extends Highlighter {
       });
 
     invertedCircleOrLineCommandGroup.execute();
+
+    // The newly added line or circle passes through all the
+    // intersection points on the intersectionPointsToUpdate list
+    // This line or circle might be a new parent to some of them
+    // shallowUpdate will check this and change parents as needed
+    intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+    intersectionPointsToUpdate.splice(0);
+
     const centerName =
       newInvertedSECircleCenter !== null
         ? newInvertedSECircleCenter.label?.ref.shortUserName

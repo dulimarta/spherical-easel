@@ -121,6 +121,7 @@ import { AddParametricTracePointCommand } from "@/commands/AddParametricTracePoi
 import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
@@ -734,13 +735,21 @@ function addParametricCurve(): void {
   }
   // Generate new intersection points. These points must be computed and created
   // in the store. Add the new created points to the parametric command so they can be undone.
+
+  const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
+
   seStore
     .createAllIntersectionsWith(newSEParametric, newlyCreatedSEPoints)
     .forEach((item: SEIntersectionReturnType) => {
       if (item.existingIntersectionPoint) {
+        intersectionPointsToUpdate.push(item.SEIntersectionPoint);
+        parametricCommandGroup.addCondition(() =>
+          item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+        );
         parametricCommandGroup.addCommand(
           new AddIntersectionPointOtherParentsInfo(item)
         );
+        parametricCommandGroup.addEndCondition();
       } else {
         // Create the plottable label
         const newSELabel = new SELabel("point", item.SEIntersectionPoint);
@@ -831,6 +840,12 @@ function addParametricCurve(): void {
     });
 
   parametricCommandGroup.execute();
+  // The newly added parametric passes through all the
+  // intersection points on the intersectionPointsToUpdate list
+  // This parametric might be a new parent to some of them
+  // shallowUpdate will check this and change parents as needed
+  intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+  intersectionPointsToUpdate.splice(0);
 
   newSEParametric.markKidsOutOfDate();
   newSEParametric.update();

@@ -8,11 +8,7 @@ import {
 import { intersectTwoObjects } from "@/utils/intersections";
 import i18n from "@/i18n";
 import { Vector3 } from "three";
-import {
-  getAncestors,
-  getDescendants,
-  rank_of_type
-} from "@/utils/helpingfunctions";
+import { getAncestors } from "@/utils/helpingfunctions";
 import SETTINGS from "@/global-settings";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { ChangeIntersectionPointPrincipleParents } from "@/commands/ChangeIntersectionPointPrincipleParents";
@@ -22,6 +18,8 @@ import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
 import { SENodule } from "@/models/SENodule";
 import { CommandGroup } from "@/commands/CommandGroup";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
+import { RemoveIntersectionPointOtherParentsInfo } from "@/commands/RemoveIntersectionPointOtherParentsInfo";
 const { t } = i18n.global;
 export class SEIntersectionPoint extends SEPoint {
   /**
@@ -199,34 +197,25 @@ export class SEIntersectionPoint extends SEPoint {
   }
 
   // Used is lots of the handler commands when a new object is created
-  public addIntersectionOtherParentInfo(
-    n: SEIntersectionReturnType,
-    fromShallowUpdate = false
-  ): boolean {
+  public addIntersectionOtherParentInfo(n: SEIntersectionReturnType): void {
     this._otherParentsInfoArray.push(n);
 
-    // Once another set of parents are added, update the exists variable with an update
-    if (!fromShallowUpdate) {
-      this.shallowUpdate();
-    }
-    console.log(
-      `Intersection point ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription}`
-    );
-    this.otherParentsInfoArray.forEach(n =>
-      console.log(
-        `OTHER p Info: ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
-      )
-    );
-
-    return true;
+    // console.log(
+    //   `Add Intersection point other parent info ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription}`
+    // );
+    // this.otherParentsInfoArray.forEach(n =>
+    //   console.log(
+    //     `OTHER p Info: ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
+    //   )
+    // );
   }
 
   public canAddIntersectionOtherParentInfo(
     possibleNewInfo: SEIntersectionReturnType
   ): boolean {
-    console.log(
-      `Intersection point ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription} ****ATTEMPT***** add other parents ${possibleNewInfo.parent1.label?.ref.shortUserName}/${possibleNewInfo.parent1.name}/${possibleNewInfo.parent1.noduleDescription} and ${possibleNewInfo.parent2.label?.ref.shortUserName}/${possibleNewInfo.parent2.name}/${possibleNewInfo.parent2.noduleDescription}`
-    );
+    // console.log(
+    //   `Intersection point ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription} ****ATTEMPT***** add other parents ${possibleNewInfo.parent1.label?.ref.shortUserName}/${possibleNewInfo.parent1.name}/${possibleNewInfo.parent1.noduleDescription} and ${possibleNewInfo.parent2.label?.ref.shortUserName}/${possibleNewInfo.parent2.name}/${possibleNewInfo.parent2.noduleDescription}`
+    // );
     // First check that this other parent info is not already in the info array
     if (
       this._otherParentsInfoArray.some(
@@ -295,7 +284,7 @@ export class SEIntersectionPoint extends SEPoint {
         SENodule.store.inverseTotalRotationMatrix
       )[possibleNewInfo.order];
       if (intersectionInfo.exists && !this._exists) {
-        console.log("bad ancestors but added anyway");
+        // console.log("Fail the ancestor test but added anyway because the point exists with this pair");
         return true;
       }
       return false;
@@ -309,29 +298,39 @@ export class SEIntersectionPoint extends SEPoint {
     // Remove the other parent from the other parent array
     const index = this._otherParentsInfoArray.findIndex(
       info =>
-        info.parent1.name == n.parent1.name &&
-        info.parent2.name == n.parent2.name &&
-        info.order == n.order
+        info.parent1.name === n.parent1.name &&
+        info.parent2.name === n.parent2.name &&
+        info.order === n.order
     );
     if (index > -1) {
       this._otherParentsInfoArray.splice(index, 1);
       // console.log(
-      //   `Actually Removed other parents ${n.parent1.name} and ${n.parent2.name} to intersection point ${this.name}`
+      //   `Removed other parents ${n.parent1.name} and ${n.parent2.name} to intersection point ${this.name}. Principle Parents are now ${this.principleParent1.name} and ${this.principleParent2.name}`
       // );
     } else {
       console.warn(
         `SEIntersection Point ${this.name}: Attempted to remove info ${n.parent1.name} and ${n.parent2.name}that was not on the other parent info array.`
       );
     }
+    // this.otherParentsInfoArray.forEach(n =>
+    //   console.log(
+    //     `OTHER parent Info: ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
+    //   )
+    // );
   }
 
   public changePrincipleParents(newInfo: SEIntersectionReturnType): void {
     this.sePrincipleParent1 = newInfo.parent1;
     this.sePrincipleParent2 = newInfo.parent2;
     this.order = newInfo.order;
-    console.log(
-      `Actually Principle parents of ${this.name} are now ${this.principleParent1.name} and ${this.principleParent2.name}`
-    );
+    // console.log(
+    //   `The Principle Parents of ${this.name} are now ${this.principleParent1.name} and ${this.principleParent2.name}`
+    // );
+    // this.otherParentsInfoArray.forEach(n =>
+    //   console.log(
+    //     `CPP OTHER parent Info: ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
+    //   )
+    // );
   }
 
   public shallowUpdate(): void {
@@ -381,8 +380,9 @@ export class SEIntersectionPoint extends SEPoint {
             )[info.order];
             if (intersectionInfo.exists) {
               // This means that info should be the new parents
-              // First save the existing parents info (if not on list already)
-              console.log("here");
+              const intersectionPointCmdGroup = new CommandGroup();
+              // First save the existing parents info (if not on list already) to the other parents info array
+              // console.log("here");
               if (
                 !this._otherParentsInfoArray.some(
                   info =>
@@ -391,29 +391,36 @@ export class SEIntersectionPoint extends SEPoint {
                     info.order == this.order
                 )
               ) {
-                console.log("in here");
-                this.addIntersectionOtherParentInfo(
-                  {
+                // console.log("in here");
+                intersectionPointCmdGroup.addCommand(
+                  new AddIntersectionPointOtherParentsInfo({
                     existingIntersectionPoint: true,
                     SEIntersectionPoint: this,
                     parent1: this.sePrincipleParent1,
                     parent2: this.sePrincipleParent2,
                     createAntipodalPoint: false,
                     order: this.order
-                  },
-                  true // fromShallowUpdate
+                  })
                 );
               }
-              // update the DAG and the principle parents
-              // To avoid an extra click on the redo/undo buttons, this command should be bundled with the previous command
-              new ChangeIntersectionPointPrincipleParents(info).execute();
+              // Update the DAG and the principle parents
+              intersectionPointCmdGroup.addCommand(
+                new ChangeIntersectionPointPrincipleParents(info)
+              );
+              // Remove the info from the other parent info array
+              intersectionPointCmdGroup.addCommand(
+                new RemoveIntersectionPointOtherParentsInfo(info)
+              );
+
+              intersectionPointCmdGroup.execute();
+              // The execution of this command causes no graphical change, so
+              // to avoid an extra mouse click in the undo/redo stack
+              // (commandHistory in Command) we combine the top two commands
+              //  on the commandHistory stack
+              CommandGroup.combineTopTwoCommands();
+
               this._exists = true;
               this.locationVector = intersectionInfo.vector;
-              // remove the info from this._otherParentsInfoArray
-              const ind = this._otherParentsInfoArray.indexOf(info);
-              if (ind != -1) {
-                this._otherParentsInfoArray.splice(ind, 1);
-              }
               break; // exit the search after the first successful one
             }
           }

@@ -722,13 +722,20 @@ export default class CircleHandler extends Highlighter {
       // Generate new intersection points. These points must be computed and created
       // in the store. Add the new created points to the circle command so they can be undone.
 
+      const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
+
       CircleHandler.store
         .createAllIntersectionsWith(newSECircle, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
+            intersectionPointsToUpdate.push(item.SEIntersectionPoint);
+            circleCommandGroup.addCondition(() =>
+              item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+            );
             circleCommandGroup.addCommand(
               new AddIntersectionPointOtherParentsInfo(item)
             );
+            circleCommandGroup.addEndCondition();
           } else {
             // the intersection point is newly created and must be added as a child of the two parents returned
             // Create the plottable and model label
@@ -767,6 +774,13 @@ export default class CircleHandler extends Highlighter {
         });
 
       circleCommandGroup.execute();
+
+      // The newly added circle passes through all the
+      // intersection points on the intersectionPointsToUpdate list
+      // This circle might be a new parent to some of them
+      // shallowUpdate will check this and change parents as needed
+      intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+      intersectionPointsToUpdate.splice(0);
 
       CircleHandler.store.updateTwoJS(); // if this is not included, when you make a new circle, the fill is not displayed
       newSECircle.ref!.updateDisplay(); // The newly created circle will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
