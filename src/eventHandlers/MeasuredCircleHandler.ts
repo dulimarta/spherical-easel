@@ -109,7 +109,7 @@ export default class MeasuredCircleHandler extends Highlighter {
           type: "error"
         });
         // switch to tools tab
-        //EventBus.fire("left-panel-set-active-tab", { tabNumber: 0 });
+        //EventBus.fire("left-panel-set-active-tab", { tabName: "tools" });
         // Change the tool
         console.debug(
           `set action mode from mouse pressed in measure circle handler`
@@ -224,7 +224,8 @@ export default class MeasuredCircleHandler extends Highlighter {
 
       if (MeasuredCircleHandler.store.seExpressions.length > 0) {
         //...open the object tree tab,
-        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
+        // console.log("MC mouse click");
+        EventBus.fire("left-panel-set-active-tab", { tabName: "objects" });
         EventBus.fire("expand-measurement-sheet", {});
         EventBus.fire("show-alert", {
           key: `handlers.measuredCircleCenterSelected`,

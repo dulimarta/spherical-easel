@@ -95,7 +95,7 @@ export default class RotationTransformationHandler extends Highlighter {
           type: "error"
         });
         // switch to tools tab
-        EventBus.fire("left-panel-set-active-tab", { tabNumber: 0 });
+        EventBus.fire("left-panel-set-active-tab", { tabName: "tools" });
         // Change the tool
         RotationTransformationHandler.store.setActionMode("segment");
         return;

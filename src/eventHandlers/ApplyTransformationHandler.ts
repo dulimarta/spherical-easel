@@ -737,7 +737,7 @@ export default class ApplyTransformationHandler extends Highlighter {
         }
       } else {
         // the user is clicking on the sphere, but hasn't selected a transformation
-        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
+        EventBus.fire("left-panel-set-active-tab", { tabName: "objects" });
         EventBus.fire("expand-transformation-sheet", {});
         EventBus.fire("show-alert", {
           key: "handlers.applyTransformationSelectTransformation",
