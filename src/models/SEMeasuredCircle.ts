@@ -4,6 +4,7 @@ import i18n from "@/i18n";
 import { SECircle } from "./SECircle";
 import { SEExpression } from "./SEExpression";
 import { SEPoint } from "./SEPoint";
+import Circle from "@/plottables/Circle";
 const { t } = i18n.global;
 
 export class SEMeasuredCircle extends SECircle {
@@ -80,15 +81,17 @@ export class SEMeasuredCircle extends SECircle {
       this.circleSEPoint.locationVector = this.tempVector.normalize();
 
       //update the centerVector and the radius
-      this.ref.circleRadius = newRadius;
-      this.ref.centerVector = this._centerSEPoint.locationVector;
-      // display the new circle with the updated values
-      this.ref.updateDisplay();
+      if (this.ref instanceof Circle) {
+        this.ref.circleRadius = newRadius;
+        this.ref.centerVector = this._centerSEPoint.locationVector;
+        // display the new circle with the updated values
+        this.ref.updateDisplay();
+      }
     }
 
-    if (this.showing && this._exists) {
+    if (this.showing && this._exists && this.ref) {
       this.ref.setVisible(true);
-    } else {
+    } else if (this.ref) {
       this.ref.setVisible(false);
     }
   }

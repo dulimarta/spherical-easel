@@ -264,6 +264,7 @@ export default class NSectAngleHandler extends Highlighter {
 
   createNSection(candidateAngle: SEAngleMarker): void {
     const nSectingLinesCommandGroup = new CommandGroup();
+    const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
     const nSectingLineArray: SENSectLine[] = []; // a list of the new lines to be updated at the end of creation
 
     // get the SEPoint at the vertex of the angle marker
@@ -380,10 +381,12 @@ export default class NSectAngleHandler extends Highlighter {
           nSectingLineArray.push(nSectingLine);
 
           // Determine all new intersection points and add their creation to the command so it can be undone
+
           NSectAngleHandler.store
             .createAllIntersectionsWith(nSectingLine, [])
             .forEach((item: SEIntersectionReturnType) => {
               if (item.existingIntersectionPoint) {
+                intersectionPointsToUpdate.push(item.SEIntersectionPoint);
                 nSectingLinesCommandGroup.addCondition(() =>
                   item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(
                     item
@@ -428,6 +431,13 @@ export default class NSectAngleHandler extends Highlighter {
       }
     }
     nSectingLinesCommandGroup.execute();
+
+    // The newly added line passes through all the
+    // intersection points on the intersectionPointsToUpdate list
+    // This line might be a new parent to some of them
+    // shallowUpdate will check this and change parents as needed
+    intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+    intersectionPointsToUpdate.splice(0);
 
     nSectingLineArray.forEach(nSectingLine => {
       nSectingLine.markKidsOutOfDate();

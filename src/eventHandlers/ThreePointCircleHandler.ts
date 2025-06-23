@@ -1106,10 +1106,12 @@ export default class ThreePointCircleHandler extends Highlighter {
 
       // Generate new intersection points. These points must be computed and created
       // in the store. Add the new created points to the ellipse command so they can be undone.
+      const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
       ThreePointCircleHandler.store
         .createAllIntersectionsWith(newSECircle, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
+            intersectionPointsToUpdate.push(item.SEIntersectionPoint);
             threePointCircleCommandGroup.addCondition(() =>
               item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
             );
@@ -1149,6 +1151,12 @@ export default class ThreePointCircleHandler extends Highlighter {
       threePointCircleCommandGroup.execute();
       newSEThreePointCircleCenter.markKidsOutOfDate();
       newSEThreePointCircleCenter.update();
+      // The newly added circle passes through all the
+      // intersection points on the intersectionPointsToUpdate list
+      // This circle might be a new parent to some of them
+      // shallowUpdate will check this and change parents as needed
+      intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+      intersectionPointsToUpdate.splice(0);
     }
     return true;
   }

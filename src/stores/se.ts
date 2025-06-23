@@ -1615,7 +1615,12 @@ export const useSEStore = defineStore("se", () => {
           );
         } else if (object1 instanceof SECircle && object2 instanceof SECircle) {
           if (object1.name != object2.name) {
-            intersectionInfo = intersectCircleWithCircle(object1, object2);
+            intersectionInfo = intersectCircleWithCircle(
+              object1,
+              object2,
+              true
+              // this is the first time these two objects have been intersected
+            );
           }
         } else if (
           object1 instanceof SECircle &&
@@ -1636,7 +1641,11 @@ export const useSEStore = defineStore("se", () => {
           object2 instanceof SEEllipse
         ) {
           if (object1.name != object2.name) {
-            intersectionInfo = intersectEllipseWithEllipse(object1, object2);
+            intersectionInfo = intersectEllipseWithEllipse(
+              object1,
+              object2,
+              true // this is the first time these two objects have been intersected
+            );
           }
         } else if (
           object1 instanceof SEEllipse &&

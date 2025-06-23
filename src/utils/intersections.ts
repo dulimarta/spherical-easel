@@ -741,12 +741,17 @@ export function intersectSegmentWithParametric(
  * @param n2 center vector of the second circle
  * @param arc2 arc length radius of the second circle
  */
-export function intersectCircleWithCircle(circ1: SECircle, circ2: SECircle) {
+export function intersectCircleWithCircle(
+  circ1: SECircle,
+  circ2: SECircle,
+  firstTimeIntersection = false
+) {
   return intersectCircles(
     circ1.centerSEPoint.locationVector,
     circ1.circleRadius,
     circ2.centerSEPoint.locationVector,
-    circ2.circleRadius
+    circ2.circleRadius,
+    firstTimeIntersection
   );
 }
 
@@ -1567,10 +1572,7 @@ export function intersectTwoObjects(
 ): IntersectionReturnType[] {
   const rank1 = rank_of_type(one);
   const rank2 = rank_of_type(two);
-  if (
-    rank2 < rank1 ||
-    (rank1 == rank2 && two.name < one.name)
-  ) {
+  if (rank2 < rank1 || (rank1 == rank2 && two.name < one.name)) {
     console.error(
       `Intersect two objects ${one.name} and ${two.name}: They are NOT in rank and/or lexicographic order! One: ${one.name} and  Two: ${two.name}`
     );

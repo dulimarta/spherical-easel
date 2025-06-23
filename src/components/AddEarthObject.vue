@@ -199,6 +199,8 @@ const addLongitudeButtonDisabled = computed((): boolean => {
   return longitudeNumber.value === "";
 });
 
+const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
+
 function addEarthPoint(): void {
   if (
     sePoints.value.filter(
@@ -317,6 +319,12 @@ function addLatitudeCircle(lat?: number): void {
 
   // new create the intersections with all existing objects
   cmdGroup.addCommand(getCircleIntersectionsCommands(seLatitude)).execute();
+  // The newly added circle passes through all the
+  // intersection points on the intersectionPointsToUpdate list
+  // This circle might be a new parent to some of them
+  // shallowUpdate will check this and change parents as needed
+  intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+  intersectionPointsToUpdate.splice(0);
   //turn off the display of all newly created but not user created points
   store.unglowAllSENodules();
 
@@ -384,6 +392,12 @@ function addLongitudeSegment(long?: number): void {
 
   // new create the intersections with all existing objects
   cmdGroup.addCommand(getSegmentIntersectionsCommands(seLongitude)).execute();
+  // The newly added segment passes through all the
+  // intersection points on the intersectionPointsToUpdate list
+  // This segment might be a new parent to some of them
+  // shallowUpdate will check this and change parents as needed
+  intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+  intersectionPointsToUpdate.splice(0);
   //turn off the display of all newly created but not user created points
   store.unglowAllSENodules();
 
@@ -412,7 +426,6 @@ watch(
       sePrimeMeridian = undefined;
       showPrimeMeridian.value = false;
     }
-    //console.log("execute ", seEquatorPole);
   }
 );
 watch(
@@ -430,7 +443,6 @@ watch(
       seEquator = undefined;
       showEquator.value = false;
     }
-    //console.log("execute ", seEquatorPole);
   }
 );
 watch(
@@ -457,85 +469,8 @@ watch(
       seSouthPole = undefined;
       showSouthPole.value = false;
     }
-    // console.log("execute ", seNorthPole);
   }
 );
-
-// watch(
-//   () => seNorthPole,
-//   () => {
-//     console.log("second watcher execute", seNorthPole);
-//     if (seNorthPole) {
-//       console.log("seNorthPole.showing", seNorthPole.showing);
-//       showNorthPole.value = seNorthPole.showing;
-//     }
-//   },
-//   { deep: true }
-// );
-
-function findPoleInObjectTree(pole: Poles): SEEarthPoint | SEPoint | undefined {
-  // The north and south pole are not necessarily earth points
-  // if you create two longitudes then the intersection SEPoints are exactly the north and south poles
-  // Standard/initial position:
-  //     The plus y axis is our north pole, so the x axis points at the viewer and the
-  //     positive z axis is to the left
-
-  // const z = sePoints.value.find((pt:SEPoint) => {
-  // tempVec.copy(pt.locationVector);
-  // // transform the pt back to standard position
-  // tempVec.applyMatrix4(inverseTotalRotationMatrix.value);
-  // console.log("point y value ", tempVec.y);
-  // if (
-  //   Math.abs(tempVec.y - (Poles.NORTH === pole ? 1 : -1)) < SETTINGS.tolerance
-  // ) {
-  // console.log(Poles.NORTH === pole ? "North" : "South", "pole found");
-  // if (pt.label) {
-  //   if (pole === Poles.NORTH && !northPoleLabelSetOnce) {
-  //     pt.label.ref.caption = t("northPole");
-  //     northPoleLabelSetOnce = true;
-  //     // set the label display mode
-  //     new StyleNoduleCommand(
-  //       [pt.getLabel()!.ref],
-  //       StyleCategory.Label,
-  //       [
-  //         {
-  //           labelDisplayMode: LabelDisplayMode.CaptionOnly
-  //         }
-  //       ],
-  //       [
-  //         {
-  //           labelDisplayMode: pt.label.ref.labelDisplayMode
-  //         }
-  //       ]
-  //     ).execute();
-  //   } else if (pole === Poles.SOUTH && !southPoleLabelSetOnce) {
-  //     pt.label.ref.caption = t("southPole");
-  //     southPoleLabelSetOnce = true;
-  //     // set the label display mode
-  //     new StyleNoduleCommand(
-  //       [pt.getLabel()!.ref],
-  //       StyleCategory.Label,
-  //       [
-  //         {
-  //           labelDisplayMode: LabelDisplayMode.CaptionOnly
-  //         }
-  //       ],
-  //       [
-  //         {
-  //           labelDisplayMode: pt.label.ref.labelDisplayMode
-  //         }
-  //       ]
-  //     ).execute();
-  //   }
-  // }
-  //     pt.update();
-  //     return true;
-  //   } else {
-  //     return false;
-  //   }
-  // });
-  return undefined;
-}
 
 function findLatitudeInObjectTree(lat: number): SELatitude | undefined {
   const seLatitudes = seCircles.value
@@ -855,7 +790,12 @@ function getSegmentIntersectionsCommands(
   createAllIntersectionsWith(newSESegment, []) // empty array of new points created
     .forEach((item: SEIntersectionReturnType) => {
       if (item.existingIntersectionPoint) {
+        intersectionPointsToUpdate.push(item.SEIntersectionPoint);
+        segmentGroup.addCondition(() =>
+          item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+        );
         segmentGroup.addCommand(new AddIntersectionPointOtherParentsInfo(item));
+        segmentGroup.addEndCondition();
       } else {
         // Create the plottable label
         const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
@@ -893,7 +833,12 @@ function getCircleIntersectionsCommands(newSECircle: SELatitude): CommandGroup {
   createAllIntersectionsWith(newSECircle).forEach(
     (item: SEIntersectionReturnType) => {
       if (item.existingIntersectionPoint) {
+        intersectionPointsToUpdate.push(item.SEIntersectionPoint);
+        circleGroup.addCondition(() =>
+          item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+        );
         circleGroup.addCommand(new AddIntersectionPointOtherParentsInfo(item));
+        circleGroup.addEndCondition();
       } else {
         // Create the plottable label
         const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(

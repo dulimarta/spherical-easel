@@ -663,6 +663,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
   ): void {
     // Create a command group to create a new tangent line, possibly new point, and to record all the new intersections for undo/redo
     const addTangentLineGroup = new CommandGroup();
+    const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
     const newlyCreatedSEPoints: SEPoint[] = [];
 
     // First create a point if needed. If sePoint is not null, then a point already exists and doesn't need to be created
@@ -819,10 +820,12 @@ export default class TangentLineThruPointHandler extends Highlighter {
       );
 
       // Determine all new intersection points and add their creation to the command so it can be undone
+
       TangentLineThruPointHandler.store
         .createAllIntersectionsWith(newSETangentLine, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
+            intersectionPointsToUpdate.push(item.SEIntersectionPoint);
             addTangentLineGroup.addCondition(() =>
               item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
             );
@@ -860,6 +863,12 @@ export default class TangentLineThruPointHandler extends Highlighter {
         });
     }
     addTangentLineGroup.execute();
+    // The newly added line passes through all the
+    // intersection points on the intersectionPointsToUpdate list
+    // This line might be a new parent to some of them
+    // shallowUpdate will check this and change parents as needed
+    intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+    intersectionPointsToUpdate.splice(0);
   }
   activate(): void {
     if (TangentLineThruPointHandler.store.selectedSENodules.length == 2) {
