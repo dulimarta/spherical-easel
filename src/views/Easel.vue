@@ -98,6 +98,10 @@
       :no-action="doLeave">
       {{ t(`unsavedConstructionsMessage`) }}
     </Dialog>
+    <v-snackbar location="top" v-model="loadingFromPath" color="grey-lighten-4">
+      Loading construction {{ props.documentId }}
+      <v-progress-circular indeterminate />
+    </v-snackbar>
     <v-snackbar v-model="clearConstructionWarning" :timeout="DELETE_DELAY">
       {{ t("clearConstructionMessage") }}
       <template #actions>
@@ -179,9 +183,7 @@ const {
   temporaryNodules,
   hasObjects,
   zoomMagnificationFactor,
-  isEarthMode,
-  canvasWidth,
-  canvasHeight
+  isEarthMode
 } = storeToRefs(seStore);
 const { constructionDocId } = storeToRefs(acctStore);
 const props = defineProps<{
@@ -201,6 +203,7 @@ const navDrawerWidth = ref(320);
 const previewClass = ref("");
 const constructionInfo = ref<SphericalConstruction | null>(null);
 const localIsEarthMode = ref(false);
+const loadingFromPath = ref(true);
 
 let confirmedLeaving = false;
 let attemptedToRoute: RouteLocationNormalized | null = null;
@@ -247,6 +250,7 @@ function adjustCanvasSize(): void {
 }
 
 function loadDocument(docId: string): void {
+  loadingFromPath.value = true;
   seStore.removeAllFromLayers();
   seStore.init(true); // true prevents the clearing of the temporary nodules so that the initial tool's temporary nodules are not cleared and then never resized properly
   seStore.setActionMode("move"); // after loading this should be the active tool
@@ -264,6 +268,7 @@ function loadDocument(docId: string): void {
           type: "error"
         });
       }
+      loadingFromPath.value = false;
     });
 
   // Nodule.resetIdPlottableDescriptionMap(); // Needed?
@@ -478,9 +483,7 @@ onBeforeRouteLeave(
   border-radius: 8px;
   border: solid white;
   background-color: white;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.12),
-    0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 #toolbox-and-sphere {
