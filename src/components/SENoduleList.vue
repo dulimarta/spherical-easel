@@ -1,34 +1,34 @@
 <template>
-    <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
-    <div id="header" class="accent">
-      <span class="text-subtitle-1">
-        {{ label }}
-      </span>
-      <v-btn
-        size="small"
-        v-show="hasExistingChildren"
-        @click="expanded = !expanded">
-        <v-icon v-if="!expanded">mdi-chevron-right</v-icon>
-        <v-icon v-else>mdi-chevron-down</v-icon>
-      </v-btn>
-    </div>
+  <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
+  <div id="header" class="accent">
+    <span class="text-subtitle-1">
+      {{ label }}
+    </span>
+    <v-btn
+      size="small"
+      v-show="hasExistingChildren"
+      @click="expanded = !expanded">
+      <v-icon v-if="!expanded">mdi-chevron-right</v-icon>
+      <v-icon v-else>mdi-chevron-down</v-icon>
+    </v-btn>
+  </div>
 
-    <transition name="slide-right">
-      <div v-show="expanded">
-        <template v-for="n in existingChildren" :key="n.id">
-          <!-- content goes here -->
-          <SENoduleItem
-            :node="n"
-            v-if="!isSlider(n)"
-            v-on:object-select="onExpressionSelect"></SENoduleItem>
-          <SESliderItem
-            v-else
-            :node="toSlider(n) /* a trick to S type error */"
-            v-on:object-select="onExpressionSelect"></SESliderItem>
-          <!-- <v-divider></v-divider-->
-        </template>
-      </div>
-    </transition>
+  <transition name="slide-right">
+    <div v-show="expanded">
+      <template v-for="n in existingChildren" :key="n.id">
+        <!-- content goes here -->
+        <SENoduleItem
+          :node="n"
+          v-if="!isSlider(n)"
+          v-on:object-select="onExpressionSelect"></SENoduleItem>
+        <SESliderItem
+          v-else
+          :node="toSlider(n) /* a trick to S type error */"
+          v-on:object-select="onExpressionSelect"></SESliderItem>
+        <!-- <v-divider></v-divider-->
+      </template>
+    </div>
+  </transition>
 </template>
 
 <script lang="ts" setup>
@@ -53,10 +53,21 @@ const props = defineProps<{
 
 const seStore = useSEStore();
 const { actionMode } = storeToRefs(seStore);
-const {t} = useI18n()
+const { t } = useI18n();
 const expanded = ref(false);
 
 onBeforeMount((): void => {
+  // console.log(
+  //   "expand mS mount, childrenAreMeasurement",
+  //   childrenAreMeasurement.value
+  // );
+  if (
+    (childrenAreMeasurement.value && actionMode.value == "measuredCircle") ||
+    (childrenAreTransformation.value &&
+      actionMode.value == "applyTransformation")
+  ) {
+    expanded.value = true;
+  }
   EventBus.listen("expand-measurement-sheet", expandMeasurementSheet);
   EventBus.listen("expand-transformation-sheet", expandTransformationSheet);
 });
@@ -81,8 +92,8 @@ const existingChildren = computed((): SENodule[] => {
     .sort((a, b) => {
       let aLabelString = a.name;
       let bLabelString = b.name;
-      const aLabel = a.getLabel()
-      const bLabel = b.getLabel()
+      const aLabel = a.getLabel();
+      const bLabel = b.getLabel();
       if (aLabel && bLabel) {
         aLabelString = aLabel.ref.shortUserName;
         bLabelString = bLabel.ref.shortUserName;
@@ -109,12 +120,16 @@ const existingChildren = computed((): SENodule[] => {
 // });
 //When the user activates the measured circle tool
 // the object tool tab is open and the existing measurements sheet is expanded and the others are closed
-const childrenAreMeasurement = computed(() => props.children.every(c => c instanceof SEExpression))
-const childrenAreTransformation = computed(() => props.children.every(c => c instanceof SETransformation))
+const childrenAreMeasurement = computed(() =>
+  props.children.every(c => c instanceof SEExpression)
+);
+const childrenAreTransformation = computed(() =>
+  props.children.every(c => c instanceof SETransformation)
+);
 function expandMeasurementSheet(): void {
   // console.log("here1");
-  if (childrenAreMeasurement) {
-    if (hasExistingChildren) {
+  if (childrenAreMeasurement.value) {
+    if (hasExistingChildren.value) {
       expanded.value = true;
       switch (actionMode.value) {
         case "measuredCircle":
@@ -146,13 +161,13 @@ function expandMeasurementSheet(): void {
 // When the user activates the apply transformation tool, the transformation sheet is expanded and the others are closed
 function expandTransformationSheet(): void {
   // console.log("here1");
-  if (childrenAreTransformation) {
-    if (hasExistingChildren) {
+  if (childrenAreTransformation.value) {
+    if (hasExistingChildren.value) {
       expanded.value = true;
       switch (actionMode.value) {
         case "applyTransformation":
           EventBus.fire("show-alert", {
-            key:t("selectATransformation"),
+            key: t("selectATransformation"),
             type: "info"
           });
           break;
@@ -205,11 +220,10 @@ onBeforeUnmount((): void => {
 }
 </style>
 <i18n lang="json" locale="en">
-  {
-    "selectAMeasurementForTranslation": "After selecting an axis (line or line segment) of translation, select a measurement to use as the distance of translation.",
-    "selectAMeasurementForRotation": "After selecting a rotation point, select a measurement to use as the angle of rotation.",
-    "selectATransformation": "Select a transformation to apply.",
-    "selectAMeasurementForMeasuredCircle": "After selecting a center point, select a measurement to use as the radius of a measured circle.",
-    "sdfdf": "sdfsdf"
-  }
+{
+  "selectAMeasurementForTranslation": "After selecting an axis (line or line segment) of translation, select a measurement to use as the distance of translation.",
+  "selectAMeasurementForRotation": "After selecting a rotation point, select a measurement to use as the angle of rotation.",
+  "selectATransformation": "Select a transformation to apply.",
+  "selectAMeasurementForMeasuredCircle": "After selecting a center point, select a measurement to use as the radius of a measured circle."
+}
 </i18n>

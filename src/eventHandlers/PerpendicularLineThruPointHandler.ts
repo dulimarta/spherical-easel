@@ -669,6 +669,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
   ): void {
     // Create a command group to create a new perpendicular line, possibly new point, and to record all the new intersections for undo/redo
     const addPerpendicularLineGroup = new CommandGroup();
+    const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
     const newlyCreatedSEPoints: SEPoint[] = [];
 
     // First create a point if needed. If sePoint is not null, then a point already exists and doesn't need to be created
@@ -847,13 +848,12 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       }
 
       // Determine all new intersection points and add their creation to the command so it can be undone
+
       PerpendicularLineThruPointHandler.store
         .createAllIntersectionsWith(newPerpLine, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
-            console.debug(
-              "PerpendicularHandler: new command AddIntersectionPointOtherParent"
-            );
+            intersectionPointsToUpdate.push(item.SEIntersectionPoint);
             const addIntersectionCmd = new AddIntersectionPointOtherParentsInfo(
               item
             );
@@ -934,8 +934,17 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         addPencilGroup.addCommand(new AddPencilCommand(pencil));
       }
     }
-    if (usePencil) addPencilGroup.execute();
-    else addPerpendicularLineGroup.execute();
+    if (usePencil) {
+      addPencilGroup.execute();
+    } else {
+      addPerpendicularLineGroup.execute();
+    }
+    // The newly added line passes through all the
+    // intersection points on the intersectionPointsToUpdate list
+    // This line might be a new parent to some of them
+    // shallowUpdate will check this and change parents as needed
+    intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+    intersectionPointsToUpdate.splice(0);
   }
 
   activate(): void {

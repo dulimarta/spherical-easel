@@ -321,7 +321,8 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
     SENodule.resetAllCounters();
     // Nodule.resetIdPlottableDescriptionMap(); // Needed?
     EventBus.fire("show-alert", {
-      key: t("constructionLoaded", { docId: selectedDocId.value }),
+      key: "constructionLoaded",
+      keyOptions: { docId: selectedDocId.value },
       type: "info"
     });
     // It looks like we have to apply the rotation matrix
@@ -340,6 +341,9 @@ function doLoadConstruction(/*event: { docId: string }*/): void {
 
     // include this so that filled objects (circles, ellipses, polygons, angleMarkers) display correctly after loading
     seStore.updateDisplay();
+
+    //switch to the tools tab so that mousing over other constructions doesn't happen after loading is complete
+    EventBus.fire("left-panel-set-active-tab", { tabName: "tools" });
   }
 }
 

@@ -35,9 +35,6 @@ export class AddIntersectionPointOtherParentsInfo extends Command {
   //  Ls8 and Ls9 create an intersection point P10
   // 12) Create line, Li1, from P9 to P10
   // Li1 passes through P3 (and P4) always, however P3 is a parent of Li1 and it is only after adding Li1 to the DAG that we can effectively figure out that Li1 is a descendent of P3 (and P4) so (Li1,C1) (and Li1, C2) should *not* be other parent info of P3 (or P4)
-  //
-  // So create this flag to so that this command is used or not
-  private commandSuccessful = true;
 
   constructor(seIntersectionPointInfo: SEIntersectionReturnType) {
     super();
@@ -45,16 +42,14 @@ export class AddIntersectionPointOtherParentsInfo extends Command {
   }
 
   do(): void {
-    // Add the info to the list of parents info the SEIntersectionPoint, as long as  both principle parents are not in the ancestor's list of both parents.
+    // Add the info to the list of parents info the SEIntersectionPoint, as long as  both principle parents are not in the ancestor's list of both parents which was check before this command was added to the commandstack
     // console.log(
     //   `AddIntersectionPointOtherParentCommand: DO For intersection point ${this.otherParentsInfo.SEIntersectionPoint.name}, add ${this.otherParentsInfo.parent1.name} and ${this.otherParentsInfo.parent2.name}`
     // );
 
-    // addIntersectionOtherParentInfo return a boolean that indicates if it was possible to actually add the parent. If so this command is useful, If not this command is removed from its group.
-    this.commandSuccessful =
-      this.otherParentsInfo.SEIntersectionPoint.addIntersectionOtherParentInfo(
-        this.otherParentsInfo
-      );
+    this.otherParentsInfo.SEIntersectionPoint.addIntersectionOtherParentInfo(
+      this.otherParentsInfo
+    );
     // console.log(`Use this Command in the future`, this.commandSuccessful);
   }
 
@@ -66,11 +61,9 @@ export class AddIntersectionPointOtherParentsInfo extends Command {
     // console.log(
     //   `AddIntersectionPointOtherParentCommand: restoreState For intersection point ${this.otherParentsInfo.SEIntersectionPoint.name}, remove ${this.otherParentsInfo.parent1.name} and ${this.otherParentsInfo.parent2.name}`
     // );
-    if (this.commandSuccessful) {
-      this.otherParentsInfo.SEIntersectionPoint.removeIntersectionOtherParentInfo(
-        this.otherParentsInfo
-      );
-    }
+    this.otherParentsInfo.SEIntersectionPoint.removeIntersectionOtherParentInfo(
+      this.otherParentsInfo
+    );
   }
 
   toOpcode(): null | string | Array<string> {

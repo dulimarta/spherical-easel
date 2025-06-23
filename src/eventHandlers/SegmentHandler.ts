@@ -867,11 +867,13 @@ export default class SegmentHandler extends Highlighter {
           newSELabel
         )
       );
+      const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
 
       SegmentHandler.store
         .createAllIntersectionsWith(newSESegment, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
+            intersectionPointsToUpdate.push(item.SEIntersectionPoint);
             segmentGroup.addCondition(() =>
               item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
             );
@@ -908,6 +910,12 @@ export default class SegmentHandler extends Highlighter {
           }
         });
       segmentGroup.execute();
+      // The newly added segment passes through all the
+      // intersection points on the intersectionPointsToUpdate list
+      // This segment might be a new parent to some of them
+      // shallowUpdate will check this and change parents as needed
+      intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+      intersectionPointsToUpdate.splice(0);
     }
     return true;
   }

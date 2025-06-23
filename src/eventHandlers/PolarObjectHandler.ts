@@ -666,10 +666,14 @@ export default class PolarObjectHandler extends Highlighter {
     newPolarLine.update();
 
     // Determine all new intersection points and add their creation to the command so it can be undone
+
+    const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
+
     PolarObjectHandler.store
       .createAllIntersectionsWith(newPolarLine, newlyCreatedSEPoints)
       .forEach((item: SEIntersectionReturnType) => {
         if (item.existingIntersectionPoint) {
+          intersectionPointsToUpdate.push(item.SEIntersectionPoint);
           polarLineCommandGroup.addCondition(() =>
             item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
           );
@@ -706,6 +710,13 @@ export default class PolarObjectHandler extends Highlighter {
         }
       });
     polarLineCommandGroup.execute();
+
+    // The newly added line passes through all the
+    // intersection points on the intersectionPointsToUpdate list
+    // This line might be a new parent to some of them
+    // shallowUpdate will check this and change parents as needed
+    intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+    intersectionPointsToUpdate.splice(0);
   }
 
   /**

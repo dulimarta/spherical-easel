@@ -14,8 +14,6 @@ export class AddSliderMeasurementCommand extends AddExpressionCommand {
     super(seSlider, []);
   }
 
-
-
   toOpcode(): null | string | Array<string> {
     return [
       "AddSliderMeasurement",
@@ -76,7 +74,7 @@ export class AddSliderMeasurementCommand extends AddExpressionCommand {
       return new AddSliderMeasurementCommand(slider);
     }
     throw new Error(
-      `AddLengthMeasurementCommand: ${sliderMeasurementMin}, ${sliderMeasurementMax}, ${sliderMeasurementStep}, or ${sliderMeasurementValue} is undefined`
+      `AddSliderMeasurementCommand: ${sliderMeasurementMin}, ${sliderMeasurementMax}, ${sliderMeasurementStep}, or ${sliderMeasurementValue} is undefined`
     );
   }
 }

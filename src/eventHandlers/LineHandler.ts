@@ -804,15 +804,14 @@ export default class LineHandler extends Highlighter {
       );
 
       // Determine all new intersection points and add their creation to the command so it can be undone
-      // let i = 1;
+
+      const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
+
       LineHandler.store
         .createAllIntersectionsWith(newSELine, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
-          // console.debug(
-          //   `Line Intersection count ${i} ${item.existingIntersectionPoint} ${item.parent1.name} ${item.parent2.name}`
-          // );
-          // i += 1;
           if (item.existingIntersectionPoint) {
+            intersectionPointsToUpdate.push(item.SEIntersectionPoint);
             lineGroup.addCondition(() =>
               item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
             );
@@ -850,6 +849,13 @@ export default class LineHandler extends Highlighter {
           }
         });
       lineGroup.execute();
+
+      // The newly added line passes through all the
+      // intersection points on the intersectionPointsToUpdate list
+      // This line might be a new parent to some of them
+      // shallowUpdate will check this and change parents as needed
+      intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+      intersectionPointsToUpdate.splice(0);
     }
     return true;
   }

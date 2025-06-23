@@ -210,8 +210,10 @@ function switchTab(): void {
     }
   }
 }
-function setActiveTab(e: { tabNumber: number }): void {
-  activeLeftDrawerTab.value = e.tabNumber;
+function setActiveTab(e: { tabName: string }): void {
+  // console.log("Active Tab", e.tabName);
+  activeItem.value = [e.tabName];
+  // activeLeftDrawerTab.value = e.tabNumber;
 }
 
 // function toggleMinify() {

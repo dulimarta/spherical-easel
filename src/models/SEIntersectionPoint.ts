@@ -8,11 +8,7 @@ import {
 import { intersectTwoObjects } from "@/utils/intersections";
 import i18n from "@/i18n";
 import { Vector3 } from "three";
-import {
-  getAncestors,
-  getDescendants,
-  rank_of_type
-} from "@/utils/helpingfunctions";
+import { getAncestors } from "@/utils/helpingfunctions";
 import SETTINGS from "@/global-settings";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { ChangeIntersectionPointPrincipleParents } from "@/commands/ChangeIntersectionPointPrincipleParents";
@@ -21,6 +17,9 @@ import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
 import { SENodule } from "@/models/SENodule";
+import { CommandGroup } from "@/commands/CommandGroup";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
+import { RemoveIntersectionPointOtherParentsInfo } from "@/commands/RemoveIntersectionPointOtherParentsInfo";
 const { t } = i18n.global;
 export class SEIntersectionPoint extends SEPoint {
   /**
@@ -198,85 +197,100 @@ export class SEIntersectionPoint extends SEPoint {
   }
 
   // Used is lots of the handler commands when a new object is created
-  public addIntersectionOtherParentInfo(n: SEIntersectionReturnType): boolean {
-    // only add parent info when both parents are not a descendants of this intersection point!
-    // console.log(
-    //   `Intersection point ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription} attempt add other parents ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
-    // );
-    // let returnValue: boolean;
-    // First check that this other parent info is not already in the info array
-    // console.log(
-    //   `SEIntersection Point ${this.name}: Attempting to add info ${n.parent1.name} and ${n.parent2.name} to ${this.name}, ${this._otherParentsInfoArray.length}`
-    // );
-    // if (
-    //   this._otherParentsInfoArray.some(
-    //     info =>
-    //       info.parent1.name == n.parent1.name &&
-    //       info.parent2.name == n.parent2.name &&
-    //       info.order == n.order
-    //   )
-    // ) {
-    //   // console.log("info already on the other parents info array");
-    //   return false;
-    // }
-    // Check that we can add n as an other parent of this intersection point
-    // One condition is that the DAG must be maintained - so both proposed new parents cannot be descendants of the intersection. (This is covered by the next condition because, if one parent is a descendant of the intersection point, then the ancestors of the parent include the parents of the intersection point )
-    // Central question: If one of the current principle parents was deleted could this new pair step in and be parents of the intersection point?
-    // Condition: This means that the ancestors of both proposed parents must not include the parent that is being deleted. That is, both principle parents can not be in the ancestors of both parents.
-    // What if n.parent1 or n.parent2 is this.principleParent1 or this.principleParent2? This is
-
-    // const ancestors = getAncestors([n.parent1, n.parent2]).map(nod => nod.name);
-    // if (
-    //   !(
-    //     ancestors.includes(this.principleParent1.name) &&
-    //     ancestors.includes(this.principleParent2.name)
-    //   )
-    // ) {
-    //   // console.log("added other parent info", this.name);
+  public addIntersectionOtherParentInfo(n: SEIntersectionReturnType): void {
     this._otherParentsInfoArray.push(n);
-    // returnValue = true;
-    // Once another set of parents are added, update the exists variable with an update
-    this.shallowUpdate();
-    // } else {
-    //   // console.log("info fails the ancestor test");
-    //   returnValue = false;
-    // }
-    return true;
+
+    // console.log(
+    //   `Add Intersection point other parent info ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription}`
+    // );
+    // this.otherParentsInfoArray.forEach(n =>
+    //   console.log(
+    //     `OTHER p Info: ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
+    //   )
+    // );
   }
 
   public canAddIntersectionOtherParentInfo(
-    n: SEIntersectionReturnType
+    possibleNewInfo: SEIntersectionReturnType
   ): boolean {
-    // only add parent info when both parents are not a descendants of this intersection point!
     // console.log(
-    //   `Intersection point ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription} attempt add other parents ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
+    //   `Intersection point ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription} ****ATTEMPT***** add other parents ${possibleNewInfo.parent1.label?.ref.shortUserName}/${possibleNewInfo.parent1.name}/${possibleNewInfo.parent1.noduleDescription} and ${possibleNewInfo.parent2.label?.ref.shortUserName}/${possibleNewInfo.parent2.name}/${possibleNewInfo.parent2.noduleDescription}`
     // );
     // First check that this other parent info is not already in the info array
-    // console.log(
-    //   `SEIntersection Point ${this.name}: Attempting to add info ${n.parent1.name} and ${n.parent2.name} to ${this.name}, ${this._otherParentsInfoArray.length}`
-    // );
     if (
       this._otherParentsInfoArray.some(
         info =>
-          info.parent1.name == n.parent1.name &&
-          info.parent2.name == n.parent2.name &&
-          info.order == n.order
+          info.parent1.name == possibleNewInfo.parent1.name &&
+          info.parent2.name == possibleNewInfo.parent2.name &&
+          info.order == possibleNewInfo.order
       )
     ) {
-      // console.log("info already on the other parents info array");
       return false;
     }
-    // Check that we can add n as an other parent of this intersection point
+    // Check that this other parent is not currently the principle parents
+    if (
+      this.principleParent1.name == possibleNewInfo.parent1.name &&
+      this.principleParent2.name == possibleNewInfo.parent2.name &&
+      this.order == possibleNewInfo.order
+    ) {
+      return false;
+    }
+    // Check that we can add possibleNewInfo as an other parent of this intersection point
     // One condition is that the DAG must be maintained - so both proposed new parents cannot be descendants of the intersection. (This is covered by the next condition because, if one parent is a descendant of the intersection point, then the ancestors of the parent include the parents of the intersection point )
     // Central question: If one of the current principle parents was deleted could this new pair step in and be parents of the intersection point?
-    // Condition: This means that the ancestors of both proposed parents must not include the parent that is being deleted. That is, both principle parents can not be in the ancestors of both parents.
-    // What if n.parent1 or n.parent2 is this.principleParent1 or this.principleParent2? This is
+    // Condition:
+    // If principle parent 1 is deleted, this means that it is not the case
+    // that BOTH new parents are deleted (i.e. principle parent 1 is NOT
+    // an ancestor of both new potential parents) and
+    // If principle parent 2 is deleted, this means that it is not the case
+    // that BOTH new parents are deleted (i.e. principle parent 2 is NOT
+    // an ancestor of both new potential parents)
 
-    const ancestors = getAncestors([n.parent1, n.parent2]).map(nod => nod.name);
-    return !(
-      ancestors.includes(this.principleParent1.name) &&
-      ancestors.includes(this.principleParent2.name)
+    const ancestors1 = getAncestors([possibleNewInfo.parent1]).map(
+      nod => nod.name
     );
+    const ancestors2 = getAncestors([possibleNewInfo.parent2]).map(
+      nod => nod.name
+    );
+    // console.log(
+    //   "Ancestors of ",
+    //   possibleNewInfo.parent1.name,
+    //   "are",
+    //   ancestors1
+    // );
+    // console.log(
+    //   "Ancestors of ",
+    //   possibleNewInfo.parent2.name,
+    //   "are",
+    //   ancestors2
+    // );
+    if (
+      (ancestors1.includes(this.principleParent1.name) &&
+        ancestors2.includes(this.principleParent1.name)) ||
+      (ancestors1.includes(this.principleParent2.name) &&
+        ancestors2.includes(this.principleParent2.name))
+    ) {
+      //  In this case, deleting
+      // one principle parent will delete BOTH new parents. However,
+      // There is another consideration. What if
+      //  the current principle parents intersect in a way that causes this
+      //  intersection point not to exist but a new pair intersect in a way
+      //  that causes this intersection point to exist? Then the new pair
+      //  should be added to the other parent information list and then
+      //  shallowupdate will make them the new principle parents.
+      const intersectionInfo = intersectTwoObjects(
+        possibleNewInfo.parent1,
+        possibleNewInfo.parent2,
+        SENodule.store.inverseTotalRotationMatrix
+      )[possibleNewInfo.order];
+      if (intersectionInfo.exists && !this._exists) {
+        // console.log("Fail the ancestor test but added anyway because the point exists with this pair");
+        return true;
+      }
+      return false;
+    } else {
+      return true;
+    }
   }
 
   // Used to undo the handler commands that used addIntersectionOtherParent
@@ -284,20 +298,25 @@ export class SEIntersectionPoint extends SEPoint {
     // Remove the other parent from the other parent array
     const index = this._otherParentsInfoArray.findIndex(
       info =>
-        info.parent1.name == n.parent1.name &&
-        info.parent2.name == n.parent2.name &&
-        info.order == n.order
+        info.parent1.name === n.parent1.name &&
+        info.parent2.name === n.parent2.name &&
+        info.order === n.order
     );
     if (index > -1) {
       this._otherParentsInfoArray.splice(index, 1);
       // console.log(
-      //   `Actually Removed other parents ${n.parent1.name} and ${n.parent2.name} to intersection point ${this.name}`
+      //   `Removed other parents ${n.parent1.name} and ${n.parent2.name} to intersection point ${this.name}. Principle Parents are now ${this.principleParent1.name} and ${this.principleParent2.name}`
       // );
     } else {
       console.warn(
         `SEIntersection Point ${this.name}: Attempted to remove info ${n.parent1.name} and ${n.parent2.name}that was not on the other parent info array.`
       );
     }
+    // this.otherParentsInfoArray.forEach(n =>
+    //   console.log(
+    //     `OTHER parent Info: ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
+    //   )
+    // );
   }
 
   public changePrincipleParents(newInfo: SEIntersectionReturnType): void {
@@ -305,7 +324,12 @@ export class SEIntersectionPoint extends SEPoint {
     this.sePrincipleParent2 = newInfo.parent2;
     this.order = newInfo.order;
     // console.log(
-    //   `Actually Principle parents of ${this.name} are now ${this.principleParent1.name} and ${this.principleParent2.name}`
+    //   `The Principle Parents of ${this.name} are now ${this.principleParent1.name} and ${this.principleParent2.name}`
+    // );
+    // this.otherParentsInfoArray.forEach(n =>
+    //   console.log(
+    //     `CPP OTHER parent Info: ${n.parent1.label?.ref.shortUserName}/${n.parent1.name}/${n.parent1.noduleDescription} and ${n.parent2.label?.ref.shortUserName}/${n.parent2.name}/${n.parent2.noduleDescription}`
+    //   )
     // );
   }
 
@@ -323,7 +347,9 @@ export class SEIntersectionPoint extends SEPoint {
     } else {
       // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
       // console.log(
-      //   `shallow update intersection between ${this.principleParent1.name} and ${this.principleParent2.name}`
+      //   `shallow update for`,
+      //   this.name,
+      //   ` intersection between ${this.sePrincipleParent1.name} and ${this.sePrincipleParent2.name}`
       // );
       const updatedIntersectionInfo: IntersectionReturnType[] =
         intersectTwoObjects(
@@ -339,7 +365,7 @@ export class SEIntersectionPoint extends SEPoint {
       if (updatedIntersectionInfo[this.order].exists) {
         // this is the best outcome
         this._exists =
-          this.principleParent1.exists && this.principleParent2.exists;
+          this.sePrincipleParent1.exists && this.sePrincipleParent2.exists;
         this.locationVector = updatedIntersectionInfo[this.order].vector;
       } else if (this._otherParentsInfoArray.length > 0) {
         // if this point is not an intersection between the two principle parents, check to see if the existence is true for other parent info.  If so, update the principle parents.
@@ -353,18 +379,48 @@ export class SEIntersectionPoint extends SEPoint {
               SENodule.store.inverseTotalRotationMatrix
             )[info.order];
             if (intersectionInfo.exists) {
-              // update the DAG
-              this.principleParent1.unregisterChild(this);
-              this.principleParent2.unregisterChild(this);
-              info.parent1.registerChild(this);
-              info.parent2.registerChild(this);
+              // This means that info should be the new parents
+              const intersectionPointCmdGroup = new CommandGroup();
+              // First save the existing parents info (if not on list already) to the other parents info array
+              // console.log("here");
+              if (
+                !this._otherParentsInfoArray.some(
+                  info =>
+                    info.parent1.name == this.sePrincipleParent1.name &&
+                    info.parent2.name == this.sePrincipleParent2.name &&
+                    info.order == this.order
+                )
+              ) {
+                // console.log("in here");
+                intersectionPointCmdGroup.addCommand(
+                  new AddIntersectionPointOtherParentsInfo({
+                    existingIntersectionPoint: true,
+                    SEIntersectionPoint: this,
+                    parent1: this.sePrincipleParent1,
+                    parent2: this.sePrincipleParent2,
+                    createAntipodalPoint: false,
+                    order: this.order
+                  })
+                );
+              }
+              // Update the DAG and the principle parents
+              intersectionPointCmdGroup.addCommand(
+                new ChangeIntersectionPointPrincipleParents(info)
+              );
+              // Remove the info from the other parent info array
+              intersectionPointCmdGroup.addCommand(
+                new RemoveIntersectionPointOtherParentsInfo(info)
+              );
+
+              intersectionPointCmdGroup.execute();
+              // The execution of this command causes no graphical change, so
+              // to avoid an extra mouse click in the undo/redo stack
+              // (commandHistory in Command) we combine the top two commands
+              //  on the commandHistory stack
+              CommandGroup.combineTopTwoCommands();
+
               this._exists = true;
               this.locationVector = intersectionInfo.vector;
-
-              // This means that info should be the new parents
-              this.changePrincipleParents(info);
-
-              // console.log("Changed principle parents for ", this.name);
               break; // exit the search after the first successful one
             }
           }

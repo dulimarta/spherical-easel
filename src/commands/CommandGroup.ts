@@ -164,7 +164,7 @@ export class CommandGroup extends Command {
         while (cmdPos === nextBeginCommandAt) {
           // Are we at beginTransaction()
           rollbackTarget.push(cmdPos); // Remember the position to rollback to
-          beginIdx++; // prepare for the next beginTrasaction()
+          beginIdx++; // prepare for the next beginTransaction()
           txLevel++; // we are now one level deeper in nesting depth
           if (beginIdx < this.txBegins.length) {
             nextBeginCommandAt = this.txBegins[beginIdx].commandIndex;
@@ -242,7 +242,7 @@ export class CommandGroup extends Command {
               }
             }
           } else {
-            console.debug(`Condition at ${cmdPos} evaluates to true`);
+            // console.debug(`Condition at ${cmdPos} evaluates to true`);
             nextCondition = this.ifConditions.pop();
           }
           if (nextCondition) {
@@ -254,7 +254,7 @@ export class CommandGroup extends Command {
           }
         }
         if (cmdPos < this.subCommands.length) {
-          const opString = this.subCommands[cmdPos].toOpcode();
+          // const opString = this.subCommands[cmdPos].toOpcode();
           // console.debug(
           //   `Executing command at position ${cmdPos} ${opString
           //     ?.toString()
@@ -294,7 +294,7 @@ export class CommandGroup extends Command {
           }
         }
         purgeVictims.forEach(v => {
-          const len = v.endAt - v.startAt + 1;
+          const len = v.endAt - v.startAt;
           this.subCommands.splice(v.startAt, len);
         });
       }
@@ -419,5 +419,48 @@ export class CommandGroup extends Command {
     // When all the sub-commands return null, we ended up
     // with an empty array. In which case we return a null.
     return group?.length > 0 ? group : null;
+  }
+
+  /** Combine the top two commands in the commandHistory so that
+   * every time a user clicks do or undo a graphical change is observed
+   */
+  static combineTopTwoCommands(): void {
+    if (this.commandHistory.length < 2) {
+      throw console.error(
+        "There are not two commands in the command history stack to combine!"
+      );
+    } else {
+      // remove the top two elements
+      const topElement = this.commandHistory.pop() as Command | CommandGroup;
+      const secondToTopElement = this.commandHistory.pop() as
+        | Command
+        | CommandGroup;
+      if (
+        topElement instanceof CommandGroup &&
+        secondToTopElement instanceof CommandGroup
+      ) {
+        topElement.subCommands.forEach(cmd =>
+          secondToTopElement.addCommand(cmd)
+        );
+        this.commandHistory.push(secondToTopElement);
+      } else if (
+        topElement instanceof CommandGroup &&
+        secondToTopElement instanceof Command
+      ) {
+        topElement.subCommands.unshift(secondToTopElement);
+        this.commandHistory.push(topElement);
+      } else if (
+        topElement instanceof Command &&
+        secondToTopElement instanceof CommandGroup
+      ) {
+        secondToTopElement.subCommands.push(topElement);
+        this.commandHistory.push(secondToTopElement);
+      } else {
+        const cmdGroup = new CommandGroup();
+        cmdGroup.addCommand(secondToTopElement);
+        cmdGroup.addCommand(topElement);
+        this.commandHistory.push(cmdGroup);
+      }
+    }
   }
 }

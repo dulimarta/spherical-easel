@@ -1,3 +1,19 @@
+diff --git a/node_modules/two.js/src/children.js b/node_modules/two.js/src/children.js
+index c644037..5ca1805 100644
+--- a/node_modules/two.js/src/children.js
++++ b/node_modules/two.js/src/children.js
+@@ -13,9 +13,9 @@ export class Children extends Collection {
+    * @property {Object} - Map of all elements in the list keyed by `id`s.
+    */
+   // N.B: Technique to disable enumeration on object
+-  #ids = {};
++  ids = {};
+   get ids() {
+-    return this.#ids;
++    return this.ids;
+   }
+ 
+   constructor(children) {
 diff --git a/node_modules/two.js/src/collection.js b/node_modules/two.js/src/collection.js
 index 3b9f1e9..4af6275 100644
 --- a/node_modules/two.js/src/collection.js
