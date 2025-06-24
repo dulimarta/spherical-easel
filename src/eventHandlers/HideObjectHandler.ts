@@ -17,7 +17,7 @@ export default class HideObjectHandler extends Highlighter {
   // a map to store (bu SENodule ID) the show or not showing status of the SENodules when the tool is activated.
   private initialShowingMap: Map<number, boolean> = new Map(); //number is the SENodule.id, boolean is the showing value of the SENodule
 
-// Filter the hitSEPoints appropriately for this handler
+  // Filter the hitSEPoints appropriately for this handler
   protected filteredIntersectionPointsList: SEPoint[] = [];
 
   constructor(layers: Group[]) {
@@ -177,7 +177,7 @@ export default class HideObjectHandler extends Highlighter {
   }
 
   activate(): void {
-    window.addEventListener("keypress", this.keyPressHandler);
+    // window.addEventListener("keypress", this.keyPressHandler);
     // Record the showing status of all the SENodules
     HideObjectHandler.store.seNodules.forEach(seNodule => {
       this.initialShowingMap.set(seNodule.id, seNodule.showing);
@@ -204,7 +204,7 @@ export default class HideObjectHandler extends Highlighter {
   deactivate(): void {
     super.deactivate();
     // Remove the listener
-    window.removeEventListener("keypress", this.keyPressHandler);
+    // window.removeEventListener("keypress", this.keyPressHandler);
     // clear the initial showing map
     this.initialShowingMap.clear();
   }
