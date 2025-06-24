@@ -21,10 +21,10 @@ export abstract class SEExpression extends SENodule {
 
   constructor() {
     super();
-    SEExpression.EXPR_COUNT++;
+    SENodule.EXPR_COUNT++;
     //DO NOT MODIFY THIS NAME! THIS SHOULD BE THE ONLY VALUE THIS FIELD EVER GETS
     // This is the key value for for the SECalculation, see its construction for the Map<string,number>
-    this.name = `M${SEExpression.EXPR_COUNT}`;
+    this.name = `M${SENodule.EXPR_COUNT}`;
   }
 
   /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number
