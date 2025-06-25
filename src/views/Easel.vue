@@ -203,7 +203,7 @@ const navDrawerWidth = ref(320);
 const previewClass = ref("");
 const constructionInfo = ref<SphericalConstruction | null>(null);
 const localIsEarthMode = ref(false);
-const loadingFromPath = ref(true);
+const loadingFromPath = ref(false);
 
 let confirmedLeaving = false;
 let attemptedToRoute: RouteLocationNormalized | null = null;
@@ -268,6 +268,8 @@ function loadDocument(docId: string): void {
           type: "error"
         });
       }
+    })
+    .finally(() => {
       loadingFromPath.value = false;
     });
 
@@ -483,7 +485,9 @@ onBeforeRouteLeave(
   border-radius: 8px;
   border: solid white;
   background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 #toolbox-and-sphere {
