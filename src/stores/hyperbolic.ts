@@ -6,16 +6,16 @@ import { ref, Ref } from "vue";
 
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const mouseIntersections: Ref<Intersection[]> = ref([]);
-  const actionMode: Ref<ActionMode> = ref("move");
+  // const actionMode: Ref<ActionMode> = ref("move");
   let threeJSScene: Scene;
 
   function setScene(s: Scene) {
     threeJSScene = s;
   }
-  function setActionMode(mode: ActionMode): void {
-    actionMode.value = mode;
-    // this.activeToolName = mode.name;
-  }
+  // function setActionMode(mode: ActionMode): void {
+  //   actionMode.value = mode;
+  //   // this.activeToolName = mode.name;
+  // }
   function addPoint(point: HEPoint) {
     point.addToScene(threeJSScene);
   }
@@ -24,11 +24,11 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   }
   return {
     mouseIntersections,
-    actionMode,
+    // actionMode,
     addPoint,
     removePoint,
-    setScene,
-    setActionMode
+    setScene
+    // setActionMode
   };
 });
 

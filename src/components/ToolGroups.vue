@@ -233,10 +233,7 @@ function toolSelectionChanged() {
       .find((toolBtn: ToolButtonType) => toolBtn.action == selectedTool.value);
     // console.log("Toolbutton handler, found the button", whichButton);
     if (whichButton) {
-      // seStore.setButton(whichButton);
-      if (!route.path.endsWith("hyperbolic"))
       seStore.setActionMode(selectedTool.value!);
-    else hyperStore.setActionMode(selectedTool.value!)
     }
   } else {
     const toolCheck = selectedTool.value

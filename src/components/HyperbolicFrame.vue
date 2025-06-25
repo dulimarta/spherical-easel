@@ -13,16 +13,17 @@
         mdi-apple-keyboard-control
       </v-icon>
     </span>
-    <span class="mr-2">
+    <span
+      class="mr-2"
+      :style="{
+        color: isOutside ? 'red' : 'black'
+      }">
       Mouse @
-      <span
-        :style="{
-          color: isOutside ? 'red' : 'black'
-        }">
-        ({{ elementX.toFixed(0) }}, {{ elementY.toFixed(0) }})
+      <span>2D:({{ elementX.toFixed(0) }}, {{ elementY.toFixed(0) }})</span>
+      <span class="mx-2">
+        {{ mouseCoordNormalized.toFixed(3) }}
       </span>
-      {{ mouseCoordNormalized.toFixed(3) }}
-      {{ rayIntersectionPoint.position.toFixed(2) }}
+      <span>3D:{{ rayIntersectionPoint.position.toFixed(2) }}</span>
     </span>
   </span>
   <canvas
@@ -83,8 +84,13 @@ import { storeToRefs } from "pinia";
 import { watch } from "vue";
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
 import { PointHandler } from "@/eventHandlers_hyperbolic/PointHandler";
+import { useSEStore } from "@/stores/se";
 const hyperStore = useHyperbolicStore();
-const { mouseIntersections, actionMode } = storeToRefs(hyperStore);
+const seStore = useSEStore()
+const { mouseIntersections } = storeToRefs(hyperStore);
+const {actionMode} = storeToRefs(seStore)
+const enableCameraControl = ref(false);
+
 type ImportantSurface = "UPPER" | "LOWER" | null;
 let onHyperboloid: ImportantSurface = null;
 // Inject new BVH functions into current THREE-JS Mesh/BufferGeometry definitions
@@ -303,9 +309,19 @@ scene.add(pointLight);
 let currentTool: ToolStrategy | null = null; //new PointHandler();
 let pointTool: PointHandler = new PointHandler();
 function doRender() {
-  const deltaTime = clock.getDelta();
-  const hasUpdatedControls = cameraController.update(deltaTime);
-  if (hasUpdatedControls) renderer.render(scene, camera);
+  // console.debug("Enable camera control", enableCameraControl.value)
+  if (enableCameraControl.value) {
+    const deltaTime = clock.getDelta();
+    const hasUpdatedControls = cameraController.update(deltaTime);
+    console.debug(
+      "Enable camera control?",
+      hasUpdatedControls
+    );
+    if (hasUpdatedControls) {
+      console.debug(`Camera control triggers update`);
+      renderer.render(scene, camera);
+    }
+  }
 }
 
 watch(
@@ -323,12 +339,18 @@ watch(
 watch(
   () => actionMode.value,
   mode => {
+    console.debug("New action mode", mode);
     switch (mode) {
       case "point":
         if (pointTool === null) {
           pointTool = new PointHandler();
         }
         currentTool = pointTool;
+        enableCameraControl.value = false
+        break
+      default:
+        enableCameraControl.value = true
+        currentTool = null;
     }
   }
 );
@@ -428,19 +450,19 @@ function threeMouseTracker(ev: MouseEvent) {
       else onHyperboloid = null;
       // console.debug(`First intersection ${firstIntersection.object.name}`);
       rayIntersectionPoint.position.copy(firstIntersection.point);
+      mouseNormalArrow.setDirection(firstIntersection.normal!);
       scene.add(rayIntersectionPoint);
       // mouseNormalArrow.position.copy(rayIntersectionPoint.position)
-      if (firstIntersection.object.name.endsWith("Plane")) {
-        // Using the normal from the intersection returned by RayCaster
-        // does not give us the correct normal vector direction
-        // Must take it from the face normal and then apply the world transformation matrix
-        const n = firstIntersection.face?.normal.clone();
-        n?.transformDirection(firstIntersection.object.matrixWorld);
-        // console.debug(`with normal vector ${n!.toFixed(2)}`);
-        mouseNormalArrow.setDirection(n!);
-      } else {
-        mouseNormalArrow.setDirection(firstIntersection.normal!);
-      }
+      // if (firstIntersection.object.name.endsWith("Plane")) {
+      //   // Using the normal from the intersection returned by RayCaster
+      //   // does not give us the correct normal vector direction
+      //   // Must take it from the face normal and then apply the world transformation matrix
+      //   const n = firstIntersection.face?.normal.clone();
+      //   n?.transformDirection(firstIntersection.object.matrixWorld);
+      //   // console.debug(`with normal vector ${n!.toFixed(2)}`);
+      //   mouseNormalArrow.setDirection(n!);
+      // } else {
+      // }
       auxLineIntersectionPoints.forEach(p => scene.remove(p));
       if (shiftKey.value) {
         // Show auxiliary line with shift-key
@@ -529,15 +551,15 @@ function threeMouseTracker(ev: MouseEvent) {
             new THREE.MeshStandardMaterial({ color: "greenyellow" })
           );
           scene.add(hyperTube);
-          const innerB =
-            planeDir1.x * planeDir1.x +
-            planeDir1.y * planeDir1.y -
-            planeDir1.z * planeDir1.z;
-          const innerA =
-            planeDir2.x * planeDir2.x +
-            planeDir2.y * planeDir2.y -
-            planeDir2.z * planeDir2.z;
-          const lambdaCoeff = Math.sqrt(-1 / innerA);
+          // const innerB =
+          //   planeDir1.x * planeDir1.x +
+          //   planeDir1.y * planeDir1.y -
+          //   planeDir1.z * planeDir1.z;
+          // const innerA =
+          //   planeDir2.x * planeDir2.x +
+          //   planeDir2.y * planeDir2.y -
+          //   planeDir2.z * planeDir2.z;
+          // const lambdaCoeff = Math.sqrt(-1 / innerA);
           // console.debug("Diag metrics", innerA, innerB, lambdaCoeff);
           planeDirArrow.setDirection(planeDir2);
 
