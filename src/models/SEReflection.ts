@@ -14,8 +14,8 @@ export class SEReflection extends SETransformation {
     super();
     this._lineOrSegment = lineOrSegment;
     this.ref = lineOrSegment.ref;
-    SETransformation.REFLECTION_COUNT++;
-    this.name = `RL${SETransformation.REFLECTION_COUNT}`;
+    SENodule.REFLECTION_COUNT++;
+    this.name = `RL${SENodule.REFLECTION_COUNT}`;
     this.markKidsOutOfDate();
     this.update(); // So that the transformation is initialized
   }

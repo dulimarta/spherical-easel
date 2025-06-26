@@ -1,3 +1,19 @@
+diff --git a/node_modules/two.js/build/two.js b/node_modules/two.js/build/two.js
+index 4237df8..c8bd09f 100644
+--- a/node_modules/two.js/build/two.js
++++ b/node_modules/two.js/build/two.js
+@@ -4240,9 +4240,9 @@ var Two = (() => {
+ 
+   // src/children.js
+   var Children = class extends Collection {
+-    #ids = {};
++    ids = {};
+     get ids() {
+-      return this.#ids;
++      return this.ids;
+     }
+     constructor(children) {
+       children = Array.isArray(children) ? children : Array.prototype.slice.call(arguments);
 diff --git a/node_modules/two.js/src/children.js b/node_modules/two.js/src/children.js
 index c644037..5ca1805 100644
 --- a/node_modules/two.js/src/children.js
