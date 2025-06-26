@@ -21,8 +21,8 @@ export class SETranslation extends SETransformation {
     this._lineOrSegment = lineOrSegment;
     this._translationDistanceExpression = translationDistanceExpression;
     this.ref = lineOrSegment.ref;
-    SETransformation.TRANSLATION_COUNT++;
-    this.name = `Tr${SETransformation.TRANSLATION_COUNT}`;
+    SENodule.TRANSLATION_COUNT++;
+    this.name = `Tr${SENodule.TRANSLATION_COUNT}`;
     this.update(); // So that the transformation is initialized
   }
 

@@ -15,6 +15,7 @@ import { SELabel } from "./SELabel";
 import { SELine } from "./SELine";
 import { SESegment } from "./SESegment";
 import { SEPoint } from "./SEPoint";
+import { SENodule } from "@/models/SENodule";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_ANGLE_MARKER_FRONT_STYLE),
@@ -149,8 +150,8 @@ export class SEAngleMarker
     // however we don't want the initial shortName of the angle marker's label to be displayed with a "M###"
     //  so we record the angleMarkerNumber and then in SELabel, we set the short name of the Label using this field.
     // The M### name is defined in the SEExpression constructor
-    SEAngleMarker.ANGLEMARKER_COUNT++;
-    this._angleMarkerNumber = SEAngleMarker.ANGLEMARKER_COUNT;
+    SENodule.ANGLEMARKER_COUNT++;
+    this._angleMarkerNumber = SENodule.ANGLEMARKER_COUNT;
   }
 
   public customStyles(): Set<string> {
