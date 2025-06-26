@@ -46,12 +46,10 @@ import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { PointMoverVisitor } from "@/visitors/PointMoverVisitor";
 import { RotationVisitor } from "@/visitors/RotationVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
-import { Ref, ref } from "vue";
+import { Ref, ref, computed, markRaw } from "vue";
 import { defineStore } from "pinia";
 import { Matrix4, Vector2, Vector3 } from "three";
-//import Two from "two.js";
 import { Group } from "two.js/src/group";
-import { computed } from "vue";
 import SETTINGS from "@/global-settings";
 import Two from "two.js";
 import { SEText } from "@/models/SEText";
@@ -609,8 +607,8 @@ export const useSEStore = defineStore("se", () => {
   function addPoint(point: SEPoint): void {
     // console.log("Point Added ", point.name)
     sePointIds.value.push(point.id);
-    sePointMap.set(point.id, point);
-    seNodules.value.push(point);
+    sePointMap.set(point.id, markRaw(point));
+    seNodules.value.push(markRaw(point));
     point.ref.addToLayers(layers);
     hasUnsavedNodules.value = true;
     updateDisabledTools("point");
@@ -639,8 +637,8 @@ export const useSEStore = defineStore("se", () => {
   }
   function addLine(line: SELine): void {
     seLineIds.value.push(line.id);
-    seLineMap.set(line.id, line);
-    seNodules.value.push(line as SENodule);
+    seLineMap.set(line.id, markRaw(line));
+    seNodules.value.push(markRaw(line));
     line.ref.addToLayers(layers);
     hasUnsavedNodules.value = true;
     updateDisabledTools("line");
@@ -660,8 +658,8 @@ export const useSEStore = defineStore("se", () => {
   }
   function addCircle(circle: SECircle): void {
     seCircleIds.value.push(circle.id);
-    seCircleMap.set(circle.id, circle);
-    seNodules.value.push(circle);
+    seCircleMap.set(circle.id, markRaw(circle));
+    seNodules.value.push(markRaw(circle));
     circle.ref!.addToLayers(layers);
     hasUnsavedNodules.value = true;
     updateDisabledTools("circle");
@@ -682,8 +680,8 @@ export const useSEStore = defineStore("se", () => {
   }
   function addTransformation(transformation: SETransformation): void {
     seTransformationIds.value.push(transformation.id);
-    seTransformationMap.set(transformation.id, transformation);
-    seNodules.value.push(transformation);
+    seTransformationMap.set(transformation.id, markRaw(transformation));
+    seNodules.value.push(markRaw(transformation));
     hasUnsavedNodules.value = true;
     updateDisabledTools("transformation");
   }
@@ -704,8 +702,8 @@ export const useSEStore = defineStore("se", () => {
   function addSegment(segment: SESegment): void {
     // console.log("seg id", segment.id)
     seSegmentIds.value.push(segment.id);
-    seSegmentMap.set(segment.id, segment);
-    seNodules.value.push(segment);
+    seSegmentMap.set(segment.id, markRaw(segment));
+    seNodules.value.push(markRaw(segment));
     segment.ref.addToLayers(layers);
     hasUnsavedNodules.value = true;
     updateDisabledTools("segment");
@@ -724,8 +722,8 @@ export const useSEStore = defineStore("se", () => {
   }
   function addEllipse(ellipse: SEEllipse): void {
     seEllipseIds.value.push(ellipse.id);
-    seEllipseMap.set(ellipse.id, ellipse);
-    seNodules.value.push(ellipse);
+    seEllipseMap.set(ellipse.id, markRaw(ellipse));
+    seNodules.value.push(markRaw(ellipse));
     ellipse.ref.addToLayers(layers);
     hasUnsavedNodules.value = true;
     updateDisabledTools("ellipse");
@@ -746,8 +744,8 @@ export const useSEStore = defineStore("se", () => {
   }
   function addLabel(label: SELabel): void {
     seLabelIds.value.push(label.id);
-    seLabelMap.set(label.id, label);
-    seNodules.value.push(label);
+    seLabelMap.set(label.id, markRaw(label));
+    seNodules.value.push(markRaw(label));
     label.ref.addToLayers(layers);
     hasUnsavedNodules.value = true;
     // this.updateDisabledTools("label"); not needed because labels are attached to all geometric objects
@@ -775,8 +773,8 @@ export const useSEStore = defineStore("se", () => {
   }
   function addText(text: SEText): void {
     seTextIds.value.push(text.id);
-    seTextMap.set(text.id, text);
-    seNodules.value.push(text);
+    seTextMap.set(text.id, markRaw(text));
+    seNodules.value.push(markRaw(text));
     text.ref.addToLayers(layers);
     hasUnsavedNodules.value = true;
   }
@@ -802,10 +800,10 @@ export const useSEStore = defineStore("se", () => {
   }
   function addAngleMarkerAndExpression(angleMarker: SEAngleMarker): void {
     seExpressionIds.value.push(angleMarker.id);
-    seExpressionMap.set(angleMarker.id, angleMarker);
+    seExpressionMap.set(angleMarker.id, markRaw(angleMarker));
     seAngleMarkerIds.value.push(angleMarker.id);
-    seAngleMarkerMap.set(angleMarker.id, angleMarker);
-    seNodules.value.push(angleMarker);
+    seAngleMarkerMap.set(angleMarker.id, markRaw(angleMarker));
+    seNodules.value.push(markRaw(angleMarker));
     angleMarker.ref.addToLayers(layers);
     hasUnsavedNodules.value = true;
     updateDisabledTools("angleMarker");
@@ -836,8 +834,8 @@ export const useSEStore = defineStore("se", () => {
   }
   function addParametric(parametric: SEParametric): void {
     seParametricIds.value.push(parametric.id);
-    seParametricMap.set(parametric.id, parametric);
-    seNodules.value.push(parametric);
+    seParametricMap.set(parametric.id, markRaw(parametric));
+    seNodules.value.push(markRaw(parametric));
     parametric.ref?.addToLayers(layers);
     // let ptr: Parametric | null = parametric.ref;
     // while (ptr) {
@@ -872,10 +870,10 @@ export const useSEStore = defineStore("se", () => {
   function addPolygonAndExpression(polygon: SEPolygon): void {
     // console.debug(`add polygon with id ${polygon.id}`);
     seExpressionIds.value.push(polygon.id);
-    seExpressionMap.set(polygon.id, polygon);
+    seExpressionMap.set(polygon.id, markRaw(polygon));
     sePolygonIds.value.push(polygon.id);
-    sePolygonMap.set(polygon.id, polygon);
-    seNodules.value.push(polygon);
+    sePolygonMap.set(polygon.id, markRaw(polygon));
+    seNodules.value.push(markRaw(polygon));
     polygon.ref.addToLayers(layers);
     hasUnsavedNodules.value = true;
     updateDisabledTools("polygon");
@@ -905,8 +903,8 @@ export const useSEStore = defineStore("se", () => {
   }
   function addExpression(measurement: SEExpression): void {
     seExpressionIds.value.push(measurement.id);
-    seExpressionMap.set(measurement.id, measurement);
-    seNodules.value.push(measurement);
+    seExpressionMap.set(measurement.id, markRaw(measurement));
+    seNodules.value.push(markRaw(measurement));
     hasUnsavedNodules.value = true;
     updateDisabledTools("expression");
   }
@@ -1070,7 +1068,7 @@ export const useSEStore = defineStore("se", () => {
   function addTemporaryNodule(nodule: Nodule): void {
     nodule.stylize(DisplayStyle.ApplyTemporaryVariables);
     nodule.adjustSize(); //since the tools are created on demand, the size of the canvas and zoom factor will be different so update the size of the temporary plottable
-    temporaryNodules.value.push(nodule);
+    temporaryNodules.value.push(markRaw(nodule)); // Do we have to use markRaw here?
   }
   function updateSelectedSENodules(payload: SENodule[]): void {
     function diffArray(prev: SENodule[], curr: SENodule[]): boolean {

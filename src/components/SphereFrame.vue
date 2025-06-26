@@ -166,7 +166,6 @@ const {
   seEllipses,
   sePolygons,
   seCircles,
-  // twojsLayers: layers,
   isEarthMode
 } = storeToRefs(seStore);
 const acctStore = useAccountStore();
