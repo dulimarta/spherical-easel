@@ -97,8 +97,8 @@ export class SEEllipse
     this._focus1SEPoint = focus1Point;
     this._focus2SEPoint = focus2Point;
     this._ellipseSEPoint = ellipsePoint;
-    SEEllipse.ELLIPSE_COUNT++;
-    this.name = `E${SEEllipse.ELLIPSE_COUNT}`;
+    SENodule.ELLIPSE_COUNT++;
+    this.name = `E${SENodule.ELLIPSE_COUNT}`;
     this.ref = createNonFree
       ? new NonFreeEllipse(this.name)
       : new Ellipse(this.name);

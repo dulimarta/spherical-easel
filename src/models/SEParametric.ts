@@ -256,8 +256,8 @@ export class SEParametric
     //   sample.push(new Vector3(x, y, z));
     // }
 
-    SEParametric.PARAMETRIC_COUNT++;
-    this.name = `Pa${SEParametric.PARAMETRIC_COUNT}`;
+    SENodule.PARAMETRIC_COUNT++;
+    this.name = `Pa${SENodule.PARAMETRIC_COUNT}`;
     this._seParentExpressions.forEach((m: SEExpression) => {
       this.varMap.set(m.name, m.value);
     });

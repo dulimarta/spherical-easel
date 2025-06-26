@@ -79,8 +79,8 @@ export class SECircle
     super();
     this._centerSEPoint = centerPoint;
     this._circleSEPoint = circlePoint;
-    SECircle.CIRCLE_COUNT++;
-    this.name = `C${SECircle.CIRCLE_COUNT}`;
+    SENodule.CIRCLE_COUNT++;
+    this.name = `C${SENodule.CIRCLE_COUNT}`;
     this.ref = createNonFreeCircle
       ? new NonFreeCircle(this.name)
       : new Circle(this.name);

@@ -70,8 +70,8 @@ export class SELine
     createNonFreeLine: boolean = false
   ) {
     super();
-    SELine.LINE_COUNT++;
-    this.name = `Li${SELine.LINE_COUNT}`;
+    SENodule.LINE_COUNT++;
+    this.name = `Li${SENodule.LINE_COUNT}`;
     this.ref = createNonFreeLine
       ? new NonFreeLine(this.name)
       : new Line(this.name);

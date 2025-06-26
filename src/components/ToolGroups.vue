@@ -134,9 +134,9 @@ onBeforeMount((): void => {
   buttonGroup.value.push(...permissibleButtonGroup);
   //sort the button list by id so that we don't have to reorder the list each item we add a new button
 
-  buttonGroup.value.forEach((gr: ToolButtonGroup) => {
-    gr.children.sort((a: ToolButtonType, b: ToolButtonType) => a.id - b.id);
-  });
+  // buttonGroup.value.forEach((gr: ToolButtonGroup) => {
+  //   gr.children.sort((a: ToolButtonType, b: ToolButtonType) => a.id - b.id);
+  // });
   if (appFeature !== "beta") {
   }
   currentToolset.push(...includedTools.value);
