@@ -57,7 +57,7 @@ export default class TranslationTransformationHandler extends Highlighter {
           type: "error"
         });
         // switch to tools tab
-        EventBus.fire("left-panel-set-active-tab", { tabNumber: 0 });
+        EventBus.fire("left-panel-set-active-tab", { tabName: "tools" });
         // Change the tool
         TranslationTransformationHandler.store.setActionMode("segment");
         return;
@@ -223,7 +223,7 @@ export default class TranslationTransformationHandler extends Highlighter {
         // the segment has not been measured so create new SEEXpression for the measurement
         measurementSEExpression = new SESegmentLength(this.measurementSEParent);
         EventBus.fire("show-alert", {
-          key: `handlers.newSegmentMeasurementAdded`,
+          key: `newSegmentMeasurementAdded`,
           keyOptions: { name: `${measurementSEExpression.name}` },
           type: "success"
         });

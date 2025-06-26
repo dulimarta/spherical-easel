@@ -1,25 +1,4 @@
 <template>
-  <div
-    style="
-      position: fixed;
-      /* Use the following background-color for debugging purposes */
-      /* background-color: #77acddc4; */
-      right: 8px;
-      width: 80px;
-      margin-top: 120px;
-      margin-bottom: 180px;
-      top: 0;
-      bottom: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      z-index: 1;
-    ">
-    <StyleDrawer></StyleDrawer>
-  </div>
-  <!--v-navigation-drawer location="end" width="80" permanent floating style="height: 70vh; margin: auto;
-  background-color: transparent;">
-  </!--v-navigation-drawer-->
   <div id="toolbox-and-sphere">
     <AppNavigation
       @drawer-width-changed="
@@ -40,13 +19,14 @@
           :available-width="availWidth" />
         <HyperbolicFrame
           v-if="route.path.endsWith('/hyperbolic')"
-          :available-width="availWidth" 
+          :available-width="availWidth"
           :available-height="availHeight"></HyperbolicFrame>
         <SphereFrame
           v-else
           :available-width="availWidth"
           :available-height="availHeight"
           :is-earth-mode="localIsEarthMode" />
+        <StyleDrawer></StyleDrawer>
       </div>
       <div
         v-if="svgDataImage.length !== 0"
@@ -89,7 +69,7 @@
         <img
           id="previewImage"
           :src="svgDataImage"
-          :width="0.9 * overlayHeight * svgDataImageAspectRatio"
+          :width="0.9 * overlayHeight"
           :height="0.9 * overlayHeight" />
       </div>
       <div id="msghub">
@@ -170,7 +150,7 @@ import {
 } from "@/types/ConstructionTypes";
 import AngleMarker from "@/plottables/AngleMarker";
 
-import { run } from "@/commands/CommandInterpreter";
+import { runScript } from "@/commands/CommandInterpreter";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import { useConstructionStore } from "@/stores/construction";
@@ -207,7 +187,9 @@ const {
   temporaryNodules,
   hasObjects,
   zoomMagnificationFactor,
-  isEarthMode
+  isEarthMode,
+  canvasWidth,
+  canvasHeight
 } = storeToRefs(seStore);
 const { constructionDocId } = storeToRefs(acctStore);
 const props = defineProps<{
@@ -234,7 +216,7 @@ let attemptedToRoute: RouteLocationNormalized | null = null;
 const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
 const clearConstructionWarning = ref(false);
 const svgDataImage = ref("");
-const svgDataImageAspectRatio = ref(1);
+// const svgDataImageAspectRatio = ref(1); // not needed because the svg has an aspect ratio of 1 and the ratio of the canvas width/height doesn't matter!
 let constructionClearTimer: any;
 
 //#region magnificationUpdate
@@ -254,7 +236,7 @@ const showConstructionPreview = (s: SphericalConstruction | null) => {
     // );
     previewClass.value = "preview-fadein";
     svgDataImage.value = s.preview;
-    svgDataImageAspectRatio.value = s.aspectRatio ?? 1;
+    // svgDataImageAspectRatio.value = s.aspectRatio ?? 1;
     constructionInfo.value = s;
   } else {
     previewClass.value = "preview-fadeout";
@@ -274,13 +256,14 @@ function adjustCanvasSize(): void {
 
 function loadDocument(docId: string): void {
   seStore.removeAllFromLayers();
-  seStore.init();
+  seStore.init(true); // true prevents the clearing of the temporary nodules so that the initial tool's temporary nodules are not cleared and then never resized properly
+  seStore.setActionMode("move"); // after loading this should be the active tool
   SENodule.resetAllCounters();
   constructionStore
     .loadPublicConstruction(docId)
     .then((script: ConstructionScript | null) => {
       if (script !== null) {
-        run(script);
+        runScript(script);
         seStore.updateDisplay();
       } else {
         EventBus.fire("show-alert", {
@@ -300,7 +283,10 @@ onMounted((): void => {
   window.addEventListener("resize", adjustCanvasSize);
   adjustCanvasSize();
 
-  if (props.documentId) loadDocument(props.documentId);
+  if (props.documentId) {
+    console.debug(`Easel component has a query argument ${props.documentId}`);
+    loadDocument(props.documentId);
+  }
   EventBus.listen("set-action-mode-to-select-tool", setActionModeToSelectTool);
   EventBus.listen("initiate-clear-construction", handleResetSphere);
   window.addEventListener("keydown", handleKeyDown);
@@ -311,30 +297,9 @@ onBeforeUnmount((): void => {
   window.removeEventListener("keydown", handleKeyDown);
 });
 
-/**
- * Split pane resize handler
- * @param event an array of numeric triplets {min: ____, max: ____, size: ____}
- */
-// function dividerMoved(
-//   event: Array<{ min: number; max: number; size: number }>
-// ): void {
-//   // event[0].size is the width of the left panel (in percentage)
-//   // 80px is the width of the right navigation drawer
-//   availWidth.value =
-//     display.width.value - mainRect.value.left - mainRect.value.right - 80;
-//   availHeight.value =
-//     display.height.value - mainRect.value.top - mainRect.value.bottom - 90;
-//   // currentCanvasSize.value = Math.min(availWidth.value, availHeight.value);
-// }
-
 function setActionModeToSelectTool(): void {
   seStore.setActionMode("select");
 }
-
-// function onWindowResized(): void {
-//   console.debug("onWindowResized()");
-//   adjustCanvasSize();
-// }
 
 function handleResetSphere(): void {
   clearConstructionWarning.value = true;
@@ -343,6 +308,7 @@ function handleResetSphere(): void {
     seStore.init();
     Command.commandHistory.splice(0);
     Command.redoHistory.splice(0);
+    Command.rememberHistoryLength();
     SENodule.resetAllCounters();
     constructionDocId.value = null;
     EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
@@ -358,6 +324,7 @@ function cancelClearConstruction() {
   }
   clearConstructionWarning.value = false;
 }
+
 function handleKeyDown(keyEvent: KeyboardEvent): void {
   // TO DO: test this on PC
   if (navigator.userAgent.indexOf("Mac OS X") !== -1) {
@@ -430,7 +397,12 @@ onBeforeRouteLeave(
     // eslint-disable-next-line no-unused-vars
     _: RouteLocationNormalized
   ): boolean => {
-    if (hasObjects.value && !confirmedLeaving) {
+    console.debug(`BeforeRouteLeave`, Command.isConstructionModified());
+    if (
+      hasObjects.value &&
+      Command.isConstructionModified() &&
+      !confirmedLeaving
+    ) {
       unsavedWorkDialog.value?.show();
       attemptedToRoute = toRoute;
       return false;

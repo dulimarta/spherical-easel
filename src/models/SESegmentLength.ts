@@ -1,8 +1,10 @@
-import { SEExpression, SENodule, SESegment } from "./internal";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
 import EventBus from "@/eventHandlers/EventBus";
+import { SEExpression } from "./SEExpression";
+import { SESegment } from "./SESegment";
+import { SENodule } from "@/models/SENodule";
 const emptySet = new Set<string>();
 const { t } = i18n.global;
 
@@ -53,7 +55,7 @@ export class SESegmentLength extends SEExpression {
     this.exists = this.seSegment.exists;
 
     if (this.exists) {
-      super.shallowUpdate()
+      super.shallowUpdate();
       // When this updates send its value to the label of the segment
       if (this.seSegment.label) {
         this.seSegment.label.ref.value = [this.value];
@@ -73,9 +75,7 @@ export class SESegmentLength extends SEExpression {
     // will cause this measurement update correctly. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Segment Length with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Segment Length with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

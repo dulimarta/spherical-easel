@@ -52,7 +52,6 @@ export class AddIsometryEllipseCommand extends Command {
     return [[this.isometrySEEllipse, this.isometrySEEllipseLabel]];
   }
 
-
   toOpcode(): null | string | Array<string> {
     return [
       "AddIsometryEllipse",

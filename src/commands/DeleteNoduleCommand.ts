@@ -17,6 +17,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SavedNames } from "@/types";
 import { toSVGType } from "@/types";
 import { SEText } from "@/models/SEText";
+import { DisplayStyle } from "@/plottables/Nodule";
 
 export class DeleteNoduleCommand extends Command {
   private seNodule: SENodule;

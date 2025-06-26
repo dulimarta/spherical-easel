@@ -1,18 +1,11 @@
-import {
-  SEPoint,
-  SECircle,
-  SETranslation,
-  SERotation,
-  SEReflection,
-  SEPointReflection
-} from "./internal";
+import { SEPoint } from "@/models/SEPoint";
+import { SECircle } from "@/models/SECircle";
+import { SETranslation } from "@/models/SETranslation";
+import { SERotation } from "@/models/SERotation";
 import { ObjectState, SEIsometry } from "@/types";
 import i18n from "@/i18n";
-// import { SECircle } from "./SECircle";
-// import { SETranslation } from "./SETranslation";
-// import { SERotation } from "./SERotation";
-// import { SEReflection } from "./SEReflection";
-// import { SEPointReflection } from "./SEPointReflection";
+import { SEReflection } from "./SEReflection";
+import { SEPointReflection } from "./SEPointReflection";
 const { t } = i18n.global;
 export class SEIsometryCircle extends SECircle {
   /**
@@ -108,9 +101,7 @@ export class SEIsometryCircle extends SECircle {
     // will cause this circle to be put into the correct location.So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Isometry Circle with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Isometry Circle with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

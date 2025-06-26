@@ -35,15 +35,21 @@ export class SetPointUserCreatedValueCommand extends Command {
   }
 
   do(): void {
-    // console.debug(
+    // console.log(
     //   `SetPointUserCreated: DO changed ${this.seIntersectionOrAntipodePoint.name} to user created:${this.userCreatedValue}`
     // );
     // if (this.userCreatedValue) {
     this.seIntersectionOrAntipodePoint.isUserCreated = this.userCreatedValue;
     // Set the display to the default values
-    this.seIntersectionOrAntipodePoint.ref.stylize(
-      DisplayStyle.ApplyCurrentVariables
-    );
+    if (this.userCreatedValue) {
+      this.seIntersectionOrAntipodePoint.ref.stylize(
+        DisplayStyle.ApplyCurrentVariables
+      );
+    } else {
+      this.seIntersectionOrAntipodePoint.ref.stylize(
+        DisplayStyle.ApplyTemporaryVariables
+      );
+    }
     // Set the size for the current zoom magnification factor
     this.seIntersectionOrAntipodePoint.ref.adjustSize();
     this.seIntersectionOrAntipodePoint.showing = this.userCreatedValue;
@@ -118,9 +124,15 @@ export class SetPointUserCreatedValueCommand extends Command {
     // hide the point
     this.seIntersectionOrAntipodePoint.showing = !this.userCreatedValue;
     // revert to temporary status
-    this.seIntersectionOrAntipodePoint.ref.stylize(
-      DisplayStyle.ApplyTemporaryVariables
-    );
+    if (!this.userCreatedValue) {
+      this.seIntersectionOrAntipodePoint.ref.stylize(
+        DisplayStyle.ApplyCurrentVariables
+      );
+    } else {
+      this.seIntersectionOrAntipodePoint.ref.stylize(
+        DisplayStyle.ApplyTemporaryVariables
+      );
+    }
     // set back to automatically created
     this.seIntersectionOrAntipodePoint.isUserCreated = !this.userCreatedValue;
     this.seIntersectionOrAntipodePoint.markKidsOutOfDate();

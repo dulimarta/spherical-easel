@@ -69,7 +69,6 @@ export class ConvertIntersectionPointToAntipodalMode extends Command {
     // this.seIntersectionPoint.isUserCreated = false;
   }
 
-
   toOpcode(): null | string | Array<string> {
     return null; // Exclude this command from interpretation
     // return [

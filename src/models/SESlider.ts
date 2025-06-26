@@ -66,7 +66,7 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
   }
 
   shallowUpdate(): void {
-    super.shallowUpdate()
+    super.shallowUpdate();
     console.error(
       `*** INCOMPLETE ${this.name} *** or no update is necessary for sliders?`
     );
@@ -83,9 +83,7 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
     if (objectState && orderedSENoduleList) {
       orderedSENoduleList.push(this.id);
       if (objectState.has(this.id)) {
-        console.log(
-          `Slider with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Slider with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       objectState.set(this.id, {

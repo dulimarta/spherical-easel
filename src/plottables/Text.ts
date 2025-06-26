@@ -5,12 +5,13 @@ import {
   StyleOptions,
   StyleCategory,
   DEFAULT_TEXT_TEXT_STYLE,
-  DEFAULT_TEXT_FRONT_STYLE,
-  DEFAULT_TEXT_BACK_STYLE
+  // DEFAULT_TEXT_FRONT_STYLE,
+  // DEFAULT_TEXT_BACK_STYLE
 } from "@/types/Styles";
 import { svgStyleType, toSVGType } from "@/types";
 import { Text as TwoJsText } from "two.js/src/text";
 import { Group } from "two.js/src/group";
+import Label from "./Label";
 
 //had to name the file Text so that it does not conflict with two.js/src/text
 export default class Text extends Nodule {
@@ -35,13 +36,13 @@ export default class Text extends Nodule {
       size: SETTINGS.text.fontSize
     });
     // Set the properties of the points that never change - stroke width and some glowing options
-    this.textObject.noStroke();
+    this.textObject.noStroke()
     this.glowingTextObject.linewidth = SETTINGS.text.glowingStrokeWidth;
+    this.glowingTextObject.stroke = SETTINGS.text.glowingStrokeColor
     this.glowingTextObject.visible = false;
 
     this.styleOptions.set(StyleCategory.Label, DEFAULT_TEXT_TEXT_STYLE);
   }
-  //private _defaultName = "";
 
   /**
    * Initialize the current text scale factor that is adjusted by the zoom level and the user textPercent
@@ -124,11 +125,11 @@ export default class Text extends Nodule {
           ...DEFAULT_TEXT_TEXT_STYLE,
           labelDisplayText: this._defaultText
         };
-      case StyleCategory.Front:
-        return DEFAULT_TEXT_FRONT_STYLE; //empty
+      // case StyleCategory.Front:
+      //   return DEFAULT_TEXT_FRONT_STYLE; //empty
 
-      case StyleCategory.Back:
-        return DEFAULT_TEXT_BACK_STYLE; //empty
+      // case StyleCategory.Back:
+      //   return DEFAULT_TEXT_BACK_STYLE; //empty
 
       default:
         return {};
@@ -164,42 +165,42 @@ export default class Text extends Nodule {
 
       case DisplayStyle.ApplyCurrentVariables: {
         // Use the current variables to directly modify the js objects.
-        const labelStyle = this.styleOptions.get(StyleCategory.Label);
+        const textStyle = this.styleOptions.get(StyleCategory.Label);
 
         // we may want to modify this to allow changes in the text from the style panel
-        // console.log("Set text in",this.name,"name=",labelStyle?.labelDisplayText )
-        this.textObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
-        this.glowingTextObject.value = labelStyle?.labelDisplayText ?? "TEXT ERROR"
-        // this._text = labelStyle?.labelDisplayText ?? "TEXT ERROR"
+        // console.log("Set text in",this.name,"name=",textStyle?.labelDisplayText )
+        this.textObject.value = textStyle?.labelDisplayText ?? "TEXT ERROR"
+        this.glowingTextObject.value = textStyle?.labelDisplayText ?? "TEXT ERROR"
+        // this._text = textStyle?.labelDisplayText ?? "TEXT ERROR"
 
-        if (labelStyle?.labelTextStyle !== "bold") {
-          this.textObject.style = (labelStyle?.labelTextStyle ??
+        if (textStyle?.labelTextStyle !== "bold") {
+          this.textObject.style = (textStyle?.labelTextStyle ??
             SETTINGS.label.style) as "normal" | "italic";
-          this.glowingTextObject.style = (labelStyle?.labelTextStyle ??
+          this.glowingTextObject.style = (textStyle?.labelTextStyle ??
             SETTINGS.label.style) as "normal" | "italic";
           this.textObject.weight = 500;
           this.glowingTextObject.weight = 500;
-        } else if (labelStyle?.labelTextStyle === "bold") {
+        } else if (textStyle?.labelTextStyle === "bold") {
           this.textObject.weight = 1000;
           this.glowingTextObject.weight = 1000;
         }
 
         this.textObject.family =
-          labelStyle?.labelTextFamily ?? SETTINGS.label.family;
+          textStyle?.labelTextFamily ?? SETTINGS.label.family;
         this.glowingTextObject.family =
-          labelStyle?.labelTextFamily ?? SETTINGS.label.family;
+          textStyle?.labelTextFamily ?? SETTINGS.label.family;
 
-        this.textObject.decoration = (labelStyle?.labelTextDecoration ??
+        this.textObject.decoration = (textStyle?.labelTextDecoration ??
           SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
-        this.glowingTextObject.decoration = (labelStyle?.labelTextDecoration ??
+        this.glowingTextObject.decoration = (textStyle?.labelTextDecoration ??
           SETTINGS.label.decoration) as "none" | "underline" | "strikethrough";
 
-        this.textObject.rotation = labelStyle?.labelTextRotation ?? 0;
-        this.glowingTextObject.rotation = labelStyle?.labelTextRotation ?? 0;
+        this.textObject.rotation = textStyle?.labelTextRotation ?? 0;
+        this.glowingTextObject.rotation = textStyle?.labelTextRotation ?? 0;
 
         // FRONT = To shoehorn text into label, the front fill color is the same as overall stroke color, there are no front/back for text
         const frontFillColor =
-          labelStyle?.labelFrontFillColor ?? SETTINGS.text.fillColor;
+          textStyle?.labelFrontFillColor ?? SETTINGS.text.fillColor;
         if (Nodule.rgbaIsNoFillOrNoStroke(frontFillColor)) {
           this.textObject.noFill();
         } else {
@@ -212,18 +213,53 @@ export default class Text extends Nodule {
     }
   }
 
-  toSVG(
-    nonScaling?: {
-      stroke: boolean;
-      text: boolean;
-      pointRadius: boolean;
-      scaleFactor: number;
-    },
-    svgForIcon?: boolean
-  ): toSVGType[] {
-    // Possibly don't need this.
-    /**None**/
-    return [];
+  toSVG( nonScaling?: {
+    stroke: boolean;
+    text: boolean;
+    pointRadius: boolean;
+    scaleFactor: number;
+  }): toSVGType[] {
+    // Create an empty return type and then fill in the non-null parts
+    const returnSVGObject: toSVGType = {
+      frontGradientDictionary: null,
+      backGradientDictionary: null,
+      frontStyleDictionary: null,
+      backStyleDictionary: null,
+      layerSVGArray: [],
+      type: "text"
+    };
+    
+    const frontReturnDictionary = new Map<svgStyleType, string>();
+    frontReturnDictionary.set("font-family", this.textObject.family);
+    frontReturnDictionary.set("font-style", this.textObject.style);
+    frontReturnDictionary.set("font-weight", String(this.textObject.weight));
+    frontReturnDictionary.set("text-decoration", this.textObject.decoration);
+    frontReturnDictionary.set(
+      "fill",
+      String(this.textObject.fill).slice(0, 7) // separate out the alpha channel
+    );
+    frontReturnDictionary.set(
+      "fill-opacity",
+      String(Number("0x" + String(this.textObject.fill).slice(7)) / 255) // separate out the alpha channel
+    );
+    returnSVGObject.frontStyleDictionary = frontReturnDictionary;
+
+    let svgFrontString =
+      "<text " +
+      Label.svgTransformMatrixString(
+        this.textObject.rotation,
+        nonScaling?.text ? 1/nonScaling.scaleFactor : (this.textObject.scale as number),
+        this.textObject.position.x,
+        this.textObject.position.y
+      );
+
+    svgFrontString += ">" + this.textObject.value + "</text>";
+    returnSVGObject.layerSVGArray.push([
+      LAYER.foregroundText,
+      svgFrontString
+    ]);
+    //console.log("text front style dictionary", returnSVGObject.frontStyleDictionary)
+    return [returnSVGObject];
   }
 
   get boundingRectangle(): {
@@ -279,6 +315,10 @@ export default class Text extends Nodule {
       labelDisplayText: txt
     });
     this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
+  get text():string {
+    const textStyle = this.styleOptions.get(StyleCategory.Label);
+    return textStyle?.labelDisplayText ?? ""
   }
 
   public setDefaultText(txt:string):void{

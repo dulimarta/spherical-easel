@@ -17,7 +17,7 @@ import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 // import Two from "two.js";
 import { Group } from "two.js/src/group";
-import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
@@ -56,6 +56,8 @@ export default class CircleHandler extends Highlighter {
    */
   protected temporaryEndMarker: Point;
 
+  // Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
   /* temporary vector and matrix to help with computations */
   private tmpVector = new Vector3();
   private tmpMatrix = new Matrix4();
@@ -93,15 +95,18 @@ export default class CircleHandler extends Highlighter {
       // The user is making a circle
       this.centerLocationSelected = true;
       // Check to see if the current location is near any points
-      if (this.hitSEPoints.length > 0) {
+
+      this.updateFilteredPointsList();
+      if (this.filteredIntersectionPointsList.length > 0) {
         // Pick the top most selected point
-        const selected = this.hitSEPoints[0];
+        const selected = this.filteredIntersectionPointsList[0];
         // Record the center vector of the circle so it can be past to the non-temporary circle
         this.centerVector.copy(selected.locationVector);
         // Record the model object as the center of the circle
         this.centerSEPoint = selected;
         // Move the startMarker to the current selected point
-        this.temporaryStartMarker.positionVectorAndDisplay = selected.locationVector;
+        this.temporaryStartMarker.positionVectorAndDisplay =
+          selected.locationVector;
         // Set the center of the circle in the plottable object
         this.temporaryCircle.centerVector = selected.locationVector;
         // Glow the selected point and select it so the highlighter.ts doesn't unglow it with the mouseMoved method
@@ -185,15 +190,17 @@ export default class CircleHandler extends Highlighter {
         // Set the center of the circle in the plottable object - also calls temporaryCircle.readjust()
         this.temporaryCircle.centerVector = this.currentSphereVector;
         // Move the startMarker to the current mouse location
-        this.temporaryStartMarker.positionVectorAndDisplay = this.currentSphereVector;
+        this.temporaryStartMarker.positionVectorAndDisplay =
+          this.currentSphereVector;
         // Record the center vector of the circle so it can be past to the non-temporary circle
         this.centerVector.copy(this.currentSphereVector);
         // Set the center of the circle to null so it can be created later
         this.centerSEPoint = null;
       }
-      this.temporaryEndMarker.positionVectorAndDisplay = this.currentSphereVector;
+      this.temporaryEndMarker.positionVectorAndDisplay =
+        this.currentSphereVector;
       EventBus.fire("show-alert", {
-        key: `handlers.circleCenterSelected`,
+        key: `circleCenterSelected`,
         keyOptions: {},
         type: "info"
       });
@@ -210,8 +217,11 @@ export default class CircleHandler extends Highlighter {
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
     let possiblyGlowing: SEPoint | SEOneOrTwoDimensional | null = null;
-    if (this.hitSEPoints.length > 0) {
-      possiblyGlowing = this.hitSEPoints[0];
+    // Filter the hitSEPoints appropriately for this handler
+    this.updateFilteredPointsList();
+
+    if (this.filteredIntersectionPointsList.length > 0) {
+      possiblyGlowing = this.filteredIntersectionPointsList[0];
     } else if (this.hitSESegments.length > 0) {
       possiblyGlowing = this.hitSESegments[0];
     } else if (this.hitSELines.length > 0) {
@@ -275,7 +285,8 @@ export default class CircleHandler extends Highlighter {
               this.currentSphereVector
             );
         } else if (this.snapTemporaryPointMarkerToPoint == null) {
-          this.temporaryStartMarker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryStartMarker.positionVectorAndDisplay =
+            this.currentSphereVector;
         }
       } else {
         // If the temporary endMarker has *not* been added to the scene do so now
@@ -310,7 +321,8 @@ export default class CircleHandler extends Highlighter {
               this.currentSphereVector
             );
         } else if (this.snapTemporaryPointMarkerToPoint === null) {
-          this.temporaryEndMarker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryEndMarker.positionVectorAndDisplay =
+            this.currentSphereVector;
         }
 
         // If the temporary circle has *not* been added to the scene do so now (only once)
@@ -491,8 +503,11 @@ export default class CircleHandler extends Highlighter {
 
     // Check to see if the release location is near any points
     // fromActivate = true means that this.circleSEPoint is already set
-    if (this.hitSEPoints.length > 0 && !fromActivate) {
-      this.circleSEPoint = this.hitSEPoints[0];
+
+    // Filter the hitSEPoints appropriately for this handler
+    this.updateFilteredPointsList();
+    if (this.filteredIntersectionPointsList.length > 0 && !fromActivate) {
+      this.circleSEPoint = this.filteredIntersectionPointsList[0];
       //compute the radius of the temporary circle using the hit point
       this.arcRadius = this.temporaryCircle.centerVector.angleTo(
         this.circleSEPoint.locationVector
@@ -707,16 +722,20 @@ export default class CircleHandler extends Highlighter {
       // Generate new intersection points. These points must be computed and created
       // in the store. Add the new created points to the circle command so they can be undone.
 
+      const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
+
       CircleHandler.store
-        .createAllIntersectionsWithCircle(newSECircle, newlyCreatedSEPoints)
+        .createAllIntersectionsWith(newSECircle, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
-            circleCommandGroup.addCommand(
-              new AddIntersectionPointOtherParent(
-                item.SEIntersectionPoint,
-                item.parent1
-              )
+            intersectionPointsToUpdate.push(item.SEIntersectionPoint);
+            circleCommandGroup.addCondition(() =>
+              item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
             );
+            circleCommandGroup.addCommand(
+              new AddIntersectionPointOtherParentsInfo(item)
+            );
+            circleCommandGroup.addEndCondition();
           } else {
             // the intersection point is newly created and must be added as a child of the two parents returned
             // Create the plottable and model label
@@ -756,12 +775,41 @@ export default class CircleHandler extends Highlighter {
 
       circleCommandGroup.execute();
 
-      CircleHandler.store.updateTwoJS()
-      newSECircle.ref.updateDisplay(); // The newly created circle will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
+      // The newly added circle passes through all the
+      // intersection points on the intersectionPointsToUpdate list
+      // This circle might be a new parent to some of them
+      // shallowUpdate will check this and change parents as needed
+      intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+      intersectionPointsToUpdate.splice(0);
+
+      CircleHandler.store.updateTwoJS(); // if this is not included, when you make a new circle, the fill is not displayed
+      newSECircle.ref!.updateDisplay(); // The newly created circle will not be displayed properly (specifically the fills will be missing or incorrect) unless the twoInstance is updated first
     }
     return true;
   }
 
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return true;
+        }
+      }
+      return pt.showing;
+    });
+  }
   activate(): void {
     // If there are exactly two SEPoints selected, create a circle with the first as the center
     // and the second as the circle point

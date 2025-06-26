@@ -1,14 +1,12 @@
-import {
-  SEPoint,
-  SETransformation,
-  SETranslation,
-  SERotation,
-  SEReflection,
-  SEPointReflection,
-  SEInversion
-} from "./internal";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
+import { SEPoint } from "./SEPoint";
+import { SETransformation } from "./SETransformation";
+import { SETranslation } from "./SETranslation";
+import { SERotation } from "./SERotation";
+import { SEReflection } from "./SEReflection";
+import { SEPointReflection } from "./SEPointReflection";
+import { SEInversion } from "./SEInversion";
 const { t } = i18n.global;
 export class SETransformedPoint extends SEPoint {
   /**
@@ -94,9 +92,7 @@ export class SETransformedPoint extends SEPoint {
     // will cause this point to be put into the correct location.So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Transformed point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Transformed point with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

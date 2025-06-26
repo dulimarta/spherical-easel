@@ -1,7 +1,9 @@
-import { SEPoint, SELine, SEAngleMarker } from "./internal";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { Vector3 } from "three";
+import { SELine } from "./SELine";
+import { SEAngleMarker } from "./SEAngleMarker";
+import { SEPoint } from "./SEPoint";
 const { t } = i18n.global;
 export class SENSectLine extends SELine {
   /**
@@ -129,9 +131,7 @@ export class SENSectLine extends SELine {
     // will cause this line to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `nSectLine with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `nSectLine with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

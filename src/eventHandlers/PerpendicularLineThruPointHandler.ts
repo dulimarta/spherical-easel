@@ -29,7 +29,7 @@ import { SEPencil } from "@/models/SEPencil";
 import { AddPencilCommand } from "@/commands/AddPencilCommand";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
-import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
@@ -74,6 +74,9 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
    * The vector location of the sePoint, used for the tempLine and to create a new point if the user clicks on nothing
    */
   private sePointVector = new Vector3(0, 0, 0);
+
+  // Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
 
   /* temporary vector to help with computation */
   private tmpVector = new Vector3();
@@ -121,6 +124,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     //Select the objects to create the perpendicular
     if (this.isOnSphere) {
+      this.updateFilteredPointsList();
       // If we don't have selectOneObjectAtATime clicking on a point on a line/segment/circle/ellipse selects both the point and the line/segment/circle/ellipse
       this.selectOneObjectAtATime = true;
       // Attempt to fill the point
@@ -128,14 +132,14 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         this.sePoint === null &&
         this.sePointOneDimensionalParent === null &&
         this.sePointVector.isZero() &&
-        (this.hitSEPoints.length !== 0 ||
+        (this.filteredIntersectionPointsList.length !== 0 ||
           this.oneDimensional !== null ||
           this.hitSENodules.length === 0)
       ) {
         // Fill the point object first by the nearby points, then by nearby intersection points,
         // then point on one-dimensional object, then by creating a new point
-        if (this.hitSEPoints.length > 0) {
-          this.sePoint = this.hitSEPoints[0];
+        if (this.filteredIntersectionPointsList.length > 0) {
+          this.sePoint = this.filteredIntersectionPointsList[0];
           this.sePoint.selected = true;
           this.sePointVector.copy(this.sePoint.locationVector);
           // if the point is an intersection point and is not user created add a temporary marker
@@ -144,7 +148,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.sePoint instanceof SEAntipodalPoint) &&
             !this.sePoint.isUserCreated
           ) {
-            this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+            this.temporaryPointMarker.positionVectorAndDisplay =
+              this.sePointVector;
             this.temporaryPointMarker.addToLayers(this.layers);
             this.temporaryPointAdded = true;
           }
@@ -157,7 +162,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -170,7 +176,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -183,7 +190,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -196,7 +204,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -209,7 +218,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -218,7 +228,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           //  Eventually, we will create a new SEPointOneDimensional and Point
           this.sePointOneDimensionalParent = this.hitSEPolygons[0];
           this.sePointVector.copy(this.currentSphereVector);
-          this.temporaryPointMarker.positionVectorAndDisplay = this.sePointVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.sePointVector;
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
@@ -226,7 +237,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           // The mouse press is not near an existing point or one dimensional object.
           //  Record the location in a temporary point (tempPointMarker found in MouseHandler).
           //  Eventually, we will create a new SEPoint and Point
-          this.temporaryPointMarker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.currentSphereVector;
           this.sePointVector.copy(this.currentSphereVector);
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
@@ -253,7 +265,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             this.sePointVector.isZero()
           ) {
             EventBus.fire("show-alert", {
-              key: `handlers.lineThruPointSegmentSelected`,
+              key: `lineThruPointSegmentSelected`,
               keyOptions: {
                 name: `${this.oneDimensional.label?.ref.shortUserName}`
               },
@@ -353,15 +365,16 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     // The user can create points  on circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
+    this.updateFilteredPointsList();
     if (
       this.sePoint === null &&
       this.sePointOneDimensionalParent === null &&
       this.sePointVector.isZero()
     ) {
       // glow the one-dimensional and points objects when point is not set
-      if (this.hitSEPoints.length > 0) {
-        this.hitSEPoints[0].glowing = true;
-        this.snapToTemporaryPoint = this.hitSEPoints[0];
+      if (this.filteredIntersectionPointsList.length > 0) {
+        this.filteredIntersectionPointsList[0].glowing = true;
+        this.snapToTemporaryPoint = this.filteredIntersectionPointsList[0];
         this.snapToTemporaryOneDimensional = null;
       } else if (this.hitSESegments.length > 0) {
         this.hitSESegments[0].glowing = true;
@@ -423,7 +436,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       //   this.snapToTemporaryOneDimensional = null;
       //   this.snapToTemporaryPoint = null;
       // }
-       else {
+      else {
         this.snapToTemporaryOneDimensional = null;
         this.snapToTemporaryPoint = null;
       }
@@ -435,9 +448,9 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     ) {
       // console.log("3 point is not set and one-d is set");
       // in this case the one dimensional is set and the point is not, so glow all the one-dimensional objects and points
-      if (this.hitSEPoints.length > 0) {
-        this.hitSEPoints[0].glowing = true;
-        this.snapToTemporaryPoint = this.hitSEPoints[0];
+      if (this.filteredIntersectionPointsList.length > 0) {
+        this.filteredIntersectionPointsList[0].glowing = true;
+        this.snapToTemporaryPoint = this.filteredIntersectionPointsList[0];
         this.snapToTemporaryOneDimensional = null;
       } else if (this.hitSESegments.length > 0) {
         this.hitSESegments[0].glowing = true;
@@ -481,7 +494,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
         }
-        this.temporaryPointMarker.positionVectorAndDisplay = this.currentSphereVector;
+        this.temporaryPointMarker.positionVectorAndDisplay =
+          this.currentSphereVector;
       }
 
       if (
@@ -527,7 +541,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             );
         } else if (this.snapToTemporaryPoint == null) {
-          this.temporaryPointMarker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryPointMarker.positionVectorAndDisplay =
+            this.currentSphereVector;
         }
       }
       if (this.oneDimensional !== null) {
@@ -624,6 +639,28 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     this.cleanup();
   }
 
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return true;
+        }
+      }
+      return pt.showing;
+    });
+  }
   createPerpendicular(
     oneDimensional: SEOneDimensional,
     sePointOneDimensionalParent: SEOneOrTwoDimensional | null,
@@ -632,6 +669,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
   ): void {
     // Create a command group to create a new perpendicular line, possibly new point, and to record all the new intersections for undo/redo
     const addPerpendicularLineGroup = new CommandGroup();
+    const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
     const newlyCreatedSEPoints: SEPoint[] = [];
 
     // First create a point if needed. If sePoint is not null, then a point already exists and doesn't need to be created
@@ -810,19 +848,29 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       }
 
       // Determine all new intersection points and add their creation to the command so it can be undone
+
       PerpendicularLineThruPointHandler.store
-        .createAllIntersectionsWithLine(newPerpLine, newlyCreatedSEPoints)
+        .createAllIntersectionsWith(newPerpLine, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
-            console.debug(
-              "PerpendicularHandler: new command AddIntersectionPointOtherParent"
+            intersectionPointsToUpdate.push(item.SEIntersectionPoint);
+            const addIntersectionCmd = new AddIntersectionPointOtherParentsInfo(
+              item
             );
-            const addIntersectionCmd = new AddIntersectionPointOtherParent(
-              item.SEIntersectionPoint,
-              item.parent1
-            );
-            if (usePencil) addPencilGroup.addCommand(addIntersectionCmd);
-            else addPerpendicularLineGroup.addCommand(addIntersectionCmd);
+
+            if (usePencil) {
+              addPencilGroup.addCondition(() =>
+                item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+              );
+              addPencilGroup.addCommand(addIntersectionCmd);
+              addPencilGroup.addEndCondition();
+            } else {
+              addPerpendicularLineGroup.addCondition(() =>
+                item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+              );
+              addPerpendicularLineGroup.addCommand(addIntersectionCmd);
+              addPerpendicularLineGroup.addEndCondition();
+            }
           } else {
             // console.debug(
             //   "Got intersection point at",
@@ -886,8 +934,17 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         addPencilGroup.addCommand(new AddPencilCommand(pencil));
       }
     }
-    if (usePencil) addPencilGroup.execute();
-    else addPerpendicularLineGroup.execute();
+    if (usePencil) {
+      addPencilGroup.execute();
+    } else {
+      addPerpendicularLineGroup.execute();
+    }
+    // The newly added line passes through all the
+    // intersection points on the intersectionPointsToUpdate list
+    // This line might be a new parent to some of them
+    // shallowUpdate will check this and change parents as needed
+    intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+    intersectionPointsToUpdate.splice(0);
   }
 
   activate(): void {

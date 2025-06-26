@@ -1,10 +1,10 @@
 import { SENodule } from "./SENodule";
 import { Matrix4, Vector3 } from "three";
-import { SETransformation, SEPoint } from "./internal";
 // import { SESegment } from "./SESegment";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-// import { SEPoint } from "./SEPoint";
+import { SEPoint } from "./SEPoint";
+import { SETransformation } from "./SETransformation";
 const { t } = i18n.global;
 
 export class SEPointReflection extends SETransformation {
@@ -15,8 +15,8 @@ export class SEPointReflection extends SETransformation {
     super();
     this._pointOfReflection = pointOfReflection;
     this.ref = pointOfReflection.ref;
-    SETransformation.POINT_REFLECTION_COUNT;
-    this.name = `Rp${SETransformation.POINT_REFLECTION_COUNT}`;
+    SENodule.POINT_REFLECTION_COUNT;
+    this.name = `Rp${SENodule.POINT_REFLECTION_COUNT}`;
     this.markKidsOutOfDate();
     this.update(); // So that the transformation is initialized
   }
@@ -64,9 +64,7 @@ export class SEPointReflection extends SETransformation {
     // will cause this point reflection to be correct. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Reflection over point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Reflection over point with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

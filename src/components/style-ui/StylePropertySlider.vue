@@ -8,15 +8,19 @@
     </span>
 
     <!-- The number selector slider -->
-    <v-slider v-bind:="attrs" :disabled="numSelected == 0 || conflict && numSelected > 1"
-    v-model="sliderValue" thumb-label show-ticks>
+    <v-slider
+      v-bind:="attrs"
+      :disabled="numSelected == 0 || (conflict && numSelected > 1)"
+      v-model="sliderValue"
+      thumb-label
+      show-ticks>
       <template v-slot:prepend>
         <v-icon @click="decrementDataValue">mdi-minus</v-icon>
       </template>
       <template v-slot:append>
         <v-icon @click="incrementDataValue">mdi-plus</v-icon>
       </template>
-      <template #thumb-label="{modelValue}">
+      <template #thumb-label="{ modelValue }">
         <span>{{ thumbMap(modelValue) }}</span>
       </template>
     </v-slider>
@@ -24,10 +28,10 @@
 </template>
 
 <script setup lang="ts">
-import { useAttrs } from "vue";
+import { ref, useAttrs, Ref } from "vue";
 import { useI18n } from "vue-i18n";
-const {t} = useI18n()
-const sliderValue = defineModel({type: Number})
+const { t } = useI18n();
+const sliderValue = defineModel({ type: Number });
 const attrs = useAttrs();
 type ComponentProps = {
   title: string;

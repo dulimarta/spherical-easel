@@ -2,7 +2,7 @@ import { Command } from "./Command";
 
 export class UpdateTwoJSCommand extends Command {
   do(): void {
-    Command.store.updateTwoJS()
+    Command.store.updateTwoJS();
   }
 
   saveState(): void {}

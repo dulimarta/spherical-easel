@@ -17,7 +17,7 @@ import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
-import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
 
@@ -30,13 +30,15 @@ export default class LineHandler extends Highlighter {
    * The plottable object needs only the normal vector to render the line. This is the normalVector of the temporary line
    */
   private normalVector = new Vector3(0, 0, 0);
-
   /**
    * The starting and ending SEPoints of the line. The possible parent of the startSEPoint
    */
   private startSEPoint: SEPoint | null = null;
   private endSEPoint: SEPoint | null = null;
   private startSEPointOneDimensionalParent: SEOneOrTwoDimensional | null = null;
+
+  // Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
 
   /** Has the temporary line/tempStartMarker/tempEndMarker been added to the scene?*/
   private isTemporaryLineAdded = false;
@@ -103,14 +105,15 @@ export default class LineHandler extends Highlighter {
     if (this.isOnSphere && !this.startLocationSelected) {
       // The user is making a line
       this.startLocationSelected = true;
-
+      this.updateFilteredPointsList();
       // Decide if the starting location is near an already existing SEPoint or near a oneDimensional SENodule
-      if (this.hitSEPoints.length > 0) {
+      if (this.filteredIntersectionPointsList.length > 0) {
         // Use an existing SEPoint to start the line
-        const selected = this.hitSEPoints[0];
+        const selected = this.filteredIntersectionPointsList[0];
         this.startVector.copy(selected.locationVector);
-        this.startSEPoint = this.hitSEPoints[0];
-        this.temporaryStartMarker.positionVectorAndDisplay = selected.locationVector;
+        this.startSEPoint = this.filteredIntersectionPointsList[0];
+        this.temporaryStartMarker.positionVectorAndDisplay =
+          selected.locationVector;
         // Glow the selected point and select it so the highlighter.ts doesn't unglow it with the mouseMoved method
         this.startSEPoint.glowing = true;
         this.startSEPoint.selected = true;
@@ -184,11 +187,13 @@ export default class LineHandler extends Highlighter {
         // The mouse press is not near an existing point or one dimensional object.
         //  Record the location in a temporary point (startMarker found in MouseHandler).
         //  Eventually, we will create a new SEPoint and Point
-        this.temporaryStartMarker.positionVectorAndDisplay = this.currentSphereVector;
+        this.temporaryStartMarker.positionVectorAndDisplay =
+          this.currentSphereVector;
         this.startVector.copy(this.currentSphereVector);
         this.startSEPoint = null;
       }
-      this.temporaryEndMarker.positionVectorAndDisplay = this.currentSphereVector;
+      this.temporaryEndMarker.positionVectorAndDisplay =
+        this.currentSphereVector;
     }
   }
   mouseMoved(event: MouseEvent): void {
@@ -199,18 +204,21 @@ export default class LineHandler extends Highlighter {
     // The user can create points  on , ellipses, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
-    if (this.hitSEPoints.length > 0) {
-      this.hitSEPoints[0].glowing = true;
+    this.updateFilteredPointsList();
+    if (this.filteredIntersectionPointsList.length > 0) {
+      this.filteredIntersectionPointsList[0].glowing = true;
       if (!this.startLocationSelected) {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = null;
-        this.snapStartMarkerToTemporaryPoint = this.hitSEPoints[0];
+        this.snapStartMarkerToTemporaryPoint =
+          this.filteredIntersectionPointsList[0];
         this.snapEndMarkerToTemporaryPoint = null;
       } else {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
-        this.snapEndMarkerToTemporaryPoint = this.hitSEPoints[0];
+        this.snapEndMarkerToTemporaryPoint =
+          this.filteredIntersectionPointsList[0];
       }
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
@@ -330,7 +338,8 @@ export default class LineHandler extends Highlighter {
               this.currentSphereVector
             );
         } else if (this.snapStartMarkerToTemporaryPoint == null) {
-          this.temporaryStartMarker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryStartMarker.positionVectorAndDisplay =
+            this.currentSphereVector;
         }
       } else {
         // If the temporary startMarker has *not* been added to the scene do so now (it might have
@@ -350,14 +359,13 @@ export default class LineHandler extends Highlighter {
           this.isTemporaryEndMarkerAdded = false;
         }
         // Set the location of the temporary endMarker by snapping to appropriate object (if any)
-        if (this.snapEndMarkerToTemporaryOneDimensional !== null) {
-          this.temporaryEndMarker.positionVectorAndDisplay =
-            this.snapEndMarkerToTemporaryOneDimensional.closestVector(
-              this.currentSphereVector
-            );
-        } else {
-          this.temporaryEndMarker.positionVectorAndDisplay = this.currentSphereVector;
-        }
+
+        this.temporaryEndMarker.positionVectorAndDisplay =
+          this.snapEndMarkerToTemporaryOneDimensional !== null
+            ? this.snapEndMarkerToTemporaryOneDimensional.closestVector(
+                this.currentSphereVector
+              )
+            : this.currentSphereVector;
 
         // If the temporary line has *not* been added to the scene do so now (only once)
         if (!this.isTemporaryLineAdded) {
@@ -366,17 +374,16 @@ export default class LineHandler extends Highlighter {
         }
         // Compute the normal vector from the this.startVector, the (old) normal vector and this.temporaryEndMarker vector
         // Compute a temporary normal from the two points' vectors
-        if (this.snapEndMarkerToTemporaryPoint === null) {
-          this.tmpVector.crossVectors(
-            this.startVector,
-            this.temporaryEndMarker.positionVector
-          );
-        } else {
-          this.tmpVector.crossVectors(
-            this.startVector,
-            this.snapEndMarkerToTemporaryPoint.locationVector
-          );
-        }
+        this.tmpVector.crossVectors(
+          this.startVector,
+          this.snapEndMarkerToTemporaryPoint === null
+            ? this.tmpVector
+                .copy(this.temporaryEndMarker.positionVector)
+                .normalize()
+            : // ? this.temporaryEndMarker.positionVector
+              this.snapEndMarkerToTemporaryPoint.locationVector
+        );
+
         // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
         // nearly antipodal or in the same direction)
         if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
@@ -398,8 +405,9 @@ export default class LineHandler extends Highlighter {
         }
         this.normalVector.copy(this.tmpVector).normalize();
 
-        // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
+        // Set the normal vector to the line in the plottable object, update the display
         this.temporaryLine.normalVector = this.normalVector;
+        // this.temporaryLine.updateDisplay();
       }
     } else if (this.isTemporaryStartMarkerAdded) {
       // Remove the temporary objects from the display.
@@ -484,6 +492,30 @@ export default class LineHandler extends Highlighter {
     // call an unglow all command
     LineHandler.store.unglowAllSENodules();
   }
+
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return true;
+        }
+      }
+      return pt.showing;
+    });
+  }
+
   // Create a new line from the mouse event information
   private makeLine(fromActivate = false): boolean {
     //Create a command group so this can be undone
@@ -538,10 +570,9 @@ export default class LineHandler extends Highlighter {
       newSELabel.locationVector = this.tmpVector;
       this.startSEPoint = vtx;
     } else if (
-      (this.startSEPoint instanceof SEIntersectionPoint &&
-        !this.startSEPoint.isUserCreated) ||
-      (this.startSEPoint instanceof SEAntipodalPoint &&
-        !this.startSEPoint.isUserCreated)
+      (this.startSEPoint instanceof SEIntersectionPoint ||
+        this.startSEPoint instanceof SEAntipodalPoint) &&
+      !this.startSEPoint.isUserCreated
     ) {
       // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
       lineGroup.addCommand(
@@ -550,13 +581,12 @@ export default class LineHandler extends Highlighter {
     }
 
     // Check to see if the release location is near any points
-    if (this.hitSEPoints.length > 0 && !fromActivate) {
-      this.endSEPoint = this.hitSEPoints[0];
+    if (this.filteredIntersectionPointsList.length > 0 && !fromActivate) {
+      this.endSEPoint = this.filteredIntersectionPointsList[0];
       if (
-        (this.endSEPoint instanceof SEIntersectionPoint &&
-          !this.endSEPoint.isUserCreated) ||
-        (this.endSEPoint instanceof SEAntipodalPoint &&
-          !this.endSEPoint.isUserCreated)
+        (this.endSEPoint instanceof SEIntersectionPoint ||
+          this.endSEPoint instanceof SEAntipodalPoint) &&
+        !this.endSEPoint.isUserCreated
       ) {
         // Mark the intersection point as created, the display style is changed and the glowing style is set up
         lineGroup.addCommand(
@@ -722,8 +752,9 @@ export default class LineHandler extends Highlighter {
       //   return false;
       // } //There are some situations in which the mouse actions (hard to duplicate) lead to an undefined normal vector and I'm hoping this will prevent the program from entering an error state.
 
-      // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
+      // Set the normal vector to the line in the plottable object this also updates the display
       this.temporaryLine.normalVector = this.normalVector;
+      // this.temporaryLine.updateDisplay();
 
       // check to make sure that this line doesn't already exist by checking that no existing line has normal or -1*normal equal to the new proposed normal
       if (
@@ -773,21 +804,21 @@ export default class LineHandler extends Highlighter {
       );
 
       // Determine all new intersection points and add their creation to the command so it can be undone
-      // let i = 1;
+
+      const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
+
       LineHandler.store
-        .createAllIntersectionsWithLine(newSELine, newlyCreatedSEPoints)
+        .createAllIntersectionsWith(newSELine, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
-          // console.debug(
-          //   `Line Intersection count ${i} ${item.existingIntersectionPoint} ${item.parent1.name} ${item.parent2.name}`
-          // );
-          // i += 1;
           if (item.existingIntersectionPoint) {
-            lineGroup.addCommand(
-              new AddIntersectionPointOtherParent(
-                item.SEIntersectionPoint,
-                item.parent1
-              )
+            intersectionPointsToUpdate.push(item.SEIntersectionPoint);
+            lineGroup.addCondition(() =>
+              item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
             );
+            lineGroup.addCommand(
+              new AddIntersectionPointOtherParentsInfo(item)
+            );
+            lineGroup.addEndCondition();
           } else {
             // Create the plottable label
             const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
@@ -818,6 +849,13 @@ export default class LineHandler extends Highlighter {
           }
         });
       lineGroup.execute();
+
+      // The newly added line passes through all the
+      // intersection points on the intersectionPointsToUpdate list
+      // This line might be a new parent to some of them
+      // shallowUpdate will check this and change parents as needed
+      intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+      intersectionPointsToUpdate.splice(0);
     }
     return true;
   }

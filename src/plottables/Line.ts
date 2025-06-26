@@ -133,12 +133,11 @@ export default class Line extends Nodule {
   }
 
   /**
-   * This is the only vector that needs to be set in order to render the line.  This also updates the display
+   * This is the only vector that needs to be set in order to render the line.
+   * This only updates the display
    */
   set normalVector(dir: Vector3) {
     this._normalVector.copy(dir).normalize();
-    this._halfMinorAxis = this._normalVector.z;
-    this._rotation = -Math.atan2(this._normalVector.x, this._normalVector.y); // not a typo because we are measuring off of the positive y axis in the screen plane
     this.updateDisplay();
   }
 
@@ -175,6 +174,9 @@ export default class Line extends Nodule {
    * call this method once that vector is updated.
    */
   public updateDisplay(): void {
+    this._halfMinorAxis = this._normalVector.z;
+    this._rotation = -Math.atan2(this._normalVector.x, this._normalVector.y); // not a typo because we are measuring off of the positive y axis in the screen plane
+
     this._frontHalf.rotation = this._rotation;
     this._glowingFrontHalf.rotation = this._rotation;
     this._backHalf.rotation = this._rotation;
@@ -235,14 +237,14 @@ export default class Line extends Nodule {
     };
 
     // collect the front style
-    returnSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary(
-      {strokeObject:this._frontHalf}
-    );
+    returnSVGObject.frontStyleDictionary = Nodule.createSVGStyleDictionary({
+      strokeObject: this._frontHalf
+    });
 
     // collect the back style
-    returnSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary(
-      {strokeObject:this._backHalf}
-    );
+    returnSVGObject.backStyleDictionary = Nodule.createSVGStyleDictionary({
+      strokeObject: this._backHalf
+    });
 
     // Collect the geometric information for the front
     // x-radius y-radius rotation large-arc-flag sweep-flag ending-x ending-y
@@ -305,7 +307,6 @@ export default class Line extends Nodule {
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
-    console.log("here line-1")
     const frontStyle = this.styleOptions.get(StyleCategory.Front);
     const backStyle = this.styleOptions.get(StyleCategory.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
@@ -339,7 +340,6 @@ export default class Line extends Nodule {
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual js objects
    */
   stylize(flag: DisplayStyle): void {
-    console.log("here line1")
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
         // Use the SETTINGS temporary options to directly modify the js objects.
@@ -356,7 +356,7 @@ export default class Line extends Nodule {
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
         this._frontHalf.linewidth = Line.currentLineStrokeWidthFront;
         // Copy the front dash properties from the front default drawn dash properties
-        if (SETTINGS.line.drawn.dashArray.front.length > 0) {
+        if (SETTINGS.line.drawn.dashArray.useOnFront) {
           this._frontHalf.dashes.clear();
           SETTINGS.line.drawn.dashArray.front.forEach(v => {
             this._frontHalf.dashes.push(v);
@@ -379,7 +379,7 @@ export default class Line extends Nodule {
         this._backHalf.linewidth = Line.currentLineStrokeWidthBack;
 
         // Copy the back dash properties from the back default drawn dash properties
-        if (SETTINGS.line.drawn.dashArray.back.length > 0) {
+        if (SETTINGS.line.drawn.dashArray.useOnBack) {
           this._backHalf.dashes.clear();
           SETTINGS.line.drawn.dashArray.back.forEach(v => {
             this._backHalf.dashes.push(v);
@@ -396,7 +396,6 @@ export default class Line extends Nodule {
       }
 
       case DisplayStyle.ApplyCurrentVariables: {
-        console.log("here line2")
         // Use the current variables to directly modify the js objects.
 
         // Front
@@ -405,15 +404,14 @@ export default class Line extends Nodule {
         if (Nodule.rgbaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontHalf.noStroke();
         } else {
-          console.log("here line3")
           this._frontHalf.stroke = frontStyle?.strokeColor ?? "black";
         }
         // strokeWidthPercent applied by adjustSize()
 
         if (
+          frontStyle?.useDashPattern &&
           frontStyle?.dashArray &&
-          frontStyle?.reverseDashArray !== undefined &&
-          frontStyle?.dashArray.length > 0
+          frontStyle.reverseDashArray != undefined
         ) {
           this._frontHalf.dashes.clear();
           this._frontHalf.dashes.push(...frontStyle?.dashArray);
@@ -451,9 +449,9 @@ export default class Line extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         if (
+          backStyle?.useDashPattern &&
           backStyle?.dashArray &&
-          backStyle?.reverseDashArray !== undefined &&
-          backStyle.dashArray.length > 0
+          backStyle.reverseDashArray != undefined
         ) {
           this._backHalf.dashes.clear();
           this._backHalf.dashes.push(...backStyle.dashArray);
@@ -473,9 +471,9 @@ export default class Line extends Nodule {
 
         // Copy the front dash properties to the glowing object
         if (
+          frontStyle?.useDashPattern &&
           frontStyle?.dashArray &&
-          frontStyle?.reverseDashArray !== undefined &&
-          frontStyle?.dashArray.length > 0
+          frontStyle.reverseDashArray != undefined
         ) {
           this._glowingFrontHalf.dashes.clear();
           this._glowingFrontHalf.dashes.push(...frontStyle?.dashArray);
@@ -495,9 +493,9 @@ export default class Line extends Nodule {
 
         // Copy the back dash properties to the glowing object
         if (
+          backStyle?.useDashPattern &&
           backStyle?.dashArray &&
-          backStyle?.reverseDashArray !== undefined &&
-          backStyle.dashArray.length > 0
+          backStyle.reverseDashArray != undefined
         ) {
           this._glowingBackHalf.dashes.clear();
           this._glowingBackHalf.dashes.push(...backStyle.dashArray);

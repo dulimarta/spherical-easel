@@ -1,11 +1,4 @@
 import { SENodule } from "./SENodule";
-import {
-  SEPoint,
-  SELabel,
-  SELine,
-  SEThreePointCircleCenter,
-  SEInversionCircleCenter
-} from "./internal";
 import Circle from "@/plottables/Circle";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
@@ -26,6 +19,11 @@ import { intersectCircles } from "@/utils/intersections";
 import i18n from "@/i18n";
 import NonFreeCircle from "@/plottables/NonFreeCircle";
 import { DisplayStyle } from "@/plottables/Nodule";
+import { SELabel } from "./SELabel";
+import { SEPoint } from "./SEPoint";
+import { SEThreePointCircleCenter } from "./SEThreePointCircleCenter";
+import { SEInversionCircleCenter } from "./SEInversionCircleCenter";
+import { SELine } from "./SELine";
 // import { SEThreePointCircleCenter } from "./SEThreePointCircleCenter";
 // import { SEInversionCircleCenter } from "./SEInversionCircleCenter";
 // import { SELine } from "./SELine";
@@ -41,7 +39,7 @@ export class SECircle
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public declare ref: Circle;
+  // declare public ref: Circle;
   /**
    * Pointer to the label of this SESegment
    */
@@ -81,11 +79,13 @@ export class SECircle
     super();
     this._centerSEPoint = centerPoint;
     this._circleSEPoint = circlePoint;
-    SECircle.CIRCLE_COUNT++;
-    this.name = `C${SECircle.CIRCLE_COUNT}`;
-    this.ref = createNonFreeCircle ? new NonFreeCircle(this.name) : new Circle(this.name);
-    this.ref.centerVector = centerPoint.locationVector;
-    this.ref.circleRadius = this.circleRadius;
+    SENodule.CIRCLE_COUNT++;
+    this.name = `C${SENodule.CIRCLE_COUNT}`;
+    this.ref = createNonFreeCircle
+      ? new NonFreeCircle(this.name)
+      : new Circle(this.name);
+    (this.ref as Circle).centerVector = centerPoint.locationVector;
+    (this.ref as Circle).circleRadius = this.circleRadius;
     this.ref.updateDisplay();
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
     this.ref.adjustSize();
@@ -178,16 +178,16 @@ export class SECircle
       const newRadius = this._centerSEPoint.locationVector.angleTo(
         this._circleSEPoint.locationVector
       );
-      this.ref.circleRadius = newRadius;
-      this.ref.centerVector = this._centerSEPoint.locationVector;
+      (this.ref as Circle).circleRadius = newRadius;
+      (this.ref as Circle).centerVector = this._centerSEPoint.locationVector;
       // display the new circle with the updated values
-      this.ref.updateDisplay();
+      (this.ref as Circle).updateDisplay();
     }
 
     if (this.showing && this._exists) {
-      this.ref.setVisible(true);
+      this.ref!.setVisible(true);
     } else {
-      this.ref.setVisible(false);
+      this.ref!.setVisible(false);
     }
   }
   public update(
@@ -199,14 +199,11 @@ export class SECircle
 
     this.setOutOfDate(false);
     this.shallowUpdate();
-
     // These circles are completely determined by their point parents and an update on the parents
     // will cause this circle to be put into the correct location.So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Circle with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Circle with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);
@@ -463,10 +460,12 @@ export class SECircle
   }
 
   public getLabel(): SELabel | null {
-    return (this as Labelable).label!
-
+    return (this as Labelable).label!;
   }
   public isMeasurable(): boolean {
+    return true;
+  }
+  public isFillable(): boolean {
     return true;
   }
 }

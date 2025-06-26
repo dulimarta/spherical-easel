@@ -1,16 +1,14 @@
-import {
-  SEPoint,
-  SELine,
-  SESegment,
-  SECircle,
-  SEEllipse,
-  SEParametric,
-  SEPencil
-} from "./internal";
 import { ObjectState, SEOneDimensional } from "@/types";
 
 import { Vector3 } from "three";
 import i18n from "@/i18n";
+import { SELine } from "./SELine";
+import { SEPencil } from "./SEPencil";
+import { SEPoint } from "./SEPoint";
+import { SESegment } from "./SESegment";
+import { SECircle } from "./SECircle";
+import { SEEllipse } from "./SEEllipse";
+import { SEParametric } from "./SEParametric";
 const { t } = i18n.global;
 export class SEPerpendicularLineThruPoint extends SELine {
   /**
@@ -136,9 +134,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
     // will cause this line to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Perpendicular Lint Thru Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Perpendicular Lint Thru Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

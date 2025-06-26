@@ -1,9 +1,10 @@
-import { SEPoint, SECircle, SEExpression } from "./internal";
 import { Vector3 } from "three";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-// import { SECircle } from "./SECircle";
-// import { SEExpression } from "./SEExpression";
+import { SECircle } from "./SECircle";
+import { SEExpression } from "./SEExpression";
+import { SEPoint } from "./SEPoint";
+import Circle from "@/plottables/Circle";
 const { t } = i18n.global;
 
 export class SEMeasuredCircle extends SECircle {
@@ -80,15 +81,17 @@ export class SEMeasuredCircle extends SECircle {
       this.circleSEPoint.locationVector = this.tempVector.normalize();
 
       //update the centerVector and the radius
-      this.ref.circleRadius = newRadius;
-      this.ref.centerVector = this._centerSEPoint.locationVector;
-      // display the new circle with the updated values
-      this.ref.updateDisplay();
+      if (this.ref instanceof Circle) {
+        this.ref.circleRadius = newRadius;
+        this.ref.centerVector = this._centerSEPoint.locationVector;
+        // display the new circle with the updated values
+        this.ref.updateDisplay();
+      }
     }
 
-    if (this.showing && this._exists) {
+    if (this.showing && this._exists && this.ref) {
       this.ref.setVisible(true);
-    } else {
+    } else if (this.ref) {
       this.ref.setVisible(false);
     }
   }
@@ -107,9 +110,7 @@ export class SEMeasuredCircle extends SECircle {
     // will cause this circle to be put into the correct location.So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Circle with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Circle with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

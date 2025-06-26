@@ -17,6 +17,9 @@ export default class HideObjectHandler extends Highlighter {
   // a map to store (bu SENodule ID) the show or not showing status of the SENodules when the tool is activated.
   private initialShowingMap: Map<number, boolean> = new Map(); //number is the SENodule.id, boolean is the showing value of the SENodule
 
+  // Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
+
   constructor(layers: Group[]) {
     super(layers);
   }
@@ -93,18 +96,11 @@ export default class HideObjectHandler extends Highlighter {
     //Select an object to delete
     // if (this.isOnSphere) { // text objects are not necessarily on the sphere
     // In the case of multiple selections prioritize text >points > lines > segments > circles>ellipses > labels
+    this.updateFilteredPointsList();
     if (this.hitSETexts.length > 0) {
       this.victim = this.hitSETexts[0];
-    } else if (this.hitSEPoints.length > 0) {
-      // you can't hide non-user created intersection points
-      if (
-        (!(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
-          this.hitSEPoints[0].isUserCreated) &&
-        (!(this.hitSEPoints[0] instanceof SEAntipodalPoint) ||
-          this.hitSEPoints[0].isUserCreated)
-      ) {
-        this.victim = this.hitSEPoints[0];
-      }
+    } else if (this.filteredIntersectionPointsList.length > 0) {
+      this.victim = this.filteredIntersectionPointsList[0];
     } else if (this.hitSELines.length > 0) {
       this.victim = this.hitSELines[0];
     } else if (this.hitSESegments.length > 0) {
@@ -134,21 +130,11 @@ export default class HideObjectHandler extends Highlighter {
   mouseMoved(event: MouseEvent): void {
     // Highlight only one object, the one that will be hidden if the user mouse presses
     super.mouseMoved(event);
+    this.updateFilteredPointsList();
     if (this.hitSETexts.length > 0) {
       this.hitSETexts[0].glowing = true;
-    } else if (this.hitSEPoints.length > 0) {
-      // never highlight non user created intersection or antipodal points
-      const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
-        if (
-          (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
-          (p instanceof SEAntipodalPoint && !p.isUserCreated)
-        ) {
-          return false;
-        } else {
-          return true;
-        }
-      });
-      if (filteredPoints.length > 0) filteredPoints[0].glowing = true;
+    } else if (this.filteredIntersectionPointsList.length > 0) {
+      this.filteredIntersectionPointsList[0].glowing = true;
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
     } else if (this.hitSELines.length > 0) {
@@ -176,8 +162,22 @@ export default class HideObjectHandler extends Highlighter {
     // Reset the victim in preparation for another deletion.
     this.victim = null;
   }
+
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint || pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return false;
+        }
+      }
+      return pt.showing;
+    });
+  }
+
   activate(): void {
-    window.addEventListener("keypress", this.keyPressHandler);
+    // window.addEventListener("keypress", this.keyPressHandler);
     // Record the showing status of all the SENodules
     HideObjectHandler.store.seNodules.forEach(seNodule => {
       this.initialShowingMap.set(seNodule.id, seNodule.showing);
@@ -204,7 +204,7 @@ export default class HideObjectHandler extends Highlighter {
   deactivate(): void {
     super.deactivate();
     // Remove the listener
-    window.removeEventListener("keypress", this.keyPressHandler);
+    // window.removeEventListener("keypress", this.keyPressHandler);
     // clear the initial showing map
     this.initialShowingMap.clear();
   }

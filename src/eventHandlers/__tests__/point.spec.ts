@@ -15,8 +15,8 @@ import {
 } from "./sphereframe-helper"
 import { createTestingPinia } from "@pinia/testing";
 import MouseHandler from "../Highlighter";
-import { SENodule } from "@/models/internal";
 import {Command} from "@/commands/Command"
+import { SENodule } from "@/models/SENodule";
 
 describe("Point Tool", () => {
   let wrapper: VueWrapper;

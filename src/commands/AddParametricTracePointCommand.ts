@@ -139,9 +139,7 @@ export class AddParametricTracePointCommand extends Command {
 
     if (parametricParent !== undefined) {
       // make the Trace Point
-      const seTracePoint = new SEParametricTracePoint(
-        parametricParent
-      );
+      const seTracePoint = new SEParametricTracePoint(parametricParent);
       const seTracePointLocation = new Vector3();
       seTracePointLocation.from(
         propMap.get("parametricEndPointseTracePointLocationVector")

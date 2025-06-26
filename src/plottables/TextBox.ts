@@ -11,10 +11,12 @@ export class TextBox extends Group {
   constructor(msg: string) {
     super();
     this._text = new Text(msg, 0, 0);
+    this._text.size = 10;
     const bbox = this._text.getBoundingClientRect();
     this.box = new RoundedRectangle(0, 0, bbox.width, bbox.height, 4);
     this.box.fill = "#e6c4b3";
     this.box.opacity = 0.7;
+
     // this.box.addTo(this);
     // this._text.addTo(this);
     this.add(this.box, this._text);

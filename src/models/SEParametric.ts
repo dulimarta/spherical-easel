@@ -16,12 +16,6 @@ import {
 } from "@/types";
 import SETTINGS from "@/global-settings";
 import { Labelable } from "@/types";
-import {
-  SELabel,
-  SEParametricEndPoint,
-  SEParametricTracePoint,
-  SEExpression
-} from "./internal";
 import i18n from "@/i18n";
 import Parametric from "@/plottables/Parametric";
 // import { SEParametricEndPoint } from "./SEParametricEndPoint";
@@ -38,6 +32,10 @@ const styleSet = new Set([
 ]);
 
 import { Heap } from "@datastructures-js/heap";
+import { SEParametricEndPoint } from "./SEParametricEndPoint";
+import { SEParametricTracePoint } from "./SEParametricTracePoint";
+import { SEExpression } from "./SEExpression";
+import { SELabel } from "./SELabel";
 
 // To keep the sample points in t-value order when new sample points
 // are appended to the array, keep track of its left and right neighbors
@@ -62,7 +60,7 @@ export class SEParametric
   /**
    * The corresponding plottable TwoJS object
    */
-  public declare ref: Parametric;
+  declare public ref: Parametric;
 
   /**
    * Pointer to the label of this SEParametric
@@ -258,8 +256,8 @@ export class SEParametric
     //   sample.push(new Vector3(x, y, z));
     // }
 
-    SEParametric.PARAMETRIC_COUNT++;
-    this.name = `Pa${SEParametric.PARAMETRIC_COUNT}`;
+    SENodule.PARAMETRIC_COUNT++;
+    this.name = `Pa${SENodule.PARAMETRIC_COUNT}`;
     this._seParentExpressions.forEach((m: SEExpression) => {
       this.varMap.set(m.name, m.value);
     });
@@ -833,9 +831,7 @@ export class SEParametric
     // will cause this parametric to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Parametric with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Parametric with id ${this.id} has been visited twice proceed no further down this branch of the DAG because we are moving two SENodules at the same time.
         return;
       }
       orderedSENoduleList.push(this.id);

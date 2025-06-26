@@ -1,9 +1,10 @@
 import { Visitable } from "@/visitors/Visitable";
-import { SEPoint, SELine } from "./internal";
 import SETTINGS from "@/global-settings";
 import { OneDimensional, Labelable, ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { Vector3 } from "three";
+import { SELine } from "./SELine";
+import { SEPoint } from "./SEPoint";
 const { t } = i18n.global;
 
 export class SEPolarLine
@@ -103,9 +104,7 @@ export class SEPolarLine
     // will cause this line to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Polar Line with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Polar Line with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

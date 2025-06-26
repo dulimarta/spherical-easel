@@ -20,7 +20,7 @@
                 </template>
 
                 <v-list-item-title
-                  v-text="$t(tool.displayedName)"></v-list-item-title>
+                  v-text="t(tool.displayedName)"></v-list-item-title>
               </v-list-item>
             </v-list>
           </v-card-text>
@@ -77,7 +77,8 @@ onBeforeMount(() => {
       t.action !== "zoomFit" &&
       t.action !== "undoAction" &&
       t.action !== "redoAction" &&
-      t.action !== "resetAction"
+      t.action !== "resetAction" &&
+      t.action !== "dummy"
   );
   allToolsList.value.sort(toolSortFunc);
 });

@@ -151,6 +151,16 @@ onBeforeMount((): void => {
   if (appFeature !== "beta") {
   }
   currentToolset.push(...includedTools.value);
+  //Added to make the initial action mode show when app is loaded for the first time or the clear button is clicked
+  selectedTool.value = actionMode.value;
+  const activeGroup = permissibleButtonGroup.findIndex(group => {
+    return group.children.some(
+      (ch: ToolButtonType) => ch.action === actionMode.value
+    );
+  });
+  if (activeGroup !== expandedPanel.value) {
+    expandedPanel.value = activeGroup;
+  }
 });
 
 watch(
@@ -170,10 +180,12 @@ watch(
 function doTransformationEffect(): void {
   switch (actionMode.value) {
     case "measuredCircle":
+      // console.log("Here in MC");
       if (seExpressions.value.length > 0) {
         //...open the object tree tab,
-        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
-        EventBus.fire("expand-measurement-sheet", {});
+        // EventBus.fire("left-panel-set-active-tab", { tabName: "objects" });
+        // console.log("IN MC expand");
+        // EventBus.fire("expand-measurement-sheet", {});
       } else {
         EventBus.fire("show-alert", {
           key: t("createMeasurementForMeasuredCircle"),
@@ -184,8 +196,8 @@ function doTransformationEffect(): void {
     case "translation":
       if (seExpressions.value.length > 0) {
         //...open the object tree tab,
-        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
-        EventBus.fire("expand-measurement-sheet", {});
+        // EventBus.fire("left-panel-set-active-tab", { tabName: "objects" });
+        // EventBus.fire("expand-measurement-sheet", {});
       } else {
         EventBus.fire("show-alert", {
           key: t("createMeasurementForTranslation"),
@@ -197,8 +209,8 @@ function doTransformationEffect(): void {
     case "rotation":
       if (seExpressions.value.length > 0) {
         //...open the object tree tab,
-        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
-        EventBus.fire("expand-measurement-sheet", {});
+        // EventBus.fire("left-panel-set-active-tab", { tabName: "objects" });
+        // EventBus.fire("expand-measurement-sheet", {});
       } else {
         EventBus.fire("show-alert", {
           key: t("createMeasurementForRotation"),
@@ -210,7 +222,7 @@ function doTransformationEffect(): void {
     case "applyTransformation":
       if (seTransformations.value.length > 0) {
         //...open the object tree tab,
-        EventBus.fire("left-panel-set-active-tab", { tabNumber: 1 });
+        EventBus.fire("left-panel-set-active-tab", { tabName: "objects" });
         EventBus.fire("expand-transformation-sheet", {});
       } else {
         EventBus.fire("show-alert", {

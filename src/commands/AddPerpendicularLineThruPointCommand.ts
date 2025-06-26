@@ -6,7 +6,6 @@ import { SavedNames, SEOneDimensional } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
-import { toSVGType } from "@/types";
 
 export class AddPerpendicularLineThruPointCommand extends Command {
   private sePerpendicularLineThruPoint: SEPerpendicularLineThruPoint;

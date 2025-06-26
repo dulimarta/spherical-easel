@@ -127,10 +127,7 @@ export default class Parametric extends Nodule {
 
     this._closed = closed;
 
-    this.styleOptions.set(
-      StyleCategory.Front,
-      DEFAULT_PARAMETRIC_FRONT_STYLE
-    );
+    this.styleOptions.set(StyleCategory.Front, DEFAULT_PARAMETRIC_FRONT_STYLE);
     this.styleOptions.set(StyleCategory.Back, DEFAULT_PARAMETRIC_BACK_STYLE);
     // this.inverseTotalRotationMatrix = store.inverseTotalRotationMatrix;
     console.debug(
@@ -184,7 +181,9 @@ export default class Parametric extends Nodule {
       this.frontParts.push(
         new Path(frontVertices, /*closed*/ false, /*curve*/ false)
       );
-      this.glowingFrontParts.push(new Path(frontVertices, /*closed*/ false, /*curve*/ false));
+      this.glowingFrontParts.push(
+        new Path(frontVertices, /*closed*/ false, /*curve*/ false)
+      );
       // Don't use .clone() for back parts we intentionally want to keep them empty
       this.backParts.push(new Path([], false, false));
       this.glowingBackParts.push(new Path([], false, false));
@@ -579,7 +578,7 @@ export default class Parametric extends Nodule {
     this.glowingBackParts.forEach(part => part.remove());
   }
 
-  toSVG():toSVGType[]{
+  toSVG(): toSVGType[] {
     // Create an empty return type and then fill in the non-null parts
     const returnSVGObject: toSVGType = {
       frontGradientDictionary: null,
@@ -588,8 +587,8 @@ export default class Parametric extends Nodule {
       backStyleDictionary: null,
       layerSVGArray: [],
       type: "parametric"
-    }
-    return [returnSVGObject]
+    };
+    return [returnSVGObject];
   }
 
   /**
@@ -692,7 +691,7 @@ export default class Parametric extends Nodule {
             (part.linewidth = Parametric.currentParametricStrokeWidthFront)
         );
         // Copy the front dash properties from the front default drawn dash properties
-        if (SETTINGS.parametric.drawn.dashArray.front.length > 0) {
+        if (SETTINGS.parametric.drawn.dashArray.useOnFront) {
           this.frontParts.forEach(part => part.dashes.clear());
           SETTINGS.parametric.drawn.dashArray.front.forEach(v => {
             this.frontParts.forEach(part => part.dashes.push(v));
@@ -718,7 +717,7 @@ export default class Parametric extends Nodule {
           part => (part.linewidth = Parametric.currentParametricStrokeWidthBack)
         );
         // Copy the front dash properties from the front default drawn dash properties
-        if (SETTINGS.parametric.drawn.dashArray.back.length > 0) {
+        if (SETTINGS.parametric.drawn.dashArray.useOnBack) {
           this.backParts.forEach(part => part.dashes.clear());
           SETTINGS.parametric.drawn.dashArray.back.forEach(v => {
             this.backParts.forEach(part => part.dashes.push(v));
@@ -749,9 +748,9 @@ export default class Parametric extends Nodule {
         // strokeWidthPercent is applied by adjustSize()
 
         if (
+          frontStyle?.useDashPattern &&
           frontStyle?.dashArray &&
-          frontStyle?.reverseDashArray !== undefined &&
-          frontStyle.dashArray.length > 0
+          frontStyle.reverseDashArray != undefined
         ) {
           this.frontParts.forEach(part => part.dashes.clear());
           frontStyle.dashArray.forEach(v => {
@@ -792,9 +791,9 @@ export default class Parametric extends Nodule {
         // strokeWidthPercent applied by adjustSizer()
 
         if (
+          backStyle?.useDashPattern &&
           backStyle?.dashArray &&
-          backStyle?.reverseDashArray !== undefined &&
-          backStyle.dashArray.length > 0
+          backStyle.reverseDashArray != undefined
         ) {
           this.backParts.forEach(part => part.dashes.clear());
           backStyle.dashArray.forEach(v => {
@@ -819,11 +818,7 @@ export default class Parametric extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
-        if (
-          frontStyle?.dashArray &&
-          frontStyle?.reverseDashArray !== undefined &&
-          frontStyle.dashArray.length > 0
-        ) {
+        if (frontStyle?.useDashPattern && frontStyle?.dashArray) {
           this.glowingFrontParts.forEach(part => part.dashes.clear());
           frontStyle.dashArray.forEach(v => {
             this.glowingFrontParts.forEach(part => part.dashes.push(v));
@@ -838,7 +833,7 @@ export default class Parametric extends Nodule {
         }
 
         // Glowing Back
-        // no fillColor for glowing ellipses
+        // no fillColor for glowing parametric
         this.glowingBackParts.forEach(
           part => (part.stroke = this.glowingStrokeColorBack)
         );
@@ -846,9 +841,9 @@ export default class Parametric extends Nodule {
 
         // Copy the back dash properties to the glowing object
         if (
+          backStyle?.useDashPattern &&
           backStyle?.dashArray &&
-          backStyle?.reverseDashArray !== undefined &&
-          backStyle.dashArray.length > 0
+          backStyle.reverseDashArray != undefined
         ) {
           this.glowingBackParts.forEach(part => part.dashes.clear());
           backStyle.dashArray.forEach(v => {

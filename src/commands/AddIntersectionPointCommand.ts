@@ -7,7 +7,6 @@ import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { toSVGType } from "@/types";
 
-
 export class AddIntersectionPointCommand extends Command {
   private seIntersectionPoint: SEIntersectionPoint;
   private principleParent1: SEOneDimensional;
@@ -61,16 +60,6 @@ export class AddIntersectionPointCommand extends Command {
   toOpcode(): null | string | Array<string> {
     // don't need the other parent array because that is handled in the commands AddIntersectionPointOtherParent and RemoveIntersectionPointOtherParent
 
-    // let intersectionPointParentArrayNameList = "";
-    // this.seIntersectionPoint.otherParentArray.forEach(parent => {
-    //   intersectionPointParentArrayNameList +=
-    //     Command.symbolToASCIIDec(parent.name) + "@";
-    // });
-    // intersectionPointParentArrayNameList =
-    //   intersectionPointParentArrayNameList.slice(0, -1);
-    // console.debug(
-    //   `Intersection point ${this.seIntersectionPoint.name}, principle parent1 ${this.principleParent1.name}, principle parent 2 ${this.principleParent2.name}`
-    // );
     return [
       "AddIntersectionPoint",
       // Any attribute that could possibly have a "= or "&" or "/" should be run through Command.symbolToASCIIDec
@@ -81,9 +70,7 @@ export class AddIntersectionPointCommand extends Command {
       "objectFrontStyle=" +
         Command.symbolToASCIIDec(
           JSON.stringify(
-            this.seIntersectionPoint.ref.currentStyleState(
-              StyleCategory.Front
-            )
+            this.seIntersectionPoint.ref.currentStyleState(StyleCategory.Front)
           )
         ),
       "objectBackStyle=" +
@@ -202,7 +189,7 @@ export class AddIntersectionPointCommand extends Command {
       const seLabel = new SELabel("point", seIntersectionPoint);
       const seLabelLocation = new Vector3();
       seLabelLocation.from(propMap.get("labelVector")); // convert to Number
-      seLabel.locationVector = seLabelLocation;// Don't use copy() on a prop
+      seLabel.locationVector = seLabelLocation; // Don't use copy() on a prop
       //style the label
       const labelStyleString = propMap.get("labelStyle");
 
@@ -234,12 +221,7 @@ export class AddIntersectionPointCommand extends Command {
       } else {
         throw new Error("AddIntersectionPoint: Label Name doesn't exist");
       }
-      // // add the other parents
-      // otherParents.forEach(parent => {
-      //   if (parent) {
-      //     seIntersectionPoint.addIntersectionOtherParent(parent);
-      //   }
-      // });
+
       return new AddIntersectionPointCommand(
         seIntersectionPoint,
         principleParent1,

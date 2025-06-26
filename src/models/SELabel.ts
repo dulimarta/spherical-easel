@@ -11,26 +11,17 @@ import {
   Labelable,
   ObjectState
 } from "@/types";
-import {
-  SEPoint,
-  SESegment,
-  SELine,
-  SECircle,
-  SEAngleMarker,
-  SEEllipse,
-  SEParametric,
-  SEPolygon
-} from "./internal";
-// import { SESegment } from "./SESegment";
-// import { SELine } from "./SELine";
-// import { SECircle } from "./SECircle";
-// import { SEAngleMarker } from "./SEAngleMarker";
-// import { SEEllipse } from "./SEEllipse";
-// import { SEParametric } from "./SEParametric";
-// import { SEPolygon } from "./SEPolygon";
+import { SESegment } from "./SESegment";
+import { SELine } from "./SELine";
+import { SECircle } from "./SECircle";
+import { SEAngleMarker } from "./SEAngleMarker";
+import { SEEllipse } from "./SEEllipse";
+import { SEParametric } from "./SEParametric";
+import { SEPolygon } from "./SEPolygon";
 import { SEEarthPoint } from "./SEEarthPoint";
 import { SELatitude } from "./SELatitude";
 import { SELongitude } from "./SELongitude";
+import { SEPoint } from "./SEPoint";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LABEL_TEXT_STYLE)
@@ -43,7 +34,7 @@ export class SELabel extends SENodule implements Visitable {
   // protected store = AppStore;
 
   /* This should be the only reference to the plotted version of this SELabel */
-  public declare ref: Label;
+  declare public ref: Label;
   /**
    * The  parent of this SELabel
    */
@@ -77,23 +68,24 @@ export class SELabel extends SENodule implements Visitable {
       // use the parent name for the short name, so to get around this we use  this
       // and the angleMarkerNumber.
       label.shortUserName = `Am${this.parent.angleMarkerNumber}`;
-      this.ref.defaultName = `Am${this.parent.angleMarkerNumber}`;
-      this.ref.value = [this.parent.value]
+      label.defaultName = `Am${this.parent.angleMarkerNumber}`;
+      label.value = [this.parent.value];
     } else if (this.parent instanceof SEPolygon) {
       // polygons are an exception which are both plottable and an expression.
       // As expressions MUST have a name of a measurement token (ie. M###), we can't
       // use the parent name for the short name, so to get around this we use  this
       // and the angleMarkerNumber.
       label.shortUserName = `Po${this.parent.polygonNumber}`;
-      this.ref.defaultName = `Po${this.parent.polygonNumber}`;
+      label.defaultName = `Po${this.parent.polygonNumber}`;
     } else {
       if (!(this.parent instanceof SEPoint)) {
         label.shortUserName = parent.name; // the short user name of a point's label is set else where via point visible count
       }
-      this.ref.defaultName = this.parent.name;
+      label.shortUserName = this.parent.name; // if this line isn't here then the antipodal point tool creates a point (with a label) and an antipodal point (***without*** a label)
+      label.defaultName = this.parent.name;
     }
     // Set the size for zoom
-    this.ref.adjustSize();
+    label.adjustSize();
 
     // Display the label initially (both showing or not or the mode)
     if (parent instanceof SEPoint) {
@@ -139,8 +131,7 @@ export class SELabel extends SENodule implements Visitable {
     } else if (parent instanceof SEPolygon) {
       this.ref.initialLabelDisplayMode = SETTINGS.polygon.defaultLabelMode;
       this.showing = SETTINGS.polygon.showLabelsInitially;
-    }
-    else {
+    } else {
       this.showing = true;
     }
   }
@@ -209,9 +200,7 @@ export class SELabel extends SENodule implements Visitable {
     // Labels are NOT completely determined by their parents so we store additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Label with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Label with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);
@@ -307,5 +296,4 @@ export class SELabel extends SENodule implements Visitable {
   public isFreeToMove(): boolean {
     return true;
   }
-
 }

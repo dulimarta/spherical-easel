@@ -9,7 +9,7 @@ import { SESegment } from "@/models/SESegment";
 import { Vector3 } from "three";
 import { createTestingPinia } from "@pinia/testing";
 import Handler from "../SegmentHandler";
-import { SENodule } from "@/models/internal";
+import { SENodule } from "@/models/dontuse-internal";
 import { Command } from "@/commands/Command";
 
 describe("Segment Tool", () => {

@@ -1,9 +1,10 @@
 import { SENodule } from "./SENodule";
-import { SEPoint, SECircle } from "./internal";
 import { Matrix4, Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import i18n from "@/i18n";
 import { geoLocationToUnitSphere } from "@/composables/earth";
+import { SECircle } from "./SECircle";
+import { SEPoint } from "./SEPoint";
 
 export class SELatitude extends SECircle {
   private _latitude = 0;

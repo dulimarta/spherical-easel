@@ -1,6 +1,10 @@
 import Highlighter from "./Highlighter";
 import { SENodule } from "@/models/SENodule";
-import { ObjectState, SEOneDimensional } from "@/types";
+import {
+  ObjectState,
+  SEIntersectionReturnType,
+  SEOneDimensional
+} from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { DeleteNoduleCommand } from "@/commands/DeleteNoduleCommand";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
@@ -9,9 +13,9 @@ import { SEPoint } from "@/models/SEPoint";
 import EventBus from "@/eventHandlers/EventBus";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
-import { ChangeIntersectionPointPrincipleParent } from "@/commands/ChangeIntersectionPointPrincipleParent";
+import { ChangeIntersectionPointPrincipleParents } from "@/commands/ChangeIntersectionPointPrincipleParents";
 import i18n from "@/i18n";
-import { RemoveIntersectionPointOtherParent } from "@/commands/RemoveIntersectionPointOtherParent";
+import { RemoveIntersectionPointOtherParentsInfo } from "@/commands/RemoveIntersectionPointOtherParentsInfo";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
@@ -35,6 +39,8 @@ export default class DeleteHandler extends Highlighter {
 
   private beforeDeleteStateMap: Map<number, ObjectState> = new Map(); //number is the SENodule.id
   private beforeDeleteSENoduleIDList: number[] = [];
+  // Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
 
   constructor(layers: Group[]) {
     super(layers);
@@ -46,21 +52,16 @@ export default class DeleteHandler extends Highlighter {
     //if (this.isOnSphere) {           //Commented Out For now
     // In the case of multiple selections prioritize texts > points > lines > segments > circles > ellipses > parametrics > labels > angle markers > polygons
     // Deleting an object deletes all objects that depend on that object including the label
+    this.updateFilteredPointsList();
     if (this.hitSETexts.length > 0) {
       this.victim = this.hitSETexts[0];
       this.victimName = this.hitSETexts[0].name;
       this.victimType = i18n.global.t(`objects.texts`, 3);
-    } else if (this.hitSEPoints.length > 0) {
-      if (
-        (!(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
-          this.hitSEPoints[0].isUserCreated) &&
-        (!(this.hitSEPoints[0] instanceof SEAntipodalPoint) ||
-          this.hitSEPoints[0].isUserCreated)
-      ) {
-        this.victim = this.hitSEPoints[0];
-        this.victimName = this.hitSEPoints[0].label?.ref.shortUserName;
-        this.victimType = i18n.global.t(`objects.points`, 3);
-      }
+    } else if (this.filteredIntersectionPointsList.length > 0) {
+      this.victim = this.filteredIntersectionPointsList[0];
+      this.victimName =
+        this.filteredIntersectionPointsList[0].label?.ref.shortUserName;
+      this.victimType = i18n.global.t(`objects.points`, 3);
     } else if (this.hitSELines.length > 0) {
       this.victim = this.hitSELines[0];
       this.victimName = this.hitSELines[0].label?.ref.shortUserName;
@@ -106,8 +107,8 @@ export default class DeleteHandler extends Highlighter {
           number: deletedNodeIds.length - 1,
           objects:
             deletedNodeIds.length === 2
-              ? i18n.global.t(`objects.objects`, 4)
-              : i18n.global.t(`objects.objects`, 3)
+              ? i18n.global.t(`objects`, 4)
+              : i18n.global.t(`objects`, 3)
         },
         type: "success"
       });
@@ -125,19 +126,9 @@ export default class DeleteHandler extends Highlighter {
     super.mouseMoved(event);
     // only one object at a time can be deleted so only glow the potential victim
     // prioritize points, if there is a point nearby, assume the user wants it to be the selection to delete
-    if (this.hitSEPoints.length > 0) {
-      // never highlight non user created intersection points
-      const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
-        if (
-          p instanceof SEIntersectionPoint ||
-          (p instanceof SEAntipodalPoint && !p.isUserCreated)
-        ) {
-          return false;
-        } else {
-          return true;
-        }
-      });
-      if (filteredPoints.length > 0) filteredPoints[0].glowing = true;
+    this.updateFilteredPointsList();
+    if (this.filteredIntersectionPointsList.length > 0) {
+      this.filteredIntersectionPointsList[0].glowing = true;
     } else if (this.hitSELines.length > 0) {
       this.hitSELines[0].glowing = true;
     } else if (this.hitSESegments.length > 0) {
@@ -188,7 +179,9 @@ export default class DeleteHandler extends Highlighter {
         )
         .forEach(object => {
           //if object has already been deleted don't do anything
-          if (deletedObjectIDs.findIndex(id => id === object.id) !== -1) return;
+          if (deletedObjectIDs.findIndex(id => id === object.id) !== -1) {
+            return;
+          }
           deletedObjectIDs.push(...this.delete(object as any));
         });
       // deletedNumberNodes: "Successfully deleted {number} {objects}.",
@@ -198,8 +191,8 @@ export default class DeleteHandler extends Highlighter {
           number: deletedObjectIDs.length,
           objects:
             deletedObjectIDs.length === 1
-              ? i18n.global.t(`objects.objects`, 4)
-              : i18n.global.t(`objects.objects`, 3)
+              ? i18n.global.t(`objects`, 4)
+              : i18n.global.t(`objects`, 3)
         },
         type: "success"
       });
@@ -214,6 +207,18 @@ export default class DeleteHandler extends Highlighter {
     super.deactivate();
   }
 
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint || pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return false;
+        }
+      }
+      return pt.showing;
+    });
+  }
   public delete(victim: SENodule): number[] {
     const deletedNodeIds: number[] = [];
     // Reset the beforeDeleteStateMap and SENoduleISList
@@ -248,66 +253,22 @@ export default class DeleteHandler extends Highlighter {
         seNoduleBeforeState !== undefined &&
         seNoduleBeforeState.object instanceof SEIntersectionPoint
       ) {
-        // console.debug(
+        // console.log(
         //   `Examine intersection point ${seNoduleBeforeState.object.name} to see if it survived the deletion`
         // );
         // only delete the intersection point itself if completing this delete command will
-        // leave this intersection point with less than two parents (principle or other) whose intersection is at this location
-        // check to see which parents are going to be deleted
-        const parents = [
-          seNoduleBeforeState.object.principleParent1,
-          seNoduleBeforeState.object.principleParent2,
-          ...seNoduleBeforeState.object.otherParentArray
-        ];
-
-        const survivingParents: SENodule[] = [];
-        parents.forEach(parent => {
-          // console.debug(`Parent ${parent.name}`);
-          if (!this.beforeDeleteStateMap.has(parent.id)) {
-            // count all the parents that are not slated to be deleted
-            survivingParents.push(parent);
-            // console.debug(`Survives`);
-          }
-          // else {
-          //   console.debug(`Is deleted`);
-          // }
-        });
-        // console.debug(
-        //   `notDeletedParentsSENoduleCount ${survivingParents.length}`
-        // );
-        // There must be two or more not deleted (surviving) parents for the intersection point to survive (i.e. not be deleted)
-        if (survivingParents.length >= 2) {
-          // now make sure that there are two parents on the list that will intersect at the existing intersection point
-          let exit_loops = false;
-          for (let i = 0; i < survivingParents.length; i++) {
-            for (let j = i + 1; j < survivingParents.length; j++) {
-              // console.debug(
-              //   `Intersect ${survivingParents[i].name} and ${
-              //     survivingParents[j].name
-              //   } and the result is ${seNoduleBeforeState.object.checkIntersectionBetweenTwoPotentialParents(
-              //     survivingParents[i] as SEOneDimensional,
-              //     survivingParents[j] as SEOneDimensional
-              //   )}`
-              // );
-
-              if (
-                seNoduleBeforeState.object.checkIntersectionBetweenTwoPotentialParents(
-                  survivingParents[i] as SEOneDimensional,
-                  survivingParents[j] as SEOneDimensional
-                ) !== -1
-              ) {
-                // console.debug(
-                //   `Added ${seNoduleBeforeState.object.name} to the notDeletedSENoduleIDs array.`
-                // );
-                notDeletedSENoduleIDs.push(seNoduleBeforeState.object.id);
-                exit_loops = true;
-                break;
-              }
-            }
-            if (exit_loops) {
-              break;
-            }
-          }
+        // leave this intersection point with a pair of (undeleted) parents  whose intersection is at this location
+        // check the seNoduleBeforeState.object.otherParentInfoArray
+        if (
+          seNoduleBeforeState.object.otherParentsInfoArray.filter(
+            info =>
+              //include info where both parents are not going to be deleted
+              !this.beforeDeleteStateMap.has(info.parent1.id) &&
+              !this.beforeDeleteStateMap.has(info.parent2.id)
+          ).length > 0
+        ) {
+          // console.log(` ${seNoduleBeforeState.object.name} survives!`);
+          notDeletedSENoduleIDs.push(seNoduleBeforeState.object.id);
         }
       }
     });
@@ -317,17 +278,17 @@ export default class DeleteHandler extends Highlighter {
     //   `Length of notDeletedSENoduleIDs ${notDeletedSENoduleIDs.length} before`
     // );
     let totalNotDeletedSENodules = notDeletedSENoduleIDs.length;
-    let examined = 0;
-    while (totalNotDeletedSENodules > examined) {
+    let examinedIndex = 0;
+    while (totalNotDeletedSENodules > examinedIndex) {
       // console.debug(`SENodule number examined: ${examined}`);
       // console.debug(`total not deleted SENodules: ${examined}`);
       // get the SENodule -- initially these are SEIntersection point that will have two surviving parents to define them
       const notDeletedSENodule = this.beforeDeleteStateMap.get(
-        notDeletedSENoduleIDs[examined]
+        notDeletedSENoduleIDs[examinedIndex]
       );
       // console.debug(`Examine the kids of ${notDeletedSENodule?.object.name}`);
       if (notDeletedSENodule !== undefined) {
-        examined += 1;
+        examinedIndex += 1;
         // Now check the kids of the non deleted SENodule
         notDeletedSENodule.object.kids.forEach(kid => {
           // console.debug(`Examine kid ${kid.name}`);
@@ -362,9 +323,9 @@ export default class DeleteHandler extends Highlighter {
     notDeletedSENoduleIDs.forEach(seNoduleID => {
       const notDeletedSENodule = this.beforeDeleteStateMap.get(seNoduleID);
       if (notDeletedSENodule !== undefined) {
-        // console.debug(`Examine object ${notDeletedSENodule.object.name}`);
+        // console.log(`Examine object ${notDeletedSENodule.object.name}`);
         if (!(notDeletedSENodule.object instanceof SEIntersectionPoint)) {
-          // console.debug(
+          // console.log(
           //   `Remove object ${notDeletedSENodule?.object.name} from the delete state map and the id list`
           // );
           this.beforeDeleteStateMap.delete(seNoduleID);
@@ -401,20 +362,17 @@ export default class DeleteHandler extends Highlighter {
               id => id === seNoduleBeforeState.object.id
             )
           ) {
-            // console.debug(
-            //   `Delete a intersection point ${seNoduleBeforeState.object.name} with ${seNoduleBeforeState.object.otherParentArray.length} other parents`
-            // );
-            // the intersection point is going to be deleted so remove all the other parents (so that undo of this delete will add them back in)
-            seNoduleBeforeState.object.otherParentArray.forEach(parent => {
+            // the intersection point is going to be deleted so remove all the other parents Info (so that undo of this delete will add them back in)
+            seNoduleBeforeState.object.otherParentsInfoArray.forEach(info => {
+              // console.log(
+              //   `Queue up 1: Delete a intersection point ${seNoduleBeforeState.object.name} other parents ${info.parent1.name} and ${info.parent2.name} `
+              // );
               deleteCommandGroup.addCommand(
-                new RemoveIntersectionPointOtherParent(
-                  seNoduleBeforeState.object as SEIntersectionPoint,
-                  parent
-                )
+                new RemoveIntersectionPointOtherParentsInfo(info)
               );
             });
+            // convert it back to not user created (if it was)
             if (seNoduleBeforeState.object.isUserCreated) {
-              // convert it back to not user created (if it was)
               deleteCommandGroup.addCommand(
                 new SetPointUserCreatedValueCommand(
                   seNoduleBeforeState.object,
@@ -428,124 +386,49 @@ export default class DeleteHandler extends Highlighter {
             );
             deletedNodeIds.push(seNoduleBeforeState.object.id);
           } else {
-            // the intersection point doesn't need to be deleted, but the existence and parentage could have changed
-            // first remove the other parents from the other parent array that are going to be deleted
-            seNoduleBeforeState.object.otherParentArray.forEach(parent => {
+            // the intersection point doesn't need to be deleted, but the existence and parentage have changed
+            // first remove the other parents info from the other parent info array where at least one of the parents are going to be deleted (i.e. when both parents are not on the deleteStateMap or on the notDeleteSENoduleIds list)
+            const possibleNewParentInfoArray: SEIntersectionReturnType[] = [];
+            seNoduleBeforeState.object.otherParentsInfoArray.forEach(info => {
               if (
-                notDeletedSENoduleIDs.some(id => id === parent.id) ||
-                !this.beforeDeleteStateMap.has(parent.id)
+                (notDeletedSENoduleIDs.some(id => id === info.parent1.id) ||
+                  !this.beforeDeleteStateMap.has(info.parent1.id)) &&
+                (notDeletedSENoduleIDs.some(id => id === info.parent2.id) ||
+                  !this.beforeDeleteStateMap.has(info.parent2.id))
               ) {
-                return;
+                // console.log(
+                //   `Found other parents ${info.parent1.name} and ${info.parent2.name} for ${seNoduleBeforeState.object.name}`
+                // );
+                possibleNewParentInfoArray.push(info); // both parents survive in this info
               } else {
-                // console.debug(
-                //   `DeleteHandler: Queue up remove other parent ${parent.name} from ${seNoduleBeforeState.object.name}`
+                // console.log(
+                //   ` Queue up 2: In DeleteHandler, remove other parent ${info.parent1.name} and ${info.parent2.name} from ${seNoduleBeforeState.object.name}`
                 // );
                 deleteCommandGroup.addCommand(
-                  new RemoveIntersectionPointOtherParent(
-                    seNoduleBeforeState.object as SEIntersectionPoint,
-                    parent
-                  )
+                  new RemoveIntersectionPointOtherParentsInfo(info)
                 );
               }
             });
-            //now modify/remove the principle parents
-            const principleParent1ID =
-              seNoduleBeforeState.object.principleParent1.id;
-            if (
-              !notDeletedSENoduleIDs.some(id => id === principleParent1ID) &&
-              this.beforeDeleteStateMap.has(principleParent1ID)
-            ) {
-              // principle parent 1 is slated to be removed
-              // console.debug(
-              //   `DeleteHandler: Principle parent 1, queue up remove principle parent ${seNoduleBeforeState.object.principleParent1.name} from ${seNoduleBeforeState.object.name}`
-              // );
+            //now modify/remove the principle parents using one info from possibleNewParentInfoArray and then remove the rest (if any) so that these will be restored when we undo this delete
 
-              deleteCommandGroup.addCommand(
-                new ChangeIntersectionPointPrincipleParent(
-                  seNoduleBeforeState.object as SEIntersectionPoint,
-                  seNoduleBeforeState.object.principleParent1
-                )
-              );
-            }
-            const principleParent2ID =
-              seNoduleBeforeState.object.principleParent2.id;
-            if (
-              !notDeletedSENoduleIDs.some(id => id === principleParent2ID) &&
-              this.beforeDeleteStateMap.has(principleParent2ID)
-            ) {
-              // principle parent 2 is slated to be removed
-              // console.debug(
-              //   `DeleteHandler: Principle parent 2, queue up remove principle parent ${seNoduleBeforeState.object.principleParent2.name} from ${seNoduleBeforeState.object.name}`
-              // );
-
-              deleteCommandGroup.addCommand(
-                new ChangeIntersectionPointPrincipleParent(
-                  seNoduleBeforeState.object as SEIntersectionPoint,
-                  seNoduleBeforeState.object.principleParent2
-                )
-              );
-            }
-            // so if the point is user created and the existence is now false, need to convert the intersection point to not user created
-            // Note: ChangeIntersectionPointPrincipleParent or RemoveIntersectionPointOtherParent are *not* executed so check the intersection existence manually
-            // now update the existence
-            const possibleParents = [
-              seNoduleBeforeState.object.principleParent1,
-              seNoduleBeforeState.object.principleParent2,
-              ...seNoduleBeforeState.object.otherParentArray
-            ];
-            let sum = 0;
-            possibleParents.forEach(parent => {
-              // if the parent is on notDeleted list or is not slated to be deleted, then use the parent to determine the existence of this intersection point
-              // console.debug(
-              //   `DeleteHandler: Check existence of ${
-              //     seNoduleBeforeState.object.name
-              //   } so examine ${
-              //     parent.name
-              //   }, on the notDeleteList: ${notDeletedSENoduleIDs.some(
-              //     id => id === parent.id
-              //   )} not going to be deleted anyway ${!this.beforeDeleteStateMap.has(
-              //     parent.id
-              //   )}`
-              // );
-              if (
-                notDeletedSENoduleIDs.some(id => id === parent.id) ||
-                !this.beforeDeleteStateMap.has(parent.id)
-              ) {
-                // console.debug(
-                //   `${parent.name} is not deleted or was not going to be deleted in the first place.`
+            // possibleNewParentInfoArray is not empty because if it was empty then notDeletedSENoduleIDs would not contain this points id and would have been deleted in the previous conditional clause
+            // console.log(
+            //   "length of possibleNewParentInfoArray",
+            //   possibleNewParentInfoArray.length
+            // );
+            possibleNewParentInfoArray.forEach((info, index) => {
+              // use the first as new parents of the intersection point
+              if (index === 0) {
+                // console.log(
+                //   `Queues up: Principle parents to be ${info.parent1.name} and ${info.parent2.name} to ${info.SEIntersectionPoint.name}`
                 // );
-                if (
-                  parent.exists &&
-                  parent.isHitAt(
-                    (seNoduleBeforeState.object as SEIntersectionPoint)
-                      .locationVector, // this is the updated location
-                    DeleteHandler.store.zoomMagnificationFactor
-                  )
-                ) {
-                  // console.debug(`Counts toward existence!`);
-                  sum += 1;
-                }
+                deleteCommandGroup.addCommand(
+                  new ChangeIntersectionPointPrincipleParents(info)
+                );
+                // if the existence is now false, the shallow update of the intersection point will fix the existence and change to the
+                // principle parents whose intersection makes the existence true (if possible)
               }
             });
-
-            // console.debug(
-            //   `${seNoduleBeforeState.object.name} intersection point sum ${sum}`
-            // );
-            const seIntersectionPointExists = sum > 1; // you must be on at least two existing parents
-
-            if (
-              seNoduleBeforeState.object.isUserCreated &&
-              !seIntersectionPointExists
-            ) {
-              // convert it back to not user created because it doesn't exist
-
-              deleteCommandGroup.addCommand(
-                new SetPointUserCreatedValueCommand(
-                  seNoduleBeforeState.object,
-                  false
-                )
-              );
-            }
           }
         } else {
           if (
@@ -557,19 +440,33 @@ export default class DeleteHandler extends Highlighter {
             seNoduleBeforeState.object instanceof SEEllipse ||
             seNoduleBeforeState.object instanceof SEParametric
           ) {
+            // for any intersection point that contains other parents info with any one dimensional that is going to be deleted, should be removed
             DeleteHandler.store.sePoints
               .filter(x => x instanceof SEIntersectionPoint)
               .map(x => x as SEIntersectionPoint)
               .forEach(interSEPoint => {
-                if (
-                  interSEPoint.otherParentArray.findIndex(
-                    parent => parent.id === seNoduleBeforeState.object.id
-                  ) > -1
-                ) {
+                // skip any intersection point that is on the not deleted list because the
+                // other parents info has already been deleted
+                if (notDeletedSENoduleIDs.some(id => id === interSEPoint.id)) {
+                  return;
+                }
+                // skip any intersection point on the already deleted list, the parent info has already been removed
+                if (deletedNodeIds.some(id => id === interSEPoint.id)) {
+                  return;
+                }
+                //find the other parent info that contain a one dimensional parent that is going to be deleted
+                const index = interSEPoint.otherParentsInfoArray.findIndex(
+                  info =>
+                    info.parent1.id === seNoduleBeforeState.object.id ||
+                    info.parent2.id === seNoduleBeforeState.object.id
+                );
+                if (index > -1) {
+                  // console.log(
+                  //   `Queue up 4: Remove other parents ${interSEPoint.otherParentsInfoArray[index].parent1.name} and ${interSEPoint.otherParentsInfoArray[index].parent2.name} to intersection point ${interSEPoint.otherParentsInfoArray[index].SEIntersectionPoint.name}/${interSEPoint.name}`
+                  // );
                   deleteCommandGroup.addCommand(
-                    new RemoveIntersectionPointOtherParent(
-                      interSEPoint,
-                      seNoduleBeforeState.object as SEOneDimensional
+                    new RemoveIntersectionPointOtherParentsInfo(
+                      interSEPoint.otherParentsInfoArray[index]
                     )
                   );
                 }

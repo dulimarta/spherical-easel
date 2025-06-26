@@ -6,7 +6,7 @@ const emptySet = new Set<string>();
 export abstract class SETransformation extends SENodule {
   constructor() {
     super();
-    SETransformation.TRANSFORMATION_COUNT++;
+    SENodule.TRANSFORMATION_COUNT++;
   }
 
   /**

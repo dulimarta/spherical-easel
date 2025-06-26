@@ -6,7 +6,7 @@ import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
 import i18n from "@/i18n";
 import EventBus from "@/eventHandlers/EventBus";
-const {t} = i18n.global
+const { t } = i18n.global;
 
 // const emptySet = new Set<string>();
 
@@ -21,10 +21,10 @@ export abstract class SEExpression extends SENodule {
 
   constructor() {
     super();
-    SEExpression.EXPR_COUNT++;
+    SENodule.EXPR_COUNT++;
     //DO NOT MODIFY THIS NAME! THIS SHOULD BE THE ONLY VALUE THIS FIELD EVER GETS
     // This is the key value for for the SECalculation, see its construction for the Map<string,number>
-    this.name = `M${SEExpression.EXPR_COUNT}`;
+    this.name = `M${SENodule.EXPR_COUNT}`;
   }
 
   /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number
@@ -66,8 +66,7 @@ export abstract class SEExpression extends SENodule {
   // the SENoduleItem in the object tree)
 
   public shallowUpdate(): void {
-    EventBus.fire("update-label-and-showing-and-measurement-display",{})
-
+    EventBus.fire("update-label-and-showing-and-measurement-display", {});
   }
   /* TODO: Evaluate or get the value of the expressions */
   abstract get value(): number;
@@ -78,7 +77,6 @@ export abstract class SEExpression extends SENodule {
   }
 
   prettyValue(fullPrecision = false): string {
-    // const {t} = useI18n()
     switch (this._valueDisplayMode) {
       case ValueDisplayMode.Number:
         return String(
@@ -133,6 +131,11 @@ export abstract class SEExpression extends SENodule {
             ) + t(`units.km`)
           );
         }
+      default: // return the number mode string as a default, but warn the user
+        console.warn(`ValueDisplayMode for ${this.name} was undefined`);
+        return String(
+          this.value.toFixed(fullPrecision ? 20 : SETTINGS.decimalPrecision)
+        );
     }
   }
 

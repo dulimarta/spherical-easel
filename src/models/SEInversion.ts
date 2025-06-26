@@ -1,11 +1,10 @@
 import { SENodule } from "./SENodule";
 import { Matrix4, Vector3 } from "three";
-import { SETransformation, SECircle } from "./internal";
-// import { SESegment } from "./SESegment";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
-// import { SECircle } from "./SECircle";
+import { SECircle } from "./SECircle";
 import SETTINGS from "@/global-settings";
+import { SETransformation } from "./SETransformation";
 const { t } = i18n.global;
 export class SEInversion extends SETransformation {
   private _circleOfInversion: SECircle;
@@ -16,8 +15,8 @@ export class SEInversion extends SETransformation {
     super();
     this._circleOfInversion = circleOfInversion;
     this.ref = circleOfInversion.ref;
-    SETransformation.INVERSION_COUNT++;
-    this.name = `In${SETransformation.INVERSION_COUNT}`;
+    SENodule.INVERSION_COUNT++;
+    this.name = `In${SENodule.INVERSION_COUNT}`;
     this.markKidsOutOfDate();
     this.update(); // So that the transformation is initialized
   }
@@ -93,9 +92,7 @@ export class SEInversion extends SETransformation {
     // will cause this inversion to be correct. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Inversion with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Inversion with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

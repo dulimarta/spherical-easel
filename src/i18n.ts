@@ -12,5 +12,5 @@ export default createI18n({
     id: messagedId
   },
   fallbackWarn: false,
-  missingWarn: false
+  missingWarn: true
 });

@@ -3,6 +3,7 @@ import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
 import { StyleOptions, StyleCategory } from "@/types/Styles";
 import {
+  FillStyle,
   svgArcObject,
   svgGradientType,
   svgStopType,
@@ -46,7 +47,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   static globalBackStyleContrast = SETTINGS.style.backStyleContrast;
 
   /** Draw the fills using a gradient or not */
-  static globalGradientFill = SETTINGS.style.fill.gradientFill;
+  static globalFillStyle = SETTINGS.style.fill.fillStyle;
 
   protected styleOptions: Map<StyleCategory, StyleOptions> = new Map();
 
@@ -374,12 +375,12 @@ export default abstract class Nodule implements Stylable, Resizeable {
     return returnStyleDictionary;
   }
 
-  static setGradientFill(value: boolean): void {
-    this.globalGradientFill = value;
+  static setFillStyle(value: FillStyle): void {
+    this.globalFillStyle = value;
   }
 
-  static getGradientFill(): boolean {
-    return this.globalGradientFill;
+  static getFillStyle(): FillStyle {
+    return this.globalFillStyle;
   }
 
   static setBackStyleContrast(contrast: number): void {
@@ -464,11 +465,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
 
   /** Get the current style state of the Nodule */
   currentStyleState(mode: StyleCategory): StyleOptions {
-    console.log(
-      "current style state of ",
-      this.name,
-      this.styleOptions.get(mode)
-    );
+    // console.log("current style state of ", this.name, this.styleOptions.get(mode))
     return this.styleOptions.get(mode) ?? {};
   }
   /**
@@ -477,7 +474,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
    * @param options The style options
    */
   updateStyle(mode: StyleCategory, options: StyleOptions): void {
-    console.debug("Update style of plottable", this, "using", options);
+    // console.log("Update style of plottable", this, "using", options);
     const currentOptions = this.styleOptions.get(mode);
     // console.log(
     //   "mode",

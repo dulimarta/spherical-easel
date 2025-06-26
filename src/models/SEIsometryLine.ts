@@ -1,18 +1,16 @@
 import { Vector3 } from "three";
 import { SELine } from "./SELine";
-import {
-  SEPoint,
-  SETranslation,
-  SERotation,
-  SEReflection,
-  SEPointReflection
-} from "./internal";
 import { ObjectState, SEIsometry } from "@/types";
 import i18n from "@/i18n";
 import {
   DEFAULT_LINE_BACK_STYLE,
   DEFAULT_LINE_FRONT_STYLE
 } from "@/types/Styles";
+import { SEPoint } from "./SEPoint";
+import { SETranslation } from "./SETranslation";
+import { SERotation } from "./SERotation";
+import { SEReflection } from "./SEReflection";
+import { SEPointReflection } from "./SEPointReflection";
 const { t } = i18n.global;
 
 const styleSet = new Set([
@@ -117,9 +115,7 @@ export class SEIsometryLine extends SELine {
     // plane of the line.
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Isometry Line with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Isometry Line with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

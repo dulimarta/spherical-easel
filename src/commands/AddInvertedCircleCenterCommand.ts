@@ -79,7 +79,6 @@ export class AddInvertedCircleCenterCommand extends Command {
     return [[this.invertedSECircleCenter, this.invertedSECircleCenterLabel]];
   }
 
-
   toOpcode(): null | string | Array<string> {
     return [
       "AddInvertedCircleCenter",

@@ -13,7 +13,7 @@ import { SENSectLine } from "@/models/SENSectLine";
 import { SEPoint } from "@/models/SEPoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddNSectLineCommand } from "@/commands/AddNSectLineCommand";
-import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands/SetPointUserCreatedValueCommand";
@@ -192,7 +192,7 @@ export default class NSectAngleHandler extends Highlighter {
         this.mouseLeave(event);
         if (this.selectedNValue === 2) {
           EventBus.fire("show-alert", {
-            key: `handlers.angleSuccessfullyBisected`,
+            key: `angleSuccessfullyBisected`,
             keyOptions: {
               angle: candidateAngle.label?.ref.shortUserName
             },
@@ -264,6 +264,7 @@ export default class NSectAngleHandler extends Highlighter {
 
   createNSection(candidateAngle: SEAngleMarker): void {
     const nSectingLinesCommandGroup = new CommandGroup();
+    const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
     const nSectingLineArray: SENSectLine[] = []; // a list of the new lines to be updated at the end of creation
 
     // get the SEPoint at the vertex of the angle marker
@@ -340,8 +341,7 @@ export default class NSectAngleHandler extends Highlighter {
           endSEPoint.showing = false; // this never changes
           endSEPoint.exists = true; // this never changes
           endSEPoint.locationVector = endPointVector; // this gets updated
-          console.log("endpoint name", endSEPoint.name)
-
+          // console.log("endpoint name", endSEPoint.name);
 
           // Create the model object for the new point and link them
           const nSectingLine = new SENSectLine(
@@ -352,7 +352,12 @@ export default class NSectAngleHandler extends Highlighter {
             i,
             this.selectedNValue
           );
-          console.log("endpoint coords", endPointVector.multiplyScalar(SETTINGS.boundaryCircle.radius).toFixed(2))
+          // console.log(
+          //   "endpoint coords",
+          //   endPointVector
+          //     .multiplyScalar(SETTINGS.boundaryCircle.radius)
+          //     .toFixed(2)
+          // );
           // Create plottable for the Label
           const newSELabel2 = new SELabel("line", nSectingLine);
           // Set the initial label location
@@ -376,16 +381,21 @@ export default class NSectAngleHandler extends Highlighter {
           nSectingLineArray.push(nSectingLine);
 
           // Determine all new intersection points and add their creation to the command so it can be undone
+
           NSectAngleHandler.store
-            .createAllIntersectionsWithLine(nSectingLine, [])
+            .createAllIntersectionsWith(nSectingLine, [])
             .forEach((item: SEIntersectionReturnType) => {
               if (item.existingIntersectionPoint) {
-                nSectingLinesCommandGroup.addCommand(
-                  new AddIntersectionPointOtherParent(
-                    item.SEIntersectionPoint,
-                    item.parent1
+                intersectionPointsToUpdate.push(item.SEIntersectionPoint);
+                nSectingLinesCommandGroup.addCondition(() =>
+                  item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(
+                    item
                   )
                 );
+                nSectingLinesCommandGroup.addCommand(
+                  new AddIntersectionPointOtherParentsInfo(item)
+                );
+                nSectingLinesCommandGroup.addEndCondition();
               } else {
                 // Create the plottable label
                 const newSELabel =
@@ -422,10 +432,16 @@ export default class NSectAngleHandler extends Highlighter {
     }
     nSectingLinesCommandGroup.execute();
 
+    // The newly added line passes through all the
+    // intersection points on the intersectionPointsToUpdate list
+    // This line might be a new parent to some of them
+    // shallowUpdate will check this and change parents as needed
+    intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+    intersectionPointsToUpdate.splice(0);
+
     nSectingLineArray.forEach(nSectingLine => {
       nSectingLine.markKidsOutOfDate();
       nSectingLine.update();
     });
-
   }
 }

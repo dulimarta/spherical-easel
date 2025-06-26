@@ -1,15 +1,12 @@
-import {
-  SEPoint,
-  SECircle,
-  SEEllipse,
-  SEParametric,
-  SENodule
-} from "./internal";
 import { SELine } from "./SELine";
 import { SEOneDimensionalNotStraight, ObjectState } from "@/types";
-// import { SELine } from "./SELine";
 import { Vector3 } from "three";
 import i18n from "@/i18n";
+import { SEPoint } from "./SEPoint";
+import { SENodule } from "@/models/SENodule";
+import { SECircle } from "./SECircle";
+import { SEEllipse } from "./SEEllipse";
+import { SEParametric } from "./SEParametric";
 const { t } = i18n.global;
 
 export class SETangentLineThruPoint extends SELine {
@@ -112,9 +109,7 @@ export class SETangentLineThruPoint extends SELine {
     if (objectState && orderedSENoduleList) {
       orderedSENoduleList.push(this.id);
       if (objectState.has(this.id)) {
-        console.log(
-          `Tangent Line Though Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Tangent Line Though Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

@@ -1,12 +1,11 @@
-import { SEPoint } from "./SEPoint"
-import { SECircle, SELine, SEInversion } from "./internal";
+import { SEPoint } from "./SEPoint";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { Vector3 } from "three";
 // import SETTINGS from "@/global-settings";
-// import { SEInversion } from "./SEInversion";
-// import { SECircle } from "./SECircle";
-// import { SELine } from "./SELine";
+import { SEInversion } from "./SEInversion";
+import { SECircle } from "./SECircle";
+import { SELine } from "./SELine";
 const { t } = i18n.global;
 export class SEInversionCircleCenter extends SEPoint {
   /**
@@ -176,9 +175,7 @@ export class SEInversionCircleCenter extends SEPoint {
     // will cause this center to be put into the correct location. So we don't store any additional information
     if (objectState && orderedSENoduleList) {
       if (objectState.has(this.id)) {
-        console.log(
-          `Inversion Circle center with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
-        );
+        // `Inversion Circle center with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
         return;
       }
       orderedSENoduleList.push(this.id);

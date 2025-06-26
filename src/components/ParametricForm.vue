@@ -16,8 +16,9 @@
         </div>
         Open panels {{ panels }}
         <v-expansion-panels multiple v-model="panels">
-          <v-expansion-panel data-testid="xyz_formula_panel"
-          :title="t('parametricCoordinates')">
+          <v-expansion-panel
+            data-testid="xyz_formula_panel"
+            :title="t('parametricCoordinates')">
             <v-expansion-panel-text class="bg-white" data-testid="xyz_formula">
               Where am I
               <template
@@ -120,9 +121,10 @@ import { AddParametricTracePointCommand } from "@/commands/AddParametricTracePoi
 import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
-import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 import { SEPoint } from "@/models/SEPoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
@@ -501,9 +503,9 @@ function addParametricCurve(): void {
   }
   tNumbersInput.value[0] = tNumbers.min.toString();
   tNumbersInput.value[1] = tNumbers.max.toString();
-  const noT = tNumbersInput.value.every(t => t.trim().length === 0)
-  const noFormula =    xyzFormulaInput.value.every(f => f.trim().length === 0);
-  disableAddParametricButton.value = noT && noFormula
+  const noT = tNumbersInput.value.every(t => t.trim().length === 0);
+  const noFormula = xyzFormulaInput.value.every(f => f.trim().length === 0);
+  disableAddParametricButton.value = noT && noFormula;
 
   // the cusp parameter values must all be between tMinNumber and tMaxNumber
   if (
@@ -733,16 +735,21 @@ function addParametricCurve(): void {
   }
   // Generate new intersection points. These points must be computed and created
   // in the store. Add the new created points to the parametric command so they can be undone.
+
+  const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
+
   seStore
-    .createAllIntersectionsWithParametric(newSEParametric, newlyCreatedSEPoints)
+    .createAllIntersectionsWith(newSEParametric, newlyCreatedSEPoints)
     .forEach((item: SEIntersectionReturnType) => {
       if (item.existingIntersectionPoint) {
-        parametricCommandGroup.addCommand(
-          new AddIntersectionPointOtherParent(
-            item.SEIntersectionPoint,
-            item.parent1
-          )
+        intersectionPointsToUpdate.push(item.SEIntersectionPoint);
+        parametricCommandGroup.addCondition(() =>
+          item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
         );
+        parametricCommandGroup.addCommand(
+          new AddIntersectionPointOtherParentsInfo(item)
+        );
+        parametricCommandGroup.addEndCondition();
       } else {
         // Create the plottable label
         const newSELabel = new SELabel("point", item.SEIntersectionPoint);
@@ -833,6 +840,12 @@ function addParametricCurve(): void {
     });
 
   parametricCommandGroup.execute();
+  // The newly added parametric passes through all the
+  // intersection points on the intersectionPointsToUpdate list
+  // This parametric might be a new parent to some of them
+  // shallowUpdate will check this and change parents as needed
+  intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+  intersectionPointsToUpdate.splice(0);
 
   newSEParametric.markKidsOutOfDate();
   newSEParametric.update();
@@ -871,7 +884,7 @@ function parametricCurveIsUnitCheck(tValues: number[]): null | number {
 </script>
 <i18n lang="json" locale="en">
 {
-"commaSeparated": "Expressions delimited by commas",
+  "commaSeparated": "Expressions delimited by commas",
   "constExpr": "Use constant only expressions",
   "currentTValue": "Current Value: ",
   "cuspValue": "Parametric Cusps",

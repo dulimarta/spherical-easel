@@ -12,7 +12,7 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { StyleCategory, StyleOptions } from "@/types/Styles";
 import { SEStoreType } from "@/stores/se";
-import { SELabel } from "./internal";
+import { SELabel } from "./SELabel";
 
 let NODE_COUNT = 0;
 
@@ -308,12 +308,14 @@ export abstract class SENodule implements Visitable {
   public isNonFreeLine(): boolean {
     return false;
   }
-
   // // Only returns true if this is an SEOneDimensional
   public isOneDimensional(): boolean {
     return false;
   }
-
+  // // Only returns true if this is an SEFillable
+  public isFillable(): boolean {
+    return false;
+  }
   public getLabel(): SELabel | null {
     return null;
   }
@@ -341,9 +343,9 @@ export abstract class SENodule implements Visitable {
       this.isNonFreeSegment() ||
       this.isNonFreeEllipse()
     ) {
-      // don't let this fall through because if a line or object has an empty parents array the .every method returns true even for non-free lines
       return false;
     }
+
     return this._parents.every(n => n.isFreePoint());
   }
   // only returns true for SENodules that can be measured (

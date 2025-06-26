@@ -160,7 +160,7 @@ export class AddAngleMarkerCommand extends Command {
     if (
       firstParent &&
       secondParent &&
-      mode &&
+      typeof mode === "number" &&
       typeof valueDisplayMode === "number"
     ) {
       const seAngleMarker = new SEAngleMarker(
@@ -200,8 +200,8 @@ export class AddAngleMarkerCommand extends Command {
       seAngleMarker.valueDisplayMode = valueDisplayMode;
 
       // These calls are needed so angle measurement value is updated
-      seAngleMarker.shallowUpdate()
-      seLabel.shallowUpdate()
+      seAngleMarker.shallowUpdate();
+      seLabel.shallowUpdate();
       //put the angleMarker in the object map
       if (propMap.get("objectName") !== undefined) {
         seAngleMarker.name = propMap.get("objectName") ?? "";

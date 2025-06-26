@@ -1,22 +1,29 @@
 <template>
-  <div class="pt-2 mr-2" id="cloader">
+  <div
+    class="mr-1"
+    id="cloader"
+    :style="{
+      display: 'flex',
+      flexDirection: 'column'
+    }">
     <!-- Button to Show Dialog -->
-    <div class="mb-4" v-if="firebaseUid && firebaseUid.length > 0">
-      <v-btn
-        color="#40A082"
-        class="mt-4"
-        @click="showDialog = true"
-        block
-        max-width="300px">
-        Construction Organization
+    <div
+      class="mb-4"
+      v-if="firebaseUid && firebaseUid.length > 0"
+      :style="{ alignSelf: 'flex-end' }">
+      <v-btn id="showFolder" @click="showDialog = true">
+        {{ t("showFolders") }}
       </v-btn>
+      <v-tooltip activator="#showFolder">
+        {{ t("constructionOrganization") }}
+      </v-tooltip>
     </div>
 
     <!-- Dialog with Treeview -->
     <ConstructionTreeDialog
       v-if="firebaseUid && firebaseUid.length > 0"
       v-model:visible="showDialog"
-      v-model:loadFolder="folderToLoad"/>
+      v-model:loadFolder="folderToLoad" />
 
     <!-- Panels for Constructions -->
     <PanelsContainer :selected-folder="folderToLoad" />
@@ -29,6 +36,8 @@ import ConstructionTreeDialog from "@/components/ConstructionTreeDialog.vue";
 import PanelsContainer from "@/components/PanelsContainer.vue";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 // Store Setup
 const acctStore = useAccountStore();
@@ -38,3 +47,9 @@ const { firebaseUid } = storeToRefs(acctStore);
 const showDialog = ref(false);
 const folderToLoad: Ref<string> = ref("");
 </script>
+<i18n locale="en" lang="json">
+{
+  "constructionOrganization": "Organize Construction Folders",
+  "showFolders": "Show Folders"
+}
+</i18n>

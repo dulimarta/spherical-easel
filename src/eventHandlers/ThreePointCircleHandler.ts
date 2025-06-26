@@ -17,7 +17,7 @@ import { SEThreePointCircleCenter } from "@/models/SEThreePointCircleCenter";
 import { SECircle } from "@/models/SECircle";
 import { AddThreePointCircleCenterCommand } from "@/commands/AddThreePointCircleCenterCommand";
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
-import { AddIntersectionPointOtherParent } from "@/commands/AddIntersectionPointOtherParent";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
@@ -54,6 +54,8 @@ export default class ThreePointCircleHandler extends Highlighter {
   private point1LocationSelected = false;
   private point2LocationSelected = false;
 
+  // Filter the hitSEPoints appropriately for this handler
+  protected filteredIntersectionPointsList: SEPoint[] = [];
   /**
    * A temporary plottable (TwoJS) points created while the user is making the ellipse. These can't be the same because the user
    * might select two new points (leaving the Focus Markers behind) and then the ellipse Point maker is displayed at the currentLocation
@@ -116,17 +118,19 @@ export default class ThreePointCircleHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     // First decide if the location of the event is on the sphere
     if (this.isOnSphere && !this.point2LocationSelected) {
+      this.updateFilteredPointsList();
       // Check to see if the current location is near any points
-      if (this.hitSEPoints.length > 0) {
+      if (this.filteredIntersectionPointsList.length > 0) {
         // Pick the top most selected point
-        const selected = this.hitSEPoints[0];
+        const selected = this.filteredIntersectionPointsList[0];
         if (!this.point1LocationSelected) {
           // Record the vector of the point so it can be past to the non-temporary three point circle center
           this.point1Vector.copy(selected.locationVector);
           // Record the model object one point of the three circle center
           this.point1SEPoint = selected;
           // Move the startMarker to the current selected point
-          this.temporaryPoint1Marker.positionVectorAndDisplay = selected.locationVector;
+          this.temporaryPoint1Marker.positionVectorAndDisplay =
+            selected.locationVector;
           // // Set the first vector in the three point circle center
           // this.temporaryThreePointCircleCenter.vector1 =
           //   selected.locationVector;
@@ -146,7 +150,8 @@ export default class ThreePointCircleHandler extends Highlighter {
             // Record the model object the second of three points in the three circle center
             this.point2SEPoint = selected;
             // Move the startMarker to the current selected point
-            this.temporaryPoint2Marker.positionVectorAndDisplay = selected.locationVector;
+            this.temporaryPoint2Marker.positionVectorAndDisplay =
+              selected.locationVector;
             // // Set the second vector in the three point circle center
             // this.temporaryThreePointCircleCenter.vector2 =
             //   selected.locationVector;
@@ -176,7 +181,8 @@ export default class ThreePointCircleHandler extends Highlighter {
             )
           );
           // this.temporaryThreePointCircleCenter.vector1 = this.point1Vector;
-          this.temporaryPoint1Marker.positionVectorAndDisplay = this.point1Vector;
+          this.temporaryPoint1Marker.positionVectorAndDisplay =
+            this.point1Vector;
           this.point1SEPoint = null;
           this.point1LocationSelected = true;
         } else {
@@ -187,7 +193,8 @@ export default class ThreePointCircleHandler extends Highlighter {
             )
           );
           // this.temporaryThreePointCircleCenter.vector2 = this.point2Vector;
-          this.temporaryPoint2Marker.positionVectorAndDisplay = this.point2Vector;
+          this.temporaryPoint2Marker.positionVectorAndDisplay =
+            this.point2Vector;
           this.point2SEPoint = null;
           this.point2LocationSelected = true;
           // trigger this so
@@ -205,7 +212,8 @@ export default class ThreePointCircleHandler extends Highlighter {
             )
           );
           // this.temporaryThreePointCircleCenter.vector1 = this.point1Vector;
-          this.temporaryPoint1Marker.positionVectorAndDisplay = this.point1Vector;
+          this.temporaryPoint1Marker.positionVectorAndDisplay =
+            this.point1Vector;
           this.point1SEPoint = null;
           this.point1LocationSelected = true;
         } else {
@@ -216,7 +224,8 @@ export default class ThreePointCircleHandler extends Highlighter {
             )
           );
           // this.temporaryThreePointCircleCenter.vector2 = this.point2Vector;
-          this.temporaryPoint2Marker.positionVectorAndDisplay = this.point2Vector;
+          this.temporaryPoint2Marker.positionVectorAndDisplay =
+            this.point2Vector;
           this.point2SEPoint = null;
           this.point2LocationSelected = true;
           // trigger this so
@@ -234,7 +243,8 @@ export default class ThreePointCircleHandler extends Highlighter {
             )
           );
           // this.temporaryThreePointCircleCenter.vector1 = this.point1Vector;
-          this.temporaryPoint1Marker.positionVectorAndDisplay = this.point1Vector;
+          this.temporaryPoint1Marker.positionVectorAndDisplay =
+            this.point1Vector;
           this.point1SEPoint = null;
           this.point1LocationSelected = true;
         } else {
@@ -245,12 +255,13 @@ export default class ThreePointCircleHandler extends Highlighter {
             )
           );
           // this.temporaryThreePointCircleCenter.vector2 = this.point2Vector;
-          this.temporaryPoint2Marker.positionVectorAndDisplay = this.point2Vector;
+          this.temporaryPoint2Marker.positionVectorAndDisplay =
+            this.point2Vector;
           this.point2SEPoint = null;
           this.point2LocationSelected = true;
           // trigger this so
           //that will prevent a mouse release at the same location as vector 2 from creating the three point circle center
-         // this.mouseMoved(event);
+          // this.mouseMoved(event);
         }
       } else if (this.hitSEEllipses.length > 0) {
         // one of the points of the three point circle will be a point on a ellise
@@ -263,7 +274,8 @@ export default class ThreePointCircleHandler extends Highlighter {
             )
           );
           // this.temporaryThreePointCircleCenter.vector1 = this.point1Vector;
-          this.temporaryPoint1Marker.positionVectorAndDisplay = this.point1Vector;
+          this.temporaryPoint1Marker.positionVectorAndDisplay =
+            this.point1Vector;
           this.point1SEPoint = null;
           this.point1LocationSelected = true;
         } else {
@@ -274,7 +286,8 @@ export default class ThreePointCircleHandler extends Highlighter {
             )
           );
           // this.temporaryThreePointCircleCenter.vector2 = this.point2Vector;
-          this.temporaryPoint2Marker.positionVectorAndDisplay = this.point2Vector;
+          this.temporaryPoint2Marker.positionVectorAndDisplay =
+            this.point2Vector;
           this.point2SEPoint = null;
           this.point2LocationSelected = true;
           // trigger this so
@@ -292,7 +305,8 @@ export default class ThreePointCircleHandler extends Highlighter {
             )
           );
           // this.temporaryThreePointCircleCenter.vector1 = this.point1Vector;
-          this.temporaryPoint1Marker.positionVectorAndDisplay = this.point1Vector;
+          this.temporaryPoint1Marker.positionVectorAndDisplay =
+            this.point1Vector;
           this.point1SEPoint = null;
           this.point1LocationSelected = true;
         } else {
@@ -303,12 +317,13 @@ export default class ThreePointCircleHandler extends Highlighter {
             )
           );
           // this.temporaryThreePointCircleCenter.vector2 = this.point2Vector;
-          this.temporaryPoint2Marker.positionVectorAndDisplay = this.point2Vector;
+          this.temporaryPoint2Marker.positionVectorAndDisplay =
+            this.point2Vector;
           this.point2SEPoint = null;
           this.point2LocationSelected = true;
           // trigger this so
           //that will prevent a mouse release at the same location as vector 2 from creating the three point circle center
-           // this.mouseMoved(event);
+          // this.mouseMoved(event);
         }
       } else if (this.hitSEPolygons.length > 0) {
         // one of the points of the three point circle will be a point on a polygon
@@ -321,7 +336,8 @@ export default class ThreePointCircleHandler extends Highlighter {
             )
           );
           // this.temporaryThreePointCircleCenter.vector1 = this.point1Vector;
-          this.temporaryPoint1Marker.positionVectorAndDisplay = this.point1Vector;
+          this.temporaryPoint1Marker.positionVectorAndDisplay =
+            this.point1Vector;
           this.point1SEPoint = null;
           this.point1LocationSelected = true;
         } else {
@@ -332,7 +348,8 @@ export default class ThreePointCircleHandler extends Highlighter {
             )
           );
           // this.temporaryThreePointCircleCenter.vector2 = this.point2Vector;
-          this.temporaryPoint2Marker.positionVectorAndDisplay = this.point2Vector;
+          this.temporaryPoint2Marker.positionVectorAndDisplay =
+            this.point2Vector;
           this.point2SEPoint = null;
           this.point2LocationSelected = true;
           // trigger this so
@@ -347,7 +364,8 @@ export default class ThreePointCircleHandler extends Highlighter {
           // this.temporaryThreePointCircleCenter.vector1 =
           //   this.currentSphereVector;
           // Move the startMarker to the current mouse location
-          this.temporaryPoint1Marker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryPoint1Marker.positionVectorAndDisplay =
+            this.currentSphereVector;
           // Record the first vector so it can be past to the non-temporary three point circle center
           this.point1Vector.copy(this.currentSphereVector);
           // Set the first SEPoint to null so it can be created later
@@ -358,7 +376,8 @@ export default class ThreePointCircleHandler extends Highlighter {
           // this.temporaryThreePointCircleCenter.vector2 =
           //   this.currentSphereVector;
           // Move the startMarker to the current mouse location
-          this.temporaryPoint2Marker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryPoint2Marker.positionVectorAndDisplay =
+            this.currentSphereVector;
           // Record the second vector so it can be past to the non-temporary three point circle center
           this.point2Vector.copy(this.currentSphereVector);
           // Set the second SEPoint to null so it can be created later
@@ -366,18 +385,20 @@ export default class ThreePointCircleHandler extends Highlighter {
           this.point2LocationSelected = true;
           // trigger this so
           //that will prevent a mouse release at the same location as vector 2 from creating the three point circle center
-           //this.mouseMoved(event);
+          //this.mouseMoved(event);
         }
       }
       if (this.point1LocationSelected && !this.point2LocationSelected) {
-        this.temporaryPoint2Marker.positionVectorAndDisplay = this.currentSphereVector;
+        this.temporaryPoint2Marker.positionVectorAndDisplay =
+          this.currentSphereVector;
         EventBus.fire("show-alert", {
           key: `handlers.threePointCircleFirstPointSelected`,
           keyOptions: {},
           type: "info"
         });
       } else {
-        this.temporaryPoint3Marker.positionVectorAndDisplay = this.currentSphereVector;
+        this.temporaryPoint3Marker.positionVectorAndDisplay =
+          this.currentSphereVector;
         EventBus.fire("show-alert", {
           key: `handlers.threePointCircleSecondPointSelected`,
           keyOptions: {},
@@ -394,9 +415,10 @@ export default class ThreePointCircleHandler extends Highlighter {
     // The user can create points on ellipses, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
+    this.updateFilteredPointsList();
     let possiblyGlowing: SEPoint | SEOneOrTwoDimensional | null = null;
-    if (this.hitSEPoints.length > 0) {
-      possiblyGlowing = this.hitSEPoints[0];
+    if (this.filteredIntersectionPointsList.length > 0) {
+      possiblyGlowing = this.filteredIntersectionPointsList[0];
     } else if (this.hitSESegments.length > 0) {
       possiblyGlowing = this.hitSESegments[0];
     } else if (this.hitSELines.length > 0) {
@@ -465,8 +487,10 @@ export default class ThreePointCircleHandler extends Highlighter {
           // glowing when the user select that location and then moves the mouse away - see line 128) we don't
           // remove the temporary start marker from the scene, instead we move it to the location of the intersection point
           if (
-            this.snapTemporaryPointMarkerToPoint instanceof
-              SEIntersectionPoint &&
+            (this.snapTemporaryPointMarkerToPoint instanceof
+              SEIntersectionPoint ||
+              this.snapTemporaryPointMarkerToPoint instanceof
+                SEAntipodalPoint) &&
             !this.snapTemporaryPointMarkerToPoint.isUserCreated
           ) {
             this.temporaryPoint1Marker.positionVectorAndDisplay =
@@ -485,7 +509,8 @@ export default class ThreePointCircleHandler extends Highlighter {
         }
         // otherwise move the point1marker to the current sphere vector (again in the case that there is no point to glow at that location)
         else if (this.snapTemporaryPointMarkerToPoint == null) {
-          this.temporaryPoint1Marker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryPoint1Marker.positionVectorAndDisplay =
+            this.currentSphereVector;
         }
       } else if (!this.point2LocationSelected) {
         // If the temporary point2Marker has *not* been added to the scene do so now
@@ -499,8 +524,10 @@ export default class ThreePointCircleHandler extends Highlighter {
           // glowing when the user select that location and then moves the mouse away - see line 128) we don't
           // remove the temporary start marker from the scene, instead we move it to the location of the intersection point
           if (
-            this.snapTemporaryPointMarkerToPoint instanceof
-              SEIntersectionPoint &&
+            (this.snapTemporaryPointMarkerToPoint instanceof
+              SEIntersectionPoint ||
+              this.snapTemporaryPointMarkerToPoint instanceof
+                SEAntipodalPoint) &&
             !this.snapTemporaryPointMarkerToPoint.isUserCreated
           ) {
             this.temporaryPoint2Marker.positionVectorAndDisplay =
@@ -519,7 +546,8 @@ export default class ThreePointCircleHandler extends Highlighter {
         }
         // otherwise move the point2marker to the current sphere vector (again in the case that there is no point to glow at that location)
         else if (this.snapTemporaryPointMarkerToPoint == null) {
-          this.temporaryPoint2Marker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryPoint2Marker.positionVectorAndDisplay =
+            this.currentSphereVector;
         }
       } else {
         // If the temporary Point3Marker has *not* been added to the scene do so now
@@ -556,7 +584,8 @@ export default class ThreePointCircleHandler extends Highlighter {
         }
         // otherwise move the Point3Marker to the current sphere vector (again in the case that there is no point to glow at that location)
         else if (this.snapTemporaryPointMarkerToPoint == null) {
-          this.temporaryPoint3Marker.positionVectorAndDisplay = this.currentSphereVector;
+          this.temporaryPoint3Marker.positionVectorAndDisplay =
+            this.currentSphereVector;
         }
 
         // If the temporary three point circle and center has *not* been added to the scene do so now (only once)
@@ -868,8 +897,8 @@ export default class ThreePointCircleHandler extends Highlighter {
     // the this.temporaryPoint3Marker.positionVector is not either of the previous two vectors.
 
     // Check to see if the release location is near any points
-    if (this.hitSEPoints.length > 0 && !fromActivate) {
-      this.point3SEPoint = this.hitSEPoints[0];
+    if (this.filteredIntersectionPointsList.length > 0 && !fromActivate) {
+      this.point3SEPoint = this.filteredIntersectionPointsList[0];
 
       if (
         (this.point3SEPoint instanceof SEIntersectionPoint &&
@@ -1025,7 +1054,7 @@ export default class ThreePointCircleHandler extends Highlighter {
         this.point2SEPoint,
         this.point3SEPoint
       );
-      newSEThreePointCircleCenter.shallowUpdate() // need this shallow update so that location vector is not 0,0,0
+      newSEThreePointCircleCenter.shallowUpdate(); // need this shallow update so that location vector is not 0,0,0
       // Create the plottable and model label
       const newSELabel = newSEThreePointCircleCenter.attachLabelWithOffset(
         new Vector3(0, SETTINGS.point.initialLabelOffset, 0)
@@ -1077,16 +1106,19 @@ export default class ThreePointCircleHandler extends Highlighter {
 
       // Generate new intersection points. These points must be computed and created
       // in the store. Add the new created points to the ellipse command so they can be undone.
+      const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
       ThreePointCircleHandler.store
-        .createAllIntersectionsWithCircle(newSECircle, newlyCreatedSEPoints)
+        .createAllIntersectionsWith(newSECircle, newlyCreatedSEPoints)
         .forEach((item: SEIntersectionReturnType) => {
           if (item.existingIntersectionPoint) {
-            threePointCircleCommandGroup.addCommand(
-              new AddIntersectionPointOtherParent(
-                item.SEIntersectionPoint,
-                item.parent1
-              )
+            intersectionPointsToUpdate.push(item.SEIntersectionPoint);
+            threePointCircleCommandGroup.addCondition(() =>
+              item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
             );
+            threePointCircleCommandGroup.addCommand(
+              new AddIntersectionPointOtherParentsInfo(item)
+            );
+            threePointCircleCommandGroup.addEndCondition();
           } else {
             // Create the plottable and model label
             const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
@@ -1119,8 +1151,37 @@ export default class ThreePointCircleHandler extends Highlighter {
       threePointCircleCommandGroup.execute();
       newSEThreePointCircleCenter.markKidsOutOfDate();
       newSEThreePointCircleCenter.update();
+      // The newly added circle passes through all the
+      // intersection points on the intersectionPointsToUpdate list
+      // This circle might be a new parent to some of them
+      // shallowUpdate will check this and change parents as needed
+      intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+      intersectionPointsToUpdate.splice(0);
     }
     return true;
+  }
+
+  updateFilteredPointsList(): void {
+    this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
+      if (pt instanceof SEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof SEAntipodalPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          return true;
+        }
+      }
+      return pt.showing;
+    });
   }
 
   activate(): void {

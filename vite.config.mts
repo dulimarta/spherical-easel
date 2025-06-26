@@ -1,8 +1,9 @@
 /// <reference types="vitest" />
 import { defineConfig } from "vite";
-import { resolve } from "path";
+import { resolve, dirname } from "path";
 import Vue from "@vitejs/plugin-vue";
 import { fileURLToPath, URL } from "node:url";
+import vueDevTools from "vite-plugin-vue-devtools";
 
 // import {createVuePlugin as vue} from "vite-plugin-vue2"
 // import { VuetifyResolver } from "unplugin-vue-components/resolvers"
@@ -18,9 +19,10 @@ export default defineConfig({
     extensions: [".mjs", ".js", ".ts", ".jsx", ".tsx", ".json", ".vue"]
   },
   optimizeDeps: {
-    exclude: ['fsevents']
+    exclude: ["fsevents"]
   },
   plugins: [
+    vueDevTools({ componentInspector: { toggleButtonVisibility: "active" } }),
     Vue({
       isProduction: false,
       template: {
@@ -39,10 +41,13 @@ export default defineConfig({
       }
     }),
     VueI18nPlugin({
-      include: [resolve(__dirname, "./src/assets/languages/**")],
+      include: resolve(
+        dirname(fileURLToPath(import.meta.url)),
+        "./src/assets/languages/**"
+      ),
       strictMessage: true /* messages should not contain HTML tags */,
-      allowDynamic: true,
-      bridge: false /* specify custom blocks to  work under both v8 and v9 */
+      allowDynamic: true
+      // bridge: false /* specify custom blocks to  work under both v8 and v9 */
     })
   ],
   server: {
