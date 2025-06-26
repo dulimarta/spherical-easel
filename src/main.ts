@@ -35,8 +35,6 @@ app.use(vuetify);
 app.use(router);
 app.use(i18n);
 app.use(gaTag);
-// When .use(pinia) is NOT the last call, Pinia did not show up in VueJS DevTools
-// https://stackoverflow.com/questions/77456631/why-cant-i-see-pinia-in-vue-devtools
 app.use(pinia);
 app.mount("#app");
 
