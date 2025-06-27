@@ -261,7 +261,7 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
 type LabelDisplayModeItem = {
-  text: any; //typeof VueI18n.TranslateResult
+  text: unknown; //typeof VueI18n.TranslateResult
   value: LabelDisplayMode;
   optionRequiresMeasurementValueToExist: boolean;
   optionRequiresCaptionToExist: boolean;

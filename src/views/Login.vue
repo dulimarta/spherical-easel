@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <v-container fluid>
     <v-row justify="center">
@@ -102,8 +103,8 @@ const loginMessage = ref("");
 const messageType: Ref<"info" | "error" | "warning"> = ref("info");
 const router = useRouter();
 const acctStore = useAccountStore();
-const usrEmail:Ref<string> = ref(import.meta.env.VITE_APP_TESTUSER);
-const usrPassword:Ref<string> = ref(import.meta.env.VITE_APP_TESTPASSWORD);
+const usrEmail: Ref<string> = ref(import.meta.env.VITE_APP_TESTUSER);
+const usrPassword: Ref<string> = ref(import.meta.env.VITE_APP_TESTPASSWORD);
 const emailRules = [
   (s: string | undefined): boolean => {
     if (!s) return false;

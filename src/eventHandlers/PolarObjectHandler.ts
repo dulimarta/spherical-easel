@@ -268,9 +268,8 @@ export default class PolarObjectHandler extends Highlighter {
           .isZero(SETTINGS.nearlyAntipodalIdeal);
       });
       if (!alreadyExists) {
-        this.hitSESegments[0]
-          ? (this.hitSESegments[0].glowing = true)
-          : (this.hitSELines[0].glowing = true);
+        if (this.hitSESegments[0]) this.hitSESegments[0].glowing = true;
+        else this.hitSELines[0].glowing = true;
         this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon = null;
         this.creating = Create.POLARPOINTS;
         this.snapToTemporaryPoint = null;

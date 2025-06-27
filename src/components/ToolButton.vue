@@ -68,7 +68,7 @@ const props = defineProps<ToolButtonProps>();
 const elev = ref(5);
 const weight: Ref<"bold" | "normal"> = ref("normal");
 const isEditing = ref(props.editing);
-const mdiIconSize = ref("")
+const mdiIconSize = ref("");
 const iconClass = ref({
   size: SETTINGS.icons.buttonIconSize + "px"
 });
@@ -85,11 +85,14 @@ const vuetifyIconAlias = computed(
     props.button.icon ?? "$" + props.button.action
 );
 
-
 onMounted(() => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const zIcons = SETTINGS.icons as Record<string, any>;
-  if (zIcons[props.button.action] && typeof zIcons[props.button.action].props.mdiIcon == "string") {
-    mdiIconSize.value = SETTINGS.icons.shortcutIconSize * 0.6 + "px" // mdiIcons are smaller
+  if (
+    zIcons[props.button.action] &&
+    typeof zIcons[props.button.action].props.mdiIcon == "string"
+  ) {
+    mdiIconSize.value = SETTINGS.icons.shortcutIconSize * 0.6 + "px"; // mdiIcons are smaller
   }
 });
 

@@ -76,9 +76,10 @@ export default class IconFactoryHandler implements ToolStrategy {
    *  modifySVGBlockForIcon, and then ask you to save it over the right file.
    */
   updateIconPaths(): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const zIcons = SETTINGS.icons as Record<string, any>;
     for (let entry in zIcons) {
-      if (entry == "polar"|| entry=="line") {
+      if (entry == "polar" || entry == "line") {
         if (zIcons[entry].props != undefined) {
           let svgFileName = zIcons[entry].props.svgFileName;
           if (svgFileName != "") {
@@ -187,12 +188,10 @@ export default class IconFactoryHandler implements ToolStrategy {
       ["circleFrontStyle", "stroke-width:", "1.5", ";", "number"],
       ["circleFrontStyle", "stroke:", "#4287f5FF", ";", "color"],
       ["ellipseFrontStyle", "stroke-width:", "1.5", ";", "number"],
-      ["ellipseFrontStyle", "stroke:", "#4287f5FF", ";", "color"],
-
+      ["ellipseFrontStyle", "stroke:", "#4287f5FF", ";", "color"]
     ];
 
     //.pointBackStyle0 { fill:#EFCFCF; stroke:#B4B4D7; stroke-width:2; vector-effect: non-scaling-stroke;}
-
 
     let svgBlock = svgString;
     iconAttributes.forEach(attribute => {

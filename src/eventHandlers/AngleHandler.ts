@@ -77,7 +77,7 @@ export default class AngleHandler extends Highlighter {
   private sePointOneDimensionalParents: (SEOneOrTwoDimensional | null)[] = [];
   private pointLocations: Vector3[] = [];
 
-// Filter the hitSEPoints appropriately for this handler
+  // Filter the hitSEPoints appropriately for this handler
   protected filteredIntersectionPointsList: SEPoint[] = [];
 
   /**
@@ -271,7 +271,7 @@ export default class AngleHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     //Select an object
     if (this.isOnSphere) {
-    // Filter the hitSEPoints appropriately for this handler
+      // Filter the hitSEPoints appropriately for this handler
       this.updateFilteredPointsList();
       switch (this.angleMode) {
         case AngleMode.NONE:
@@ -286,8 +286,8 @@ export default class AngleHandler extends Highlighter {
             );
             this.temporaryAngleMarker.startVector =
               this.filteredIntersectionPointsList[0].locationVector;
-            this.temporaryFirstPoint.positionVectorAndDisplay;
-            this.filteredIntersectionPointsList[0].locationVector;
+            this.temporaryFirstPoint.positionVectorAndDisplay =
+              this.filteredIntersectionPointsList[0].locationVector;
             // select (to prevent unglowing by highlighter.ts)  and glow the point
             this.filteredIntersectionPointsList[0].glowing = true;
             this.filteredIntersectionPointsList[0].selected = true;
@@ -995,7 +995,7 @@ export default class AngleHandler extends Highlighter {
       }
       return pt.showing;
     });
-  }  
+  }
 
   private makeAngleMarkerFromThreePoints(): boolean {
     // make sure that this triple of points has not been measured already

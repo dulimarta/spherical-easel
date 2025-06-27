@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div id="toolbox-and-sphere">
     <AppNavigation
@@ -165,6 +166,7 @@ import { useLayout, useDisplay } from "vuetify";
 import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
 import Text from "@/plottables/Text";
+import { Handler } from "mitt";
 
 const DELETE_DELAY = 5000; // in milliseconds
 /**
@@ -212,12 +214,18 @@ const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
 const clearConstructionWarning = ref(false);
 const svgDataImage = ref("");
 // const svgDataImageAspectRatio = ref(1); // not needed because the svg has an aspect ratio of 1 and the ratio of the canvas width/height doesn't matter!
-let constructionClearTimer: any;
+let constructionClearTimer;
 
 //#region magnificationUpdate
 onBeforeMount(() => {
-  EventBus.listen("magnification-updated", resizePlottables);
-  EventBus.listen("preview-construction", showConstructionPreview);
+  EventBus.listen(
+    "magnification-updated",
+    resizePlottables as Handler<unknown>
+  );
+  EventBus.listen(
+    "preview-construction",
+    showConstructionPreview as Handler<unknown>
+  );
 });
 //#endregion magnificationUpdate
 

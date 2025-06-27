@@ -33,7 +33,7 @@
             </v-icon>
           </template>
         </template>
-        <template #expanded-row="{ columns, item }">
+        <template #expanded-row="{ item }">
           <v-data-table
             :items="item.constructions"
             :headers="constructionHeaders"
@@ -215,9 +215,9 @@ const constructionHeaders = [
   { title: "Description", key: "description" },
   { title: "Created", key: "dateCreated" },
   { title: "Published", key: "publicDocId" },
-  { title: "Command Script", key: "script", align: "center" as any },
-  { title: "Image Preview", key: "preview", align: "center" },
-  { title: "Action", key: "actions", align: "center" }
+  { title: "Command Script", key: "script", align: "center" as const },
+  { title: "Image Preview", key: "preview", align: "center" as const },
+  { title: "Action", key: "actions", align: "center" as const }
 ];
 type CloudFile = {
   path: string;

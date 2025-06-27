@@ -78,7 +78,7 @@ async function parseDocument(
     )
       .then((url: string) => axios.get(url))
       .then((r: AxiosResponse) => r.data)
-      .catch((err: any) => {
+      .catch((err: undefined) => {
         console.debug(
           "Firebase Storage error in fetching construction script",
           err
@@ -104,7 +104,7 @@ async function parseDocument(
     svgData = await getDownloadURL(storageRef(appStorage, remoteDoc.preview))
       .then((url: string) => axios.get(url))
       .then((r: AxiosResponse) => r.data)
-      .catch((err: any) => {
+      .catch((err: unknown) => {
         console.debug("Firebase Storage error in fetching SVG preview", err);
         return "";
       });
@@ -367,6 +367,7 @@ export const useConstructionStore = defineStore("construction", () => {
           constructionDetails.starCount = ds.data().starCount;
         }
       });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       saveTask = updateDoc(targetDoc, constructionDetails as any).then(
         () => targetDoc
       );
@@ -696,7 +697,7 @@ export const useConstructionStore = defineStore("construction", () => {
     if (victimDetails.publicDocId) {
       try {
         await deleteDoc(doc(appDB, "constructions", victimDetails.publicDocId));
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.debug(
           "Unable to delete public construction",
           victimDetails.publicDocId
@@ -707,7 +708,7 @@ export const useConstructionStore = defineStore("construction", () => {
     if (victimDetails.script.startsWith("https://")) {
       try {
         await deleteObject(storageRef(appStorage, `/scripts/${docId}`));
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.debug(`Unable to delete script ${docId} in Firebase storage`);
       }
     }
@@ -717,7 +718,7 @@ export const useConstructionStore = defineStore("construction", () => {
         await deleteObject(
           storageRef(appStorage, `/construction-svg/${docId}`)
         );
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.debug(
           `Unable to delete SVG preview ${docId} in Firebase storage`
         );
@@ -945,7 +946,7 @@ export const useConstructionStore = defineStore("construction", () => {
    * @param id starred ID to parse
    * @returns starred ID to parse to a path and id as a StarredConstruction type
    */
-  function parseStarredID(id: String): StarredConstruction {
+  function parseStarredID(id: string): StarredConstruction {
     const splitIdx = id.indexOf("/");
     return {
       id: splitIdx != -1 ? id.slice(0, splitIdx) : id,
@@ -964,17 +965,17 @@ export const useConstructionStore = defineStore("construction", () => {
     to: ConstructionPath,
     ...constructionIDs: Array<string>
   ): Promise<boolean> {
-    var success: boolean = true;
+    let success: boolean = true;
     // track whether or not we changed starred so we only update the list once
-    var changedStarred: boolean = false;
+    let changedStarred: boolean = false;
 
     // validate the destination path
     if (to.isValid()) {
       // iterate over every passed construction ID
       constructionIDs.forEach(async id => {
         // determine if the construction is owned or starred
-        var isOwned: boolean | undefined = undefined;
-        var index = 0;
+        let isOwned: boolean | undefined = undefined;
+        let index = 0;
 
         /* search owned constructions first */
         index = privateConstructions.value.findIndex(

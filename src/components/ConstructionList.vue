@@ -246,7 +246,7 @@ const clipboardAPI = useClipboard();
 // const writePermission = usePermission("clipboard-write");
 //setup for starred construction list
 let lastDocId: string | null = null;
-let actionTimer: any;
+let actionTimer;
 const ACTION_DELAY = 3000;
 
 function previewOrDefault(dataUrl: string | undefined): string {
@@ -352,7 +352,7 @@ function handleDeleteConstruction(docId: string): void {
     showDeleteWarning.value = true;
     actionTimer = setTimeout(async () => {
       const deleted = await constructionStore.deleteConstruction(
-        firebaseUid.value!!,
+        firebaseUid.value!,
         docId
       );
       if (deleted)

@@ -1,8 +1,5 @@
 <template>
-  <v-icon
-    v-if="mdiIcon"
-    :class="mdiIconName"
-    class="mdi" />
+  <v-icon v-if="mdiIcon" :class="mdiIconName" class="mdi" />
   <svg
     v-else
     xmlns="http://www.w3.org/2000/svg"
@@ -38,9 +35,9 @@ const customIconStyle = ref("");
 
 onMounted((): void => {
   // THE CONTAINER OF THE ICON Determines the size of the icon
-  customIconStyle.value =
-    "overflow: visible;"
-  const zIcons = SETTINGS.icons as Record<string, any>;
+  customIconStyle.value = "overflow: visible;";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const zIcons = SETTINGS.icons as unknown as Record<string, any>;
   svgFileName = zIcons[props.iconName].props.svgFileName;
   filePath = "../../icons/" + svgFileName;
   mdiIcon.value = zIcons[props.iconName].props.mdiIcon;
@@ -50,11 +47,11 @@ onMounted((): void => {
     // By default, axios assumes a JSON response and the input will be parsed as JSON.
     // We want to override it to "text"
     axios.get(filePath, { responseType: "text" }).then(r => {
-      let completeSVGString:string = r.data;
+      let completeSVGString: string = r.data;
       //strip off the first and last lines of the svg code
-      completeSVGString=completeSVGString.replace(/.*\n/, '')
-      completeSVGString=completeSVGString.replace(/\n.*$/, '')
-      svgSnippetAmended.value =completeSVGString
+      completeSVGString = completeSVGString.replace(/.*\n/, "");
+      completeSVGString = completeSVGString.replace(/\n.*$/, "");
+      svgSnippetAmended.value = completeSVGString;
     });
   } else {
     mdiIconName.value = mdiIcon.value;

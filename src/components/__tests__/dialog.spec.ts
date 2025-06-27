@@ -19,27 +19,36 @@ describe("Dialog.vue", () => {
     //     title: "Hans"
     //   }
     // });
-    const wrapper = createWrapper(TestedComponent, {
-      componentProps: {
-        props: {
-          title: "Test Title"
-        },
+    const wrapper = createWrapper(
+      TestedComponent,
+      {
+        componentProps: {
+          props: {
+            title: "Test Title"
+          }
+        }
       },
-    }, false);
+      false
+    );
     // console.debug("What is", wrapper.html());
     expect(wrapper).toBeTruthy();
   });
 
   it("shows correct title", async () => {
-    const { wrapper } = createWrapper(TestedComponent, {
-      componentProps: {
-        props: {
-          title: "Dialog Title",
-        },
-      }
-    }, false);
-    await wrapper.trigger('show')
-    await (wrapper.vm as any).show()
+    const { wrapper } = createWrapper(
+      TestedComponent,
+      {
+        componentProps: {
+          props: {
+            title: "Dialog Title"
+          }
+        }
+      },
+      false
+    );
+    await wrapper.trigger("show");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (wrapper.vm as any).show();
     console.debug("Dialog HTML", wrapper.html());
     const b = await wrapper.find("#_test_title");
     console.debug(b);

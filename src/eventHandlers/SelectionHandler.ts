@@ -107,7 +107,7 @@ export default class SelectionHandler extends Highlighter {
         .filter((n: SECircle) => n.showing) //no hidden circles allowed
         .forEach((n: SECircle) => {
           this.keyPressSelection.push(n);
-          n.ref.glowingDisplay();
+          n.ref?.glowingDisplay();
         });
     }
     // Get all SEEllipses lower case e
@@ -227,11 +227,11 @@ export default class SelectionHandler extends Highlighter {
           if (pos === val) {
             // add the item to the list
             this.keyPressSelection.push(n);
-            (n as any).ref.glowingDisplay();
+            n.ref?.glowingDisplay();
             // Show the name of the selected item
             this.infoText.text = n.name;
           } else if (!n.selected) {
-            (n as any).ref.normalDisplay();
+            n.ref?.normalDisplay();
           }
         });
     }
@@ -315,7 +315,7 @@ export default class SelectionHandler extends Highlighter {
   mouseMoved(event: MouseEvent): void {
     // UnGlow and clear any objects in the keyPressSelection
     if (this.keyPressSelection.length != 0) {
-      this.keyPressSelection.forEach(n => (n as any).ref.normalDisplay());
+      this.keyPressSelection.forEach(n => n.ref?.normalDisplay());
       this.keyPressSelection.splice(0);
     }
 

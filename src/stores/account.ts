@@ -168,7 +168,7 @@ export const useAccountStore = defineStore("acct", () => {
       } else {
         return false;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       return error as string;
     }
   }
@@ -186,6 +186,7 @@ export const useAccountStore = defineStore("acct", () => {
       sendEmailVerification(credential.user);
       userEmail.value = email;
       return true;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       return error;
     }
@@ -210,8 +211,9 @@ export const useAccountStore = defineStore("acct", () => {
     try {
       const cred = await signInWithPopup(appAuth, provider);
       parseUserProfile(cred.user);
-      userEmail.value = cred.user.email!!;
+      userEmail.value = cred.user.email!;
       return null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       return error;
     }

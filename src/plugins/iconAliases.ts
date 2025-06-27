@@ -1,4 +1,5 @@
-import { h} from "vue";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { h } from "vue";
 import IconBase from "@/components/IconBase.vue";
 
 const iconNames = [
@@ -90,14 +91,11 @@ const iconNames = [
 ];
 
 const toRecord = (n: Array<string>): Record<string, any> => {
-  return n.reduce(
-    (acc: Record<string, any>, curr: string, pos: number) => {
-      return {
-        ...acc,
-        [curr]: () => h(IconBase as any, { iconName: curr })
-      };
-    },
-    {} as Record<string, any>
-  );
+  return n.reduce((acc: Record<string, any>, curr: string, pos: number) => {
+    return {
+      ...acc,
+      [curr]: () => h(IconBase as any, { iconName: curr })
+    };
+  }, {} as Record<string, any>);
 };
 export const customIcons = toRecord(iconNames);

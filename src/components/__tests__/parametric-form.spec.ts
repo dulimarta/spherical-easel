@@ -4,14 +4,13 @@ import { it, vi } from "vitest";
 import { VueWrapper, mount } from "@vue/test-utils";
 import { useSEStore } from "@/stores/se";
 import { SECalculation } from "@/models/SECalculation";
-global.ResizeObserver = require("resize-observer-polyfill");
+// global.ResizeObserver = require("resize-observer-polyfill");
 
 describe("ParametricForm.vue basics", () => {
   let wrapper: VueWrapper;
   beforeEach(() => {
-    const out = createWrapper(TestedComponent, {
-    }, false);
-    wrapper = out.wrapper
+    const out = createWrapper(TestedComponent, {}, false);
+    wrapper = out.wrapper;
     vi.useFakeTimers();
   });
 
@@ -22,15 +21,15 @@ describe("ParametricForm.vue basics", () => {
   });
 
   it.todo("has XYZ formula panel", async () => {
-    const xyzFormulaPanel = wrapper.find('[data-testid=xyz_formula_panel]')
-    const xyzFormula = xyzFormulaPanel.find("[data-testid]")
-    console.debug("Visible before", xyzFormula.isVisible())
+    const xyzFormulaPanel = wrapper.find("[data-testid=xyz_formula_panel]");
+    const xyzFormula = xyzFormulaPanel.find("[data-testid]");
+    console.debug("Visible before", xyzFormula.isVisible());
     // console.debug("Panel before:", xyzFormula.html());
-    expect(xyzFormula.isVisible()).toBeFalsy()
-    await xyzFormulaPanel.trigger('click')
-    vi.advanceTimersByTime(1000)
-    await wrapper.vm.$nextTick()
-    console.debug("Visible after", xyzFormula.isVisible())
+    expect(xyzFormula.isVisible()).toBeFalsy();
+    await xyzFormulaPanel.trigger("click");
+    vi.advanceTimersByTime(1000);
+    await wrapper.vm.$nextTick();
+    console.debug("Visible after", xyzFormula.isVisible());
     // console.debug("Panel after:", xyzFormula.html());
     // await vi.advanceTimersByTimeAsync(2000)
     // console.debug("After:", xyzPanel.html());

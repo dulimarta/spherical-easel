@@ -63,7 +63,7 @@ export class TreeviewNode {
       /* use the path up to this point as a unique ID since duplicate paths can't exist - note that
        * this may still cause problems if the same paths exist in private and starred constructions since
        * this function is unaware of the name of root node. */
-      var fullPathChunk: string = fullpath;
+      let fullPathChunk: string = fullpath;
       if (remainingPath.length > 0) {
         fullPathChunk = fullPathChunk.replace("/" + remainingPath, "");
         if (fullPathChunk.at(-1) != "/") {

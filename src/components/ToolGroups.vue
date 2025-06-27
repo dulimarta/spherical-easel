@@ -50,7 +50,8 @@
                   return true;
                 }
               })"
-              :value="btn.action">
+              :value="btn.action"
+              :key="btn.action">
               <ToolButton
                 :button="btn"
                 :selected="isSelected!"

@@ -2,7 +2,7 @@ import TestedComponent from "../ParametricCuspParameterValues.vue";
 import { createWrapper } from "$/vue-helper";
 import { it, vi } from "vitest";
 import { VueWrapper } from "@vue/test-utils";
-global.ResizeObserver = require("resize-observer-polyfill");
+// global.ResizeObserver = require("resize-observer-polyfill");
 
 describe("ParametricCuspParameterValues.vue basics", () => {
   let wrapper: VueWrapper;
@@ -11,10 +11,10 @@ describe("ParametricCuspParameterValues.vue basics", () => {
       componentProps: {
         tooltip: "bbbbb",
         label: "cccc",
-        modelValue: "",
+        modelValue: ""
       }
     });
-    wrapper = out.wrapper
+    wrapper = out.wrapper;
   });
 
   it("is a component", () => {
@@ -38,7 +38,7 @@ describe("ParametricCuspParameterValues.vue with input", () => {
       componentProps: {
         tooltip: "",
         label: "",
-        modelValue: "173 + 6",
+        modelValue: "173 + 6"
       }
     });
     const textInput = wrapper.find("[data-testid=textfield]");
@@ -47,7 +47,7 @@ describe("ParametricCuspParameterValues.vue with input", () => {
     await vi.advanceTimersByTimeAsync(3000);
 
     // console.debug("Text After input", wrapper.text())
-    expect(wrapper.text().length).toBe(0)
+    expect(wrapper.text().length).toBe(0);
   });
 
   it("shows no error when input is a comma separated multiple expressions", async () => {
@@ -55,7 +55,7 @@ describe("ParametricCuspParameterValues.vue with input", () => {
       componentProps: {
         tooltip: "",
         label: "",
-        modelValue: "173 + 6, 2 * PI",
+        modelValue: "173 + 6, 2 * PI"
       }
     });
     const textInput = wrapper.find("[data-testid=textfield]");
@@ -64,7 +64,7 @@ describe("ParametricCuspParameterValues.vue with input", () => {
     await vi.advanceTimersByTimeAsync(3000);
 
     // console.debug("Text After input", wrapper.text())
-    expect(wrapper.text().length).toBe(0)
+    expect(wrapper.text().length).toBe(0);
   });
 
   it("shows error on a single formula with T variable", async () => {
@@ -72,7 +72,7 @@ describe("ParametricCuspParameterValues.vue with input", () => {
       componentProps: {
         tooltip: "",
         label: "",
-        modelValue: "3.0 * t",
+        modelValue: "3.0 * t"
       }
     });
     const textInput = wrapper.find("[data-testid=textfield]");
@@ -81,7 +81,7 @@ describe("ParametricCuspParameterValues.vue with input", () => {
     await vi.advanceTimersByTimeAsync(3000);
 
     // console.debug("Text After input", wrapper.text())
-    expect(wrapper.text()).toMatch(/variable t/i)
+    expect(wrapper.text()).toMatch(/variable t/i);
   });
 
   it("shows error on multiple formulas containing T variable", async () => {
@@ -89,7 +89,7 @@ describe("ParametricCuspParameterValues.vue with input", () => {
       componentProps: {
         tooltip: "",
         label: "",
-        modelValue: "123,-4+t,3.0 * 3",
+        modelValue: "123,-4+t,3.0 * 3"
       }
     });
     const textInput = wrapper.find("[data-testid=textfield]");
@@ -98,7 +98,7 @@ describe("ParametricCuspParameterValues.vue with input", () => {
     await vi.advanceTimersByTimeAsync(3000);
 
     // console.debug("Text After input", wrapper.text())
-    expect(wrapper.text()).toMatch(/variable t/i)
+    expect(wrapper.text()).toMatch(/variable t/i);
   });
 
   it("shows error on formula with measurement", async () => {
@@ -117,8 +117,6 @@ describe("ParametricCuspParameterValues.vue with input", () => {
     await vi.advanceTimersByTimeAsync(3000);
 
     // // console.debug("Text After input", wrapper.text())
-    expect(wrapper.text()).toMatch(/variable M1/i)
+    expect(wrapper.text()).toMatch(/variable M1/i);
   });
-
-
 });
