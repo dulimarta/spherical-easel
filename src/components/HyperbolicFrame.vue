@@ -78,17 +78,20 @@ import {
   useEventListener,
   useMagicKeys
 } from "@vueuse/core";
-import { degToRad, radToDeg } from "three/src/math/MathUtils";
+import { degToRad } from "three/src/math/MathUtils";
 import { useHyperbolicStore } from "@/stores/hyperbolic";
 import { storeToRefs } from "pinia";
 import { watch } from "vue";
-import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
+import {
+  HyperbolicToolStrategy,
+  ToolStrategy
+} from "@/eventHandlers/ToolStrategy";
 import { PointHandler } from "@/eventHandlers_hyperbolic/PointHandler";
 import { useSEStore } from "@/stores/se";
 const hyperStore = useHyperbolicStore();
-const seStore = useSEStore()
+const seStore = useSEStore();
 const { mouseIntersections } = storeToRefs(hyperStore);
-const {actionMode} = storeToRefs(seStore)
+const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
 
 type ImportantSurface = "UPPER" | "LOWER" | null;
@@ -306,17 +309,14 @@ const pointLight = new PointLight(0xffffff, 100);
 pointLight.position.set(3, 3, 5);
 scene.add(ambientLight);
 scene.add(pointLight);
-let currentTool: ToolStrategy | null = null; //new PointHandler();
+let currentTool: HyperbolicToolStrategy | null = null; //new PointHandler();
 let pointTool: PointHandler = new PointHandler();
 function doRender() {
   // console.debug("Enable camera control", enableCameraControl.value)
   if (enableCameraControl.value) {
     const deltaTime = clock.getDelta();
     const hasUpdatedControls = cameraController.update(deltaTime);
-    console.debug(
-      "Enable camera control?",
-      hasUpdatedControls
-    );
+    console.debug("Enable camera control?", hasUpdatedControls);
     if (hasUpdatedControls) {
       console.debug(`Camera control triggers update`);
       renderer.render(scene, camera);
@@ -346,10 +346,10 @@ watch(
           pointTool = new PointHandler();
         }
         currentTool = pointTool;
-        enableCameraControl.value = false
-        break
+        enableCameraControl.value = false;
+        break;
       default:
-        enableCameraControl.value = true
+        enableCameraControl.value = true;
         currentTool = null;
     }
   }
@@ -395,7 +395,7 @@ function doMouseDown(ev: MouseEvent) {
     currentTool?.mousePressed(
       ev,
       mouseIntersections.value[0].point,
-      mouseIntersections.value[0].normal
+      mouseIntersections.value[0].normal!
     );
 }
 
@@ -403,26 +403,37 @@ function doMouseDown(ev: MouseEvent) {
 
 // }
 
-function doMouseMove(
-  onCanvas: boolean,
-  onHyperboloid: ImportantSurface,
-  position: Vector3 | null
-) {
-  console.debug(
-    "On canvas",
-    onCanvas,
-    " on sheet",
-    onHyperboloid,
-    " at ",
-    position?.toFixed(2)
-  );
+function handleMouseMove(ev: MouseEvent) {
+  console.debug("In handlemousemove", ev);
+  if (currentTool !== null) {
+    console.debug("Invoking current tool");
+    // currentTool.mouseMoved(ev);
+  }
 }
+// function doMouseMove(
+//   onCanvas: boolean,
+//   onHyperboloid: ImportantSurface,
+//   position: Vector3 | null
+// ) {
+//   console.debug(
+//     "On canvas",
+//     onCanvas,
+//     " on sheet",
+//     onHyperboloid,
+//     " at ",
+//     position?.toFixed(2)
+//   );
+// }
 
 function threeMouseTracker(ev: MouseEvent) {
   mouseCoordNormalized.value.x =
     2 * (elementX.value / renderer.domElement.clientWidth) - 1;
   mouseCoordNormalized.value.y =
     1 - 2 * (elementY.value / renderer.domElement.clientHeight);
+  console.debug(
+    `Coordinate from event (${ev.offsetX},${ev.offsetY}) ` +
+      `from VueUse (${elementX.value}, ${elementY.value})`
+  );
   rayCaster.setFromCamera(mouseCoordNormalized.value, camera);
   const regex = /(Sheet|Sphere)$/; // For filtering cursor intersection point(s)
   mouseIntersections.value = rayCaster
@@ -449,9 +460,9 @@ function threeMouseTracker(ev: MouseEvent) {
           .toUpperCase() as "UPPER" | "LOWER";
       else onHyperboloid = null;
       // console.debug(`First intersection ${firstIntersection.object.name}`);
-      rayIntersectionPoint.position.copy(firstIntersection.point);
-      mouseNormalArrow.setDirection(firstIntersection.normal!);
-      scene.add(rayIntersectionPoint);
+      // rayIntersectionPoint.position.copy(firstIntersection.point);
+      // mouseNormalArrow.setDirection(firstIntersection.normal!);
+      // scene.add(rayIntersectionPoint);
       // mouseNormalArrow.position.copy(rayIntersectionPoint.position)
       // if (firstIntersection.object.name.endsWith("Plane")) {
       //   // Using the normal from the intersection returned by RayCaster
@@ -596,13 +607,13 @@ function threeMouseTracker(ev: MouseEvent) {
     scene.remove(rayIntersectionPoint);
     scene.remove(auxLine);
   }
-  doMouseMove(
-    !isOutside.value,
-    onHyperboloid,
-    mouseIntersections.value.length > 0
-      ? mouseIntersections.value[0].point
-      : null
-  );
+  // doMouseMove(
+  //   !isOutside.value,
+  //   onHyperboloid,
+  //   mouseIntersections.value.length > 0
+  //     ? mouseIntersections.value[0].point
+  //     : null
+  // );
 }
 function hyperboloidPlus(u: number, v: number, pt: Vector3) {
   u = u * 2;

@@ -149,7 +149,6 @@ import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
 import { useMagicKeys } from "@vueuse/core";
 import { watchEffect } from "vue";
-import Settings from "@/views/Settings.vue";
 
 type ComponentProps = {
   availableHeight: number;
@@ -165,8 +164,7 @@ const {
   seLabels,
   seEllipses,
   sePolygons,
-  seCircles,
-  isEarthMode
+  seCircles
 } = storeToRefs(seStore);
 const acctStore = useAccountStore();
 const { favoriteTools } = storeToRefs(acctStore);
@@ -372,6 +370,7 @@ onBeforeMount((): void => {
   EventBus.listen("set-expression-for-tool", setExpressionForTool);
   EventBus.listen("set-transformation-for-tool", setTransformationForTool);
   EventBus.listen("delete-node", deleteNode);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   EventBus.listen("cursor-position", (arg: any) => {
     const rawPos = arg.raw.map((s: number) => s.toFixed(2)).join(",");
     const normPos = arg.normalized.map((s: number) => s.toFixed(2)).join(",");
@@ -437,7 +436,7 @@ watch(
       layer => typeof layer !== "number"
     )) {
       if ((layer as string).includes("background")) {
-        (layers[i] as any).visible = !earthMode;
+        layers[i].visible = !earthMode;
       }
       i++;
     }
@@ -447,7 +446,7 @@ watch(
     } else {
       let currentLineWidth = boundaryCircle.linewidth;
       boundaryCircle.stroke = "blue";
-      let intervalHandle: any;
+      let intervalHandle;
       // Gradually decrease the linewidth until it disappears
       intervalHandle = setInterval(() => {
         currentLineWidth -= 0.2;
@@ -705,8 +704,9 @@ function handleMouseLeave(e: MouseEvent): void {
 }
 
 //#region handleSphereRotation
-function handleSphereRotation(e: unknown): void {
-  seStore.rotateSphere((e as any).transform);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handleSphereRotation(e: any): void {
+  seStore.rotateSphere(e.transform);
   // console.log(seStore.inverseTotalRotationMatrix.elements);
 }
 //#endregion handleSphereRotation
@@ -1089,13 +1089,13 @@ watch(
   }
 );
 
-function assertNever(x: any): never {
-  throw Error("This should not happen", x);
+function assertNever(x: unknown): never {
+  throw Error(`This should not happen ${x}`);
 }
 
 function listItemStyle(idx: number, xLoc: string, yLoc: string) {
   //xLoc determines left or right, yLoc determines top or bottom
-  const style: any = {};
+  const style: Record<string, string> = {};
   let r = 0;
   let c = 0;
   let startCol = 0;

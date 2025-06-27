@@ -1,9 +1,9 @@
 import { AddPointCommandByCoordinates } from "@/commands/AddPointCommandByCoordinates";
-import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
+import { HyperbolicToolStrategy } from "@/eventHandlers/ToolStrategy";
 import { HEPoint } from "@/models-hyperbolic/HEPoint";
 import { Vector3 } from "three";
 
-export class PointHandler implements ToolStrategy {
+export class PointHandler implements HyperbolicToolStrategy {
   mouseMoved(event: MouseEvent): void {
     throw new Error("Method not implemented.");
   }
