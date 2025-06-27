@@ -203,7 +203,7 @@ const navDrawerWidth = ref(320);
 const previewClass = ref("");
 const constructionInfo = ref<SphericalConstruction | null>(null);
 const localIsEarthMode = ref(false);
-const loadingFromPath = ref(true);
+const loadingFromPath = ref(false);
 
 let confirmedLeaving = false;
 let attemptedToRoute: RouteLocationNormalized | null = null;
