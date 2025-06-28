@@ -23,7 +23,9 @@
       <span class="mx-2">
         {{ mouseCoordNormalized.toFixed(3) }}
       </span>
-      <span>3D:{{ rayIntersectionPoint.position.toFixed(2) }}</span>
+      <span v-if="onSurface">
+        3D:{{ rayIntersectionPoint.position.toFixed(2) }}
+      </span>
     </span>
   </span>
   <canvas
@@ -88,14 +90,15 @@ import {
 } from "@/eventHandlers/ToolStrategy";
 import { PointHandler } from "@/eventHandlers_hyperbolic/PointHandler";
 import { useSEStore } from "@/stores/se";
+import { PoseTracker } from "@/eventHandlers_hyperbolic/PoseTracker";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
 const { mouseIntersections } = storeToRefs(hyperStore);
 const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
 
-type ImportantSurface = "UPPER" | "LOWER" | null;
-let onHyperboloid: ImportantSurface = null;
+type ImportantSurface = "Upper" | "Lower" | "Sphere" | null;
+let onSurface: Ref<ImportantSurface> = ref(null);
 // Inject new BVH functions into current THREE-JS Mesh/BufferGeometry definitions
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
@@ -194,12 +197,6 @@ for (let k = 0; k < 3; k++) {
   auxLineIntersectionPoints.push(p);
 }
 
-const mouseNormalArrow = new ArrowHelper(); // ArrowHelper to show the normal vector of mouse intersection point
-mouseNormalArrow.setColor(0xffffff);
-mouseNormalArrow.setLength(1, 0.2, 0.2);
-// Attach the arrowhelper of the mouse normal to the intersectionpoint itself
-rayIntersectionPoint.add(mouseNormalArrow);
-
 const auxLineDirection = new Vector3();
 const auxLine = new Mesh(
   new CylinderGeometry(0.01, 0.01, 100),
@@ -281,10 +278,10 @@ const bvhCastCallback = {
     if (t1.intersectsTriangle(t2, aLine)) {
       const lc = new LineCurve3(aLine.start, aLine.end);
       const intersectionTubeGeo = new TubeGeometry(lc, 10, 0.03, 10, false);
-      const intersectionTube = new Mesh(
-        intersectionTubeGeo,
-        new MeshStandardMaterial({ color: "yellow" })
-      );
+      // const intersectionTube = new Mesh(
+      //   intersectionTubeGeo,
+      //   new MeshStandardMaterial({ color: "yellow" })
+      // );
       // intersectionGroup.add(intersectionTube);
     }
     return false;
@@ -310,7 +307,7 @@ pointLight.position.set(3, 3, 5);
 scene.add(ambientLight);
 scene.add(pointLight);
 let currentTool: HyperbolicToolStrategy | null = null; //new PointHandler();
-let pointTool: PointHandler = new PointHandler();
+let pointTool: PointHandler = new PointHandler(scene);
 function doRender() {
   // console.debug("Enable camera control", enableCameraControl.value)
   if (enableCameraControl.value) {
@@ -343,7 +340,7 @@ watch(
     switch (mode) {
       case "point":
         if (pointTool === null) {
-          pointTool = new PointHandler();
+          pointTool = new PointHandler(scene);
         }
         currentTool = pointTool;
         enableCameraControl.value = false;
@@ -380,6 +377,7 @@ onMounted(() => {
   renderer.render(scene, camera);
   useEventListener("mousemove", threeMouseTracker);
   useEventListener(webglCanvas, "mousedown", doMouseDown);
+  currentTool = new PointHandler(scene);
 });
 
 onUpdated(() => {
@@ -394,226 +392,202 @@ function doMouseDown(ev: MouseEvent) {
   if (mouseIntersections.value.length > 0)
     currentTool?.mousePressed(
       ev,
+      mouseCoordNormalized.value,
       mouseIntersections.value[0].point,
       mouseIntersections.value[0].normal!
     );
 }
-
-// function doMouseUp() {
-
-// }
-
-function handleMouseMove(ev: MouseEvent) {
-  console.debug("In handlemousemove", ev);
-  if (currentTool !== null) {
-    console.debug("Invoking current tool");
-    // currentTool.mouseMoved(ev);
-  }
-}
-// function doMouseMove(
-//   onCanvas: boolean,
-//   onHyperboloid: ImportantSurface,
-//   position: Vector3 | null
-// ) {
-//   console.debug(
-//     "On canvas",
-//     onCanvas,
-//     " on sheet",
-//     onHyperboloid,
-//     " at ",
-//     position?.toFixed(2)
-//   );
-// }
 
 function threeMouseTracker(ev: MouseEvent) {
   mouseCoordNormalized.value.x =
     2 * (elementX.value / renderer.domElement.clientWidth) - 1;
   mouseCoordNormalized.value.y =
     1 - 2 * (elementY.value / renderer.domElement.clientHeight);
-  console.debug(
-    `Coordinate from event (${ev.offsetX},${ev.offsetY}) ` +
-      `from VueUse (${elementX.value}, ${elementY.value})`
-  );
+  // console.debug(
+  //   `Coordinate from event (${ev.offsetX},${ev.offsetY}) ` +
+  //     `from VueUse (${elementX.value}, ${elementY.value})`
+  // );
   rayCaster.setFromCamera(mouseCoordNormalized.value, camera);
   const regex = /(Sheet|Sphere)$/; // For filtering cursor intersection point(s)
   mouseIntersections.value = rayCaster
     .intersectObjects(scene.children, true)
     .filter(iSect => {
-      console.debug(
-        "Raycast intersect",
-        iSect.object.name,
-        iSect.object.name.match(regex)
-      );
+      // console.debug(
+      //   "Raycast intersect",
+      //   iSect.object.name,
+      //   iSect.object.name.match(regex)
+      // );
       return iSect.object.name.match(regex);
     });
+  // let position3d: Vector3 | null;
+  let firstIntersection: THREE.Intersection | null;
   if (mouseIntersections.value.length > 0) {
     // console.debug(`Number of all intersections ${allIntersections.length}`)
     // We are interested only in intersection with named objects
-    const namedIntersections = mouseIntersections.value.filter(
-      z => z.object.name.length > 0 // we are interested only in named objects
-    );
-    if (namedIntersections.length > 0) {
-      const firstIntersection = namedIntersections[0];
-      if (firstIntersection.object.name.endsWith("Sheet"))
-        onHyperboloid = firstIntersection.object.name
-          .substring(0, 6)
-          .toUpperCase() as "UPPER" | "LOWER";
-      else onHyperboloid = null;
-      // console.debug(`First intersection ${firstIntersection.object.name}`);
-      // rayIntersectionPoint.position.copy(firstIntersection.point);
-      // mouseNormalArrow.setDirection(firstIntersection.normal!);
-      // scene.add(rayIntersectionPoint);
-      // mouseNormalArrow.position.copy(rayIntersectionPoint.position)
-      // if (firstIntersection.object.name.endsWith("Plane")) {
-      //   // Using the normal from the intersection returned by RayCaster
-      //   // does not give us the correct normal vector direction
-      //   // Must take it from the face normal and then apply the world transformation matrix
-      //   const n = firstIntersection.face?.normal.clone();
-      //   n?.transformDirection(firstIntersection.object.matrixWorld);
-      //   // console.debug(`with normal vector ${n!.toFixed(2)}`);
-      //   mouseNormalArrow.setDirection(n!);
-      // } else {
-      // }
-      auxLineIntersectionPoints.forEach(p => scene.remove(p));
-      if (shiftKey.value) {
-        // Show auxiliary line with shift-key
-        const hypotenuse = Math.sqrt(
-          Math.pow(rayIntersectionPoint.position.x, 2) +
-            Math.pow(rayIntersectionPoint.position.y, 2)
-        );
-        // Reorient the line to follow the mouse (in 3D)
-        auxLine.rotation.set(0, 0, 0);
-        auxLine.rotateZ(
-          Math.PI / 2 +
-            Math.atan2(
-              rayIntersectionPoint.position.y,
-              rayIntersectionPoint.position.x
-            )
-        );
-        auxLine.rotateX(
-          -Math.atan2(rayIntersectionPoint.position.z, hypotenuse)
-        );
-        scene.add(auxLine);
+    // const namedIntersections = mouseIntersections.value.filter(
+    //   z => z.object.name.length > 0 // we are interested only in named objects
+    // );
+    firstIntersection = mouseIntersections.value[0];
+    // position3d = firstIntersection.point;
+    if (firstIntersection.object.name.endsWith("Sheet"))
+      onSurface.value = firstIntersection.object.name
+        .substring(0, 6)
+        .toUpperCase() as ImportantSurface;
+    else if (firstIntersection.object.name.endsWith("Sphere"))
+      onSurface.value = "Sphere";
+    else onSurface.value = null;
+    // console.debug(`First intersection ${firstIntersection.object.name}`);
+    rayIntersectionPoint.position.copy(firstIntersection.point);
+    // if (firstIntersection.object.name.endsWith("Plane")) {
+    //   // Using the normal from the intersection returned by RayCaster
+    //   // does not give us the correct normal vector direction
+    //   // Must take it from the face normal and then apply the world transformation matrix
+    //   const n = firstIntersection.face?.normal.clone();
+    //   n?.transformDirection(firstIntersection.object.matrixWorld);
+    //   // console.debug(`with normal vector ${n!.toFixed(2)}`);
+    //   mouseNormalArrow.setDirection(n!);
+    // } else {
+    // }
+    auxLineIntersectionPoints.forEach(p => scene.remove(p));
+    if (shiftKey.value) {
+      // Show auxiliary line with shift-key
+      const hypotenuse = Math.sqrt(
+        Math.pow(rayIntersectionPoint.position.x, 2) +
+          Math.pow(rayIntersectionPoint.position.y, 2)
+      );
+      // Reorient the line to follow the mouse (in 3D)
+      auxLine.rotation.set(0, 0, 0);
+      auxLine.rotateZ(
+        Math.PI / 2 +
+          Math.atan2(
+            rayIntersectionPoint.position.y,
+            rayIntersectionPoint.position.x
+          )
+      );
+      auxLine.rotateX(-Math.atan2(rayIntersectionPoint.position.z, hypotenuse));
+      scene.add(auxLine);
 
-        // Find other intersection points between the auxiliary line and the sphere and/or hyperboloids)
-        auxLineDirection.copy(rayIntersectionPoint.position);
-        const { x: x0, y: y0, z: z0 } = rayIntersectionPoint.position;
-        let scale = 0;
-        if (firstIntersection.object.name === "Center Sphere") {
-          // Antipode on the circle
-          auxLineIntersectionPoints[0].position.set(-x0, -y0, -z0);
-          scene.add(auxLineIntersectionPoints[0]);
+      // Find other intersection points between the auxiliary line and the sphere and/or hyperboloids)
+      auxLineDirection.copy(rayIntersectionPoint.position);
+      const { x: x0, y: y0, z: z0 } = rayIntersectionPoint.position;
+      let scale = 0;
+      if (firstIntersection.object.name === "Center Sphere") {
+        // Antipode on the circle
+        auxLineIntersectionPoints[0].position.set(-x0, -y0, -z0);
+        scene.add(auxLineIntersectionPoints[0]);
 
-          // Calculate the scaling factor to place the point on hyperbolodi sheets
-          const scaleSquared = -1 / (x0 * x0 + y0 * y0 - z0 * z0);
-          console.debug(
-            "Scaling required to project from sphere to hyperboloid",
-            scaleSquared
-          );
-          if (scaleSquared > 0) {
-            scale = Math.sqrt(scaleSquared);
-          }
-        } else if (firstIntersection.object.name.endsWith("Sheet")) {
-          // Antipode on the hyperboloid
-          auxLineIntersectionPoints[0].position.set(-x0, -y0, -z0);
-          scene.add(auxLineIntersectionPoints[0]);
-          // Calculate the scale factor to place the point on the sphere
-          scale = Math.sqrt(1 / (x0 * x0 + y0 * y0 + z0 * z0));
-          console.debug(
-            "Scaling required to project from hyperboloid to sphere",
-            scale
-          );
+        // Calculate the scaling factor to place the point on hyperbolodi sheets
+        const scaleSquared = -1 / (x0 * x0 + y0 * y0 - z0 * z0);
+        console.debug(
+          "Scaling required to project from sphere to hyperboloid",
+          scaleSquared
+        );
+        if (scaleSquared > 0) {
+          scale = Math.sqrt(scaleSquared);
         }
-        if (scale > 0) {
-          // Draw two more points
-          auxLineIntersectionPoints[1].position.set(
-            scale * x0,
-            scale * y0,
-            scale * z0
-          );
-          scene.add(auxLineIntersectionPoints[1]);
-          auxLineIntersectionPoints[2].position.set(
-            -scale * x0,
-            -scale * y0,
-            -scale * z0
-          );
-          scene.add(auxLineIntersectionPoints[2]);
-        }
-      } else {
-        scene.remove(auxLine);
+      } else if (firstIntersection.object.name.endsWith("Sheet")) {
+        // Antipode on the hyperboloid
+        auxLineIntersectionPoints[0].position.set(-x0, -y0, -z0);
+        scene.add(auxLineIntersectionPoints[0]);
+        // Calculate the scale factor to place the point on the sphere
+        scale = Math.sqrt(1 / (x0 * x0 + y0 * y0 + z0 * z0));
+        console.debug(
+          "Scaling required to project from hyperboloid to sphere",
+          scale
+        );
       }
-      if (controlKey.value) {
-        // Need to use mouse intersection with a non-plane object
-        const nonPlane = namedIntersections.find(obj => {
-          // console.debug("Check ctrl intersect", obj.object.name);
-          return !obj.object.name.endsWith("Plane");
-        });
-        if (nonPlane) {
-          const planeXRotation = Math.atan2(nonPlane.point.y, nonPlane.point.z);
-          planeDir2
-            .set(0, Math.sin(planeXRotation), Math.cos(planeXRotation))
-            .normalize();
-          const newPath = new HyperbolaCurve(planeDir2);
-          hyperTube.geometry.dispose();
-          hyperTube.material.dispose();
-          scene.remove(hyperTube);
-          hyperTube = new Mesh(
-            new TubeGeometry(newPath, 50, 0.03, 12, false),
-            new THREE.MeshStandardMaterial({ color: "greenyellow" })
-          );
-          scene.add(hyperTube);
-          // const innerB =
-          //   planeDir1.x * planeDir1.x +
-          //   planeDir1.y * planeDir1.y -
-          //   planeDir1.z * planeDir1.z;
-          // const innerA =
-          //   planeDir2.x * planeDir2.x +
-          //   planeDir2.y * planeDir2.y -
-          //   planeDir2.z * planeDir2.z;
-          // const lambdaCoeff = Math.sqrt(-1 / innerA);
-          // console.debug("Diag metrics", innerA, innerB, lambdaCoeff);
-          planeDirArrow.setDirection(planeDir2);
-
-          // console.debug(`Red plane rotation ${radToDeg(planeXRotation)}`);
-          randomPlane.rotation.set(0, 0, 0);
-          randomPlane.rotateX(Math.PI / 2 - planeXRotation);
-          randomPlane.updateMatrixWorld();
-          scene.add(randomPlane);
-          // intersectionGroup.clear();
-          // intersectionGroup.rotation.set(0, 0, 0);
-          // upperHyperboloidToPlaneMatrix
-          //   .copy(randomPlane.matrixWorld)
-          //   .invert()
-          //   .multiply(upperHyperboloidMesh.matrixWorld);
-
-          // WARNING: the boundary volume casting call is expensive!
-          // upperPlaneGeometry.boundsTree?.bvhcast(
-          //   upperHyperboloidGeometry.boundsTree!,
-          //   upperHyperboloidToPlaneMatrix,
-          //   bvhCastCallback
-          // );
-          // intersectionGroup.rotateX(Math.PI / 2 - planeXRotation);
-        }
-      } else {
-        scene.remove(randomPlane);
-        scene.remove(hyperTube);
+      if (scale > 0) {
+        // Draw two more points
+        auxLineIntersectionPoints[1].position.set(
+          scale * x0,
+          scale * y0,
+          scale * z0
+        );
+        scene.add(auxLineIntersectionPoints[1]);
+        auxLineIntersectionPoints[2].position.set(
+          -scale * x0,
+          -scale * y0,
+          -scale * z0
+        );
+        scene.add(auxLineIntersectionPoints[2]);
       }
     } else {
-      scene.remove(rayIntersectionPoint);
       scene.remove(auxLine);
     }
+    if (controlKey.value) {
+      // Need to use mouse intersection with a non-plane object
+      const nonPlane = mouseIntersections.value.find(obj => {
+        // console.debug("Check ctrl intersect", obj.object.name);
+        return !obj.object.name.endsWith("Plane");
+      });
+      if (nonPlane) {
+        const planeXRotation = Math.atan2(nonPlane.point.y, nonPlane.point.z);
+        planeDir2
+          .set(0, Math.sin(planeXRotation), Math.cos(planeXRotation))
+          .normalize();
+        const newPath = new HyperbolaCurve(planeDir2);
+        hyperTube.geometry.dispose();
+        hyperTube.material.dispose();
+        scene.remove(hyperTube);
+        hyperTube = new Mesh(
+          new TubeGeometry(newPath, 50, 0.03, 12, false),
+          new THREE.MeshStandardMaterial({ color: "greenyellow" })
+        );
+        scene.add(hyperTube);
+        // const innerB =
+        //   planeDir1.x * planeDir1.x +
+        //   planeDir1.y * planeDir1.y -
+        //   planeDir1.z * planeDir1.z;
+        // const innerA =
+        //   planeDir2.x * planeDir2.x +
+        //   planeDir2.y * planeDir2.y -
+        //   planeDir2.z * planeDir2.z;
+        // const lambdaCoeff = Math.sqrt(-1 / innerA);
+        // console.debug("Diag metrics", innerA, innerB, lambdaCoeff);
+        planeDirArrow.setDirection(planeDir2);
+
+        // console.debug(`Red plane rotation ${radToDeg(planeXRotation)}`);
+        randomPlane.rotation.set(0, 0, 0);
+        randomPlane.rotateX(Math.PI / 2 - planeXRotation);
+        randomPlane.updateMatrixWorld();
+        scene.add(randomPlane);
+        // intersectionGroup.clear();
+        // intersectionGroup.rotation.set(0, 0, 0);
+        // upperHyperboloidToPlaneMatrix
+        //   .copy(randomPlane.matrixWorld)
+        //   .invert()
+        //   .multiply(upperHyperboloidMesh.matrixWorld);
+
+        // WARNING: the boundary volume casting call is expensive!
+        // upperPlaneGeometry.boundsTree?.bvhcast(
+        //   upperHyperboloidGeometry.boundsTree!,
+        //   upperHyperboloidToPlaneMatrix,
+        //   bvhCastCallback
+        // );
+        // intersectionGroup.rotateX(Math.PI / 2 - planeXRotation);
+      }
+    } else {
+      scene.remove(randomPlane);
+      scene.remove(hyperTube);
+    }
+    // } else {
+    //   scene.remove(rayIntersectionPoint);
+    //   scene.remove(auxLine);
+    // }
   } else {
-    onHyperboloid = null;
+    onSurface.value = null;
+    firstIntersection = null;
     scene.remove(rayIntersectionPoint);
     scene.remove(auxLine);
   }
-  // doMouseMove(
-  //   !isOutside.value,
-  //   onHyperboloid,
-  //   mouseIntersections.value.length > 0
-  //     ? mouseIntersections.value[0].point
-  //     : null
-  // );
+
+  currentTool?.mouseMoved(
+    ev,
+    mouseCoordNormalized.value,
+    firstIntersection?.point ?? null,
+    firstIntersection?.normal ?? null
+  );
+  // doMouseMove(!isOutside.value, onSurface.value, position3d);
 }
 function hyperboloidPlus(u: number, v: number, pt: Vector3) {
   u = u * 2;

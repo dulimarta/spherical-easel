@@ -1,6 +1,6 @@
 // Use Strategy design pattern to enable switching tool behavior at runtime
 
-import { Vector3 } from "three";
+import { Vector2, Vector3 } from "three";
 
 // #region toolStrategy
 export interface ToolStrategy {
@@ -16,11 +16,13 @@ export interface ToolStrategy {
 export interface HyperbolicToolStrategy {
   mouseMoved(
     event: MouseEvent,
+    normalizedScreenPosition: Vector2,
     position: Vector3 | null,
-    normalDirection: Vector3
+    normalDirection: Vector3 | null
   ): void;
   mousePressed(
     event: MouseEvent,
+    normalizedScreenPosition: Vector2,
     position: Vector3,
     normalDirection: Vector3
   ): void;

@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div id="toolbox-and-sphere">
     <AppNavigation
@@ -217,7 +218,7 @@ const unsavedWorkDialog: Ref<DialogAction | null> = ref(null);
 const clearConstructionWarning = ref(false);
 const svgDataImage = ref("");
 // const svgDataImageAspectRatio = ref(1); // not needed because the svg has an aspect ratio of 1 and the ratio of the canvas width/height doesn't matter!
-let constructionClearTimer: any;
+let constructionClearTimer;
 
 //#region magnificationUpdate
 onBeforeMount(() => {
