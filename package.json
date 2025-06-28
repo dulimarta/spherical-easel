@@ -42,10 +42,10 @@
     "two.js": "0.8.18",
     "vue": "~3.5.13",
     "vue-advanced-cropper": "^2.8.8",
-    "vue-gtag": "^3.5.1",
+    "vue-gtag": "~3.1.1",
     "vue-i18n": "^11.1.5",
-    "vue-router": "~4.0.0",
-    "vuetify": "~3.6.15"
+    "vue-router": "~4.5.0",
+    "vuetify": "~3.8.11"
   },
   "devDependencies": {
     "@eslint/css": "^0.9.0",
@@ -81,7 +81,7 @@
     "vitepress": "^1.1.4",
     "vitest": "^2.0.4",
     "vitest-canvas-mock": "^0.3.3",
-    "vue-eslint-parser": "^9.4.3",
+    "vue-eslint-parser": "~10.0.0",
     "vue-i18n-extract": "^2.0.7"
   },
   "browserslist": [
