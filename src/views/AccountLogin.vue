@@ -17,7 +17,7 @@
                 type="password"
                 :rules="passwordRules"
                 prepend-icon="mdi-lock"></v-text-field>
-              <template v-if="!isSigningUp">
+              <div v-if="!isSigningUp">
                 <div
                   class="mb-3"
                   :style="{
@@ -56,31 +56,35 @@
                     GitHub
                   </v-btn>
                 </div>
-              </template>
-              <template v-else>
-                <v-text-field
-                  :label="t('Password2')"
-                  v-model="passwordConfirm"
-                  type="password"
-                  :error="usrPassword !== passwordConfirm"
-                  prepend-icon="mdi-lock"></v-text-field>
-                <v-text-field
-                  :label="t('name')"
-                  v-model="userName"
-                  type="text"
-                  prepend-icon="mdi-card-account-details" />
-                <div
-                  class="mb-3"
-                  :style="{
-                    display: 'flex',
-                    justifyContent: 'space-evenly'
-                  }">
-                  <v-btn @click="doSignup" :disabled="!canCreateAccount">
-                    {{ t("confirm") }}
-                  </v-btn>
-                  <v-btn @click="isSigningUp = false">{{ t("cancel") }}</v-btn>
+              </div>
+              <Transition name="signup">
+                <div v-if="isSigningUp">
+                  <v-text-field
+                    :label="t('Password2')"
+                    v-model="passwordConfirm"
+                    type="password"
+                    :error="usrPassword !== passwordConfirm"
+                    prepend-icon="mdi-lock"></v-text-field>
+                  <v-text-field
+                    :label="t('name')"
+                    v-model="userName"
+                    type="text"
+                    prepend-icon="mdi-card-account-details" />
+                  <div
+                    class="mb-3"
+                    :style="{
+                      display: 'flex',
+                      justifyContent: 'space-evenly'
+                    }">
+                    <v-btn @click="doSignup" :disabled="!canCreateAccount">
+                      {{ t("confirm") }}
+                    </v-btn>
+                    <v-btn @click="isSigningUp = false">
+                      {{ t("cancel") }}
+                    </v-btn>
+                  </div>
                 </div>
-              </template>
+              </Transition>
             </div>
           </v-form>
         </v-sheet>
@@ -236,3 +240,19 @@ function doGoogleLogin(): void {
   "passwordReset": "Periksalah email and ({emailAddr}) untuk mereset password"
 }
 </i18n>
+<style scoped>
+.signup-enter-active {
+  transition: all 0.5s ease;
+}
+
+.signup-leave-active {
+  transition: all 0.3s ease;
+}
+.signup-enter-from {
+  transform: scale(50%);
+}
+.signup-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
+}
+</style>
