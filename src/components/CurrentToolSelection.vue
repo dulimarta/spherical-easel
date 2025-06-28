@@ -38,15 +38,7 @@
 </template>
 
 <script lang="ts" setup>
-import {
-  ref,
-  onBeforeMount,
-  computed,
-  onBeforeUnmount,
-  onMounted,
-  onBeforeUpdate,
-  watch
-} from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useSEStore } from "@/stores/se";
 import { useI18n } from "vue-i18n";
 // import EventBus from "@/eventHandlers/EventBus";
@@ -55,6 +47,7 @@ import { storeToRefs } from "pinia";
 import SETTINGS from "@/global-settings";
 import EventBus from "@/eventHandlers/EventBus";
 import { TOOL_DICTIONARY } from "./tooldictionary";
+import { Handler } from "mitt";
 
 // Associate each ActionMode with the corresponding I18N key
 
@@ -122,7 +115,7 @@ const activeToolName = computed((): string => {
 
 type MessageType = {
   key: string;
-  keyOptions?: any;
+  keyOptions?: unknown;
   secondaryMsg: string;
   secondaryMsgKeyOptions: string;
   type: string;
@@ -130,7 +123,7 @@ type MessageType = {
 };
 onMounted((): void => {
   setIconSize();
-  EventBus.listen("show-alert", (m: MessageType) => {
+  EventBus.listen("show-alert", ((m: MessageType) => {
     // console.debug("Incoming message", m);
     if (m.type === "directive") {
       toolHint.value = "";
@@ -138,7 +131,7 @@ onMounted((): void => {
         toolHint.value = t(m.secondaryMsg);
       }, 300);
     }
-  });
+  }) as Handler<unknown>);
   //Added to make the initial action mode show when app is loaded for the first time or the clear button is clicked
   const associatedButton = TOOL_DICTIONARY.get(actionMode.value);
   if (associatedButton) {
@@ -154,7 +147,8 @@ watch(
 );
 
 function setIconSize(): void {
-  const zIcons = SETTINGS.icons as Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const zIcons = SETTINGS.icons as unknown as Record<ActionMode, any>;
   // console.log(
   //   actionMode.value,
   //   zIcons[actionMode.value].props,

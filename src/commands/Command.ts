@@ -688,7 +688,7 @@ export abstract class Command {
     }
     // Build the svg gradient|style String parts from (gradient|style) dictionaries don't add anything that is default value
     // Start with the gradients
-    var gradientSVGReturnString = "";
+    let gradientSVGReturnString = "";
     // If any, create the gradient part of the SVG return string
     if (gradientDictionary.size != 0) {
       gradientSVGReturnString += "\t<defs>\n";
@@ -730,7 +730,7 @@ export abstract class Command {
       "\t\t\t.text { font-size:15px; text-anchor:middle; line-height:middle; dominant-baseline:middle; }\n";
 
     // Create the CSS style part of the SVG return string
-    var styleSVGReturnString = '\t<style type="text/css">\n'; //<![CDATA[\n';
+    let styleSVGReturnString = '\t<style type="text/css">\n'; //<![CDATA[\n';
     for (let [name, styleDict] of styleDictionary.entries()) {
       if (
         !(

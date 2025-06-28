@@ -1,23 +1,23 @@
 <template>
-    <v-tooltip bottom max-width="400px">
-      <template v-slot:activator="{ props }">
-        <v-text-field
-          id="__test_textfield"
-          v-model="tValueExpression"
-          v-bind="props"
-          :label="label"
-          :placeholder="placeholder"
-          :error-messages="parsingError"
-          :hint="currentValueString"
-          persistent-hint
-          density="compact"
-          variant="outlined"
-          clearable
-          @keydown="onKeyPressed"
-          @click:clear="reset"></v-text-field>
-      </template>
-      {{ tooltip }}
-    </v-tooltip>
+  <v-tooltip bottom max-width="400px">
+    <template v-slot:activator="{ props }">
+      <v-text-field
+        id="__test_textfield"
+        v-model="tValueExpression"
+        v-bind="props"
+        :label="label"
+        :placeholder="placeholder"
+        :error-messages="parsingError"
+        :hint="currentValueString"
+        persistent-hint
+        density="compact"
+        variant="outlined"
+        clearable
+        @keydown="onKeyPressed"
+        @click:clear="reset"></v-text-field>
+    </template>
+    {{ tooltip }}
+  </v-tooltip>
 </template>
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
@@ -60,7 +60,7 @@ function reset(): void {
   parsingError.value = "";
 }
 
-function addVarToExpr(param: any): void {
+function addVarToExpr(param: unknown): void {
   console.debug(
     "Variable selected",
     param,
@@ -104,9 +104,10 @@ function onKeyPressed(): void {
         t(`currentTValue`) + tValueResult.toFixed(SETTINGS.decimalPrecision);
 
       // console.debug("Calculation result is", this.calcResult);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // no code
       const syntaxErr = err as SyntaxError;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       parsingError.value = t(syntaxErr.message, syntaxErr.cause as any);
       EventBus.fire("test-t-value", { val: 0 });
     }

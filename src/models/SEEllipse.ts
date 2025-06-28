@@ -33,7 +33,7 @@ export class SEEllipse
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  declare public ref: Ellipse;
+  public declare ref: Ellipse;
   /**
    * Pointer to the label of this SESegment
    */
@@ -423,7 +423,7 @@ export class SEEllipse
       // This can't be zero because tmpVector can be the closest on the segment to idealUnitSphereVector and parallel with ideanUnitSphereVector
       this.tmpVector1.crossVectors(idealUnitSphereVector, closest).normalize();
       // compute the toVector (so that tmpVector2= toVector, tmpVector= fromVector, tmpVector1 form an orthonormal frame)
-      this.tmpVector2.crossVectors(closest, this.tmpVector1).normalize;
+      this.tmpVector2.crossVectors(closest, this.tmpVector1).normalize();
       // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
       this.tmpVector2.multiplyScalar(
         Math.sin(SETTINGS.ellipse.maxLabelDistance / mag)

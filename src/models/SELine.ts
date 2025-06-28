@@ -32,7 +32,7 @@ export class SELine
   /**
    * The corresponding plottable TwoJS object
    */
-  declare public ref: Line;
+  public declare ref: Line;
   /**
    * Pointer to the label of this SESegment
    */
@@ -189,7 +189,7 @@ export class SELine
         .crossVectors(idealUnitSphereVector, this.tmpVector)
         .normalize();
       // compute the toVector (so that tmpVector2= toVector, tmpVector= fromVector, tmpVector1 form an orthonormal frame)
-      this.tmpVector2.crossVectors(this.tmpVector, this.tmpVector1).normalize;
+      this.tmpVector2.crossVectors(this.tmpVector, this.tmpVector1).normalize();
       // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
       this.tmpVector2.multiplyScalar(
         Math.sin(SETTINGS.line.maxLabelDistance / zoomMagnificationFactor)

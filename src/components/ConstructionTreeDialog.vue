@@ -193,7 +193,7 @@ const newPathDialog: Ref<DialogAction | null> = ref(null);
 const moveFolders: Ref<TreeviewNode[] | undefined> = ref(undefined);
 
 /** the root folder string to match against when determining which root folder to show between public/owned/starred */
-const allowedMoveFoldersRoot: Ref<String> = ref("");
+const allowedMoveFoldersRoot: Ref<string> = ref("");
 
 /** the full construction tree excluding the public branch but including all constructions. */
 const treeItems: Ref<TreeviewNode[] | undefined> = ref(undefined);

@@ -791,12 +791,13 @@ export default class ApplyTransformationHandler extends Highlighter {
           if (this.possiblyGlowing instanceof SEPoint) {
             // Check to see if this point has been transformed before with the current transformation
             if (
-              !this.possiblyGlowing.kids.some(kid => {
-                kid instanceof SETransformedPoint &&
+              !this.possiblyGlowing.kids.some(
+                kid =>
+                  kid instanceof SETransformedPoint &&
                   this.transformationSEParent &&
                   kid.parentTransformation.name ===
-                    this.transformationSEParent.name;
-              }) &&
+                    this.transformationSEParent.name
+              ) &&
               // check to see if there is a point already at the transformed location
               !ApplyTransformationHandler.store.sePoints.some(pt => {
                 return (
@@ -1541,7 +1542,7 @@ export default class ApplyTransformationHandler extends Highlighter {
 
     if (
       ApplyTransformationHandler.store.sePoints
-        .map((n: any) => n as SEPoint)
+        .map(n => n as SEPoint)
         .some(pt => {
           if (
             this.tmpVector
@@ -2419,7 +2420,7 @@ export default class ApplyTransformationHandler extends Highlighter {
     );
     //search to see if there are any points at the inverted location (for example the center of inversion or antipodal to the center of inversion)
     ApplyTransformationHandler.store.sePoints
-      .map((n: any) => n as SEPoint)
+      .map(n => n as SEPoint)
       .forEach((pt: SEPoint) => {
         if (
           this.tmpVector

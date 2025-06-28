@@ -1,7 +1,8 @@
 <template>
   <v-tooltip bottom max-width="400px">
     <template v-slot:activator="{ props }">
-      <v-textarea data-testid="textarea"
+      <v-textarea
+        data-testid="textarea"
         v-model="coordinateExpression"
         v-bind="props"
         :label="label"
@@ -63,7 +64,7 @@ function reset(): void {
   parsingError.value = "";
 }
 
-function addVarToExpr(param: any): void {
+function addVarToExpr(param: unknown): void {
   console.debug(
     "Variable selected",
     param,
@@ -89,10 +90,11 @@ function onKeyPressed(): void {
           ? parser.evaluateWithVars(coordinateExpression.value, varMap)
           : 0;
       // console.debug(`"Calculation result evaluated at ${props.useTValue} = ${coordinateResult}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // no code
       // console.debug("Got an error", err);
       const syntaxErr = err as SyntaxError;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       parsingError.value = t(syntaxErr.message, syntaxErr.cause as any);
     }
   }, 1000);

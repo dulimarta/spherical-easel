@@ -1,11 +1,11 @@
 import ConstructionList from "@/components/ConstructionList.vue";
-import { SphericalConstruction } from "@/types";
+import { SphericalConstruction } from "@/types/ConstructionTypes";
 import { createWrapper } from "$/vue-helper";
-import {mockedStore} from "$/mock-utils"
+import { mockedStore } from "$/mock-utils";
 import { Matrix4 } from "three";
 import { vi } from "vitest";
 import { useAccountStore } from "@/stores/account";
-import { useConstructionStore } from "@/stores/construction"
+import { useConstructionStore } from "@/stores/construction";
 import { VueWrapper } from "@vue/test-utils";
 import { User, UserCredential } from "firebase/auth";
 import { DocumentSnapshot, QuerySnapshot } from "firebase/firestore";
@@ -32,10 +32,8 @@ const sampleData = () => {
   return arr;
 };
 
-
 // import { mockFirebase } from "firestore-vitest-mock/mocks/firebase";
-function prepareWrapper(
-) {
+function prepareWrapper() {
   vi.mock("firebase/firestore", async fn_arg => {
     const firestoreObject = (await fn_arg()) as object;
 
@@ -58,14 +56,14 @@ function prepareWrapper(
     };
   });
   vi.mock("firebase/auth", () => {
-    console.debug("Inside firebase/auth mock")
+    console.debug("Inside firebase/auth mock");
     const u: UserCredential = {
       user: {
         emailVerified: true
       } as User,
       providerId: null,
-      operationType: 'signIn'
-    }
+      operationType: "signIn"
+    };
     return {
       getAuth: vi.fn(() => ({
         onAuthStateChanged: vi.fn()
@@ -107,13 +105,13 @@ describe("Construction Lis: empty list", () => {
 
 describe("Construction List: non-empty list", () => {
   let wrapper: VueWrapper;
-  let testPinia: TestingPinia
-  beforeEach(async() => {
+  let testPinia: TestingPinia;
+  beforeEach(async () => {
     const out = prepareWrapper();
     wrapper = out.wrapper;
-    testPinia = out.testPinia
+    testPinia = out.testPinia;
     vi.clearAllTimers();
-    await wrapper.setProps({items: TEST_DATA, allowSharing: false})
+    await wrapper.setProps({ items: TEST_DATA, allowSharing: false });
   });
   it("shows the right number of items", async () => {
     const z = wrapper.findAll("[data-testid=constructionItem]");
@@ -140,14 +138,14 @@ describe("Construction List: non-empty list", () => {
 });
 
 describe("Construction List: Overlay buttons", () => {
-  let wrapper: VueWrapper
-  let testPinia: TestingPinia
+  let wrapper: VueWrapper;
+  let testPinia: TestingPinia;
   // let overlayContent: DOMWrapper<Element> | undefined
   beforeEach(() => {
     vi.useFakeTimers();
-    const out = prepareWrapper()
-    wrapper = out.wrapper
-    testPinia = out.testPinia
+    const out = prepareWrapper();
+    wrapper = out.wrapper;
+    testPinia = out.testPinia;
   });
   afterEach(() => {
     vi.clearAllTimers();
@@ -164,7 +162,7 @@ describe("Construction List: Overlay buttons", () => {
   }
 
   it("has overlay with button(s)", async () => {
-    await wrapper.setProps({items: TEST_DATA, allowSharing: true})
+    await wrapper.setProps({ items: TEST_DATA, allowSharing: true });
     const overlayContent = await hoverToFirstItem(wrapper);
     expect(overlayContent?.exists).toBeTruthy();
     const buttons = overlayContent?.findAll("button");
@@ -181,7 +179,7 @@ describe("Construction List: Overlay buttons", () => {
   it("shows share button", async () => {
     const testDataPublic = TEST_DATA.map((z, idx) => ({
       ...z,
-      publicDocId: `PUBLICDOC${idx}`,
+      publicDocId: `PUBLICDOC${idx}`
     }));
     await wrapper.setProps({ items: testDataPublic, allowSharing: true });
     const overlayContent = await hoverToFirstItem(wrapper);
@@ -194,85 +192,84 @@ describe("Construction List: Overlay buttons", () => {
     const testDataPublic = TEST_DATA.map((z, idx) => ({
       ...z,
       publicDocId: `PUBLICDOC${idx}`,
-      author: 'me@test.com'
+      author: "me@test.com"
     }));
     await wrapper.setProps({ items: testDataPublic, allowSharing: true });
     const acctStore = useAccountStore(testPinia);
-    acctStore.userEmail = "me@test.com"
+    acctStore.userEmail = "me@test.com";
     const overlayContent = await hoverToFirstItem(wrapper);
     // console.debug("Overlay", overlayContent?.html())
     const btn = overlayContent?.find("[data-testid=make_private_btn]");
     // // console.debug("Button", btn?.html())
-    expect(btn?.exists()).toBeTruthy()
+    expect(btn?.exists()).toBeTruthy();
   });
 
   it("shows make public button for constructions owned by a user", async () => {
     const testDataPublic = TEST_DATA.map((z, idx) => ({
       ...z,
-      author: 'me@test.com'
+      author: "me@test.com"
     }));
 
     await wrapper.setProps({ items: testDataPublic, allowSharing: true });
     const acctStore = useAccountStore(testPinia);
-    acctStore.userEmail = "me@test.com"
+    acctStore.userEmail = "me@test.com";
     const overlayContent = await hoverToFirstItem(wrapper);
     const btn = overlayContent?.find("[data-testid=make_public_btn]");
     // console.debug("Button", btn?.html())
-    expect(btn?.exists()).toBeTruthy()
+    expect(btn?.exists()).toBeTruthy();
   });
 
   it("shows delete button on constructions owned by a user", async () => {
     const testDataPublic = TEST_DATA.map((z, idx) => ({
       ...z,
-      author: 'me@test.com'
+      author: "me@test.com"
     }));
     await wrapper.setProps({ items: testDataPublic, allowSharing: true });
     const acctStore = useAccountStore(testPinia);
-    acctStore.userEmail = "me@test.com"
+    acctStore.userEmail = "me@test.com";
     const overlayContent = await hoverToFirstItem(wrapper);
     const btn = overlayContent?.find("[data-testid=delete_btn]");
     // console.debug("Button", btn?.html())
-    expect(btn?.exists()).toBeTruthy()
+    expect(btn?.exists()).toBeTruthy();
   });
 
   it("shows star button on constructions owned by someone else", async () => {
     const testDataPublic = TEST_DATA.map((z, idx) => ({
       ...z,
       publicDocId: `PUBLICDOC${idx}`,
-      author: 'otheruser@test.com'
+      author: "otheruser@test.com"
     }));
     // console.debug("TestPinia", testPinia.state.value)
     const acctStore = useAccountStore(testPinia);
-    const constructionStore = mockedStore(useConstructionStore)
+    const constructionStore = mockedStore(useConstructionStore);
     // constructionStore.repopulateArrays.mockImplementation(async () => {
     //   console.debug("Mocked firebaseUid watcher")
     // })
-    acctStore.userEmail = "me@test.com"
-    acctStore.firebaseUid = "OID61123GYZ"
+    acctStore.userEmail = "me@test.com";
+    acctStore.firebaseUid = "OID61123GYZ";
     await wrapper.setProps({ items: testDataPublic, allowSharing: true });
     const overlayContent = await hoverToFirstItem(wrapper);
     // console.debug("Overlay", overlayContent?.html())
     const btn = overlayContent?.find("[data-testid=star_btn]");
     // console.debug("Button", btn?.html())
-    expect(btn?.exists()).toBeTruthy
+    expect(btn?.exists()).toBeTruthy();
   });
 
   it("shows unstar button on constructions in my star list", async () => {
     const testDataPublic = TEST_DATA.map((z, idx) => ({
       ...z,
       publicDocId: `PUBLICDOC${idx}`,
-      author: 'otheruser@test.com'
+      author: "otheruser@test.com"
     }));
     const acctStore = useAccountStore(testPinia);
-    acctStore.userEmail = "me@test.com"
-    acctStore.firebaseUid = "OID61123GYZ"
-    acctStore.starredConstructionIDs = ["PUBLICDOC0"]
+    acctStore.userEmail = "me@test.com";
+    acctStore.firebaseUid = "OID61123GYZ";
+    acctStore.starredConstructionIDs = ["PUBLICDOC0"];
     await wrapper.setProps({ items: testDataPublic, allowSharing: true });
     const overlayContent = await hoverToFirstItem(wrapper);
     // console.debug("Overlay", overlayContent?.html())
     const btn = overlayContent?.find("[data-testid=unstar_btn]");
     // console.debug("Button", btn?.html())
-    expect(btn?.exists()).toBeTruthy
+    expect(btn?.exists()).toBeTruthy();
   });
-
 });

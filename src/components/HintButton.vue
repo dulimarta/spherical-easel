@@ -22,7 +22,7 @@ const props = defineProps<{
   longLabel?: boolean;
 }>();
 
-const labelStyle = computed((): any => {
+const labelStyle = computed((): unknown => {
   return props.longLabel
     ? {
         maxWidth: "250px",

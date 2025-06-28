@@ -119,10 +119,12 @@ export default class NSectAngleHandler extends Highlighter {
             .normalize();
 
           const toVector = new Vector3();
-          toVector.crossVectors(
-            this.temporarilySelectedAngle.vertexVector,
-            fromVector
-          ).normalize;
+          toVector
+            .crossVectors(
+              this.temporarilySelectedAngle.vertexVector,
+              fromVector
+            )
+            .normalize();
           const angle = this.temporarilySelectedAngle.value;
 
           // The other (end) point on the line is the point at
@@ -303,7 +305,7 @@ export default class NSectAngleHandler extends Highlighter {
       .normalize();
 
     const toVector = new Vector3();
-    toVector.crossVectors(candidateAngle.vertexVector, fromVector).normalize;
+    toVector.crossVectors(candidateAngle.vertexVector, fromVector).normalize();
     const angle = candidateAngle.value;
 
     if (startSEPoint !== undefined) {

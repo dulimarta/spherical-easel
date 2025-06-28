@@ -418,7 +418,7 @@ describe("SphereFrame: Delete Tool", () => {
     { first: "fg", second: "fg" },
     { first: "fg", second: "bg" },
     { first: "bg", second: "fg" },
-    { first: "bg", second: "bg" },
+    { first: "bg", second: "bg" }
   ])(
     "deletes circles $(ctr,$boundary) when clicking on the circle (part 2)",
     async ({ first, second }) => {
@@ -475,16 +475,16 @@ describe("SphereFrame: Delete Tool", () => {
       //store current circle length and make sure it is 2 more than previous one
       const newCircleCount = SEStore.seCircles.length;
       expect(newCircleCount).toEqual(prevCircleCount + 2);
-      var aCircle = SEStore.seCircles[prevCircleCount];
+      let aCircle = SEStore.seCircles[prevCircleCount];
 
       // Calculate a different point on circle 1
-      var target = new Vector3().copy(aCircle.circleSEPoint.locationVector);
+      let target = new Vector3().copy(aCircle.circleSEPoint.locationVector);
       target.applyAxisAngle(
         aCircle.centerSEPoint.locationVector,
         Math.PI * 0.1
       );
-      var R = SETTINGS.boundaryCircle.radius;
-      var prevPointCount = SEStore.sePoints.length;
+      const R = SETTINGS.boundaryCircle.radius;
+      let prevPointCount = SEStore.sePoints.length;
       //delete circle 1
       SEStore.setActionMode("delete");
       await wrapper.vm.$nextTick();
@@ -504,7 +504,6 @@ describe("SphereFrame: Delete Tool", () => {
         aCircle.centerSEPoint.locationVector,
         Math.PI * 0.1
       );
-      R = SETTINGS.boundaryCircle.radius;
       prevPointCount = SEStore.sePoints.length;
       //delete circle 2
       await wrapper.vm.$nextTick();

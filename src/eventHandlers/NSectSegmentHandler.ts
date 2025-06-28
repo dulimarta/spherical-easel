@@ -265,7 +265,9 @@ export default class NSectSegmentHandler extends Highlighter {
         .multiplyScalar(Math.sin((arcLength * i) / this.selectedNValue));
 
       const nSectingPointVector = new Vector3();
-      nSectingPointVector.addVectors(scaledStartVector, scaledToAxis).normalize;
+      nSectingPointVector
+        .addVectors(scaledStartVector, scaledToAxis)
+        .normalize();
 
       // Make sure that this point doesn't exist already
       const index = NSectSegmentHandler.store.sePoints.findIndex(pt =>

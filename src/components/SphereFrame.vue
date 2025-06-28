@@ -165,8 +165,7 @@ const {
   seLabels,
   seEllipses,
   sePolygons,
-  seCircles,
-  isEarthMode
+  seCircles
 } = storeToRefs(seStore);
 const acctStore = useAccountStore();
 const { favoriteTools } = storeToRefs(acctStore);
@@ -372,6 +371,7 @@ onBeforeMount((): void => {
   EventBus.listen("set-expression-for-tool", setExpressionForTool);
   EventBus.listen("set-transformation-for-tool", setTransformationForTool);
   EventBus.listen("delete-node", deleteNode);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   EventBus.listen("cursor-position", (arg: any) => {
     const rawPos = arg.raw.map((s: number) => s.toFixed(2)).join(",");
     const normPos = arg.normalized.map((s: number) => s.toFixed(2)).join(",");
@@ -437,7 +437,7 @@ watch(
       layer => typeof layer !== "number"
     )) {
       if ((layer as string).includes("background")) {
-        (layers[i] as any).visible = !earthMode;
+        layers[i].visible = !earthMode;
       }
       i++;
     }
@@ -447,7 +447,7 @@ watch(
     } else {
       let currentLineWidth = boundaryCircle.linewidth;
       boundaryCircle.stroke = "blue";
-      let intervalHandle: any;
+      let intervalHandle;
       // Gradually decrease the linewidth until it disappears
       intervalHandle = setInterval(() => {
         currentLineWidth -= 0.2;
@@ -706,6 +706,7 @@ function handleMouseLeave(e: MouseEvent): void {
 
 //#region handleSphereRotation
 function handleSphereRotation(e: unknown): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   seStore.rotateSphere((e as any).transform);
   // console.log(seStore.inverseTotalRotationMatrix.elements);
 }
@@ -1089,13 +1090,14 @@ watch(
   }
 );
 
-function assertNever(x: any): never {
-  throw Error("This should not happen", x);
+function assertNever(x: unknown): never {
+  throw Error(`This should not happen ${x}`);
 }
 
 function listItemStyle(idx: number, xLoc: string, yLoc: string) {
   //xLoc determines left or right, yLoc determines top or bottom
-  const style: any = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const style: Record<string, any> = {};
   let r = 0;
   let c = 0;
   let startCol = 0;

@@ -18,6 +18,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import { FillStyle } from "@/types";
 import SETTINGS from "@/global-settings";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isArrayEqual(a: Array<any>, b: Array<any>) {
   if (a.length !== b.length) return false;
   for (let k = 0; k < a.length; k++) {
@@ -138,7 +139,7 @@ export const useStylingStore = defineStore("style", () => {
       // With deep watching enabled, visual blinking of the selected objects
       // by the SelectionHandler will trigger a watch update. To ignore
       // this visual changes, compare the current selection with a recorded set
-      if (isSameAsPreviousSet(selectionArr as any)) return;
+      if (isSameAsPreviousSet(selectionArr)) return;
 
       // First check for any objects which were deselected
       // by comparing the selectedLabels/plottables map against the current
@@ -175,13 +176,13 @@ export const useStylingStore = defineStore("style", () => {
       // Use the spread operator (...) to guarantee copy by value (not copy by ref)
       const newOptions: StyleOptions = { ...opt };
       currentStyleChoicesMap.forEach((oldValue, key) => {
-        const newValue = (newOptions as any)[key];
+        const newValue = newOptions[key];
         // console.log("key", key, "new", newValue, "old", oldValue);
         if (!isPropEqual(oldValue, newValue)) {
           console.log(
             `Property ${key} CHANGES from ${oldValue} to ${newValue}`
           );
-          (postUpdateStyleOptions as any)[key] = newValue;
+          postUpdateStyleOptions[key] = newValue;
           currentStyleChoicesMap.set(key, newValue);
         }
       });
@@ -208,7 +209,7 @@ export const useStylingStore = defineStore("style", () => {
         activeStyleGroup === StyleCategory.Back
       ) {
         selectedPlottables.value.forEach(plot => {
-          plot.updateStyle(activeStyleGroup!!, postUpdateStyleOptions);
+          plot.updateStyle(activeStyleGroup!, postUpdateStyleOptions);
           // any property which may depends on Zoom factor, must also be updated
           // by calling adjustSize()
           plot.updateDisplay();
@@ -256,7 +257,7 @@ export const useStylingStore = defineStore("style", () => {
         ) {
           // The user attempts to update stroke/fill color but the dynamic back styles disagree
           selectedPlottables.value.forEach(plot => {
-            plot.updateStyle(activeStyleGroup!!, { dynamicBackStyle: false });
+            plot.updateStyle(activeStyleGroup!, { dynamicBackStyle: false });
           });
         }
 
@@ -410,7 +411,7 @@ export const useStylingStore = defineStore("style", () => {
         seLab => seLab.ref.name === selectedName
       );
 
-      var props: StyleOptions | undefined = undefined;
+      let props: StyleOptions | undefined = undefined;
       if (label) {
         props = label.ref.currentStyleState(StyleCategory.Label);
       } else {
@@ -429,10 +430,11 @@ export const useStylingStore = defineStore("style", () => {
         })
         .forEach(propName => {
           const recordedPropValue = currentStyleChoicesMap.get(propName);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const thisPropValue = (props as any)[propName];
           if (typeof recordedPropValue === "undefined") {
             currentStyleChoicesMap.set(propName, thisPropValue);
-            (styleOptions.value as any)[propName] = thisPropValue;
+            styleOptions.value[propName] = thisPropValue;
           } else if (!isPropEqual(recordedPropValue, thisPropValue)) {
             conflictingProperties.value.add(propName);
           }
@@ -444,10 +446,11 @@ export const useStylingStore = defineStore("style", () => {
       const props = plot.currentStyleState(category);
       Object.getOwnPropertyNames(props).forEach(propName => {
         const recordedPropValue = currentStyleChoicesMap.get(propName);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const thisPropValue = (props as any)[propName];
         if (typeof recordedPropValue === "undefined") {
           currentStyleChoicesMap.set(propName, thisPropValue);
-          (styleOptions.value as any)[propName] = thisPropValue;
+          styleOptions.value[propName] = thisPropValue;
         } else if (!isPropEqual(recordedPropValue, thisPropValue)) {
           conflictingProperties.value.add(propName);
         }
@@ -721,8 +724,8 @@ export const useStylingStore = defineStore("style", () => {
       //   "SubValue: ",
       //   (subSetStyles as any)[propName]
       // );
-      const supVal = (superSetStyles as any)[propName];
-      const subVal = (subSetStyles as any)[propName];
+      const supVal = superSetStyles[propName];
+      const subVal = subSetStyles[propName];
 
       if (!isPropEqual(supVal, subVal)) {
         differenceDetected = true;
@@ -743,7 +746,7 @@ export const useStylingStore = defineStore("style", () => {
     function mergeStyles(accumulator: StyleOptions, curr: StyleOptions) {
       Object.getOwnPropertyNames(curr).forEach((propName: string) => {
         if (!Object.hasOwn(accumulator, propName)) {
-          (accumulator as any)[propName] = (curr as any)[propName];
+          accumulator[propName] = curr[propName];
         }
       });
     }
