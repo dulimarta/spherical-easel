@@ -1,5 +1,5 @@
 [build]
-command = "yarn app:build; yarn docs:build"
+command = "bun run build"
 #command = "bun run build"
 publish = "dist/"
 
