@@ -83,6 +83,9 @@
     "vue-eslint-parser": "~10.0.0",
     "vue-i18n-extract": "^2.0.7"
   },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.6"
+  },
   "browserslist": [
     "> 1%",
     "last 2 versions",
