@@ -1,6 +1,5 @@
 [build]
-command = "bun run build"
-#command = "bun run build"
+command = "yarn app:build"
 publish = "dist/"
 
 [context.production.environment]
