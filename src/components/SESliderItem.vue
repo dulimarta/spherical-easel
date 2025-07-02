@@ -6,15 +6,15 @@
       @mouseenter="glowMe(true)"
       @mouseleave="glowMe(false)">
       <v-icon>$slider</v-icon>
-      <span>{{ node.name }}: {{ node.value }}</span>
+      <span>{{ model.name }}: {{ model.value }}</span>
     </div>
-    <v-slider data-testid="slider"
-      v-model.number="sliderVal"
-      :min="node.min"
-      :max="node.max"
-      :step="node.step"
-      thumb-label
-      @update:modelValue="node.value = sliderVal"></v-slider>
+    <v-slider
+      data-testid="slider"
+      v-model="model.value"
+      :min="model.min"
+      :max="model.max"
+      :step="model.step"
+      thumb-label></v-slider>
     <div
       :style="{
         display: 'grid',
@@ -50,7 +50,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import { SEExpression } from "@/models/SEExpression";
 import { SESlider } from "@/models/SESlider";
 import { SliderPlaybackMode } from "@/types";
@@ -58,20 +58,20 @@ import EventBus from "@/eventHandlers/EventBus";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import { onMounted } from "vue";
+import { SENodule } from "@/models/SENodule";
 
 const store = useSEStore();
 // const { sePoints } = storeToRefs(store);
-const props = defineProps<{ node: SESlider }>();
+const model = defineModel<SESlider>({ required: true });
 const emit = defineEmits(["object-select"]);
 const playbackMode = ref(SliderPlaybackMode.ONCE);
 const playbackSpeed = ref(750);
-const sliderVal = ref(props.node.value);
 let playbackForward = true;
 let timer: number | null = null;
 
 onMounted(() => {
-  console.debug("SeSliderItem::onMounted()")
-})
+  console.debug("SeSliderItem::onMounted()");
+});
 
 const playbackSelections = [
   { title: "Once", value: SliderPlaybackMode.ONCE },
@@ -86,53 +86,53 @@ const speedSelections = [
 ];
 
 function selectMe(): void {
-  if (props.node instanceof SEExpression) {
-    // console.debug("Clicked", props.node.name);
-    emit("object-select", { id: props.node.id });
+  if (model.value instanceof SEExpression) {
+    // console.debug("Clicked", model.value.name);
+    emit("object-select", { id: model.value.id });
     EventBus.fire("set-expression-for-tool", {
-      expression: props.node
+      expression: model.value
     });
   }
 }
 function glowMe(flag: boolean): void {
-  // console.log("here", props.node instanceof SEExpression);
+  // console.log("here", model.value instanceof SEExpression);
   EventBus.fire("measured-circle-set-temporary-radius", {
     display: flag,
-    radius: props.node.value
+    radius: model.value
   });
 }
 
 function animate_once(): void {
-  if (props.node.value >= props.node.max) {
+  if (model.value.value >= model.value.max) {
     clearInterval(timer!);
     timer = null;
   } else {
-    props.node.value += props.node.step;
-    props.node.markKidsOutOfDate();
-    props.node.update();
+    model.value.value += model.value.step;
+    model.value.markKidsOutOfDate();
+    model.value.update();
   }
 }
 
 function animate_loop(): void {
-  if (props.node.value >= props.node.max) {
-    props.node.value = props.node.min;
+  if (model.value.value >= model.value.max) {
+    model.value.value = model.value.min;
   } else {
-    props.node.value += props.node.step;
-    props.node.markKidsOutOfDate();
-    props.node.update();
+    model.value.value += model.value.step;
+    model.value.markKidsOutOfDate();
+    model.value.update();
   }
 }
 
 function animate_loop_reverse(): void {
-  if (props.node.value >= props.node.max) {
+  if (model.value.value >= model.value.max) {
     playbackForward = false;
-  } else if (props.node.value <= props.node.min) {
+  } else if (model.value.value <= model.value.min) {
     playbackForward = true;
   }
-  if (playbackForward) props.node.value += props.node.step;
-  else props.node.value -= props.node.step;
-  props.node.markKidsOutOfDate();
-  props.node.update();
+  if (playbackForward) model.value.value += model.value.step;
+  else model.value.value -= model.value.step;
+  model.value.markKidsOutOfDate();
+  model.value.update();
 }
 
 function play(): void {
@@ -141,7 +141,7 @@ function play(): void {
     switch (playbackMode.value) {
       case SliderPlaybackMode.ONCE:
         timer = window.setInterval(() => animate_once(), playbackSpeed.value);
-        props.node.value = props.node.min;
+        model.value.value = model.value.min;
         break;
       case SliderPlaybackMode.LOOP:
         timer = window.setInterval(() => animate_loop, playbackSpeed.value);
@@ -164,18 +164,18 @@ function stop(): void {
 }
 
 // get isMeasurement(): boolean {
-//   return props.node instanceof SEMeasurement;
+//   return model.node instanceof SEMeasurement;
 // }
 // get isCalculation(): boolean {
-//   return props.node instanceof SECalculation;
+//   return model.node instanceof SECalculation;
 // }
 
 // get showClass(): string {
-//   return props.node.showing ? "visibleNode" : "invisibleNode";
+//   return model.node.showing ? "visibleNode" : "invisibleNode";
 // }
 
 // get definitionText(): string {
-//   return props.node.name;
+//   return model.node.name;
 // }
 </script>
 

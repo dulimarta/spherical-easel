@@ -306,9 +306,7 @@
      will see thru the style drawer */
   background: white;
   border: solid 1px lightgray;
-  box-shadow:
-    0 4px 6px -1px rgb(0 0 0 / 0.1),
-    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 
   border-radius: 0.5em;
   height: 50vh;
@@ -356,7 +354,7 @@ import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 const styleDrawerRef = useTemplateRef("drawerOverlay");
 const showDrawer = ref(false);
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 const seStore = useSEStore();
 const styleStore = useStylingStore();
 const { hasObjects, seNodules, seLabels } = storeToRefs(seStore);

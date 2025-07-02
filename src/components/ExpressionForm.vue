@@ -61,7 +61,7 @@ import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 const seStore = useSEStore();
 const { seExpressions } = storeToRefs(seStore);
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 let parser = new ExpressionParser();
 
 const calcExpression = ref("");
