@@ -122,7 +122,7 @@
             class="mt-1 folder-tree"
             @update:selected="handleNodeSelection">
             <!-- TODO add icon to TreeviewNode type -->
-            <template v-slot:prepend="{ item }">
+            <template v-slot:prepend="{}">
               <v-icon>{{ /*item.icon ||*/ "mdi-folder" }}</v-icon>
             </template>
           </v-treeview>
@@ -475,7 +475,7 @@ const folderPath = ref("");
  *
  * @param input input from the v-treeview component
  */
-const handleNodeSelection = (input: any) => {
+const handleNodeSelection = (input: unknown) => {
   const selected: Array<string> = input as Array<string>;
   if (selected && selected.length > 0) {
     const selectedParsed: ConstructionPath = new ConstructionPath(selected[0]);
@@ -799,11 +799,7 @@ function exportHeightRule(value: number | undefined): boolean | string {
   return true;
 }
 function checkExportHeight(): void {
-  if (
-    imageExportHeight.value < 50 ||
-    imageExportHeight == undefined ||
-    imageExportHeight == null
-  ) {
+  if (imageExportHeight.value < 50) {
     imageExportHeight.value = 50;
   } else if (1500 < imageExportHeight.value) {
     imageExportHeight.value = 1500;

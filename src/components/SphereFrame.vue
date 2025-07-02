@@ -149,6 +149,7 @@ import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
 import { useMagicKeys } from "@vueuse/core";
 import { watchEffect } from "vue";
+import { Handler } from "mitt";
 
 type ComponentProps = {
   availableHeight: number;
@@ -365,11 +366,17 @@ onBeforeMount((): void => {
   EventBus.listen("construction-loaded", animateCanvas);
   EventBus.listen(
     "measured-circle-set-temporary-radius",
-    measuredCircleSetTemporaryRadius
+    measuredCircleSetTemporaryRadius as Handler<unknown>
   );
-  EventBus.listen("set-expression-for-tool", setExpressionForTool);
-  EventBus.listen("set-transformation-for-tool", setTransformationForTool);
-  EventBus.listen("delete-node", deleteNode);
+  EventBus.listen(
+    "set-expression-for-tool",
+    setExpressionForTool as Handler<unknown>
+  );
+  EventBus.listen(
+    "set-transformation-for-tool",
+    setTransformationForTool as Handler<unknown>
+  );
+  EventBus.listen("delete-node", deleteNode as Handler<unknown>);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   EventBus.listen("cursor-position", (arg: any) => {
     const rawPos = arg.raw.map((s: number) => s.toFixed(2)).join(",");
@@ -379,7 +386,10 @@ onBeforeMount((): void => {
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   EventBus.listen("update-fill-objects", updateObjectsWithFill);
   // EventBus.listen("export-current-svg-for-icon", getCurrentSVGForIcon);
-  EventBus.listen("show-text-edit-dialog", showTextObjectEditDialog);
+  EventBus.listen(
+    "show-text-edit-dialog",
+    showTextObjectEditDialog as Handler<unknown>
+  );
 });
 
 onMounted((): void => {
@@ -704,9 +714,9 @@ function handleMouseLeave(e: MouseEvent): void {
 }
 
 //#region handleSphereRotation
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleSphereRotation(e: any): void {
-  seStore.rotateSphere(e.transform);
+function handleSphereRotation(e: unknown): void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  seStore.rotateSphere((e as any).transform);
   // console.log(seStore.inverseTotalRotationMatrix.elements);
 }
 //#endregion handleSphereRotation
@@ -1095,7 +1105,8 @@ function assertNever(x: unknown): never {
 
 function listItemStyle(idx: number, xLoc: string, yLoc: string) {
   //xLoc determines left or right, yLoc determines top or bottom
-  const style: Record<string, string> = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const style: Record<string, any> = {};
   let r = 0;
   let c = 0;
   let startCol = 0;

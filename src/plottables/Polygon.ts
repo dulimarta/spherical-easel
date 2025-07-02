@@ -271,14 +271,14 @@ export default class Polygon extends Nodule {
           // console.log("front extra length", seg.frontExtraInUse);
           // console.log("back extra length", seg.backExtraInUse);
           // get the local transformation matrix of the segment (should be the same for all parts front/back part/extra)
-          var localMatrix = seg.frontPart.matrix; //local matrix works for just the position, rotation, and scale of that object in its local frame
+          let localMatrix = seg.frontPart.matrix; //local matrix works for just the position, rotation, and scale of that object in its local frame
           // Add the vertices in the segment in the orientation of the segment and flip it later if necessary
           let numVerticesAdded = 0;
           if (seg.firstVertexIsOnFront) {
             // This seg starts with frontPart, then backPart, then frontExtra (the last two might not be in use)
             if (seg.frontPartInUse && Nodule.longEnoughToAdd(seg.frontPart)) {
               for (let i = 0; i < seg.frontPart.vertices.length; i++) {
-                var coords = localMatrix.multiply(
+                let coords = localMatrix.multiply(
                   seg.frontPart.vertices[i].x,
                   seg.frontPart.vertices[i].y,
                   1
@@ -294,7 +294,7 @@ export default class Polygon extends Nodule {
             }
             if (seg.backPartInUse && Nodule.longEnoughToAdd(seg.backPart)) {
               for (let i = 0; i < seg.backPart.vertices.length; i++) {
-                var coords = localMatrix.multiply(
+                let coords = localMatrix.multiply(
                   seg.backPart.vertices[i].x,
                   seg.backPart.vertices[i].y,
                   1
@@ -310,7 +310,7 @@ export default class Polygon extends Nodule {
             }
             if (seg.frontExtraInUse && Nodule.longEnoughToAdd(seg.frontExtra)) {
               for (let i = 0; i < seg.frontExtra.vertices.length; i++) {
-                var coords = localMatrix.multiply(
+                let coords = localMatrix.multiply(
                   seg.frontExtra.vertices[i].x,
                   seg.frontExtra.vertices[i].y,
                   1
@@ -338,7 +338,7 @@ export default class Polygon extends Nodule {
             // This seg starts with backPart, then frontPart, then backExtra (the last two might not be in use)
             if (seg.backPartInUse && Nodule.longEnoughToAdd(seg.backPart)) {
               for (let i = 0; i < seg.backPart.vertices.length; i++) {
-                var coords = localMatrix.multiply(
+                const coords = localMatrix.multiply(
                   seg.backPart.vertices[i].x,
                   seg.backPart.vertices[i].y,
                   1
@@ -354,7 +354,7 @@ export default class Polygon extends Nodule {
             }
             if (seg.frontPartInUse && Nodule.longEnoughToAdd(seg.frontPart)) {
               for (let i = 0; i < seg.frontPart.vertices.length; i++) {
-                var coords = localMatrix.multiply(
+                const coords = localMatrix.multiply(
                   seg.frontPart.vertices[i].x,
                   seg.frontPart.vertices[i].y,
                   1
@@ -370,7 +370,7 @@ export default class Polygon extends Nodule {
             }
             if (seg.backExtraInUse && Nodule.longEnoughToAdd(seg.backExtra)) {
               for (let i = 0; i < seg.backExtra.vertices.length; i++) {
-                var coords = localMatrix.multiply(
+                const coords = localMatrix.multiply(
                   seg.backExtra.vertices[i].x,
                   seg.backExtra.vertices[i].y,
                   1
@@ -1153,7 +1153,7 @@ export default class Polygon extends Nodule {
         let svgFrontString = '<path d="';
         const localMatrix = fill.matrix;
         fill.vertices.forEach((v: Anchor, index: number) => {
-          var coords = localMatrix.multiply(v.x, v.y, 1);
+          const coords = localMatrix.multiply(v.x, v.y, 1);
           if (index == 0) {
             svgFrontString += "M" + coords[0] + " " + coords[1] + " ";
           } else {
@@ -1174,7 +1174,7 @@ export default class Polygon extends Nodule {
         let svgBackString = '<path d="';
         const localMatrix = fill.matrix;
         fill.vertices.forEach((v: Anchor, index: number) => {
-          var coords = localMatrix.multiply(v.x, v.y, 1);
+          const coords = localMatrix.multiply(v.x, v.y, 1);
           if (index == 0) {
             svgBackString += "M" + coords[0] + " " + coords[1] + " ";
           } else {

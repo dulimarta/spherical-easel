@@ -11,7 +11,9 @@ import {
   DocumentSnapshot,
   doc,
   getDoc,
-  getFirestore
+  getFirestore,
+  setDoc,
+  updateDoc
 } from "firebase/firestore";
 import { UserProfile } from "@/types";
 import {
@@ -168,14 +170,15 @@ export const useAccountStore = defineStore("acct", () => {
       } else {
         return false;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       return error as string;
     }
   }
 
   async function signUp(
     email: string,
-    password: string
+    password: string,
+    userName: string
   ): Promise<boolean | string> {
     try {
       const credential: UserCredential = await createUserWithEmailAndPassword(
@@ -185,9 +188,15 @@ export const useAccountStore = defineStore("acct", () => {
       );
       sendEmailVerification(credential.user);
       userEmail.value = email;
+      const newUser: UserProfile = {
+        displayName: userName,
+        location: "N/A",
+        role: "Community Member"
+      };
+      await setDoc(doc(appDB, "users", credential.user.uid), newUser);
       return true;
-    } catch (error: any) {
-      return error;
+    } catch (error: unknown) {
+      return error as string;
     }
   }
 
@@ -210,8 +219,9 @@ export const useAccountStore = defineStore("acct", () => {
     try {
       const cred = await signInWithPopup(appAuth, provider);
       parseUserProfile(cred.user);
-      userEmail.value = cred.user.email!!;
+      userEmail.value = cred.user.email!;
       return null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       return error;
     }

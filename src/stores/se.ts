@@ -607,6 +607,10 @@ export const useSEStore = defineStore("se", () => {
   function addPoint(point: SEPoint): void {
     // console.log("Point Added ", point.name)
     sePointIds.value.push(point.id);
+    // We had an issue caused by design changes in TwoJS 0.8.18 classes which use private variables.
+    // Placing SExxxx objects in a reactive container (seNodules) causes Pinia to wrap these
+    // objects in a reactive proxy object. But it was causing failure in TwoJS when it needs to manipulate
+    // those private variables. The solution below is to use markRow to bypass the proxy wrapper
     sePointMap.set(point.id, markRaw(point));
     seNodules.value.push(markRaw(point));
     point.ref.addToLayers(layers);

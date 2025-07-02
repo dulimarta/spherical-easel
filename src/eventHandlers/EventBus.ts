@@ -3,21 +3,21 @@
 // Vue3 deprecated $on, $off, $emit, so we have to use
 // a third party library for firing, listening, and registering events
 
-import mitt, { Emitter } from "mitt"
+import mitt, { Emitter, Handler } from "mitt";
 
 class EventBus {
-  private mitt: Emitter<any>
+  private mitt: Emitter<Record<string, unknown>>;
 
   constructor() {
-    this.mitt = mitt()
+    this.mitt = mitt();
   }
 
-  fire(eventName: string, data: any): void {
+  fire(eventName: string, data: unknown): void {
     this.verifyKebabCase(eventName);
     this.mitt.emit(eventName, data);
   }
 
-  listen(eventName: string, callback: any) {
+  listen(eventName: string, callback: Handler<unknown>) {
     this.verifyKebabCase(eventName);
     this.mitt.on(eventName, callback);
   }

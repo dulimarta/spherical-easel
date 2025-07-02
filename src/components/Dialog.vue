@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <v-dialog v-bind="$attrs" v-model="visible" transition="dialog-transition">
     <v-card elevation="2">
@@ -13,15 +14,16 @@
           id="_test_posButton"
           :disabled="isDisabled"
           color="primary"
-          @click="doYes()">{{ yesLabel }}</v-btn
-        >
+          @click="doYes()">
+          {{ yesLabel }}
+        </v-btn>
         <v-btn
           id="_test_negButton"
           v-if="noText"
           color="secondary"
-          @click="doNo()"
-          >{{ noText }}</v-btn
-        >
+          @click="doNo()">
+          {{ noText }}
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -38,7 +40,7 @@ export interface DialogAction {
 
 type DialogFunc = () => void;
 
-const sequencer = useDialogSequencer()
+const sequencer = useDialogSequencer();
 const props = defineProps<{
   title: string;
   yesText?: string;
@@ -48,7 +50,7 @@ const props = defineProps<{
   isDisabled?: boolean;
 }>();
 
-defineExpose({ show, hide }) // Make these two functions "public"
+defineExpose({ show, hide }); // Make these two functions "public"
 
 const visible = ref(false);
 
@@ -67,17 +69,16 @@ function hide(): void {
 }
 
 function hideLast(): void {
-  console.debug("Calling hideLast()")
-  if (!sequencer.hideLastDialog())
-    hide()
+  console.debug("Calling hideLast()");
+  if (!sequencer.hideLastDialog()) hide();
 }
 function doYes() {
-  hideLast()
-  if (props.yesAction) props.yesAction()
+  hideLast();
+  if (props.yesAction) props.yesAction();
 }
 
 function doNo() {
-  hideLast()
-  if (props.noAction) props.noAction()
+  hideLast();
+  if (props.noAction) props.noAction();
 }
 </script>

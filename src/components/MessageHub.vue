@@ -39,11 +39,12 @@
               <v-checkbox
                 v-model="selectedMessageType"
                 class="mx-2"
-                v-for="mt in messageTypes"
+                v-for="(mt, pos) in messageTypes"
                 :value="mt.value"
                 :label="mt.title"
                 density="compact"
-                direction="horizontal"></v-checkbox>
+                direction="horizontal"
+                :key="pos"></v-checkbox>
             </div>
           </v-card-text>
           <v-card-actions>
@@ -153,6 +154,7 @@ import { watch } from "vue";
 
 type MessageType = {
   key: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   keyOptions?: any;
   secondaryMsg: string;
   secondaryMsgKeyOptions: string;
@@ -179,7 +181,7 @@ const selectedMessageType: Ref<Array<string>> = ref(
   messageTypes.value.map(m => m.value)
 );
 const messages: Ref<MessageType[]> = ref([]);
-let deleteTimer: any;
+let deleteTimer;
 
 onMounted((): void => {
   EventBus.listen("show-alert", addMessage);

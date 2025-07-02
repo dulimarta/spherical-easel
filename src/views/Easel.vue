@@ -104,6 +104,10 @@
       :no-action="doLeave">
       {{ t(`unsavedConstructionsMessage`) }}
     </Dialog>
+    <v-snackbar location="top" v-model="loadingFromPath" color="grey-lighten-4">
+      Loading construction {{ props.documentId }}
+      <v-progress-circular indeterminate />
+    </v-snackbar>
     <v-snackbar v-model="clearConstructionWarning" :timeout="DELETE_DELAY">
       {{ t("clearConstructionMessage") }}
       <template #actions>
@@ -169,6 +173,7 @@ import { useLayout, useDisplay } from "vuetify";
 import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
 import Text from "@/plottables/Text";
+import { Handler } from "mitt";
 
 const DELETE_DELAY = 5000; // in milliseconds
 /**
@@ -188,9 +193,7 @@ const {
   temporaryNodules,
   hasObjects,
   zoomMagnificationFactor,
-  isEarthMode,
-  canvasWidth,
-  canvasHeight
+  isEarthMode
 } = storeToRefs(seStore);
 const { constructionDocId } = storeToRefs(acctStore);
 const props = defineProps<{
@@ -210,6 +213,7 @@ const navDrawerWidth = ref(320);
 const previewClass = ref("");
 const constructionInfo = ref<SphericalConstruction | null>(null);
 const localIsEarthMode = ref(false);
+const loadingFromPath = ref(false);
 
 let confirmedLeaving = false;
 let attemptedToRoute: RouteLocationNormalized | null = null;
@@ -222,8 +226,14 @@ let constructionClearTimer;
 
 //#region magnificationUpdate
 onBeforeMount(() => {
-  EventBus.listen("magnification-updated", resizePlottables);
-  EventBus.listen("preview-construction", showConstructionPreview);
+  EventBus.listen(
+    "magnification-updated",
+    resizePlottables as Handler<unknown>
+  );
+  EventBus.listen(
+    "preview-construction",
+    showConstructionPreview as Handler<unknown>
+  );
 });
 //#endregion magnificationUpdate
 
@@ -256,6 +266,7 @@ function adjustCanvasSize(): void {
 }
 
 function loadDocument(docId: string): void {
+  loadingFromPath.value = true;
   seStore.removeAllFromLayers();
   seStore.init(true); // true prevents the clearing of the temporary nodules so that the initial tool's temporary nodules are not cleared and then never resized properly
   seStore.setActionMode("move"); // after loading this should be the active tool
@@ -273,6 +284,7 @@ function loadDocument(docId: string): void {
           type: "error"
         });
       }
+      loadingFromPath.value = false;
     });
 
   // Nodule.resetIdPlottableDescriptionMap(); // Needed?

@@ -3,16 +3,16 @@
     <v-hover v-slot:default="{ isHovering }">
       <div id="profileImage">
         <img v-if="profileImage" width="128" :src="profileImage" />
-        <v-icon v-else :color="isHovering ? 'primary' : 'secondary'" size="128"
-          >mdi-account
+        <v-icon v-else :color="isHovering ? 'primary' : 'secondary'" size="128">
+          mdi-account
         </v-icon>
         <v-overlay absolute :value="isHovering">
           <v-row>
             <v-col cols="auto">
-              <v-icon @click="toPhotoCapture"> mdi-camera</v-icon>
+              <v-icon @click="toPhotoCapture">mdi-camera</v-icon>
             </v-col>
             <v-col cols="auto">
-              <v-icon @click="imageUpload?.click()"> mdi-upload</v-icon>
+              <v-icon @click="imageUpload?.click()">mdi-upload</v-icon>
               <input
                 ref="imageUpload"
                 type="file"
@@ -72,6 +72,7 @@ function onImageUploaded(event: Event): void {
     emit("photo-change", {});
     const reader = new FileReader();
     reader.onload = (ev: ProgressEvent) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const imageBase64 = (ev.target as any).result;
       temporaryProfilePicture.value = imageBase64;
       router.push({

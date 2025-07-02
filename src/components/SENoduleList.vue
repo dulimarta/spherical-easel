@@ -179,7 +179,7 @@ function expandTransformationSheet(): void {
   // console.log("------------");
 }
 //When a user clicks on an expression this sends the token name to the expression builder (ExpressionForm.vue)
-function onExpressionSelect(x: any): void {
+function onExpressionSelect(x: SENodule): void {
   const pos = props.children.findIndex(n => n.id === x.id);
   // console.debug("****Selection", x, "at", pos);
   if (pos >= 0) {

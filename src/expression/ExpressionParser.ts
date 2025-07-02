@@ -1,4 +1,4 @@
-import i18n from "@/i18n";
+import { useI18n } from "vue-i18n";
 
 export enum TokenType {
   /* 0 */ PLUS,
@@ -58,9 +58,9 @@ class Lexer {
   private nextChar: IteratorResult<string>;
   private prev?: Lexicon;
   private curr?: Lexicon;
-  private t: any;
+  private t;
   constructor(input: string) {
-    this.t = i18n.global;
+    this.t = useI18n().t;
     // JS strings are an iterable object
     // The iterator provides two important properties:
     // .done which is set to true when we reach the end of iteration
@@ -268,7 +268,9 @@ export class ExpressionParser {
           token = tokenizer.next();
           return { node: out };
         } else {
-          throw SyntaxError("exprParser.variablesNotAllowed", { cause: { varName: token.value.text } })
+          throw SyntaxError("exprParser.variablesNotAllowed", {
+            cause: { varName: token.value.text }
+          });
         }
       } else if (token.value.kind === TokenType.NUMBER) {
         const out = token.value;
@@ -985,5 +987,8 @@ export class ExpressionParser {
 
   evaluate = (input: string): number =>
     // Do not allow variables in expressions
-    ExpressionParser.evaluate(ExpressionParser.parse(input, false), this.EMPTY_MAP);
+    ExpressionParser.evaluate(
+      ExpressionParser.parse(input, false),
+      this.EMPTY_MAP
+    );
 }
