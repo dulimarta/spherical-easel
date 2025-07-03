@@ -2,7 +2,7 @@ import TestedComponent from "../ConstructionLoader.vue";
 import { vi, describe, beforeEach, it, expect } from "vitest";
 import { createWrapper } from "$/vue-helper";
 import { useConstructionStore } from "@/stores/construction";
-import { SphericalConstruction } from "@/types";
+import { SphericalConstruction } from "@/types/ConstructionTypes";
 import { Matrix4 } from "three";
 import { useAccountStore } from "@/stores/account";
 
@@ -256,7 +256,7 @@ describe("Construction Loader", () => {
     constructionStore.publicConstructions = testData.slice(0);
     await wrapper.vm.$nextTick();
     const acctStore = useAccountStore(testPinia);
-    acctStore.starredConstructionIDs.push(
+    acctStore.userProfile?.userStarredConstructions?.push(
       testData[0].publicDocId,
       testData[1].publicDocId
     );

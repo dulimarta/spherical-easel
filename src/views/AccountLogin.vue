@@ -38,6 +38,7 @@
                   <v-btn :disabled="!isValidEmail" @click="doReset">
                     {{ t("resetPass") }}
                   </v-btn>
+                  <v-btn @click="asGuest">Continue as Guest</v-btn>
                 </div>
                 <v-divider />
                 <div
@@ -220,6 +221,10 @@ function doGoogleLogin(): void {
       showLoginError.value = true;
     }
   });
+}
+
+function asGuest() {
+  router.back();
 }
 </script>
 <i18n lang="json" locale="en">

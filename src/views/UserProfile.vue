@@ -1,11 +1,44 @@
 <template>
-  <div>
-    <v-hover v-slot:default="{ isHovering }">
-      <div id="profileImage">
-        <img v-if="profileImage" width="128" :src="profileImage" />
-        <v-icon v-else :color="isHovering ? 'primary' : 'secondary'" size="128">
-          mdi-account
-        </v-icon>
+  <div id="userprofile">
+    <!-- <v-hover v-slot:default="{ isHovering }"> -->
+    <div>
+      <img
+        v-if="userProfile?.profilePictureURL"
+        width="128"
+        :src="userProfile.profilePictureURL" />
+      <v-icon v-else :color="true ? 'primary' : 'secondary'" size="128">
+        mdi-account
+      </v-icon>
+      <v-btn :disabled="!userEmail">Change Password</v-btn>
+      <v-btn color="red lighten-2">Delete Account</v-btn>
+    </div>
+    <div>
+      Right
+      <v-container>
+        <v-row>
+          <v-col cols="6">
+            <v-text-field label="Email" readonly v-model="userEmail" />
+          </v-col>
+          <v-col cols="6">
+            <v-text-field
+              v-model="userProfile!.displayName"
+              label="Display Name" />
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="6">
+            <v-text-field v-model="userLocation" label="Location" />
+          </v-col>
+          <v-col cols="6">
+            <v-select
+              label="Role"
+              v-model="userProfile!.role"
+              :items="['Student', 'Instructor', 'Community Member']"></v-select>
+          </v-col>
+        </v-row>
+      </v-container>
+    </div>
+    <!--div id="profileImage">
         <v-overlay absolute :value="isHovering">
           <v-row>
             <v-col cols="auto">
@@ -21,8 +54,8 @@
             </v-col>
           </v-row>
         </v-overlay>
-      </div>
-    </v-hover>
+      </!--div-->
+    <!-- </v-hover> -->
   </div>
 </template>
 
@@ -39,15 +72,19 @@ import { storeToRefs } from "pinia";
 import { defineComponent, onMounted, ref, Ref } from "vue";
 import { useRouter } from "vue-router";
 import { getAuth } from "firebase/auth";
+import { isShallow } from "vue";
 type FileEvent = EventTarget & { files: FileList | undefined };
 
 const appDB = getFirestore();
 const appAuth = getAuth();
 const emit = defineEmits(["photo-change"]);
 const router = useRouter();
-const profileImage: Ref<string | null> = ref(null);
+// const profileImage: Ref<string | null> = ref(null);
 const acctStore = useAccountStore();
-const { temporaryProfilePicture } = storeToRefs(acctStore);
+const { temporaryProfilePicture, userEmail, userProfile } =
+  storeToRefs(acctStore);
+const userLocation = ref("");
+
 const imageUpload: Ref<HTMLInputElement | null> = ref(null);
 
 onMounted((): void => {
@@ -57,7 +94,7 @@ onMounted((): void => {
   getDoc(userDoc).then((ds: DocumentSnapshot) => {
     if (ds.exists()) {
       const userDetails = ds.data() as UserProfile;
-      profileImage.value = userDetails.profilePictureURL ?? null;
+      // profileImage.value = userDetails.profilePictureURL ?? null;
     }
   });
 });
@@ -85,6 +122,22 @@ function onImageUploaded(event: Event): void {
 </script>
 
 <style scoped>
+#userprofile {
+  display: flex;
+  flex-direction: row;
+  justify-content: stretch;
+}
+#userprofile > :nth-child(1) {
+  width: 20%;
+  /* background-color: red; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#userprofile > :nth-child(2) {
+  width: 80%;
+}
+
 #profileImage {
   display: inline-block;
   position: relative;

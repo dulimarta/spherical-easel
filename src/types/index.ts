@@ -676,7 +676,7 @@ export interface UserProfile {
   location?: string;
   role?: string;
   favoriteTools?: string;
-  userStarredConstructions?: Array<string>;
+  userStarredConstructions: Array<string>;
 }
 
 export enum AngleMode {

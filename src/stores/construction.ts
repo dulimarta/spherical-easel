@@ -182,14 +182,9 @@ export const useConstructionStore = defineStore("construction", () => {
   const currentConstructionPreview: Ref<string | null> = ref(null);
   const acctStore = useAccountStore();
   const seStore = useSEStore();
-  const {
-    svgCanvas,
-    inverseTotalRotationMatrix,
-    isEarthMode,
-    canvasWidth,
-    canvasHeight
-  } = storeToRefs(seStore);
-  const { firebaseUid, starredConstructionIDs, userEmail, includedTools } =
+  const { inverseTotalRotationMatrix, isEarthMode, canvasWidth, canvasHeight } =
+    storeToRefs(seStore);
+  const { firebaseUid, userEmail, userProfile, includedTools } =
     storeToRefs(acctStore);
   const myPublicSet: Set<string> = new Set();
 
@@ -212,9 +207,10 @@ export const useConstructionStore = defineStore("construction", () => {
         // Partition private list into mine and theirs
         const [theirs, _mine] = allPublicConstructions.partition(s => {
           const myOwnPublic = myPublicSet.has(s.publicDocId!);
-          const inMyStarList = starredConstructionIDs.value.some(
-            star => star === s.publicDocId
-          );
+          const inMyStarList =
+            userProfile.value?.userStarredConstructions?.some(
+              star => star === s.publicDocId
+            );
           return !myOwnPublic && !inMyStarList;
         });
         publicConstructions.value = theirs;
@@ -222,7 +218,7 @@ export const useConstructionStore = defineStore("construction", () => {
         console.debug("User just logged out", uid);
         myPublicSet.clear();
         privateConstructions.value.splice(0);
-        starredConstructionIDs.value.splice(0);
+        userProfile.value?.userStarredConstructions?.splice(0);
         starredConstructions.value.splice(0);
         publicConstructions.value = allPublicConstructions.slice(0);
       }
@@ -240,11 +236,13 @@ export const useConstructionStore = defineStore("construction", () => {
 
   // watch for changes in starred constructions
   watch(
-    () => starredConstructionIDs.value,
+    () => userProfile.value?.userStarredConstructions,
     async favorites => {
-      console.debug("Starred watcher", favorites);
-      await parseStarredConstructions(favorites);
-      constructionTree.setStarredConstructions(starredConstructions);
+      if (favorites) {
+        console.debug("Starred watcher", favorites);
+        await parseStarredConstructions(favorites);
+        constructionTree.setStarredConstructions(starredConstructions);
+      }
     },
     { deep: true }
   );
@@ -697,7 +695,7 @@ export const useConstructionStore = defineStore("construction", () => {
     if (victimDetails.publicDocId) {
       try {
         await deleteDoc(doc(appDB, "constructions", victimDetails.publicDocId));
-      } catch (err: unknown) {
+      } catch (_: unknown) {
         console.debug(
           "Unable to delete public construction",
           victimDetails.publicDocId
@@ -708,7 +706,7 @@ export const useConstructionStore = defineStore("construction", () => {
     if (victimDetails.script.startsWith("https://")) {
       try {
         await deleteObject(storageRef(appStorage, `/scripts/${docId}`));
-      } catch (err: unknown) {
+      } catch (_: unknown) {
         console.debug(`Unable to delete script ${docId} in Firebase storage`);
       }
     }
@@ -718,7 +716,7 @@ export const useConstructionStore = defineStore("construction", () => {
         await deleteObject(
           storageRef(appStorage, `/construction-svg/${docId}`)
         );
-      } catch (err: unknown) {
+      } catch (_: unknown) {
         console.debug(
           `Unable to delete SVG preview ${docId} in Firebase storage`
         );
@@ -907,8 +905,10 @@ export const useConstructionStore = defineStore("construction", () => {
       publicConstructions.value[pos].path = "";
       const inPublic = publicConstructions.value.splice(pos, 1);
       starredConstructions.value.push(...inPublic);
-      starredConstructionIDs.value.push(...inPublic.map(z => z.publicDocId!));
-      updateStarredArrayInFirebase(starredConstructionIDs.value);
+      userProfile.value!.userStarredConstructions.push(
+        ...inPublic.map(z => z.publicDocId!)
+      );
+      updateStarredArrayInFirebase(userProfile.value!.userStarredConstructions);
       updateStarCountInFirebase(pubConstructionId, +1);
     } // no, we didn't find the construction in the local store; do nothing
   }
@@ -923,7 +923,7 @@ export const useConstructionStore = defineStore("construction", () => {
     const parsed: StarredConstruction = parseStarredID(pubConstructionId);
 
     // find the index of the starred construction in firebase
-    const pos = starredConstructionIDs.value.findIndex(
+    const pos = userProfile.value!.userStarredConstructions.findIndex(
       x => parseStarredID(x).id === pubConstructionId
     );
     // did we find the construction in firebase?
@@ -934,9 +934,9 @@ export const useConstructionStore = defineStore("construction", () => {
         the firebase's copy of both the user's starred constructions array
         and the public construction's star count.
       */
-      starredConstructionIDs.value.splice(pos, 1);
+      userProfile.value!.userStarredConstructions.splice(pos, 1);
 
-      updateStarredArrayInFirebase(starredConstructionIDs.value);
+      updateStarredArrayInFirebase(userProfile.value!.userStarredConstructions);
       updateStarCountInFirebase(pubConstructionId, -1);
     }
   }
@@ -987,7 +987,7 @@ export const useConstructionStore = defineStore("construction", () => {
 
         /* if we didn't find the construction in the owned list, check the starred list */
         if (!isOwned || isOwned === undefined) {
-          index = starredConstructionIDs.value.findIndex(
+          index = userProfile.value!.userStarredConstructions.findIndex(
             starredId => starredId === id
           );
           if (index >= 0) {
@@ -1016,9 +1016,10 @@ export const useConstructionStore = defineStore("construction", () => {
           await updateDoc(ownedDocRef, { path: to.toString() });
         } else {
           const parsed: StarredConstruction = parseStarredID(
-            starredConstructionIDs.value.at(index)!
+            userProfile.value!.userStarredConstructions.at(index)!
           );
-          starredConstructionIDs.value[index] = parsed.id + "/" + to.toString();
+          userProfile.value!.userStarredConstructions[index] =
+            parsed.id + "/" + to.toString();
           changedStarred = true;
         }
       });
@@ -1028,7 +1029,7 @@ export const useConstructionStore = defineStore("construction", () => {
 
     // if we changed the starred constructions, upload them
     if (changedStarred) {
-      updateStarredArrayInFirebase(starredConstructionIDs.value);
+      updateStarredArrayInFirebase(userProfile.value!.userStarredConstructions);
     }
 
     return success;

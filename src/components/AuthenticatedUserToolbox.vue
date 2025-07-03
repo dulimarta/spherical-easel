@@ -14,17 +14,18 @@
       @click="doLoginOrLogout">
       <v-avatar
         size="small"
-        v-if="firebaseUid"
+        v-if="userProfile?.profilePictureURL"
         contain
         max-width="40"
-        :image="userProfilePictureURL"
-        @click="doLoginOrLogout"></v-avatar>
+        :image="userProfile?.profilePictureURL"></v-avatar>
 
       <v-icon size="x-large" v-else>mdi-account</v-icon>
       <v-tooltip
         activator="parent"
         :text="
-          firebaseUid ? `Logout ${firebaseUid.substring(0, 8)}` : 'Login'
+          firebaseUid
+            ? `Logout ${userEmail} ${firebaseUid.substring(0, 8)}`
+            : 'Login'
         "></v-tooltip>
     </v-btn>
     <router-link to="/settings/" v-if="firebaseUid">
@@ -336,7 +337,6 @@ import Dialog from "./Dialog.vue";
 import { storeToRefs } from "pinia";
 import { useAccountStore } from "@/stores/account";
 import { useSEStore } from "@/stores/se";
-import { onKeyDown } from "@vueuse/core";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { DialogAction } from "./Dialog.vue";
@@ -357,7 +357,6 @@ import SETTINGS from "@/global-settings";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { VTreeview } from "vuetify/labs/VTreeview";
-import { shallowRef } from "vue";
 import { SEPoint } from "@/models/SEPoint";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
@@ -373,8 +372,8 @@ const seStore = useSEStore();
 const constructionStore = useConstructionStore();
 const {
   // loginEnabled,
-  userProfilePictureURL,
-  userDisplayedName,
+  userEmail,
+  userProfile,
   constructionDocId,
   firebaseUid
 } = storeToRefs(acctStore);
@@ -610,34 +609,6 @@ onMounted(() => {
   // before SphereCanvas, so it is possible that svgCanvas has not been
   // set yet
   svgRoot = svgCanvas.value?.querySelector("svg") as SVGElement;
-
-  // authSubscription = appAuth.onAuthStateChanged((u: User | null) => {
-  // if (u !== null) {
-  // showExport.value = true;
-  // acctStore.userEmail = u.email ?? t("unknownEmail");
-  // acctStore.userProfilePictureURL = u.photoURL ?? undefined;
-  // uid.value = u.uid;
-  // console.debug("User details", u);
-  // const userDoc = doc(appDB, "users", u.uid);
-  // getDoc(userDoc).then((ds: DocumentSnapshot) => {
-  // if (ds.exists()) {
-  // accountEnabled.value = true;
-  // console.debug("User data", ds.data());
-  // const { profilePictureURL, role } = ds.data() as any;
-  // if (profilePictureURL && userProfilePictureURL.value === undefined) {
-  //   acctStore.userProfilePictureURL = profilePictureURL;
-  // }
-  // if (role) {
-  //   acctStore.userRole = role.toLowerCase();
-  // }
-  // }
-  // });
-  // acctStore.loginEnabled = true;
-  // } else {
-  // acctStore.userEmail = undefined;
-  // acctStore.userProfilePictureURL = undefined;
-  // }
-  // });
 });
 
 onUpdated(() => {
@@ -725,12 +696,9 @@ onUpdated(() => {
 async function doLoginOrLogout() {
   if (firebaseUid.value) {
     await acctStore.signOff();
-    // userEmail.value = undefined;
-    userProfilePictureURL.value = undefined;
-    userDisplayedName.value = undefined;
     firebaseUid.value = undefined;
   } else {
-    router.replace({ path: "/account" });
+    router.push({ path: "/account" });
   }
 }
 

@@ -143,7 +143,7 @@ export class ConstructionTree {
     let folders: Array<TreeviewNode> = [];
 
     folders.push(this.root[this.ownedIdx].copy());
-    this.root[this.ownedIdx].children?.forEach(node => {
+    this.root[this.ownedIdx].children?.forEach(_ => {
       folders[0].children = this._getLeafless(this.root[this.ownedIdx]);
     });
 

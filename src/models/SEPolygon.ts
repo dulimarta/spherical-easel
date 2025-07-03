@@ -1,5 +1,5 @@
 import { SENodule } from "./SENodule";
-import { Vector3, Matrix4 } from "three";
+import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import SETTINGS from "@/global-settings";
@@ -119,21 +119,21 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     edgeNames = edgeNames.substring(0, edgeNames.length - 2);
     if (this._seEdgeSegments.length === 2) {
       return String(
-        i18n.global.t(`objectTree.bigonWithEdges`, {
+        t(`objectTree.bigonWithEdges`, {
           edges: edgeNames,
           val: SENodule.store.isEarthMode ? this.prettyValue(true) : this.value
         })
       );
     } else if (this._seEdgeSegments.length === 3) {
       return String(
-        i18n.global.t(`objectTree.triangleWithEdges`, {
+        t(`objectTree.triangleWithEdges`, {
           edges: edgeNames,
           val: SENodule.store.isEarthMode ? this.prettyValue(true) : this.value
         })
       );
     } else {
       return String(
-        i18n.global.t(`objectTree.polygonWithEdges`, {
+        t(`objectTree.polygonWithEdges`, {
           edges: edgeNames,
           val: SENodule.store.isEarthMode ? this.prettyValue(true) : this.value
         })

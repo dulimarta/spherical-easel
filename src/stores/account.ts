@@ -51,32 +51,28 @@ const DEFAULT_TOOL_NAMES: Array<Array<ActionMode>> = [[], []];
 export const useAccountStore = defineStore("acct", () => {
   const appDB = getFirestore();
   const appAuth = getAuth();
+
   // const loginEnabled = ref(false); // true when the secret key combination is detected
+  const userProfile: Ref<UserProfile | null> = ref(null);
   const temporaryProfilePicture = ref("");
-  const userDisplayedName: Ref<string | undefined> = ref(undefined);
   const userEmail: Ref<string | undefined> = ref(undefined);
   const firebaseUid: Ref<string | undefined> = ref(undefined);
-  const userProfilePictureURL: Ref<string | undefined> = ref(undefined);
-  const userRole: Ref<string | undefined> = ref(undefined);
-  const starredConstructionIDs: Ref<Array<string>> = ref([]);
   /** @type { ActionMode[]} */
   const includedTools: Ref<ActionMode[]> = ref([]);
   const excludedTools: Ref<ActionMode[]> = ref([]);
   const favoriteTools: Ref<Array<Array<ActionMode>>> = ref(DEFAULT_TOOL_NAMES);
   const constructionDocId: Ref<string | null> = ref(null);
 
-  appAuth.onAuthStateChanged(async (u: User | null) => {
-    if (u) {
-      firebaseUid.value = u.uid;
-      // loginEnabled.value = true;
-      await parseUserProfile(u);
-      if (u.email && !userEmail.value) userEmail.value = u.email;
-      if (u.displayName && !userDisplayedName.value)
-        userDisplayedName.value = u.displayName;
-    } else {
-      firebaseUid.value = undefined;
-    }
-  });
+  // appAuth.onAuthStateChanged(async (u: User | null) => {
+  //   if (u) {
+  //     firebaseUid.value = u.uid;
+  //     // loginEnabled.value = true;
+  //     await parseUserProfile(u);
+  //     if (u.email && !userEmail.value) userEmail.value = u.email;
+  //   } else {
+  //     firebaseUid.value = undefined;
+  //   }
+  // });
 
   function resetToolset(includeAll = true): void {
     includedTools.value.splice(0);
@@ -123,31 +119,10 @@ export const useAccountStore = defineStore("acct", () => {
     firebaseUid.value = u.uid;
     await getDoc(doc(appDB, "users", u.uid)).then((ds: DocumentSnapshot) => {
       if (ds?.exists()) {
-        const uProfile = ds.data() as UserProfile;
-        const {
-          favoriteTools,
-          displayName,
-          profilePictureURL,
-          role,
-          userStarredConstructions
-        } = uProfile;
-        if (userDisplayedName.value === undefined)
-          userDisplayedName.value = displayName;
-        if (userProfilePictureURL.value === undefined)
-          userProfilePictureURL.value = profilePictureURL;
-        if (role) userRole.value = role.toLowerCase();
-        if (userStarredConstructions) {
-          console.debug(
-            `User ${displayName} (${u.uid}) has starred constructions`,
-            userStarredConstructions
-          );
-          starredConstructionIDs.value = userStarredConstructions;
-        }
-        parseAndSetFavoriteTools(favoriteTools ?? "#");
+        userProfile.value = ds.data() as UserProfile;
+        parseAndSetFavoriteTools(userProfile.value?.favoriteTools ?? "#");
       } else {
         console.debug("Initialize user profile with login provider data?");
-        userDisplayedName.value = u.displayName ?? undefined;
-        userProfilePictureURL.value = u.photoURL ?? undefined;
       }
     });
   }
@@ -191,7 +166,8 @@ export const useAccountStore = defineStore("acct", () => {
       const newUser: UserProfile = {
         displayName: userName,
         location: "N/A",
-        role: "Community Member"
+        role: "Community Member",
+        userStarredConstructions: []
       };
       await setDoc(doc(appDB, "users", credential.user.uid), newUser);
       return true;
@@ -201,10 +177,8 @@ export const useAccountStore = defineStore("acct", () => {
   }
 
   async function signOff(): Promise<void> {
-    starredConstructionIDs.value.splice(0);
-    userEmail.value = undefined;
-    userDisplayedName.value = undefined;
-    favoriteTools.value = [];
+    favoriteTools.value = DEFAULT_TOOL_NAMES;
+    userProfile.value = null;
     await signOut(appAuth);
   }
 
@@ -234,12 +208,9 @@ export const useAccountStore = defineStore("acct", () => {
     firebaseUid,
     includedTools,
     // loginEnabled,
-    starredConstructionIDs,
+    userProfile,
     temporaryProfilePicture,
-    userDisplayedName,
     userEmail,
-    userProfilePictureURL,
-    userRole,
 
     /* functions */
     excludeToolName,
