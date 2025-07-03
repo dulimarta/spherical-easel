@@ -74,7 +74,7 @@
       </v-window-item>
       <v-window-item>
         <v-sheet elevation="2" class="pa-2">
-          <h3 v-t="'settings.title'"></h3>
+          <h3>{{ t('settings.title') }}</h3>
           <v-container fluid>
             <v-row>
               <v-col cols="4">
@@ -129,6 +129,8 @@
       <v-col cols="auto"></v-col>
     </v-row>
   </v-container>
+  <v-snackbar v-model="passwordResetSnackbar" location="top"
+  timeout="5000">A password reset link has been sent to {{ userEmail }}</v-snackbar>
 </template>
 
 <style lang="scss" scoped>
@@ -173,7 +175,7 @@ import { UserProfile } from "@/types";
 import FavoriteToolsPicker from "@/components/FavoriteToolsPicker.vue";
 import EventBus from "@/eventHandlers/EventBus";
 import { computed, onMounted, Ref, ref } from "vue";
-// import { useI18n } from "vue-i18n";
+import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
@@ -182,7 +184,7 @@ type LocaleName = {
   locale: string;
   name: string;
 };
-// const { t } = useI18n();
+const { t } = useI18n();
 const acctStore = useAccountStore();
 const { favoriteTools } = storeToRefs(acctStore);
 const appAuth = getAuth();
@@ -197,6 +199,7 @@ const userDisplayName = ref("");
 const userLocation = ref("");
 const userRole = ref("Community Member");
 const selectedTab = ref(0);
+const passwordResetSnackbar = ref(false)
 // eslint-disable-next-line no-unused-vars
 let authSubscription!: Unsubscribe;
 const profileEnabled = ref(false);
@@ -268,6 +271,8 @@ function doChangePassword(): void {
         key: "A password reset link has been delivered by email",
         type: "info"
       });
+    }).finally(() => {
+      passwordResetSnackbar.value = true
     });
 }
 </script>

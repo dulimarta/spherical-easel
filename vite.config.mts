@@ -3,7 +3,7 @@ import { defineConfig } from "vite";
 import { resolve, dirname } from "path";
 import Vue from "@vitejs/plugin-vue";
 import { fileURLToPath, URL } from "node:url";
-//import vueDevTools from "vite-plugin-vue-devtools";
+import vueDevTools from "vite-plugin-vue-devtools";
 
 // import {createVuePlugin as vue} from "vite-plugin-vue2"
 // import { VuetifyResolver } from "unplugin-vue-components/resolvers"

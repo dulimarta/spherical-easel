@@ -246,13 +246,13 @@ function doGoogleLogin(): void {
 }
 
 .signup-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.5s ease;
 }
 .signup-enter-from {
   transform: scale(50%);
 }
 .signup-leave-to {
-  transform: translateX(100%);
+  transform: translateY(-100%);
   opacity: 0;
 }
 </style>

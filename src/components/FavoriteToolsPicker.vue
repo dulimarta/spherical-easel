@@ -1,5 +1,5 @@
 <template>
-  <h2 v-t="'sectionHeading'"></h2>
+  <h2>{{ t('sectionHeading') }}</h2>
   <v-container>
     <v-row>
       <v-col cols="3">
