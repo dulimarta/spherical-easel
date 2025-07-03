@@ -1,19 +1,23 @@
 <template>
-  <div id="userprofile">
+  <div id="userprofile" class="mt-3">
     <!-- <v-hover v-slot:default="{ isHovering }"> -->
     <div>
-      <img
-        v-if="userProfile?.profilePictureURL"
-        width="128"
-        :src="userProfile.profilePictureURL" />
-      <v-icon v-else :color="true ? 'primary' : 'secondary'" size="128">
-        mdi-account
-      </v-icon>
-      <v-btn :disabled="!userEmail">Change Password</v-btn>
-      <v-btn color="red lighten-2">Delete Account</v-btn>
+      <v-hover>
+        <template #default="{ isHovering, props }">
+          <v-avatar
+            v-bind="props"
+            v-if="userProfile?.profilePictureURL"
+            :size="isHovering ? 144 : 128"
+            icon="mdi-account"
+            :image="userProfile.profilePictureURL" />
+          <v-icon v-else :color="true ? 'primary' : 'secondary'" size="128">
+            mdi-account
+          </v-icon>
+        </template>
+      </v-hover>
+      <v-btn color="red lighten-2" class="mt-3">Delete Account</v-btn>
     </div>
     <div>
-      Right
       <v-container>
         <v-row>
           <v-col cols="6">
@@ -35,6 +39,13 @@
               v-model="userProfile!.role"
               :items="['Student', 'Instructor', 'Community Member']"></v-select>
           </v-col>
+          <v-select
+            v-model="selectedLanguage"
+            variant="outlined"
+            :items="languages"
+            item-title="name"
+            item-value="locale"
+            label="Language"></v-select>
         </v-row>
       </v-container>
     </div>
@@ -69,11 +80,15 @@ import {
 import { UserProfile } from "@/types";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
-import { defineComponent, onMounted, ref, Ref } from "vue";
+import { onMounted, ref, Ref } from "vue";
 import { useRouter } from "vue-router";
 import { getAuth } from "firebase/auth";
-import { isShallow } from "vue";
+import SETTINGS from "@/global-settings";
 type FileEvent = EventTarget & { files: FileList | undefined };
+type LocaleName = {
+  locale: string;
+  name: string;
+};
 
 const appDB = getFirestore();
 const appAuth = getAuth();
@@ -84,6 +99,8 @@ const acctStore = useAccountStore();
 const { temporaryProfilePicture, userEmail, userProfile } =
   storeToRefs(acctStore);
 const userLocation = ref("");
+const selectedLanguage: Ref<LocaleName> = ref({ locale: "", name: "" });
+const languages: Ref<Array<LocaleName>> = ref(SETTINGS.supportedLanguages);
 
 const imageUpload: Ref<HTMLInputElement | null> = ref(null);
 

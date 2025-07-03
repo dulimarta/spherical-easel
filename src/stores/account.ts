@@ -104,7 +104,7 @@ export const useAccountStore = defineStore("acct", () => {
   }
 
   function parseAndSetFavoriteTools(favTools: string) {
-    if (favTools.trim().length > 0) {
+    if (favTools.trim().length > 1) {
       favoriteTools.value = favTools
         .split("#")
         .map(
@@ -117,12 +117,20 @@ export const useAccountStore = defineStore("acct", () => {
 
   async function parseUserProfile(u: User): Promise<void> {
     firebaseUid.value = u.uid;
-    await getDoc(doc(appDB, "users", u.uid)).then((ds: DocumentSnapshot) => {
+    const userDocRef = doc(appDB, "users", u.uid);
+    await getDoc(userDocRef).then(async (ds: DocumentSnapshot) => {
       if (ds?.exists()) {
         userProfile.value = ds.data() as UserProfile;
         parseAndSetFavoriteTools(userProfile.value?.favoriteTools ?? "#");
       } else {
+        userProfile.value = {
+          displayName: u.displayName ?? undefined,
+          profilePictureURL: u.photoURL ?? undefined,
+          role: "Community Member",
+          userStarredConstructions: []
+        };
         console.debug("Initialize user profile with login provider data?");
+        await setDoc(userDocRef, { ...userProfile.value });
       }
     });
   }

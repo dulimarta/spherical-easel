@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
     <v-row justify="center">
-      <v-col cols="5">
+      <v-col cols="6">
         <v-sheet elevation="4" class="pa-4">
           <v-form v-model="validEntries">
             <div :style="{ display: 'flex', flexDirection: 'column' }">

@@ -2,7 +2,7 @@
 <template>
   <v-tabs centered v-model="selectedTab">
     <v-tab v-if="profileEnabled">User Profile</v-tab>
-    <v-tab>App Preferences</v-tab>
+    <!-- <v-tab>App Preferences</v-tab> -->
     <v-tab>Tools</v-tab>
   </v-tabs>
   <v-window v-model="selectedTab">
@@ -51,19 +51,12 @@
         </div>
       </v-sheet>
     </v-window-item>
-    <v-window-item>
+    <!--v-window-item>
       <v-sheet elevation="2" class="pa-2">
         <h3 v-t="'settings.title'"></h3>
         <v-container fluid>
           <v-row>
             <v-col cols="4">
-              <v-select
-                v-model="selectedLanguage"
-                variant="outlined"
-                :items="languages"
-                item-title="name"
-                item-value="locale"
-                label="Language"></v-select>
             </v-col>
             <v-col cols="4">
               <v-sheet rounded="lg" elevation="2">
@@ -94,7 +87,7 @@
           <v-radio label="Default"></v-radio>
         </v-radio-group>
       </v-sheet>
-    </v-window-item>
+    </!--v-window-item-->
 
     <v-window-item>
       <FavoriteToolsPicker />
@@ -105,7 +98,7 @@
     <v-col cols="auto">
       <v-btn @click="doSave">Save & Return</v-btn>
     </v-col>
-    <v-col cols="auto"></v-col>
+    <v-col cols="auto"><v-btn @click="doReturn">Return</v-btn></v-col>
   </v-row>
 </template>
 
@@ -158,10 +151,6 @@ import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 import { onBeforeUnmount } from "vue";
 const router = useRouter();
-type LocaleName = {
-  locale: string;
-  name: string;
-};
 // const { t } = useI18n();
 const acctStore = useAccountStore();
 const { favoriteTools, userProfile, userEmail } = storeToRefs(acctStore);
@@ -169,8 +158,6 @@ const appAuth = getAuth();
 const appDB = getFirestore();
 // const imageUpload: Ref<HTMLInputElement | null> = ref(null);
 const updatingPicture = ref(false);
-const selectedLanguage: Ref<LocaleName> = ref({ locale: "", name: "" });
-const languages: Ref<Array<LocaleName>> = ref(SETTINGS.supportedLanguages);
 const decimalPrecision = ref(3);
 const selectedTab = ref(0);
 // eslint-disable-next-line no-unused-vars
@@ -230,6 +217,10 @@ function doSave(): void {
     });
     router.back();
   });
+}
+
+function doReturn() {
+  router.back();
 }
 
 function doChangePassword(): void {
