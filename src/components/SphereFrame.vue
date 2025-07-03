@@ -150,6 +150,7 @@ import { Group } from "two.js/src/group";
 import { useMagicKeys } from "@vueuse/core";
 import { watchEffect } from "vue";
 import Settings from "@/views/Settings.vue";
+import { Handler } from "mitt";
 
 type ComponentProps = {
   availableHeight: number;
@@ -169,7 +170,7 @@ const {
 } = storeToRefs(seStore);
 const acctStore = useAccountStore();
 const { favoriteTools } = storeToRefs(acctStore);
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 
 const props = withDefaults(defineProps<ComponentProps>(), {
   availableHeight: 240,
@@ -366,11 +367,17 @@ onBeforeMount((): void => {
   EventBus.listen("construction-loaded", animateCanvas);
   EventBus.listen(
     "measured-circle-set-temporary-radius",
-    measuredCircleSetTemporaryRadius
+    measuredCircleSetTemporaryRadius as Handler<unknown>
   );
-  EventBus.listen("set-expression-for-tool", setExpressionForTool);
-  EventBus.listen("set-transformation-for-tool", setTransformationForTool);
-  EventBus.listen("delete-node", deleteNode);
+  EventBus.listen(
+    "set-expression-for-tool",
+    setExpressionForTool as Handler<unknown>
+  );
+  EventBus.listen(
+    "set-transformation-for-tool",
+    setTransformationForTool as Handler<unknown>
+  );
+  EventBus.listen("delete-node", deleteNode as Handler<unknown>);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   EventBus.listen("cursor-position", (arg: any) => {
     const rawPos = arg.raw.map((s: number) => s.toFixed(2)).join(",");
@@ -380,7 +387,10 @@ onBeforeMount((): void => {
   // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   EventBus.listen("update-fill-objects", updateObjectsWithFill);
   // EventBus.listen("export-current-svg-for-icon", getCurrentSVGForIcon);
-  EventBus.listen("show-text-edit-dialog", showTextObjectEditDialog);
+  EventBus.listen(
+    "show-text-edit-dialog",
+    showTextObjectEditDialog as Handler<unknown>
+  );
 });
 
 onMounted((): void => {

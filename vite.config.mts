@@ -22,7 +22,7 @@ export default defineConfig({
     exclude: ["fsevents"]
   },
   plugins: [
-    //vueDevTools({ componentInspector: { toggleButtonVisibility: "active" } }),
+    // vueDevTools({ componentInspector: { toggleButtonVisibility: "active" } }),
     Vue({
       isProduction: false,
       template: {

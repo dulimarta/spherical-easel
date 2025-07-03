@@ -301,7 +301,7 @@ const { selectedLabels, styleOptions, measurableSelections } =
   storeToRefs(styleStore);
 const { hasDisagreement, hasLabelObject, i18nMessageSelector, hasTextObject } =
   styleStore;
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 const { seLabels } = storeToRefs(seStore);
 
 const maxLabelTextScalePercent = SETTINGS.style.maxLabelTextScalePercent;

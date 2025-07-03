@@ -103,7 +103,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 import { inject } from "vue";
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 const acctStore = useAccountStore();
 const { userRole, includedTools } = storeToRefs(acctStore);
 const seStore = useSEStore();

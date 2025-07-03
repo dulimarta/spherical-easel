@@ -166,7 +166,7 @@ import { watchDebounced } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
 import Dialog, { DialogAction } from "./Dialog.vue";
 // Get the translation function
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 
 /** v-model that controls visibility of the overall component */
 const visible = defineModel<boolean>("visible", { default: false });

@@ -15,18 +15,19 @@
 
   <transition name="slide-right">
     <div v-show="expanded">
-      <template v-for="n in existingChildren" :key="n.id">
-        <!-- content goes here -->
-        <SENoduleItem
-          :node="n"
-          v-if="!isSlider(n)"
-          v-on:object-select="onExpressionSelect"></SENoduleItem>
-        <SESliderItem
-          v-else
-          :node="toSlider(n) /* a trick to S type error */"
-          v-on:object-select="onExpressionSelect"></SESliderItem>
-        <!-- <v-divider></v-divider-->
-      </template>
+      <!-- content goes here -->
+      <SENoduleItem
+        v-for="(n, childIndex) in existingChildren[0]"
+        :key="n.id"
+        v-model="existingChildren[0][childIndex]"
+        v-on:object-select="onExpressionSelect"></SENoduleItem>
+
+      <SESliderItem
+        v-for="(n, childIndex) in existingChildren[1]"
+        :key="n.id"
+        v-model="existingChildren[1][childIndex]"
+        v-on:object-select="onExpressionSelect"></SESliderItem>
+      <!-- <v-divider></v-divider-->
     </div>
   </transition>
 </template>
@@ -44,7 +45,6 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { storeToRefs } from "pinia";
 import { SEExpression } from "@/models/SEExpression";
 import { SETransformation } from "@/models/SETransformation";
-import { SEText } from "@/models/SEText";
 import { useI18n } from "vue-i18n";
 const props = defineProps<{
   children: SENodule[];
@@ -53,7 +53,7 @@ const props = defineProps<{
 
 const seStore = useSEStore();
 const { actionMode } = storeToRefs(seStore);
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 const expanded = ref(false);
 
 onBeforeMount((): void => {
@@ -72,15 +72,18 @@ onBeforeMount((): void => {
   EventBus.listen("expand-transformation-sheet", expandTransformationSheet);
 });
 
-const toSlider = (n: SENodule): SESlider => n as SESlider;
+// const toSlider = (n: SENodule): SESlider => n as SESlider;
 
 const hasExistingChildren = computed((): boolean => {
-  existingChildren.value.forEach(node => console.debug(node.name));
-  return existingChildren.value.length > 0;
+  existingChildren.value[0].forEach(node => console.debug(node.name));
+  existingChildren.value[1].forEach(node => console.debug(node.name));
+  return (
+    existingChildren.value[0].length + existingChildren.value[1].length > 0
+  );
 });
 
-const existingChildren = computed((): SENodule[] => {
-  return props.children
+const existingChildren = computed((): [SENodule[], SESlider[]] => {
+  const [nonSliders, sliders] = props.children
     .filter((n: SENodule) => {
       //return noduleUserCreatedAndExist.value(n);
       if (n instanceof SEIntersectionPoint || n instanceof SEAntipodalPoint) {
@@ -109,8 +112,15 @@ const existingChildren = computed((): SENodule[] => {
           return 1;
         }
       }
-    });
+    })
+    .partition(n => !(n instanceof SESlider));
+  return [nonSliders, sliders.map(s => s as SESlider)];
 });
+
+const existingSliders = computed((): SESlider[] =>
+  existingChildren.value.filter(c => c instanceof SESlider)
+);
+
 // const noduleUserCreatedAndExist = computed(() => (n: SENodule): boolean => {
 //   if (n instanceof SEIntersectionPoint || n instanceof SEAntipodalPoint) {
 //     return n.isUserCreated && n.exists;

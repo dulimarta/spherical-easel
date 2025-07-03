@@ -389,7 +389,7 @@ const {
   seSegments,
   selectedSENodules
 } = storeToRefs(seStore);
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 
 const { privateConstructions } = storeToRefs(constructionStore);
 const state: Ref<SecretKeyState> = ref(SecretKeyState.NONE);

@@ -68,7 +68,7 @@ import SETTINGS from "@/global-settings";
 import Color from "color";
 import HintButton from "@/components/HintButton.vue";
 import { useI18n } from "vue-i18n";
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 type ComponentProps = {
   title: string;
   conflict: boolean;
