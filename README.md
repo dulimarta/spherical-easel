@@ -73,7 +73,7 @@ After a successful document build, you will find a new directory `dist/docs`.
 
    ```
    docker login -u DDDDDDDD
-   # Then enter your password or Docker Personal Access Token
+   # Then enter your Docker Personal Access Token (with Read, Write, Delete permission)
    docker push DDDDDDDD/easelgo
    ```
 
