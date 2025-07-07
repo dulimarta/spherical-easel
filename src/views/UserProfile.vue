@@ -1,55 +1,77 @@
 <template>
   <div id="userprofile" class="mt-3">
-    <!-- <v-hover v-slot:default="{ isHovering }"> -->
     <div>
       <v-hover>
         <template #default="{ isHovering, props }">
-          <v-avatar
-            v-bind="props"
-            v-if="userProfile?.profilePictureURL"
-            :size="isHovering ? 144 : 128"
-            icon="mdi-account"
-            :image="userProfile.profilePictureURL" />
-          <v-icon v-else :color="true ? 'primary' : 'secondary'" size="128">
-            mdi-account
-          </v-icon>
+          <v-card elevation="3" class="mx-2">
+            <v-card-text class="bg-grey-lighten-3">
+              <v-avatar
+                v-if="userProfile?.profilePictureURL"
+                v-bind="props"
+                id="useravatar"
+                :image="userProfile?.profilePictureURL" />
+              <v-icon
+                v-else
+                v-bind="props"
+                id="useravatar"
+                size="128"
+                :color="isHovering ? 'grey' : 'black'">
+                mdi-account
+              </v-icon>
+              <div
+                :style="{
+                  position: 'absolute',
+                  opacity: isHovering ? 1 : 0,
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%,5%)',
+                  zIndex: 5
+                }">
+                <v-icon v-bind="props" color="red" size="x-large" @click="showPhotoDialog">
+                  mdi-camera
+                </v-icon>
+              </div>
+            </v-card-text>
+            <v-card-actions>
+              <v-btn base-color="red"  variant="outlined" class="mt-3">Delete Account</v-btn>
+            </v-card-actions>
+          </v-card>
         </template>
       </v-hover>
-      <v-btn color="red lighten-2" class="mt-3">Delete Account</v-btn>
     </div>
     <div>
       <v-container>
         <v-row>
-          <v-col cols="6">
-            <v-text-field label="Email" readonly v-model="userEmail" />
-          </v-col>
-          <v-col cols="6">
-            <v-text-field
-              v-model="userProfile!.displayName"
-              label="Display Name" />
+          <v-col>
+            <span class="text-h5">Email: {{ userEmail }}</span>
           </v-col>
         </v-row>
         <v-row>
           <v-col cols="6">
-            <v-text-field v-model="userLocation" label="Location" />
+            <v-text-field label="Display Name" />
           </v-col>
           <v-col cols="6">
+            <v-text-field v-model="userLocation" label="Location" />
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="4">
             <v-select
               label="Role"
-              v-model="userProfile!.role"
               :items="['Student', 'Instructor', 'Community Member']"></v-select>
           </v-col>
-          <v-select
-            v-model="selectedLanguage"
-            variant="outlined"
-            :items="languages"
-            item-title="name"
-            item-value="locale"
-            label="Language"></v-select>
+          <v-col cols="4">
+            <v-select
+              v-model="selectedLanguage"
+              variant="outlined"
+              :items="languages"
+              item-title="name"
+              item-value="locale"
+              label="Language"></v-select>
+          </v-col>
         </v-row>
       </v-container>
-    </div>
-    <!--div id="profileImage">
+      <!--div id="profileImage">
         <v-overlay absolute :value="isHovering">
           <v-row>
             <v-col cols="auto">
@@ -66,8 +88,13 @@
           </v-row>
         </v-overlay>
       </!--div-->
-    <!-- </v-hover> -->
+    </div>
   </div>
+  <Dialog ref="photoDialog" title="Your Profile Photo" width="40%"
+  yes-text="Use Image" no-text="Cancel">
+    <v-btn>Upload</v-btn>
+    <v-btn>Use Camera</v-btn>
+  </Dialog>
 </template>
 
 <script lang="ts" setup>
@@ -81,9 +108,11 @@ import { UserProfile } from "@/types";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 import { onMounted, ref, Ref } from "vue";
+import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useRouter } from "vue-router";
 import { getAuth } from "firebase/auth";
 import SETTINGS from "@/global-settings";
+import { computed } from "vue";
 type FileEvent = EventTarget & { files: FileList | undefined };
 type LocaleName = {
   locale: string;
@@ -101,8 +130,8 @@ const { temporaryProfilePicture, userEmail, userProfile } =
 const userLocation = ref("");
 const selectedLanguage: Ref<LocaleName> = ref({ locale: "", name: "" });
 const languages: Ref<Array<LocaleName>> = ref(SETTINGS.supportedLanguages);
-
-const imageUpload: Ref<HTMLInputElement | null> = ref(null);
+const photoDialog: Ref<DialogAction|null> = ref(null)
+// const imageUpload: Ref<HTMLInputElement | null> = ref(null);
 
 onMounted((): void => {
   const uid = appAuth.currentUser?.uid;
@@ -116,10 +145,13 @@ onMounted((): void => {
   });
 });
 
-function toPhotoCapture(): void {
-  router.push({ name: "PhotoCapture" });
-  emit("photo-change", {});
+function showPhotoDialog() {
+  photoDialog.value?.show()
 }
+// function toPhotoCapture(): void {
+//   router.push({ name: "PhotoCapture" });
+//   emit("photo-change", {});
+// }
 function onImageUploaded(event: Event): void {
   const files = (event.target as FileEvent).files;
   if (files && files.length > 0) {
@@ -145,14 +177,12 @@ function onImageUploaded(event: Event): void {
   justify-content: stretch;
 }
 #userprofile > :nth-child(1) {
-  width: 20%;
-  /* background-color: red; */
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 #userprofile > :nth-child(2) {
-  width: 80%;
+  flex-grow: 1;
 }
 
 #profileImage {
@@ -160,10 +190,9 @@ function onImageUploaded(event: Event): void {
   position: relative;
   border-radius: 50%;
 }
-img {
-  border-radius: 50%;
-}
-input[type="file"] {
-  display: none;
+.photo-overlay {
+  position: absolute;
+  bottom: -20px;
+  right: 0px;
 }
 </style>

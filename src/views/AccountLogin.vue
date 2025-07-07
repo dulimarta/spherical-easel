@@ -30,12 +30,12 @@
                     :disabled="!validEntries">
                     {{ t("Signin") }}
                   </v-btn>
-                  <v-btn
+                  <v-btn id="signup"
                     @click="doSignup"
                     :disabled="isSigningUp && !validEntries">
                     {{ t("Signup") }}
                   </v-btn>
-                  <v-btn :disabled="!isValidEmail" @click="doReset">
+                  <v-btn id="reset" :disabled="!isValidEmail" @click="doReset">
                     {{ t("resetPass") }}
                   </v-btn>
                   <v-btn @click="asGuest">Continue as Guest</v-btn>

@@ -23,6 +23,7 @@
               gridColumnStart: 1,
               gridColumnEnd: 2
             }">
+            What goes here?
             <!-- Nested router view for handling profile picture update -->
             <!--router-view
                 @photo-change="setUpdatingPicture(true)"
