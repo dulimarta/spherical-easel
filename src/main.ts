@@ -12,7 +12,6 @@ import { firebaseConfig } from "./firebase-config";
 import { Command } from "@/commands/Command";
 import { useSEStore } from "@/stores/se";
 import MouseHandler from "./eventHandlers/MouseHandler";
-import Nodule from "./plottables/Nodule";
 import { SENodule } from "@/models/SENodule";
 const firebaseApp = initializeApp(firebaseConfig);
 const pinia = createPinia();

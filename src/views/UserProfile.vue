@@ -8,6 +8,7 @@
               <v-avatar
                 v-if="userProfile?.profilePictureURL"
                 v-bind="props"
+                size="128"
                 id="useravatar"
                 :image="userProfile?.profilePictureURL" />
               <v-icon
@@ -92,8 +93,15 @@
   </div>
   <Dialog ref="photoDialog" title="Your Profile Photo" width="40%"
   yes-text="Use Image" no-text="Cancel">
-    <v-btn>Upload</v-btn>
-    <v-btn>Use Camera</v-btn>
+  <VTabs v-model="photoMode">
+    <VTab>Live Camera</VTab>
+    <VTab>Photo File</VTab>
+  </VTabs>
+  <VTabsWindow v-model="photoMode">
+    <VTabsWindowItem><CameraCapture/></VTabsWindowItem>
+    <VTabsWindowItem>Upload from .PNG, .JPG, etc.</VTabsWindowItem>
+  </VTabsWindow>
+    
   </Dialog>
 </template>
 
@@ -113,6 +121,7 @@ import { useRouter } from "vue-router";
 import { getAuth } from "firebase/auth";
 import SETTINGS from "@/global-settings";
 import { computed } from "vue";
+import CameraCapture from "@/components/CameraCapture.vue";
 type FileEvent = EventTarget & { files: FileList | undefined };
 type LocaleName = {
   locale: string;
@@ -131,6 +140,7 @@ const userLocation = ref("");
 const selectedLanguage: Ref<LocaleName> = ref({ locale: "", name: "" });
 const languages: Ref<Array<LocaleName>> = ref(SETTINGS.supportedLanguages);
 const photoDialog: Ref<DialogAction|null> = ref(null)
+const photoMode = ref(0)
 // const imageUpload: Ref<HTMLInputElement | null> = ref(null);
 
 onMounted((): void => {
