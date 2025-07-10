@@ -6,7 +6,13 @@
       alignItems: 'flex-start',
       rowGap: '8px'
     }">
-    <!-- {{ userDisplayedName }} {{ userEmail }} -->
+    <span
+      :style="{
+        writingMode: 'sideways-lr',
+        textOrientation: 'mixed'
+      }">
+      {{ userProfile?.displayName }}
+    </span>
     <v-btn
       icon
       size="x-small"
@@ -17,7 +23,7 @@
         v-if="userProfile?.profilePictureURL"
         contain
         max-width="40"
-        :image="userProfile?.profilePictureURL"></v-avatar>
+        :image="userProfile!.profilePictureURL"></v-avatar>
 
       <v-icon size="x-large" v-else>mdi-account</v-icon>
       <v-tooltip
@@ -331,7 +337,7 @@
 }
 </style>
 <script setup lang="ts">
-import { Ref, ref, onMounted, onBeforeMount, onUpdated } from "vue";
+import { Ref, ref, onUpdated } from "vue";
 import HintButton from "./HintButton.vue";
 import Dialog from "./Dialog.vue";
 import { storeToRefs } from "pinia";
@@ -379,7 +385,6 @@ const {
 } = storeToRefs(acctStore);
 const {
   hasObjects,
-  svgCanvas,
   canvasHeight,
   canvasWidth,
   sePoints,
@@ -391,7 +396,6 @@ const {
 const { t } = useI18n({ useScope: "local" });
 
 const { privateConstructions } = storeToRefs(constructionStore);
-const state: Ref<SecretKeyState> = ref(SecretKeyState.NONE);
 const router = useRouter();
 const constructionDescription = ref("");
 const saveConstructionDialog: Ref<DialogAction | null> = ref(null);
@@ -434,37 +438,8 @@ const svgAnimationRepeat = ref(0); // 0 is indefinite
 
 const currentConstructionPreview = ref(""); // preview string
 // let authSubscription: Unsubscribe | null = null;
-let svgRoot: SVGElement;
-type ComponentProps = {
-  expandedView: boolean;
-};
-const props = defineProps<ComponentProps>();
 /* User account feature is initially disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
-// onKeyDown(
-//   true, // true: accept all keys
-//   (event: KeyboardEvent) => {
-//     if (!event.ctrlKey || !event.altKey) {
-//       state.value = SecretKeyState.NONE;
-//       return false;
-//     }
-//     if (event.code === "KeyS" && state.value === SecretKeyState.NONE) {
-//       state.value = SecretKeyState.ACCEPT_S;
-//       event.preventDefault();
-//     } else if (
-//       event.code === "KeyE" &&
-//       state.value === SecretKeyState.ACCEPT_S
-//     ) {
-//       state.value = SecretKeyState.COMPLETE;
-//       // loginEnabled.value = true;
-//       event.preventDefault();
-//     } else {
-//       state.value = SecretKeyState.NONE;
-//       event.preventDefault();
-//     }
-//   },
-//   { dedupe: true } // ignore repeated key events when keys are held down
-// );
 
 const folderPath = ref("");
 
@@ -604,12 +579,6 @@ watch(
 //   }
 //   console.log(rotationAngleSelectorThumbStrings);
 // });
-onMounted(() => {
-  // The svgCanvas was set by SphereFrame but this component may be mounted
-  // before SphereCanvas, so it is possible that svgCanvas has not been
-  // set yet
-  svgRoot = svgCanvas.value?.querySelector("svg") as SVGElement;
-});
 
 onUpdated(() => {
   // clear the old values

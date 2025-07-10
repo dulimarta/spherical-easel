@@ -12,8 +12,7 @@ import {
   doc,
   getDoc,
   getFirestore,
-  setDoc,
-  updateDoc
+  setDoc
 } from "firebase/firestore";
 import { UserProfile } from "@/types";
 import {
@@ -63,17 +62,6 @@ export const useAccountStore = defineStore("acct", () => {
   const favoriteTools: Ref<Array<Array<ActionMode>>> = ref(DEFAULT_TOOL_NAMES);
   const constructionDocId: Ref<string | null> = ref(null);
 
-  // appAuth.onAuthStateChanged(async (u: User | null) => {
-  //   if (u) {
-  //     firebaseUid.value = u.uid;
-  //     // loginEnabled.value = true;
-  //     await parseUserProfile(u);
-  //     if (u.email && !userEmail.value) userEmail.value = u.email;
-  //   } else {
-  //     firebaseUid.value = undefined;
-  //   }
-  // });
-
   function resetToolset(includeAll = true): void {
     includedTools.value.splice(0);
     excludedTools.value.splice(0);
@@ -121,11 +109,22 @@ export const useAccountStore = defineStore("acct", () => {
     await getDoc(userDocRef).then(async (ds: DocumentSnapshot) => {
       if (ds?.exists()) {
         userProfile.value = ds.data() as UserProfile;
-        parseAndSetFavoriteTools(userProfile.value?.favoriteTools ?? "#");
+        // In the following lines, using the bracket or DOT syntax does not guarantee
+        // the new prop is reactive. Replacing the entire object retains reactivity
+        if (!userProfile.value.favoriteTools)
+          userProfile.value = { ...userProfile.value, favoriteTools: "#" };
+        if (!userProfile.value.location)
+          userProfile.value = { ...userProfile.value, location: "N/A" };
+        if (!userProfile.value.preferredLanguage)
+          userProfile.value = { ...userProfile.value, preferredLanguage: "en" };
+        parseAndSetFavoriteTools(userProfile.value.favoriteTools);
       } else {
         userProfile.value = {
-          displayName: u.displayName ?? undefined,
+          displayName: u.displayName ?? "N/A",
           profilePictureURL: u.photoURL ?? undefined,
+          location: "",
+          preferredLanguage: "en",
+          favoriteTools: "#",
           role: "Community Member",
           userStarredConstructions: []
         };
@@ -174,6 +173,8 @@ export const useAccountStore = defineStore("acct", () => {
       const newUser: UserProfile = {
         displayName: userName,
         location: "N/A",
+        favoriteTools: "#",
+        preferredLanguage: "en",
         role: "Community Member",
         userStarredConstructions: []
       };
@@ -187,6 +188,7 @@ export const useAccountStore = defineStore("acct", () => {
   async function signOff(): Promise<void> {
     favoriteTools.value = DEFAULT_TOOL_NAMES;
     userProfile.value = null;
+    userEmail.value = undefined;
     await signOut(appAuth);
   }
 

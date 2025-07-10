@@ -672,10 +672,11 @@ export interface ObjectState {
 /* UserProfile as stored in Firestore "users" collection */
 export interface UserProfile {
   profilePictureURL?: string;
-  displayName?: string;
-  location?: string;
-  role?: string;
-  favoriteTools?: string;
+  displayName: string;
+  location: string;
+  role: string;
+  favoriteTools: string;
+  preferredLanguage: string;
   userStarredConstructions: Array<string>;
 }
 

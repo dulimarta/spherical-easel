@@ -5,7 +5,7 @@
         <template #default="{ isHovering, props }">
           <v-card elevation="3" class="mx-2">
             <v-card-text class="bg-grey-lighten-3">
-              <v-avatar
+              <v-avatar :class="{'opacity-50': isHovering}"
                 v-if="userProfile?.profilePictureURL"
                 v-bind="props"
                 size="128"
@@ -28,7 +28,7 @@
                   transform: 'translate(-50%,5%)',
                   zIndex: 5
                 }">
-                <v-icon v-bind="props" color="red" size="x-large" @click="showPhotoDialog">
+                <v-icon v-bind="props" color="black" size="x-large" @click="showPhotoDialog">
                   mdi-camera
                 </v-icon>
               </div>
@@ -49,21 +49,21 @@
         </v-row>
         <v-row>
           <v-col cols="6">
-            <v-text-field label="Display Name" />
+            <v-text-field label="Display Name" v-model="userProfile!.displayName" />
           </v-col>
           <v-col cols="6">
-            <v-text-field v-model="userLocation" label="Location" />
+            <v-text-field v-model="userProfile!.location" label="Location" />
           </v-col>
         </v-row>
         <v-row>
           <v-col cols="4">
-            <v-select
+            <v-select v-model="userProfile!.role"
               label="Role"
               :items="['Student', 'Instructor', 'Community Member']"></v-select>
           </v-col>
           <v-col cols="4">
-            <v-select
-              v-model="selectedLanguage"
+            {{ userProfile }}
+            <v-select v-model="userProfile!.preferredLanguage"
               variant="outlined"
               :items="languages"
               item-title="name"
@@ -72,23 +72,6 @@
           </v-col>
         </v-row>
       </v-container>
-      <!--div id="profileImage">
-        <v-overlay absolute :value="isHovering">
-          <v-row>
-            <v-col cols="auto">
-              <v-icon @click="toPhotoCapture">mdi-camera</v-icon>
-            </v-col>
-            <v-col cols="auto">
-              <v-icon @click="imageUpload?.click()">mdi-upload</v-icon>
-              <input
-                ref="imageUpload"
-                type="file"
-                accept="image/*"
-                @change="onImageUploaded" />
-            </v-col>
-          </v-row>
-        </v-overlay>
-      </!--div-->
     </div>
   </div>
   <Dialog ref="photoDialog" title="Your Profile Photo" width="40%"
@@ -106,21 +89,12 @@
 </template>
 
 <script lang="ts" setup>
-import {
-  DocumentSnapshot,
-  getFirestore,
-  doc,
-  getDoc
-} from "firebase/firestore";
-import { UserProfile } from "@/types";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
-import { onMounted, ref, Ref } from "vue";
+import { ref, Ref } from "vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useRouter } from "vue-router";
-import { getAuth } from "firebase/auth";
 import SETTINGS from "@/global-settings";
-import { computed } from "vue";
 import CameraCapture from "@/components/CameraCapture.vue";
 type FileEvent = EventTarget & { files: FileList | undefined };
 type LocaleName = {
@@ -128,32 +102,19 @@ type LocaleName = {
   name: string;
 };
 
-const appDB = getFirestore();
-const appAuth = getAuth();
+// const appDB = getFirestore();
+// const appAuth = getAuth();
 const emit = defineEmits(["photo-change"]);
 const router = useRouter();
 // const profileImage: Ref<string | null> = ref(null);
 const acctStore = useAccountStore();
 const { temporaryProfilePicture, userEmail, userProfile } =
   storeToRefs(acctStore);
-const userLocation = ref("");
-const selectedLanguage: Ref<LocaleName> = ref({ locale: "", name: "" });
 const languages: Ref<Array<LocaleName>> = ref(SETTINGS.supportedLanguages);
 const photoDialog: Ref<DialogAction|null> = ref(null)
 const photoMode = ref(0)
 // const imageUpload: Ref<HTMLInputElement | null> = ref(null);
 
-onMounted((): void => {
-  const uid = appAuth.currentUser?.uid;
-  if (!uid) return;
-  const userDoc = doc(appDB, "users", uid);
-  getDoc(userDoc).then((ds: DocumentSnapshot) => {
-    if (ds.exists()) {
-      const userDetails = ds.data() as UserProfile;
-      // profileImage.value = userDetails.profilePictureURL ?? null;
-    }
-  });
-});
 
 function showPhotoDialog() {
   photoDialog.value?.show()
