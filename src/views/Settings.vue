@@ -23,13 +23,6 @@
               gridColumnStart: 1,
               gridColumnEnd: 2
             }">
-            What goes here?
-            <!-- Nested router view for handling profile picture update -->
-            <!--router-view
-                @photo-change="setUpdatingPicture(true)"
-                @no-capture="setUpdatingPicture(false)"
-                @photo-captured="setUpdatingPicture(false)"></!--router-view-->
-            <!--router-view /-->
           </div>
           <div
             :style="{
@@ -127,12 +120,9 @@ div#appSetting {
 
 <script lang="ts" setup>
 import UserProfileUI from "./UserProfile.vue";
-// import PhotoCapture from "@/views/PhotoCapture.vue";
-import SETTINGS from "@/global-settings";
 import {
   getAuth,
   User,
-  sendPasswordResetEmail,
   Unsubscribe
 } from "firebase/auth";
 import {
@@ -158,7 +148,6 @@ const { favoriteTools, userProfile, userEmail } = storeToRefs(acctStore);
 const appAuth = getAuth();
 const appDB = getFirestore();
 // const imageUpload: Ref<HTMLInputElement | null> = ref(null);
-const updatingPicture = ref(false);
 const decimalPrecision = ref(3);
 const selectedTab = ref(0);
 // eslint-disable-next-line no-unused-vars
@@ -202,9 +191,6 @@ onBeforeUnmount(() => {
 // function switchLocale(): void {
 //   // $i18n.locale = (this.selectedLanguage as any).locale;
 // }
-function setUpdatingPicture(flag: boolean): void {
-  updatingPicture.value = flag;
-}
 
 function doSave(): void {
   favoriteTools.value.map(arr => arr.map(s => s.trim()).join(",")).join("#");
@@ -224,13 +210,13 @@ function doReturn() {
   router.back();
 }
 
-function doChangePassword(): void {
-  if (userEmail.value)
-    sendPasswordResetEmail(appAuth, userEmail.value).then(() => {
-      EventBus.fire("show-alert", {
-        key: "A password reset link has been delivered by email",
-        type: "info"
-      });
-    });
-}
+// function doChangePassword(): void {
+//   if (userEmail.value)
+//     sendPasswordResetEmail(appAuth, userEmail.value).then(() => {
+//       EventBus.fire("show-alert", {
+//         key: "A password reset link has been delivered by email",
+//         type: "info"
+//       });
+//     });
+// }
 </script>

@@ -73,6 +73,8 @@
             marginBottom: '8px',
             alignItems: mouseOnDrawer ? 'flex-start' : 'center'
           }">
+          <AuthenticatedUserToolbox :expanded-view="mouseOnDrawer" />
+          <LanguageSelector />
           <template v-if="!inProductionMode">
             <!-- A rudimentary tool to clean up unused SVG/script files in Firebase Storage -->
             <router-link to="/firebase-cleanup">
@@ -84,8 +86,6 @@
                 text="Firebase Cleaner"></v-tooltip>
             </router-link>
           </template>
-          <AuthenticatedUserToolbox :expanded-view="mouseOnDrawer" />
-          <LanguageSelector />
         </div>
       </template>
     </v-navigation-drawer>

@@ -22,7 +22,7 @@
           gap: '8px'
         }">
         <v-icon @click="retakePhoto">mdi-camera-retake</v-icon>
-        <v-icon>mdi-crop</v-icon>
+        <v-icon @click="useCapturedPhoto">mdi-check</v-icon>
       </div>
     </div>
     <VueCamera
@@ -52,7 +52,9 @@
 <script setup lang="ts">
 import VueCamera from "simple-vue-camera";
 import { Ref, ref, useTemplateRef } from "vue";
-
+const trigger = defineEmits<{
+  (e: 'photo-selected', url: string): void
+}>()
 const cameraResolution = { width: 400, height: 300 };
 const cameraObj = useTemplateRef<typeof VueCamera>("camera");
 const cameraIsLive = ref(true);
@@ -73,10 +75,17 @@ async function captureCamera() {
   );
   photoURL.value = URL.createObjectURL(photoBlob);
   // console.debug("URL", url.substring(0, 50));
+
 }
 
 function retakePhoto() {
   photoURL.value = null;
   cameraIsLive.value = true;
+}
+function useCapturedPhoto() {
+  if (photoURL.value) {
+    console.debug("Triggerring photo-selected event")
+    trigger('photo-selected', photoURL.value)
+  }
 }
 </script>

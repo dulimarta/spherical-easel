@@ -1,8 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Easel from "@/views/Easel.vue";
 import Login from "@/views/AccountLogin.vue";
-import PhotoCropper from "@/views/PhotoCropper.vue";
-import ProfilePicture from "@/views/UserProfile.vue";
 let routes: Array<RouteRecordRaw> = [
   {
     path: "",
@@ -28,23 +26,6 @@ let routes: Array<RouteRecordRaw> = [
     // which is lazy-loaded when the route is visited.
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/Settings.vue")
-    // children: [
-    //   {
-    //     path: "",
-    //     component: ProfilePicture
-    //   },
-    //   {
-    //     name: "PhotoCapture",
-    //     path: "photocapture",
-    //     component: () => import("@/views/PhotoCapture.vue")
-    //   },
-    //   {
-    //     name: "PhotoCropper",
-    //     path: "photocropper/:image",
-    //     component: PhotoCropper,
-    //     props: true
-    //   }
-    // ]
   }
 ];
 

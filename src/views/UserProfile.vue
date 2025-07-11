@@ -5,7 +5,8 @@
         <template #default="{ isHovering, props }">
           <v-card elevation="3" class="mx-2">
             <v-card-text class="bg-grey-lighten-3">
-              <v-avatar :class="{'opacity-50': isHovering}"
+              <v-avatar
+                :class="{ 'opacity-50': isHovering }"
                 v-if="userProfile?.profilePictureURL"
                 v-bind="props"
                 size="128"
@@ -28,13 +29,19 @@
                   transform: 'translate(-50%,5%)',
                   zIndex: 5
                 }">
-                <v-icon v-bind="props" color="black" size="x-large" @click="showPhotoDialog">
+                <v-icon
+                  v-bind="props"
+                  color="black"
+                  size="x-large"
+                  @click="showPhotoDialog">
                   mdi-camera
                 </v-icon>
               </div>
             </v-card-text>
             <v-card-actions>
-              <v-btn base-color="red"  variant="outlined" class="mt-3">Delete Account</v-btn>
+              <v-btn base-color="red" variant="outlined" class="mt-3">
+                Delete Account
+              </v-btn>
             </v-card-actions>
           </v-card>
         </template>
@@ -49,7 +56,9 @@
         </v-row>
         <v-row>
           <v-col cols="6">
-            <v-text-field label="Display Name" v-model="userProfile!.displayName" />
+            <v-text-field
+              label="Display Name"
+              v-model="userProfile!.displayName" />
           </v-col>
           <v-col cols="6">
             <v-text-field v-model="userProfile!.location" label="Location" />
@@ -57,13 +66,15 @@
         </v-row>
         <v-row>
           <v-col cols="4">
-            <v-select v-model="userProfile!.role"
+            <v-select
+              v-model="userProfile!.role"
               label="Role"
               :items="['Student', 'Instructor', 'Community Member']"></v-select>
           </v-col>
           <v-col cols="4">
             {{ userProfile }}
-            <v-select v-model="userProfile!.preferredLanguage"
+            <v-select
+              v-model="userProfile!.preferredLanguage"
               variant="outlined"
               :items="languages"
               item-title="name"
@@ -74,28 +85,23 @@
       </v-container>
     </div>
   </div>
-  <Dialog ref="photoDialog" title="Your Profile Photo" width="40%"
-  yes-text="Use Image" no-text="Cancel">
-  <VTabs v-model="photoMode">
-    <VTab>Live Camera</VTab>
-    <VTab>Photo File</VTab>
-  </VTabs>
-  <VTabsWindow v-model="photoMode">
-    <VTabsWindowItem><CameraCapture/></VTabsWindowItem>
-    <VTabsWindowItem>Upload from .PNG, .JPG, etc.</VTabsWindowItem>
-  </VTabsWindow>
-    
+  <Dialog
+    ref="photoDialog"
+    title="Create Profile Photo"
+    width="40%"
+    yes-text="Cancel">
+    <PhotoCapture />
   </Dialog>
 </template>
 
 <script lang="ts" setup>
+import { ref, Ref } from "vue";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
-import { ref, Ref } from "vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
+import PhotoCapture from "@/components/PhotoSelector.vue";
 import { useRouter } from "vue-router";
 import SETTINGS from "@/global-settings";
-import CameraCapture from "@/components/CameraCapture.vue";
 type FileEvent = EventTarget & { files: FileList | undefined };
 type LocaleName = {
   locale: string;
@@ -111,18 +117,11 @@ const acctStore = useAccountStore();
 const { temporaryProfilePicture, userEmail, userProfile } =
   storeToRefs(acctStore);
 const languages: Ref<Array<LocaleName>> = ref(SETTINGS.supportedLanguages);
-const photoDialog: Ref<DialogAction|null> = ref(null)
-const photoMode = ref(0)
-// const imageUpload: Ref<HTMLInputElement | null> = ref(null);
-
+const photoDialog: Ref<DialogAction | null> = ref(null);
 
 function showPhotoDialog() {
-  photoDialog.value?.show()
+  photoDialog.value?.show();
 }
-// function toPhotoCapture(): void {
-//   router.push({ name: "PhotoCapture" });
-//   emit("photo-change", {});
-// }
 function onImageUploaded(event: Event): void {
   const files = (event.target as FileEvent).files;
   if (files && files.length > 0) {

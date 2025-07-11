@@ -23,7 +23,7 @@
     "@intlify/unplugin-vue-i18n": "^6.0.8",
     "@mdi/font": "^7.4.47",
     "@vueuse/core": "^10.2.1",
-    "axios": "^0.27.2",
+    "axios": "^1.10.0",
     "color": "^4.2.3",
     "detect-browser": "^5.2.0",
     "file-saver": "^2.0.5",
@@ -42,10 +42,10 @@
     "three": "^0.153.0",
     "two.js": "0.8.18",
     "vue": "~3.5.13",
-    "vue-advanced-cropper": "^2.8.8",
+    "vue-advanced-cropper": "^2.8.9",
     "vue-i18n": "^11.1.5",
     "vue-router": "~4.0.0",
-    "vuetify": "~3.6.15"
+    "vuetify": "~3.7.19"
   },
   "devDependencies": {
     "@eslint/css": "^0.9.0",

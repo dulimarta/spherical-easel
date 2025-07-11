@@ -6,12 +6,15 @@
       alignItems: 'flex-start',
       rowGap: '8px'
     }">
-    <span
+    <span id="diplayed-name"
+      v-if="userProfile"
+      @click="isAbbreviatedName = !isAbbreviatedName"
       :style="{
         writingMode: 'sideways-lr',
         textOrientation: 'mixed'
       }">
-      {{ userProfile?.displayName }}
+      {{ userDisplayedName }}
+    <v-tooltip activator="parent" text="Click to toggle short/long name"></v-tooltip>
     </span>
     <v-btn
       icon
@@ -103,21 +106,21 @@
       <div class="my-2">
         <v-divider class="mb-2"></v-divider>
         <h3 class="text-subtitle-1 mb-2">
-          Select or Enter Folder Path in Owned Constructions
+          {{t('folder.title')}}
         </h3>
 
         <!-- Folder path input -->
         <v-text-field
           v-model="folderPath"
-          label="Folder Path (e.g., Math/Geometry)"
+          label=""
           density="compact"
-          hint="Enter a new or existing folder path"
+          :hint="t('folder.pathLabel')"
           persistent-hint
           clearable
           @keypress.stop></v-text-field>
 
         <!-- Existing Folders Treeview -->
-        <p class="text-caption mt-2 mb-1">Or select an existing folder:</p>
+        <p class="text-caption mt-2 mb-1">{{ t('folder.selectExisting') }}</p>
         <div class="folder-tree-container">
           <v-treeview
             :items="treeItems"
@@ -368,11 +371,10 @@ import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { SELine } from "@/models/SELine";
 
-enum SecretKeyState {
-  NONE,
-  ACCEPT_S,
-  COMPLETE // Accept "SE"
-}
+type ComponentProps = {
+  expandedView: boolean;
+};
+defineProps<ComponentProps>();
 const acctStore = useAccountStore();
 const seStore = useSEStore();
 const constructionStore = useConstructionStore();
@@ -442,7 +444,18 @@ const currentConstructionPreview = ref(""); // preview string
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
 
 const folderPath = ref("");
-
+const isAbbreviatedName = ref(false);
+const userDisplayedName = computed(() => {
+  if (userProfile.value) {
+    return !isAbbreviatedName.value
+      ? userProfile.value.displayName
+      : userProfile.value.displayName
+          .split(" ") // Split individual words
+          .map(s => s.substring(0, 1)) // take only the first letter
+          .join("") // don't use default separator (,)
+          .toUpperCase();
+  } else return "N/A";
+});
 /**
  * take the "any" input from the v-treeview component's update:selected property
  * and convert it into a filepath to use with the picker.
@@ -915,7 +928,12 @@ function doExport() {
   "line": "Line: ",
   "segment": "Segment: ",
   "point": "Point: ",
-  "circle": "Circle: "
+  "circle": "Circle: ",
+  "folder": {
+    "title": "Select or Enter Folder Path in Owned Constructions",
+    "pathLabel": "Folder Path (e.g., favs/math/geometry)",
+    "selectExisting": "Or select an existing folder:"
+  }
 }
 </i18n>
 <i18n locale="id" lang="json">
