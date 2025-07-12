@@ -22,8 +22,7 @@
               gridRowEnd: 2,
               gridColumnStart: 1,
               gridColumnEnd: 2
-            }">
-          </div>
+            }"></div>
           <div
             :style="{
               gridRowStart: 2,
@@ -120,11 +119,7 @@ div#appSetting {
 
 <script lang="ts" setup>
 import UserProfileUI from "./UserProfile.vue";
-import {
-  getAuth,
-  User,
-  Unsubscribe
-} from "firebase/auth";
+import { getAuth, User, Unsubscribe } from "firebase/auth";
 import {
   DocumentSnapshot,
   getFirestore,
@@ -197,7 +192,6 @@ function doSave(): void {
 
   const profileDoc = doc(appDB, "users", userUid.value!);
   setDoc(profileDoc, userProfile.value, { merge: true }).then(() => {
-    alert("New profile saved");
     EventBus.fire("show-alert", {
       key: "Your profile has been update",
       type: "info"

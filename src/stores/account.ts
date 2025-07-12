@@ -1,11 +1,6 @@
 import { Ref, ref } from "vue";
 import { defineStore } from "pinia";
-import {
-  // AccountState,
-  ActionMode,
-  ToolButtonGroup,
-  ToolButtonType
-} from "@/types";
+import { ActionMode, ToolButtonGroup, ToolButtonType } from "@/types";
 import { toolGroups } from "@/components/toolgroups";
 import {
   DocumentSnapshot,
@@ -53,7 +48,7 @@ export const useAccountStore = defineStore("acct", () => {
 
   // const loginEnabled = ref(false); // true when the secret key combination is detected
   const userProfile: Ref<UserProfile | null> = ref(null);
-  const temporaryProfilePicture = ref("");
+  const temporaryProfilePictureURL = ref("");
   const userEmail: Ref<string | undefined> = ref(undefined);
   const firebaseUid: Ref<string | undefined> = ref(undefined);
   /** @type { ActionMode[]} */
@@ -219,7 +214,7 @@ export const useAccountStore = defineStore("acct", () => {
     includedTools,
     // loginEnabled,
     userProfile,
-    temporaryProfilePicture,
+    temporaryProfilePictureURL,
     userEmail,
 
     /* functions */

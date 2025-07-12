@@ -6,15 +6,18 @@
       alignItems: 'flex-start',
       rowGap: '8px'
     }">
-    <span id="diplayed-name"
+    <span
+      id="diplayed-name"
       v-if="userProfile"
       @click="isAbbreviatedName = !isAbbreviatedName"
       :style="{
-        writingMode: 'sideways-lr',
+        writingMode: isAbbreviatedName ? 'horizontal-tb' : 'sideways-lr',
         textOrientation: 'mixed'
       }">
       {{ userDisplayedName }}
-    <v-tooltip activator="parent" text="Click to toggle short/long name"></v-tooltip>
+      <v-tooltip
+        activator="parent"
+        text="Click to toggle short/long name"></v-tooltip>
     </span>
     <v-btn
       icon
@@ -106,7 +109,7 @@
       <div class="my-2">
         <v-divider class="mb-2"></v-divider>
         <h3 class="text-subtitle-1 mb-2">
-          {{t('folder.title')}}
+          {{ t("folder.title") }}
         </h3>
 
         <!-- Folder path input -->
@@ -120,7 +123,7 @@
           @keypress.stop></v-text-field>
 
         <!-- Existing Folders Treeview -->
-        <p class="text-caption mt-2 mb-1">{{ t('folder.selectExisting') }}</p>
+        <p class="text-caption mt-2 mb-1">{{ t("folder.selectExisting") }}</p>
         <div class="folder-tree-container">
           <v-treeview
             :items="treeItems"

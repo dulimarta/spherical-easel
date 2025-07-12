@@ -15,14 +15,13 @@
           position: 'absolute',
           bottom: '8px',
           width: '100%',
-          border: '1px solid green',
+          // border: '1px solid green',
           display: 'flex',
           flexDirection: 'row',
           justifyContent: 'center',
           gap: '8px'
         }">
-        <v-icon @click="retakePhoto">mdi-camera-retake</v-icon>
-        <v-icon @click="useCapturedPhoto">mdi-check</v-icon>
+        <v-icon @click="retakePhoto" size="large">mdi-camera-retake</v-icon>
       </div>
     </div>
     <VueCamera
@@ -41,8 +40,8 @@
           justifyContent: 'center'
         }">
         <template v-if="cameraIsLive">
-          <v-icon @click="pauseCamera">mdi-pause-box</v-icon>
-          <v-icon @click="captureCamera">mdi-camera</v-icon>
+          <v-icon size="large" @click="pauseCamera">mdi-pause-box</v-icon>
+          <v-icon size="large" @click="captureCamera">mdi-camera</v-icon>
         </template>
         <v-icon v-else @click="startCamera">mdi-play-box</v-icon>
       </div>
@@ -51,17 +50,27 @@
 </template>
 <script setup lang="ts">
 import VueCamera from "simple-vue-camera";
-import { Ref, ref, useTemplateRef } from "vue";
+import { Ref, ref, useTemplateRef, onBeforeUpdate } from "vue";
+
+defineExpose({ stopCamera, startCamera });
 const trigger = defineEmits<{
-  (e: 'photo-selected', url: string): void
-}>()
+  // (e: "photo-captured", yesNo: boolean): void;
+  (e: "photo-changed", url: string | null): void;
+}>();
 const cameraResolution = { width: 400, height: 300 };
 const cameraObj = useTemplateRef<typeof VueCamera>("camera");
 const cameraIsLive = ref(true);
 const photoURL: Ref<string | null> = ref(null);
+
 function startCamera() {
   cameraObj.value?.start();
   cameraIsLive.value = true;
+  photoURL.value = null;
+}
+
+function stopCamera() {
+  cameraObj.value?.stop();
+  cameraIsLive.value = false;
 }
 function pauseCamera() {
   cameraObj.value?.pause();
@@ -74,18 +83,12 @@ async function captureCamera() {
     0.9 /* quality */
   );
   photoURL.value = URL.createObjectURL(photoBlob);
-  // console.debug("URL", url.substring(0, 50));
-
+  trigger("photo-changed", photoURL.value);
 }
 
 function retakePhoto() {
   photoURL.value = null;
   cameraIsLive.value = true;
-}
-function useCapturedPhoto() {
-  if (photoURL.value) {
-    console.debug("Triggerring photo-selected event")
-    trigger('photo-selected', photoURL.value)
-  }
+  trigger("photo-changed", photoURL.value);
 }
 </script>

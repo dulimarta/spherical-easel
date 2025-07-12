@@ -40,7 +40,7 @@
             </v-card-text>
             <v-card-actions>
               <v-btn base-color="red" variant="outlined" class="mt-3">
-                Delete Account
+                {{ t("DeleteAcct") }}
               </v-btn>
             </v-card-actions>
           </v-card>
@@ -72,7 +72,6 @@
               :items="['Student', 'Instructor', 'Community Member']"></v-select>
           </v-col>
           <v-col cols="4">
-            {{ userProfile }}
             <v-select
               v-model="userProfile!.preferredLanguage"
               variant="outlined"
@@ -87,10 +86,10 @@
   </div>
   <Dialog
     ref="photoDialog"
-    title="Create Profile Photo"
+    :title="t('createProfilePic')"
     width="40%"
     yes-text="Cancel">
-    <PhotoCapture />
+    <PhotoMaker @changed="closePhotoDialog" />
   </Dialog>
 </template>
 
@@ -99,10 +98,10 @@ import { ref, Ref } from "vue";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
-import PhotoCapture from "@/components/PhotoSelector.vue";
-import { useRouter } from "vue-router";
+import PhotoMaker from "@/components/ProfilePhotoMaker.vue";
 import SETTINGS from "@/global-settings";
-type FileEvent = EventTarget & { files: FileList | undefined };
+import { useI18n } from "vue-i18n";
+// type FileEvent = EventTarget & { files: FileList | undefined };
 type LocaleName = {
   locale: string;
   name: string;
@@ -110,33 +109,20 @@ type LocaleName = {
 
 // const appDB = getFirestore();
 // const appAuth = getAuth();
-const emit = defineEmits(["photo-change"]);
-const router = useRouter();
-// const profileImage: Ref<string | null> = ref(null);
+const { t } = useI18n();
 const acctStore = useAccountStore();
-const { temporaryProfilePicture, userEmail, userProfile } =
-  storeToRefs(acctStore);
+const { userEmail, userProfile } = storeToRefs(acctStore);
 const languages: Ref<Array<LocaleName>> = ref(SETTINGS.supportedLanguages);
 const photoDialog: Ref<DialogAction | null> = ref(null);
 
 function showPhotoDialog() {
   photoDialog.value?.show();
 }
-function onImageUploaded(event: Event): void {
-  const files = (event.target as FileEvent).files;
-  if (files && files.length > 0) {
-    emit("photo-change", {});
-    const reader = new FileReader();
-    reader.onload = (ev: ProgressEvent) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const imageBase64 = (ev.target as any).result;
-      temporaryProfilePicture.value = imageBase64;
-      router.push({
-        name: "PhotoCropper"
-      });
-    };
-    reader.readAsDataURL(files[0]);
-  }
+
+function closePhotoDialog(s: string) {
+  console.debug("What is data image", s);
+  userProfile.value = { ...userProfile.value!, profilePictureURL: s };
+  photoDialog.value?.hide();
 }
 </script>
 
@@ -166,3 +152,9 @@ function onImageUploaded(event: Event): void {
   right: 0px;
 }
 </style>
+<i18n locale="en">
+  {
+    "DeleteAcct": "Delete Account",
+    "createProfilePic": "Create Profile Picture"
+  }
+</i18n>

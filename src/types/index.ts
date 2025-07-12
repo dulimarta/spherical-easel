@@ -26,20 +26,6 @@ export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
 }
 
-export interface AccountState {
-  loginEnabled: boolean;
-  temporaryProfilePicture: string;
-  userProfilePictureURL: string | undefined;
-  userDisplayedName: string | undefined;
-  userEmail: string | undefined;
-  userRole: string | undefined;
-  includedTools: Array<ActionMode>;
-  excludedTools: Array<ActionMode>;
-  favoriteTools: Array<Array<ActionMode>>;
-  constructionDocId: string | null; // The document id of construction being viewed on the canvas
-  constructionSaved: boolean;
-}
-
 /* This interface lists all the properties that each tool/button must have. */
 export type ToolButtonGroup = {
   group: string;
