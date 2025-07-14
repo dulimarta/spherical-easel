@@ -43,7 +43,7 @@ function reset(): void {
   parsingError.value = "";
 }
 
-function addVarToExpr(param: any): void {
+function addVarToExpr(param: unknown): void {
   console.debug(
     "Variable selected",
     param,
@@ -66,10 +66,11 @@ function onKeyPressed(): void {
           tValueResults.push(parser.evaluate(str));
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       // no code
       const syntaxErr = err as SyntaxError;
       // console.debug("Got an error", err);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       parsingError.value = t(syntaxErr.message, syntaxErr.cause as any);
     }
   }, 1000);

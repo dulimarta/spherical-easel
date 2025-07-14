@@ -34,7 +34,7 @@ export class SESegment
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  declare public ref: Segment;
+  public declare ref: Segment;
   /**
    * Pointer to the label of this SESegment import { SELabel } from "@/models/SELabel";
    */
@@ -457,7 +457,7 @@ export class SESegment
         .crossVectors(idealUnitSphereVector, this.tmpVector)
         .normalize();
       // compute the toVector (so that tmpVector2= toVector, tmpVector= fromVector, tmpVector1 form an orthonormal frame)
-      this.tmpVector2.crossVectors(this.tmpVector, this.tmpVector1).normalize;
+      this.tmpVector2.crossVectors(this.tmpVector, this.tmpVector1).normalize();
       // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
       this.tmpVector2.multiplyScalar(
         Math.sin(SETTINGS.segment.maxLabelDistance / mag)

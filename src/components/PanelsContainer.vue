@@ -120,7 +120,7 @@ import { useConstructionStore } from "@/stores/construction";
 import { useAccountStore } from "@/stores/account";
 
 // Get the translation function
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 
 /* get the constructions from the store */
 const constructionStore = useConstructionStore();
@@ -233,7 +233,7 @@ watch(idle, (isIdle: boolean) => {
   } else {
     lastSearchKey = searchKey.value;
     searchResult.value = "";
-    const matchFound = [];
+    const matchFound: Array<string> = [];
     /* filter the private constructions to those whose title matches the search key */
     const privateMatch = privateConstructions.value.filter(
       (c: SphericalConstruction) =>

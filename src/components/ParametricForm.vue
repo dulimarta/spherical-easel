@@ -129,8 +129,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { useI18n } from "vue-i18n";
-import { RefSymbol } from "@vue/reactivity";
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 // interface ParametricDataType {
 //   tMinNumber?: number;
 //   tMaxNumber?: number;
@@ -657,7 +656,7 @@ function addParametricCurve(): void {
           parent => parent.name === seExpressions.value[pos].name
         );
         if (pos2 < 0) {
-          calculationParents.push(seExpressions.value[pos] as any);
+          calculationParents.push(seExpressions.value[pos]);
         }
       }
     }

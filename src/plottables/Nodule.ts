@@ -143,8 +143,8 @@ export default abstract class Nodule implements Stylable, Resizeable {
   // some parts of each segment may not be long enough to add to the polygon or to the segment arc objects this function helps check that
   static longEnoughToAdd(path: Path): boolean {
     const matrix = path.matrix;
-    var start = matrix.multiply(path.vertices[0].x, path.vertices[0].y, 1);
-    var end = matrix.multiply(
+    let start = matrix.multiply(path.vertices[0].x, path.vertices[0].y, 1);
+    let end = matrix.multiply(
       path.vertices[path.vertices.length - 1].x,
       path.vertices[path.vertices.length - 1].y,
       1
@@ -363,7 +363,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
           args.strokeObject.dashes[1] == 0
         )
       ) {
-        var dashString = "";
+        let dashString = "";
         for (let num = 0; num < args.strokeObject.dashes.length; num++) {
           dashString += args.strokeObject.dashes[num] + " ";
         }

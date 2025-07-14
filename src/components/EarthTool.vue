@@ -13,7 +13,9 @@
     <v-expansion-panels>
       <v-expansion-panel style="border-radius: 8px">
         <v-expansion-panel-title>
-          <h3 class="body-1 font-weight-bold button-group-heading">{{t('point')}}</h3>
+          <h3 class="body-1 font-weight-bold button-group-heading">
+            {{ t("point") }}
+          </h3>
         </v-expansion-panel-title>
         <v-expansion-panel-text>
           <Suspense>
@@ -25,7 +27,9 @@
     <v-expansion-panels>
       <v-expansion-panel style="border-radius: 8px">
         <v-expansion-panel-title>
-          <h3 class="body-1 font-weight-bold button-group-heading">{{t('line')}}</h3>
+          <h3 class="body-1 font-weight-bold button-group-heading">
+            {{ t("line") }}
+          </h3>
         </v-expansion-panel-title>
         <v-expansion-panel-text>
           <v-icon>mdi-crosshairs-gps</v-icon>
@@ -53,7 +57,7 @@
               firstPlaceID.length === 0 ||
               secondPlaceID.length === 0
             ">
-            {{ t('draw') }}
+            {{ t("draw") }}
           </v-btn>
         </v-expansion-panel-text>
       </v-expansion-panel>
@@ -91,7 +95,7 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 
 const seStore = useSEStore();
 const { isEarthMode, seNodules } = storeToRefs(seStore);
-const {t} = useI18n()
+const { t } = useI18n({ useScope: "local" });
 const firstPoint: Ref<undefined | SEPoint> = ref();
 const secondPoint: Ref<undefined | SEPoint> = ref();
 const firstPlaceID = ref("");
@@ -128,7 +132,7 @@ watch([() => firstPoint.value, () => secondPoint.value], () => {
 watch(
   () => isEarthMode.value,
   (earthModeActive: boolean) => {
-    Label.isEarthMode = earthModeActive
+    Label.isEarthMode = earthModeActive;
     // localIsEarthMode.value = !localIsEarthMode.value;
     let setNoduleDisplayCommandGroup = new CommandGroup();
     setNoduleDisplayCommandGroup.addCommand(
@@ -168,10 +172,10 @@ watch(
 }
 </i18n>
 <i18n locale="id" lang="json">
-  {
-    "point": "Titik",
-    "earthMode": "Peta Bumi",
-    "line": "Garis",
-    "draw": "Tampilkan Segmen"
-  }
-  </i18n>
+{
+  "point": "Titik",
+  "earthMode": "Peta Bumi",
+  "line": "Garis",
+  "draw": "Tampilkan Segmen"
+}
+</i18n>

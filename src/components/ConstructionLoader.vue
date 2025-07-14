@@ -37,7 +37,7 @@ import PanelsContainer from "@/components/PanelsContainer.vue";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 
 // Store Setup
 const acctStore = useAccountStore();

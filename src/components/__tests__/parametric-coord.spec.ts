@@ -4,7 +4,7 @@ import { it, vi } from "vitest";
 import { VueWrapper, mount } from "@vue/test-utils";
 import { useSEStore } from "@/stores/se";
 import { SECalculation } from "@/models/SECalculation";
-global.ResizeObserver = require("resize-observer-polyfill");
+// global.ResizeObserver = require("resize-observer-polyfill");
 
 describe("ParametricCoord.vue basics", () => {
   let wrapper: VueWrapper;
@@ -18,7 +18,7 @@ describe("ParametricCoord.vue basics", () => {
         useTValue: 0
       }
     });
-    wrapper = out.wrapper
+    wrapper = out.wrapper;
   });
 
   it("is a component", () => {
@@ -28,7 +28,7 @@ describe("ParametricCoord.vue basics", () => {
   });
 
   it("shows the placeholder", () => {
-    const textArea = wrapper.find("[data-testid=textarea]").find('textarea');
+    const textArea = wrapper.find("[data-testid=textarea]").find("textarea");
     // console.debug("Element: ", textArea.attributes('placeholder'))
     console.debug("Text:", textArea.text());
     // console.debug("HTML:", textArea.html());
@@ -68,7 +68,7 @@ describe("ParametricCoord.vue with input", () => {
         label: "",
         placeholder: "",
         modelValue: "3.0 * t",
-        useTValue: .7
+        useTValue: 0.7
       }
     });
     const textArea = wrapper.find("[data-testid=textarea]");
@@ -105,19 +105,18 @@ describe("ParametricCoord.vue with store access", () => {
   // let testPinia
   beforeEach(() => {
     // testPinia = createTestingPinia({stubActions: false,
-      // initialState: {
-        // se: {
-        //   seExpressionIds: [c1.id],
-        //   seExpressionMap: aMap
-        // }
-      // }
+    // initialState: {
+    // se: {
+    //   seExpressionIds: [c1.id],
+    //   seExpressionMap: aMap
+    // }
+    // }
     // });
     // setActivePinia(testPinia);
-    vi.useFakeTimers()
+    vi.useFakeTimers();
   });
 
   it("inspects variables in the Pinia store", async () => {
-
     const { wrapper, testPinia } = createWrapper(TestedComponent, {
       componentProps: {
         tooltip: "",
@@ -127,8 +126,8 @@ describe("ParametricCoord.vue with store access", () => {
         useTValue: 0.4
       }
     });
-    const s = useSEStore(testPinia)
-    await s.addExpression(new SECalculation("0.1")) // This creates a new expression M1
+    const s = useSEStore(testPinia);
+    await s.addExpression(new SECalculation("0.1")); // This creates a new expression M1
     const textArea = wrapper.find("[data-testid=textarea]");
     await textArea.trigger("keydown.enter");
     // Wait for the setTimeout to work
@@ -139,7 +138,6 @@ describe("ParametricCoord.vue with store access", () => {
   });
 
   it("shows syntax error when expressions include undefined variables", async () => {
-
     const { wrapper, testPinia } = createWrapper(TestedComponent, {
       componentProps: {
         tooltip: "",
@@ -149,15 +147,14 @@ describe("ParametricCoord.vue with store access", () => {
         useTValue: 0
       }
     });
-    const s = useSEStore(testPinia)
-    await s.addExpression(new SECalculation("0.25")) // This creates a new expression M1
+    const s = useSEStore(testPinia);
+    await s.addExpression(new SECalculation("0.25")); // This creates a new expression M1
     const textArea = wrapper.find("[data-testid=textarea]");
     await textArea.trigger("keydown.enter");
     // Wait for the setTimeout to work
     await vi.advanceTimersByTimeAsync(3000);
 
     // console.debug("Text After input", wrapper.text());
-    expect(wrapper.text()).toContain("M3")
+    expect(wrapper.text()).toContain("M3");
   });
-
 });

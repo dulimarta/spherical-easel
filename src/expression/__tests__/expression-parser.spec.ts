@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ExpressionParser } from "../ExpressionParser";
 // import {createPinia, setActivePinia} from "pinia"
 
@@ -7,7 +8,7 @@ import { ExpressionParser } from "../ExpressionParser";
 describe("SEExpression", () => {
   beforeEach(() => {
     // setActivePinia(createPinia())
-  })
+  });
   const parser = new ExpressionParser();
 
   describe("Numeric constant", () => {
@@ -240,7 +241,7 @@ describe("SEExpression", () => {
       expect(parser.evaluate("ln(exp(3))")).toBeCloseTo(3, 2);
       expect(parser.evaluate("exp(ln(3))")).toBeCloseTo(3, 2);
       expect(parser.evaluate("ln(-3-7)")).toBeFalsy();
-      expect(parser.evaluate("ln(0)")).toEqual(-Infinity)
+      expect(parser.evaluate("ln(0)")).toEqual(-Infinity);
     });
     it("computes sgn()", () => {
       expect(parser.evaluate("sgn(0.56)")).toBeCloseTo(1.0, 1);
@@ -264,7 +265,7 @@ describe("SEExpression", () => {
     it("detects unknown character", () => {
       try {
         parser.evaluate("20 # 60");
-      } catch (e) {
+      } catch (e: any) {
         expect(e.message).toContain("unexpectedToken");
       }
     });
@@ -287,7 +288,7 @@ describe("SEExpression", () => {
     it("detects missing operand after binary minus", () => {
       try {
         parser.evaluate("20 -");
-      } catch (e) {
+      } catch (e: any) {
         expect(e.message).toContain("unexpectedInput");
       }
     });
@@ -295,29 +296,29 @@ describe("SEExpression", () => {
     it("detects missing operand after exponentiation", () => {
       try {
         parser.evaluate("20 **");
-      } catch (e) {
+      } catch (e: any) {
         expect(e.message).toContain("unexpectedInput");
       }
     });
     it("detects missing parenthesis", () => {
       try {
         parser.evaluate("20 * (4 ^ 3");
-      } catch (e) {
+      } catch (e: any) {
         expect(e.message).toContain("expectedRightParenthesis");
       }
     });
     it("detects missing left parenthesis after builtin func", () => {
       try {
         parser.evaluate("20 * cos pi");
-      } catch (e) {
-        expect(e.message).toContain("Parenthesis")
+      } catch (e: any) {
+        expect(e.message).toContain("Parenthesis");
       }
     });
     it("detects missing right parenthesis after builtin func args", () => {
       try {
         parser.evaluate("20 * cos(pi/4");
-      } catch (e) {
-        expect(e.message).toBeTruthy
+      } catch (e: any) {
+        expect(e.message).toBeTruthy();
       }
     });
     // it("detects natural log of negative numbers", () => {

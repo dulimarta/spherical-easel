@@ -288,7 +288,7 @@ export default class Parametric extends Nodule {
     this.glowingBackParts.forEach((path: Path) => {
       this.glowingPool.push(...path.vertices.splice(0));
     });
-    this.markers.children.forEach((m: Object) => {
+    this.markers.children.forEach(m => {
       this.markerPool.push(m as Circle);
     });
     this.markerPool.forEach(c => {

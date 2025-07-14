@@ -21,45 +21,49 @@ import { ToolButtonType } from "@/types";
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { Command } from "@/commands/Command";
 import SETTINGS from "@/global-settings";
-import { useI18n } from "vue-i18n"
+import { useI18n } from "vue-i18n";
 const seStore = useSEStore();
 const iconSize = ref(SETTINGS.icons.shortcutIconSize);
 const shortCutButtonSize = ref(SETTINGS.icons.shortcutButtonSize);
-const { t } = useI18n()
+const { t } = useI18n();
 const props = defineProps<{
-  model: ToolButtonType
-}>()
-let disabled = ref(false)
+  model: ToolButtonType;
+}>();
+let disabled = ref(false);
 /** mounted() is part of VueJS lifecycle hooks */
 onMounted((): void => {
   // console.debug("Incoming model is ", props.model)
   if (props.model.action === "undoAction") {
-    EventBus.listen("undo-enabled", setEnabled)
-    disabled.value = Command.commandHistory.length == 0 // initially value
+    EventBus.listen("undo-enabled", setEnabled);
+    disabled.value = Command.commandHistory.length == 0; // initially value
   } else if (props.model.action === "redoAction") {
-    EventBus.listen("redo-enabled", setEnabled)
-    disabled.value = Command.redoHistory.length == 0 // initially value
+    EventBus.listen("redo-enabled", setEnabled);
+    disabled.value = Command.redoHistory.length == 0; // initially value
   }
-  const zIcons = SETTINGS.icons as Record<string, any>;
-  if (zIcons[props.model.action] && typeof zIcons[props.model.action].props.mdiIcon == "string") {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const zIcons = SETTINGS.icons as unknown as Record<string, any>;
+  if (
+    zIcons[props.model.action] &&
+    typeof zIcons[props.model.action].props.mdiIcon == "string"
+  ) {
     iconSize.value = SETTINGS.icons.shortcutIconSize * 0.6; // mdiIcons are smaller
   }
 });
 
 onBeforeUnmount((): void => {
   if (props.model.action === "undoAction") {
-    EventBus.unlisten("undo-enabled")
+    EventBus.unlisten("undo-enabled");
   } else if (props.model.action === "redoAction") {
-    EventBus.unlisten("redo-enabled")
+    EventBus.unlisten("redo-enabled");
   }
-})
+});
 
 function setEnabled(e: { value: boolean }) {
-  disabled.value = !e.value
+  disabled.value = !e.value;
 }
 function invokeAction(): void {
   if (typeof props.model.clickFunc === "function") {
-    props.model.clickFunc!()
-  } else if (props.model.action) seStore.setActionMode(props.model.action)
+    props.model.clickFunc!();
+  } else if (props.model.action) seStore.setActionMode(props.model.action);
 }
 </script>

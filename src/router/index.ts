@@ -1,8 +1,8 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router"
-import Easel from "@/views/Easel.vue"
-import Login from "@/views/Login.vue"
-import PhotoCropper from "@/views/PhotoCropper.vue"
-import ProfilePicture from "@/views/ProfilePicture.vue"
+import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
+import Easel from "@/views/Easel.vue";
+import Login from "@/views/AccountLogin.vue";
+import PhotoCropper from "@/views/PhotoCropper.vue";
+import ProfilePicture from "@/views/ProfilePicture.vue";
 let routes: Array<RouteRecordRaw> = [
   {
     path: "",
@@ -51,17 +51,17 @@ let routes: Array<RouteRecordRaw> = [
       }
     ]
   }
-]
+];
 
 if (import.meta.env.MODE !== "production") {
   routes.push({
     /* A rudimentary tool to clean up unused SVG/script files in Firebase Storage */
     path: "/firebase-cleanup",
     component: () => import("../components/FirebaseStorageGarbageCollector.vue")
-  })
+  });
 }
 
 export default createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
-})
+});

@@ -182,7 +182,7 @@ export default class DeleteHandler extends Highlighter {
           if (deletedObjectIDs.findIndex(id => id === object.id) !== -1) {
             return;
           }
-          deletedObjectIDs.push(...this.delete(object as any));
+          deletedObjectIDs.push(...this.delete(object));
         });
       // deletedNumberNodes: "Successfully deleted {number} {objects}.",
       EventBus.fire("show-alert", {

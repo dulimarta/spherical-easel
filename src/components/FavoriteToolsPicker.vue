@@ -1,5 +1,5 @@
 <template>
-  <h2 v-t="'sectionHeading'"></h2>
+  <h2>{{ t('sectionHeading') }}</h2>
   <v-container>
     <v-row>
       <v-col cols="3">
@@ -19,8 +19,9 @@
                   </v-icon>
                 </template>
 
-                <v-list-item-title
-                  v-text="t(tool.displayedName)"></v-list-item-title>
+                <v-list-item-title>
+                  {{ t(tool.displayedName) }}
+                </v-list-item-title>
               </v-list-item>
             </v-list>
           </v-card-text>

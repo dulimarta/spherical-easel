@@ -60,7 +60,7 @@ export class SEParametric
   /**
    * The corresponding plottable TwoJS object
    */
-  declare public ref: Parametric;
+  public declare ref: Parametric;
 
   /**
    * Pointer to the label of this SEParametric
@@ -535,7 +535,7 @@ export class SEParametric
       let partIndex = 0;
       let sampleIndex = 0;
       for (const upperBound of breakPoints) {
-        const tVals = [];
+        const tVals: Array<number> = [];
         while (
           sampleIndex < this._tValues.length &&
           this._tValues[sampleIndex] < upperBound
@@ -948,7 +948,7 @@ export class SEParametric
       // This can't be zero because tmpVector can be the closest on the segment to idealUnitSphereVector and parallel with ideanUnitSphereVector
       this.tmpVector1.crossVectors(idealUnitSphereVector, closest).normalize();
       // compute the toVector (so that tmpVector2= toVector, tmpVector= fromVector, tmpVector1 form an orthonormal frame)
-      this.tmpVector2.crossVectors(closest, this.tmpVector1).normalize;
+      this.tmpVector2.crossVectors(closest, this.tmpVector1).normalize();
       // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
       this.tmpVector2.multiplyScalar(
         Math.sin(SETTINGS.parametric.maxLabelDistance / mag)

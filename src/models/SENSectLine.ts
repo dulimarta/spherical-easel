@@ -87,8 +87,9 @@ export class SENSectLine extends SELine {
         .normalize();
 
       const toVector = new Vector3();
-      toVector.crossVectors(this._seAngleParent.vertexVector, fromVector)
-        .normalize;
+      toVector
+        .crossVectors(this._seAngleParent.vertexVector, fromVector)
+        .normalize();
       const angle = this._seAngleParent.value;
 
       // The other (end) point on the line is the point at

@@ -1,6 +1,5 @@
-
 <template>
-  <div style="display: flex; padding:5px;">
+  <div style="display: flex; padding: 5px">
     <v-autocomplete
       ref="addrInput"
       v-model="addrPlaceId"
@@ -15,11 +14,12 @@
       density="compact"
       :label="t('enterAddress')"
       style="width: 30em">
-      <template #append v-if="!isLine" >
-        <v-btn  @click="getPlaceDetails" :disabled="addrPlaceId===null||addrPlaceId.length===0">
+      <template #append v-if="!isLine">
+        <v-btn
+          @click="getPlaceDetails"
+          :disabled="addrPlaceId === null || addrPlaceId.length === 0">
           <v-icon>mdi-map-marker</v-icon>
         </v-btn>
-
       </template>
     </v-autocomplete>
   </div>
@@ -53,7 +53,7 @@
   background-color: black;
 }
 </style>
- <script setup lang="ts">
+<script setup lang="ts">
 import { onMounted, ref, watch, Ref } from "vue";
 import * as THREE from "three";
 import { SELabel } from "@/models/SELabel";
@@ -64,30 +64,31 @@ import { storeToRefs } from "pinia";
 import { SEEarthPoint } from "@/models/SEEarthPoint";
 import { Loader } from "@googlemaps/js-api-loader";
 import { useI18n } from "vue-i18n";
-import {useEarthCoordinate} from "@/composables/earth"
+import { useEarthCoordinate } from "@/composables/earth";
 // import { SEParametric } from "@/models/SEParametric";
 // import { SEPoint } from "@/models/SEPoint";
 import EventBus from "@/eventHandlers/EventBus";
 type ComponentProps = {
-  isLine?: boolean,
-  drawLine?: boolean
-}
+  isLine?: boolean;
+  drawLine?: boolean;
+};
 type AddressPair = {
   description: string;
   placeId: string;
 };
 const store = useSEStore();
-const { inverseTotalRotationMatrix, sePoints, isEarthMode } = storeToRefs(store);
-const { t } = useI18n();
-const {geoLocationToUnitSphere} = useEarthCoordinate()
+const { inverseTotalRotationMatrix, sePoints, isEarthMode } =
+  storeToRefs(store);
+const { t } = useI18n({ useScope: "local" });
+const { geoLocationToUnitSphere } = useEarthCoordinate();
 const props = withDefaults(defineProps<ComponentProps>(), {
   isLine: false,
   drawLine: false
-})
+});
 const emit = defineEmits<{
-  'update:placeId': [id: string],
-  'update:point': [vtx: SEEarthPoint]
-}>()
+  "update:placeId": [id: string];
+  "update:point": [vtx: SEEarthPoint];
+}>();
 const addrPlaceId = ref("");
 const addressError = ref("");
 const addrInput: Ref<HTMLInputElement | null> = ref(null);
@@ -99,12 +100,11 @@ const loader = new Loader({
   apiKey,
   version: "weekly"
 });
-const { AutocompleteService, PlacesService } = await loader.importLibrary(
-  "places"
-);
+const { AutocompleteService, PlacesService, PlacesServiceStatus } =
+  await loader.importLibrary("places");
 const addressPredictor = new AutocompleteService();
 // eslint-disable-next-line no-undef
-let placesInspector: google.maps.places.PlacesService;
+let placesInspector;
 
 onMounted(async () => {
   placesInspector = new PlacesService(addrInput.value!);
@@ -117,19 +117,19 @@ watch(
   }
 );
 watch(
-  ()=>props.drawLine,
-  ()=>{
-    if(props.isLine){
-      getPlaceDetails()
+  () => props.drawLine,
+  () => {
+    if (props.isLine) {
+      getPlaceDetails();
     }
   }
-)
+);
 watch(
-  ()=>addrPlaceId.value,
-  ()=>{
-      emit("update:placeId", addrPlaceId.value)
+  () => addrPlaceId.value,
+  () => {
+    emit("update:placeId", addrPlaceId.value);
   }
-)
+);
 function searchAddress(v: string) {
   addressError.value = "";
   addressPredictor
@@ -156,7 +156,7 @@ function getPlaceDetails() {
     },
     (place, status) => {
       // eslint-disable-next-line no-undef
-      if (status === google.maps.places.PlacesServiceStatus.OK) {
+      if (status === PlacesServiceStatus.OK) {
         // console.debug("Place details", place, status);
         // Make sure that this location doesn't exist already
         const earthPoints = sePoints.value
@@ -180,10 +180,13 @@ function getPlaceDetails() {
         if (place?.geometry?.location) {
           // const latRad = (place.geometry?.location.lat() * Math.PI) / 180;
           // const lngRad = (place.geometry?.location.lng() * Math.PI) / 180;
-          const arr = geoLocationToUnitSphere(place.geometry.location.lat(), place.geometry.location.lng())
-          const xcor = arr[0]
-          const ycor = arr[1]
-          const zcor = arr[2]
+          const arr = geoLocationToUnitSphere(
+            place.geometry.location.lat(),
+            place.geometry.location.lng()
+          );
+          const xcor = arr[0];
+          const ycor = arr[1];
+          const zcor = arr[2];
 
           // caption
           const vtx = new SEEarthPoint(
@@ -215,8 +218,8 @@ function getPlaceDetails() {
       }
     }
   );
-  addrPlaceId.value="";
-  addressSearch.value="";
-  predictedAddresses.value=[];
+  addrPlaceId.value = "";
+  addressSearch.value = "";
+  predictedAddresses.value = [];
 }
 </script>

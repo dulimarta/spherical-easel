@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <v-container>
     <v-tabs centered v-model="selectedTab">
@@ -73,7 +74,7 @@
       </v-window-item>
       <v-window-item>
         <v-sheet elevation="2" class="pa-2">
-          <h3 v-t="'settings.title'"></h3>
+          <h3>{{ t('settings.title') }}</h3>
           <v-container fluid>
             <v-row>
               <v-col cols="4">
@@ -128,6 +129,8 @@
       <v-col cols="auto"></v-col>
     </v-row>
   </v-container>
+  <v-snackbar v-model="passwordResetSnackbar" location="top"
+  timeout="5000">A password reset link has been sent to {{ userEmail }}</v-snackbar>
 </template>
 
 <style lang="scss" scoped>
@@ -154,91 +157,92 @@ div#appSetting {
 
 <script lang="ts" setup>
 // import PhotoCapture from "@/views/PhotoCapture.vue";
-import SETTINGS from "@/global-settings"
+import SETTINGS from "@/global-settings";
 import {
   getAuth,
   User,
   sendPasswordResetEmail,
   Unsubscribe
-} from "firebase/auth"
+} from "firebase/auth";
 import {
   DocumentSnapshot,
   getFirestore,
   doc,
   getDoc,
   setDoc
-} from "firebase/firestore"
-import { UserProfile } from "@/types"
-import FavoriteToolsPicker from "@/components/FavoriteToolsPicker.vue"
-import EventBus from "@/eventHandlers/EventBus"
-import { computed, onMounted, Ref, ref } from "vue"
-// import { useI18n } from "vue-i18n";
-import { useRouter } from "vue-router"
-import { useAccountStore } from "@/stores/account"
-import { storeToRefs } from "pinia"
-const router = useRouter()
+} from "firebase/firestore";
+import { UserProfile } from "@/types";
+import FavoriteToolsPicker from "@/components/FavoriteToolsPicker.vue";
+import EventBus from "@/eventHandlers/EventBus";
+import { computed, onMounted, Ref, ref } from "vue";
+import { useI18n } from "vue-i18n";
+import { useRouter } from "vue-router";
+import { useAccountStore } from "@/stores/account";
+import { storeToRefs } from "pinia";
+const router = useRouter();
 type LocaleName = {
-  locale: string
-  name: string
-}
-// const { t } = useI18n();
-const acctStore = useAccountStore()
-const { favoriteTools } = storeToRefs(acctStore)
-const appAuth = getAuth()
-const appDB = getFirestore()
+  locale: string;
+  name: string;
+};
+const { t } = useI18n();
+const acctStore = useAccountStore();
+const { favoriteTools } = storeToRefs(acctStore);
+const appAuth = getAuth();
+const appDB = getFirestore();
 // const imageUpload: Ref<HTMLInputElement | null> = ref(null);
-const updatingPicture = ref(false)
-const selectedLanguage: Ref<LocaleName> = ref({ locale: "", name: "" })
-const languages: Ref<Array<LocaleName>> = ref(SETTINGS.supportedLanguages)
-const decimalPrecision = ref(3)
-const userEmail = ref("")
-const userDisplayName = ref("")
-const userLocation = ref("")
-const userRole = ref("Community Member")
-const selectedTab = ref(0)
+const updatingPicture = ref(false);
+const selectedLanguage: Ref<LocaleName> = ref({ locale: "", name: "" });
+const languages: Ref<Array<LocaleName>> = ref(SETTINGS.supportedLanguages);
+const decimalPrecision = ref(3);
+const userEmail = ref("");
+const userDisplayName = ref("");
+const userLocation = ref("");
+const userRole = ref("Community Member");
+const selectedTab = ref(0);
+const passwordResetSnackbar = ref(false)
 // eslint-disable-next-line no-unused-vars
-let authSubscription!: Unsubscribe
-const profileEnabled = ref(false)
+let authSubscription!: Unsubscribe;
+const profileEnabled = ref(false);
 // The displayed favorite tools (includes defaults)
 
 const userUid = computed((): string | undefined => {
-  return appAuth.currentUser?.uid
-})
+  return appAuth.currentUser?.uid;
+});
 
 onMounted((): void => {
   if (userUid.value) {
     getDoc(doc(appDB, "users", userUid.value)).then((ds: DocumentSnapshot) => {
       if (ds.exists()) {
-        const uProfile = ds.data() as UserProfile
+        const uProfile = ds.data() as UserProfile;
         // console.log("From Firestore", uProfile);
-        userDisplayName.value = uProfile.displayName ?? "N/A"
-        userLocation.value = uProfile.location ?? "N/A"
+        userDisplayName.value = uProfile.displayName ?? "N/A";
+        userLocation.value = uProfile.location ?? "N/A";
         // userFavoriteTools.value = decodeFavoriteTools(
         //   uProfile.favoriteTools ?? "###"
         // );
-        if (uProfile.role) userRole.value = uProfile.role
+        if (uProfile.role) userRole.value = uProfile.role;
       }
-    })
+    });
   }
   authSubscription = appAuth.onAuthStateChanged((u: User | null) => {
-    profileEnabled.value = u !== null
+    profileEnabled.value = u !== null;
     if (u !== null) {
-      userEmail.value = u.email ?? "unknown"
+      userEmail.value = u.email ?? "unknown";
     } else {
-      userDisplayName.value = ""
-      userLocation.value = ""
-      userRole.value = "Community Member"
+      userDisplayName.value = "";
+      userLocation.value = "";
+      userRole.value = "Community Member";
     }
 
     // console.log("Auth changed", u, this.profileEnabled);
-  })
-})
+  });
+});
 
 // function switchLocale(): void {
 //   // $i18n.locale = (this.selectedLanguage as any).locale;
 // }
 function setUpdatingPicture(flag: boolean): void {
-  updatingPicture.value = flag
+  updatingPicture.value = flag;
 }
 function doSave(): void {
   const newProf: UserProfile = {
@@ -248,16 +252,16 @@ function doSave(): void {
     favoriteTools: favoriteTools.value
       .map(arr => arr.map(s => s.trim()).join(","))
       .join("#")
-  }
-  const profileDoc = doc(appDB, "users", userUid.value!)
+  };
+  const profileDoc = doc(appDB, "users", userUid.value!);
   setDoc(profileDoc, newProf, { merge: true }).then(() => {
-    alert("New profile saved")
+    alert("New profile saved");
     EventBus.fire("show-alert", {
       key: "Your profile has been update",
       type: "info"
-    })
-    router.back()
-  })
+    });
+    router.back();
+  });
 }
 
 function doChangePassword(): void {
@@ -266,7 +270,9 @@ function doChangePassword(): void {
       EventBus.fire("show-alert", {
         key: "A password reset link has been delivered by email",
         type: "info"
-      })
-    })
+      });
+    }).finally(() => {
+      passwordResetSnackbar.value = true
+    });
 }
 </script>

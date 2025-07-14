@@ -59,7 +59,11 @@ import EventBus from "@/eventHandlers/EventBus";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 import { onBeforeUnmount, onMounted, ref, Ref } from "vue";
-import { onBeforeRouteLeave, RouteLocationNormalized, useRouter } from "vue-router";
+import {
+  onBeforeRouteLeave,
+  RouteLocationNormalized,
+  useRouter
+} from "vue-router";
 type MyData = {
   hasCamera: boolean;
   streaming: boolean;
@@ -119,6 +123,7 @@ onMounted((): void => {
         }
       });
     })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .catch((err: any) => {
       EventBus.fire("show-alert", {
         key: "Media device error" + err.message,
@@ -134,12 +139,17 @@ onBeforeUnmount((): void => {
 });
 
 // TODO: Fix these when upgrading vue-router
-onBeforeRouteLeave((toRoute: RouteLocationNormalized, fromRoute: RouteLocationNormalized): boolean => {
-  console.debug("Before route leave", toRoute);
-  videoTrack?.stop();
-  if (video.value) video.value.srcObject = null;
-  return true
-})
+onBeforeRouteLeave(
+  (
+    toRoute: RouteLocationNormalized,
+    fromRoute: RouteLocationNormalized
+  ): boolean => {
+    console.debug("Before route leave", toRoute);
+    videoTrack?.stop();
+    if (video.value) video.value.srcObject = null;
+    return true;
+  }
+);
 
 function stopCamera(): void {
   videoTrack?.stop();

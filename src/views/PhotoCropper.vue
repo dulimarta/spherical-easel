@@ -6,8 +6,7 @@
       :src="inputImageBase64"
       :stencil-props="{ aspectRation: 1 / 1, resizable: true }"
       :stencil-component="$options.components?.CircleStencil"
-      @change="onCropChanged">
-    </ImageCropper>
+      @change="onCropChanged"></ImageCropper>
     <v-btn @click="uploadProfilePicture">
       <v-icon left color="secondary">mdi-upload</v-icon>
       Crop & Upload
@@ -32,14 +31,23 @@ import EventBus from "@/eventHandlers/EventBus";
 import { computed, ref, defineComponent } from "vue";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
-import { RouteLocationNormalized, useRouter, onBeforeRouteUpdate } from "vue-router";
+import {
+  RouteLocationNormalized,
+  useRouter,
+  onBeforeRouteUpdate
+} from "vue-router";
 import { getAuth } from "firebase/auth";
-import {doc, getFirestore, setDoc} from "firebase/firestore"
-import { getStorage, ref as storageRef, getDownloadURL, uploadBytes } from "firebase/storage";
+import { doc, getFirestore, setDoc } from "firebase/firestore";
+import {
+  getStorage,
+  ref as storageRef,
+  getDownloadURL,
+  uploadBytes
+} from "firebase/storage";
 type CropDetails = {
   canvas: HTMLCanvasElement;
-  imageTransforms: any;
-  visibleArea: any;
+  imageTransforms: unknown;
+  visibleArea: unknown;
   coordinates: {
     left: number;
     top: number;
@@ -48,9 +56,9 @@ type CropDetails = {
   };
 };
 
-const appDB = getFirestore()
-const appAuth = getAuth()
-const appStorage = getStorage()
+const appDB = getFirestore();
+const appAuth = getAuth();
+const appStorage = getStorage();
 const router = useRouter();
 const emit = defineEmits(["no-capture", "photo-captured"]);
 const acctStore = useAccountStore();
@@ -67,8 +75,12 @@ let inputImageBinary: ImageBitmap | null = null;
 let goBackSteps = 1;
 let croppedImageBinary: Blob | null = null;
 
-onBeforeRouteUpdate(async (toRoute: RouteLocationNormalized, fromRoute: RouteLocationNormalized) => {
-  // At this time the function does not have access to "this"
+onBeforeRouteUpdate(
+  async (
+    toRoute: RouteLocationNormalized,
+    fromRoute: RouteLocationNormalized
+  ) => {
+    // At this time the function does not have access to "this"
 
     // If this component is pushed from PhotoCapture
     // we have to pop 2 items from the history stack
@@ -77,13 +89,11 @@ onBeforeRouteUpdate(async (toRoute: RouteLocationNormalized, fromRoute: RouteLoc
     const tempProfile = temporaryProfilePicture.value;
 
     // Convert base64 image to binary blob
-    createImageBitmap(dataURItoBlob(tempProfile)).then(
-      (bmp: ImageBitmap) => {
-        inputImageBinary = bmp;
-      }
-    );
-  });
-
+    createImageBitmap(dataURItoBlob(tempProfile)).then((bmp: ImageBitmap) => {
+      inputImageBinary = bmp;
+    });
+  }
+);
 
 function onCropChanged(z: CropDetails): void {
   if (inputImageBinary) {
@@ -113,17 +123,17 @@ function uploadProfilePicture(): void {
   // Upload cropped image to Firebase Firestore
   if (croppedImageBinary) {
     const uid = appAuth.currentUser?.uid ?? "nouser";
-    const pngRef = storageRef(appStorage, `profilePictures/${uid}`)
+    const pngRef = storageRef(appStorage, `profilePictures/${uid}`);
     uploadBytes(pngRef, croppedImageBinary, {
-        contentType: "image/png"
-      })
+      contentType: "image/png"
+    })
       .then(s => getDownloadURL(s.ref))
       .then((url: string) => {
         emit("photo-captured", {});
         router.go(-goBackSteps);
 
         // Use {merge:true} to update or create new fields
-        const userDoc = doc(appDB,"users",uid)
+        const userDoc = doc(appDB, "users", uid);
         return setDoc(userDoc, { profilePictureURL: url }, { merge: true });
       })
       .then(() => {
@@ -133,7 +143,7 @@ function uploadProfilePicture(): void {
         });
         temporaryProfilePicture.value = "";
       })
-      .catch((err: any) => {
+      .catch((err: unknown) => {
         EventBus.fire("show-alert", {
           key: "Unable to upload profile picture to Firebase" + err,
           type: "error"

@@ -133,12 +133,13 @@ import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleCategory } from "@/types/Styles";
 import Highlighter from "@/eventHandlers/Highlighter";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { Handler } from "mitt";
 
 const store = useSEStore();
 const { inverseTotalRotationMatrix, sePoints, seCircles, seSegments } =
   storeToRefs(store);
 const { createAllIntersectionsWith } = store;
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 const { geoLocationToUnitSphere } = useEarthCoordinate();
 const tempVec = new Vector3();
 
@@ -491,27 +492,30 @@ function findLongitudeInObjectTree(long: number): SELongitude | undefined {
 
 onMounted(() => {
   // set the show(North|South)Pole.value if the (South|North)Pole has already been created and put into the object tree
-  seSouthPole = findPoleInObjectTree(Poles.SOUTH);
-  seNorthPole = findPoleInObjectTree(Poles.NORTH);
+  seSouthPole = SENodule.unregisteredSEPointSouthPole; //findPoleInObjectTree(Poles.SOUTH);
+  seNorthPole = SENodule.unregisteredSEPointNorthPole;
   if (seNorthPole !== undefined) {
     showNorthPole.value = seNorthPole.showing;
   }
   if (seSouthPole !== undefined) {
     showSouthPole.value = seSouthPole.showing;
   }
-  EventBus.listen("update-pole-switch", poleSwitch); //NP
+  EventBus.listen("update-pole-switch", poleSwitch as Handler<unknown>); //NP
 
   seEquator = findLatitudeInObjectTree(0);
   if (seEquator !== undefined) {
     showEquator.value = seEquator.showing;
   }
-  EventBus.listen("update-equator-switch", equatorSwitch); //NP
+  EventBus.listen("update-equator-switch", equatorSwitch as Handler<unknown>); //NP
 
   sePrimeMeridian = findLongitudeInObjectTree(0);
   if (sePrimeMeridian !== undefined) {
     showPrimeMeridian.value = sePrimeMeridian.showing;
   }
-  EventBus.listen("update-prime-meridian-switch", primeMeridianSwitch); //NP
+  EventBus.listen(
+    "update-prime-meridian-switch",
+    primeMeridianSwitch as Handler<unknown>
+  ); //NP
 });
 
 //NP
@@ -678,7 +682,10 @@ function displayPrimeMeridian(): void {
 //Return the command to add the north pole to the object tree so that it can be grouped with the other hide/show commands.
 function setSEPoleVariable(pole: Poles): undefined | CommandGroup {
   //Find the north or south pole in the store of sePoints, if it exists
-  let sePole = findPoleInObjectTree(pole);
+  let sePole =
+    pole == Poles.NORTH
+      ? SENodule.unregisteredSEPointNorthPole
+      : SENodule.unregisteredSEPointSouthPole;
   // If the north or south pole already exists then this next code block will not execute (because findPoleInObjectTree will return the pole) so you cannot
   // create two points at either pole
   let cmdGroup: CommandGroup | undefined = undefined;

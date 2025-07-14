@@ -5,11 +5,12 @@
         <v-container>
           <v-row>
             <v-col cols="12">
-              <v-textarea data-testid="input_expr"
+              <v-textarea
+                data-testid="input_expr"
                 auto-grow
                 density="compact"
                 full-width
-               variant="outlined"
+                variant="outlined"
                 clearable
                 rows="3"
                 v-bind:label="t('calculationExpression')"
@@ -18,26 +19,26 @@
                 v-model="calcExpression"
                 :error-messages="parsingError"
                 @keydown="onKeyPressed"
-                @click:clear="reset">
-              </v-textarea>
+                @click:clear="reset"></v-textarea>
             </v-col>
           </v-row>
-          <v-text-field data-testid="output_result"
+          <v-text-field
+            data-testid="output_result"
             density="compact"
-           variant="outlined"
+            variant="outlined"
             readonly
             v-bind:label="t('result')"
             placeholder="0"
-            v-model="calcResult">
-          </v-text-field>
+            v-model="calcResult"></v-text-field>
         </v-container>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
         <!--- Disable the FAB when either the expression text is empty or
           there is a syntax error -->
-        <v-btn data-testid="add_expr"
-         size="small"
+        <v-btn
+          data-testid="add_expr"
+          size="small"
           fab
           right
           color="accent"
@@ -60,7 +61,7 @@ import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 const seStore = useSEStore();
 const { seExpressions } = storeToRefs(seStore);
-const {t} = useI18n()
+const { t } = useI18n({ useScope: "local" });
 let parser = new ExpressionParser();
 
 const calcExpression = ref("");
@@ -79,7 +80,7 @@ function reset(): void {
   calcResult.value = 0;
 }
 
-function addVarToExpr(param: any): void {
+function addVarToExpr(param: unknown): void {
   calcExpression.value += param;
   onKeyPressed();
 }
@@ -89,7 +90,7 @@ function onKeyPressed(): void {
   if (timerInstance) clearTimeout(timerInstance);
   timerInstance = setTimeout(() => {
     try {
-      seExpressions.value.forEach((m) => {
+      seExpressions.value.forEach(m => {
         const measurementName = m.name;
         // console.debug("Measurement", m, measurementName);
         varMap.set(measurementName, m.value);
@@ -98,10 +99,11 @@ function onKeyPressed(): void {
         calcExpression.value.length > 0
           ? parser.evaluateWithVars(calcExpression.value, varMap)
           : 0;
-    } catch (err: any) {
+    } catch (err: unknown) {
       // console.debug("Got an error", err);
-      const syntaxErr = err as SyntaxError
-      parsingError.value = t(syntaxErr.message, syntaxErr.cause as any)
+      const syntaxErr = err as SyntaxError;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      parsingError.value = t(syntaxErr.message, syntaxErr.cause as any);
     }
   }, 1000);
 }
@@ -118,7 +120,7 @@ function addExpression(): void {
   calc.update();
   reset();
   varMap.clear();
-  seExpressions.value.forEach((m) => {
+  seExpressions.value.forEach(m => {
     const measurementName = m.name;
     // console.debug("Measurement", m, measurementName);
     varMap.set(measurementName, m.value);
@@ -126,8 +128,8 @@ function addExpression(): void {
 }
 </script>
 <i18n lang="json" locale="en">
-  {
-    "calculationExpression": "Calculation Expression",
-    "result": "Result"
-  }
+{
+  "calculationExpression": "Calculation Expression",
+  "result": "Result"
+}
 </i18n>

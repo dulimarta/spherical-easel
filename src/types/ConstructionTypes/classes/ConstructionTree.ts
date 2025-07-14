@@ -68,16 +68,19 @@ export class ConstructionTree {
   public addOwnedConstructions(...constructions: SphericalConstruction[]) {
     constructions
       .toSorted((a, b) => {
-        if (a.path && b.path) { // Both path are defined
-          const pathCompare = a.path.localeCompare(b.path)
-          if (pathCompare !== 0) return pathCompare
+        if (a.path && b.path) {
+          // Both path are defined
+          const pathCompare = a.path.localeCompare(b.path);
+          if (pathCompare !== 0) return pathCompare;
           return a.description.localeCompare(b.description);
-        } else if (!a.path && !b.path) // Neither path is defined
+        } else if (!a.path && !b.path)
+          // Neither path is defined
           return a.description.localeCompare(b.description);
-        else if (a.path) // A has path, B does not
-          return -1
-        else // B has path, A does not
-          return +1
+        else if (a.path)
+          // A has path, B does not
+          return -1;
+        // B has path, A does not
+        else return +1;
       })
       .forEach(construction => {
         this.root[this.ownedIdx].appendChildConstruction(construction);
@@ -123,7 +126,7 @@ export class ConstructionTree {
    * get a copy of the tree without any of the leaves, leaving only the folders
    */
   public getFolders(): Array<TreeviewNode> {
-    var leafless: Array<TreeviewNode> = [];
+    let leafless: Array<TreeviewNode> = [];
 
     this.root.forEach(rootNode => {
       leafless.push(rootNode.copy());
@@ -137,7 +140,7 @@ export class ConstructionTree {
    * like getFolders(), but only returns the owned branch.
    */
   public getOwnedFolders(): Array<TreeviewNode> {
-    var folders: Array<TreeviewNode> = [];
+    let folders: Array<TreeviewNode> = [];
 
     folders.push(this.root[this.ownedIdx].copy());
     this.root[this.ownedIdx].children?.forEach(node => {
@@ -165,12 +168,12 @@ export class ConstructionTree {
       return undefined;
     }
 
-    var leafless: Array<TreeviewNode> = [];
+    let leafless: Array<TreeviewNode> = [];
 
     node.children!.forEach(child => {
       if (!child.leaf) {
         /* copy the child */
-        var copy: TreeviewNode = child.copy();
+        let copy: TreeviewNode = child.copy();
         /* add it to the array */
         leafless.push(copy);
         /* recurse on the child */
@@ -266,7 +269,7 @@ export class ConstructionTree {
       while (path_chunks.length > 0) {
         /* only run if the parent has children */
         if (parent.children) {
-          var found: boolean = false;
+          let found: boolean = false;
           let child: TreeviewNode;
           for (child of parent.children) {
             /* only check non-leaves */

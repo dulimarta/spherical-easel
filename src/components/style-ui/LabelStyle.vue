@@ -261,7 +261,7 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
 type LabelDisplayModeItem = {
-  text: any; //typeof VueI18n.TranslateResult
+  text: unknown; //typeof VueI18n.TranslateResult
   value: LabelDisplayMode;
   optionRequiresMeasurementValueToExist: boolean;
   optionRequiresCaptionToExist: boolean;
@@ -301,7 +301,7 @@ const { selectedLabels, styleOptions, measurableSelections } =
   storeToRefs(styleStore);
 const { hasDisagreement, hasLabelObject, i18nMessageSelector, hasTextObject } =
   styleStore;
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 const { seLabels } = storeToRefs(seStore);
 
 const maxLabelTextScalePercent = SETTINGS.style.maxLabelTextScalePercent;

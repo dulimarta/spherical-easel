@@ -166,7 +166,7 @@ import { watchDebounced } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
 import Dialog, { DialogAction } from "./Dialog.vue";
 // Get the translation function
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 
 /** v-model that controls visibility of the overall component */
 const visible = defineModel<boolean>("visible", { default: false });
@@ -193,7 +193,7 @@ const newPathDialog: Ref<DialogAction | null> = ref(null);
 const moveFolders: Ref<TreeviewNode[] | undefined> = ref(undefined);
 
 /** the root folder string to match against when determining which root folder to show between public/owned/starred */
-const allowedMoveFoldersRoot: Ref<String> = ref("");
+const allowedMoveFoldersRoot: Ref<string> = ref("");
 
 /** the full construction tree excluding the public branch but including all constructions. */
 const treeItems: Ref<TreeviewNode[] | undefined> = ref(undefined);

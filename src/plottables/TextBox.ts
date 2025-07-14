@@ -6,7 +6,7 @@ import { Text } from "two.js/src/text";
 export class TextBox extends Group {
   private box: RoundedRectangle;
   private _text: Text;
-  private timer: any;
+  private timer;
 
   constructor(msg: string) {
     super();
@@ -30,6 +30,7 @@ export class TextBox extends Group {
   set text(msg: string) {
     this._text.value = msg;
     const bbox = this._text.getBoundingClientRect();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (this.box as any).width = bbox.width;
   }
 
