@@ -29,13 +29,16 @@ if (fPos >= 0) {
 } else {
   app.provide("features", null);
 }
-const gaTag = createGtag({
-  tagId: "G-1XK98KQMYZ"
-});
 app.use(vuetify);
 app.use(router);
 app.use(i18n);
-app.use(gaTag);
+if (import.meta.env.MODE === "production") {
+  const gaTag = createGtag({
+    tagId: "G-1XK98KQMYZ"
+  });
+
+  app.use(gaTag);
+}
 app.use(pinia);
 app.mount("#app");
 router.afterEach((to, from) => {

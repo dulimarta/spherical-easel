@@ -23,13 +23,13 @@ export interface HyperbolicToolStrategy {
   mousePressed(
     event: MouseEvent,
     normalizedScreenPosition: Vector2,
-    position: Vector3,
-    normalDirection: Vector3
+    position: Vector3 | null,
+    normalDirection: Vector3 | null
   ): void;
   mouseReleased(
     event: MouseEvent,
-    position: Vector3,
-    normalDirection: Vector3
+    position: Vector3 | null,
+    normalDirection: Vector3 | null
   ): void;
   mouseLeave(event: MouseEvent): void;
   activate(): void;
