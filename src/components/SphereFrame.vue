@@ -149,7 +149,6 @@ import { Circle } from "two.js/src/shapes/circle";
 import { Group } from "two.js/src/group";
 import { useMagicKeys } from "@vueuse/core";
 import { watchEffect } from "vue";
-import Settings from "@/views/Settings.vue";
 import { Handler } from "mitt";
 
 type ComponentProps = {

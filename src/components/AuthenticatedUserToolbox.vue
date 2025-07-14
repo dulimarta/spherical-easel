@@ -6,7 +6,19 @@
       alignItems: 'flex-start',
       rowGap: '8px'
     }">
-    <!-- {{ userDisplayedName }} {{ userEmail }} -->
+    <span
+      id="diplayed-name"
+      v-if="userProfile"
+      @click="isAbbreviatedName = !isAbbreviatedName"
+      :style="{
+        writingMode: 'sideways-lr',
+        textOrientation: 'mixed'
+      }">
+      {{ userDisplayedName }}
+      <v-tooltip
+        activator="parent"
+        text="Click to toggle short/long name"></v-tooltip>
+    </span>
     <v-btn
       icon
       size="x-small"
@@ -14,17 +26,18 @@
       @click="doLoginOrLogout">
       <v-avatar
         size="small"
-        v-if="firebaseUid"
+        v-if="userProfile?.profilePictureURL"
         contain
         max-width="40"
-        :image="userProfilePictureURL"
-        @click="doLoginOrLogout"></v-avatar>
+        :image="userProfile!.profilePictureURL"></v-avatar>
 
       <v-icon size="x-large" v-else>mdi-account</v-icon>
       <v-tooltip
         activator="parent"
         :text="
-          firebaseUid ? `Logout ${firebaseUid.substring(0, 8)}` : 'Login'
+          firebaseUid
+            ? `Logout ${userEmail} ${firebaseUid.substring(0, 8)}`
+            : 'Login'
         "></v-tooltip>
     </v-btn>
     <router-link to="/settings/" v-if="firebaseUid">
@@ -96,21 +109,21 @@
       <div class="my-2">
         <v-divider class="mb-2"></v-divider>
         <h3 class="text-subtitle-1 mb-2">
-          Select or Enter Folder Path in Owned Constructions
+          {{ t("folder.title") }}
         </h3>
 
         <!-- Folder path input -->
         <v-text-field
           v-model="folderPath"
-          label="Folder Path (e.g., Math/Geometry)"
+          label=""
           density="compact"
-          hint="Enter a new or existing folder path"
+          :hint="t('folder.pathLabel')"
           persistent-hint
           clearable
           @keypress.stop></v-text-field>
 
         <!-- Existing Folders Treeview -->
-        <p class="text-caption mt-2 mb-1">Or select an existing folder:</p>
+        <p class="text-caption mt-2 mb-1">{{ t("folder.selectExisting") }}</p>
         <div class="folder-tree-container">
           <v-treeview
             :items="treeItems"
@@ -330,13 +343,12 @@
 }
 </style>
 <script setup lang="ts">
-import { Ref, ref, onMounted, onBeforeMount, onUpdated } from "vue";
+import { Ref, ref, onUpdated } from "vue";
 import HintButton from "./HintButton.vue";
 import Dialog from "./Dialog.vue";
 import { storeToRefs } from "pinia";
 import { useAccountStore } from "@/stores/account";
 import { useSEStore } from "@/stores/se";
-import { onKeyDown } from "@vueuse/core";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { DialogAction } from "./Dialog.vue";
@@ -357,30 +369,27 @@ import SETTINGS from "@/global-settings";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { VTreeview } from "vuetify/labs/VTreeview";
-import { shallowRef } from "vue";
 import { SEPoint } from "@/models/SEPoint";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { SELine } from "@/models/SELine";
 
-enum SecretKeyState {
-  NONE,
-  ACCEPT_S,
-  COMPLETE // Accept "SE"
-}
+type ComponentProps = {
+  expandedView: boolean;
+};
+defineProps<ComponentProps>();
 const acctStore = useAccountStore();
 const seStore = useSEStore();
 const constructionStore = useConstructionStore();
 const {
   // loginEnabled,
-  userProfilePictureURL,
-  userDisplayedName,
+  userEmail,
+  userProfile,
   constructionDocId,
   firebaseUid
 } = storeToRefs(acctStore);
 const {
   hasObjects,
-  svgCanvas,
   canvasHeight,
   canvasWidth,
   sePoints,
@@ -392,7 +401,6 @@ const {
 const { t } = useI18n({ useScope: "local" });
 
 const { privateConstructions } = storeToRefs(constructionStore);
-const state: Ref<SecretKeyState> = ref(SecretKeyState.NONE);
 const router = useRouter();
 const constructionDescription = ref("");
 const saveConstructionDialog: Ref<DialogAction | null> = ref(null);
@@ -435,40 +443,26 @@ const svgAnimationRepeat = ref(0); // 0 is indefinite
 
 const currentConstructionPreview = ref(""); // preview string
 // let authSubscription: Unsubscribe | null = null;
-let svgRoot: SVGElement;
-type ComponentProps = {
-  expandedView: boolean;
-};
-const props = defineProps<ComponentProps>();
 /* User account feature is initially disabled. To unlock this feature
      The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
-// onKeyDown(
-//   true, // true: accept all keys
-//   (event: KeyboardEvent) => {
-//     if (!event.ctrlKey || !event.altKey) {
-//       state.value = SecretKeyState.NONE;
-//       return false;
-//     }
-//     if (event.code === "KeyS" && state.value === SecretKeyState.NONE) {
-//       state.value = SecretKeyState.ACCEPT_S;
-//       event.preventDefault();
-//     } else if (
-//       event.code === "KeyE" &&
-//       state.value === SecretKeyState.ACCEPT_S
-//     ) {
-//       state.value = SecretKeyState.COMPLETE;
-//       // loginEnabled.value = true;
-//       event.preventDefault();
-//     } else {
-//       state.value = SecretKeyState.NONE;
-//       event.preventDefault();
-//     }
-//   },
-//   { dedupe: true } // ignore repeated key events when keys are held down
-// );
 
 const folderPath = ref("");
-
+const isAbbreviatedName = ref(false);
+const userDisplayedName = computed(() => {
+  if (userProfile.value) {
+    return !isAbbreviatedName.value
+      ? userProfile.value.displayName
+      : userProfile.value.displayName
+          .split(" ") // Split individual words
+          .map(s =>
+            s
+              .substring(0, 1)
+              .toUpperCase()
+              .replace(/[^A-Z]/, "")
+          )
+          .join(""); // don't use default separator (,)
+  } else return "N/A";
+});
 /**
  * take the "any" input from the v-treeview component's update:selected property
  * and convert it into a filepath to use with the picker.
@@ -605,40 +599,6 @@ watch(
 //   }
 //   console.log(rotationAngleSelectorThumbStrings);
 // });
-onMounted(() => {
-  // The svgCanvas was set by SphereFrame but this component may be mounted
-  // before SphereCanvas, so it is possible that svgCanvas has not been
-  // set yet
-  svgRoot = svgCanvas.value?.querySelector("svg") as SVGElement;
-
-  // authSubscription = appAuth.onAuthStateChanged((u: User | null) => {
-  // if (u !== null) {
-  // showExport.value = true;
-  // acctStore.userEmail = u.email ?? t("unknownEmail");
-  // acctStore.userProfilePictureURL = u.photoURL ?? undefined;
-  // uid.value = u.uid;
-  // console.debug("User details", u);
-  // const userDoc = doc(appDB, "users", u.uid);
-  // getDoc(userDoc).then((ds: DocumentSnapshot) => {
-  // if (ds.exists()) {
-  // accountEnabled.value = true;
-  // console.debug("User data", ds.data());
-  // const { profilePictureURL, role } = ds.data() as any;
-  // if (profilePictureURL && userProfilePictureURL.value === undefined) {
-  //   acctStore.userProfilePictureURL = profilePictureURL;
-  // }
-  // if (role) {
-  //   acctStore.userRole = role.toLowerCase();
-  // }
-  // }
-  // });
-  // acctStore.loginEnabled = true;
-  // } else {
-  // acctStore.userEmail = undefined;
-  // acctStore.userProfilePictureURL = undefined;
-  // }
-  // });
-});
 
 onUpdated(() => {
   // clear the old values
@@ -725,12 +685,9 @@ onUpdated(() => {
 async function doLoginOrLogout() {
   if (firebaseUid.value) {
     await acctStore.signOff();
-    // userEmail.value = undefined;
-    userProfilePictureURL.value = undefined;
-    userDisplayedName.value = undefined;
     firebaseUid.value = undefined;
   } else {
-    router.replace({ path: "/account" });
+    router.push({ path: "/account" });
   }
 }
 
@@ -978,7 +935,12 @@ function doExport() {
   "line": "Line: ",
   "segment": "Segment: ",
   "point": "Point: ",
-  "circle": "Circle: "
+  "circle": "Circle: ",
+  "folder": {
+    "title": "Select or Enter Folder Path in Owned Constructions",
+    "pathLabel": "Folder Path (e.g., favs/math/geometry)",
+    "selectExisting": "Or select an existing folder:"
+  }
 }
 </i18n>
 <i18n locale="id" lang="json">

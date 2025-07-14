@@ -99,7 +99,6 @@ import { onUnmounted } from "vue";
 
 const { t } = useI18n();
 const acctStore = useAccountStore();
-const { userRole } = storeToRefs(acctStore);
 const constructionStore = useConstructionStore();
 
 const logoutDialog: Ref<DialogAction | null> = ref(null);
@@ -123,8 +122,6 @@ onUnmounted(async () => {
 async function doLogout(): Promise<void> {
   await acctStore.signOff();
   logoutDialog.value?.hide();
-  userRole.value = undefined;
-  acctStore.parseAndSetFavoriteTools("");
 }
 </script>
 
