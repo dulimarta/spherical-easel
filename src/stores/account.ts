@@ -46,8 +46,16 @@ export const useAccountStore = defineStore("acct", () => {
   const appDB = getFirestore();
   const appAuth = getAuth();
 
-  // const loginEnabled = ref(false); // true when the secret key combination is detected
-  const userProfile: Ref<UserProfile | null> = ref(null);
+  const DEFAULT_PROFILE = {
+    displayName: "",
+    location: "",
+    role: "Community Member",
+    preferredLanguage: "en",
+    favoriteTools: "#",
+    userStarredConstructions: []
+  };
+
+  const userProfile: Ref<UserProfile> = ref(DEFAULT_PROFILE);
   const temporaryProfilePictureURL = ref("");
   const userEmail: Ref<string | undefined> = ref(undefined);
   const firebaseUid: Ref<string | undefined> = ref(undefined);
@@ -103,25 +111,14 @@ export const useAccountStore = defineStore("acct", () => {
     const userDocRef = doc(appDB, "users", u.uid);
     await getDoc(userDocRef).then(async (ds: DocumentSnapshot) => {
       if (ds?.exists()) {
-        userProfile.value = ds.data() as UserProfile;
-        // In the following lines, using the bracket or DOT syntax does not guarantee
-        // the new prop is reactive. Replacing the entire object retains reactivity
-        if (!userProfile.value.favoriteTools)
-          userProfile.value = { ...userProfile.value, favoriteTools: "#" };
-        if (!userProfile.value.location)
-          userProfile.value = { ...userProfile.value, location: "N/A" };
-        if (!userProfile.value.preferredLanguage)
-          userProfile.value = { ...userProfile.value, preferredLanguage: "en" };
+        const savedProfile = ds.data() as UserProfile;
+        userProfile.value = { ...userProfile.value, ...savedProfile };
         parseAndSetFavoriteTools(userProfile.value.favoriteTools);
       } else {
         userProfile.value = {
+          ...DEFAULT_PROFILE,
           displayName: u.displayName ?? "N/A",
-          profilePictureURL: u.photoURL ?? undefined,
-          location: "",
-          preferredLanguage: "en",
-          favoriteTools: "#",
-          role: "Community Member",
-          userStarredConstructions: []
+          profilePictureURL: u.photoURL ?? undefined
         };
         console.debug("Initialize user profile with login provider data?");
         await setDoc(userDocRef, { ...userProfile.value });
@@ -166,12 +163,8 @@ export const useAccountStore = defineStore("acct", () => {
       sendEmailVerification(credential.user);
       userEmail.value = email;
       const newUser: UserProfile = {
-        displayName: userName,
-        location: "N/A",
-        favoriteTools: "#",
-        preferredLanguage: "en",
-        role: "Community Member",
-        userStarredConstructions: []
+        ...DEFAULT_PROFILE,
+        displayName: userName
       };
       await setDoc(doc(appDB, "users", credential.user.uid), newUser);
       return true;
@@ -182,7 +175,7 @@ export const useAccountStore = defineStore("acct", () => {
 
   async function signOff(): Promise<void> {
     favoriteTools.value = DEFAULT_TOOL_NAMES;
-    userProfile.value = null;
+    userProfile.value = DEFAULT_PROFILE;
     userEmail.value = undefined;
     await signOut(appAuth);
   }
@@ -206,6 +199,21 @@ export const useAccountStore = defineStore("acct", () => {
     }
   }
 
+  async function saveUserProfile() {
+    const favToolsAsString = favoriteTools.value
+      .map(arr => arr.map(s => s.trim()).join(","))
+      .join("#");
+    const profileDoc = doc(appDB, "users", firebaseUid.value!);
+    await setDoc(
+      profileDoc,
+      {
+        ...userProfile.value,
+        favoriteTools: favToolsAsString
+      },
+      { merge: true }
+    );
+  }
+
   return {
     /* state */
     constructionDocId,
@@ -223,6 +231,8 @@ export const useAccountStore = defineStore("acct", () => {
     includeToolName,
     parseAndSetFavoriteTools,
     parseUserProfile,
+    saveUserProfile,
+
     passwordReset,
     resetToolset,
     signIn,

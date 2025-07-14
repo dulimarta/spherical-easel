@@ -11,7 +11,7 @@
       v-if="userProfile"
       @click="isAbbreviatedName = !isAbbreviatedName"
       :style="{
-        writingMode: isAbbreviatedName ? 'horizontal-tb' : 'sideways-lr',
+        writingMode: 'sideways-lr',
         textOrientation: 'mixed'
       }">
       {{ userDisplayedName }}
@@ -454,9 +454,13 @@ const userDisplayedName = computed(() => {
       ? userProfile.value.displayName
       : userProfile.value.displayName
           .split(" ") // Split individual words
-          .map(s => s.substring(0, 1)) // take only the first letter
-          .join("") // don't use default separator (,)
-          .toUpperCase();
+          .map(s =>
+            s
+              .substring(0, 1)
+              .toUpperCase()
+              .replace(/[^A-Z]/, "")
+          )
+          .join(""); // don't use default separator (,)
   } else return "N/A";
 });
 /**

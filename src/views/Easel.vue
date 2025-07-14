@@ -158,6 +158,7 @@ import Parametric from "@/plottables/Parametric";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 import {
+  NavigationGuardNext,
   onBeforeRouteLeave,
   RouteLocationNormalized,
   useRouter
@@ -401,7 +402,7 @@ onBeforeRouteLeave(
     toRoute: RouteLocationNormalized,
     // eslint-disable-next-line no-unused-vars
     _: RouteLocationNormalized
-  ): boolean => {
+  ) => {
     console.debug(`BeforeRouteLeave`, Command.isConstructionModified());
     if (
       hasObjects.value &&

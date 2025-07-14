@@ -55,30 +55,32 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="6">
+          <v-col cols="4">
             <v-text-field
-              label="Display Name"
+              :label="t('displayedName')"
               v-model="userProfile!.displayName" />
           </v-col>
-          <v-col cols="6">
-            <v-text-field v-model="userProfile!.location" label="Location" />
+          <v-col cols="4">
+            <v-text-field
+              v-model="userProfile!.location"
+              :label="t('location')" />
+          </v-col>
+          <v-col cols="4">
+            <v-select
+              v-model="userProfile!.role"
+              :label="t('role')"
+              :items="['Student', 'Instructor', 'Community Member']"></v-select>
           </v-col>
         </v-row>
         <v-row>
           <v-col cols="4">
             <v-select
-              v-model="userProfile!.role"
-              label="Role"
-              :items="['Student', 'Instructor', 'Community Member']"></v-select>
-          </v-col>
-          <v-col cols="4">
-            <v-select
-              v-model="userProfile!.preferredLanguage"
+              v-model="userProfile.preferredLanguage"
               variant="outlined"
               :items="languages"
               item-title="name"
               item-value="locale"
-              label="Language"></v-select>
+              :label="t('language')"></v-select>
           </v-col>
         </v-row>
       </v-container>
@@ -107,11 +109,10 @@ type LocaleName = {
   name: string;
 };
 
-// const appDB = getFirestore();
-// const appAuth = getAuth();
 const { t } = useI18n();
 const acctStore = useAccountStore();
-const { userEmail, userProfile } = storeToRefs(acctStore);
+const { userEmail, userProfile, temporaryProfilePictureURL } =
+  storeToRefs(acctStore);
 const languages: Ref<Array<LocaleName>> = ref(SETTINGS.supportedLanguages);
 const photoDialog: Ref<DialogAction | null> = ref(null);
 
@@ -155,6 +156,10 @@ function closePhotoDialog(s: string) {
 <i18n locale="en">
   {
     "DeleteAcct": "Delete Account",
-    "createProfilePic": "Create Profile Picture"
+    "createProfilePic": "Create Profile Picture",
+    "displayedName": "Displayed Name",
+    "location": "Location",
+    "role": "Role",
+    "language": "Language"
   }
 </i18n>

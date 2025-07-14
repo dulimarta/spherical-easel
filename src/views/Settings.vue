@@ -1,48 +1,13 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <v-tabs centered v-model="selectedTab">
-    <v-tab v-if="profileEnabled">User Profile</v-tab>
+    <v-tab>{{ t("userProfile") }}</v-tab>
     <!-- <v-tab>App Preferences</v-tab> -->
-    <v-tab>Tools</v-tab>
+    <v-tab>{{ t("tools") }}</v-tab>
   </v-tabs>
   <v-window v-model="selectedTab">
-    <v-window-item v-if="profileEnabled">
+    <v-window-item>
       <UserProfileUI />
-      <v-sheet elevation="2" class="ma-2 pa-2" border rounded>
-        <div
-          class="text-body-2"
-          :style="{
-            display: 'grid',
-            gridTemplateColumns: 'auto 1fr'
-          }">
-          <div
-            class="mx-3"
-            :style="{
-              gridRowStart: 1,
-              gridRowEnd: 2,
-              gridColumnStart: 1,
-              gridColumnEnd: 2
-            }"></div>
-          <div
-            :style="{
-              gridRowStart: 2,
-              gridRowEnd: 3,
-              gridColumnStart: 1,
-              gridColumnEnd: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'stretch'
-            }"></div>
-          <div
-            class="px-2"
-            :style="{
-              gridRowStart: 1,
-              gridRowEnd: 3,
-              gridColumnStart: 2,
-              gridColumnEnd: 3
-            }"></div>
-        </div>
-      </v-sheet>
     </v-window-item>
     <!--v-window-item>
       <v-sheet elevation="2" class="pa-2">
@@ -87,11 +52,14 @@
     </v-window-item>
   </v-window>
 
-  <v-row justify="center">
+  <v-divider />
+  <v-row justify="center" class="my-1">
     <v-col cols="auto">
-      <v-btn @click="doSave">Save & Return</v-btn>
+      <v-btn @click="doSave">{{ t("saveAndReturn") }}</v-btn>
     </v-col>
-    <v-col cols="auto"><v-btn @click="doReturn">Return</v-btn></v-col>
+    <v-col cols="auto">
+      <v-btn @click="doReturn">{{ t("returnOnly") }}</v-btn>
+    </v-col>
   </v-row>
 </template>
 
@@ -119,85 +87,27 @@ div#appSetting {
 
 <script lang="ts" setup>
 import UserProfileUI from "./UserProfile.vue";
-import { getAuth, User, Unsubscribe } from "firebase/auth";
-import {
-  DocumentSnapshot,
-  getFirestore,
-  doc,
-  getDoc,
-  setDoc
-} from "firebase/firestore";
-import { UserProfile } from "@/types";
 import FavoriteToolsPicker from "@/components/FavoriteToolsPicker.vue";
 import EventBus from "@/eventHandlers/EventBus";
-import { computed, onMounted, Ref, ref } from "vue";
-// import { useI18n } from "vue-i18n";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAccountStore } from "@/stores/account";
-import { storeToRefs } from "pinia";
-import { onBeforeUnmount } from "vue";
+import { useI18n } from "vue-i18n";
 const router = useRouter();
-// const { t } = useI18n();
+const { t } = useI18n();
 const acctStore = useAccountStore();
-const { favoriteTools, userProfile, userEmail } = storeToRefs(acctStore);
-const appAuth = getAuth();
-const appDB = getFirestore();
 // const imageUpload: Ref<HTMLInputElement | null> = ref(null);
 const decimalPrecision = ref(3);
 const selectedTab = ref(0);
-// eslint-disable-next-line no-unused-vars
-let authSubscription!: Unsubscribe;
-const profileEnabled = ref(false);
 // The displayed favorite tools (includes defaults)
 
-const userUid = computed((): string | undefined => {
-  return appAuth.currentUser?.uid;
-});
-
-onMounted((): void => {
-  if (userUid.value) {
-    getDoc(doc(appDB, "users", userUid.value)).then((ds: DocumentSnapshot) => {
-      if (ds.exists()) {
-        userProfile.value = ds.data() as UserProfile;
-        // console.log("From Firestore", uProfile);
-        // userDisplayName.value = uProfile.displayName ?? "N/A";
-        // userLocation.value = uProfile.location ?? "N/A";
-        // userFavoriteTools.value = decodeFavoriteTools(
-        //   uProfile.favoriteTools ?? "###"
-        // );
-      }
-    });
-  }
-  authSubscription = appAuth.onAuthStateChanged((u: User | null) => {
-    profileEnabled.value = u !== null;
-    if (u !== null) {
-      userEmail.value = u.email ?? "unknown";
-    } else {
-      userProfile.value = null;
-    }
-
-    // console.log("Auth changed", u, this.profileEnabled);
+async function doSave(): Promise<void> {
+  await acctStore.saveUserProfile();
+  EventBus.fire("show-alert", {
+    key: "Your profile has been update",
+    type: "info"
   });
-});
-
-onBeforeUnmount(() => {
-  authSubscription();
-});
-// function switchLocale(): void {
-//   // $i18n.locale = (this.selectedLanguage as any).locale;
-// }
-
-function doSave(): void {
-  favoriteTools.value.map(arr => arr.map(s => s.trim()).join(",")).join("#");
-
-  const profileDoc = doc(appDB, "users", userUid.value!);
-  setDoc(profileDoc, userProfile.value, { merge: true }).then(() => {
-    EventBus.fire("show-alert", {
-      key: "Your profile has been update",
-      type: "info"
-    });
-    router.back();
-  });
+  router.back();
 }
 
 function doReturn() {
@@ -214,3 +124,11 @@ function doReturn() {
 //     });
 // }
 </script>
+<i18n locale="en">
+  {
+    "userProfile": "User Profile",
+    "tools": "Tools",
+    "saveAndReturn": "Save & Return",
+    "returnOnly": "Return"
+  }
+</i18n>
