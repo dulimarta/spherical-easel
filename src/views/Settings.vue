@@ -89,7 +89,7 @@ div#appSetting {
 import UserProfileUI from "./UserProfile.vue";
 import FavoriteToolsPicker from "@/components/FavoriteToolsPicker.vue";
 import EventBus from "@/eventHandlers/EventBus";
-import { computed, onMounted, Ref, ref } from "vue";
+import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useAccountStore } from "@/stores/account";

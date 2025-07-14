@@ -187,7 +187,6 @@ export const useAccountStore = defineStore("acct", () => {
   async function googleLogin(): Promise<string | null> {
     const provider = new GoogleAuthProvider();
     // provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     try {
       const cred = await signInWithPopup(appAuth, provider);
       parseUserProfile(cred.user);

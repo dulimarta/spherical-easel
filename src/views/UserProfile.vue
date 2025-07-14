@@ -111,8 +111,7 @@ type LocaleName = {
 
 const { t } = useI18n();
 const acctStore = useAccountStore();
-const { userEmail, userProfile, temporaryProfilePictureURL } =
-  storeToRefs(acctStore);
+const { userEmail, userProfile } = storeToRefs(acctStore);
 const languages: Ref<Array<LocaleName>> = ref(SETTINGS.supportedLanguages);
 const photoDialog: Ref<DialogAction | null> = ref(null);
 

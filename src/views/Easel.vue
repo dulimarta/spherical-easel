@@ -124,7 +124,7 @@ import {
   ref,
   watch
 } from "vue";
-import colors from "vuetify/util/colors";
+import colors from "vuetify/lib/util/colors";
 import AppNavigation from "@/components/AppNavigation.vue";
 import SphereFrame from "@/components/SphereFrame.vue";
 import EarthLayer from "@/components/EarthLayer.vue";
@@ -158,12 +158,13 @@ import Parametric from "@/plottables/Parametric";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 import {
-  NavigationGuardNext,
   onBeforeRouteLeave,
   RouteLocationNormalized,
   useRouter
 } from "vue-router";
-import { useLayout, useDisplay } from "vuetify";
+// import { useLayout, useDisplay } from "vuetify";
+import { useLayout } from "vuetify/lib/composables/layout";
+import { useDisplay } from "vuetify/lib/composables/display";
 import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
 import Text from "@/plottables/Text";
@@ -494,9 +495,7 @@ onBeforeRouteLeave(
   border-radius: 8px;
   border: solid white;
   background-color: white;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.12),
-    0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 #toolbox-and-sphere {
