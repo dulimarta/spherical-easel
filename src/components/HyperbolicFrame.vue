@@ -72,10 +72,6 @@ import {
 import type { UseMouseEventExtractor } from "@vueuse/core";
 
 import {
-  useKeyModifier,
-  useMouse,
-  useMousePressed,
-  useParentElement,
   useMouseInElement,
   useEventListener,
   useMagicKeys
@@ -247,7 +243,7 @@ randomPlane.updateMatrixWorld(); // This is needed to before bvhcast can do its 
 // scene.add(randomPlane);
 // scene.add(planeDirArrow);
 
-const hyperbolaPath = new HyperbolaCurve(new Vector3(0, 0, 1));
+const hyperbolaPath = new HyperbolaCurve();
 
 let hyperTube = new Mesh(
   new TubeGeometry(hyperbolaPath, 50, 0.05, 12, false),
@@ -543,12 +539,13 @@ function threeMouseTracker(ev: MouseEvent) {
         planeDir2
           .set(0, Math.sin(planeXRotation), Math.cos(planeXRotation))
           .normalize();
-        const newPath = new HyperbolaCurve(planeDir2);
+        // const newPath = new HyperbolaCurve(planeDir2);
+        hyperbolaPath.setDirection(planeDir2);
         hyperTube.geometry.dispose();
         hyperTube.material.dispose();
         scene.remove(hyperTube);
         hyperTube = new Mesh(
-          new TubeGeometry(newPath, 50, 0.03, 12, false),
+          new TubeGeometry(hyperbolaPath, 50, 0.03, 12, false),
           new THREE.MeshStandardMaterial({ color: "greenyellow" })
         );
         scene.add(hyperTube);

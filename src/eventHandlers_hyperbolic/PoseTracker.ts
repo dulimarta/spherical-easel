@@ -47,12 +47,12 @@ export class PoseTracker implements HyperbolicToolStrategy {
     position: Vector3 | null,
     direction: Vector3 | null
   ): void {
-    console.debug(
-      "PoseTracker::mouseMoved",
-      position ? position.toFixed(2) : "N/A",
-      "dragging",
-      this.isDragging
-    );
+    // console.debug(
+    //   "PoseTracker::mouseMoved",
+    //   position ? position.toFixed(2) : "N/A",
+    //   "dragging",
+    //   this.isDragging
+    // );
     if (position) {
       this.aPoint.position.copy(position);
       this.scene.add(this.aPoint);
