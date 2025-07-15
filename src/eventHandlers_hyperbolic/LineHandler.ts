@@ -23,7 +23,7 @@ export class LineHandler extends PoseTracker {
   private hyperbolaPath = new HyperbolaCurve();
   private hyperbolaTube = new Mesh(
     new TubeGeometry(this.hyperbolaPath, 50, 0.05, 12, false),
-    new MeshStandardMaterial({ color: "greenyellow" })
+    new MeshStandardMaterial({ color: "springgreen" })
   );
 
   constructor(s: Scene) {
@@ -80,7 +80,7 @@ export class LineHandler extends PoseTracker {
       this.scene.remove(this.hyperbolaTube);
       this.hyperbolaTube = new Mesh(
         new TubeGeometry(this.hyperbolaPath, 50, 0.03, 12, false),
-        new MeshStandardMaterial({ color: "springreen" })
+        new MeshStandardMaterial({ color: "springgreen" })
       );
       this.hyperbolaTube.rotation.z = rotationAngle;
       this.scene.add(this.hyperbolaTube);
@@ -112,10 +112,10 @@ export class LineHandler extends PoseTracker {
       position,
       normalDirection
     );
-    this.planeNormal.copy(this.first.position).normalize();
-    this.arrow1.setDirection(this.planeNormal);
-    this.arrow1.setLength(this.first.position.length());
-    this.scene.add(this.arrow1);
+    // this.planeNormal.copy(this.first.position).normalize();
+    // this.arrow1.setDirection(this.planeNormal);
+    // this.arrow1.setLength(this.first.position.length());
+    // this.scene.add(this.arrow1);
   }
   mouseReleased(
     event: MouseEvent,
