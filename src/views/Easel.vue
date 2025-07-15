@@ -284,6 +284,8 @@ function loadDocument(docId: string): void {
           type: "error"
         });
       }
+    })
+    .finally(() => {
       loadingFromPath.value = false;
     });
 

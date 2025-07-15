@@ -1,20 +1,28 @@
 import { Curve, Vector3 } from "three";
 
+/* This class generate a hyperbola on a plane through the X-axis.
+ */
 export class HyperbolaCurve extends Curve<Vector3> {
   // Compute the points of a hyperbola on a plane
   // rotated on the X-axis
-  v1: Vector3 = new Vector3();
-  v2: Vector3 = new Vector3();
+  v1: Vector3 = new Vector3(0, 0, 1);
+  v2: Vector3 = new Vector3(1, 0, 0); // Second vector is alway the X-axis
   outVec = new Vector3();
   a: number = 1;
   b: number = 1;
-  constructor(v1: Vector3) {
+  constructor() {
     super();
-    this.v1.copy(v1); // Must be a vector perpendicular to X-axis
-    if (Math.abs(v1.x) > 1e-3)
+  }
+
+  // The setDirection() method allows the plane to be rotated along the X-axis
+  // The 'd' vector must be a vector on the YZ-plane. Together with the X-axis
+  // this vector spans the plane where the hyperbola lives
+  setDirection(d: Vector3) {
+    this.v1.copy(d); // Must be a vector perpendicular to X-axis
+    if (Math.abs(d.x) > 1e-3)
       throw "The direction vector of hyperbola must be perpendiclar to the X-axis";
     this.v2.set(1, 0, 0);
-    const innerA = v1.x * v1.x + v1.y * v1.y - v1.z * v1.z;
+    const innerA = d.x * d.x + d.y * d.y - d.z * d.z;
     this.a = Math.sqrt(-1.0 / innerA);
   }
 

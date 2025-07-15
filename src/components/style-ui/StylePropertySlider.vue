@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import { ref, useAttrs, Ref } from "vue";
 import { useI18n } from "vue-i18n";
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 const sliderValue = defineModel({ type: Number });
 const attrs = useAttrs();
 type ComponentProps = {

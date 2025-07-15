@@ -3,16 +3,15 @@
     <div id="dataEntry">
       <v-text-field
         id="_test_input_min"
-        v-bind:label="$t('min')"
+        v-bind:label="t('min')"
         class="field _test_input"
         variant="outlined"
         density="compact"
         v-model.number="sliderMin"
-        :error="sliderMin > sliderMax">
-      </v-text-field>
+        :error="sliderMin > sliderMax"></v-text-field>
       <v-text-field
         id="_test_input_step"
-        v-bind:label="$t('step')"
+        v-bind:label="t('step')"
         class="field _test_input"
         variant="outlined"
         density="compact"
@@ -20,7 +19,7 @@
         :error="sliderStep > sliderMax - sliderMin"></v-text-field>
       <v-text-field
         id="_test_input_max"
-        v-bind:label="$t('max')"
+        v-bind:label="t('max')"
         class="field _test_input"
         variant="outlined"
         density="compact"
@@ -37,15 +36,15 @@
       background-color="accent lighten-2"
       show-ticks="always"
       tick-size="4"></v-slider>
-    <v-divider> </v-divider>
+    <v-divider></v-divider>
     <div id="action">
       <v-btn
         id="_test_add_slider"
         color="primary"
         :disabled="!isValid"
-        @click="addSlider"
-        >{{ $t("create") }}</v-btn
-      >
+        @click="addSlider">
+        {{ t("create") }}
+      </v-btn>
     </div>
   </v-form>
 </template>
@@ -69,52 +68,60 @@
 }
 </style>
 <script lang="ts" setup>
-import  {ref, watch} from "vue";
+import { ref, watch } from "vue";
 import { SESlider } from "@/models/SESlider";
 import { AddSliderMeasurementCommand } from "@/commands/AddSliderMeasurementCommand";
-  const sliderMin = ref(0);
-  const sliderMax = ref(1);
-  const sliderStep = ref(0.1);
-  const sliderValue = ref(0);
+import { useI18n } from "vue-i18n";
+const { t } = useI18n({ useScope: "local" });
+const sliderMin = ref(0);
+const sliderMax = ref(1);
+const sliderStep = ref(0.1);
+const sliderValue = ref(0);
 
-  const isValid = ref(false);
+const isValid = ref(false);
 
-  function addSlider(): void {
-    const sliderMeasure = new SESlider({
-      min: sliderMin.value,
-      max: sliderMax.value,
-      step: sliderStep.value,
-      value: sliderValue.value
-    });
-    new AddSliderMeasurementCommand(sliderMeasure).execute();
+function addSlider(): void {
+  const sliderMeasure = new SESlider({
+    min: sliderMin.value,
+    max: sliderMax.value,
+    step: sliderStep.value,
+    value: sliderValue.value
+  });
+  new AddSliderMeasurementCommand(sliderMeasure).execute();
+}
+
+function adjustSlidertep() {
+  const numTicks = (sliderMax.value - sliderMin.value) / sliderStep.value;
+  // console.debug(
+  //   `Min:${sliderMin.value}, Max=${sliderMax.value}, Step=${sliderStep.value}`
+  // );
+  if (numTicks > 25) {
+    sliderStep.value = (sliderMax.value - sliderMin.value) / 25;
   }
+}
 
-  function adjustSlidertep() {
-    const numTicks = (sliderMax.value - sliderMin.value) / sliderStep.value;
-    // console.debug(
-    //   `Min:${sliderMin.value}, Max=${sliderMax.value}, Step=${sliderStep.value}`
-    // );
-    if (numTicks > 25) {
-      sliderStep.value = (sliderMax.value - sliderMin.value) / 25;
-    }
-  }
-
-  watch(() => sliderMin.value, (newVal: number): void =>{
+watch(
+  () => sliderMin.value,
+  (newVal: number): void => {
     if (newVal > sliderMax.value || sliderStep.value === 0) return;
     adjustSlidertep();
-  })
+  }
+);
 
-  watch(() => sliderMax.value, (newVal: number): void => {
+watch(
+  () => sliderMax.value,
+  (newVal: number): void => {
     if (newVal < sliderMin.value || sliderStep.value === 0) return;
     adjustSlidertep();
-  })
+  }
+);
 </script>
 <i18n lang="json" locale="en">
-  {
-    "min": "Min",
-    "max": "Max",
-    "step": "Step",
-    "create": "Create",
-    "$$$": "xxx"
-  }
+{
+  "min": "Min",
+  "max": "Max",
+  "step": "Step",
+  "create": "Create",
+  "$$$": "xxx"
+}
 </i18n>

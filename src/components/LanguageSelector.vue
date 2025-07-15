@@ -7,7 +7,7 @@
     offset="24"
     :close-on-content-click="false">
     <v-card>
-      <v-card-title v-t="'selectLanguage'"></v-card-title>
+      <v-card-title> {{ t('selectLanguage') }}</v-card-title>
       <v-card-text>
         <v-select :items="availabelLanguages" v-model="$i18n.locale"></v-select>
       </v-card-text>

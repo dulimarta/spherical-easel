@@ -89,7 +89,7 @@
   </v-item-group>
 
   <ul>
-    <li v-for="x in mouseIntersections.filter((_,pos) => pos < 4)">
+    <li v-for="x in mouseIntersections.filter((_,pos) => pos < 4)" :key="x.object.name">
       {{ x.point.toFixed(2) }} at {{ x.distance.toFixed(2) }} with {{ x.object.name }}
     </li>
   </ul>

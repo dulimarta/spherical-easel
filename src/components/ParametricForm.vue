@@ -129,7 +129,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { useI18n } from "vue-i18n";
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 // interface ParametricDataType {
 //   tMinNumber?: number;
 //   tMaxNumber?: number;

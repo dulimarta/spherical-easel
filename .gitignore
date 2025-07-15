@@ -52,3 +52,6 @@ docs/.vitepress/cache/**
 
 easel-original
 package-lock.json
+
+# Local Netlify folder
+.netlify

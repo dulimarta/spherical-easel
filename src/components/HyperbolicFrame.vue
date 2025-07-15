@@ -72,10 +72,6 @@ import {
 import type { UseMouseEventExtractor } from "@vueuse/core";
 
 import {
-  useKeyModifier,
-  useMouse,
-  useMousePressed,
-  useParentElement,
   useMouseInElement,
   useEventListener,
   useMagicKeys
@@ -84,13 +80,10 @@ import { degToRad } from "three/src/math/MathUtils";
 import { useHyperbolicStore } from "@/stores/hyperbolic";
 import { storeToRefs } from "pinia";
 import { watch } from "vue";
-import {
-  HyperbolicToolStrategy,
-  ToolStrategy
-} from "@/eventHandlers/ToolStrategy";
+import { HyperbolicToolStrategy } from "@/eventHandlers/ToolStrategy";
 import { PointHandler } from "@/eventHandlers_hyperbolic/PointHandler";
 import { useSEStore } from "@/stores/se";
-import { PoseTracker } from "@/eventHandlers_hyperbolic/PoseTracker";
+import { LineHandler } from "@/eventHandlers_hyperbolic/LineHandler";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
 const { mouseIntersections } = storeToRefs(hyperStore);
@@ -250,7 +243,7 @@ randomPlane.updateMatrixWorld(); // This is needed to before bvhcast can do its 
 // scene.add(randomPlane);
 // scene.add(planeDirArrow);
 
-const hyperbolaPath = new HyperbolaCurve(new Vector3(0, 0, 1));
+const hyperbolaPath = new HyperbolaCurve();
 
 let hyperTube = new Mesh(
   new TubeGeometry(hyperbolaPath, 50, 0.05, 12, false),
@@ -308,12 +301,13 @@ scene.add(ambientLight);
 scene.add(pointLight);
 let currentTool: HyperbolicToolStrategy | null = null; //new PointHandler();
 let pointTool: PointHandler = new PointHandler(scene);
+let lineTool: LineHandler | null = null;
 function doRender() {
   // console.debug("Enable camera control", enableCameraControl.value)
   if (enableCameraControl.value) {
     const deltaTime = clock.getDelta();
     const hasUpdatedControls = cameraController.update(deltaTime);
-    console.debug("Enable camera control?", hasUpdatedControls);
+    // console.debug("Enable camera control?", hasUpdatedControls);
     if (hasUpdatedControls) {
       console.debug(`Camera control triggers update`);
       renderer.render(scene, camera);
@@ -337,6 +331,7 @@ watch(
   () => actionMode.value,
   mode => {
     console.debug("New action mode", mode);
+    currentTool?.deactivate();
     switch (mode) {
       case "point":
         if (pointTool === null) {
@@ -345,10 +340,16 @@ watch(
         currentTool = pointTool;
         enableCameraControl.value = false;
         break;
+      case "line":
+        if (lineTool === null) lineTool = new LineHandler(scene);
+        currentTool = lineTool;
+        enableCameraControl.value = false;
+        break;
       default:
         enableCameraControl.value = true;
         currentTool = null;
     }
+    currentTool?.activate();
   }
 );
 
@@ -377,6 +378,7 @@ onMounted(() => {
   renderer.render(scene, camera);
   useEventListener("mousemove", threeMouseTracker);
   useEventListener(webglCanvas, "mousedown", doMouseDown);
+  useEventListener(webglCanvas, "mouseup", doMouseUp);
   currentTool = new PointHandler(scene);
 });
 
@@ -396,6 +398,18 @@ function doMouseDown(ev: MouseEvent) {
       mouseIntersections.value[0].point,
       mouseIntersections.value[0].normal!
     );
+  else currentTool?.mousePressed(ev, mouseCoordNormalized.value, null, null);
+}
+
+function doMouseUp(ev: MouseEvent) {
+  if (mouseIntersections.value.length > 0)
+    currentTool?.mouseReleased(
+      ev,
+      // mouseCoordNormalized.value,
+      mouseIntersections.value[0].point,
+      mouseIntersections.value[0].normal!
+    );
+  else currentTool?.mouseReleased(ev, null, null);
 }
 
 function threeMouseTracker(ev: MouseEvent) {
@@ -525,12 +539,13 @@ function threeMouseTracker(ev: MouseEvent) {
         planeDir2
           .set(0, Math.sin(planeXRotation), Math.cos(planeXRotation))
           .normalize();
-        const newPath = new HyperbolaCurve(planeDir2);
+        // const newPath = new HyperbolaCurve(planeDir2);
+        hyperbolaPath.setDirection(planeDir2);
         hyperTube.geometry.dispose();
         hyperTube.material.dispose();
         scene.remove(hyperTube);
         hyperTube = new Mesh(
-          new TubeGeometry(newPath, 50, 0.03, 12, false),
+          new TubeGeometry(hyperbolaPath, 50, 0.03, 12, false),
           new THREE.MeshStandardMaterial({ color: "greenyellow" })
         );
         scene.add(hyperTube);

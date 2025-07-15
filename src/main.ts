@@ -14,6 +14,7 @@ import { useSEStore } from "@/stores/se";
 import MouseHandler from "./eventHandlers/MouseHandler";
 import Nodule from "./plottables/Nodule";
 import { useHyperbolicStore } from "./stores/hyperbolic";
+import { createGtag } from "vue-gtag";
 import { SENodule } from "@/models/SENodule";
 const firebaseApp = initializeApp(firebaseConfig);
 const pinia = createPinia();
@@ -31,8 +32,13 @@ if (fPos >= 0) {
 app.use(vuetify);
 app.use(router);
 app.use(i18n);
-// When .use(pinia) is NOT the last call, Pinia did not show up in VueJS DevTools
-// https://stackoverflow.com/questions/77456631/why-cant-i-see-pinia-in-vue-devtools
+if (import.meta.env.MODE === "production") {
+  const gaTag = createGtag({
+    tagId: "G-1XK98KQMYZ"
+  });
+
+  app.use(gaTag);
+}
 app.use(pinia);
 app.mount("#app");
 router.afterEach((to, from) => {

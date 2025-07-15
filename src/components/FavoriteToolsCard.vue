@@ -69,7 +69,7 @@ import { computed } from "vue";
 import { Ref, ref } from "vue";
 import { TOOL_DICTIONARY } from "./tooldictionary";
 import { useI18n } from "vue-i18n";
-const { t } = useI18n({ useScope: "local" });
+const { t } = useI18n();
 const selectedPos: Ref<number | null> = ref(null);
 const prettyList = computed(() =>
   model.value?.map((a: ActionMode) => TOOL_DICTIONARY.get(a)!)

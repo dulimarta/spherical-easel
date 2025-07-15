@@ -169,7 +169,7 @@ const {
 } = storeToRefs(seStore);
 const acctStore = useAccountStore();
 const { favoriteTools } = storeToRefs(acctStore);
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 
 const props = withDefaults(defineProps<ComponentProps>(), {
   availableHeight: 240,
@@ -1105,8 +1105,7 @@ function assertNever(x: unknown): never {
 
 function listItemStyle(idx: number, xLoc: string, yLoc: string) {
   //xLoc determines left or right, yLoc determines top or bottom
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const style: Record<string, any> = {};
+  const style: Record<string, string> = {};
   let r = 0;
   let c = 0;
   let startCol = 0;

@@ -73,7 +73,7 @@ After a successful document build, you will find a new directory `dist/docs`.
 
    ```
    docker login -u DDDDDDDD
-   # Then enter your password or Docker Personal Access Token
+   # Then enter your Docker Personal Access Token (with Read, Write, Delete permission)
    docker push DDDDDDDD/easelgo
    ```
 
@@ -83,3 +83,31 @@ After a successful document build, you will find a new directory `dist/docs`.
    docker run -it -p 9000:80 DDDDDDDD/easelgeo
    ```
    Then open the URL `localhost:9000` in your browser
+
+# Deployment to Netlify
+
+1. Install netlify CLI ([documentation](https://cli.netlify.com/))
+
+   ```
+   npm install -g netlify
+   ```
+
+2. Login to your Netlify account
+
+   ```
+   netlify login
+   ```
+
+4. Link your project
+
+   ```
+   # This will prompt you to enter the project URL or ID
+   netlify link
+   ```
+
+5. Build and deploy (to production)
+
+   ```
+   netlify build
+   netlify deploy --prod
+   ```
