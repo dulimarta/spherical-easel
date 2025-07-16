@@ -364,7 +364,7 @@ const seTextMap: Map<number, SEText> = new Map();
 export const useSEStore = defineStore("se", () => {
   const twoInstance: Ref<Two | null> = ref(null);
   const isEarthMode = ref(false);
-  const actionMode: Ref<ActionMode> = ref<ActionMode>("rotate");
+  const actionMode: Ref<ActionMode> = ref<ActionMode>("point");
   const previousActionMode: Ref<ActionMode> = ref("rotate");
   // activeToolName: "RotateDisplayedName", // the corresponding I18N key of actionMode
   // buttonSelection: {},

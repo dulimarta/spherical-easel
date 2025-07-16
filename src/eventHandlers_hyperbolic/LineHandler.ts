@@ -5,15 +5,22 @@ import {
   Scene,
   Mesh,
   TubeGeometry,
-  MeshStandardMaterial
+  MeshStandardMaterial,
+  PlaneGeometry,
+  DoubleSide,
+  Matrix4
 } from "three";
 import { PoseTracker } from "./PoseTracker";
 import { HyperbolaCurve } from "@/mesh/HyperbolaCurve";
+import { createPoint } from "@/mesh/MeshFactory";
 
+const Z_AXIS = new Vector3(0, 0, 1);
+const ORIGIN = new Vector3(0, 0, 0);
 export class LineHandler extends PoseTracker {
   // The line is the intersection between a plane spanned by
   // the origin, the two points, and the hyperboloid
   private planeNormal = new Vector3();
+  // private rotationAxis = new Vector3();
   private planeDir1 = new Vector3();
   private planeDir2 = new Vector3();
   private arrow1 = new ArrowHelper(this.planeDir1, new Vector3());
@@ -26,12 +33,23 @@ export class LineHandler extends PoseTracker {
     new MeshStandardMaterial({ color: "springgreen" })
   );
 
+  private startPoint = createPoint(0.05, "yellow");
+  private hPlane = new Mesh(
+    new PlaneGeometry(6, 10, 20, 20),
+    new MeshStandardMaterial({
+      color: "darkred",
+      roughness: 0.4,
+      side: DoubleSide
+    })
+  );
+  private hPlaneCF = new Matrix4();
   constructor(s: Scene) {
     super(s);
     this.arrow1.setColor(0xff1187);
     this.arrow2.setColor(0x34e1eb);
     this.arrow3.setColor(0xffcc00);
     this.arrow4.setColor(0xa641bf);
+    this.hPlane.matrixAutoUpdate = false;
   }
 
   mouseMoved(
@@ -56,9 +74,15 @@ export class LineHandler extends PoseTracker {
           2
         )} to ${this.second.position.toFixed(2)}`
       );
+      // Compute the normal vector of the plane that intersects the
+      // paraboloid
       this.planeNormal
         .crossVectors(this.first.position, this.second.position)
         .normalize();
+      this.hPlaneCF.lookAt(ORIGIN, this.planeNormal, Z_AXIS);
+      console.debug("HPlane CF", this.hPlaneCF.elements);
+      this.hPlane.matrix.copy(this.hPlaneCF);
+      this.hPlane.updateMatrixWorld();
       const xyHypotenuse = Math.sqrt(
         this.planeNormal.x * this.planeNormal.x +
           this.planeNormal.y * this.planeNormal.y
@@ -112,6 +136,9 @@ export class LineHandler extends PoseTracker {
       position,
       normalDirection
     );
+    this.scene.add(this.hPlane);
+    this.startPoint.position.copy(position);
+    this.scene.add(this.startPoint);
     // this.planeNormal.copy(this.first.position).normalize();
     // this.arrow1.setDirection(this.planeNormal);
     // this.arrow1.setLength(this.first.position.length());
@@ -127,6 +154,8 @@ export class LineHandler extends PoseTracker {
     this.scene.remove(this.arrow2);
     this.scene.remove(this.arrow3);
     this.scene.remove(this.arrow4);
+    this.scene.remove(this.hPlane);
+    this.scene.remove(this.startPoint);
   }
   mouseLeave(event: MouseEvent): void {
     throw new Error("Method not implemented.");
