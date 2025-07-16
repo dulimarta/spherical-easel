@@ -37,6 +37,8 @@ export class LineHandler extends PoseTracker {
   private hPlane = new Mesh(
     new PlaneGeometry(6, 10, 20, 20),
     new MeshStandardMaterial({
+      transparent: true,
+      opacity: 0.5,
       color: "darkred",
       roughness: 0.4,
       side: DoubleSide
@@ -77,28 +79,25 @@ export class LineHandler extends PoseTracker {
       // Compute the normal vector of the plane that intersects the
       // paraboloid
       this.planeNormal
-        .crossVectors(this.first.position, this.second.position)
+        .crossVectors(this.second.position, this.first.position)
         .normalize();
+      // console.debug(`Plane Normal before ${this.planeNormal.toFixed(2)}`);
+      // With this setup the coordinate from of hPlane would be as follows:
+      // - Its X-axis is on the XY plane (i.e. its z component is zero)
+      // - Its Y-axis is on a plane perpendicular to the XY-plane]
+      // - Its Z-axis is the normal vector computed from both mouse points
       this.hPlaneCF.lookAt(ORIGIN, this.planeNormal, Z_AXIS);
-      console.debug("HPlane CF", this.hPlaneCF.elements);
       this.hPlane.matrix.copy(this.hPlaneCF);
-      this.hPlane.updateMatrixWorld();
-      const xyHypotenuse = Math.sqrt(
-        this.planeNormal.x * this.planeNormal.x +
-          this.planeNormal.y * this.planeNormal.y
+      this.hPlaneCF.extractBasis(
+        this.planeDir1,
+        this.planeDir2,
+        this.planeNormal
       );
-      const pitchAngle = Math.atan2(this.planeNormal.z, xyHypotenuse);
-      const rotationAngle =
-        Math.PI / 2 + Math.atan2(this.planeNormal.y, this.planeNormal.x);
-
-      console.debug(
-        `Pitch angle is ${pitchAngle.toDegrees().toFixed(2)}, ` +
-          `Rotation angle is ${rotationAngle.toDegrees().toFixed(2)}`
+      this.hyperbolaPath.setDirection(
+        this.planeDir1,
+        this.planeDir2,
+        position.z > 0
       );
-      this.planeDir1
-        .set(0, Math.sin(pitchAngle), Math.cos(pitchAngle))
-        .normalize();
-      this.hyperbolaPath.setDirection(this.planeDir1);
       this.hyperbolaTube.geometry.dispose();
       this.hyperbolaTube.material.dispose();
       this.scene.remove(this.hyperbolaTube);
@@ -106,20 +105,13 @@ export class LineHandler extends PoseTracker {
         new TubeGeometry(this.hyperbolaPath, 50, 0.03, 12, false),
         new MeshStandardMaterial({ color: "springgreen" })
       );
-      this.hyperbolaTube.rotation.z = rotationAngle;
+      // this.hyperbolaTube.rotation.z = rotationAngle;
       this.scene.add(this.hyperbolaTube);
-      console.debug(
-        `Plane spanned by ${this.planeDir1.toFixed(
-          2
-        )} and ${this.planeDir2.toFixed(2)}`
-      );
-      // this.scene.remove(this.hyperbolaTube);
-      // this.hyperbolaPath.setPlaneDirection(this.planeDir1, this.planeDir2);
-      // this.hyperbolaTube = new Mesh(
-      //   new TubeGeometry(this.hyperbolaPath, 50, 0.05, 12, false),
-      //   new MeshStandardMaterial({ color: "greenyellow" })
+      // console.debug(
+      //   `Plane spanned by ${this.planeDir1.toFixed(
+      //     2
+      //   )} and ${this.planeDir2.toFixed(2)}`
       // );
-      // this.scene.add(this.hyperbolaTube);
     } else {
       this.scene.remove(this.hyperbolaTube);
     }

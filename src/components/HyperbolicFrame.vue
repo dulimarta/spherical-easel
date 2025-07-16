@@ -92,9 +92,10 @@ const enableCameraControl = ref(false);
 type ImportantSurface = "Upper" | "Lower" | "Sphere" | null;
 let onSurface: Ref<ImportantSurface> = ref(null);
 // Inject new BVH functions into current THREE-JS Mesh/BufferGeometry definitions
-// THREE.Mesh.prototype.raycast = acceleratedRaycast;
+THREE.Mesh.prototype.raycast = acceleratedRaycast;
 // THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 // THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
+const U_MULTIPLIER = Math.acosh(3);
 
 type ComponentProps = {
   availableHeight: number;
@@ -147,7 +148,7 @@ const upperHyperboloidGeometry = new ParametricGeometry(
   120,
   300
 );
-upperHyperboloidGeometry.computeBoundsTree({ maxLeafTris: 2 });
+// upperHyperboloidGeometry.computeBoundsTree({ maxLeafTris: 2 });
 const upperHyperboloidMesh = new Mesh(
   upperHyperboloidGeometry,
   new MeshStandardMaterial({
@@ -163,7 +164,7 @@ const lowerHyperboloidGeometry = new ParametricGeometry(
   120,
   300
 );
-lowerHyperboloidGeometry.computeBoundsTree();
+// lowerHyperboloidGeometry.computeBoundsTree();
 const lowerHyperboloidMesh = new Mesh(
   lowerHyperboloidGeometry,
   new MeshStandardMaterial({
@@ -203,11 +204,11 @@ centerSphere.name = "Center Sphere";
 scene.add(centerSphere);
 
 const upperPlaneGeometry = new THREE.PlaneGeometry(6, 10, 20, 20);
-upperPlaneGeometry.computeBoundsTree({
-  verbose: true,
-  maxLeafTris: 0,
-  maxDepth: 10
-});
+// upperPlaneGeometry.computeBoundsTree({
+//   verbose: true,
+//   maxLeafTris: 0,
+//   maxDepth: 10
+// });
 
 const ambientLight = new AmbientLight(0xffffff, 1.5);
 const pointLight = new PointLight(0xffffff, 100);
@@ -438,20 +439,18 @@ function threeMouseTracker(ev: MouseEvent) {
 }
 
 function hyperboloidPlus(u: number, v: number, pt: Vector3) {
-  u = u * 2;
   const theta = v * 2 * Math.PI;
-  const x = Math.sinh(u) * Math.cos(theta);
-  const y = Math.sinh(u) * Math.sin(theta);
-  const z = Math.cosh(u);
+  const x = Math.sinh(2 * u) * Math.cos(theta);
+  const y = Math.sinh(2 * u) * Math.sin(theta);
+  const z = Math.cosh(2 * u);
   pt.set(x, y, z);
 }
 
 function hyperboloidMinus(u: number, v: number, pt: Vector3) {
   const theta = v * 2 * Math.PI;
-  u = u * 2;
-  const x = Math.sinh(u) * Math.cos(theta);
-  const y = Math.sinh(u) * Math.sin(theta);
-  const z = -Math.cosh(u);
+  const x = Math.sinh(2 * u) * Math.cos(theta);
+  const y = Math.sinh(2 * u) * Math.sin(theta);
+  const z = -Math.cosh(2 * u);
   pt.set(x, y, z);
 }
 </script>
