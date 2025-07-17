@@ -58,7 +58,6 @@ import {
 } from "three";
 import * as THREE from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
-import { LineCurve3 } from "three/src/extras/curves/LineCurve3";
 import { onUpdated, onMounted, Ref, ref, useTemplateRef } from "vue";
 import CameraControls from "camera-controls";
 import {

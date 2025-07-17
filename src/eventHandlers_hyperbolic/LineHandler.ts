@@ -71,11 +71,11 @@ export class LineHandler extends PoseTracker {
       !isNaN(this.first.position.x) &&
       !isNaN(this.second.position.x)
     ) {
-      console.debug(
-        `Mouse was dragged from ${this.first.position.toFixed(
-          2
-        )} to ${this.second.position.toFixed(2)}`
-      );
+      // console.debug(
+      //   `Mouse was dragged from ${this.first.position.toFixed(
+      //     2
+      //   )} to ${this.second.position.toFixed(2)}`
+      // );
       // Compute the normal vector of the plane that intersects the
       // paraboloid
       this.planeNormal
@@ -93,10 +93,11 @@ export class LineHandler extends PoseTracker {
         this.planeDir2,
         this.planeNormal
       );
-      this.hyperbolaPath.setDirection(
+      this.hyperbolaPath.setPointsAndDirections(
+        this.first.position,
+        this.second.position,
         this.planeDir1,
-        this.planeDir2,
-        position.z > 0
+        this.planeDir2
       );
       this.hyperbolaTube.geometry.dispose();
       this.hyperbolaTube.material.dispose();
