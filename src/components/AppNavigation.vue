@@ -11,7 +11,7 @@
       :expand-on-hover="expandOnHover"
       disable-resize-watcher
       :rail="rail"
-      :rail-width="64"
+      :rail-width="56"
       @mouseover="onNavigationHover"
       @mouseleave="onNavigationHover"
       style="background-color: #002108; color: white">
@@ -86,6 +86,16 @@
           </template>
           <AuthenticatedUserToolbox :expanded-view="mouseOnDrawer" />
           <LanguageSelector />
+          <v-btn
+            variant="flat"
+            density="compact"
+            icon
+            color="black"
+            size="medium"
+            href="https://github.com/dulimarta/spherical-easel"
+            target="_blank">
+            <v-icon>mdi-github</v-icon>
+          </v-btn>
         </div>
       </template>
     </v-navigation-drawer>
@@ -129,6 +139,7 @@ import { storeToRefs } from "pinia";
 import { useLayout } from "vuetify";
 import { useDisplay } from "vuetify";
 import axios from "axios";
+import { Handler } from "mitt";
 // import { computed } from "vue";
 // import { set } from "@vueuse/core";
 const appFeature = inject("features");
@@ -174,7 +185,10 @@ function setHover() {
 /* Copy global setting to local variable */
 const activeLeftDrawerTab = ref(0);
 onBeforeMount((): void => {
-  EventBus.listen("left-panel-set-active-tab", setActiveTab);
+  EventBus.listen(
+    "left-panel-set-active-tab",
+    setActiveTab as Handler<unknown>
+  );
   // I tried to make the logo bigger but there is a problem with the svg blurring if you uncomment the axios file getter and the template above
   // axios
   //   .get("../../icons/LogoAnimatedSmallerV3.svg", { responseType: "text" })

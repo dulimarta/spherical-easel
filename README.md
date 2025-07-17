@@ -1,5 +1,7 @@
 # Spherical Geometry
 
+Live web application at [Easel Geo](http://easelgeo.app)
+ 
 ## Prerequisite for Building/Compiling the app
 
 1. Download and install [NodeJS](https://nodejs.org/en/download/). Verify that `node` and `npm` are installed correctly by typing
