@@ -33,6 +33,10 @@
     id="webglCanvas"
     :width="props.availableWidth"
     :height="props.availableHeight" />
+  <div
+    ref="textCanvas"
+    :width="props.availableWidth"
+    :height="props.availableHeight"></div>
 </template>
 
 <script setup lang="ts">
@@ -73,7 +77,6 @@ import {
   useEventListener,
   useMagicKeys
 } from "@vueuse/core";
-import { degToRad } from "three/src/math/MathUtils";
 import { useHyperbolicStore } from "@/stores/hyperbolic";
 import { storeToRefs } from "pinia";
 import { watch } from "vue";
@@ -83,6 +86,8 @@ import { useSEStore } from "@/stores/se";
 import { LineHandler } from "@/eventHandlers_hyperbolic/LineHandler";
 import { createPoint } from "@/mesh/MeshFactory";
 import { onBeforeMount } from "vue";
+import { TextHandler } from "@/eventHandlers_hyperbolic/TextHandler";
+import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
 const { surfaceIntersections, objectIntersections } = storeToRefs(hyperStore);
@@ -107,6 +112,7 @@ const props = withDefaults(defineProps<ComponentProps>(), {
 });
 
 const webglCanvas = useTemplateRef<HTMLCanvasElement>("webglCanvas");
+const textCanvas = useTemplateRef<HTMLDivElement>("textCanvas");
 const { elementX, elementY, isOutside } = useMouseInElement(webglCanvas, {});
 const { shift: shiftKey, control: controlKey } = useMagicKeys({
   passive: false
@@ -122,6 +128,7 @@ const rayCaster = new Raycaster();
 const mouseCoordNormalized: Ref<THREE.Vector2> = ref(new THREE.Vector2()); // used by RayCaster
 let camera: PerspectiveCamera;
 let renderer: WebGLRenderer;
+let textRenderer: CSS2DRenderer;
 let cameraController: CameraControls;
 CameraControls.install({ THREE });
 const ambientLight = new AmbientLight(0xffffff, 1.5);
@@ -211,6 +218,7 @@ function initialize() {
 let currentTool: HyperbolicToolStrategy | null = null; //new PointHandler();
 let pointTool: PointHandler = new PointHandler(scene);
 let lineTool: LineHandler | null = null;
+let textTool: TextHandler | null = null;
 
 function doRender() {
   // console.debug("Enable camera control", enableCameraControl.value)
@@ -223,6 +231,7 @@ function doRender() {
       renderer.render(scene, camera);
     }
   }
+  textRenderer.render(scene, camera);
 }
 
 watch(
@@ -230,18 +239,19 @@ watch(
   mode => {
     console.debug("New action mode", mode);
     currentTool?.deactivate();
+    enableCameraControl.value = false;
     switch (mode) {
       case "point":
-        if (pointTool === null) {
-          pointTool = new PointHandler(scene);
-        }
+        if (pointTool === null) pointTool = new PointHandler(scene);
         currentTool = pointTool;
-        enableCameraControl.value = false;
         break;
       case "line":
         if (lineTool === null) lineTool = new LineHandler(scene);
         currentTool = lineTool;
-        enableCameraControl.value = false;
+        break;
+      case "text":
+        if (textTool === null) textTool = new TextHandler(scene);
+        currentTool = textTool;
         break;
       default:
         enableCameraControl.value = true;
@@ -278,6 +288,12 @@ onMounted(() => {
   renderer.setClearColor(0xcccccc, 1);
   renderer.setAnimationLoop(doRender);
   renderer.render(scene, camera);
+  textRenderer = new CSS2DRenderer(/*{ element: textCanvas.value! }*/);
+  textRenderer.setSize(props.availableWidth, props.availableHeight);
+  textRenderer.domElement.style.position = "absolute";
+  textRenderer.domElement.style.top = "0px";
+  textRenderer.render(scene, camera);
+  textCanvas.value!.appendChild(textRenderer.domElement);
   useEventListener("mousemove", threeMouseTracker);
   useEventListener(webglCanvas, "mousedown", doMouseDown);
   useEventListener(webglCanvas, "mouseup", doMouseUp);
@@ -289,6 +305,7 @@ onUpdated(() => {
   camera.aspect = props.availableWidth / props.availableHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(props.availableWidth, props.availableHeight);
+  // textRenderer.setSize(props.availableWidth, props.availableHeight);
   renderer.render(scene, camera);
 });
 

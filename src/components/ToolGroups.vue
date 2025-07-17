@@ -91,15 +91,15 @@
   Intersections with surface
   <ul class="text-caption">
     <li
-      v-for="x in surfaceIntersections.filter((_, pos) => pos < 4)"
-      :key="x.object.name">
+      v-for="(x, pos) in surfaceIntersections.filter((_, pos) => pos < 4)"
+      :key="`${x.object.name}${pos}`">
       {{ x.point.toFixed(1) }} distance {{ x.distance.toFixed(2) }} with
       {{ x.object.name }}
     </li>
   </ul>
   Intersections with objects
   <ul class="text-caption">
-    <li v-for="x in objectIntersections" :key="x.object.name">
+    <li v-for="(x, pos) in objectIntersections" :key="`${x.object.name}${pos}`">
       {{ x.point.toFixed(1) }} distance {{ x.distance.toFixed(2) }} with
       {{ x.object.name }}
     </li>
