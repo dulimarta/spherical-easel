@@ -88,8 +88,15 @@
     </v-expansion-panels>
   </v-item-group>
 
+  Intersections with surface
   <ul>
-    <li v-for="x in mouseIntersections.filter((_,pos) => pos < 4)" :key="x.object.name">
+    <li v-for="x in surfaceIntersections.filter((_,pos) => pos < 4)" :key="x.object.name">
+      {{ x.point.toFixed(2) }} at {{ x.distance.toFixed(2) }} with {{ x.object.name }}
+    </li>
+  </ul>
+  Intersections with objects
+  <ul>
+    <li v-for="x in objectIntersections" :key="x.object.name">
       {{ x.point.toFixed(2) }} at {{ x.distance.toFixed(2) }} with {{ x.object.name }}
     </li>
   </ul>
@@ -117,7 +124,7 @@ const hyperStore = useHyperbolicStore();
 const { userRole, includedTools } = storeToRefs(acctStore);
 const seStore = useSEStore();
 const { seExpressions, seTransformations, actionMode } = storeToRefs(seStore);
-const { mouseIntersections } = storeToRefs(hyperStore);
+const { surfaceIntersections, objectIntersections } = storeToRefs(hyperStore);
 const route = useRoute();
 
 const inProductionMode = ref(false);

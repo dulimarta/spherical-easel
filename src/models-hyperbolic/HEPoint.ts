@@ -7,7 +7,6 @@ import {
   Object3D
 } from "three";
 import { HENodule } from "./HENodule";
-import { applyActionCode } from "firebase/auth";
 
 export class HEPoint extends HENodule {
   constructor(pos: Vector3) {
@@ -15,6 +14,9 @@ export class HEPoint extends HENodule {
     const material = new MeshStandardMaterial({ color: "white" });
     this.mesh.push(new Mesh(new SphereGeometry(0.05), material));
     this.mesh[0].position.copy(pos);
+    HENodule.POINT_COUNT++;
+    this.mesh[0].name = `P${HENodule.POINT_COUNT}`;
+    this.name = `P${HENodule.POINT_COUNT}`;
     const scale = pos.length();
     let apppliedScale = -1;
     if (scale > 1) {
@@ -61,5 +63,15 @@ export class HEPoint extends HENodule {
   }
   public shallowUpdate(): void {
     throw new Error("Method not implemented.");
+  }
+  public glowingDisplay(): void {
+    // console.debug(`Attempt to glow ${this.name}`);
+    (this.mesh[0].material as MeshStandardMaterial).color.set("yellow");
+    this.mesh[0].scale.set(2, 2, 2);
+  }
+  public normalDisplay(): void {
+    // console.debug(`Attempt to unglow ${this.name}`);
+    (this.mesh[0].material as MeshStandardMaterial).color.set("white");
+    this.mesh[0].scale.set(1.0, 1.0, 1.0);
   }
 }

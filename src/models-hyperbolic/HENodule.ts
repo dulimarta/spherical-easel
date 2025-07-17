@@ -1,12 +1,14 @@
-import { Object3D, Scene } from "three";
+import { Mesh, Scene } from "three";
 
 let NODE_COUNT = 0;
 export abstract class HENodule {
+  static POINT_COUNT = 0;
+
   protected _parents: HENodule[] = [];
   protected _kids: HENodule[] = [];
   public id: number;
   public name = "";
-  protected mesh: Array<Object3D> = [];
+  public mesh: Array<Mesh> = [];
   constructor() {
     this.id = NODE_COUNT++;
   }
@@ -48,4 +50,6 @@ export abstract class HENodule {
   public abstract removeFromScene(s: Scene): void;
   public abstract update(): void;
   public abstract shallowUpdate(): void;
+  public abstract glowingDisplay(): void;
+  public abstract normalDisplay(): void;
 }

@@ -16,6 +16,7 @@ import Nodule from "./plottables/Nodule";
 import { useHyperbolicStore } from "./stores/hyperbolic";
 import { createGtag } from "vue-gtag";
 import { SENodule } from "@/models/SENodule";
+import { PoseTracker } from "./eventHandlers_hyperbolic/PoseTracker";
 const firebaseApp = initializeApp(firebaseConfig);
 const pinia = createPinia();
 
@@ -52,4 +53,5 @@ const heStore = useHyperbolicStore();
 Command.setGlobalStore(seStore, heStore);
 MouseHandler.setGlobalStore(seStore);
 SENodule.setGlobalStore(seStore);
+PoseTracker.hyperStore = heStore;
 // Nodule.setGlobalStore(seStore);

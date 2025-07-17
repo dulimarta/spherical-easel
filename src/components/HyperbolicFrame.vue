@@ -84,7 +84,7 @@ import { LineHandler } from "@/eventHandlers_hyperbolic/LineHandler";
 import { createPoint } from "@/mesh/MeshFactory";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
-const { mouseIntersections } = storeToRefs(hyperStore);
+const { surfaceIntersections, objectIntersections } = storeToRefs(hyperStore);
 const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
 
@@ -294,23 +294,23 @@ onUpdated(() => {
 });
 
 function doMouseDown(ev: MouseEvent) {
-  if (mouseIntersections.value.length > 0)
+  if (surfaceIntersections.value.length > 0)
     currentTool?.mousePressed(
       ev,
       mouseCoordNormalized.value,
-      mouseIntersections.value[0].point,
-      mouseIntersections.value[0].normal!
+      surfaceIntersections.value[0].point,
+      surfaceIntersections.value[0].normal!
     );
   else currentTool?.mousePressed(ev, mouseCoordNormalized.value, null, null);
 }
 
 function doMouseUp(ev: MouseEvent) {
-  if (mouseIntersections.value.length > 0)
+  if (surfaceIntersections.value.length > 0)
     currentTool?.mouseReleased(
       ev,
       // mouseCoordNormalized.value,
-      mouseIntersections.value[0].point,
-      mouseIntersections.value[0].normal!
+      surfaceIntersections.value[0].point,
+      surfaceIntersections.value[0].normal!
     );
   else currentTool?.mouseReleased(ev, null, null);
 }
@@ -326,7 +326,7 @@ function threeMouseTracker(ev: MouseEvent) {
   // );
   rayCaster.setFromCamera(mouseCoordNormalized.value, camera);
   const regex = /(Sheet|Sphere)$/; // For filtering cursor intersection point(s)
-  mouseIntersections.value = rayCaster
+  [surfaceIntersections.value, objectIntersections.value] = rayCaster
     .intersectObjects(scene.children, true)
     .filter(iSect => {
       // console.debug(
@@ -334,17 +334,17 @@ function threeMouseTracker(ev: MouseEvent) {
       //   iSect.object.name,
       //   iSect.object.name.match(regex)
       // );
-      return iSect.object.name.match(regex);
-    });
+      return iSect.object.name.length > 0;
+    }).partition(x => x.object.name.match(regex) !== null);
   // let position3d: Vector3 | null;
   let firstIntersection: THREE.Intersection | null;
-  if (mouseIntersections.value.length > 0) {
-    // console.debug(`Number of all intersections ${allIntersections.length}`)
+  if (surfaceIntersections.value.length > 0) {
+    // console.debug(`Number of all intersections ${surfaceIntersections.value.length}`)
     // We are interested only in intersection with named objects
     // const namedIntersections = mouseIntersections.value.filter(
     //   z => z.object.name.length > 0 // we are interested only in named objects
     // );
-    firstIntersection = mouseIntersections.value[0];
+    firstIntersection = surfaceIntersections.value[0];
     // position3d = firstIntersection.point;
     if (firstIntersection.object.name.endsWith("Sheet"))
       onSurface.value = firstIntersection.object.name
@@ -352,7 +352,10 @@ function threeMouseTracker(ev: MouseEvent) {
         .toUpperCase() as ImportantSurface;
     else if (firstIntersection.object.name.endsWith("Sphere"))
       onSurface.value = "Sphere";
-    else onSurface.value = null;
+    else{
+      onSurface.value = null;
+      console.debug(`Intersection with ${firstIntersection.object.name}`, firstIntersection.normal)
+    }
     // console.debug(`First intersection ${firstIntersection.object.name}`);
     rayIntersectionPoint.position.copy(firstIntersection.point);
     secondaryIntersections.forEach(p => scene.remove(p));

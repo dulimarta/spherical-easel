@@ -9,7 +9,11 @@ import {
   ArrowHelper
 } from "three";
 import { Mouse3D } from "./mouseTypes";
+import { HEStoreType } from "@/stores/hyperbolic";
+import { HENodule } from "@/models-hyperbolic/HENodule";
 export class PoseTracker implements HyperbolicToolStrategy {
+  static hyperStore: HEStoreType;
+
   protected scene: Scene;
   protected first: Mouse3D = {
     normalized2D: new Vector2(),
@@ -28,6 +32,7 @@ export class PoseTracker implements HyperbolicToolStrategy {
   );
   private normalArrow = new ArrowHelper(); // ArrowHelper to show the normal vector of mouse intersection point
 
+  private hitObject: HENodule | null = null;
   // protected mouseCoordNormalized = new Vector2();
   // private rayCaster = new Raycaster();
   // private mousePoint = new Mesh(
@@ -53,6 +58,22 @@ export class PoseTracker implements HyperbolicToolStrategy {
     //   "dragging",
     //   this.isDragging
     // );
+    // console.debug(
+    //   "Object intersections: ",
+    //   PoseTracker.hyperStore.objectIntersections.length
+    // );
+    this.hitObject?.normalDisplay();
+    if (PoseTracker.hyperStore.objectIntersections.length > 0) {
+      const firstIntersect = PoseTracker.hyperStore.objectIntersections[0];
+      // console.debug("Hit object", firstIntersect.object.name);
+      this.hitObject = PoseTracker.hyperStore.getObjectById(
+        firstIntersect.object.name
+      );
+      // console.debug(`Changing color of`, this.hitObject);
+      if (this.hitObject) {
+        this.hitObject.glowingDisplay();
+      }
+    }
     if (position) {
       this.aPoint.position.copy(position);
       this.scene.add(this.aPoint);
