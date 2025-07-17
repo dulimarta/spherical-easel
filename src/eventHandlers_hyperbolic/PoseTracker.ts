@@ -6,11 +6,17 @@ import {
   Mesh,
   SphereGeometry,
   MeshStandardMaterial,
-  ArrowHelper
+  ArrowHelper,
+  CylinderGeometry,
+  Matrix4
 } from "three";
 import { Mouse3D } from "./mouseTypes";
 import { HEStoreType } from "@/stores/hyperbolic";
 import { HENodule } from "@/models-hyperbolic/HENodule";
+import { createPoint } from "@/mesh/MeshFactory";
+
+const ORIGIN = new Vector3(0, 0, 0);
+const Y_AXIS = new Vector3(0, 1, 0);
 export class PoseTracker implements HyperbolicToolStrategy {
   static hyperStore: HEStoreType;
 
@@ -30,6 +36,15 @@ export class PoseTracker implements HyperbolicToolStrategy {
     new SphereGeometry(0.05),
     new MeshStandardMaterial({ color: "white" })
   );
+  private auxLineCF = new Matrix4();
+  private auxRotationAxis = new Vector3();
+  private auxLine = new Mesh(
+    new CylinderGeometry(0.01, 0.01, 100),
+    // auxLineTube,
+    new MeshStandardMaterial({ color: "khaki" })
+  );
+  private secondaryIntersections: Array<Mesh> = [];
+
   private normalArrow = new ArrowHelper(); // ArrowHelper to show the normal vector of mouse intersection point
 
   private hitObject: HENodule | null = null;
@@ -45,6 +60,11 @@ export class PoseTracker implements HyperbolicToolStrategy {
     this.normalArrow.setColor(0xffffff);
     this.normalArrow.setLength(1, 0.2, 0.2);
     this.aPoint.add(this.normalArrow);
+    this.auxLine.matrixAutoUpdate = false;
+    for (let k = 0; k < 3; k++) {
+      const p = createPoint(0.06, "red");
+      this.secondaryIntersections.push(p);
+    }
   }
   mouseMoved(
     event: MouseEvent,
@@ -79,6 +99,48 @@ export class PoseTracker implements HyperbolicToolStrategy {
       this.scene.add(this.aPoint);
       this.normalArrow.setDirection(direction!);
       this.second.position.copy(position);
+      this.secondaryIntersections.forEach(p => this.scene.remove(p));
+
+      if (event.shiftKey) {
+        const angle = this.second.position.angleTo(Y_AXIS);
+        this.auxRotationAxis
+          .crossVectors(Y_AXIS, this.second.position)
+          .normalize();
+        this.auxLineCF.makeRotationAxis(this.auxRotationAxis, angle);
+        this.auxLine.matrix.copy(this.auxLineCF);
+        this.scene.add(this.auxLine);
+        const { x: x1, y: y1, z: z1 } = this.second.position;
+        // Always add the antipode
+        this.secondaryIntersections[0].position.set(-x1, -y1, -z1);
+        this.scene.add(this.secondaryIntersections[0]);
+        const pointDistance = this.second.position.length();
+        let scaleFactor = 0;
+        if (pointDistance > 1) {
+          /* Second point on hyperboloid */
+          scaleFactor = 1 / pointDistance;
+        } else {
+          /* Second point on sphere */
+          const scaleSquared = -1 / (x1 * x1 + y1 * y1 - z1 * z1);
+          if (scaleSquared > 0) scaleFactor = Math.sqrt(scaleSquared);
+        }
+        if (scaleFactor > 0) {
+          // Draw two more points
+          this.secondaryIntersections[1].position.set(
+            scaleFactor * x1,
+            scaleFactor * y1,
+            scaleFactor * z1
+          );
+          this.secondaryIntersections[2].position.set(
+            -scaleFactor * x1,
+            -scaleFactor * y1,
+            -scaleFactor * z1
+          );
+          this.scene.add(this.secondaryIntersections[1]);
+          this.scene.add(this.secondaryIntersections[2]);
+        }
+      } else {
+        this.scene.remove(this.auxLine);
+      }
     } else {
       this.scene.remove(this.aPoint);
       this.second.position.set(Number.NaN, Number.NaN, Number.NaN);
@@ -105,6 +167,9 @@ export class PoseTracker implements HyperbolicToolStrategy {
   mouseReleased(event: MouseEvent, p: Vector3, d: Vector3): void {
     console.debug("PoseTracker::mouseReleased");
     this.isDragging = false;
+    if (!event.shiftKey) {
+      this.scene.remove(this.auxLine);
+    }
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mouseLeave(event: MouseEvent): void {
