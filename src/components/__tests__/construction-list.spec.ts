@@ -264,7 +264,7 @@ describe("Construction List: Overlay buttons", () => {
     const acctStore = useAccountStore(testPinia);
     acctStore.userEmail = "me@test.com";
     acctStore.firebaseUid = "OID61123GYZ";
-    acctStore.starredConstructionIDs = ["PUBLICDOC0"];
+    acctStore.userProfile!.userStarredConstructions = ["PUBLICDOC0"];
     await wrapper.setProps({ items: testDataPublic, allowSharing: true });
     const overlayContent = await hoverToFirstItem(wrapper);
     // console.debug("Overlay", overlayContent?.html())

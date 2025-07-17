@@ -10,7 +10,7 @@
     <v-btn
       :style="{ position: 'absolute', right: '16px' }"
       icon
-      v-if="userRole && userRole === 'instructor'"
+      v-if="userProfile?.role?.toLowerCase() === 'instructor'"
       size="x-small"
       class="mr-1"
       color="green-darken-1"
@@ -103,9 +103,9 @@ import EventBus from "@/eventHandlers/EventBus";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 import { inject } from "vue";
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 const acctStore = useAccountStore();
-const { userRole, includedTools } = storeToRefs(acctStore);
+const { userProfile, includedTools } = storeToRefs(acctStore);
 const seStore = useSEStore();
 const { seExpressions, seTransformations, actionMode } = storeToRefs(seStore);
 

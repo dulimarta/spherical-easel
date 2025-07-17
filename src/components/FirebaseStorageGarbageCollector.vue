@@ -167,7 +167,6 @@ import {
   getDoc,
   getDocs,
   getFirestore,
-  QuerySnapshot,
   updateDoc
 } from "firebase/firestore";
 import { UserProfile } from "@/types";

@@ -6,26 +6,26 @@ import "@/scss/settings.scss";
 import { mdi } from "vuetify/iconsets/mdi";
 import { customIcons } from "./iconAliases";
 import colors from "vuetify/util/colors";
-import {md3 as blueprint} from "vuetify/blueprints"
+import { md3 as blueprint } from "vuetify/blueprints";
 const SECustomTheme: ThemeDefinition = {
   // dark: true,
   colors: {
     background: colors.red.base,
-    'on-background': colors.red.lighten4,
+    "on-background": colors.red.lighten4,
     surface: colors.lightGreen.lighten5,
-    'on-surface': colors.lightGreen.darken3,
+    "on-surface": colors.lightGreen.darken3,
     primary: colors.green.base,
-    'on-primary': colors.green.lighten3,
+    "on-primary": colors.green.lighten3,
     secondary: colors.blue.base,
-    'on-secondary': colors.blue.accent4,
+    "on-secondary": colors.blue.accent4,
     success: colors.green.accent1,
-    'on-success': colors.green.darken3,
+    "on-success": colors.green.darken3,
     warning: colors.yellow.accent1,
-    'on-warning': colors.shades.black,
+    "on-warning": colors.shades.black,
     error: colors.red.accent1,
-    'on-error': colors.red.lighten2,
+    "on-error": colors.red.lighten2,
     info: colors.grey.base,
-    'on-info': colors.shades.black,
+    "on-info": colors.shades.black
   }
 };
 
@@ -56,7 +56,7 @@ export default createVuetify({
     }
   },
   theme: {
-    defaultTheme: 'light', // "SECustomTheme",
+    defaultTheme: "light", // "SECustomTheme",
     themes: {
       SECustomTheme
     }

@@ -36,7 +36,7 @@
               opacity="0.9"
               scrim="white"
               width="600"-->
-            <ParametricForm/>
+            <ParametricForm />
             <!--v-overlay-->
           </v-expansion-panel-text>
         </v-expansion-panel>
@@ -146,7 +146,7 @@
         </v-sheet>
         <v-sheet
           rounded
-          color = "accent"
+          color="accent"
           :elevation="4"
           class="my-3"
           v-show="seTexts.length > 0">
@@ -154,7 +154,6 @@
             :label="t('text', seTexts.length)"
             :children="seTexts"></SENoduleList>
         </v-sheet>
-
 
         <!--v-sheet rounded
           color="accent"
@@ -200,12 +199,12 @@ const {
   seTransformations,
   seTexts //added seText in se.ts line 3999
 } = storeToRefs(seStore);
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 let displayExpressionSheetAgain = true;
 const pointsKey = ref(0);
 const parametricVisible = ref(true);
 const panels: Ref<Array<number>> = ref([]);
-const appFeature = inject('features')
+const appFeature = inject("features");
 
 // const userCreatedPoints = computed(() => {
 //   return sePoints.value.filter(

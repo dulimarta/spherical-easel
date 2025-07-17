@@ -35,7 +35,7 @@ const styleStore = useStylingStore();
 const args = defineProps<ComponentProps>();
 const { conflictingProperties: allDisagreement, forceAgreement } =
   storeToRefs(styleStore);
-const { t } = useI18n();
+const { t } = useI18n({ useScope: "local" });
 // const applyToAll = ref(forceAgreement.value;
 const localDisagreement = computed(() => {
   if (!allDisagreement.value) return [];

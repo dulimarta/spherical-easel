@@ -1,58 +1,51 @@
 <template>
-  <h2 v-t="'sectionHeading'"></h2>
-  <v-container>
-    <v-row>
-      <v-col cols="3">
-        <v-card>
-          <v-card-title>
-            {{ t("allTools") }}
-          </v-card-title>
-          <v-card-text>
-            <v-list density="compact" id="mainToolsList">
-              <v-list-item
-                v-for="tool in allToolsList"
-                :key="tool.action"
-                @click="selected = tool.action">
-                <template #prepend>
-                  <v-icon>
-                    {{ tool.icon ?? "$" + tool.action }}
-                  </v-icon>
-                </template>
-
-                <v-list-item-title>
-                  {{ t(tool.displayedName) }}
-                </v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-card-text>
-        </v-card>
-      </v-col>
-      <v-col cols="9">
-        <v-container>
-          <v-row>
-            <v-col cols="6">
-              <FavoriteToolsCard
-                v-model="favoriteTools[0]"
-                :tool-pick="selected"
-                :id="0"
-                :list-title="t('topLeft')"
-                v-on:tool-added="onToolAdded"
-                v-on:tool-removed="onToolRemoved" />
-            </v-col>
-            <v-col cols="6">
-              <FavoriteToolsCard
-                v-model="favoriteTools[1]"
-                :tool-pick="selected"
-                :id="1"
-                :list-title="t('topRight')"
-                v-on:tool-added="onToolAdded"
-                v-on:tool-removed="onToolRemoved" />
-            </v-col>
-          </v-row>
-        </v-container>
-      </v-col>
-    </v-row>
-  </v-container>
+  <h2>{{ t("sectionHeading") }}</h2>
+  <!-- <ul>
+    <li v-for="t in allToolsList" :key="t.action">
+      {{ t.action }} {{ t.displayedName }}
+    </li>
+  </ul> -->
+  <div
+    :style="{
+      display: 'flex',
+      flexDirection: 'row',
+      justifyContent: 'space-evenly',
+      maxHeight: '60vh',
+      columnGap: '2em'
+    }">
+    <div class="mx-2">
+      <span>Available tools ({{ allToolsList.length }})</span>
+      <v-list
+        density="compact"
+        v-model:activated="itemSelection"
+        :items="allToolsList"
+        item-value="action"
+        item-title="displayedName"
+        activatable
+        active-class="bg-green-lighten-1">
+        <template #title="{ title }">{{ t(title as string) }}</template>
+        <template #prepend="{ item }">
+          <v-icon>{{ "$" + item.action }}</v-icon>
+        </template>
+      </v-list>
+    </div>
+    <FavoriteToolsCard
+      :style="{ flexGrow: 1 }"
+      v-model="favoriteTools[0]"
+      :tool-pick="itemSelection.length > 0 ? itemSelection[0] : null"
+      :id="0"
+      :list-title="t('topLeft')"
+      v-on:tool-added="onToolAdded"
+      v-on:tool-removed="onToolRemoved" />
+    <FavoriteToolsCard
+      :style="{ flexGrow: 1 }"
+      v-model="favoriteTools[1]"
+      :tool-pick="itemSelection.length > 0 ? itemSelection[0] : null"
+      :id="1"
+      :list-title="t('topRight')"
+      v-on:tool-added="onToolAdded"
+      v-on:tool-removed="onToolRemoved" />
+  </div>
 </template>
 <script setup lang="ts">
 import { ref, Ref, onBeforeMount } from "vue";
@@ -68,8 +61,8 @@ const acctStore = useAccountStore();
 const { favoriteTools } = storeToRefs(acctStore);
 const { t } = useI18n({ useScope: "local" });
 const allToolsList: Ref<ToolButtonType[]> = ref([]);
-const selected: Ref<ActionMode | null> = ref(null);
-
+// const selected: Ref<ActionMode | null> = ref(null);
+const itemSelection = ref([]);
 onBeforeMount(() => {
   allToolsList.value = Array.from(TOOL_DICTIONARY.values()).filter(
     (t: ToolButtonType) =>
@@ -105,11 +98,11 @@ function toolSortFunc(a: ToolButtonType, b: ToolButtonType): number {
 
 function onToolAdded() {
   const pos = allToolsList.value.findIndex(
-    (t: ToolButtonType) => t.action === selected.value
+    (t: ToolButtonType) => t.action === itemSelection.value[0]
   );
   if (pos >= 0) {
     allToolsList.value.splice(pos, 1);
-    selected.value = null;
+    itemSelection.value.splice(0);
   }
 }
 
@@ -118,13 +111,6 @@ function onToolRemoved(toolName: ActionMode) {
   allToolsList.value.sort(toolSortFunc);
 }
 </script>
-<style scoped>
-#mainToolsList {
-  /* display: inline-block; */
-  max-height: 50vh;
-  overflow-y: auto;
-}
-</style>
 <i18n locale="en">
 {
   "allTools": "All Tools",

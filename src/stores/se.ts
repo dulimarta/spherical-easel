@@ -1337,7 +1337,7 @@ export const useSEStore = defineStore("se", () => {
     //   };
   }
   // },
-  // eslint-disable-next-line no-unused-vars
+
   function findSENoduleById(id: number): SENodule | undefined {
     return seNodules.value
       .map(z => z as SENodule)
@@ -1345,10 +1345,8 @@ export const useSEStore = defineStore("se", () => {
   }
 
   //#region findNearbyGetter
-  // eslint-disable-next-line no-unused-vars
   function findNearbySENodules(
     unitIdealVector: Vector3,
-    // eslint-disable-next-line no-unused-vars
     screenPosition: Vector2
   ): SENodule[] {
     return seNodules.value.filter((obj: SENodule) => {

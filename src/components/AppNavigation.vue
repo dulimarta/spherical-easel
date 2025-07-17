@@ -73,6 +73,8 @@
             marginBottom: '8px',
             alignItems: mouseOnDrawer ? 'flex-start' : 'center'
           }">
+          <AuthenticatedUserToolbox :expanded-view="mouseOnDrawer" />
+          <LanguageSelector />
           <template v-if="!inProductionMode">
             <!-- A rudimentary tool to clean up unused SVG/script files in Firebase Storage -->
             <router-link to="/firebase-cleanup">
@@ -118,14 +120,7 @@
 </template>
 
 <script lang="ts" setup>
-import {
-  onBeforeMount,
-  onBeforeUnmount,
-  onMounted,
-  ref,
-  computed,
-  inject
-} from "vue";
+import { onBeforeMount, onBeforeUnmount, ref, computed, inject } from "vue";
 import ToolGroups from "@/components/ToolGroups.vue";
 import EventBus from "@/eventHandlers/EventBus";
 import ObjectTree from "./ObjectTree.vue";
@@ -133,25 +128,16 @@ import ConstructionLoader from "./ConstructionLoader.vue";
 import EarthToolVue from "@/components/EarthTool.vue";
 import LanguageSelector from "./LanguageSelector.vue";
 import AuthenticatedUserToolbox from "./AuthenticatedUserToolbox.vue";
-import { useSEStore } from "@/stores/se";
-import { useAccountStore } from "@/stores/account";
-import { storeToRefs } from "pinia";
-import { useLayout } from "vuetify";
 import { useDisplay } from "vuetify";
-import axios from "axios";
 import { Handler } from "mitt";
 // import { computed } from "vue";
 // import { set } from "@vueuse/core";
 const appFeature = inject("features");
 
-const seStore = useSEStore();
-const acctStore = useAccountStore();
-const { actionMode } = storeToRefs(seStore);
-// const props = defineProps<{ minified: boolean }>();
 const announce = defineEmits<{
   drawerWidthChanged: [width: number];
 }>();
-const { height, width, name } = useDisplay();
+const { height } = useDisplay();
 // eslint-disable-next-line no-unused-vars
 // const temp = ref("0px");
 const rail = ref(true);
@@ -165,7 +151,6 @@ const expandOnHover = ref(true);
 const inProductionMode = computed((): boolean => {
   return import.meta.env.MODE === "production";
 });
-const svgSnippetAmended = ref("");
 
 function navigationMonitor(shown: boolean) {
   bigDrawerVisible.value = shown;
@@ -183,7 +168,6 @@ function setHover() {
 // const minified = ref(false);
 // const emit = defineEmits(["minifyToggled"]);
 /* Copy global setting to local variable */
-const activeLeftDrawerTab = ref(0);
 onBeforeMount((): void => {
   EventBus.listen(
     "left-panel-set-active-tab",
@@ -202,38 +186,12 @@ onBeforeMount((): void => {
   //   });
 });
 
-// onMounted((): void => {
-//   // const { mainRect } = useLayout();
-//   // console.log("Layout details", mainRect);
-//   // console.log("Display details", height.value, width.value, name.value);
-//   // activeItem.value = [];
-//   // this.scene = this.layers[LAYER.midground];
-// });
-
-function switchTab(): void {
-  // console.log("this.activeLeftDrawerTab", this.activeLeftDrawerTab);
-  if (activeLeftDrawerTab.value === 1) {
-    // 1 is the index of the object tree tab
-    // change to the move mode, but only if we are not using the measured circle tool
-    if (
-      actionMode.value !== "measuredCircle" &&
-      actionMode.value !== "translation" &&
-      actionMode.value !== "rotation"
-    ) {
-      seStore.setActionMode("move");
-    }
-  }
-}
 function setActiveTab(e: { tabName: string }): void {
   // console.log("Active Tab", e.tabName);
   activeItem.value = [e.tabName];
   // activeLeftDrawerTab.value = e.tabNumber;
 }
 
-// function toggleMinify() {
-//   minified.value = !minified.value;
-//   emit("minifyToggled", minified.value);
-// }
 onBeforeUnmount((): void => {
   EventBus.unlisten("left-panel-set-active-tab");
 });

@@ -2,10 +2,7 @@ import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SENodule } from "./SENodule";
 import { Vector2, Vector3 } from "three";
-import { Vector } from "two.js/src/vector";
-import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
-// import { TextMoverVisitor } from "@/visitors/TextMoverVisitor";
 import Text from "@/plottables/Text";
 import { DisplayStyle } from "@/plottables/Nodule";
 import {
@@ -13,14 +10,13 @@ import {
   // DEFAULT_TEXT_FRONT_STYLE,
   DEFAULT_TEXT_TEXT_STYLE
 } from "@/types/Styles";
-const { t } = i18n.global;
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_TEXT_TEXT_STYLE)
 ]);
 
 export class SEText extends SENodule {
-  declare public ref: Text; //<- plottable Text object in TwoJS
+  public declare ref: Text; //<- plottable Text object in TwoJS
 
   protected _locationVector = new Vector2();
 
@@ -74,10 +70,10 @@ export class SEText extends SENodule {
 
   // implement for MOVE tool
   public isHitAt(
-    unitIdealVector: Vector3,
+    _unitIdealVector: Vector3,
     currentMagnificationFactor: number,
     screenPosition: Vector2 = new Vector2(),
-    extraFactor?: number
+    _extraFactor?: number
   ): boolean {
     // Get the bounding box of the text
     const boundingBox = this.ref.boundingRectangle;
@@ -130,7 +126,7 @@ export class SEText extends SENodule {
   //   // console.log("set default name of ", this.name, "to", txt)
   //   this.ref.setDefaultText(txt)
   // }
-  public accept(v: Visitor): boolean {
+  public accept(_: Visitor): boolean {
     return false;
   }
 }
