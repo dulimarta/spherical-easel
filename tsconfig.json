@@ -30,26 +30,15 @@
       "./node_modules"
     ],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "$/*": [
-        "./tests/*"
-      ]
+      "@/*": ["./src/*"],
+      "$/*": ["./tests/*"]
     },
-    "lib": [
-      "esnext",
-      "dom",
-      "dom.iterable",
-      "scripthost"
-    ],
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
     "resolveJsonModule": true,
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true
   },
-  "exclude": [
-    "node_modules"
-  ],
+  "exclude": ["node_modules"],
   "include": [
     "src/**/*.ts",
     "tests/*.ts", // This is needed to enable path mapping $/* above

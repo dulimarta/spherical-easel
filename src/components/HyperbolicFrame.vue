@@ -33,10 +33,6 @@
     id="webglCanvas"
     :width="props.availableWidth"
     :height="props.availableHeight" />
-  <div
-    ref="textCanvas"
-    :width="props.availableWidth"
-    :height="props.availableHeight"></div>
 </template>
 
 <script setup lang="ts">
@@ -87,10 +83,10 @@ import { LineHandler } from "@/eventHandlers_hyperbolic/LineHandler";
 import { createPoint } from "@/mesh/MeshFactory";
 import { onBeforeMount } from "vue";
 import { TextHandler } from "@/eventHandlers_hyperbolic/TextHandler";
-import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
-const { surfaceIntersections, objectIntersections } = storeToRefs(hyperStore);
+const { surfaceIntersections, objectIntersections, cameraQuaternion } =
+  storeToRefs(hyperStore);
 const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
 
@@ -128,7 +124,6 @@ const rayCaster = new Raycaster();
 const mouseCoordNormalized: Ref<THREE.Vector2> = ref(new THREE.Vector2()); // used by RayCaster
 let camera: PerspectiveCamera;
 let renderer: WebGLRenderer;
-let textRenderer: CSS2DRenderer;
 let cameraController: CameraControls;
 CameraControls.install({ THREE });
 const ambientLight = new AmbientLight(0xffffff, 1.5);
@@ -140,6 +135,7 @@ scene.add(pointLight);
 const rayIntersectionPoint = createPoint(0.05, "white");
 
 function initialize() {
+  // cameraQuaternion.value.copy(camera.q);
   const xyGrid = new GridHelper();
   xyGrid.translateZ(1);
   xyGrid.rotateX(Math.PI / 2);
@@ -231,7 +227,6 @@ function doRender() {
       renderer.render(scene, camera);
     }
   }
-  textRenderer.render(scene, camera);
 }
 
 watch(
@@ -279,6 +274,7 @@ onMounted(() => {
   camera.position.set(8, 7, 6);
   camera.up.set(0, 0, 1);
   camera.lookAt(0, 0, 0);
+  cameraQuaternion.value.copy(camera.quaternion);
   cameraController = new CameraControls(camera, webglCanvas.value!);
   renderer = new WebGLRenderer({
     canvas: webglCanvas.value!,
@@ -288,15 +284,11 @@ onMounted(() => {
   renderer.setClearColor(0xcccccc, 1);
   renderer.setAnimationLoop(doRender);
   renderer.render(scene, camera);
-  textRenderer = new CSS2DRenderer(/*{ element: textCanvas.value! }*/);
-  textRenderer.setSize(props.availableWidth, props.availableHeight);
-  textRenderer.domElement.style.position = "absolute";
-  textRenderer.domElement.style.top = "0px";
-  textRenderer.render(scene, camera);
-  textCanvas.value!.appendChild(textRenderer.domElement);
+  // textRenderer.render(scene, camera);
+  // visualContent.value!.appendChild(textRenderer.domElement);
   useEventListener("mousemove", threeMouseTracker);
-  useEventListener(webglCanvas, "mousedown", doMouseDown);
-  useEventListener(webglCanvas, "mouseup", doMouseUp);
+  useEventListener(webglCanvas.value, "mousedown", doMouseDown);
+  useEventListener(webglCanvas.value, "mouseup", doMouseUp);
   currentTool = new PointHandler(scene);
 });
 
@@ -305,11 +297,11 @@ onUpdated(() => {
   camera.aspect = props.availableWidth / props.availableHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(props.availableWidth, props.availableHeight);
-  // textRenderer.setSize(props.availableWidth, props.availableHeight);
   renderer.render(scene, camera);
 });
 
 function doMouseDown(ev: MouseEvent) {
+  console.debug("MouseDown");
   if (surfaceIntersections.value.length > 0)
     currentTool?.mousePressed(
       ev,
@@ -321,6 +313,7 @@ function doMouseDown(ev: MouseEvent) {
 }
 
 function doMouseUp(ev: MouseEvent) {
+  console.debug("MouseUp");
   if (surfaceIntersections.value.length > 0)
     currentTool?.mouseReleased(
       ev,

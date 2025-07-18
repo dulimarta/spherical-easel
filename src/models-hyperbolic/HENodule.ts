@@ -1,8 +1,10 @@
+import { HEStoreType } from "@/stores/hyperbolic";
 import { Mesh, Scene } from "three";
 
 let NODE_COUNT = 0;
 export abstract class HENodule {
   static POINT_COUNT = 0;
+  static hyperStore: HEStoreType;
 
   protected _parents: HENodule[] = [];
   protected _kids: HENodule[] = [];

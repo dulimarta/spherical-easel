@@ -7,19 +7,20 @@ import {
   Object3D
 } from "three";
 import { HENodule } from "./HENodule";
-import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
-
+import { Text } from "troika-three-text";
 export class HEPoint extends HENodule {
   constructor(pos: Vector3) {
     super();
     const material = new MeshStandardMaterial({ color: "white" });
     this.mesh.push(new Mesh(new SphereGeometry(0.05), material));
     this.mesh[0].position.copy(pos);
-    const txtSpan = document.createElement("div");
-    txtSpan.textContent = `Point ${HEPoint.POINT_COUNT}`;
-    const txtObject = new CSS2DObject(txtSpan);
+    const txtObject = new Text();
+    txtObject.text = `Point ${HENodule.POINT_COUNT}`;
     txtObject.position.set(0, 0, 0);
-    // txtObject.position.copy(pos);
+    txtObject.fontSize = 0.3;
+    txtObject.color = 0x000000;
+    txtObject.quaternion.copy(HENodule.hyperStore.cameraQuaternion);
+    txtObject.sync();
     this.mesh[0].add(txtObject);
 
     HENodule.POINT_COUNT++;

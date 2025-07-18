@@ -2,7 +2,7 @@ import { HENodule } from "@/models-hyperbolic/HENodule";
 import { HEPoint } from "@/models-hyperbolic/HEPoint";
 // import { ActionMode } from "@/types";
 import { defineStore } from "pinia";
-import { Intersection, Mesh, Object3D, Scene } from "three";
+import { Intersection, Mesh, Object3D, Quaternion, Scene } from "three";
 import { markRaw } from "vue";
 import { ref, Ref } from "vue";
 
@@ -10,6 +10,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const surfaceIntersections: Ref<Intersection[]> = ref([]);
   const objectIntersections: Ref<Intersection[]> = ref([]);
   const objectMap: Map<string, HENodule> = new Map();
+  const cameraQuaternion: Ref<Quaternion> = ref(new Quaternion());
   // const actionMode: Ref<ActionMode> = ref("move");
   let threeJSScene: Scene;
 
@@ -33,6 +34,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   }
   return {
     surfaceIntersections,
+    cameraQuaternion,
     objectIntersections,
     addPoint,
     getObjectById,
