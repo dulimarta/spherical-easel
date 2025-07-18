@@ -83,6 +83,7 @@ import { LineHandler } from "@/eventHandlers_hyperbolic/LineHandler";
 import { createPoint } from "@/mesh/MeshFactory";
 import { onBeforeMount } from "vue";
 import { TextHandler } from "@/eventHandlers_hyperbolic/TextHandler";
+import { FontLoader } from "three/examples/jsm/loaders/FontLoader";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
 const { surfaceIntersections, objectIntersections, cameraQuaternion } =
@@ -223,7 +224,9 @@ function doRender() {
     const hasUpdatedControls = cameraController.update(deltaTime);
     // console.debug("Enable camera control?", hasUpdatedControls);
     if (hasUpdatedControls) {
-      console.debug(`Camera control triggers update`);
+      // console.debug(`Camera control triggers update`, camera.quaternion);
+      cameraQuaternion.value.copy(camera.quaternion);
+      hyperStore.reorientText(camera.quaternion);
       renderer.render(scene, camera);
     }
   }
@@ -301,7 +304,7 @@ onUpdated(() => {
 });
 
 function doMouseDown(ev: MouseEvent) {
-  console.debug("MouseDown");
+  // console.debug("MouseDown");
   if (surfaceIntersections.value.length > 0)
     currentTool?.mousePressed(
       ev,
@@ -313,7 +316,7 @@ function doMouseDown(ev: MouseEvent) {
 }
 
 function doMouseUp(ev: MouseEvent) {
-  console.debug("MouseUp");
+  // console.debug("MouseUp");
   if (surfaceIntersections.value.length > 0)
     currentTool?.mouseReleased(
       ev,

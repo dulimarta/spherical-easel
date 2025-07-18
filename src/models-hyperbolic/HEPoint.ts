@@ -7,24 +7,45 @@ import {
   Object3D
 } from "three";
 import { HENodule } from "./HENodule";
+import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { Text } from "troika-three-text";
 export class HEPoint extends HENodule {
+  private pointMesh: Mesh;
   constructor(pos: Vector3) {
     super();
     const material = new MeshStandardMaterial({ color: "white" });
-    this.mesh.push(new Mesh(new SphereGeometry(0.05), material));
-    this.mesh[0].position.copy(pos);
+    this.pointMesh = new Mesh(new SphereGeometry(0.05), material);
+    this.pointMesh.position.copy(pos);
+    this.group.add(this.pointMesh);
     const txtObject = new Text();
-    txtObject.text = `Point ${HENodule.POINT_COUNT}`;
-    txtObject.position.set(0, 0, 0);
+    // console.debug("Text object material", txtObject.material);
+    txtObject.name = `La${HENodule.POINT_COUNT}`;
+    txtObject.text = `P${HENodule.POINT_COUNT}`;
+    txtObject.anchorX = "center";
+    txtObject.anchorY = "bottom";
+    // txtObject.position.set(0, 0, 0);
     txtObject.fontSize = 0.3;
-    txtObject.color = 0x000000;
+    txtObject.color = "black"; //0x000000;
+
+    // Copy the camera quaternion so the text is always facing the camera
     txtObject.quaternion.copy(HENodule.hyperStore.cameraQuaternion);
+    // Disable depthTest so the text is not occluded by other objects?
+    // But the sideeffect is that text objects will never get occluded
+    // txtObject.material.depthTest = false;
     txtObject.sync();
-    this.mesh[0].add(txtObject);
+    this.pointMesh.add(txtObject);
+    // const textGeo = new TextGeometry(`P${HENodule.POINT_COUNT}`, {
+    //   font: HENodule.hyperStore.font!,
+    //   size: 50
+    // });
+
+    // const textMesh = new Mesh(textGeo, material);
+    // this.pointMesh.add(textMesh);
+    // this.group.add(textMesh);
+    // textMesh.position.copy(pos);
 
     HENodule.POINT_COUNT++;
-    this.mesh[0].name = `P${HENodule.POINT_COUNT}`;
+    this.pointMesh.name = `P${HENodule.POINT_COUNT}`;
     this.name = `P${HENodule.POINT_COUNT}`;
     const scale = pos.length();
     let apppliedScale = -1;
@@ -39,33 +60,34 @@ export class HEPoint extends HENodule {
       apppliedScale = hscale < 0 ? Math.sqrt(-hscale) : -1;
     }
     if (apppliedScale > 0) {
-      // We have a secondary point to add
-      this.mesh.push(
-        new Mesh(
-          new SphereGeometry(0.05),
-          new MeshStandardMaterial({ color: "white" })
-        )
+      const extraPointMesh = new Mesh(
+        new SphereGeometry(0.05),
+        new MeshStandardMaterial({ color: "white" })
       );
-      this.mesh[1].position.copy(pos);
-      this.mesh[1].position.divideScalar(apppliedScale);
+      // We have a secondary point to add
+      this.group.add(extraPointMesh);
+      extraPointMesh.position.copy(pos);
+      extraPointMesh.position.divideScalar(apppliedScale);
     } else {
       // Points on sphere with no associated hyperbolic counterpart are colored red
       material.color.setColorName("red");
     }
   }
 
-  addToScene(s: Scene): void {
-    // throw new Error("Method not implemented.");
-    this.mesh.forEach((m: Object3D) => {
-      s.add(m);
-    });
-  }
-  removeFromScene(s: Scene): void {
-    // throw new Error("Method not implemented.");
-    this.mesh.forEach((m: Object3D) => {
-      s.remove(m);
-    });
-  }
+  // addToScene(s: Scene): void {
+  //   // throw new Error("Method not implemented.");
+  //   s.add(this.group);
+  //   // this.mesh.forEach((m: Object3D) => {
+  //   //   s.add(m);
+  //   // });
+  // }
+  // removeFromScene(s: Scene): void {
+  //   // throw new Error("Method not implemented.");
+  //   s.remove(this.group);
+  //   // this.mesh.forEach((m: Object3D) => {
+  //   //   s.remove(m);
+  //   // });
+  // }
 
   public update(): void {
     throw new Error("Method not implemented.");
@@ -75,12 +97,12 @@ export class HEPoint extends HENodule {
   }
   public glowingDisplay(): void {
     // console.debug(`Attempt to glow ${this.name}`);
-    (this.mesh[0].material as MeshStandardMaterial).color.set("yellow");
-    this.mesh[0].scale.set(2, 2, 2);
+    (this.pointMesh.material as MeshStandardMaterial).color.set("yellow");
+    this.pointMesh.scale.set(1.25, 1.25, 1.25);
   }
   public normalDisplay(): void {
     // console.debug(`Attempt to unglow ${this.name}`);
-    (this.mesh[0].material as MeshStandardMaterial).color.set("white");
-    this.mesh[0].scale.set(1.0, 1.0, 1.0);
+    (this.pointMesh.material as MeshStandardMaterial).color.set("white");
+    this.pointMesh.scale.set(1.0, 1.0, 1.0);
   }
 }

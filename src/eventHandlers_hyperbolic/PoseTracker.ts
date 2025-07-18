@@ -72,12 +72,12 @@ export class PoseTracker implements HyperbolicToolStrategy {
     position: Vector3 | null,
     direction: Vector3 | null
   ): void {
-    console.debug(
-      "PoseTracker::mouseMoved",
-      position ? position.toFixed(2) : "N/A",
-      "dragging",
-      this.isDragging
-    );
+    // console.debug(
+    //   "PoseTracker::mouseMoved",
+    //   position ? position.toFixed(2) : "N/A",
+    //   "dragging",
+    //   this.isDragging
+    // );
     // console.debug(
     //   "Object intersections: ",
     //   PoseTracker.hyperStore.objectIntersections.length
@@ -162,11 +162,10 @@ export class PoseTracker implements HyperbolicToolStrategy {
     if (n) this.first.normal.copy(n);
     else this.first.normal.set(Number.NaN, Number.NaN, Number.NaN);
     this.isDragging = true;
-    console.debug("PoseTracker::mousePressed", this.isDragging);
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mouseReleased(event: MouseEvent, p: Vector3, d: Vector3): void {
-    console.debug("PoseTracker::mouseReleased");
+    // console.debug("PoseTracker::mouseReleased");
     this.isDragging = false;
     if (!event.shiftKey) {
       this.scene.remove(this.auxLine);

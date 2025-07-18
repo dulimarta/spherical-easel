@@ -1,5 +1,5 @@
 import { HEStoreType } from "@/stores/hyperbolic";
-import { Mesh, Scene } from "three";
+import { Group, Mesh, MeshBasicMaterial, Scene } from "three";
 
 let NODE_COUNT = 0;
 export abstract class HENodule {
@@ -10,7 +10,8 @@ export abstract class HENodule {
   protected _kids: HENodule[] = [];
   public id: number;
   public name = "";
-  public mesh: Array<Mesh> = [];
+  // public mesh: Array<Mesh> = [];
+  protected group = new Group();
   constructor() {
     this.id = NODE_COUNT++;
   }
@@ -48,8 +49,19 @@ export abstract class HENodule {
     }
   }
 
-  public abstract addToScene(s: Scene): void;
-  public abstract removeFromScene(s: Scene): void;
+  public addToScene(s: Scene): void {
+    s.add(this.group);
+  }
+  public removeFromScene(s: Scene) {
+    this.group.children
+      .map(c => c as Mesh)
+      .forEach(c => {
+        (c.material as MeshBasicMaterial).dispose();
+        c.geometry.dispose();
+      });
+    s.remove(this.group);
+  }
+
   public abstract update(): void;
   public abstract shallowUpdate(): void;
   public abstract glowingDisplay(): void;
