@@ -34,9 +34,11 @@ export class HEPoint extends HENodule {
     // txtObject.material.depthTest = false;
     txtObject.sync();
     this.pointMesh.add(txtObject);
-    // const textGeo = new TextGeometry(`P${HENodule.POINT_COUNT}`, {
+    // console.debug("Text font", HENodule.hyperStore.font);
+    // const textGeo = new TextGeometry(`Point${HENodule.POINT_COUNT}`, {
     //   font: HENodule.hyperStore.font!,
-    //   size: 50
+    //   size: 0.1,
+    //   depth: 3
     // });
 
     // const textMesh = new Mesh(textGeo, material);
@@ -64,6 +66,7 @@ export class HEPoint extends HENodule {
         new SphereGeometry(0.05),
         new MeshStandardMaterial({ color: "white" })
       );
+      extraPointMesh.name = `EP${HENodule.POINT_COUNT}`;
       // We have a secondary point to add
       this.group.add(extraPointMesh);
       extraPointMesh.position.copy(pos);

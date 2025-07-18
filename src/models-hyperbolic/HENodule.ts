@@ -11,7 +11,7 @@ export abstract class HENodule {
   public id: number;
   public name = "";
   // public mesh: Array<Mesh> = [];
-  protected group = new Group();
+  public group = new Group();
   constructor() {
     this.id = NODE_COUNT++;
   }

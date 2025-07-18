@@ -2,11 +2,9 @@ import { HENodule } from "@/models-hyperbolic/HENodule";
 import { HEPoint } from "@/models-hyperbolic/HEPoint";
 // import { ActionMode } from "@/types";
 import { defineStore } from "pinia";
-import { Intersection, Mesh, Object3D, Quaternion, Scene } from "three";
-import { FontLoader } from "three/examples/jsm/loaders/FontLoader";
+import { Intersection, Quaternion, Scene } from "three";
 import { markRaw } from "vue";
 import { ref, Ref } from "vue";
-import axios from "axios";
 import { useThreeFont } from "@/composables/useThreeFont";
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const surfaceIntersections: Ref<Intersection[]> = ref([]);
@@ -37,9 +35,14 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     objectMap
       .values()
       .filter(obj => obj instanceof HEPoint)
-      .forEach(p => {
-        // Using copy() cause the code to crash at runtime ("undefined property")
-        // p.mesh[0].children[0].quaternion.set(quat.x, quat.y, quat.z, quat.w);
+      .flatMap(p => p.group.children[0].children)
+      .filter(p => {
+        // console.debug("Here is", p);
+        return p.name.startsWith("La");
+      })
+      .forEach(t => {
+        // console.debug("What is", t);
+        t.quaternion.copy(quat);
       });
   }
   return {
