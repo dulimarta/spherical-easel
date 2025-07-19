@@ -50,23 +50,19 @@ import {
   Scene,
   SphereGeometry,
   Vector3,
-  WebGLRenderer,
-  TubeGeometry,
-  CylinderGeometry,
-  Line3,
-  Group
+  WebGLRenderer
 } from "three";
 import * as THREE from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import { onUpdated, onMounted, Ref, ref, useTemplateRef } from "vue";
 import CameraControls from "camera-controls";
 import {
-  acceleratedRaycast,
-  computeBoundsTree,
-  disposeBoundsTree,
-  ExtendedTriangle
+  acceleratedRaycast
+  // computeBoundsTree,
+  // disposeBoundsTree,
+  // ExtendedTriangle
 } from "three-mesh-bvh";
-import type { UseMouseEventExtractor } from "@vueuse/core";
+// import type { UseMouseEventExtractor } from "@vueuse/core";
 
 import {
   useMouseInElement,
@@ -83,7 +79,6 @@ import { LineHandler } from "@/eventHandlers_hyperbolic/LineHandler";
 import { createPoint } from "@/mesh/MeshFactory";
 import { onBeforeMount } from "vue";
 import { TextHandler } from "@/eventHandlers_hyperbolic/TextHandler";
-import { FontLoader } from "three/examples/jsm/loaders/FontLoader";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
 const { surfaceIntersections, objectIntersections, cameraQuaternion } =
@@ -97,7 +92,6 @@ let onSurface: Ref<ImportantSurface> = ref(null);
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 // THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 // THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
-const U_MULTIPLIER = Math.acosh(3);
 
 type ComponentProps = {
   availableHeight: number;
@@ -109,7 +103,6 @@ const props = withDefaults(defineProps<ComponentProps>(), {
 });
 
 const webglCanvas = useTemplateRef<HTMLCanvasElement>("webglCanvas");
-const textCanvas = useTemplateRef<HTMLDivElement>("textCanvas");
 const { elementX, elementY, isOutside } = useMouseInElement(webglCanvas, {});
 const { shift: shiftKey, control: controlKey } = useMagicKeys({
   passive: false
@@ -245,6 +238,14 @@ watch(
         break;
       case "line":
         if (lineTool === null) lineTool = new LineHandler(scene);
+        // Extend the line to the end of the hyperboloid
+        lineTool.setInfiniteMode(true);
+        currentTool = lineTool;
+        break;
+      case "segment":
+        if (lineTool === null) lineTool = new LineHandler(scene);
+        // Constrain the line to fit between the two end points
+        lineTool.setInfiniteMode(false);
         currentTool = lineTool;
         break;
       case "text":

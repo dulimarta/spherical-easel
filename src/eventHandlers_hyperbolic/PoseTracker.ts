@@ -15,7 +15,7 @@ import { HEStoreType } from "@/stores/hyperbolic";
 import { HENodule } from "@/models-hyperbolic/HENodule";
 import { createPoint } from "@/mesh/MeshFactory";
 
-const ORIGIN = new Vector3(0, 0, 0);
+// const ORIGIN = new Vector3(0, 0, 0);
 const Y_AXIS = new Vector3(0, 1, 0);
 export class PoseTracker implements HyperbolicToolStrategy {
   static hyperStore: HEStoreType;
@@ -153,7 +153,7 @@ export class PoseTracker implements HyperbolicToolStrategy {
     if (direction) this.second.normal.copy(direction);
     else this.second.normal.set(Number.NaN, Number.NaN, Number.NaN);
   }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   mousePressed(
     event: MouseEvent,
     pos2D: Vector2,

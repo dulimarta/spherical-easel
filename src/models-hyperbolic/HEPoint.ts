@@ -1,11 +1,4 @@
-import {
-  MeshStandardMaterial,
-  Scene,
-  SphereGeometry,
-  Vector3,
-  Mesh,
-  Object3D
-} from "three";
+import { MeshStandardMaterial, SphereGeometry, Vector3, Mesh } from "three";
 import { HENodule } from "./HENodule";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { Text } from "troika-three-text";

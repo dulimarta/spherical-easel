@@ -11,7 +11,7 @@ import {
   Matrix4
 } from "three";
 import { PoseTracker } from "./PoseTracker";
-import { HyperbolaCurve } from "@/mesh/HyperbolaCurve";
+import { Hyperbola } from "@/mesh/HyperbolaCurve";
 import { createPoint } from "@/mesh/MeshFactory";
 
 const Z_AXIS = new Vector3(0, 0, 1);
@@ -27,7 +27,7 @@ export class LineHandler extends PoseTracker {
   private arrow2 = new ArrowHelper(this.planeDir2, new Vector3());
   private arrow3 = new ArrowHelper(this.planeDir2, new Vector3());
   private arrow4 = new ArrowHelper(this.planeDir2, new Vector3());
-  private hyperbolaPath = new HyperbolaCurve();
+  private hyperbolaPath = new Hyperbola();
   private hyperbolaTube = new Mesh(
     new TubeGeometry(this.hyperbolaPath, 50, 0.05, 12, false),
     new MeshStandardMaterial({ color: "springgreen" })
@@ -35,7 +35,7 @@ export class LineHandler extends PoseTracker {
 
   private startPoint = createPoint(0.05, "yellow");
   private hPlane = new Mesh(
-    new PlaneGeometry(6, 10, 20, 20),
+    new PlaneGeometry(7.5, 10, 20, 20),
     new MeshStandardMaterial({
       transparent: true,
       opacity: 0.5,
@@ -45,6 +45,7 @@ export class LineHandler extends PoseTracker {
     })
   );
   private hPlaneCF = new Matrix4();
+  private infiniteLine = false;
   constructor(s: Scene) {
     super(s);
     this.arrow1.setColor(0xff1187);
@@ -52,6 +53,10 @@ export class LineHandler extends PoseTracker {
     this.arrow3.setColor(0xffcc00);
     this.arrow4.setColor(0xa641bf);
     this.hPlane.matrixAutoUpdate = false;
+  }
+
+  setInfiniteMode(onOff: boolean) {
+    this.infiniteLine = onOff;
   }
 
   mouseMoved(
@@ -69,7 +74,8 @@ export class LineHandler extends PoseTracker {
     if (
       this.isDragging &&
       !isNaN(this.first.position.x) &&
-      !isNaN(this.second.position.x)
+      !isNaN(this.second.position.x) &&
+      this.first.position.z * this.second.position.z > 0 // Both points must be on the same sheet
     ) {
       // console.debug(
       //   `Mouse was dragged from ${this.first.position.toFixed(
@@ -97,7 +103,8 @@ export class LineHandler extends PoseTracker {
         this.first.position,
         this.second.position,
         this.planeDir1,
-        this.planeDir2
+        this.planeDir2,
+        this.infiniteLine
       );
       this.hyperbolaTube.geometry.dispose();
       this.hyperbolaTube.material.dispose();
@@ -108,6 +115,7 @@ export class LineHandler extends PoseTracker {
       );
       // this.hyperbolaTube.rotation.z = rotationAngle;
       this.scene.add(this.hyperbolaTube);
+      this.scene.add(this.hPlane);
       // console.debug(
       //   `Plane spanned by ${this.planeDir1.toFixed(
       //     2
@@ -115,6 +123,7 @@ export class LineHandler extends PoseTracker {
       // );
     } else {
       this.scene.remove(this.hyperbolaTube);
+      this.scene.remove(this.hPlane);
     }
   }
   mousePressed(

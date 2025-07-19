@@ -1,8 +1,6 @@
 import { AddPointCommandByCoordinates } from "@/commands/AddPointCommandByCoordinates";
 import { Scene, Vector2, Vector3 } from "three";
 import { PoseTracker } from "./PoseTracker";
-import { HEPoint } from "@/models-hyperbolic/HEPoint";
-import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
 
 export class PointHandler extends PoseTracker {
   constructor(scene: Scene) {
@@ -33,6 +31,8 @@ export class PointHandler extends PoseTracker {
     super.mouseReleased(event, p, d);
     // throw new Error("Method not implemented.");
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mouseLeave(event: MouseEvent): void {
     throw new Error("Method not implemented.");
   }
