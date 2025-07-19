@@ -193,16 +193,16 @@ function initialize() {
   scene.add(centerSphere);
 
   /* Show Klein disk? */
-  // const kleinDisk = new Mesh(
-  //   new THREE.CircleGeometry(1, 30),
-  //   new MeshStandardMaterial({
-  //     transparent: true,
-  //     opacity: 0.7,
-  //     color: "darkorange"
-  //   })
-  // );
-  // kleinDisk.position.z = 1;
-  // scene.add(kleinDisk);
+  const kleinDisk = new Mesh(
+    new THREE.CircleGeometry(1, 30),
+    new MeshStandardMaterial({
+      transparent: true,
+      opacity: 0.7,
+      color: "darkorange"
+    })
+  );
+  kleinDisk.position.z = 1;
+  scene.add(kleinDisk);
 }
 
 let currentTool: HyperbolicToolStrategy | null = null; //new PointHandler();

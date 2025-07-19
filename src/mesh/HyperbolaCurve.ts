@@ -61,8 +61,22 @@ export class Hyperbola extends Curve<Vector3> {
       this.tMin = -Math.acosh(Math.cosh(2) / denom);
       this.tMax = Math.acosh(Math.cosh(2) / denom);
     } else {
+      // d1 is the normal vector of the plane of symmetry of the hyperbola
+      // If P1 and P2 are on different sides of this plane,
+      // then the hyperbola is long(er) and the T values span from negative to positive
+      // If both P1 and P2 are "below" this plane, the T values span in the negative range
+      // Otherwise the T values span in the positive range
+      const side1 = p1.dot(d1);
+      const side2 = p2.dot(d1);
       this.tMin = -Math.acosh(p2.z / denom);
       this.tMax = Math.acosh(p1.z / denom);
+      if (side1 < 0 && side2 < 0) {
+        // Both tMin and tMax are negative
+        this.tMax *= -1;
+      } else if (side1 > 0 && side2 > 0) {
+        // Both tMin and tMax are positive
+        this.tMin *= -1;
+      }
     }
     this.updateArcLengths(); // Must call this after the curve shape is modified
   }

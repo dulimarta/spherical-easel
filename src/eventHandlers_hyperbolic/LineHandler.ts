@@ -13,6 +13,7 @@ import {
 import { PoseTracker } from "./PoseTracker";
 import { Hyperbola } from "@/mesh/HyperbolaCurve";
 import { createPoint } from "@/mesh/MeshFactory";
+import { b } from "vitest/dist/chunks/suite.d.FvehnV49";
 
 const Z_AXIS = new Vector3(0, 0, 1);
 const ORIGIN = new Vector3(0, 0, 0);
@@ -34,6 +35,8 @@ export class LineHandler extends PoseTracker {
   );
 
   private startPoint = createPoint(0.05, "yellow");
+  private kleinStart = createPoint(0.05, "red");
+  private kleinEnd = createPoint(0.05, "red");
   private hPlane = new Mesh(
     new PlaneGeometry(7.5, 10, 20, 20),
     new MeshStandardMaterial({
@@ -113,18 +116,60 @@ export class LineHandler extends PoseTracker {
         new TubeGeometry(this.hyperbolaPath, 50, 0.03, 12, false),
         new MeshStandardMaterial({ color: "springgreen" })
       );
-      // this.hyperbolaTube.rotation.z = rotationAngle;
       this.scene.add(this.hyperbolaTube);
       this.scene.add(this.hPlane);
-      // console.debug(
-      //   `Plane spanned by ${this.planeDir1.toFixed(
-      //     2
-      //   )} and ${this.planeDir2.toFixed(2)}`
-      // );
+      this.kleinStart.position.set(
+        this.first.position.x / this.first.position.z,
+        this.first.position.y / this.first.position.z,
+        1
+      );
+      this.kleinEnd.position.set(
+        this.second.position.x / this.second.position.z,
+        this.second.position.y / this.second.position.z,
+        1
+      );
+      this.scene.add(this.kleinStart);
+      this.scene.add(this.kleinEnd);
+      // When we are drawing an "infinite line", move the two points
+      // to the edge of the Klein disk
+      if (this.infiniteLine)
+        this.computeKleinIntersections(
+          this.kleinStart.position,
+          this.kleinEnd.position
+        );
     } else {
       this.scene.remove(this.hyperbolaTube);
       this.scene.remove(this.hPlane);
+      this.scene.remove(this.kleinStart);
+      this.scene.remove(this.kleinEnd);
     }
+  }
+
+  private computeKleinIntersections(p: Vector3, q: Vector3) {
+    // Compute the intersection points between line PQ with the Klein circle
+    const px = p.x;
+    const py = p.y;
+    const qx = q.x;
+    const qy = q.y;
+    const dx = q.x - p.x;
+    const dy = q.y - p.y;
+    // Setup quadratic equation
+    const aCoeff = dx * dx + dy * dy;
+    const bCoeff = 2 * (p.x * dx + p.y * dy);
+    const cCoeff = p.x * p.x + p.y * p.y - 1;
+    const disc = bCoeff * bCoeff - 4 * aCoeff * cCoeff;
+    const lambda1 = (-bCoeff + Math.sqrt(disc)) / (2 * aCoeff);
+    const lambda2 = (-bCoeff - Math.sqrt(disc)) / (2 * aCoeff);
+    this.kleinStart.position.set(
+      lambda1 * qx + (1 - lambda1) * px,
+      lambda1 * qy + (1 - lambda1) * py,
+      1
+    );
+    this.kleinEnd.position.set(
+      lambda2 * qx + (1 - lambda2) * px,
+      lambda2 * qy + (1 - lambda2) * py,
+      1
+    );
   }
   mousePressed(
     event: MouseEvent,
