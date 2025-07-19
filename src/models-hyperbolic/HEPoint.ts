@@ -17,6 +17,21 @@ export class HEPoint extends HENodule {
     this.pointMesh = new Mesh(new SphereGeometry(0.05), material);
     this.pointMesh.position.copy(pos);
     this.group.add(this.pointMesh);
+    // console.debug("Text font", HENodule.hyperStore.font);
+    // const textGeo = new TextGeometry(`Point${HENodule.POINT_COUNT}`, {
+    //   font: HENodule.hyperStore.font!,
+    //   size: 0.1,
+    //   depth: 3
+    // });
+
+    // const textMesh = new Mesh(textGeo, material);
+    // this.pointMesh.add(textMesh);
+    // this.group.add(textMesh);
+    // textMesh.position.copy(pos);
+
+    HENodule.POINT_COUNT++;
+    this.pointMesh.name = `P${HENodule.POINT_COUNT}`;
+    this.name = `P${HENodule.POINT_COUNT}`;
     const txtObject = new Text();
     // console.debug("Text object material", txtObject.material);
     txtObject.name = `La${HENodule.POINT_COUNT}`;
@@ -34,21 +49,7 @@ export class HEPoint extends HENodule {
     // txtObject.material.depthTest = false;
     txtObject.sync();
     this.pointMesh.add(txtObject);
-    // console.debug("Text font", HENodule.hyperStore.font);
-    // const textGeo = new TextGeometry(`Point${HENodule.POINT_COUNT}`, {
-    //   font: HENodule.hyperStore.font!,
-    //   size: 0.1,
-    //   depth: 3
-    // });
 
-    // const textMesh = new Mesh(textGeo, material);
-    // this.pointMesh.add(textMesh);
-    // this.group.add(textMesh);
-    // textMesh.position.copy(pos);
-
-    HENodule.POINT_COUNT++;
-    this.pointMesh.name = `P${HENodule.POINT_COUNT}`;
-    this.name = `P${HENodule.POINT_COUNT}`;
     const scale = pos.length();
     let apppliedScale = -1;
     if (scale > 1) {
@@ -100,7 +101,7 @@ export class HEPoint extends HENodule {
   }
   public glowingDisplay(): void {
     // console.debug(`Attempt to glow ${this.name}`);
-    (this.pointMesh.material as MeshStandardMaterial).color.set("yellow");
+    (this.pointMesh.material as MeshStandardMaterial).color.set("blue");
     this.pointMesh.scale.set(1.25, 1.25, 1.25);
   }
   public normalDisplay(): void {

@@ -83,6 +83,7 @@ export class PoseTracker implements HyperbolicToolStrategy {
     //   PoseTracker.hyperStore.objectIntersections.length
     // );
     this.hitObject?.normalDisplay();
+    this.hitObject = null;
     if (PoseTracker.hyperStore.objectIntersections.length > 0) {
       const firstIntersect = PoseTracker.hyperStore.objectIntersections[0];
       // console.debug("Hit object", firstIntersect.object.name);
@@ -91,10 +92,13 @@ export class PoseTracker implements HyperbolicToolStrategy {
       );
       // console.debug(`Changing color of`, this.hitObject);
       if (this.hitObject) {
+        this.scene.remove(this.aPoint);
         this.hitObject.glowingDisplay();
+      } else {
+        this.scene.add(this.aPoint);
       }
     }
-    if (position) {
+    if (position && this.hitObject === null) {
       this.aPoint.position.copy(position);
       this.scene.add(this.aPoint);
       this.normalArrow.setDirection(direction!);
