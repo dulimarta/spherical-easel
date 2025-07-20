@@ -11,9 +11,9 @@ import {
   Matrix4
 } from "three";
 import { PoseTracker } from "./PoseTracker";
-import { Hyperbola } from "@/mesh/HyperbolaCurve";
+import { HyperbolicCurve } from "@/mesh/HyperbolicCurve";
+import { CircularCurve } from "@/mesh/CircularCurve";
 import { createPoint } from "@/mesh/MeshFactory";
-import { b } from "vitest/dist/chunks/suite.d.FvehnV49";
 
 const Z_AXIS = new Vector3(0, 0, 1);
 const ORIGIN = new Vector3(0, 0, 0);
@@ -28,12 +28,17 @@ export class LineHandler extends PoseTracker {
   private arrow2 = new ArrowHelper(this.planeDir2, new Vector3());
   private arrow3 = new ArrowHelper(this.planeDir2, new Vector3());
   private arrow4 = new ArrowHelper(this.planeDir2, new Vector3());
-  private hyperbolaPath = new Hyperbola();
+  private hyperbolaPath = new HyperbolicCurve();
   private hyperbolaTube = new Mesh(
     new TubeGeometry(this.hyperbolaPath, 50, 0.05, 12, false),
     new MeshStandardMaterial({ color: "springgreen" })
   );
-
+  private circlePath = new CircularCurve();
+  private circleTube = new Mesh(
+    new TubeGeometry(this.circlePath, 50, 0.03, 12, false),
+    new MeshStandardMaterial({ color: "springgreen" })
+  );
+  pr;
   private startPoint = createPoint(0.05, "yellow");
   private kleinStart = createPoint(0.05, "red");
   private kleinEnd = createPoint(0.05, "red");
@@ -117,6 +122,21 @@ export class LineHandler extends PoseTracker {
         new MeshStandardMaterial({ color: "springgreen" })
       );
       this.scene.add(this.hyperbolaTube);
+      this.circlePath.setPointsAndDirections(
+        this.first.position,
+        this.second.position,
+        this.planeDir1,
+        this.planeDir2,
+        this.infiniteLine
+      );
+      this.circleTube.geometry.dispose();
+      this.circleTube.material.dispose();
+      this.scene.remove(this.circleTube);
+      this.circleTube = new Mesh(
+        new TubeGeometry(this.circlePath, 50, 0.03, 12, false),
+        new MeshStandardMaterial({ color: "springgreen" })
+      );
+      this.scene.add(this.circleTube);
       this.scene.add(this.hPlane);
       this.kleinStart.position.set(
         this.first.position.x / this.first.position.z,
@@ -139,6 +159,7 @@ export class LineHandler extends PoseTracker {
         );
     } else {
       this.scene.remove(this.hyperbolaTube);
+      this.scene.remove(this.circleTube);
       this.scene.remove(this.hPlane);
       this.scene.remove(this.kleinStart);
       this.scene.remove(this.kleinEnd);

@@ -7,7 +7,7 @@ import { Curve, Vector3 } from "three";
  * Peter Paul Klein, "On the Intersection Equation of a Hyperboloid and a Plane",
  *   Applied Mathematics, 2013, 4, 40-49
  */
-export class Hyperbola extends Curve<Vector3> {
+export class HyperbolicCurve extends Curve<Vector3> {
   // Compute the points of a hyperbola on a plane
   // rotated on the X-axis
   dir1: Vector3 = new Vector3(0, 0, 1);
