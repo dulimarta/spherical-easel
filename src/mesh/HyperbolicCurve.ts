@@ -7,6 +7,8 @@ import { Curve, Vector3 } from "three";
  * Peter Paul Klein, "On the Intersection Equation of a Hyperboloid and a Plane",
  *   Applied Mathematics, 2013, 4, 40-49
  */
+
+const MAX_Z_HYPERBOLOID = Math.cosh(2);
 export class HyperbolicCurve extends Curve<Vector3> {
   // Compute the points of a hyperbola on a plane
   // rotated on the X-axis
@@ -17,9 +19,7 @@ export class HyperbolicCurve extends Curve<Vector3> {
   bCoeff: number = 1;
   tMin: number = Number.MAX_VALUE;
   tMax: number = Number.MIN_VALUE;
-  // maxZ: number = Number.MIN_VALUE;
   upperSheet = true;
-  // minT: number = Number.MAX_VALUE;
   constructor() {
     super();
   }
@@ -58,8 +58,8 @@ export class HyperbolicCurve extends Curve<Vector3> {
     */
     const denom = this.bCoeff * d2.z;
     if (isInfinite) {
-      this.tMin = -Math.acosh(Math.cosh(2) / denom);
-      this.tMax = Math.acosh(Math.cosh(2) / denom);
+      this.tMin = -Math.acosh(MAX_Z_HYPERBOLOID / denom);
+      this.tMax = Math.acosh(MAX_Z_HYPERBOLOID / denom);
     } else {
       // d1 is the normal vector of the plane of symmetry of the hyperbola
       // If P1 and P2 are on different sides of this plane,
@@ -68,8 +68,10 @@ export class HyperbolicCurve extends Curve<Vector3> {
       // Otherwise the T values span in the positive range
       const side1 = p1.dot(d1);
       const side2 = p2.dot(d1);
-      this.tMin = -Math.acosh(p2.z / denom);
-      this.tMax = Math.acosh(p1.z / denom);
+      // T-value should not cause the curve to extend beyond the
+      // maximum height of the hyperboloid
+      this.tMin = -Math.acosh(Math.min(p2.z, MAX_Z_HYPERBOLOID) / denom);
+      this.tMax = Math.acosh(Math.min(p1.z, MAX_Z_HYPERBOLOID) / denom);
       if (side1 < 0 && side2 < 0) {
         // Both tMin and tMax are negative
         this.tMax *= -1;

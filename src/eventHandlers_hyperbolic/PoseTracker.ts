@@ -106,6 +106,8 @@ export class PoseTracker implements HyperbolicToolStrategy {
       this.secondaryIntersections.forEach(p => this.scene.remove(p));
 
       if (event.shiftKey) {
+        // When shift key is pressed show all the associated points
+        // on the sphere and hyperboloid(s)
         const angle = this.second.position.angleTo(Y_AXIS);
         this.auxRotationAxis
           .crossVectors(Y_AXIS, this.second.position)
@@ -120,15 +122,15 @@ export class PoseTracker implements HyperbolicToolStrategy {
         const pointDistance = this.second.position.length();
         let scaleFactor = 0;
         if (pointDistance > 1) {
-          /* Second point on hyperboloid */
+          /* Second point on hyperboloid, compute scale factor to project it down to the sphere */
           scaleFactor = 1 / pointDistance;
         } else {
-          /* Second point on sphere */
+          /* Second point on sphere, compute the scale factor to project it up to the hyperboloid */
           const scaleSquared = -1 / (x1 * x1 + y1 * y1 - z1 * z1);
           if (scaleSquared > 0) scaleFactor = Math.sqrt(scaleSquared);
         }
         if (scaleFactor > 0) {
-          // Draw two more points
+          // Draw the associated point and its antipode
           this.secondaryIntersections[1].position.set(
             scaleFactor * x1,
             scaleFactor * y1,

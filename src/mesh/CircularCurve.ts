@@ -10,6 +10,8 @@ import { Curve, Vector3 } from "three";
 export class CircularCurve extends Curve<Vector3> {
   // Compute the points of a hyperbola on a plane
   // rotated on the X-axis
+  point1: Vector3 = new Vector3();
+  point2: Vector3 = new Vector3();
   dir1: Vector3 = new Vector3(0, 0, 1);
   dir2: Vector3 = new Vector3(1, 0, 0); // Second vector is alway the X-axis
   outVec = new Vector3();
@@ -34,6 +36,8 @@ export class CircularCurve extends Curve<Vector3> {
   ): void {
     this.dir1.copy(d1);
     this.dir2.copy(d2);
+    this.point1.copy(p1).normalize();
+    this.point2.copy(p2).normalize();
     // The curve is on the uppoer sheet when the Z-coordinate is positive
     // console.debug(`D1:${d1.z.toFixed(3)}  D2:${d2.z.toFixed(3)}`);
 
@@ -48,13 +52,34 @@ export class CircularCurve extends Curve<Vector3> {
        can be computed as follows.
     */
     // const denom = this.bCoeff * d2.z;
-    this.tMin = 0;
-    this.tMax = 2 * Math.PI;
+    if (isInfinite) {
+      this.tMin = 0;
+      this.tMax = 2 * Math.PI;
+    } else {
+      const x1 = this.point1.dot(d1);
+      const y1 = this.point1.dot(d2);
+      const angle1 = Math.atan2(y1, x1);
+      const x2 = this.point2.dot(d1);
+      const y2 = this.point2.dot(d2);
+      const angle2 = Math.atan2(y2, x2);
+      // console.debug(
+      //   `Angles of P1 ${x1.toFixed(2)} ${y1.toFixed(1)} => ${angle1
+      //     .toDegrees()
+      //     .toFixed(1)}`
+      // );
+      // console.debug(
+      //   `Angles of P2 ${x2.toFixed(2)} ${y2.toFixed(1)} => ${angle2
+      //     .toDegrees()
+      //     .toFixed(1)}`
+      // );
+      this.tMin = angle1;
+      this.tMax = angle2;
+    }
     this.updateArcLengths(); // Must call this after the curve shape is modified
   }
 
   getPoint(tInput: number, optionalTarget: Vector3 = new Vector3()): Vector3 {
-    const t = 2 * tInput * Math.PI;
+    const t = tInput * (this.tMax - this.tMin) + this.tMin;
     const lambda = Math.cos(t);
     const mu = Math.sin(t);
     // const out = optionalTarget ?? this.outVec;

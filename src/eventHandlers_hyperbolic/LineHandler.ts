@@ -24,10 +24,8 @@ export class LineHandler extends PoseTracker {
   // private rotationAxis = new Vector3();
   private planeDir1 = new Vector3();
   private planeDir2 = new Vector3();
-  private arrow1 = new ArrowHelper(this.planeDir1, new Vector3());
-  private arrow2 = new ArrowHelper(this.planeDir2, new Vector3());
-  private arrow3 = new ArrowHelper(this.planeDir2, new Vector3());
-  private arrow4 = new ArrowHelper(this.planeDir2, new Vector3());
+  private projectUp1 = new Vector3();
+  private projectUp2 = new Vector3();
   private hyperbolaPath = new HyperbolicCurve();
   private hyperbolaTube = new Mesh(
     new TubeGeometry(this.hyperbolaPath, 50, 0.05, 12, false),
@@ -39,7 +37,7 @@ export class LineHandler extends PoseTracker {
     new MeshStandardMaterial({ color: "springgreen" })
   );
   pr;
-  private startPoint = createPoint(0.05, "yellow");
+  private startPoint = createPoint(0.05, "aqua");
   private kleinStart = createPoint(0.05, "red");
   private kleinEnd = createPoint(0.05, "red");
   private hPlane = new Mesh(
@@ -56,10 +54,6 @@ export class LineHandler extends PoseTracker {
   private infiniteLine = false;
   constructor(s: Scene) {
     super(s);
-    this.arrow1.setColor(0xff1187);
-    this.arrow2.setColor(0x34e1eb);
-    this.arrow3.setColor(0xffcc00);
-    this.arrow4.setColor(0xa641bf);
     this.hPlane.matrixAutoUpdate = false;
   }
 
@@ -79,24 +73,19 @@ export class LineHandler extends PoseTracker {
       position,
       normalDirection
     );
+    const len1 = this.first.position.lengthSq();
+    const len2 = this.second.position.lengthSq();
+    const onHyperboloid = len1 > 1 && len2 > 1;
     if (
       this.isDragging &&
+      // both points must be on the hyperboloid or sphere
       !isNaN(this.first.position.x) &&
-      !isNaN(this.second.position.x) &&
-      this.first.position.z * this.second.position.z > 0 // Both points must be on the same sheet
+      !isNaN(this.second.position.x)
     ) {
-      // console.debug(
-      //   `Mouse was dragged from ${this.first.position.toFixed(
-      //     2
-      //   )} to ${this.second.position.toFixed(2)}`
-      // );
-      // Compute the normal vector of the plane that intersects the
-      // paraboloid
       this.planeNormal
         .crossVectors(this.second.position, this.first.position)
         .normalize();
-      // console.debug(`Plane Normal before ${this.planeNormal.toFixed(2)}`);
-      // With this setup the coordinate from of hPlane would be as follows:
+      // With the lookAt() function below, the coordinate frame of hPlane would be as follows:
       // - Its X-axis is on the XY plane (i.e. its z component is zero)
       // - Its Y-axis is on a plane perpendicular to the XY-plane]
       // - Its Z-axis is the normal vector computed from both mouse points
@@ -107,21 +96,58 @@ export class LineHandler extends PoseTracker {
         this.planeDir2,
         this.planeNormal
       );
-      this.hyperbolaPath.setPointsAndDirections(
-        this.first.position,
-        this.second.position,
-        this.planeDir1,
-        this.planeDir2,
-        this.infiniteLine
-      );
-      this.hyperbolaTube.geometry.dispose();
-      this.hyperbolaTube.material.dispose();
+      this.scene.add(this.hPlane);
+
+      const planeElevationAngle = this.planeNormal.angleTo(Z_AXIS);
+      const intersectsHyperboloid =
+        (onHyperboloid && this.first.position.z * this.second.position.z > 0) ||
+        (!onHyperboloid && planeElevationAngle > Math.PI / 4);
       this.scene.remove(this.hyperbolaTube);
-      this.hyperbolaTube = new Mesh(
-        new TubeGeometry(this.hyperbolaPath, 50, 0.03, 12, false),
-        new MeshStandardMaterial({ color: "springgreen" })
-      );
-      this.scene.add(this.hyperbolaTube);
+      if (intersectsHyperboloid) {
+        // console.debug("Draw hyperbola and circle");
+        if (onHyperboloid) {
+          // both points are on the hyperboloid, draw the hyperbola using
+          // the two original points
+          this.hyperbolaPath.setPointsAndDirections(
+            this.first.position,
+            this.second.position,
+            this.planeDir1,
+            this.planeDir2,
+            this.infiniteLine
+          );
+        } else {
+          // At most one point is on the hyperboloid
+          // If necessary, project the points to the hyperboloid
+          const { x: x1, y: y1, z: z1 } = this.first.position;
+          const { x: x2, y: y2, z: z2 } = this.second.position;
+          let scale1 = -1 / (x1 * x1 + y1 * y1 - z1 * z1);
+          let scale2 = -1 / (x2 * x2 + y2 * y2 - z2 * z2);
+          this.projectUp1.copy(this.first.position);
+          this.projectUp2.copy(this.second.position);
+          if (scale1 > 0) {
+            this.projectUp1.multiplyScalar(Math.sqrt(scale1));
+          }
+          if (scale2 > 0) {
+            this.projectUp2.multiplyScalar(Math.sqrt(scale2));
+          }
+          // Draw the hyperbola using the projected points
+          this.hyperbolaPath.setPointsAndDirections(
+            this.projectUp1,
+            this.projectUp2,
+            this.planeDir1,
+            this.planeDir2,
+            this.infiniteLine
+          );
+        }
+        this.hyperbolaTube.geometry.dispose();
+        this.hyperbolaTube.material.dispose();
+        this.hyperbolaTube = new Mesh(
+          new TubeGeometry(this.hyperbolaPath, 50, 0.03, 12, false),
+          new MeshStandardMaterial({ color: "springgreen" })
+        );
+        this.scene.add(this.hyperbolaTube);
+      }
+      // Draw intersection with sphere
       this.circlePath.setPointsAndDirections(
         this.first.position,
         this.second.position,
@@ -137,7 +163,6 @@ export class LineHandler extends PoseTracker {
         new MeshStandardMaterial({ color: "springgreen" })
       );
       this.scene.add(this.circleTube);
-      this.scene.add(this.hPlane);
       this.kleinStart.position.set(
         this.first.position.x / this.first.position.z,
         this.first.position.y / this.first.position.z,
@@ -207,10 +232,6 @@ export class LineHandler extends PoseTracker {
     this.scene.add(this.hPlane);
     this.startPoint.position.copy(position);
     this.scene.add(this.startPoint);
-    // this.planeNormal.copy(this.first.position).normalize();
-    // this.arrow1.setDirection(this.planeNormal);
-    // this.arrow1.setLength(this.first.position.length());
-    // this.scene.add(this.arrow1);
   }
   mouseReleased(
     event: MouseEvent,
@@ -218,10 +239,6 @@ export class LineHandler extends PoseTracker {
     normalDirection: Vector3
   ): void {
     super.mouseReleased(event, position, normalDirection);
-    this.scene.remove(this.arrow1);
-    this.scene.remove(this.arrow2);
-    this.scene.remove(this.arrow3);
-    this.scene.remove(this.arrow4);
     this.scene.remove(this.hPlane);
     this.scene.remove(this.startPoint);
   }
