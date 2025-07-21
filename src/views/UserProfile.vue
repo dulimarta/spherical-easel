@@ -96,29 +96,39 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, Ref } from "vue";
+import { onBeforeMount, ref, Ref, watch } from "vue";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import PhotoMaker from "@/components/ProfilePhotoMaker.vue";
 import SETTINGS from "@/global-settings";
 import { useI18n } from "vue-i18n";
+import { UserProfile } from "@/types";
 // type FileEvent = EventTarget & { files: FileList | undefined };
 type LocaleName = {
   locale: string;
   name: string;
 };
-
+const emits = defineEmits(["profile-changed"]);
 const { t } = useI18n();
 const acctStore = useAccountStore();
-const {
-  userEmail,
-  userProfile,
-  temporaryProfilePictureURL
-} = storeToRefs(acctStore);
+const { userEmail, userProfile, temporaryProfilePictureURL } =
+  storeToRefs(acctStore);
 const languages: Ref<Array<LocaleName>> = ref(SETTINGS.supportedLanguages);
 const photoDialog: Ref<DialogAction | null> = ref(null);
+let oldUserProfile: UserProfile;
 
+onBeforeMount(() => {
+  oldUserProfile = { ...userProfile.value };
+});
+watch(
+  () => userProfile.value,
+  newProfile => {
+    const changed = JSON.stringify(oldUserProfile) !== JSON.stringify(newProfile)
+    // console.debug("User profile watcher", unchanged, newProfile)
+    emits("profile-changed", changed);
+  }, {deep: true}
+);
 function showPhotoDialog() {
   photoDialog.value?.show();
 }

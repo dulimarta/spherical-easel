@@ -7,7 +7,7 @@
   </v-tabs>
   <v-window v-model="selectedTab">
     <v-window-item>
-      <UserProfileUI />
+      <UserProfileUI @profile-changed="(arg) => profileChanged = arg"/>
     </v-window-item>
     <v-window-item>
       <FavoriteToolsPicker />
@@ -54,7 +54,7 @@
 
   <v-divider />
   <div class="mt-3" :style="{display: 'flex', justifyContent: 'center'}">
-      <v-btn class="mx-2" @click="doSave" >{{ t("saveAndReturn") }}</v-btn>
+      <v-btn class="mx-2" @click="doSave" :disabled="!profileChanged">{{ t("saveAndReturn") }}</v-btn>
       <v-btn class="mx-2" @click="doReturn">{{ t("returnOnly") }}</v-btn>
   </div>
 </template>
@@ -77,6 +77,7 @@ const acctStore = useAccountStore();
 // const imageUpload: Ref<HTMLInputElement | null> = ref(null);
 const decimalPrecision = ref(3);
 const selectedTab = ref(0);
+const profileChanged = ref(false)
 // The displayed favorite tools (includes defaults)
 
 async function doSave(): Promise<void> {
@@ -91,6 +92,7 @@ async function doSave(): Promise<void> {
 function doReturn() {
   router.back();
 }
+
 </script>
 <i18n locale="en">
   {
