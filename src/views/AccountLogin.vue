@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
     <v-row justify="center">
-      <v-col cols="5">
+      <v-col cols="6">
         <v-sheet elevation="4" class="pa-4">
           <v-form v-model="validEntries">
             <div :style="{ display: 'flex', flexDirection: 'column' }">
@@ -30,14 +30,15 @@
                     :disabled="!validEntries">
                     {{ t("Signin") }}
                   </v-btn>
-                  <v-btn
+                  <v-btn id="signup"
                     @click="doSignup"
                     :disabled="isSigningUp && !validEntries">
                     {{ t("Signup") }}
                   </v-btn>
-                  <v-btn :disabled="!isValidEmail" @click="doReset">
+                  <v-btn id="reset" :disabled="!isValidEmail" @click="doReset">
                     {{ t("resetPass") }}
                   </v-btn>
+                  <v-btn @click="asGuest">Continue as Guest</v-btn>
                 </div>
                 <v-divider />
                 <div
@@ -220,6 +221,10 @@ function doGoogleLogin(): void {
       showLoginError.value = true;
     }
   });
+}
+
+function asGuest() {
+  router.back();
 }
 </script>
 <i18n lang="json" locale="en">

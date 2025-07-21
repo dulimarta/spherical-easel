@@ -12,7 +12,6 @@ import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SELatitude } from "@/models/SELatitude";
 import { SELongitude } from "@/models/SELongitude";
-import { SEText } from "@/models/SEText";
 
 export class RotationVisitor implements Visitor {
   private transformMatrix: Matrix4 = new Matrix4();
@@ -115,7 +114,6 @@ export class RotationVisitor implements Visitor {
     }
   }
 
-  // eslint-disable-next-line
   actionOnCircle(c: SECircle): boolean {
     //Circles are completely determined by two points they depend on so no need to update them unless that circle is a
     // SELatitude where the (center && circle)points are *not* in the object tree so handle those here
@@ -155,7 +153,7 @@ export class RotationVisitor implements Visitor {
     // a.ref.updateDisplay();
     return false;
   }
-  // eslint-disable-next-line
+
   actionOnParametric(e: SEParametric): boolean {
     e.fnValues.forEach((pt: Vector3) => pt.applyMatrix4(this.transformMatrix));
     e.fnPrimeValues.forEach((tangent: Vector3) =>
@@ -180,6 +178,8 @@ export class RotationVisitor implements Visitor {
     // }
     return true;
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   actionOnPolygon(p: SEPolygon): boolean {
     // update the display of the plottable object. update gets the new rotation matrix directly from the store.
     // p.ref.updateDisplay(); // sets the location of the vertices for the front/back fills

@@ -236,7 +236,7 @@ const sharedDocId = ref("");
 const showDeleteWarning = ref(false);
 const showPrivateWarning = ref(false);
 const showPublicWarning = ref(false);
-const { constructionDocId, userEmail, firebaseUid, starredConstructionIDs } =
+const { constructionDocId, userEmail, firebaseUid, userProfile } =
   storeToRefs(acctStore);
 const { hasUnsavedNodules, seNodules } = storeToRefs(seStore);
 const { t } = useI18n({ useScope: "local" });
@@ -256,8 +256,10 @@ function previewOrDefault(dataUrl: string | undefined): string {
 function inMyStarredList(docId: string | undefined): boolean {
   // console.debug(`Starred? ${docId}`, starredConstructions.value.map(s => `ID ${s.id} PUB ${s.publicDocId}`).join(" ") )
   if (!docId) return false;
-  return starredConstructionIDs.value.some(
-    z => constructionStore.parseStarredID(z).id === docId
+  return (
+    userProfile.value?.userStarredConstructions?.some(
+      z => constructionStore.parseStarredID(z).id === docId
+    ) ?? false
   );
 }
 // TODO: the onXXXX functions below are not bug-free yet
