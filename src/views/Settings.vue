@@ -2,14 +2,17 @@
 <template>
   <v-tabs centered v-model="selectedTab">
     <v-tab>{{ t("userProfile") }}</v-tab>
-    <!-- <v-tab>App Preferences</v-tab> -->
     <v-tab>{{ t("tools") }}</v-tab>
+    <v-tab>App Preferences</v-tab>
   </v-tabs>
   <v-window v-model="selectedTab">
     <v-window-item>
       <UserProfileUI />
     </v-window-item>
-    <!--v-window-item>
+    <v-window-item>
+      <FavoriteToolsPicker />
+    </v-window-item>
+    <v-window-item>
       <v-sheet elevation="2" class="pa-2">
         <h3 v-t="'settings.title'"></h3>
         <v-container fluid>
@@ -45,45 +48,16 @@
           <v-radio label="Default"></v-radio>
         </v-radio-group>
       </v-sheet>
-    </!--v-window-item-->
-
-    <v-window-item>
-      <FavoriteToolsPicker />
     </v-window-item>
+
   </v-window>
 
   <v-divider />
-  <v-row justify="center" class="my-1">
-    <v-col cols="auto">
-      <v-btn @click="doSave">{{ t("saveAndReturn") }}</v-btn>
-    </v-col>
-    <v-col cols="auto">
-      <v-btn @click="doReturn">{{ t("returnOnly") }}</v-btn>
-    </v-col>
-  </v-row>
+  <div class="mt-3" :style="{display: 'flex', justifyContent: 'center'}">
+      <v-btn class="mx-2" @click="doSave" >{{ t("saveAndReturn") }}</v-btn>
+      <v-btn class="mx-2" @click="doReturn">{{ t("returnOnly") }}</v-btn>
+  </div>
 </template>
-
-<style lang="scss" scoped>
-div#container {
-  padding: 1rem;
-}
-
-div#profileInfo {
-  display: flex;
-
-  // flex-direction: row;
-  // align-items: flex-start;
-  & > :nth-child(2) {
-    // background-color: map-get($green, lighten-2);
-    flex-grow: 1;
-  }
-}
-
-div#appSetting {
-  display: grid;
-  grid-template-columns: 1fr 3fr; // align-items: baseline;
-}
-</style>
 
 <script lang="ts" setup>
 import UserProfileUI from "./UserProfile.vue";

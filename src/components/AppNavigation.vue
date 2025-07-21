@@ -11,7 +11,7 @@
       :expand-on-hover="expandOnHover"
       disable-resize-watcher
       :rail="rail"
-      :rail-width="64"
+      :rail-width="56"
       @mouseover="onNavigationHover"
       @mouseleave="onNavigationHover"
       style="background-color: #002108; color: white">

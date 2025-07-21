@@ -111,7 +111,11 @@ type LocaleName = {
 
 const { t } = useI18n();
 const acctStore = useAccountStore();
-const { userEmail, userProfile } = storeToRefs(acctStore);
+const {
+  userEmail,
+  userProfile,
+  temporaryProfilePictureURL
+} = storeToRefs(acctStore);
 const languages: Ref<Array<LocaleName>> = ref(SETTINGS.supportedLanguages);
 const photoDialog: Ref<DialogAction | null> = ref(null);
 
@@ -120,7 +124,11 @@ function showPhotoDialog() {
 }
 
 function closePhotoDialog(s: string) {
-  console.debug("What is data image", s);
+  console.debug("What is data image from arg", s.substring(0, 50));
+  console.debug(
+    "Data image From Blob",
+    temporaryProfilePictureURL.value.substring(0, 50)
+  );
   userProfile.value = { ...userProfile.value!, profilePictureURL: s };
   photoDialog.value?.hide();
 }

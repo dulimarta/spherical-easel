@@ -50,13 +50,16 @@
       <div
         class="ma-2"
         :style="{ display: 'flex', justifyContent: 'space-between' }">
-        <v-btn @click="prev" :disabled="photoStep === 1">Previous</v-btn>
-        <v-btn
+        <v-btn @click="prev" :disabled="photoStep === 1" icon>
+          <v-icon>mdi-arrow-left-bold</v-icon>
+          </v-btn>
+        <v-btn icon
           @click="nextAction"
           :disabled="
             photoStep === 1 && temporaryProfilePictureURL.length === 0
           ">
-          {{ photoStep === 1 ? "To Cropper" : "Use" }}
+          <v-icon v-if="photoStep === 1">mdi-arrow-right-bold</v-icon>
+          <v-icon v-else>mdi-check-bold</v-icon>
         </v-btn>
       </div>
     </template>
@@ -96,6 +99,8 @@ watch(
   (phFile: File | undefined) => {
     if (phFile) {
       const url = URL.createObjectURL(phFile);
+      if (temporaryProfilePictureURL.value.length > 0)
+        URL.revokeObjectURL(temporaryProfilePictureURL.value);
       temporaryProfilePictureURL.value = url;
       console.debug(`File ${phFile.name} with URL ${url}`);
     } else {
@@ -131,6 +136,7 @@ function nextAction() {
   if (photoStep.value === 1 && temporaryProfilePictureURL.value.length > 0)
     photoStep.value = 2;
   else if (photoStep.value === 2 && cropDataURL.value?.length) {
+    temporaryProfilePictureURL.value = cropDataURL.value
     emit("changed", cropDataURL.value!);
   }
 }

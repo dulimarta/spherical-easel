@@ -50,7 +50,7 @@
 </template>
 <script setup lang="ts">
 import VueCamera from "simple-vue-camera";
-import { Ref, ref, useTemplateRef, onBeforeUpdate } from "vue";
+import { Ref, ref, useTemplateRef } from "vue";
 
 defineExpose({ stopCamera, startCamera });
 const trigger = defineEmits<{
