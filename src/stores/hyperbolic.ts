@@ -9,6 +9,7 @@ import { useThreeFont } from "@/composables/useThreeFont";
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const surfaceIntersections: Ref<Intersection[]> = ref([]);
   const objectIntersections: Ref<Intersection[]> = ref([]);
+  const labelLayerIntersections: Ref<Intersection[]> = ref([]);
   const objectMap: Map<string, HENodule> = new Map();
   const cameraQuaternion: Ref<Quaternion> = ref(new Quaternion());
   const { font } = useThreeFont();
@@ -48,8 +49,9 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   return {
     font,
     surfaceIntersections,
-    cameraQuaternion,
+    labelLayerIntersections,
     objectIntersections,
+    cameraQuaternion,
     addPoint,
     getObjectById,
     removePoint,

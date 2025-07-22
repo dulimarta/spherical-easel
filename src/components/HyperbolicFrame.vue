@@ -26,6 +26,7 @@
       <span v-if="onSurface">
         3D:{{ rayIntersectionPoint.position.toFixed(2) }}
       </span>
+      <span>Camera {{ positionInCameraCF.toFixed(2) }}</span>
     </span>
   </span>
   <canvas
@@ -42,6 +43,7 @@ import {
   Clock,
   DoubleSide,
   GridHelper,
+  Matrix4,
   Mesh,
   MeshStandardMaterial,
   PerspectiveCamera,
@@ -79,10 +81,16 @@ import { LineHandler } from "@/eventHandlers_hyperbolic/LineHandler";
 import { createPoint } from "@/mesh/MeshFactory";
 import { onBeforeMount } from "vue";
 import { TextHandler } from "@/eventHandlers_hyperbolic/TextHandler";
+import { Text } from "troika-three-text";
+import { KeyboardEvent } from "happy-dom";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
-const { surfaceIntersections, objectIntersections, cameraQuaternion } =
-  storeToRefs(hyperStore);
+const {
+  surfaceIntersections,
+  objectIntersections,
+  labelLayerIntersections,
+  cameraQuaternion
+} = storeToRefs(hyperStore);
 const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
 
@@ -117,6 +125,8 @@ const rayCaster = new Raycaster();
 // rayCaster.firstHitOnly = true;
 const mouseCoordNormalized: Ref<THREE.Vector2> = ref(new THREE.Vector2()); // used by RayCaster
 let camera: PerspectiveCamera;
+const cameraInverseMatrix = new Matrix4();
+const positionInCameraCF = ref(new Vector3());
 let renderer: WebGLRenderer;
 let cameraController: CameraControls;
 CameraControls.install({ THREE });
@@ -209,6 +219,25 @@ let currentTool: HyperbolicToolStrategy | null = null; //new PointHandler();
 let pointTool: PointHandler = new PointHandler(scene);
 let lineTool: LineHandler | null = null;
 let textTool: TextHandler | null = null;
+const labelPlane = new THREE.Mesh(
+  new THREE.PlaneGeometry(3, 3),
+  new THREE.MeshBasicMaterial({
+    color: 0xffff00,
+    transparent: true,
+    opacity: 0
+  })
+);
+labelPlane.name = "LabelPlane";
+
+const txtObject = new Text();
+// txtObject.name = `La${HENodule.POINT_COUNT}`;
+txtObject.text = `Hello`;
+txtObject.anchorX = "center";
+txtObject.anchorY = "bottom";
+// txtObject.position.set(0, 0, 0);
+txtObject.fontSize = 0.02;
+txtObject.color = "yellow"; //0x000000;
+// txtObject.position.set(0, 0, -0.3);
 
 function doRender() {
   // console.debug("Enable camera control", enableCameraControl.value)
@@ -265,7 +294,6 @@ onBeforeMount(() => {
 });
 
 onMounted(() => {
-  hyperStore.setScene(scene);
   console.debug(
     `Mounted size ${props.availableWidth}x${props.availableHeight}`
   );
@@ -278,6 +306,19 @@ onMounted(() => {
   camera.position.set(8, 7, 6);
   camera.up.set(0, 0, 1);
   camera.lookAt(0, 0, 0);
+  // txtObject.position.set(0, 0, -1);
+  // txtObject.sync();
+  // camera.add(txtObject);
+
+  // In order to add objects as a child of the camera, the camera itself
+  // must be inserted into the scene
+  scene.add(camera);
+  camera.add(labelPlane);
+  labelPlane.position.set(0, 0, -1); // 1 unit IN FRONT of camera
+  // kleinDisk.position.set(0, 0, -20);
+  // x.position.set(0, 0, 6);
+  hyperStore.setScene(scene);
+
   cameraQuaternion.value.copy(camera.quaternion);
   cameraController = new CameraControls(camera, webglCanvas.value!);
   renderer = new WebGLRenderer({
@@ -288,6 +329,11 @@ onMounted(() => {
   renderer.setClearColor(0xcccccc, 1);
   renderer.setAnimationLoop(doRender);
   renderer.render(scene, camera);
+  // Computing the inverse must be done after the first render call
+  // Otherwise, the camera matrix is not up-to-date
+
+  cameraInverseMatrix.copy(camera.matrixWorld).invert();
+
   // textRenderer.render(scene, camera);
   // visualContent.value!.appendChild(textRenderer.domElement);
   useEventListener("mousemove", threeMouseTracker);
@@ -306,14 +352,27 @@ onUpdated(() => {
 
 function doMouseDown(ev: MouseEvent) {
   // console.debug("MouseDown");
-  if (surfaceIntersections.value.length > 0)
+  positionInCameraCF.value
+    .copy(labelLayerIntersections.value[0].point)
+    .applyMatrix4(cameraInverseMatrix);
+  console.debug(
+    `${labelLayerIntersections.value[0].point.toFixed(
+      2
+    )} => ${positionInCameraCF.value.toFixed(2)}`
+  );
+
+  if (surfaceIntersections.value.length > 0) {
     currentTool?.mousePressed(
       ev,
       mouseCoordNormalized.value,
       surfaceIntersections.value[0].point,
       surfaceIntersections.value[0].normal!
     );
-  else currentTool?.mousePressed(ev, mouseCoordNormalized.value, null, null);
+    // const { x, y, z } = labelLayerIntersections.value[0].point;
+
+    txtObject.sync();
+    camera.add(txtObject);
+  } else currentTool?.mousePressed(ev, mouseCoordNormalized.value, null, null);
 }
 
 function doMouseUp(ev: MouseEvent) {
@@ -338,7 +397,7 @@ function threeMouseTracker(ev: MouseEvent) {
   //     `from VueUse (${elementX.value}, ${elementY.value})`
   // );
   rayCaster.setFromCamera(mouseCoordNormalized.value, camera);
-  const regex = /(Sheet|Sphere)$/; // For filtering cursor intersection point(s)
+  const regex = /(Sheet|Sphere|LabelPlane)$/; // For filtering cursor intersection point(s)
   [surfaceIntersections.value, objectIntersections.value] = rayCaster
     .intersectObjects(scene.children, true)
     .filter(iSect => {
@@ -350,7 +409,20 @@ function threeMouseTracker(ev: MouseEvent) {
       return iSect.object.name.length > 0;
     })
     .partition(x => x.object.name.match(regex) !== null);
+  [labelLayerIntersections.value, surfaceIntersections.value] =
+    surfaceIntersections.value.partition(x => x.object.name.endsWith("Plane"));
   // let position3d: Vector3 | null;
+  positionInCameraCF.value
+    .copy(labelLayerIntersections.value[0].point)
+    .applyMatrix4(cameraInverseMatrix);
+  txtObject.position.copy(positionInCameraCF.value);
+  txtObject.sync();
+  console.debug(
+    "Cursor pos in camera CF",
+    labelLayerIntersections.value[0].point,
+    positionInCameraCF.value.toFixed(3)
+  );
+
   let firstIntersection: THREE.Intersection | null;
   if (surfaceIntersections.value.length > 0) {
     // console.debug(`Number of all intersections ${surfaceIntersections.value.length}`)
@@ -359,6 +431,7 @@ function threeMouseTracker(ev: MouseEvent) {
     //   z => z.object.name.length > 0 // we are interested only in named objects
     // );
     firstIntersection = surfaceIntersections.value[0];
+    txtObject.text = firstIntersection.object.name;
     // position3d = firstIntersection.point;
     if (firstIntersection.object.name.endsWith("Sheet"))
       onSurface.value = firstIntersection.object.name

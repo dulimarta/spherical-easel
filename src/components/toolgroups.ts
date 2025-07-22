@@ -14,8 +14,8 @@ const toolGroupInternal: Array<ToolGroup> = [
   {
     group: "BasicTools",
     tools: ["point", "line", "segment", "circle", "text"]
-  }
-  // { group: "EditTools", tools: ["select", "delete" /*, "dummy" */] }
+  },
+  { group: "EditTools", tools: ["select", "delete" /*, "dummy" */] }
   // {
   //   group: "DisplayTools",
   //   tools: [

@@ -100,7 +100,9 @@ export class LineHandler extends PoseTracker {
 
       const planeElevationAngle = this.planeNormal.angleTo(Z_AXIS);
       const intersectsHyperboloid =
+        // If both points are on the hyperboloid they must be on the same sheet
         (onHyperboloid && this.first.position.z * this.second.position.z > 0) ||
+        // If the points are on the sphere, the plane elevation angle must > 45 degrees
         (!onHyperboloid && planeElevationAngle > Math.PI / 4);
       this.scene.remove(this.hyperbolaTube);
       if (intersectsHyperboloid) {
