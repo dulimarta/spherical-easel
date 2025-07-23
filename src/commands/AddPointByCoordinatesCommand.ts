@@ -2,7 +2,7 @@ import { Command } from "@/commands/Command";
 import { HEPoint } from "@/models-hyperbolic/HEPoint";
 import { Vector3 } from "three";
 
-export class AddPointCommandByCoordinates extends Command {
+export class AddPointByCoordinatesCommand extends Command {
   hePoint: HEPoint;
   constructor(coord: Vector3) {
     super();

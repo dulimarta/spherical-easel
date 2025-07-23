@@ -7,11 +7,15 @@ export class AddHyperbolicLineCommand extends Command {
   startPoint: HEPoint;
   endPoint: HEPoint;
   line: HELine;
-  constructor(startPosition: Vector3, endPosition: Vector3) {
+  constructor(
+    startPosition: Vector3,
+    endPosition: Vector3,
+    isInfinite: boolean
+  ) {
     super();
     this.startPoint = new HEPoint(startPosition);
     this.endPoint = new HEPoint(endPosition);
-    this.line = new HELine(startPosition, endPosition, false);
+    this.line = new HELine(startPosition, endPosition, isInfinite);
   }
   restoreState(preventGraphicalUpdate?: boolean): void {
     Command.hstore.removeLine(this.line);

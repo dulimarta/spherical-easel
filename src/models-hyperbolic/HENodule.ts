@@ -4,6 +4,8 @@ import { Group, Mesh, MeshBasicMaterial, Scene } from "three";
 let NODE_COUNT = 0;
 export abstract class HENodule {
   static POINT_COUNT = 0;
+  static LINE_COUNT = 0;
+  static SEGMENT_COUNT = 0;
   static hyperStore: HEStoreType;
 
   protected _parents: HENodule[] = [];

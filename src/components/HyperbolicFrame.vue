@@ -416,11 +416,11 @@ function threeMouseTracker(ev: MouseEvent) {
     .applyMatrix4(cameraInverseMatrix);
   txtObject.position.copy(positionInCameraCF.value);
   txtObject.sync();
-  console.debug(
-    "Cursor pos in camera CF",
-    labelLayerIntersections.value[0].point,
-    positionInCameraCF.value.toFixed(3)
-  );
+  // console.debug(
+  //   "Cursor pos in camera CF",
+  //   labelLayerIntersections.value[0].point,
+  //   positionInCameraCF.value.toFixed(3)
+  // );
 
   let firstIntersection: THREE.Intersection | null;
   if (surfaceIntersections.value.length > 0) {

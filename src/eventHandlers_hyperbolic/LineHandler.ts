@@ -230,7 +230,8 @@ export class LineHandler extends PoseTracker {
     if (position) {
       const cmd = new AddHyperbolicLineCommand(
         this.first.position,
-        this.second.position
+        this.second.position,
+        this.infiniteLine
       );
       cmd.execute();
     }

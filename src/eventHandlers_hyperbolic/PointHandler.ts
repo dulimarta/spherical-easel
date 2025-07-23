@@ -1,4 +1,4 @@
-import { AddPointCommandByCoordinates } from "@/commands/AddPointCommandByCoordinates";
+import { AddPointByCoordinatesCommand } from "@/commands/AddPointByCoordinatesCommand";
 import { Scene, Vector2, Vector3 } from "three";
 import { PoseTracker } from "./PoseTracker";
 
@@ -23,7 +23,7 @@ export class PointHandler extends PoseTracker {
   ): void {
     super.mousePressed(event, scrPos, position, normalDirection);
     if (position) {
-      const cmd = new AddPointCommandByCoordinates(position);
+      const cmd = new AddPointByCoordinatesCommand(position);
       cmd.execute();
     }
   }

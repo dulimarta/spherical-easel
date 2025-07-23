@@ -32,12 +32,15 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   }
   function removePoint(point: HEPoint) {
     point.removeFromScene(threeJSScene);
+    objectMap.delete(point.name);
   }
   function addLine(line: HELine) {
     line.addToScene(threeJSScene);
+    objectMap.set(line.name, markRaw(line));
   }
   function removeLine(line: HELine) {
     line.removeFromScene(threeJSScene);
+    objectMap.delete(line.name);
   }
   function reorientText(quat: Quaternion) {
     objectMap

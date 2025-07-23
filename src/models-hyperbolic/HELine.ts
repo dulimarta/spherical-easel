@@ -1,6 +1,7 @@
 import {
   Matrix4,
   Mesh,
+  MeshBasicMaterial,
   MeshStandardMaterial,
   TubeGeometry,
   Vector3
@@ -18,10 +19,11 @@ export class HELine extends HENodule {
   planeDir2 = new Vector3();
   planeCoordinateFrame = new Matrix4();
   hyperbolaPath = new HyperbolicCurve();
+  normalColor = "springgreen";
   isInfinite: boolean;
   private hyperbolaTube = new Mesh(
     new TubeGeometry(this.hyperbolaPath, 50, 0.05, 12, false),
-    new MeshStandardMaterial({ color: "springgreen" })
+    new MeshStandardMaterial({ color: this.normalColor })
   );
   constructor(
     startPos: Vector3 = new Vector3(),
@@ -33,6 +35,14 @@ export class HELine extends HENodule {
     this.endPoint.copy(endPos);
     this.isInfinite = isInfinite;
     this.group.add(this.hyperbolaTube);
+    if (isInfinite) {
+      HENodule.LINE_COUNT++;
+      this.name = `Li${HENodule.LINE_COUNT}`;
+    } else {
+      HENodule.SEGMENT_COUNT++;
+      this.name = `Ls${HENodule.SEGMENT_COUNT}`;
+    }
+    this.hyperbolaTube.name = this.name;
     this.shallowUpdate();
   }
 
@@ -75,9 +85,16 @@ export class HELine extends HENodule {
     );
   }
   public glowingDisplay(): void {
-    throw new Error("Method not implemented.");
+    const material = this.hyperbolaTube.material as MeshStandardMaterial;
+    // if (this.group.children.length > 0) {
+    //   const mesh = this.group.children[0] as Mesh;
+    // const material = mesh.material as MeshBasicMaterial;
+    this.normalColor = "#" + material.color.getHexString();
+    material.color.set("yellow");
+    // }
   }
   public normalDisplay(): void {
-    throw new Error("Method not implemented.");
+    const material = this.hyperbolaTube.material as MeshStandardMaterial;
+    material.color.set(this.normalColor);
   }
 }
