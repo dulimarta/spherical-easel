@@ -6,6 +6,7 @@ import { Intersection, Quaternion, Scene } from "three";
 import { markRaw } from "vue";
 import { ref, Ref } from "vue";
 import { useThreeFont } from "@/composables/useThreeFont";
+import { HELine } from "@/models-hyperbolic/HELine";
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const surfaceIntersections: Ref<Intersection[]> = ref([]);
   const objectIntersections: Ref<Intersection[]> = ref([]);
@@ -32,6 +33,12 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   function removePoint(point: HEPoint) {
     point.removeFromScene(threeJSScene);
   }
+  function addLine(line: HELine) {
+    line.addToScene(threeJSScene);
+  }
+  function removeLine(line: HELine) {
+    line.removeFromScene(threeJSScene);
+  }
   function reorientText(quat: Quaternion) {
     objectMap
       .values()
@@ -53,8 +60,10 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     objectIntersections,
     cameraQuaternion,
     addPoint,
+    addLine,
     getObjectById,
     removePoint,
+    removeLine,
     setScene,
     reorientText
   };

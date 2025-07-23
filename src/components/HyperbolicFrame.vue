@@ -20,13 +20,13 @@
       }">
       Mouse @
       <span>2D:({{ elementX.toFixed(0) }}, {{ elementY.toFixed(0) }})</span>
-      <span class="mx-2">
+      <span class="mr-1">
         {{ mouseCoordNormalized.toFixed(3) }}
       </span>
       <span v-if="onSurface">
-        3D:{{ rayIntersectionPoint.position.toFixed(2) }}
+        World:{{ rayIntersectionPoint.position.toFixed(2) }}
       </span>
-      <span>Camera {{ positionInCameraCF.toFixed(2) }}</span>
+      <span class="ml-1">In Camera {{ positionInCameraCF.toFixed(2) }}</span>
     </span>
   </span>
   <canvas
@@ -82,7 +82,6 @@ import { createPoint } from "@/mesh/MeshFactory";
 import { onBeforeMount } from "vue";
 import { TextHandler } from "@/eventHandlers_hyperbolic/TextHandler";
 import { Text } from "troika-three-text";
-import { KeyboardEvent } from "happy-dom";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
 const {
@@ -218,7 +217,7 @@ function initialize() {
 let currentTool: HyperbolicToolStrategy | null = null; //new PointHandler();
 let pointTool: PointHandler = new PointHandler(scene);
 let lineTool: LineHandler | null = null;
-let textTool: TextHandler | null = null;
+// let textTool: TextHandler | null = null;
 const labelPlane = new THREE.Mesh(
   new THREE.PlaneGeometry(3, 3),
   new THREE.MeshBasicMaterial({
@@ -277,10 +276,10 @@ watch(
         lineTool.setInfiniteMode(false);
         currentTool = lineTool;
         break;
-      case "text":
-        if (textTool === null) textTool = new TextHandler(scene);
-        currentTool = textTool;
-        break;
+      // case "text":
+      //   if (textTool === null) textTool = new TextHandler(scene);
+      //   currentTool = textTool;
+      //   break;
       default:
         enableCameraControl.value = true;
         currentTool = null;
@@ -370,8 +369,8 @@ function doMouseDown(ev: MouseEvent) {
     );
     // const { x, y, z } = labelLayerIntersections.value[0].point;
 
-    txtObject.sync();
-    camera.add(txtObject);
+    // txtObject.sync();
+    // camera.add(txtObject);
   } else currentTool?.mousePressed(ev, mouseCoordNormalized.value, null, null);
 }
 
@@ -432,6 +431,7 @@ function threeMouseTracker(ev: MouseEvent) {
     // );
     firstIntersection = surfaceIntersections.value[0];
     txtObject.text = firstIntersection.object.name;
+    if (currentTool === null) camera.add(txtObject);
     // position3d = firstIntersection.point;
     if (firstIntersection.object.name.endsWith("Sheet"))
       onSurface.value = firstIntersection.object.name
@@ -452,6 +452,7 @@ function threeMouseTracker(ev: MouseEvent) {
     onSurface.value = null;
     firstIntersection = null;
     scene.remove(rayIntersectionPoint);
+    camera.remove(txtObject);
   }
 
   currentTool?.mouseMoved(
