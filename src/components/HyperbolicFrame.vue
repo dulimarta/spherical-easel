@@ -1,5 +1,6 @@
 <template>
   <span
+    id="cursorInfo"
     :style="{
       position: 'fixed',
       backgroundColor: '#FFF7'
@@ -14,13 +15,12 @@
       </v-icon>
     </span>
     <span
-      class="mr-2"
+      class="mr-1"
       :style="{
         color: isOutside ? 'red' : 'black'
       }">
-      Mouse @
-      <span>2D:({{ elementX.toFixed(0) }}, {{ elementY.toFixed(0) }})</span>
       <span class="mr-1">
+        Canvas: ({{ elementX.toFixed(0) }}, {{ elementY.toFixed(0) }}) |
         {{ mouseCoordNormalized.toFixed(3) }}
       </span>
       <span v-if="onSurface">
@@ -29,13 +29,35 @@
       <span class="ml-1">In Camera {{ positionInCameraCF.toFixed(2) }}</span>
     </span>
   </span>
+  <v-tooltip activator="#cursorInfo" location="bottom" class="opacity-70">
+    <ul>
+      <li>Canvas: the position of the mouse in the canvas</li>
+      <ul>
+        <li>pixel coordinates</li>
+        <li>
+          <b>normalized</b>
+          pixel coordinates
+        </li>
+      </ul>
+      <li>World: intersection of mouse ray with world objects</li>
+      <li>Location of world point in the camera coordinate system</li>
+    </ul>
+  </v-tooltip>
+  <v-switch
+    v-model="showKleinDisk" color="green-lighten-2"
+    :style="{ position: 'fixed', bottom: '32px', right: '24px' }"
+    label="Show Klein Disk"></v-switch>
   <canvas
     ref="webglCanvas"
     id="webglCanvas"
     :width="props.availableWidth"
     :height="props.availableHeight" />
 </template>
-
+<style lang="css" scoped>
+ul > ul {
+  margin-left: 1em;
+}
+</style>
 <script setup lang="ts">
 import {
   AmbientLight,
@@ -86,7 +108,7 @@ import { LAYER } from "@/global-settings";
 import { useIdle } from "@vueuse/core";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
-const { idle, reset: idleReset } = useIdle(1 * 1000); // 3 seconds
+const { idle } = useIdle(250); // in milliseconds
 const {
   surfaceIntersections,
   objectIntersections,
@@ -97,6 +119,7 @@ const {
 const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
 const hasUpdatedCameraControls = ref(false);
+const showKleinDisk = ref(true);
 
 type ImportantSurface = "Upper" | "Lower" | "Sphere" | null;
 let onSurface: Ref<ImportantSurface> = ref(null);
@@ -137,15 +160,23 @@ const pointLight = new PointLight(0xffffff, 100);
 pointLight.position.set(3, 3, 5);
 scene.add(ambientLight);
 scene.add(pointLight);
+const kleinDisk = new Mesh(
+  new THREE.CircleGeometry(1, 30),
+  new MeshStandardMaterial({
+    transparent: true,
+    opacity: 0.7,
+    color: "PaleGreen"
+  })
+);
+kleinDisk.position.z = 1;
 
 const rayIntersectionPoint = createPoint(0.05, "white");
 
 watch(idle, idleValue => {
-  console.debug("Idle state", idleValue);
-  console.debug("Camera control", hasUpdatedCameraControls.value);
+  // console.debug("Idle state", idleValue);
+  // console.debug("Camera control", hasUpdatedCameraControls.value);
   if (idleValue && hasUpdatedCameraControls.value) {
     console.debug("Reorient text labels");
-
     hyperStore.reorientText(camera.quaternion);
     hasUpdatedCameraControls.value = false;
   }
@@ -175,13 +206,16 @@ function initialize() {
     120,
     300
   );
+  const hyperboloidMaterial: THREE.MeshStandardMaterialParameters = {
+    color: "chocolate",
+    side: DoubleSide,
+    roughness: 0.2,
+    transparent: true,
+    opacity: 0.75
+  };
   const upperHyperboloidMesh = new Mesh(
     upperHyperboloidGeometry,
-    new MeshStandardMaterial({
-      color: "chocolate",
-      side: DoubleSide,
-      roughness: 0.2
-    })
+    new MeshStandardMaterial(hyperboloidMaterial)
   );
 
   const lowerHyperboloidGeometry = new ParametricGeometry(
@@ -192,11 +226,7 @@ function initialize() {
   // lowerHyperboloidGeometry.computeBoundsTree();
   const lowerHyperboloidMesh = new Mesh(
     lowerHyperboloidGeometry,
-    new MeshStandardMaterial({
-      color: "chocolate",
-      side: DoubleSide,
-      roughness: 0.2
-    })
+    new MeshStandardMaterial(hyperboloidMaterial)
   );
   lowerHyperboloidMesh.name = "Lower Sheet";
   upperHyperboloidMesh.name = "Upper Sheet";
@@ -210,23 +240,16 @@ function initialize() {
     new MeshStandardMaterial({
       color: "green",
       side: DoubleSide,
-      roughness: 0.3
+      roughness: 0.3,
+      transparent: true,
+      opacity: 0.75
     })
   );
   centerSphere.name = "Center Sphere";
   scene.add(centerSphere);
 
   /* Show Klein disk? */
-  const kleinDisk = new Mesh(
-    new THREE.CircleGeometry(1, 30),
-    new MeshStandardMaterial({
-      transparent: true,
-      opacity: 0.7,
-      color: "darkorange"
-    })
-  );
-  kleinDisk.position.z = 1;
-  scene.add(kleinDisk);
+  if (showKleinDisk.value) scene.add(kleinDisk);
 }
 
 let currentTool: HyperbolicToolStrategy | null = null; //new PointHandler();
@@ -272,6 +295,13 @@ function doRender() {
   }
 }
 
+watch(
+  () => showKleinDisk.value,
+  showKlein => {
+    if (showKlein) scene.add(kleinDisk)
+    else scene.remove(kleinDisk)
+  }
+);
 watch(
   () => actionMode.value,
   mode => {

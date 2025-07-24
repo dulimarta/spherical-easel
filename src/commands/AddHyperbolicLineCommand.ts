@@ -9,12 +9,14 @@ export class AddHyperbolicLineCommand extends Command {
   line: HELine;
   constructor(
     startPosition: Vector3,
+    startNormal: Vector3,
     endPosition: Vector3,
+    endNormal: Vector3,
     isInfinite: boolean
   ) {
     super();
-    this.startPoint = new HEPoint(startPosition);
-    this.endPoint = new HEPoint(endPosition);
+    this.startPoint = new HEPoint(startPosition, startNormal);
+    this.endPoint = new HEPoint(endPosition, endNormal);
     this.line = new HELine(startPosition, endPosition, isInfinite);
   }
   restoreState(preventGraphicalUpdate?: boolean): void {

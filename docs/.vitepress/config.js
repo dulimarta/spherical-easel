@@ -2,33 +2,35 @@ export default {
   lang: "en-US",
   title: "Spherical Easel",
   description:
-        "Explore Spherical Geometry: A user guide and design guide for Spherical Easel",
+    "Explore Spherical Geometry: A user guide and design guide for Spherical Easel",
 
   //The srcDir is used so that the VitePress site will be built relative to this directory
-  srcDir: './src',
+  srcDir: "./src",
   markdown: {
     // After installing the package via add -D markdown-it-mathjax3, this enables latex in the markdown files
     math: true
   },
 
   themeConfig: {
-    lastUpdated: true,// Displays last updated on each page
-    editLink: { //Display a link to edit the page on github
-      pattern: 'https://github.com/dulimarta/spherical-easel/tree/main/docs/:link'
+    lastUpdated: true, // Displays last updated on each page
+    editLink: {
+      //Display a link to edit the page on github
+      pattern:
+        "https://github.com/dulimarta/spherical-easel/tree/main/docs/:link"
     },
     search: {
-      provider: 'local'
+      provider: "local"
     },
     i18nRouting: true,
     logo: "/SphericalEaselLogo.gif",
     nav: [
       {
-      text: "Navigation",
-      ariaLabel: "Navigation Menu",
-      items: [
-      { text: "Home", link: "/" },
-      { text: "About", link: "/about.md" },
-      { text: "Contact", link: "/contact.md" },
+        text: "Navigation",
+        ariaLabel: "Navigation Menu",
+        items: [
+          { text: "Home", link: "/" },
+          { text: "About", link: "/about.md" },
+          { text: "Contact", link: "/contact.md" }
         ]
       },
       {
@@ -37,16 +39,19 @@ export default {
         items: [
           { text: "Quick Start Guide", link: "/quickstart/" },
           { text: "User Manual", link: "/userguide/" },
-          { text: "Tools Documents", link: "/tools/edit" },
+          { text: "Tools Documents", link: "/tools/" },
           { text: "Design Documents", link: "/design/" },
+          { text: "Design Documents (Hyperbolic)", link: "/hyperbolic-easel/" },
           { text: "Lesson Plans", link: "/lessonplans/" }
         ]
       }
     ],
 
     footer: {
-      message: "License agreements <a href='https://creativecommons.org/licenses/by-nc-sa/4.0/'target='_blank''> CC-BY-NC-SA </a>",
-      copyright: 'Copyright © 2002-present David Austin, William Dickinson, Hans Dulimarta, Michelle Dowling, Vinicius Lima'
+      message:
+        "License agreements <a href='https://creativecommons.org/licenses/by-nc-sa/4.0/'target='_blank''> CC-BY-NC-SA </a>",
+      copyright:
+        "Copyright © 2002-present David Austin, William Dickinson, Hans Dulimarta, Michelle Dowling, Vinicius Lima"
     },
 
     //Settings for the sidebar, this is done in groups so that
@@ -83,7 +88,7 @@ export default {
           collapsed: false,
           sidebarDepth: 0,
           items: [
-            { text: "Equilateral Triangles",link: "/quickstart/"},
+            { text: "Equilateral Triangles", link: "/quickstart/" },
             { text: "Construct", link: "/quickstart/construct" },
             { text: "Style", link: "/quickstart/explorestyle" },
             { text: "Measure", link: "/quickstart/measure" },
@@ -112,16 +117,16 @@ export default {
           collapsed: true,
           sidebarDepth: 0,
           items: [
-            { text:"Edit", link:"/tools/edit"},
-            { text:"Display", link:"/tools/display"},
-            { text:"Basic", link:"/tools/basic"},
-            { text:"Construction", link:"/tools/construction"},
-            { text:"Measurement", link:"/tools/measurement"},
-            { text:"Conic", link:"/tools/conic"},
-            { text:"Advanced", link:"/tools/advanced"},
-            { text:"Transformation", link:"/tools/transformation"},
-            { text:"Measured Object", link:"/tools/measuredobject"},
-            { text:"Tool Tips", link:"/tools/"}
+            { text: "Edit", link: "/tools/edit" },
+            { text: "Display", link: "/tools/display" },
+            { text: "Basic", link: "/tools/basic" },
+            { text: "Construction", link: "/tools/construction" },
+            { text: "Measurement", link: "/tools/measurement" },
+            { text: "Conic", link: "/tools/conic" },
+            { text: "Advanced", link: "/tools/advanced" },
+            { text: "Transformation", link: "/tools/transformation" },
+            { text: "Measured Object", link: "/tools/measuredobject" },
+            { text: "Tool Tips", link: "/tools/" }
           ]
         },
         {
@@ -130,8 +135,11 @@ export default {
           collapsed: true,
           sidebarDepth: 0,
           items: [
-            {text: "Overview", link: "/design/"},
-            {text: "Adding a tool - Outline", link: "/design/addingatooloutline"}
+            { text: "Overview", link: "/design/" },
+            {
+              text: "Adding a tool - Outline",
+              link: "/design/addingatooloutline"
+            }
           ]
         },
         {
@@ -147,12 +155,12 @@ export default {
           collapsed: true,
           //sidebarDepth: 1,
           items: [
-            {text:"Home", link:"/"},
-            {text: "About", link:"about"} ,
-            {text: "Contact", link:"contact"}
+            { text: "Home", link: "/" },
+            { text: "About", link: "about" },
+            { text: "Contact", link: "contact" }
           ]
         }
-      ],
+      ]
     },
     plugins: [
       [
@@ -160,7 +168,7 @@ export default {
         {
           delimiters: "dollars"
         }
-      ],
-    ],
+      ]
+    ]
   }
-}
+};

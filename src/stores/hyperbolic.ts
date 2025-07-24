@@ -69,7 +69,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     line.removeFromScene(threeJSScene);
     objectMap.delete(line.name);
   }
-  function reorientText(quat: Quaternion) {
+  function reorientTextBackup(quat: Quaternion) {
     threeJSCamera.matrixWorld.decompose(
       cameraOrigin,
       cameraQuaternion.value,
@@ -87,28 +87,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     rayCaster.layers.enable(LAYER.midground);
     // rayCaster.layers.enable(LAYER.foreground);
     // rayCaster.layers.enableAll();
-    const [visibleObjects, occludedobjects] = objectMap
-      .values()
-      .flatMap(obj => obj.group.children)
-      .toArray()
-      .partition(obj => {
-        rayCastDirection.subVectors(cameraOrigin, obj.position);
-        rayCaster.set(obj.position, rayCastDirection);
-        const occlusions = rayCaster
-          .intersectObjects(threeJSScene.children, true)
-          .filter(occ => occ.distance > 1e-5);
-        console.debug(`Checking occlusion of ${obj.name}`);
-        // occlusions
-        //   // .filter(occ => occ.distance >= 1e-6)
-        //   .forEach(occ => {
-        //     console.debug(`${occ.object.name} ${occ.distance}`);
-        //   });
-        return occlusions.length === 0;
-      });
-    console.debug(
-      "Visible objects",
-      visibleObjects.map(obj => obj.name).join(", ")
-    );
+
     //   const labels = objectMap
     //     .values()
     //     .flatMap(obj => obj.group.children[0].children);
@@ -141,6 +120,51 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     //       // }
     //       t.quaternion.copy(quat);
     //     });
+  }
+  function reorientText(quat: Quaternion) {
+    threeJSCamera.matrixWorld.decompose(
+      cameraOrigin,
+      cameraQuaternion.value,
+      cameraScale
+    );
+    rayCaster.layers.disableAll();
+    rayCaster.layers.enable(LAYER.midground);
+    const [visibleObjects, occludedobjects] = objectMap
+      .values()
+      .flatMap(obj => obj.group.children)
+      .toArray()
+      .partition(obj => {
+        rayCastDirection.subVectors(cameraOrigin, obj.position);
+        rayCaster.set(obj.position, rayCastDirection);
+        const occlusions = rayCaster
+          .intersectObjects(threeJSScene.children, true)
+          .filter(occ => occ.distance > 1e-5);
+        if (occlusions.length > 0) {
+          const msg = occlusions
+            // .filter(occ => occ.distance >= 1e-6)
+            .map(occ => occ.object.name + " @" + occ.distance.toFixed(2))
+            .join();
+
+          console.debug(`${obj.name} is occluded by ${msg}`);
+        }
+        return occlusions.length === 0;
+      });
+    console.debug(
+      "Visible objects",
+      visibleObjects.map(obj => obj.name).join(", ")
+    );
+    objectMap
+      .values()
+      .filter(obj => obj instanceof HEPoint)
+      .flatMap(p => p.group.children[0].children)
+      .filter(p => {
+        // console.debug("Here is", p);
+        return p.name.startsWith("La");
+      })
+      .forEach(t => {
+        // console.debug("What is", t);
+        t.quaternion.copy(quat);
+      });
   }
   return {
     font,
