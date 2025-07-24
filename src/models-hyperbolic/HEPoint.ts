@@ -64,8 +64,9 @@ export class HEPoint extends HENodule {
         new MeshStandardMaterial({ color: "white" })
       );
       extraPointMesh.name = `EP${HENodule.POINT_COUNT}`;
+      extraPointMesh.layers.set(LAYER.backgroundPoints);
       // We have a secondary point to add
-      this.group.add(extraPointMesh);
+      // this.group.add(extraPointMesh);
       extraPointMesh.position.copy(pos);
       extraPointMesh.position.divideScalar(apppliedScale);
     } else {

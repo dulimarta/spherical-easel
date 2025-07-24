@@ -75,33 +75,40 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
       cameraQuaternion.value,
       cameraScale
     );
-    console.debug("Camera position 1", cameraOrigin.toFixed(2));
-    cameraInverseMatrix.value.copy(threeJSCamera.matrixWorld).invert();
-    cameraInverseMatrix.value.decompose(
-      cameraOrigin,
-      cameraQuaternion.value,
-      cameraScale
-    );
-    console.debug("Camera origin 2", cameraOrigin.toFixed(2));
-    // rayCaster.layers.enable(LAYER.midground);
+    // console.debug("Camera position 1", cameraOrigin.toFixed(2));
+    // cameraInverseMatrix.value.copy(threeJSCamera.matrixWorld).invert();
+    // cameraInverseMatrix.value.decompose(
+    //   cameraOrigin,
+    //   cameraQuaternion.value,
+    //   cameraScale
+    // );
+    // console.debug("Camera origin 2", cameraOrigin.toFixed(2));
+    rayCaster.layers.disableAll();
+    rayCaster.layers.enable(LAYER.midground);
     // rayCaster.layers.enable(LAYER.foreground);
-    //   rayCaster.layers.enableAll();
-    //   const [visibleObjects, occludedobjects] = objectMap
-    //     .values()
-    //     .flatMap(obj => obj.group.children)
-    //     .toArray()
-    //     .partition(obj => {
-    //       rayCastDirection.subVectors(cameraOrigin, obj.position);
-    //       rayCaster.set(obj.position, rayCastDirection);
-    //       const occlusions = rayCaster.intersectObjects(
-    //         threeJSCamera.children,
-    //         true
-    //       );
-    //       console.debug(
-    //         `Checking occlusion of ${obj.name} ==> ${occlusions.length}`
-    //       );
-    //       return occlusions.length === 0;
-    //     });
+    // rayCaster.layers.enableAll();
+    const [visibleObjects, occludedobjects] = objectMap
+      .values()
+      .flatMap(obj => obj.group.children)
+      .toArray()
+      .partition(obj => {
+        rayCastDirection.subVectors(cameraOrigin, obj.position);
+        rayCaster.set(obj.position, rayCastDirection);
+        const occlusions = rayCaster
+          .intersectObjects(threeJSScene.children, true)
+          .filter(occ => occ.distance > 1e-5);
+        console.debug(`Checking occlusion of ${obj.name}`);
+        // occlusions
+        //   // .filter(occ => occ.distance >= 1e-6)
+        //   .forEach(occ => {
+        //     console.debug(`${occ.object.name} ${occ.distance}`);
+        //   });
+        return occlusions.length === 0;
+      });
+    console.debug(
+      "Visible objects",
+      visibleObjects.map(obj => obj.name).join(", ")
+    );
     //   const labels = objectMap
     //     .values()
     //     .flatMap(obj => obj.group.children[0].children);

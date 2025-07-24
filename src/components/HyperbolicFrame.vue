@@ -261,7 +261,11 @@ function doRender() {
     // console.debug("Enable camera control?", hasUpdatedControls);
     if (hasUpdated) {
       hasUpdatedCameraControls.value = true;
-      // console.debug(`Camera control triggers update`, camera.quaternion);
+      // console.debug(
+      //   `Camera control triggers update`,
+      //   camera.quaternion,
+      //   camera.matrixWorld.elements
+      // );
       cameraQuaternion.value.copy(camera.quaternion);
       renderer.render(scene, camera);
     }
