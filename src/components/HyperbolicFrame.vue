@@ -78,7 +78,7 @@ import { useSEStore } from "@/stores/se";
 import { LineHandler } from "@/eventHandlers_hyperbolic/LineHandler";
 import { createPoint } from "@/mesh/MeshFactory";
 import { onBeforeMount } from "vue";
-import { TextHandler } from "@/eventHandlers_hyperbolic/TextHandler";
+// import { TextHandler } from "@/eventHandlers_hyperbolic/TextHandler";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
 const { surfaceIntersections, objectIntersections, cameraQuaternion } =
@@ -208,7 +208,7 @@ function initialize() {
 let currentTool: HyperbolicToolStrategy | null = null; //new PointHandler();
 let pointTool: PointHandler = new PointHandler(scene);
 let lineTool: LineHandler | null = null;
-let textTool: TextHandler | null = null;
+// let textTool: TextHandler | null = null;
 
 function doRender() {
   // console.debug("Enable camera control", enableCameraControl.value)
@@ -248,10 +248,10 @@ watch(
         lineTool.setInfiniteMode(false);
         currentTool = lineTool;
         break;
-      case "text":
-        if (textTool === null) textTool = new TextHandler(scene);
-        currentTool = textTool;
-        break;
+      // case "text":
+      //   if (textTool === null) textTool = new TextHandler(scene);
+      //   currentTool = textTool;
+      //   break;
       default:
         enableCameraControl.value = true;
         currentTool = null;

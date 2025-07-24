@@ -13,9 +13,9 @@ const toolGroupInternal: Array<ToolGroup> = [
   // and a Command class
   {
     group: "BasicTools",
-    tools: ["point", "line", "segment", "circle", "text"]
-  }
-  // { group: "EditTools", tools: ["select", "delete" /*, "dummy" */] }
+    tools: ["point", "line", "segment" /*, "circle", "text" */]
+  },
+  { group: "EditTools", tools: ["select", "delete" /*, "dummy" */] }
   // {
   //   group: "DisplayTools",
   //   tools: [

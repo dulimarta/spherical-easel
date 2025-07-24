@@ -1,10 +1,10 @@
 import { MeshStandardMaterial, SphereGeometry, Vector3, Mesh } from "three";
 import { HENodule } from "./HENodule";
-import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
+// import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { Text } from "troika-three-text";
 export class HEPoint extends HENodule {
   private pointMesh: Mesh;
-  constructor(pos: Vector3) {
+  constructor(pos: Vector3, dir: Vector3) {
     super();
     const material = new MeshStandardMaterial({ color: "white" });
     this.pointMesh = new Mesh(new SphereGeometry(0.05), material);
@@ -30,7 +30,7 @@ export class HEPoint extends HENodule {
     txtObject.name = `La${HENodule.POINT_COUNT}`;
     txtObject.text = `P${HENodule.POINT_COUNT}`;
     txtObject.anchorX = "center";
-    txtObject.anchorY = "bottom";
+    txtObject.anchorY = dir.z > 0 ? "bottom" : "top";
     // txtObject.position.set(0, 0, 0);
     txtObject.fontSize = 0.3;
     txtObject.color = "black"; //0x000000;
