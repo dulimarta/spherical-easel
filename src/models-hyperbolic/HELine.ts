@@ -1,13 +1,13 @@
 import {
   Matrix4,
   Mesh,
-  MeshBasicMaterial,
   MeshStandardMaterial,
   TubeGeometry,
   Vector3
 } from "three";
 import { HENodule } from "./HENodule";
 import { HyperbolicCurve } from "@/mesh/HyperbolicCurve";
+import { LAYER } from "@/global-settings";
 
 const ORIGIN = new Vector3();
 const Z_AXIS = new Vector3(0, 0, 1);
@@ -19,7 +19,7 @@ export class HELine extends HENodule {
   planeDir2 = new Vector3();
   planeCoordinateFrame = new Matrix4();
   hyperbolaPath = new HyperbolicCurve();
-  normalColor = "springgreen";
+  normalColor = "yellow";
   isInfinite: boolean;
   private hyperbolaTube = new Mesh(
     new TubeGeometry(this.hyperbolaPath, 50, 0.05, 12, false),
@@ -43,6 +43,7 @@ export class HELine extends HENodule {
       this.name = `Ls${HENodule.SEGMENT_COUNT}`;
     }
     this.hyperbolaTube.name = this.name;
+    this.hyperbolaTube.layers.set(LAYER.foreground);
     this.shallowUpdate();
   }
 
@@ -90,7 +91,7 @@ export class HELine extends HENodule {
     //   const mesh = this.group.children[0] as Mesh;
     // const material = mesh.material as MeshBasicMaterial;
     this.normalColor = "#" + material.color.getHexString();
-    material.color.set("yellow");
+    material.color.set("springgreen");
     // }
   }
   public normalDisplay(): void {

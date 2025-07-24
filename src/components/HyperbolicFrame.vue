@@ -82,16 +82,21 @@ import { createPoint } from "@/mesh/MeshFactory";
 import { onBeforeMount } from "vue";
 import { TextHandler } from "@/eventHandlers_hyperbolic/TextHandler";
 import { Text } from "troika-three-text";
+import { LAYER } from "@/global-settings";
+import { useIdle } from "@vueuse/core";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
+const { idle, reset: idleReset } = useIdle(1 * 1000); // 3 seconds
 const {
   surfaceIntersections,
   objectIntersections,
   labelLayerIntersections,
-  cameraQuaternion
+  cameraQuaternion,
+  cameraInverseMatrix
 } = storeToRefs(hyperStore);
 const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
+const hasUpdatedCameraControls = ref(false);
 
 type ImportantSurface = "Upper" | "Lower" | "Sphere" | null;
 let onSurface: Ref<ImportantSurface> = ref(null);
@@ -121,10 +126,8 @@ const { shift: shiftKey, control: controlKey } = useMagicKeys({
 const scene = new Scene();
 const clock = new Clock(); // used by camera control animation
 const rayCaster = new Raycaster();
-// rayCaster.firstHitOnly = true;
 const mouseCoordNormalized: Ref<THREE.Vector2> = ref(new THREE.Vector2()); // used by RayCaster
 let camera: PerspectiveCamera;
-const cameraInverseMatrix = new Matrix4();
 const positionInCameraCF = ref(new Vector3());
 let renderer: WebGLRenderer;
 let cameraController: CameraControls;
@@ -137,6 +140,16 @@ scene.add(pointLight);
 
 const rayIntersectionPoint = createPoint(0.05, "white");
 
+watch(idle, idleValue => {
+  console.debug("Idle state", idleValue);
+  console.debug("Camera control", hasUpdatedCameraControls.value);
+  if (idleValue && hasUpdatedCameraControls.value) {
+    console.debug("Reorient text labels");
+
+    hyperStore.reorientText(camera.quaternion);
+    hasUpdatedCameraControls.value = false;
+  }
+});
 function initialize() {
   // cameraQuaternion.value.copy(camera.q);
   const xyGrid = new GridHelper();
@@ -187,6 +200,8 @@ function initialize() {
   );
   lowerHyperboloidMesh.name = "Lower Sheet";
   upperHyperboloidMesh.name = "Upper Sheet";
+  lowerHyperboloidMesh.layers.set(LAYER.midground);
+  upperHyperboloidMesh.layers.set(LAYER.midground);
   scene.add(upperHyperboloidMesh);
   scene.add(lowerHyperboloidMesh);
 
@@ -242,12 +257,12 @@ function doRender() {
   // console.debug("Enable camera control", enableCameraControl.value)
   if (enableCameraControl.value) {
     const deltaTime = clock.getDelta();
-    const hasUpdatedControls = cameraController.update(deltaTime);
+    const hasUpdated = cameraController.update(deltaTime);
     // console.debug("Enable camera control?", hasUpdatedControls);
-    if (hasUpdatedControls) {
+    if (hasUpdated) {
+      hasUpdatedCameraControls.value = true;
       // console.debug(`Camera control triggers update`, camera.quaternion);
       cameraQuaternion.value.copy(camera.quaternion);
-      hyperStore.reorientText(camera.quaternion);
       renderer.render(scene, camera);
     }
   }
@@ -305,6 +320,10 @@ onMounted(() => {
   camera.position.set(8, 7, 6);
   camera.up.set(0, 0, 1);
   camera.lookAt(0, 0, 0);
+  // By default, only layer 0 is enabled
+  // camera.layers.enable(LAYER.foreground);
+  // camera.layers.enable(LAYER.midground);
+  camera.layers.enableAll();
   // txtObject.position.set(0, 0, -1);
   // txtObject.sync();
   // camera.add(txtObject);
@@ -316,7 +335,7 @@ onMounted(() => {
   labelPlane.position.set(0, 0, -1); // 1 unit IN FRONT of camera
   // kleinDisk.position.set(0, 0, -20);
   // x.position.set(0, 0, 6);
-  hyperStore.setScene(scene);
+  hyperStore.setScene(scene, camera);
 
   cameraQuaternion.value.copy(camera.quaternion);
   cameraController = new CameraControls(camera, webglCanvas.value!);
@@ -330,8 +349,6 @@ onMounted(() => {
   renderer.render(scene, camera);
   // Computing the inverse must be done after the first render call
   // Otherwise, the camera matrix is not up-to-date
-
-  cameraInverseMatrix.copy(camera.matrixWorld).invert();
 
   // textRenderer.render(scene, camera);
   // visualContent.value!.appendChild(textRenderer.domElement);
@@ -353,12 +370,12 @@ function doMouseDown(ev: MouseEvent) {
   // console.debug("MouseDown");
   positionInCameraCF.value
     .copy(labelLayerIntersections.value[0].point)
-    .applyMatrix4(cameraInverseMatrix);
-  console.debug(
-    `${labelLayerIntersections.value[0].point.toFixed(
-      2
-    )} => ${positionInCameraCF.value.toFixed(2)}`
-  );
+    .applyMatrix4(cameraInverseMatrix.value);
+  // console.debug(
+  //   `${labelLayerIntersections.value[0].point.toFixed(
+  //     2
+  //   )} => ${positionInCameraCF.value.toFixed(2)}`
+  // );
 
   if (surfaceIntersections.value.length > 0) {
     currentTool?.mousePressed(
@@ -396,14 +413,15 @@ function threeMouseTracker(ev: MouseEvent) {
   //     `from VueUse (${elementX.value}, ${elementY.value})`
   // );
   rayCaster.setFromCamera(mouseCoordNormalized.value, camera);
+  rayCaster.layers.enableAll();
   const regex = /(Sheet|Sphere|LabelPlane)$/; // For filtering cursor intersection point(s)
   [surfaceIntersections.value, objectIntersections.value] = rayCaster
     .intersectObjects(scene.children, true)
-    .filter(iSect => {
+    .filter((iSect, idx) => {
       // console.debug(
-      //   "Raycast intersect",
-      //   iSect.object.name,
-      //   iSect.object.name.match(regex)
+      //   `Raycast intersect #${idx} ${iSect.object.name}`,
+      //   iSect.normal?.toFixed(2)
+      //   // iSect.object.name.match(regex)
       // );
       return iSect.object.name.length > 0;
     })
@@ -413,7 +431,7 @@ function threeMouseTracker(ev: MouseEvent) {
   // let position3d: Vector3 | null;
   positionInCameraCF.value
     .copy(labelLayerIntersections.value[0].point)
-    .applyMatrix4(cameraInverseMatrix);
+    .applyMatrix4(cameraInverseMatrix.value);
   txtObject.position.copy(positionInCameraCF.value);
   txtObject.sync();
   // console.debug(

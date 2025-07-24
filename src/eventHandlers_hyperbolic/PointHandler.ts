@@ -22,8 +22,8 @@ export class PointHandler extends PoseTracker {
     normalDirection: Vector3 | null
   ): void {
     super.mousePressed(event, scrPos, position, normalDirection);
-    if (position) {
-      const cmd = new AddPointByCoordinatesCommand(position);
+    if (position && normalDirection) {
+      const cmd = new AddPointByCoordinatesCommand(position, normalDirection);
       cmd.execute();
     }
   }

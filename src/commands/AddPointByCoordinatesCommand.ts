@@ -4,9 +4,9 @@ import { Vector3 } from "three";
 
 export class AddPointByCoordinatesCommand extends Command {
   hePoint: HEPoint;
-  constructor(coord: Vector3) {
+  constructor(coord: Vector3, surfaceNormal: Vector3) {
     super();
-    this.hePoint = new HEPoint(coord);
+    this.hePoint = new HEPoint(coord, surfaceNormal);
   }
   restoreState(): void {
     Command.hstore.removePoint(this.hePoint);

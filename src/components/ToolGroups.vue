@@ -94,7 +94,8 @@
       <li
         v-for="(x, pos) in labelLayerIntersections.filter((_, pos) => pos < 4)"
         :key="`${x.object.name}${pos}`">
-        {{ x.point.toFixed(1) }} distance {{ x.distance.toFixed(2) }} with
+        At {{ x.point.toFixed(1) }} Norm: {{ x.normal?.toFixed(1) }} distance
+        {{ x.distance.toFixed(2) }} with
         {{ x.object.name }}
       </li>
     </ul>
@@ -105,7 +106,8 @@
       <li
         v-for="(x, pos) in surfaceIntersections.filter((_, pos) => pos < 4)"
         :key="`${x.object.name}${pos}`">
-        {{ x.point.toFixed(1) }} distance {{ x.distance.toFixed(2) }} with
+        {{ x.point.toFixed(1) }} Norm: {{ x.normal?.toFixed(1) }} distance
+        {{ x.distance.toFixed(2) }} with
         {{ x.object.name }}
       </li>
     </ul>
