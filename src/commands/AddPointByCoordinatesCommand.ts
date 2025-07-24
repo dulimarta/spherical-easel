@@ -3,13 +3,11 @@ import { HELabel } from "@/models-hyperbolic/HELabel";
 import { HEPoint } from "@/models-hyperbolic/HEPoint";
 import { Vector3 } from "three";
 
-export class AddPointCommandByCoordinates extends Command {
+export class AddPointByCoordinatesCommand extends Command {
   hePoint: HEPoint;
-  // heLabel: HELabel;
-  constructor(coord: Vector3, normalDir: Vector3) {
+  constructor(coord: Vector3, surfaceNormal: Vector3) {
     super();
-    this.hePoint = new HEPoint(coord, normalDir);
-    // this.heLabel = new HELabel(this.hePoint.name, coord, normalDir);
+    this.hePoint = new HEPoint(coord, surfaceNormal);
   }
   restoreState(): void {
     Command.hstore.removePoint(this.hePoint);

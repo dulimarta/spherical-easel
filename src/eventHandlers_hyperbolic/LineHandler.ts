@@ -11,26 +11,24 @@ import {
   Matrix4
 } from "three";
 import { PoseTracker } from "./PoseTracker";
-import { HyperbolicCurve } from "@/mesh/HyperbolicCurve";
 import { CircularCurve } from "@/mesh/CircularCurve";
 import { createPoint } from "@/mesh/MeshFactory";
+import { AddHyperbolicLineCommand } from "@/commands/AddHyperbolicLineCommand";
+import { HELine } from "@/models-hyperbolic/HELine";
 
 const Z_AXIS = new Vector3(0, 0, 1);
 const ORIGIN = new Vector3(0, 0, 0);
 export class LineHandler extends PoseTracker {
+  prototypeLine = new HELine();
   // The line is the intersection between a plane spanned by
   // the origin, the two points, and the hyperboloid
   private planeNormal = new Vector3();
   // private rotationAxis = new Vector3();
+
   private planeDir1 = new Vector3();
   private planeDir2 = new Vector3();
   private projectUp1 = new Vector3();
   private projectUp2 = new Vector3();
-  private hyperbolaPath = new HyperbolicCurve();
-  private hyperbolaTube = new Mesh(
-    new TubeGeometry(this.hyperbolaPath, 50, 0.05, 12, false),
-    new MeshStandardMaterial({ color: "springgreen" })
-  );
   private circlePath = new CircularCurve();
   private circleTube = new Mesh(
     new TubeGeometry(this.circlePath, 50, 0.03, 12, false),
@@ -58,6 +56,7 @@ export class LineHandler extends PoseTracker {
   }
 
   setInfiniteMode(onOff: boolean) {
+    this.prototypeLine.markInfinite(onOff);
     this.infiniteLine = onOff;
   }
 
@@ -100,20 +99,19 @@ export class LineHandler extends PoseTracker {
 
       const planeElevationAngle = this.planeNormal.angleTo(Z_AXIS);
       const intersectsHyperboloid =
+        // If both points are on the hyperboloid they must be on the same sheet
         (onHyperboloid && this.first.position.z * this.second.position.z > 0) ||
+        // If the points are on the sphere, the plane elevation angle must > 45 degrees
         (!onHyperboloid && planeElevationAngle > Math.PI / 4);
-      this.scene.remove(this.hyperbolaTube);
+      this.scene.remove(this.prototypeLine.group);
       if (intersectsHyperboloid) {
         // console.debug("Draw hyperbola and circle");
         if (onHyperboloid) {
           // both points are on the hyperboloid, draw the hyperbola using
           // the two original points
-          this.hyperbolaPath.setPointsAndDirections(
+          this.prototypeLine.setPoints(
             this.first.position,
-            this.second.position,
-            this.planeDir1,
-            this.planeDir2,
-            this.infiniteLine
+            this.second.position
           );
         } else {
           // At most one point is on the hyperboloid
@@ -131,21 +129,9 @@ export class LineHandler extends PoseTracker {
             this.projectUp2.multiplyScalar(Math.sqrt(scale2));
           }
           // Draw the hyperbola using the projected points
-          this.hyperbolaPath.setPointsAndDirections(
-            this.projectUp1,
-            this.projectUp2,
-            this.planeDir1,
-            this.planeDir2,
-            this.infiniteLine
-          );
+          this.prototypeLine.setPoints(this.projectUp1, this.projectUp2);
         }
-        this.hyperbolaTube.geometry.dispose();
-        this.hyperbolaTube.material.dispose();
-        this.hyperbolaTube = new Mesh(
-          new TubeGeometry(this.hyperbolaPath, 50, 0.03, 12, false),
-          new MeshStandardMaterial({ color: "springgreen" })
-        );
-        this.scene.add(this.hyperbolaTube);
+        this.scene.add(this.prototypeLine.group);
       }
       // Draw intersection with sphere
       this.circlePath.setPointsAndDirections(
@@ -183,7 +169,7 @@ export class LineHandler extends PoseTracker {
           this.kleinEnd.position
         );
     } else {
-      this.scene.remove(this.hyperbolaTube);
+      this.scene.remove(this.prototypeLine.group);
       this.scene.remove(this.circleTube);
       this.scene.remove(this.hPlane);
       this.scene.remove(this.kleinStart);
@@ -241,6 +227,14 @@ export class LineHandler extends PoseTracker {
     super.mouseReleased(event, position, normalDirection);
     this.scene.remove(this.hPlane);
     this.scene.remove(this.startPoint);
+    if (position) {
+      const cmd = new AddHyperbolicLineCommand(
+        this.first.position,
+        this.second.position,
+        this.infiniteLine
+      );
+      cmd.execute();
+    }
   }
   mouseLeave(event: MouseEvent): void {
     throw new Error("Method not implemented.");

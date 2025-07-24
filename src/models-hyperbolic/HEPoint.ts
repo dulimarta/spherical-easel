@@ -2,9 +2,10 @@ import { MeshStandardMaterial, SphereGeometry, Vector3, Mesh } from "three";
 import { HENodule } from "./HENodule";
 // import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { Text } from "troika-three-text";
+import { LAYER } from "@/global-settings";
 export class HEPoint extends HENodule {
   private pointMesh: Mesh;
-  constructor(pos: Vector3, dir: Vector3) {
+  constructor(pos: Vector3, normal: Vector3) {
     super();
     const material = new MeshStandardMaterial({ color: "white" });
     this.pointMesh = new Mesh(new SphereGeometry(0.05), material);
@@ -30,8 +31,9 @@ export class HEPoint extends HENodule {
     txtObject.name = `La${HENodule.POINT_COUNT}`;
     txtObject.text = `P${HENodule.POINT_COUNT}`;
     txtObject.anchorX = "center";
-    txtObject.anchorY = dir.z > 0 ? "bottom" : "top";
-    // txtObject.position.set(0, 0, 0);
+    txtObject.anchorY = normal.z > 0 ? "bottom" : "top";
+    // Add extra offset for the label in the direction of the surface normal
+    txtObject.position.copy(normal).multiplyScalar(0.05);
     txtObject.fontSize = 0.3;
     txtObject.color = "black"; //0x000000;
 
@@ -42,6 +44,7 @@ export class HEPoint extends HENodule {
     // txtObject.material.depthTest = false;
     txtObject.sync();
     this.pointMesh.add(txtObject);
+    this.pointMesh.layers.set(LAYER.foreground);
 
     const scale = pos.length();
     let apppliedScale = -1;
@@ -61,8 +64,9 @@ export class HEPoint extends HENodule {
         new MeshStandardMaterial({ color: "white" })
       );
       extraPointMesh.name = `EP${HENodule.POINT_COUNT}`;
+      extraPointMesh.layers.set(LAYER.backgroundPoints);
       // We have a secondary point to add
-      this.group.add(extraPointMesh);
+      // this.group.add(extraPointMesh);
       extraPointMesh.position.copy(pos);
       extraPointMesh.position.divideScalar(apppliedScale);
     } else {

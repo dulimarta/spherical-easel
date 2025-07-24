@@ -20,12 +20,13 @@
       }">
       Mouse @
       <span>2D:({{ elementX.toFixed(0) }}, {{ elementY.toFixed(0) }})</span>
-      <span class="mx-2">
+      <span class="mr-1">
         {{ mouseCoordNormalized.toFixed(3) }}
       </span>
       <span v-if="onSurface">
-        3D:{{ rayIntersectionPoint.position.toFixed(2) }}
+        World:{{ rayIntersectionPoint.position.toFixed(2) }}
       </span>
+      <span class="ml-1">In Camera {{ positionInCameraCF.toFixed(2) }}</span>
     </span>
   </span>
   <canvas
@@ -42,6 +43,7 @@ import {
   Clock,
   DoubleSide,
   GridHelper,
+  Matrix4,
   Mesh,
   MeshStandardMaterial,
   PerspectiveCamera,
@@ -78,13 +80,23 @@ import { useSEStore } from "@/stores/se";
 import { LineHandler } from "@/eventHandlers_hyperbolic/LineHandler";
 import { createPoint } from "@/mesh/MeshFactory";
 import { onBeforeMount } from "vue";
-// import { TextHandler } from "@/eventHandlers_hyperbolic/TextHandler";
+import { TextHandler } from "@/eventHandlers_hyperbolic/TextHandler";
+import { Text } from "troika-three-text";
+import { LAYER } from "@/global-settings";
+import { useIdle } from "@vueuse/core";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
-const { surfaceIntersections, objectIntersections, cameraQuaternion } =
-  storeToRefs(hyperStore);
+const { idle, reset: idleReset } = useIdle(1 * 1000); // 3 seconds
+const {
+  surfaceIntersections,
+  objectIntersections,
+  labelLayerIntersections,
+  cameraQuaternion,
+  cameraInverseMatrix
+} = storeToRefs(hyperStore);
 const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
+const hasUpdatedCameraControls = ref(false);
 
 type ImportantSurface = "Upper" | "Lower" | "Sphere" | null;
 let onSurface: Ref<ImportantSurface> = ref(null);
@@ -114,9 +126,9 @@ const { shift: shiftKey, control: controlKey } = useMagicKeys({
 const scene = new Scene();
 const clock = new Clock(); // used by camera control animation
 const rayCaster = new Raycaster();
-// rayCaster.firstHitOnly = true;
 const mouseCoordNormalized: Ref<THREE.Vector2> = ref(new THREE.Vector2()); // used by RayCaster
 let camera: PerspectiveCamera;
+const positionInCameraCF = ref(new Vector3());
 let renderer: WebGLRenderer;
 let cameraController: CameraControls;
 CameraControls.install({ THREE });
@@ -128,6 +140,16 @@ scene.add(pointLight);
 
 const rayIntersectionPoint = createPoint(0.05, "white");
 
+watch(idle, idleValue => {
+  console.debug("Idle state", idleValue);
+  console.debug("Camera control", hasUpdatedCameraControls.value);
+  if (idleValue && hasUpdatedCameraControls.value) {
+    console.debug("Reorient text labels");
+
+    hyperStore.reorientText(camera.quaternion);
+    hasUpdatedCameraControls.value = false;
+  }
+});
 function initialize() {
   // cameraQuaternion.value.copy(camera.q);
   const xyGrid = new GridHelper();
@@ -178,6 +200,8 @@ function initialize() {
   );
   lowerHyperboloidMesh.name = "Lower Sheet";
   upperHyperboloidMesh.name = "Upper Sheet";
+  lowerHyperboloidMesh.layers.set(LAYER.midground);
+  upperHyperboloidMesh.layers.set(LAYER.midground);
   scene.add(upperHyperboloidMesh);
   scene.add(lowerHyperboloidMesh);
 
@@ -209,17 +233,40 @@ let currentTool: HyperbolicToolStrategy | null = null; //new PointHandler();
 let pointTool: PointHandler = new PointHandler(scene);
 let lineTool: LineHandler | null = null;
 // let textTool: TextHandler | null = null;
+const labelPlane = new THREE.Mesh(
+  new THREE.PlaneGeometry(3, 3),
+  new THREE.MeshBasicMaterial({
+    color: 0xffff00,
+    transparent: true,
+    opacity: 0
+  })
+);
+labelPlane.name = "LabelPlane";
+
+const txtObject = new Text();
+// txtObject.name = `La${HENodule.POINT_COUNT}`;
+txtObject.text = `Hello`;
+txtObject.anchorX = "center";
+txtObject.anchorY = "bottom";
+// txtObject.position.set(0, 0, 0);
+txtObject.fontSize = 0.02;
+txtObject.color = "yellow"; //0x000000;
+// txtObject.position.set(0, 0, -0.3);
 
 function doRender() {
   // console.debug("Enable camera control", enableCameraControl.value)
   if (enableCameraControl.value) {
     const deltaTime = clock.getDelta();
-    const hasUpdatedControls = cameraController.update(deltaTime);
+    const hasUpdated = cameraController.update(deltaTime);
     // console.debug("Enable camera control?", hasUpdatedControls);
-    if (hasUpdatedControls) {
-      // console.debug(`Camera control triggers update`, camera.quaternion);
+    if (hasUpdated) {
+      hasUpdatedCameraControls.value = true;
+      // console.debug(
+      //   `Camera control triggers update`,
+      //   camera.quaternion,
+      //   camera.matrixWorld.elements
+      // );
       cameraQuaternion.value.copy(camera.quaternion);
-      hyperStore.reorientText(camera.quaternion);
       renderer.render(scene, camera);
     }
   }
@@ -265,7 +312,6 @@ onBeforeMount(() => {
 });
 
 onMounted(() => {
-  hyperStore.setScene(scene);
   console.debug(
     `Mounted size ${props.availableWidth}x${props.availableHeight}`
   );
@@ -278,6 +324,23 @@ onMounted(() => {
   camera.position.set(8, 7, 6);
   camera.up.set(0, 0, 1);
   camera.lookAt(0, 0, 0);
+  // By default, only layer 0 is enabled
+  // camera.layers.enable(LAYER.foreground);
+  // camera.layers.enable(LAYER.midground);
+  camera.layers.enableAll();
+  // txtObject.position.set(0, 0, -1);
+  // txtObject.sync();
+  // camera.add(txtObject);
+
+  // In order to add objects as a child of the camera, the camera itself
+  // must be inserted into the scene
+  scene.add(camera);
+  camera.add(labelPlane);
+  labelPlane.position.set(0, 0, -1); // 1 unit IN FRONT of camera
+  // kleinDisk.position.set(0, 0, -20);
+  // x.position.set(0, 0, 6);
+  hyperStore.setScene(scene, camera);
+
   cameraQuaternion.value.copy(camera.quaternion);
   cameraController = new CameraControls(camera, webglCanvas.value!);
   renderer = new WebGLRenderer({
@@ -288,6 +351,9 @@ onMounted(() => {
   renderer.setClearColor(0xcccccc, 1);
   renderer.setAnimationLoop(doRender);
   renderer.render(scene, camera);
+  // Computing the inverse must be done after the first render call
+  // Otherwise, the camera matrix is not up-to-date
+
   // textRenderer.render(scene, camera);
   // visualContent.value!.appendChild(textRenderer.domElement);
   useEventListener("mousemove", threeMouseTracker);
@@ -306,14 +372,27 @@ onUpdated(() => {
 
 function doMouseDown(ev: MouseEvent) {
   // console.debug("MouseDown");
-  if (surfaceIntersections.value.length > 0)
+  positionInCameraCF.value
+    .copy(labelLayerIntersections.value[0].point)
+    .applyMatrix4(cameraInverseMatrix.value);
+  // console.debug(
+  //   `${labelLayerIntersections.value[0].point.toFixed(
+  //     2
+  //   )} => ${positionInCameraCF.value.toFixed(2)}`
+  // );
+
+  if (surfaceIntersections.value.length > 0) {
     currentTool?.mousePressed(
       ev,
       mouseCoordNormalized.value,
       surfaceIntersections.value[0].point,
       surfaceIntersections.value[0].normal!
     );
-  else currentTool?.mousePressed(ev, mouseCoordNormalized.value, null, null);
+    // const { x, y, z } = labelLayerIntersections.value[0].point;
+
+    // txtObject.sync();
+    // camera.add(txtObject);
+  } else currentTool?.mousePressed(ev, mouseCoordNormalized.value, null, null);
 }
 
 function doMouseUp(ev: MouseEvent) {
@@ -338,19 +417,33 @@ function threeMouseTracker(ev: MouseEvent) {
   //     `from VueUse (${elementX.value}, ${elementY.value})`
   // );
   rayCaster.setFromCamera(mouseCoordNormalized.value, camera);
-  const regex = /(Sheet|Sphere)$/; // For filtering cursor intersection point(s)
+  rayCaster.layers.enableAll();
+  const regex = /(Sheet|Sphere|LabelPlane)$/; // For filtering cursor intersection point(s)
   [surfaceIntersections.value, objectIntersections.value] = rayCaster
     .intersectObjects(scene.children, true)
-    .filter(iSect => {
+    .filter((iSect, idx) => {
       // console.debug(
-      //   "Raycast intersect",
-      //   iSect.object.name,
-      //   iSect.object.name.match(regex)
+      //   `Raycast intersect #${idx} ${iSect.object.name}`,
+      //   iSect.normal?.toFixed(2)
+      //   // iSect.object.name.match(regex)
       // );
       return iSect.object.name.length > 0;
     })
     .partition(x => x.object.name.match(regex) !== null);
+  [labelLayerIntersections.value, surfaceIntersections.value] =
+    surfaceIntersections.value.partition(x => x.object.name.endsWith("Plane"));
   // let position3d: Vector3 | null;
+  positionInCameraCF.value
+    .copy(labelLayerIntersections.value[0].point)
+    .applyMatrix4(cameraInverseMatrix.value);
+  txtObject.position.copy(positionInCameraCF.value);
+  txtObject.sync();
+  // console.debug(
+  //   "Cursor pos in camera CF",
+  //   labelLayerIntersections.value[0].point,
+  //   positionInCameraCF.value.toFixed(3)
+  // );
+
   let firstIntersection: THREE.Intersection | null;
   if (surfaceIntersections.value.length > 0) {
     // console.debug(`Number of all intersections ${surfaceIntersections.value.length}`)
@@ -359,6 +452,8 @@ function threeMouseTracker(ev: MouseEvent) {
     //   z => z.object.name.length > 0 // we are interested only in named objects
     // );
     firstIntersection = surfaceIntersections.value[0];
+    txtObject.text = firstIntersection.object.name;
+    if (currentTool === null) camera.add(txtObject);
     // position3d = firstIntersection.point;
     if (firstIntersection.object.name.endsWith("Sheet"))
       onSurface.value = firstIntersection.object.name
@@ -379,6 +474,7 @@ function threeMouseTracker(ev: MouseEvent) {
     onSurface.value = null;
     firstIntersection = null;
     scene.remove(rayIntersectionPoint);
+    camera.remove(txtObject);
   }
 
   currentTool?.mouseMoved(

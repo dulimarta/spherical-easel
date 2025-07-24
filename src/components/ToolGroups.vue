@@ -88,22 +88,41 @@
     </v-expansion-panels>
   </v-item-group>
 
-  Intersections with surface
-  <ul class="text-caption">
-    <li
-      v-for="(x, pos) in surfaceIntersections.filter((_, pos) => pos < 4)"
-      :key="`${x.object.name}${pos}`">
-      {{ x.point.toFixed(1) }} distance {{ x.distance.toFixed(2) }} with
-      {{ x.object.name }}
-    </li>
-  </ul>
-  Intersections with objects
-  <ul class="text-caption">
-    <li v-for="(x, pos) in objectIntersections" :key="`${x.object.name}${pos}`">
-      {{ x.point.toFixed(1) }} distance {{ x.distance.toFixed(2) }} with
-      {{ x.object.name }}
-    </li>
-  </ul>
+  <template v-if="labelLayerIntersections.length > 0">
+    Intersections with Label Plane
+    <ul class="text-caption">
+      <li
+        v-for="(x, pos) in labelLayerIntersections.filter((_, pos) => pos < 4)"
+        :key="`${x.object.name}${pos}`">
+        At {{ x.point.toFixed(1) }} Norm: {{ x.normal?.toFixed(1) }} distance
+        {{ x.distance.toFixed(2) }} with
+        {{ x.object.name }}
+      </li>
+    </ul>
+  </template>
+  <template v-if="surfaceIntersections.length > 0">
+    Intersections with Surfaces
+    <ul class="text-caption">
+      <li
+        v-for="(x, pos) in surfaceIntersections.filter((_, pos) => pos < 4)"
+        :key="`${x.object.name}${pos}`">
+        {{ x.point.toFixed(1) }} Norm: {{ x.normal?.toFixed(1) }} distance
+        {{ x.distance.toFixed(2) }} with
+        {{ x.object.name }}
+      </li>
+    </ul>
+  </template>
+  <template v-if="objectIntersections.length > 0">
+    Intersections with objects
+    <ul class="text-caption">
+      <li
+        v-for="(x, pos) in objectIntersections"
+        :key="`${x.object.name}${pos}`">
+        {{ x.point.toFixed(1) }} distance {{ x.distance.toFixed(2) }} with
+        {{ x.object.name }}
+      </li>
+    </ul>
+  </template>
 </template>
 
 <script lang="ts" setup>
@@ -128,7 +147,8 @@ const hyperStore = useHyperbolicStore();
 const { userRole, includedTools } = storeToRefs(acctStore);
 const seStore = useSEStore();
 const { seExpressions, seTransformations, actionMode } = storeToRefs(seStore);
-const { surfaceIntersections, objectIntersections } = storeToRefs(hyperStore);
+const { surfaceIntersections, objectIntersections, labelLayerIntersections } =
+  storeToRefs(hyperStore);
 const route = useRoute();
 
 const inProductionMode = ref(false);
