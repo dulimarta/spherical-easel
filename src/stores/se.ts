@@ -365,6 +365,7 @@ export const useSEStore = defineStore("se", () => {
   const twoInstance: Ref<Two | null> = ref(null);
   const isEarthMode = ref(false);
   const actionMode: Ref<ActionMode> = ref<ActionMode>("point");
+  const geometryMode: Ref<"spherical" | "hyperbolic"> = ref("spherical");
   const previousActionMode: Ref<ActionMode> = ref("rotate");
   // activeToolName: "RotateDisplayedName", // the corresponding I18N key of actionMode
   // buttonSelection: {},
@@ -1683,6 +1684,7 @@ export const useSEStore = defineStore("se", () => {
   return {
     /* states */
     actionMode,
+    geometryMode,
     canvasHeight,
     canvasWidth,
     hasUnsavedNodules,

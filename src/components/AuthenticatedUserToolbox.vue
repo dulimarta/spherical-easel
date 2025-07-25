@@ -11,6 +11,17 @@
       icon
       size="x-small"
       class="bg-green-lighten-1"
+      @click="switchGeometryMode">
+      <v-icon color="black">mdi-calculator</v-icon>
+      <v-tooltip activator="parent">
+        Switch to
+        {{ geometryMode === "spherical" ? "Hyperbolic" : "Spherical" }}
+      </v-tooltip>
+    </v-btn>
+    <v-btn
+      icon
+      size="x-small"
+      class="bg-green-lighten-1"
       @click="doLoginOrLogout">
       <v-avatar
         size="small"
@@ -387,7 +398,8 @@ const {
   seLines,
   seCircles,
   seSegments,
-  selectedSENodules
+  selectedSENodules,
+  geometryMode
 } = storeToRefs(seStore);
 const { t } = useI18n({ useScope: "local" });
 
@@ -929,6 +941,15 @@ function doExport() {
         constructionName + "." + selectedExportFormat.value.toLowerCase()
       );
     });
+  }
+}
+function switchGeometryMode() {
+  if (geometryMode.value === "spherical") {
+    router.replace("/hyperbolic");
+    geometryMode.value = "hyperbolic";
+  } else {
+    router.replace("/");
+    geometryMode.value = "spherical";
   }
 }
 // function previewOrDefault(dataUrl: string | undefined): string {

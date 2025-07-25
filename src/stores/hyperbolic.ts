@@ -9,13 +9,15 @@ import {
   Camera,
   Raycaster,
   Matrix4,
-  Vector3
+  Vector3,
+  Object3D
 } from "three";
 import { markRaw } from "vue";
 import { ref, Ref } from "vue";
 import { useThreeFont } from "@/composables/useThreeFont";
 import { HELine } from "@/models-hyperbolic/HELine";
 import { LAYER } from "@/global-settings";
+import { Text } from "troika-three-text";
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const surfaceIntersections: Ref<Intersection[]> = ref([]);
   const objectIntersections: Ref<Intersection[]> = ref([]);
@@ -33,6 +35,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   let threeJSScene: Scene;
   let threeJSCamera: Camera;
   let rayCaster: Raycaster;
+  const labelPosition = new Vector3();
 
   function setScene(s: Scene, c: Camera) {
     threeJSScene = s;
@@ -121,7 +124,8 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     //       t.quaternion.copy(quat);
     //     });
   }
-  function reorientText(quat: Quaternion) {
+  function adjustTextPose(quat: Quaternion) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     threeJSCamera.matrixWorld.decompose(
       cameraOrigin,
       cameraQuaternion.value,
@@ -129,6 +133,8 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     );
     rayCaster.layers.disableAll();
     rayCaster.layers.enable(LAYER.midground);
+
+    // Look for non-occluded objects
     const [visibleObjects, occludedobjects] = objectMap
       .values()
       .flatMap(obj => obj.group.children)
@@ -139,32 +145,52 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
         const occlusions = rayCaster
           .intersectObjects(threeJSScene.children, true)
           .filter(occ => occ.distance > 1e-5);
-        if (occlusions.length > 0) {
-          const msg = occlusions
-            // .filter(occ => occ.distance >= 1e-6)
-            .map(occ => occ.object.name + " @" + occ.distance.toFixed(2))
-            .join();
+        // if (occlusions.length > 0) {
+        //   const msg = occlusions
+        //     // .filter(occ => occ.distance >= 1e-6)
+        //     .map(occ => occ.object.name + " @" + occ.distance.toFixed(2))
+        //     .join();
 
-          console.debug(`${obj.name} is occluded by ${msg}`);
-        }
+        //   // console.debug(`${obj.name} is occluded by ${msg}`);
+        // }
         return occlusions.length === 0;
       });
     console.debug(
       "Visible objects",
       visibleObjects.map(obj => obj.name).join(", ")
     );
-    objectMap
+
+    const allLabels = objectMap
       .values()
-      .filter(obj => obj instanceof HEPoint)
-      .flatMap(p => p.group.children[0].children)
-      .filter(p => {
-        // console.debug("Here is", p);
-        return p.name.startsWith("La");
-      })
-      .forEach(t => {
-        // console.debug("What is", t);
-        t.quaternion.copy(quat);
-      });
+      // This flatMap assumes that the text is attached to its parent
+      .flatMap(obj => obj.group.children[0].children)
+      .toArray();
+
+    const [occludedLabels, _otherLabels] = allLabels.partition(obj => {
+      const pos = visibleObjects.findIndex(x => x.name === obj.parent?.name);
+      if (pos < 0) return false;
+      // Perform ray cast from the label to the camera
+      labelPosition
+        .copy(visibleObjects[pos].position)
+        .addScaledVector(obj.position, 1);
+      rayCastDirection.subVectors(cameraOrigin, labelPosition);
+      rayCaster.set(labelPosition, rayCastDirection);
+      const labelOcclusions = rayCaster
+        .intersectObjects(threeJSScene.children, true)
+        .filter(occ => occ.distance > 1e-5);
+      // This label is occluded by other objects
+      return labelOcclusions.length > 0;
+    });
+
+    occludedLabels.forEach(textObj => {
+      // Move the label to the other side of the hyperboloid
+      textObj.position.multiplyScalar(-1);
+      // Adjust the text anchor in the Y direction
+      (textObj as Text).anchorY = textObj.position.z > 0 ? "bottom" : "top";
+    });
+    allLabels.forEach(t => {
+      t.quaternion.copy(quat);
+    });
   }
   return {
     font,
@@ -179,7 +205,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     removePoint,
     removeLine,
     setScene,
-    reorientText
+    adjustTextPose
   };
 });
 

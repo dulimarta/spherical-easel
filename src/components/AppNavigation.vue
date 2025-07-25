@@ -136,7 +136,7 @@ const appFeature = inject("features");
 
 const seStore = useSEStore();
 const acctStore = useAccountStore();
-const { actionMode } = storeToRefs(seStore);
+const { actionMode, geometryMode } = storeToRefs(seStore);
 // const props = defineProps<{ minified: boolean }>();
 const announce = defineEmits<{
   drawerWidthChanged: [width: number];

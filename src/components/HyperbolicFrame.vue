@@ -44,7 +44,8 @@
     </ul>
   </v-tooltip>
   <v-switch
-    v-model="showKleinDisk" color="green-lighten-2"
+    v-model="showKleinDisk"
+    color="green-lighten-2"
     :style="{ position: 'fixed', bottom: '32px', right: '24px' }"
     label="Show Klein Disk"></v-switch>
   <canvas
@@ -176,8 +177,7 @@ watch(idle, idleValue => {
   // console.debug("Idle state", idleValue);
   // console.debug("Camera control", hasUpdatedCameraControls.value);
   if (idleValue && hasUpdatedCameraControls.value) {
-    console.debug("Reorient text labels");
-    hyperStore.reorientText(camera.quaternion);
+    hyperStore.adjustTextPose(camera.quaternion);
     hasUpdatedCameraControls.value = false;
   }
 });
@@ -298,8 +298,8 @@ function doRender() {
 watch(
   () => showKleinDisk.value,
   showKlein => {
-    if (showKlein) scene.add(kleinDisk)
-    else scene.remove(kleinDisk)
+    if (showKlein) scene.add(kleinDisk);
+    else scene.remove(kleinDisk);
   }
 );
 watch(
