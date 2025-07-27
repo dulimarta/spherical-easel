@@ -21,7 +21,6 @@ import { Text } from "troika-three-text";
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const surfaceIntersections: Ref<Intersection[]> = ref([]);
   const objectIntersections: Ref<Intersection[]> = ref([]);
-  const labelLayerIntersections: Ref<Intersection[]> = ref([]);
   const objectMap: Map<string, HENodule> = new Map();
   const cameraQuaternion: Ref<Quaternion> = ref(new Quaternion());
   // const cameraCF = new Matrix4();
@@ -29,6 +28,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const cameraScale = new Vector3();
   const rayCastDirection = new Vector3();
   const cameraOrigin = new Vector3();
+  const showKleinDisk = ref(false);
   const { font } = useThreeFont();
 
   // const actionMode: Ref<ActionMode> = ref("move");
@@ -193,9 +193,9 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     });
   }
   return {
+    showKleinDisk,
     font,
     surfaceIntersections,
-    labelLayerIntersections,
     objectIntersections,
     cameraQuaternion,
     cameraInverseMatrix,

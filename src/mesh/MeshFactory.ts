@@ -1,7 +1,7 @@
 import { Mesh, MeshStandardMaterial, SphereGeometry } from "three";
 
 export function createPoint(
-  size: number = 0.02,
+  size: number = 0.05,
   color: string = "white"
 ): Mesh {
   return new Mesh(

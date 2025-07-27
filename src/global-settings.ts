@@ -1325,7 +1325,8 @@ export enum LAYER {
   foregroundPoints,
   foregroundLabelGlowing,
   foregroundLabel,
-  foregroundText
+  foregroundText,
+  kleinDisk
 }
 //#endregion layers
 

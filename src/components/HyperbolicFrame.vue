@@ -46,7 +46,7 @@
   <v-switch
     v-model="showKleinDisk"
     color="green-lighten-2"
-    :style="{ position: 'fixed', bottom: '32px', right: '24px' }"
+    :style="{ position: 'fixed', bottom: '32px', left: '384px' }"
     label="Show Klein Disk"></v-switch>
   <canvas
     ref="webglCanvas"
@@ -113,14 +113,13 @@ const { idle } = useIdle(250); // in milliseconds
 const {
   surfaceIntersections,
   objectIntersections,
-  labelLayerIntersections,
   cameraQuaternion,
-  cameraInverseMatrix
+  cameraInverseMatrix,
+  showKleinDisk
 } = storeToRefs(hyperStore);
 const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
 const hasUpdatedCameraControls = ref(false);
-const showKleinDisk = ref(true);
 
 type ImportantSurface = "Upper" | "Lower" | "Sphere" | null;
 let onSurface: Ref<ImportantSurface> = ref(null);
@@ -162,14 +161,14 @@ pointLight.position.set(3, 3, 5);
 scene.add(ambientLight);
 scene.add(pointLight);
 const kleinDisk = new Mesh(
-  new THREE.CircleGeometry(1, 30),
+  new THREE.CircleGeometry(4, 30),
   new MeshStandardMaterial({
     transparent: true,
-    opacity: 0.7,
+    opacity: 0.3,
     color: "PaleGreen"
   })
 );
-kleinDisk.position.z = 1;
+kleinDisk.position.z = 4;
 
 const rayIntersectionPoint = createPoint(0.05, "white");
 
@@ -181,6 +180,11 @@ watch(idle, idleValue => {
     hasUpdatedCameraControls.value = false;
   }
 });
+watch(showKleinDisk, showKlein => {
+  if (showKlein) camera.layers.enable(LAYER.kleinDisk);
+  else camera.layers.disable(LAYER.kleinDisk);
+});
+
 function initialize() {
   // cameraQuaternion.value.copy(camera.q);
   const xyGrid = new GridHelper();
@@ -256,15 +260,6 @@ let currentTool: HyperbolicToolStrategy | null = null; //new PointHandler();
 let pointTool: PointHandler = new PointHandler(scene);
 let lineTool: LineHandler | null = null;
 // let textTool: TextHandler | null = null;
-const labelPlane = new THREE.Mesh(
-  new THREE.PlaneGeometry(3, 3),
-  new THREE.MeshBasicMaterial({
-    color: 0xffff00,
-    transparent: true,
-    opacity: 0
-  })
-);
-labelPlane.name = "LabelPlane";
 
 const txtObject = new Text();
 // txtObject.name = `La${HENodule.POINT_COUNT}`;
@@ -364,9 +359,7 @@ onMounted(() => {
 
   // In order to add objects as a child of the camera, the camera itself
   // must be inserted into the scene
-  scene.add(camera);
-  camera.add(labelPlane);
-  labelPlane.position.set(0, 0, -1); // 1 unit IN FRONT of camera
+  // scene.add(camera);
   // kleinDisk.position.set(0, 0, -20);
   // x.position.set(0, 0, 6);
   hyperStore.setScene(scene, camera);
@@ -402,14 +395,6 @@ onUpdated(() => {
 
 function doMouseDown(ev: MouseEvent) {
   // console.debug("MouseDown");
-  positionInCameraCF.value
-    .copy(labelLayerIntersections.value[0].point)
-    .applyMatrix4(cameraInverseMatrix.value);
-  // console.debug(
-  //   `${labelLayerIntersections.value[0].point.toFixed(
-  //     2
-  //   )} => ${positionInCameraCF.value.toFixed(2)}`
-  // );
 
   if (surfaceIntersections.value.length > 0) {
     currentTool?.mousePressed(
@@ -460,14 +445,9 @@ function threeMouseTracker(ev: MouseEvent) {
       return iSect.object.name.length > 0;
     })
     .partition(x => x.object.name.match(regex) !== null);
-  [labelLayerIntersections.value, surfaceIntersections.value] =
-    surfaceIntersections.value.partition(x => x.object.name.endsWith("Plane"));
   // let position3d: Vector3 | null;
-  positionInCameraCF.value
-    .copy(labelLayerIntersections.value[0].point)
-    .applyMatrix4(cameraInverseMatrix.value);
-  txtObject.position.copy(positionInCameraCF.value);
-  txtObject.sync();
+  // txtObject.position.copy(positionInCameraCF.value);
+  // txtObject.sync();
   // console.debug(
   //   "Cursor pos in camera CF",
   //   labelLayerIntersections.value[0].point,

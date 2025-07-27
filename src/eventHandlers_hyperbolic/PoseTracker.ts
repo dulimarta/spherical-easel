@@ -32,10 +32,7 @@ export class PoseTracker implements HyperbolicToolStrategy {
     normal: new Vector3()
   };
   protected isDragging = false;
-  private aPoint = new Mesh(
-    new SphereGeometry(0.05),
-    new MeshStandardMaterial({ color: "white" })
-  );
+  private aPoint = createPoint();
   private auxLineCF = new Matrix4();
   private auxRotationAxis = new Vector3();
   private auxLine = new Mesh(
