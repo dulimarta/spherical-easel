@@ -200,6 +200,17 @@ const pointLight = new PointLight(0xffffff, 100);
 pointLight.position.set(3, 3, 5);
 scene.add(ambientLight);
 scene.add(pointLight);
+const unitSphere = new Mesh(
+    new SphereGeometry(1),
+    new MeshStandardMaterial({
+      color: "green",
+      side: DoubleSide,
+      roughness: 0.3,
+      transparent: true,
+      opacity: 0.75
+    })
+  );
+  
 const kleinDisk = new Mesh(
   new THREE.CircleGeometry(1, 30),
   new MeshStandardMaterial({
@@ -295,21 +306,12 @@ function initialize() {
   scene.add(upperHyperboloidMesh);
   scene.add(lowerHyperboloidMesh);
 
-  const centerSphere = new Mesh(
-    new SphereGeometry(1),
-    new MeshStandardMaterial({
-      color: "green",
-      side: DoubleSide,
-      roughness: 0.3,
-      transparent: true,
-      opacity: 0.75
-    })
-  );
-  centerSphere.name = "Center Sphere";
-  centerSphere.layers.set(HYPERBOLIC_LAYER.midgroundSpherical);
-  scene.add(centerSphere)
+  unitSphere.name = "Unit Sphere";
+  unitSphere.layers.set(HYPERBOLIC_LAYER.midgroundSpherical);
+  scene.add(unitSphere)
   if (showSphere.value) {
     rayCaster.layers.enable(HYPERBOLIC_LAYER.midgroundSpherical)
+    camera.layers.enable(HYPERBOLIC_LAYER.midgroundSpherical)
   }
 
   /* Show Klein disk? */
@@ -374,7 +376,7 @@ watch(
         break;
       case "line":
         if (lineTool === null) lineTool = new LineHandler(scene);
-        if (sphericalLineTool === null) sphericalLineTool = new SphericalLineHandler(scene)
+        if (sphericalLineTool === null) sphericalLineTool = new SphericalLineHandler(scene, unitSphere)
         // Extend the line to the end of the hyperboloid
         lineTool.setInfiniteMode(true);
         sphericalLineTool.setInfiniteMode(true)
@@ -383,9 +385,12 @@ watch(
         break;
       case "segment":
         if (lineTool === null) lineTool = new LineHandler(scene);
+        if (sphericalLineTool === null) sphericalLineTool = new SphericalLineHandler(scene, unitSphere)
         // Constrain the line to fit between the two end points
         lineTool.setInfiniteMode(false);
+        sphericalLineTool.setInfiniteMode(false)
         currentTools.push(lineTool);
+        currentTools.push(sphericalLineTool)
         break;
       // case "text":
       //   if (textTool === null) textTool = new TextHandler(scene);
