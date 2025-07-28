@@ -139,6 +139,7 @@ import { HyperbolicToolStrategy } from "@/eventHandlers/ToolStrategy";
 import { PointHandler } from "@/eventHandlers_hyperbolic/PointHandler";
 import { useSEStore } from "@/stores/se";
 import { LineHandler } from "@/eventHandlers_hyperbolic/LineHandler";
+import { SphericalLineHandler } from "@/eventHandlers_hyperbolic/SphericalLineHandler";
 import { createPoint } from "@/mesh/MeshFactory";
 import { onBeforeMount } from "vue";
 import { TextHandler } from "@/eventHandlers_hyperbolic/TextHandler";
@@ -318,6 +319,7 @@ function initialize() {
 let currentTools: Array<HyperbolicToolStrategy> = []; //new PointHandler();
 let pointTool: PointHandler = new PointHandler(scene);
 let lineTool: LineHandler | null = null;
+let sphericalLineTool: SphericalLineHandler | null = null
 // let textTool: TextHandler | null = null;
 
 const txtObject = new Text();
@@ -372,9 +374,12 @@ watch(
         break;
       case "line":
         if (lineTool === null) lineTool = new LineHandler(scene);
+        if (sphericalLineTool === null) sphericalLineTool = new SphericalLineHandler(scene)
         // Extend the line to the end of the hyperboloid
         lineTool.setInfiniteMode(true);
+        sphericalLineTool.setInfiniteMode(true)
         currentTools.push(lineTool);
+        currentTools.push(sphericalLineTool)
         break;
       case "segment":
         if (lineTool === null) lineTool = new LineHandler(scene);
