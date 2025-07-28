@@ -43,24 +43,49 @@
       <li>Location of world point in the camera coordinate system</li>
     </ul>
   </v-tooltip>
-  <v-hover open-delay="500">
-    <template #default="{ isHovering, props }">
-      <div
-        v-bind="props"
-        :style="{ position: 'fixed', bottom: '32px', left: '384px',
-          display: 'flex', flexDirection: 'column', alignItems: 'flex-start'
-         }">
-        <v-slider v-if="isHovering && showKleinDisk" v-model="kleinDiskPosition" 
-        direction="vertical" class="ml-2" thumb-label
-        min="1"
-        :max="Math.round(Math.cosh(2))"></v-slider>
-        <v-switch
-          v-model="showKleinDisk"
-          color="green-lighten-2"
-          label="Show Klein Disk"></v-switch>
-      </div>
-    </template>
-  </v-hover>
+  <div
+    :style="{
+      position: 'fixed',
+      bottom: '64px',
+      left: '384px',
+      display: 'flex',
+      marginLeft: '8px',
+      flexDirection: 'column',
+      alignItems: 'flex-start'
+    }">
+    <v-hover open-delay="250" close-delay="250">
+      <template #default="{ isHovering, props }">
+        <div
+          v-bind="props"
+          :style="{
+            display: 'flex',
+            marginLeft: '0px',
+            flexDirection: 'column',
+            alignItems: 'flex-start'
+          }">
+          <v-slider
+            v-if="isHovering && showKleinDisk"
+            v-model="kleinDiskElevation"
+            direction="vertical"
+            density="compact"
+            thumb-label
+            min="1"
+            :max="Math.round(Math.cosh(2))"></v-slider>
+          <v-switch
+            hide-details
+            v-model="showKleinDisk"
+            density="comfortable"
+            color="green-lighten-2"
+            label="Show Klein Disk"></v-switch>
+        </div>
+      </template>
+    </v-hover>
+    <v-switch
+      v-model="showSphere"
+      hide-details
+      label="Show Sphere"
+      density="compact" />
+  </div>
   <canvas
     ref="webglCanvas"
     id="webglCanvas"
@@ -128,12 +153,13 @@ const {
   objectIntersections,
   cameraQuaternion,
   cameraInverseMatrix,
-  showKleinDisk
+  showKleinDisk,
+  kleinDiskElevation,
+  showSphere
 } = storeToRefs(hyperStore);
 const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
 const hasUpdatedCameraControls = ref(false);
-const kleinDiskPosition = ref(4)
 type ImportantSurface = "Upper" | "Lower" | "Sphere" | null;
 let onSurface: Ref<ImportantSurface> = ref(null);
 // Inject new BVH functions into current THREE-JS Mesh/BufferGeometry definitions
@@ -174,14 +200,15 @@ pointLight.position.set(3, 3, 5);
 scene.add(ambientLight);
 scene.add(pointLight);
 const kleinDisk = new Mesh(
-  new THREE.CircleGeometry(kleinDiskPosition.value, 30),
+  new THREE.CircleGeometry(1, 30),
   new MeshStandardMaterial({
     transparent: true,
     opacity: 0.3,
     color: "PaleGreen"
   })
 );
-kleinDisk.position.z = kleinDiskPosition.value;
+kleinDisk.position.z = kleinDiskElevation.value;
+kleinDisk.scale.set(kleinDiskElevation.value, kleinDiskElevation.value, 1);
 
 const rayIntersectionPoint = createPoint(0.05, "white");
 
@@ -197,10 +224,21 @@ watch(showKleinDisk, showKlein => {
   if (showKlein) camera.layers.enable(HYPERBOLIC_LAYER.kleinDisk);
   else camera.layers.disable(HYPERBOLIC_LAYER.kleinDisk);
 });
-watch(kleinDiskPosition, (diskPos) => {
-  kleinDisk.position.z = diskPos
-  kleinDisk.scale.set(diskPos, diskPos, 1)
-})
+watch(kleinDiskElevation, diskPos => {
+  kleinDisk.position.z = diskPos;
+  kleinDisk.scale.set(diskPos, diskPos, 1);
+});
+watch(showSphere, show => {
+  if (show) {
+    camera.layers.enable(HYPERBOLIC_LAYER.midgroundSpherical);
+    camera.layers.enable(HYPERBOLIC_LAYER.foregroundSpherical)
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.midgroundSpherical);
+  } else {
+    camera.layers.disable(HYPERBOLIC_LAYER.midgroundSpherical);
+    camera.layers.disable(HYPERBOLIC_LAYER.foregroundSpherical)
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.midgroundSpherical);
+  }
+});
 function initialize() {
   // cameraQuaternion.value.copy(camera.q);
   const xyGrid = new GridHelper();
@@ -252,6 +290,7 @@ function initialize() {
   upperHyperboloidMesh.name = "Upper Sheet";
   lowerHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.midgroundHyperbolic);
   upperHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.midgroundHyperbolic);
+  rayCaster.layers.enable(HYPERBOLIC_LAYER.midgroundHyperbolic)
   scene.add(upperHyperboloidMesh);
   scene.add(lowerHyperboloidMesh);
 
@@ -267,10 +306,13 @@ function initialize() {
   );
   centerSphere.name = "Center Sphere";
   centerSphere.layers.set(HYPERBOLIC_LAYER.midgroundSpherical);
-  scene.add(centerSphere);
+  scene.add(centerSphere)
+  if (showSphere.value) {
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.midgroundSpherical)
+  }
 
   /* Show Klein disk? */
-  if (showKleinDisk.value) scene.add(kleinDisk);
+  scene.add(kleinDisk);
 }
 
 let currentTools: Array<HyperbolicToolStrategy> = []; //new PointHandler();
@@ -461,7 +503,6 @@ function threeMouseTracker(ev: MouseEvent) {
   //     `from VueUse (${elementX.value}, ${elementY.value})`
   // );
   rayCaster.setFromCamera(mouseCoordNormalized.value, camera);
-  rayCaster.layers.enableAll();
   const regex = /(Sheet|Sphere|LabelPlane)$/; // For filtering cursor intersection point(s)
   [surfaceIntersections.value, objectIntersections.value] = rayCaster
     .intersectObjects(scene.children, true)

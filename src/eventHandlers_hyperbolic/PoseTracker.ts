@@ -69,16 +69,6 @@ export class PoseTracker implements HyperbolicToolStrategy {
     position: Vector3 | null,
     direction: Vector3 | null
   ): void {
-    // console.debug(
-    //   "PoseTracker::mouseMoved",
-    //   position ? position.toFixed(2) : "N/A",
-    //   "dragging",
-    //   this.isDragging
-    // );
-    // console.debug(
-    //   "Object intersections: ",
-    //   PoseTracker.hyperStore.objectIntersections.length
-    // );
     this.hitObject?.normalDisplay();
     this.hitObject = null;
     if (PoseTracker.hyperStore.objectIntersections.length > 0) {
@@ -119,8 +109,10 @@ export class PoseTracker implements HyperbolicToolStrategy {
         const pointDistance = this.second.position.length();
         let scaleFactor = 0;
         if (pointDistance > 1) {
-          /* Second point on hyperboloid, compute scale factor to project it down to the sphere */
-          scaleFactor = 1 / pointDistance;
+          if (PoseTracker.hyperStore.$state.showSphere) {
+            /* Second point on hyperboloid, compute scale factor to project it down to the sphere */
+            scaleFactor = 1 / pointDistance;
+          }
         } else {
           /* Second point on sphere, compute the scale factor to project it up to the hyperboloid */
           const scaleSquared = -1 / (x1 * x1 + y1 * y1 - z1 * z1);

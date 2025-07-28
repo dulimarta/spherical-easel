@@ -21,7 +21,12 @@ export class PointHandler extends PoseTracker {
     super.mouseMoved(event, scrPos, position, direction);
     if (position) {
       const { x, y, z } = position;
-      this.kleinPoint.position.set((4 * x) / z, (4 * y) / z, 4);
+      const kleinZPos = PointHandler.hyperStore.$state.kleinDiskElevation;
+      this.kleinPoint.position.set(
+        (kleinZPos * x) / z,
+        (kleinZPos * y) / z,
+        kleinZPos
+      );
 
       if (!this.kleinPointAdded) {
         this.scene.add(this.kleinPoint);
