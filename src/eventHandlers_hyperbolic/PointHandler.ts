@@ -22,6 +22,7 @@ export class PointHandler extends PoseTracker {
     if (position) {
       const { x, y, z } = position;
       this.kleinPoint.position.set((4 * x) / z, (4 * y) / z, 4);
+
       if (!this.kleinPointAdded) {
         this.scene.add(this.kleinPoint);
         this.kleinPointAdded = true;

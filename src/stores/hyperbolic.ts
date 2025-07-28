@@ -72,58 +72,6 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     line.removeFromScene(threeJSScene);
     objectMap.delete(line.name);
   }
-  function reorientTextBackup(quat: Quaternion) {
-    threeJSCamera.matrixWorld.decompose(
-      cameraOrigin,
-      cameraQuaternion.value,
-      cameraScale
-    );
-    // console.debug("Camera position 1", cameraOrigin.toFixed(2));
-    // cameraInverseMatrix.value.copy(threeJSCamera.matrixWorld).invert();
-    // cameraInverseMatrix.value.decompose(
-    //   cameraOrigin,
-    //   cameraQuaternion.value,
-    //   cameraScale
-    // );
-    // console.debug("Camera origin 2", cameraOrigin.toFixed(2));
-    rayCaster.layers.disableAll();
-    rayCaster.layers.enable(HYPERBOLIC_LAYER.midground);
-    // rayCaster.layers.enable(LAYER.foreground);
-    // rayCaster.layers.enableAll();
-
-    //   const labels = objectMap
-    //     .values()
-    //     .flatMap(obj => obj.group.children[0].children);
-    //   // const visibleObjects: Set<HENodule> = new Set();
-    //   objectMap
-    //     .values()
-    //     .filter(obj => obj instanceof HEPoint)
-    //     .flatMap(p => [...p.group.children, ...p.group.children[0].children])
-    //     // .filter(p => {
-    //     //   // console.debug("Here is", p);
-    //     //   return p.name.startsWith("La");
-    //     // })
-    //     .forEach(t => {
-    //       // console.debug(`Object ${t.name}`);
-    //       // if (t.parent) {
-    //       //   const occlusions = rayCaster.intersectObjects(
-    //       //     threeJSScene.children.filter(obj =>
-    //       //       obj.layers.isEnabled(LAYER.midground)
-    //       //     )
-    //       //   );
-    //       //   // if (occlusions.length === 0) {
-    //       //   //   console.debug(`Object ${t.name} is visible`);
-    //       //   // } else {
-    //       //   //   console.debug(
-    //       //   //     `Object ${t.name} is occluded by ${occlusions.map(
-    //       //   //       obj => obj.object.name
-    //       //   //     )}`)
-
-    //       //   // }
-    //       // }
-    //       t.quaternion.copy(quat);
-    //     });
-  }
   function adjustTextPose(quat: Quaternion) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     threeJSCamera.matrixWorld.decompose(
@@ -132,7 +80,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
       cameraScale
     );
     rayCaster.layers.disableAll();
-    rayCaster.layers.enable(HYPERBOLIC_LAYER.midground);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.midgroundHyperbolic);
 
     // Look for non-occluded objects
     const [visibleObjects, occludedobjects] = objectMap

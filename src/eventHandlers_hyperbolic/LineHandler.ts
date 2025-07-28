@@ -106,9 +106,9 @@ export class LineHandler extends PoseTracker {
       );
 
       const angleFromZ = Z_AXIS.angleTo(this.planeDir2);
-      console.debug(
-        `Angle of plane from Z ${angleFromZ.toDegrees().toFixed(2)}`
-      );
+      // console.debug(
+      //   `Angle of plane from Z ${angleFromZ.toDegrees().toFixed(2)}`
+      // );
       const desiredPlaneHeight = Math.cosh(2) / Math.cos(angleFromZ);
       this.hPlaneScale.makeScale(1, 2 * desiredPlaneHeight, 1);
       this.hPlane.matrix.multiply(this.hPlaneScale);

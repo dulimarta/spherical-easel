@@ -43,11 +43,24 @@
       <li>Location of world point in the camera coordinate system</li>
     </ul>
   </v-tooltip>
-  <v-switch
-    v-model="showKleinDisk"
-    color="green-lighten-2"
-    :style="{ position: 'fixed', bottom: '32px', left: '384px' }"
-    label="Show Klein Disk"></v-switch>
+  <v-hover open-delay="500">
+    <template #default="{ isHovering, props }">
+      <div
+        v-bind="props"
+        :style="{ position: 'fixed', bottom: '32px', left: '384px',
+          display: 'flex', flexDirection: 'column', alignItems: 'flex-start'
+         }">
+        <v-slider v-if="isHovering && showKleinDisk" v-model="kleinDiskPosition" 
+        direction="vertical" class="ml-2" thumb-label
+        min="1"
+        :max="Math.round(Math.cosh(2))"></v-slider>
+        <v-switch
+          v-model="showKleinDisk"
+          color="green-lighten-2"
+          label="Show Klein Disk"></v-switch>
+      </div>
+    </template>
+  </v-hover>
   <canvas
     ref="webglCanvas"
     id="webglCanvas"
@@ -120,7 +133,7 @@ const {
 const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
 const hasUpdatedCameraControls = ref(false);
-
+const kleinDiskPosition = ref(4)
 type ImportantSurface = "Upper" | "Lower" | "Sphere" | null;
 let onSurface: Ref<ImportantSurface> = ref(null);
 // Inject new BVH functions into current THREE-JS Mesh/BufferGeometry definitions
@@ -161,14 +174,14 @@ pointLight.position.set(3, 3, 5);
 scene.add(ambientLight);
 scene.add(pointLight);
 const kleinDisk = new Mesh(
-  new THREE.CircleGeometry(4, 30),
+  new THREE.CircleGeometry(kleinDiskPosition.value, 30),
   new MeshStandardMaterial({
     transparent: true,
     opacity: 0.3,
     color: "PaleGreen"
   })
 );
-kleinDisk.position.z = 4;
+kleinDisk.position.z = kleinDiskPosition.value;
 
 const rayIntersectionPoint = createPoint(0.05, "white");
 
@@ -184,11 +197,14 @@ watch(showKleinDisk, showKlein => {
   if (showKlein) camera.layers.enable(HYPERBOLIC_LAYER.kleinDisk);
   else camera.layers.disable(HYPERBOLIC_LAYER.kleinDisk);
 });
-
+watch(kleinDiskPosition, (diskPos) => {
+  kleinDisk.position.z = diskPos
+  kleinDisk.scale.set(diskPos, diskPos, 1)
+})
 function initialize() {
   // cameraQuaternion.value.copy(camera.q);
   const xyGrid = new GridHelper();
-  xyGrid.translateZ(1);
+  // xyGrid.translateZ(1);
   xyGrid.rotateX(Math.PI / 2);
   scene.add(xyGrid);
 
@@ -234,8 +250,8 @@ function initialize() {
   );
   lowerHyperboloidMesh.name = "Lower Sheet";
   upperHyperboloidMesh.name = "Upper Sheet";
-  lowerHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.midground);
-  upperHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.midground);
+  lowerHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.midgroundHyperbolic);
+  upperHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.midgroundHyperbolic);
   scene.add(upperHyperboloidMesh);
   scene.add(lowerHyperboloidMesh);
 
@@ -250,7 +266,7 @@ function initialize() {
     })
   );
   centerSphere.name = "Center Sphere";
-  centerSphere.layers.set(HYPERBOLIC_LAYER.midground)
+  centerSphere.layers.set(HYPERBOLIC_LAYER.midgroundSpherical);
   scene.add(centerSphere);
 
   /* Show Klein disk? */
@@ -302,8 +318,10 @@ watch(
   () => actionMode.value,
   mode => {
     console.debug("New action mode", mode);
-    currentTools.forEach (t => {t.deactivate()});
-    currentTools.splice(0)
+    currentTools.forEach(t => {
+      t.deactivate();
+    });
+    currentTools.splice(0);
     enableCameraControl.value = false;
     switch (mode) {
       case "point":
@@ -328,9 +346,11 @@ watch(
       //   break;
       default:
         enableCameraControl.value = true;
-        // currentTools. = null;
+      // currentTools. = null;
     }
-    currentTools.forEach(t => {t.activate()});
+    currentTools.forEach(t => {
+      t.activate();
+    });
   }
 );
 
@@ -352,7 +372,7 @@ onMounted(() => {
   camera.up.set(0, 0, 1);
   camera.lookAt(0, 0, 0);
   // By default, only layer 0 is enabled
-  camera.layers.enableAll();
+  camera.layers.enable(HYPERBOLIC_LAYER.midgroundHyperbolic);
   // txtObject.position.set(0, 0, -1);
   // txtObject.sync();
   // camera.add(txtObject);
@@ -396,29 +416,39 @@ function doMouseDown(ev: MouseEvent) {
   // console.debug("MouseDown");
 
   if (surfaceIntersections.value.length > 0) {
-    currentTools.forEach(t => {t.mousePressed(
-      ev,
-      mouseCoordNormalized.value,
-      surfaceIntersections.value[0].point,
-      surfaceIntersections.value[0].normal!
-    )});
+    currentTools.forEach(t => {
+      t.mousePressed(
+        ev,
+        mouseCoordNormalized.value,
+        surfaceIntersections.value[0].point,
+        surfaceIntersections.value[0].normal!
+      );
+    });
     // const { x, y, z } = labelLayerIntersections.value[0].point;
 
     // txtObject.sync();
     // camera.add(txtObject);
-  } else currentTools.forEach(t => {t.mousePressed(ev, mouseCoordNormalized.value, null, null)});
+  } else
+    currentTools.forEach(t => {
+      t.mousePressed(ev, mouseCoordNormalized.value, null, null);
+    });
 }
 
 function doMouseUp(ev: MouseEvent) {
   // console.debug("MouseUp");
   if (surfaceIntersections.value.length > 0)
-    currentTools.forEach(t =>{t.mouseReleased(
-      ev,
-      // mouseCoordNormalized.value,
-      surfaceIntersections.value[0].point,
-      surfaceIntersections.value[0].normal!
-    )}) ;
-  else currentTools.forEach(t => {t.mouseReleased(ev, null, null)});
+    currentTools.forEach(t => {
+      t.mouseReleased(
+        ev,
+        // mouseCoordNormalized.value,
+        surfaceIntersections.value[0].point,
+        surfaceIntersections.value[0].normal!
+      );
+    });
+  else
+    currentTools.forEach(t => {
+      t.mouseReleased(ev, null, null);
+    });
 }
 
 function threeMouseTracker(ev: MouseEvent) {
@@ -486,12 +516,14 @@ function threeMouseTracker(ev: MouseEvent) {
     camera.remove(txtObject);
   }
 
-  currentTools.forEach(t => {t.mouseMoved(
-    ev,
-    mouseCoordNormalized.value,
-    firstIntersection?.point ?? null,
-    firstIntersection?.normal ?? null
-  )});
+  currentTools.forEach(t => {
+    t.mouseMoved(
+      ev,
+      mouseCoordNormalized.value,
+      firstIntersection?.point ?? null,
+      firstIntersection?.normal ?? null
+    );
+  });
   // doMouseMove(!isOutside.value, onSurface.value, position3d);
 }
 

@@ -44,7 +44,7 @@ export class HEPoint extends HENodule {
     // txtObject.material.depthTest = false;
     txtObject.sync();
     this.pointMesh.add(txtObject);
-    this.pointMesh.layers.set(HYPERBOLIC_LAYER.foreground);
+    this.pointMesh.layers.set(HYPERBOLIC_LAYER.foregroundHyperbolic);
 
     const scale = pos.length();
     let apppliedScale = -1;
@@ -64,9 +64,9 @@ export class HEPoint extends HENodule {
         new MeshStandardMaterial({ color: "white" })
       );
       extraPointMesh.name = `EP${HENodule.POINT_COUNT}`;
-      extraPointMesh.layers.set(HYPERBOLIC_LAYER.backgroundPoints);
+      extraPointMesh.layers.set(HYPERBOLIC_LAYER.foregroundSpherical);
       // We have a secondary point to add
-      // this.group.add(extraPointMesh);
+      this.group.add(extraPointMesh);
       extraPointMesh.position.copy(pos);
       extraPointMesh.position.divideScalar(apppliedScale);
     } else {
@@ -74,21 +74,6 @@ export class HEPoint extends HENodule {
       material.color.setColorName("red");
     }
   }
-
-  // addToScene(s: Scene): void {
-  //   // throw new Error("Method not implemented.");
-  //   s.add(this.group);
-  //   // this.mesh.forEach((m: Object3D) => {
-  //   //   s.add(m);
-  //   // });
-  // }
-  // removeFromScene(s: Scene): void {
-  //   // throw new Error("Method not implemented.");
-  //   s.remove(this.group);
-  //   // this.mesh.forEach((m: Object3D) => {
-  //   //   s.remove(m);
-  //   // });
-  // }
 
   public update(): void {
     throw new Error("Method not implemented.");
