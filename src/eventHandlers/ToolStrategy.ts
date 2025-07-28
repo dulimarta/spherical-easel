@@ -31,7 +31,7 @@ export interface HyperbolicToolStrategy {
     position: Vector3 | null,
     normalDirection: Vector3 | null
   ): void;
-  mouseLeave(event: MouseEvent): void;
+  // mouseLeave(event: MouseEvent): void;
   activate(): void;
   deactivate(): void;
 }

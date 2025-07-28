@@ -1325,9 +1325,15 @@ export enum LAYER {
   foregroundPoints,
   foregroundLabelGlowing,
   foregroundLabel,
-  foregroundText,
-  kleinDisk
+  foregroundText
 }
 //#endregion layers
 
+export enum HYPERBOLIC_LAYER {
+  foregroundHyperbolid,
+  foregroundSphere,
+  label,
+  midground,
+  kleinDisk
+}
 export default SETTINGS;

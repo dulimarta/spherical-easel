@@ -174,10 +174,6 @@ export class PoseTracker implements HyperbolicToolStrategy {
       this.scene.remove(this.auxLine);
     }
   }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  mouseLeave(event: MouseEvent): void {
-    throw new Error("Method not implemented.");
-  }
   activate(): void {
     throw new Error("Method not implemented.");
   }

@@ -40,9 +40,6 @@ export class TextHandler extends PoseTracker {
   ): void {
     // throw new Error("Method not implemented.");
   }
-  mouseLeave(event: MouseEvent): void {
-    // throw new Error("Method not implemented.");
-  }
   activate(): void {
     // throw new Error("Method not implemented.");
     // if (TextHandler.textRenderer === null) {

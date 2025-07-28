@@ -105,7 +105,7 @@ import { createPoint } from "@/mesh/MeshFactory";
 import { onBeforeMount } from "vue";
 import { TextHandler } from "@/eventHandlers_hyperbolic/TextHandler";
 import { Text } from "troika-three-text";
-import { LAYER } from "@/global-settings";
+import { HYPERBOLIC_LAYER } from "@/global-settings";
 import { useIdle } from "@vueuse/core";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
@@ -181,8 +181,8 @@ watch(idle, idleValue => {
   }
 });
 watch(showKleinDisk, showKlein => {
-  if (showKlein) camera.layers.enable(LAYER.kleinDisk);
-  else camera.layers.disable(LAYER.kleinDisk);
+  if (showKlein) camera.layers.enable(HYPERBOLIC_LAYER.kleinDisk);
+  else camera.layers.disable(HYPERBOLIC_LAYER.kleinDisk);
 });
 
 function initialize() {
@@ -234,8 +234,8 @@ function initialize() {
   );
   lowerHyperboloidMesh.name = "Lower Sheet";
   upperHyperboloidMesh.name = "Upper Sheet";
-  lowerHyperboloidMesh.layers.set(LAYER.midground);
-  upperHyperboloidMesh.layers.set(LAYER.midground);
+  lowerHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.midground);
+  upperHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.midground);
   scene.add(upperHyperboloidMesh);
   scene.add(lowerHyperboloidMesh);
 
@@ -250,13 +250,14 @@ function initialize() {
     })
   );
   centerSphere.name = "Center Sphere";
+  centerSphere.layers.set(HYPERBOLIC_LAYER.midground)
   scene.add(centerSphere);
 
   /* Show Klein disk? */
   if (showKleinDisk.value) scene.add(kleinDisk);
 }
 
-let currentTool: HyperbolicToolStrategy | null = null; //new PointHandler();
+let currentTools: Array<HyperbolicToolStrategy> = []; //new PointHandler();
 let pointTool: PointHandler = new PointHandler(scene);
 let lineTool: LineHandler | null = null;
 // let textTool: TextHandler | null = null;
@@ -301,24 +302,25 @@ watch(
   () => actionMode.value,
   mode => {
     console.debug("New action mode", mode);
-    currentTool?.deactivate();
+    currentTools.forEach (t => {t.deactivate()});
+    currentTools.splice(0)
     enableCameraControl.value = false;
     switch (mode) {
       case "point":
         if (pointTool === null) pointTool = new PointHandler(scene);
-        currentTool = pointTool;
+        currentTools.push(pointTool);
         break;
       case "line":
         if (lineTool === null) lineTool = new LineHandler(scene);
         // Extend the line to the end of the hyperboloid
         lineTool.setInfiniteMode(true);
-        currentTool = lineTool;
+        currentTools.push(lineTool);
         break;
       case "segment":
         if (lineTool === null) lineTool = new LineHandler(scene);
         // Constrain the line to fit between the two end points
         lineTool.setInfiniteMode(false);
-        currentTool = lineTool;
+        currentTools.push(lineTool);
         break;
       // case "text":
       //   if (textTool === null) textTool = new TextHandler(scene);
@@ -326,9 +328,9 @@ watch(
       //   break;
       default:
         enableCameraControl.value = true;
-        currentTool = null;
+        // currentTools. = null;
     }
-    currentTool?.activate();
+    currentTools.forEach(t => {t.activate()});
   }
 );
 
@@ -350,8 +352,6 @@ onMounted(() => {
   camera.up.set(0, 0, 1);
   camera.lookAt(0, 0, 0);
   // By default, only layer 0 is enabled
-  // camera.layers.enable(LAYER.foreground);
-  // camera.layers.enable(LAYER.midground);
   camera.layers.enableAll();
   // txtObject.position.set(0, 0, -1);
   // txtObject.sync();
@@ -382,7 +382,6 @@ onMounted(() => {
   useEventListener("mousemove", threeMouseTracker);
   useEventListener(webglCanvas.value, "mousedown", doMouseDown);
   useEventListener(webglCanvas.value, "mouseup", doMouseUp);
-  currentTool = new PointHandler(scene);
 });
 
 onUpdated(() => {
@@ -397,29 +396,29 @@ function doMouseDown(ev: MouseEvent) {
   // console.debug("MouseDown");
 
   if (surfaceIntersections.value.length > 0) {
-    currentTool?.mousePressed(
+    currentTools.forEach(t => {t.mousePressed(
       ev,
       mouseCoordNormalized.value,
       surfaceIntersections.value[0].point,
       surfaceIntersections.value[0].normal!
-    );
+    )});
     // const { x, y, z } = labelLayerIntersections.value[0].point;
 
     // txtObject.sync();
     // camera.add(txtObject);
-  } else currentTool?.mousePressed(ev, mouseCoordNormalized.value, null, null);
+  } else currentTools.forEach(t => {t.mousePressed(ev, mouseCoordNormalized.value, null, null)});
 }
 
 function doMouseUp(ev: MouseEvent) {
   // console.debug("MouseUp");
   if (surfaceIntersections.value.length > 0)
-    currentTool?.mouseReleased(
+    currentTools.forEach(t =>{t.mouseReleased(
       ev,
       // mouseCoordNormalized.value,
       surfaceIntersections.value[0].point,
       surfaceIntersections.value[0].normal!
-    );
-  else currentTool?.mouseReleased(ev, null, null);
+    )}) ;
+  else currentTools.forEach(t => {t.mouseReleased(ev, null, null)});
 }
 
 function threeMouseTracker(ev: MouseEvent) {
@@ -463,7 +462,7 @@ function threeMouseTracker(ev: MouseEvent) {
     // );
     firstIntersection = surfaceIntersections.value[0];
     txtObject.text = firstIntersection.object.name;
-    if (currentTool === null) camera.add(txtObject);
+    if (currentTools.length === 0) camera.add(txtObject);
     // position3d = firstIntersection.point;
     if (firstIntersection.object.name.endsWith("Sheet"))
       onSurface.value = firstIntersection.object.name
@@ -487,12 +486,12 @@ function threeMouseTracker(ev: MouseEvent) {
     camera.remove(txtObject);
   }
 
-  currentTool?.mouseMoved(
+  currentTools.forEach(t => {t.mouseMoved(
     ev,
     mouseCoordNormalized.value,
     firstIntersection?.point ?? null,
     firstIntersection?.normal ?? null
-  );
+  )});
   // doMouseMove(!isOutside.value, onSurface.value, position3d);
 }
 

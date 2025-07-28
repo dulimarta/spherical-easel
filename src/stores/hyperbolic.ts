@@ -16,7 +16,7 @@ import { markRaw } from "vue";
 import { ref, Ref } from "vue";
 import { useThreeFont } from "@/composables/useThreeFont";
 import { HELine } from "@/models-hyperbolic/HELine";
-import { LAYER } from "@/global-settings";
+import { HYPERBOLIC_LAYER } from "@/global-settings";
 import { Text } from "troika-three-text";
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const surfaceIntersections: Ref<Intersection[]> = ref([]);
@@ -87,7 +87,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     // );
     // console.debug("Camera origin 2", cameraOrigin.toFixed(2));
     rayCaster.layers.disableAll();
-    rayCaster.layers.enable(LAYER.midground);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.midground);
     // rayCaster.layers.enable(LAYER.foreground);
     // rayCaster.layers.enableAll();
 
@@ -132,7 +132,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
       cameraScale
     );
     rayCaster.layers.disableAll();
-    rayCaster.layers.enable(LAYER.midground);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.midground);
 
     // Look for non-occluded objects
     const [visibleObjects, occludedobjects] = objectMap

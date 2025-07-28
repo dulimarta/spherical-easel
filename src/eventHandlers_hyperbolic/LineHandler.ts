@@ -15,7 +15,7 @@ import { CircularCurve } from "@/mesh/CircularCurve";
 import { createPoint } from "@/mesh/MeshFactory";
 import { AddHyperbolicLineCommand } from "@/commands/AddHyperbolicLineCommand";
 import { HELine } from "@/models-hyperbolic/HELine";
-import { LAYER } from "@/global-settings";
+import { HYPERBOLIC_LAYER } from "@/global-settings";
 
 const Z_AXIS = new Vector3(0, 0, 1);
 const ORIGIN = new Vector3(0, 0, 0);
@@ -56,8 +56,8 @@ export class LineHandler extends PoseTracker {
   constructor(s: Scene) {
     super(s);
     this.hPlane.matrixAutoUpdate = false;
-    this.kleinStart.layers.set(LAYER.kleinDisk);
-    this.kleinEnd.layers.set(LAYER.kleinDisk);
+    this.kleinStart.layers.set(HYPERBOLIC_LAYER.kleinDisk);
+    this.kleinEnd.layers.set(HYPERBOLIC_LAYER.kleinDisk);
   }
 
   setInfiniteMode(onOff: boolean) {
@@ -264,9 +264,6 @@ export class LineHandler extends PoseTracker {
       );
       cmd.execute();
     }
-  }
-  mouseLeave(event: MouseEvent): void {
-    throw new Error("Method not implemented.");
   }
   activate(): void {
     // throw new Error("Method not implemented.");

@@ -7,7 +7,7 @@ import {
 } from "three";
 import { HENodule } from "./HENodule";
 import { HyperbolicCurve } from "@/mesh/HyperbolicCurve";
-import { LAYER } from "@/global-settings";
+import { HYPERBOLIC_LAYER } from "@/global-settings";
 
 const ORIGIN = new Vector3();
 const Z_AXIS = new Vector3(0, 0, 1);
@@ -43,7 +43,7 @@ export class HELine extends HENodule {
       this.name = `Ls${HENodule.SEGMENT_COUNT}`;
     }
     this.hyperbolaTube.name = this.name;
-    this.hyperbolaTube.layers.set(LAYER.foreground);
+    this.hyperbolaTube.layers.set(HYPERBOLIC_LAYER.foreground);
     this.shallowUpdate();
   }
 

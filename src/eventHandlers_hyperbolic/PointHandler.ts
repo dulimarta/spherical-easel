@@ -2,7 +2,7 @@ import { AddPointByCoordinatesCommand } from "@/commands/AddPointByCoordinatesCo
 import { Scene, Vector2, Vector3 } from "three";
 import { PoseTracker } from "./PoseTracker";
 import { createPoint } from "@/mesh/MeshFactory";
-import { LAYER } from "@/global-settings";
+import { HYPERBOLIC_LAYER } from "@/global-settings";
 
 export class PointHandler extends PoseTracker {
   kleinPoint = createPoint();
@@ -10,7 +10,7 @@ export class PointHandler extends PoseTracker {
   constructor(scene: Scene) {
     super(scene);
     this.scene = scene;
-    this.kleinPoint.layers.set(LAYER.kleinDisk);
+    this.kleinPoint.layers.set(HYPERBOLIC_LAYER.kleinDisk);
   }
   mouseMoved(
     event: MouseEvent,
@@ -48,10 +48,6 @@ export class PointHandler extends PoseTracker {
     // throw new Error("Method not implemented.");
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  mouseLeave(event: MouseEvent): void {
-    throw new Error("Method not implemented.");
-  }
   activate(): void {
     // throw new Error("Method not implemented.");
   }

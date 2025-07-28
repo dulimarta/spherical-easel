@@ -2,7 +2,7 @@ import { MeshStandardMaterial, SphereGeometry, Vector3, Mesh } from "three";
 import { HENodule } from "./HENodule";
 // import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { Text } from "troika-three-text";
-import { LAYER } from "@/global-settings";
+import { HYPERBOLIC_LAYER } from "@/global-settings";
 export class HEPoint extends HENodule {
   private pointMesh: Mesh;
   constructor(pos: Vector3, normal: Vector3) {
@@ -44,7 +44,7 @@ export class HEPoint extends HENodule {
     // txtObject.material.depthTest = false;
     txtObject.sync();
     this.pointMesh.add(txtObject);
-    this.pointMesh.layers.set(LAYER.foreground);
+    this.pointMesh.layers.set(HYPERBOLIC_LAYER.foreground);
 
     const scale = pos.length();
     let apppliedScale = -1;
@@ -64,7 +64,7 @@ export class HEPoint extends HENodule {
         new MeshStandardMaterial({ color: "white" })
       );
       extraPointMesh.name = `EP${HENodule.POINT_COUNT}`;
-      extraPointMesh.layers.set(LAYER.backgroundPoints);
+      extraPointMesh.layers.set(HYPERBOLIC_LAYER.backgroundPoints);
       // We have a secondary point to add
       // this.group.add(extraPointMesh);
       extraPointMesh.position.copy(pos);
