@@ -17,7 +17,6 @@ import { HYPERBOLIC_LAYER } from "@/global-settings";
 
 const Z_AXIS = new Vector3(0, 0, 1);
 const ORIGIN = new Vector3(0, 0, 0);
-const KLEIN_DISK_RADIUS = 4;
 export class LineHandler extends PoseTracker {
   prototypeLine = new HELine();
   // The line is the intersection between a plane spanned by
@@ -31,8 +30,6 @@ export class LineHandler extends PoseTracker {
   private projectUp2 = new Vector3();
 
   private startPoint = createPoint(0.05, "aqua");
-  private kleinStart = createPoint(0.05, "red");
-  private kleinEnd = createPoint(0.05, "red");
   private hPlane = new Mesh(
     new PlaneGeometry(9, 1, 20, 20),
     new MeshStandardMaterial({
@@ -49,8 +46,6 @@ export class LineHandler extends PoseTracker {
   constructor(s: Scene) {
     super(s);
     this.hPlane.matrixAutoUpdate = false;
-    this.kleinStart.layers.set(HYPERBOLIC_LAYER.kleinDisk);
-    this.kleinEnd.layers.set(HYPERBOLIC_LAYER.kleinDisk);
   }
 
   setInfiniteMode(onOff: boolean) {
@@ -146,62 +141,31 @@ export class LineHandler extends PoseTracker {
         this.scene.add(this.prototypeLine.group);
       }
       // console.debug("Updating klein endpoints");
-      this.kleinStart.position.set(
-        (KLEIN_DISK_RADIUS * this.first.position.x) / this.first.position.z,
-        (KLEIN_DISK_RADIUS * this.first.position.y) / this.first.position.z,
-        KLEIN_DISK_RADIUS
-      );
-      this.kleinEnd.position.set(
-        (KLEIN_DISK_RADIUS * this.second.position.x) / this.second.position.z,
-        (KLEIN_DISK_RADIUS * this.second.position.y) / this.second.position.z,
-        KLEIN_DISK_RADIUS
-      );
-      this.scene.add(this.kleinStart);
-      this.scene.add(this.kleinEnd);
+      // this.kleinStart.position.set(
+      //   (KLEIN_DISK_RADIUS * this.first.position.x) / this.first.position.z,
+      //   (KLEIN_DISK_RADIUS * this.first.position.y) / this.first.position.z,
+      //   KLEIN_DISK_RADIUS
+      // );
+      // this.kleinEnd.position.set(
+      //   (KLEIN_DISK_RADIUS * this.second.position.x) / this.second.position.z,
+      //   (KLEIN_DISK_RADIUS * this.second.position.y) / this.second.position.z,
+      //   KLEIN_DISK_RADIUS
+      // );
+      // this.scene.add(this.kleinStart);
+      // this.scene.add(this.kleinEnd);
       // When we are drawing an "infinite line", move the two points
       // to the edge of the Klein disk
-      if (this.infiniteLine)
-        this.computeKleinIntersections(
-          this.kleinStart.position,
-          this.kleinEnd.position
-        );
+      // if (this.infiniteLine)
+      //   this.computeKleinIntersections(
+      //     this.kleinStart.position,
+      //     this.kleinEnd.position
+      //   );
     } else {
       this.scene.remove(this.prototypeLine.group);
       this.scene.remove(this.hPlane);
-      this.scene.remove(this.kleinStart);
-      this.scene.remove(this.kleinEnd);
     }
   }
 
-  private computeKleinIntersections(p: Vector3, q: Vector3) {
-    // Compute the intersection points between line PQ with the Klein circle
-    const px = p.x;
-    const py = p.y;
-    const qx = q.x;
-    const qy = q.y;
-    const dx = q.x - p.x;
-    const dy = q.y - p.y;
-    // Setup quadratic equation
-    const aCoeff = dx * dx + dy * dy;
-    const bCoeff = 2 * (p.x * dx + p.y * dy);
-    const cCoeff =
-      p.x * p.x + p.y * p.y - KLEIN_DISK_RADIUS * KLEIN_DISK_RADIUS;
-    const disc = bCoeff * bCoeff - 4 * aCoeff * cCoeff;
-    const lambda1 = (-bCoeff + Math.sqrt(disc)) / (2 * aCoeff);
-    const lambda2 = (-bCoeff - Math.sqrt(disc)) / (2 * aCoeff);
-    this.kleinStart.position.set(
-      lambda1 * qx + (1 - lambda1) * px,
-      lambda1 * qy + (1 - lambda1) * py,
-      KLEIN_DISK_RADIUS
-    );
-    // .multiplyScalar(KLEIN_DISK_RADIUS);
-    this.kleinEnd.position.set(
-      lambda2 * qx + (1 - lambda2) * px,
-      lambda2 * qy + (1 - lambda2) * py,
-      KLEIN_DISK_RADIUS
-    );
-    // .multiplyScalar(KLEIN_DISK_RADIUS);
-  }
   mousePressed(
     event: MouseEvent,
     normalizedScreenPosition: Vector2,
@@ -217,8 +181,6 @@ export class LineHandler extends PoseTracker {
     this.scene.add(this.hPlane);
     this.startPoint.position.copy(position);
     this.scene.add(this.startPoint);
-    this.scene.add(this.kleinStart);
-    this.scene.add(this.kleinEnd);
   }
   mouseReleased(
     event: MouseEvent,
@@ -228,8 +190,6 @@ export class LineHandler extends PoseTracker {
     super.mouseReleased(event, position, normalDirection);
     this.scene.remove(this.hPlane);
     this.scene.remove(this.startPoint);
-    this.scene.remove(this.kleinStart);
-    this.scene.remove(this.kleinEnd);
     if (position) {
       const cmd = new AddHyperbolicLineCommand(
         this.first.position,
@@ -238,7 +198,7 @@ export class LineHandler extends PoseTracker {
         this.second.normal,
         this.infiniteLine
       );
-      cmd.execute();
+      // cmd.execute();
     }
   }
   activate(): void {

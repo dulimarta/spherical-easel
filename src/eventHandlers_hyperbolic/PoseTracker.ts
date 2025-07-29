@@ -167,9 +167,9 @@ export class PoseTracker implements HyperbolicToolStrategy {
     }
   }
   activate(): void {
-    throw new Error("Method not implemented.");
+    // throw new Error("Method not implemented.");
   }
   deactivate(): void {
-    throw new Error("Method not implemented.");
+    // throw new Error("Method not implemented.");
   }
 }

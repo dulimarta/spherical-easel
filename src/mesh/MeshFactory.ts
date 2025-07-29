@@ -1,4 +1,9 @@
-import { Mesh, MeshStandardMaterial, SphereGeometry } from "three";
+import {
+  CylinderGeometry,
+  Mesh,
+  MeshStandardMaterial,
+  SphereGeometry
+} from "three";
 
 export function createPoint(
   size: number = 0.05,
@@ -6,6 +11,13 @@ export function createPoint(
 ): Mesh {
   return new Mesh(
     new SphereGeometry(size),
+    new MeshStandardMaterial({ color })
+  );
+}
+
+export function create2DLine(width: number = 0.03, color: string = "white") {
+  return new Mesh(
+    new CylinderGeometry(width, width, 1),
     new MeshStandardMaterial({ color })
   );
 }

@@ -3,7 +3,7 @@ import { Scene, Vector2, Vector3 } from "three";
 import { PoseTracker } from "./PoseTracker";
 import { createPoint } from "@/mesh/MeshFactory";
 import { HYPERBOLIC_LAYER } from "@/global-settings";
-
+const Z_AXIS = new Vector3(0, 0, 1);
 export class PointHandler extends PoseTracker {
   kleinPoint = createPoint();
   kleinPointAdded = false;
@@ -21,21 +21,22 @@ export class PointHandler extends PoseTracker {
     super.mouseMoved(event, scrPos, position, direction);
     if (position) {
       const { x, y, z } = position;
-      const kleinZPos = PointHandler.hyperStore.$state.kleinDiskElevation;
-      this.kleinPoint.position.set(
-        (kleinZPos * x) / z,
-        (kleinZPos * y) / z,
-        kleinZPos
-      );
+      console.debug(`${position.toFixed(2)} ==> ${x * x + y * y} < ${z * z} ?`);
+      // const zAngle = Z_AXIS.angleTo(position);
+      if (x * x + y * y <= z * z) {
+        const kleinZPos = PointHandler.hyperStore.$state.kleinDiskElevation;
+        this.kleinPoint.position.set(x / z, y / z, 1).multiplyScalar(kleinZPos);
 
-      if (!this.kleinPointAdded) {
-        this.scene.add(this.kleinPoint);
-        this.kleinPointAdded = true;
+        if (!this.kleinPointAdded) {
+          this.scene.add(this.kleinPoint);
+          this.kleinPointAdded = true;
+        }
+        return;
       }
-    } else {
-      this.scene.remove(this.kleinPoint);
-      this.kleinPointAdded = false;
     }
+    this.scene.remove(this.kleinPoint);
+    this.kleinPointAdded = false;
+    // }
   }
   mousePressed(
     event: MouseEvent,

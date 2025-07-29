@@ -9,8 +9,7 @@ import {
   Camera,
   Raycaster,
   Matrix4,
-  Vector3,
-  Object3D
+  Vector3
 } from "three";
 import { markRaw } from "vue";
 import { ref, Ref } from "vue";
@@ -28,8 +27,8 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const cameraScale = new Vector3();
   const rayCastDirection = new Vector3();
   const cameraOrigin = new Vector3();
-  const showKleinDisk = ref(false);
-  const kleinDiskElevation = ref(1);
+  const showKleinDisk = ref(true);
+  const kleinDiskElevation = ref(Math.cosh(2));
   const showSphere = ref(false);
   const { font } = useThreeFont();
 
@@ -50,7 +49,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     // c.matrixWorld.decompose(v, q, scale);
     // console.debug("Camera details", v, q, s);
     cameraInverseMatrix.value.decompose(cameraOrigin, q, scale);
-    console.debug("Camera inverse details", cameraOrigin, q, s);
+    // console.debug("Camera inverse details", cameraOrigin, q, s);
     rayCaster = new Raycaster();
   }
 

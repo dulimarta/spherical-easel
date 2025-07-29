@@ -83,7 +83,7 @@
     <v-switch
       v-model="showSphere"
       hide-details
-      label="Show Sphere"
+      label="Show Unit Sphere"
       density="compact" />
   </div>
   <canvas
@@ -104,6 +104,7 @@ import {
   Clock,
   DoubleSide,
   GridHelper,
+  Group,
   Matrix4,
   Mesh,
   MeshStandardMaterial,
@@ -146,6 +147,7 @@ import { TextHandler } from "@/eventHandlers_hyperbolic/TextHandler";
 import { Text } from "troika-three-text";
 import { HYPERBOLIC_LAYER } from "@/global-settings";
 import { useIdle } from "@vueuse/core";
+import { KleinLineHandler } from "@/eventHandlers_hyperbolic/KleinLineHandler";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
 const { idle } = useIdle(250); // in milliseconds
@@ -153,7 +155,7 @@ const {
   surfaceIntersections,
   objectIntersections,
   cameraQuaternion,
-  cameraInverseMatrix,
+  // cameraInverseMatrix,
   showKleinDisk,
   kleinDiskElevation,
   showSphere
@@ -201,26 +203,29 @@ pointLight.position.set(3, 3, 5);
 scene.add(ambientLight);
 scene.add(pointLight);
 const unitSphere = new Mesh(
-    new SphereGeometry(1),
-    new MeshStandardMaterial({
-      color: "green",
-      side: DoubleSide,
-      roughness: 0.3,
-      transparent: true,
-      opacity: 0.75
-    })
-  );
-  
-const kleinDisk = new Mesh(
+  new SphereGeometry(1),
+  new MeshStandardMaterial({
+    color: "green",
+    side: DoubleSide,
+    roughness: 0.3,
+    transparent: true,
+    opacity: 0.75
+  })
+);
+
+const kleinCircle = new Mesh(
   new THREE.CircleGeometry(1, 30),
   new MeshStandardMaterial({
     transparent: true,
-    opacity: 0.3,
-    color: "PaleGreen"
+    opacity: 0.5,
+    color: "ForestGreen"
   })
 );
+const kleinDisk = new Group()
+kleinDisk.add(kleinCircle)
+kleinDisk.layers.set(HYPERBOLIC_LAYER.kleinDisk);
 kleinDisk.position.z = kleinDiskElevation.value;
-kleinDisk.scale.set(kleinDiskElevation.value, kleinDiskElevation.value, 1);
+kleinCircle.scale.set(kleinDiskElevation.value, kleinDiskElevation.value, 1);
 
 const rayIntersectionPoint = createPoint(0.05, "white");
 
@@ -236,18 +241,20 @@ watch(showKleinDisk, showKlein => {
   if (showKlein) camera.layers.enable(HYPERBOLIC_LAYER.kleinDisk);
   else camera.layers.disable(HYPERBOLIC_LAYER.kleinDisk);
 });
+
 watch(kleinDiskElevation, diskPos => {
-  kleinDisk.position.z = diskPos;
-  kleinDisk.scale.set(diskPos, diskPos, 1);
+  kleinCircle.scale.set(diskPos, diskPos, 1)
+  kleinDisk.position.z = diskPos;  
 });
+
 watch(showSphere, show => {
   if (show) {
     camera.layers.enable(HYPERBOLIC_LAYER.midgroundSpherical);
-    camera.layers.enable(HYPERBOLIC_LAYER.foregroundSpherical)
+    camera.layers.enable(HYPERBOLIC_LAYER.foregroundSpherical);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.midgroundSpherical);
   } else {
     camera.layers.disable(HYPERBOLIC_LAYER.midgroundSpherical);
-    camera.layers.disable(HYPERBOLIC_LAYER.foregroundSpherical)
+    camera.layers.disable(HYPERBOLIC_LAYER.foregroundSpherical);
     rayCaster.layers.disable(HYPERBOLIC_LAYER.midgroundSpherical);
   }
 });
@@ -302,16 +309,16 @@ function initialize() {
   upperHyperboloidMesh.name = "Upper Sheet";
   lowerHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.midgroundHyperbolic);
   upperHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.midgroundHyperbolic);
-  rayCaster.layers.enable(HYPERBOLIC_LAYER.midgroundHyperbolic)
+  rayCaster.layers.enable(HYPERBOLIC_LAYER.midgroundHyperbolic);
   scene.add(upperHyperboloidMesh);
   scene.add(lowerHyperboloidMesh);
 
   unitSphere.name = "Unit Sphere";
   unitSphere.layers.set(HYPERBOLIC_LAYER.midgroundSpherical);
-  scene.add(unitSphere)
+  scene.add(unitSphere);
   if (showSphere.value) {
-    rayCaster.layers.enable(HYPERBOLIC_LAYER.midgroundSpherical)
-    camera.layers.enable(HYPERBOLIC_LAYER.midgroundSpherical)
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.midgroundSpherical);
+    camera.layers.enable(HYPERBOLIC_LAYER.midgroundSpherical);
   }
 
   /* Show Klein disk? */
@@ -321,7 +328,8 @@ function initialize() {
 let currentTools: Array<HyperbolicToolStrategy> = []; //new PointHandler();
 let pointTool: PointHandler = new PointHandler(scene);
 let lineTool: LineHandler | null = null;
-let sphericalLineTool: SphericalLineHandler | null = null
+let sphericalLineTool: SphericalLineHandler | null = null;
+let kleinLineTool: KleinLineHandler | null = null;
 // let textTool: TextHandler | null = null;
 
 const txtObject = new Text();
@@ -354,13 +362,6 @@ function doRender() {
 }
 
 watch(
-  () => showKleinDisk.value,
-  showKlein => {
-    if (showKlein) scene.add(kleinDisk);
-    else scene.remove(kleinDisk);
-  }
-);
-watch(
   () => actionMode.value,
   mode => {
     console.debug("New action mode", mode);
@@ -376,21 +377,31 @@ watch(
         break;
       case "line":
         if (lineTool === null) lineTool = new LineHandler(scene);
-        if (sphericalLineTool === null) sphericalLineTool = new SphericalLineHandler(scene, unitSphere)
+        if (sphericalLineTool === null)
+          sphericalLineTool = new SphericalLineHandler(scene, unitSphere);
+        if (kleinLineTool === null)
+          kleinLineTool = new KleinLineHandler(scene, kleinDisk);
         // Extend the line to the end of the hyperboloid
         lineTool.setInfiniteMode(true);
-        sphericalLineTool.setInfiniteMode(true)
+        sphericalLineTool.setInfiniteMode(true);
+        kleinLineTool.setInfiniteMode(true)
         currentTools.push(lineTool);
-        currentTools.push(sphericalLineTool)
+        currentTools.push(sphericalLineTool);
+        currentTools.push(kleinLineTool);
         break;
       case "segment":
         if (lineTool === null) lineTool = new LineHandler(scene);
-        if (sphericalLineTool === null) sphericalLineTool = new SphericalLineHandler(scene, unitSphere)
+        if (sphericalLineTool === null)
+          sphericalLineTool = new SphericalLineHandler(scene, unitSphere);
+        if (kleinLineTool === null)
+          kleinLineTool = new KleinLineHandler(scene, kleinDisk);
         // Constrain the line to fit between the two end points
         lineTool.setInfiniteMode(false);
-        sphericalLineTool.setInfiniteMode(false)
+        sphericalLineTool.setInfiniteMode(false);
+        kleinLineTool.setInfiniteMode(false)
         currentTools.push(lineTool);
-        currentTools.push(sphericalLineTool)
+        currentTools.push(sphericalLineTool);
+        currentTools.push(kleinLineTool);
         break;
       // case "text":
       //   if (textTool === null) textTool = new TextHandler(scene);
@@ -425,6 +436,8 @@ onMounted(() => {
   camera.lookAt(0, 0, 0);
   // By default, only layer 0 is enabled
   camera.layers.enable(HYPERBOLIC_LAYER.midgroundHyperbolic);
+    if (showKleinDisk.value) camera.layers.enable(HYPERBOLIC_LAYER.kleinDisk);
+
   // txtObject.position.set(0, 0, -1);
   // txtObject.sync();
   // camera.add(txtObject);
