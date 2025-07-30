@@ -79,7 +79,8 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
       cameraScale
     );
     rayCaster.layers.disableAll();
-    rayCaster.layers.enable(HYPERBOLIC_LAYER.midgroundHyperbolic);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheet);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
 
     // Look for non-occluded objects
     const [visibleObjects, occludedobjects] = objectMap

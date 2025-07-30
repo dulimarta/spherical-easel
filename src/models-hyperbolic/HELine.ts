@@ -43,7 +43,11 @@ export class HELine extends HENodule {
       this.name = `Ls${HENodule.SEGMENT_COUNT}`;
     }
     this.hyperbolaTube.name = this.name;
-    this.hyperbolaTube.layers.set(HYPERBOLIC_LAYER.foregroundHyperbolic);
+    this.hyperbolaTube.layers.set(
+      this.startPoint.z > 0
+        ? HYPERBOLIC_LAYER.upperSheetLines
+        : HYPERBOLIC_LAYER.lowerShettLines
+    );
     this.shallowUpdate();
   }
 

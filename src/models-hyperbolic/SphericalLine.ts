@@ -43,7 +43,7 @@ export class SphericalLine extends HENodule {
       this.name = `Ls${HENodule.SEGMENT_COUNT}`;
     }
     this.circleTube.name = this.name;
-    this.circleTube.layers.set(HYPERBOLIC_LAYER.foregroundSpherical);
+    this.circleTube.layers.set(HYPERBOLIC_LAYER.unitSphere);
     this.shallowUpdate();
   }
 

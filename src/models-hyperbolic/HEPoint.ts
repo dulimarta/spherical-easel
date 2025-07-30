@@ -44,7 +44,11 @@ export class HEPoint extends HENodule {
     // txtObject.material.depthTest = false;
     txtObject.sync();
     this.pointMesh.add(txtObject);
-    this.pointMesh.layers.set(HYPERBOLIC_LAYER.foregroundHyperbolic);
+    this.pointMesh.layers.set(
+      pos.z > 0
+        ? HYPERBOLIC_LAYER.upperSheetPoints
+        : HYPERBOLIC_LAYER.lowerSheetPoints
+    );
 
     const scale = pos.length();
     let apppliedScale = -1;
@@ -64,7 +68,7 @@ export class HEPoint extends HENodule {
         new MeshStandardMaterial({ color: "white" })
       );
       extraPointMesh.name = `EP${HENodule.POINT_COUNT}`;
-      extraPointMesh.layers.set(HYPERBOLIC_LAYER.foregroundSpherical);
+      extraPointMesh.layers.set(HYPERBOLIC_LAYER.unitSphere);
       // We have a secondary point to add
       this.group.add(extraPointMesh);
       extraPointMesh.position.copy(pos);

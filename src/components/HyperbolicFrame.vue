@@ -84,8 +84,14 @@
             <v-btn size="small" color="yellow-lighten-2" value="poincare">
               Poincar&eacute;
             </v-btn>
-            <v-btn size="small" color="green-darken-3" value="sphere">
-              Sphere
+            <v-btn icon color="green-darken-3" value="sphere">
+              <v-icon>mdi-circle-outline</v-icon>
+            </v-btn>
+            <v-btn icon color="orange" value="lowerSheet">
+              <v-icon
+                :style="{ transform: ' translateY(0.3em) rotate(90deg)' }">
+                mdi-circle-half
+              </v-icon>
             </v-btn>
           </v-btn-toggle>
         </div>
@@ -154,7 +160,6 @@ import { Text } from "troika-three-text";
 import { HYPERBOLIC_LAYER } from "@/global-settings";
 import { useIdle } from "@vueuse/core";
 import { KleinLineHandler } from "@/eventHandlers_hyperbolic/KleinLineHandler";
-import { C } from "vitest/dist/chunks/reporters.d.BFLkQcL6";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
 const { idle } = useIdle(250); // in milliseconds
@@ -172,6 +177,7 @@ const visibleLayers: Ref<string[]> = ref([]);
 const showKleinDisk = ref(false);
 const showPoincareDisk = ref(false);
 const showSphere = ref(false);
+const showLowerSheet = ref(true);
 type ImportantSurface = "Upper" | "Lower" | "Sphere" | null;
 let onSurface: Ref<ImportantSurface> = ref(null);
 // Inject new BVH functions into current THREE-JS Mesh/BufferGeometry definitions
@@ -270,21 +276,27 @@ watch(visibleLayers, (layers: Array<string>) => {
   }
   showSphere.value = layers.includes("sphere");
   if (showSphere.value) {
-    camera.layers.enable(HYPERBOLIC_LAYER.midgroundSpherical);
-    camera.layers.enable(HYPERBOLIC_LAYER.foregroundSpherical);
-    rayCaster.layers.enable(HYPERBOLIC_LAYER.midgroundSpherical);
+    camera.layers.enable(HYPERBOLIC_LAYER.unitSphere);
+    // camera.layers.enable(HYPERBOLIC_LAYER.foregroundSpherical);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.unitSphere);
   } else {
-    camera.layers.disable(HYPERBOLIC_LAYER.midgroundSpherical);
-    camera.layers.disable(HYPERBOLIC_LAYER.foregroundSpherical);
-    rayCaster.layers.disable(HYPERBOLIC_LAYER.midgroundSpherical);
+    camera.layers.disable(HYPERBOLIC_LAYER.unitSphere);
+    // camera.layers.disable(HYPERBOLIC_LAYER.foregroundSpherical);
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.unitSphere);
   }
   showPoincareDisk.value = layers.includes("poincare");
   if (showPoincareDisk.value) {
-    camera.layers.enable(HYPERBOLIC_LAYER.poincareDisk)
+    camera.layers.enable(HYPERBOLIC_LAYER.poincareDisk);
     scene.add(poincareDisk);
   } else {
     scene.remove(poincareDisk);
-    camera.layers.disable(HYPERBOLIC_LAYER.poincareDisk)
+    camera.layers.disable(HYPERBOLIC_LAYER.poincareDisk);
+  }
+  showLowerSheet.value = layers.includes("lowerSheet")
+  if (showLowerSheet.value) {
+    camera.layers.enable(HYPERBOLIC_LAYER.lowerSheet)
+  } else {
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheet)
   }
 });
 watch(idle, idleValue => {
@@ -351,18 +363,19 @@ function initialize() {
   );
   lowerHyperboloidMesh.name = "Lower Sheet";
   upperHyperboloidMesh.name = "Upper Sheet";
-  lowerHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.midgroundHyperbolic);
-  upperHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.midgroundHyperbolic);
-  rayCaster.layers.enable(HYPERBOLIC_LAYER.midgroundHyperbolic);
+  lowerHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.lowerSheet);
+  upperHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.upperSheet);
+  rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
+  rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheet)
   scene.add(upperHyperboloidMesh);
   scene.add(lowerHyperboloidMesh);
 
   unitSphere.name = "Unit Sphere";
-  unitSphere.layers.set(HYPERBOLIC_LAYER.midgroundSpherical);
+  unitSphere.layers.set(HYPERBOLIC_LAYER.unitSphere);
   scene.add(unitSphere);
   if (showSphere.value) {
-    rayCaster.layers.enable(HYPERBOLIC_LAYER.midgroundSpherical);
-    camera.layers.enable(HYPERBOLIC_LAYER.midgroundSpherical);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.unitSphere);
+    camera.layers.enable(HYPERBOLIC_LAYER.unitSphere);
   }
 
   /* Show Klein disk? */
@@ -478,8 +491,8 @@ onMounted(() => {
   camera.position.set(8, 7, 6);
   camera.up.set(0, 0, 1);
   camera.lookAt(0, 0, 0);
-  // By default, only layer 0 is enabled
-  camera.layers.enable(HYPERBOLIC_LAYER.midgroundHyperbolic);
+  camera.layers.enable(HYPERBOLIC_LAYER.upperSheet);
+  camera.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
   if (showKleinDisk.value) camera.layers.enable(HYPERBOLIC_LAYER.kleinDisk);
 
   // txtObject.position.set(0, 0, -1);
