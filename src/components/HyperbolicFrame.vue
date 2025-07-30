@@ -49,7 +49,6 @@
       bottom: '64px',
       left: '384px',
       display: 'flex',
-      marginLeft: '8px',
       flexDirection: 'column',
       alignItems: 'flex-start'
     }">
@@ -59,32 +58,39 @@
           v-bind="props"
           :style="{
             display: 'flex',
-            marginLeft: '0px',
             flexDirection: 'column',
             alignItems: 'flex-start'
           }">
           <v-slider
-            v-if="isHovering && showKleinDisk"
+            :style="{ marginLeft: '8px' }"
+            v-if="
+              isHovering &&
+              (visibleLayers.includes('klein') ||
+                visibleLayers.includes('poincare'))
+            "
             v-model="kleinDiskElevation"
-            direction="vertical"
+            :direction="
+              visibleLayers.includes('klein') ? 'vertical' : 'horizontal'
+            "
             density="compact"
             thumb-label
+            :min-width="visibleLayers.includes('klein') ? undefined : '200'"
             min="1"
             :max="Math.round(Math.cosh(2))"></v-slider>
-          <v-switch
-            hide-details
-            v-model="showKleinDisk"
-            density="comfortable"
-            color="green-lighten-2"
-            label="Show Klein Disk"></v-switch>
+          <v-btn-toggle v-model="visibleLayers" multiple density="compact">
+            <v-btn size="small" color="green-lighten-3" value="klein">
+              Klein
+            </v-btn>
+            <v-btn size="small" color="yellow-lighten-2" value="poincare">
+              Poincar&eacute;
+            </v-btn>
+            <v-btn size="small" color="green-darken-3" value="sphere">
+              Sphere
+            </v-btn>
+          </v-btn-toggle>
         </div>
       </template>
     </v-hover>
-    <v-switch
-      v-model="showSphere"
-      hide-details
-      label="Show Unit Sphere"
-      density="compact" />
   </div>
   <canvas
     ref="webglCanvas"
@@ -156,13 +162,15 @@ const {
   objectIntersections,
   cameraQuaternion,
   // cameraInverseMatrix,
-  showKleinDisk,
-  kleinDiskElevation,
-  showSphere
+  kleinDiskElevation
 } = storeToRefs(hyperStore);
 const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
 const hasUpdatedCameraControls = ref(false);
+const visibleLayers: Ref<string[]> = ref([]);
+const showKleinDisk = ref(false);
+const showPoincareDisk = ref(false);
+const showSphere = ref(false);
 type ImportantSurface = "Upper" | "Lower" | "Sphere" | null;
 let onSurface: Ref<ImportantSurface> = ref(null);
 // Inject new BVH functions into current THREE-JS Mesh/BufferGeometry definitions
@@ -213,6 +221,10 @@ const unitSphere = new Mesh(
   })
 );
 
+// To enable resizing the "disk" using scaling trick and constraining
+// the scaling only to the "disk" (and not other objects attached on on)
+// we represent the Klein "disk" as a THREE.Group() and make the circle
+// as a child of this group
 const kleinCircle = new Mesh(
   new THREE.CircleGeometry(1, 30),
   new MeshStandardMaterial({
@@ -221,34 +233,42 @@ const kleinCircle = new Mesh(
     color: "ForestGreen"
   })
 );
-const kleinDisk = new Group()
-kleinDisk.add(kleinCircle)
-kleinDisk.layers.set(HYPERBOLIC_LAYER.kleinDisk);
+kleinCircle.layers.set(HYPERBOLIC_LAYER.kleinDisk);
+const kleinDisk = new Group();
+// WARNING: setting lers on a THREE.Group has no effect on its children
+// kleinDisk.layers.set(HYPERBOLIC_LAYER.kleinDisk);
+kleinDisk.add(kleinCircle);
+// Apply position adjustment to the Group
 kleinDisk.position.z = kleinDiskElevation.value;
+// Apply scaling only to the circle
 kleinCircle.scale.set(kleinDiskElevation.value, kleinDiskElevation.value, 1);
 
+// Poincare
+const poincareDisk = new Group();
+const poincareCircle = new Mesh(
+  new THREE.CircleGeometry(1, 30),
+  new MeshStandardMaterial({
+    transparent: true,
+    opacity: 0.5,
+    color: "Yellow"
+  })
+);
+poincareCircle.scale.copy(kleinCircle.scale);
+poincareDisk.add(poincareCircle);
+if (showPoincareDisk.value) scene.add(poincareDisk);
 const rayIntersectionPoint = createPoint(0.05, "white");
 
-watch(idle, idleValue => {
-  // console.debug("Idle state", idleValue);
-  // console.debug("Camera control", hasUpdatedCameraControls.value);
-  if (idleValue && hasUpdatedCameraControls.value) {
-    hyperStore.adjustTextPose(camera.quaternion);
-    hasUpdatedCameraControls.value = false;
+watch(visibleLayers, (layers: Array<string>) => {
+  showKleinDisk.value = layers.includes("klein");
+  if (showKleinDisk.value) {
+    camera.layers.enable(HYPERBOLIC_LAYER.kleinDisk);
+    scene.add(kleinDisk);
+  } else {
+    scene.remove(kleinDisk);
+    camera.layers.disable(HYPERBOLIC_LAYER.kleinDisk);
   }
-});
-watch(showKleinDisk, showKlein => {
-  if (showKlein) camera.layers.enable(HYPERBOLIC_LAYER.kleinDisk);
-  else camera.layers.disable(HYPERBOLIC_LAYER.kleinDisk);
-});
-
-watch(kleinDiskElevation, diskPos => {
-  kleinCircle.scale.set(diskPos, diskPos, 1)
-  kleinDisk.position.z = diskPos;  
-});
-
-watch(showSphere, show => {
-  if (show) {
+  showSphere.value = layers.includes("sphere");
+  if (showSphere.value) {
     camera.layers.enable(HYPERBOLIC_LAYER.midgroundSpherical);
     camera.layers.enable(HYPERBOLIC_LAYER.foregroundSpherical);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.midgroundSpherical);
@@ -257,7 +277,28 @@ watch(showSphere, show => {
     camera.layers.disable(HYPERBOLIC_LAYER.foregroundSpherical);
     rayCaster.layers.disable(HYPERBOLIC_LAYER.midgroundSpherical);
   }
+  showPoincareDisk.value = layers.includes("poincare");
+  if (showPoincareDisk.value) {
+    scene.add(poincareDisk);
+  } else {
+    scene.remove(poincareDisk);
+  }
 });
+watch(idle, idleValue => {
+  // console.debug("Idle state", idleValue);
+  // console.debug("Camera control", hasUpdatedCameraControls.value);
+  if (idleValue && hasUpdatedCameraControls.value) {
+    hyperStore.adjustTextPose(camera.quaternion);
+    hasUpdatedCameraControls.value = false;
+  }
+});
+
+watch(kleinDiskElevation, diskPos => {
+  kleinCircle.scale.set(diskPos, diskPos, 1);
+  poincareCircle.scale.set(diskPos, diskPos, 1);
+  kleinDisk.position.z = diskPos;
+});
+
 function initialize() {
   // cameraQuaternion.value.copy(camera.q);
   const xyGrid = new GridHelper();
@@ -384,7 +425,7 @@ watch(
         // Extend the line to the end of the hyperboloid
         lineTool.setInfiniteMode(true);
         sphericalLineTool.setInfiniteMode(true);
-        kleinLineTool.setInfiniteMode(true)
+        kleinLineTool.setInfiniteMode(true);
         currentTools.push(lineTool);
         currentTools.push(sphericalLineTool);
         currentTools.push(kleinLineTool);
@@ -398,7 +439,7 @@ watch(
         // Constrain the line to fit between the two end points
         lineTool.setInfiniteMode(false);
         sphericalLineTool.setInfiniteMode(false);
-        kleinLineTool.setInfiniteMode(false)
+        kleinLineTool.setInfiniteMode(false);
         currentTools.push(lineTool);
         currentTools.push(sphericalLineTool);
         currentTools.push(kleinLineTool);
@@ -436,7 +477,7 @@ onMounted(() => {
   camera.lookAt(0, 0, 0);
   // By default, only layer 0 is enabled
   camera.layers.enable(HYPERBOLIC_LAYER.midgroundHyperbolic);
-    if (showKleinDisk.value) camera.layers.enable(HYPERBOLIC_LAYER.kleinDisk);
+  if (showKleinDisk.value) camera.layers.enable(HYPERBOLIC_LAYER.kleinDisk);
 
   // txtObject.position.set(0, 0, -1);
   // txtObject.sync();

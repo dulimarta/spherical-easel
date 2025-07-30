@@ -27,9 +27,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const cameraScale = new Vector3();
   const rayCastDirection = new Vector3();
   const cameraOrigin = new Vector3();
-  const showKleinDisk = ref(true);
   const kleinDiskElevation = ref(Math.cosh(2));
-  const showSphere = ref(false);
   const { font } = useThreeFont();
 
   // const actionMode: Ref<ActionMode> = ref("move");
@@ -142,9 +140,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     });
   }
   return {
-    showKleinDisk,
     kleinDiskElevation,
-    showSphere,
     font,
     surfaceIntersections,
     objectIntersections,

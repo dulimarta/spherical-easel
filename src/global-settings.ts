@@ -1335,6 +1335,7 @@ export enum HYPERBOLIC_LAYER {
   label,
   midgroundHyperbolic,
   midgroundSpherical,
-  kleinDisk
+  kleinDisk,
+  poincareDisk
 }
 export default SETTINGS;
