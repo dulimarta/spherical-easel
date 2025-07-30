@@ -63,3 +63,9 @@ Therefore,
 \right) = \frac{2h}{z + h^2\frac{z^2 - 1}{z}}
 (x, y)
 ```
+
+## Derivation via Projection
+
+Or direct from "perspective project" with center at $(0,0,-1)$ and projection plane at $z=d$
+$$
+(x_P, y_P) = \frac{d+1}{z+1}(x,y)

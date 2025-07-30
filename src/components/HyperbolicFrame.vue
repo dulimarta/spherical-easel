@@ -154,6 +154,7 @@ import { Text } from "troika-three-text";
 import { HYPERBOLIC_LAYER } from "@/global-settings";
 import { useIdle } from "@vueuse/core";
 import { KleinLineHandler } from "@/eventHandlers_hyperbolic/KleinLineHandler";
+import { C } from "vitest/dist/chunks/reporters.d.BFLkQcL6";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
 const { idle } = useIdle(250); // in milliseconds
@@ -279,9 +280,11 @@ watch(visibleLayers, (layers: Array<string>) => {
   }
   showPoincareDisk.value = layers.includes("poincare");
   if (showPoincareDisk.value) {
+    camera.layers.enable(HYPERBOLIC_LAYER.poincareDisk)
     scene.add(poincareDisk);
   } else {
     scene.remove(poincareDisk);
+    camera.layers.disable(HYPERBOLIC_LAYER.poincareDisk)
   }
 });
 watch(idle, idleValue => {
