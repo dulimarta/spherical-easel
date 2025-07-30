@@ -6,6 +6,7 @@ import { Curve, Vector3 } from "three";
  *
  * Peter Paul Klein, "On the Intersection Equation of a Hyperboloid and a Plane",
  *   Applied Mathematics, 2013, 4, 40-49
+ * http://dx.doi.org/10.4236/am.2013.412A005
  */
 
 const MAX_Z_HYPERBOLOID = Math.cosh(2);
