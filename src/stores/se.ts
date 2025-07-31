@@ -522,7 +522,7 @@ export const useSEStore = defineStore("se", () => {
     inverseTotalRotationMatrix.value.copy(mat);
   }
   function setActionMode(mode: ActionMode): void {
-    console.debug("Changing action mode in SE store to", mode);
+    // console.debug("Changing action mode in SE store to", mode);
     // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
     if (
       !(actionMode.value === "zoomFit" || actionMode.value === "iconFactory")

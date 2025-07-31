@@ -77,7 +77,7 @@
             :min-width="visibleLayers.includes('klein') ? undefined : '200'"
             min="1"
             :max="Math.round(Math.cosh(2))"></v-slider>
-          <v-btn-toggle v-model="visibleLayers" multiple density="compact">
+          <v-btn-toggle v-model="visibleLayers" multiple>
             <v-btn size="small" color="green-lighten-3" value="klein">
               Klein
             </v-btn>
@@ -88,6 +88,7 @@
               <v-icon>mdi-circle-outline</v-icon>
             </v-btn>
             <v-btn icon color="orange" value="lowerSheet">
+              <!-- Use CSS trick to rotate the semicircle icon to look like lower sheet :-) -->
               <v-icon
                 :style="{ transform: ' translateY(0.3em) rotate(90deg)' }">
                 mdi-circle-half
@@ -160,6 +161,7 @@ import { Text } from "troika-three-text";
 import { HYPERBOLIC_LAYER } from "@/global-settings";
 import { useIdle } from "@vueuse/core";
 import { KleinLineHandler } from "@/eventHandlers_hyperbolic/KleinLineHandler";
+import { PoincareLineHandler } from "@/eventHandlers_hyperbolic/PoincareLineHandler";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
 const { idle } = useIdle(250); // in milliseconds
@@ -175,7 +177,7 @@ const enableCameraControl = ref(false);
 const hasUpdatedCameraControls = ref(false);
 const visibleLayers: Ref<string[]> = ref([]);
 const showKleinDisk = ref(false);
-const showPoincareDisk = ref(false);
+const showPoincareDisk = ref(true);
 const showSphere = ref(false);
 const showLowerSheet = ref(true);
 type ImportantSurface = "Upper" | "Lower" | "Sphere" | null;
@@ -260,7 +262,9 @@ const poincareCircle = new Mesh(
     color: "Yellow"
   })
 );
-poincareCircle.scale.copy(kleinCircle.scale);
+const Rk = kleinDiskElevation.value // Klein Radius
+const poincareRadius = (Rk*Rk)/(Rk+1)
+poincareCircle.scale.set(poincareRadius, poincareRadius, 1);
 poincareDisk.add(poincareCircle);
 if (showPoincareDisk.value) scene.add(poincareDisk);
 const rayIntersectionPoint = createPoint(0.05, "white");
@@ -286,18 +290,24 @@ watch(visibleLayers, (layers: Array<string>) => {
   }
   showPoincareDisk.value = layers.includes("poincare");
   if (showPoincareDisk.value) {
-    camera.layers.enable(HYPERBOLIC_LAYER.poincareDisk);
     scene.add(poincareDisk);
   } else {
     scene.remove(poincareDisk);
     camera.layers.disable(HYPERBOLIC_LAYER.poincareDisk);
   }
-  showLowerSheet.value = layers.includes("lowerSheet")
+  showLowerSheet.value = layers.includes("lowerSheet");
   if (showLowerSheet.value) {
-    camera.layers.enable(HYPERBOLIC_LAYER.lowerSheet)
+    camera.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
+    camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetPoints);
+    camera.layers.enable(HYPERBOLIC_LAYER.lowerShettLines);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
   } else {
-    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheet)
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheet);
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetPoints);
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerShettLines);
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheet);
   }
+  renderer.render(scene, camera);
 });
 watch(idle, idleValue => {
   // console.debug("Idle state", idleValue);
@@ -308,14 +318,23 @@ watch(idle, idleValue => {
   }
 });
 
-watch(kleinDiskElevation, diskPos => {
-  kleinCircle.scale.set(diskPos, diskPos, 1);
-  poincareCircle.scale.set(diskPos, diskPos, 1);
-  kleinDisk.position.z = diskPos;
+watch(kleinDiskElevation, h => {
+  kleinCircle.scale.set(h, h, 1);
+  kleinDisk.position.z = h;
+  const poincareRadius = (h * h) / (h + 1);
+  poincareCircle.scale.set(poincareRadius, poincareRadius, 1);
+  // Poincare disk is 1 unit below Klein Disk
+  poincareDisk.position.z = h - 1;
 });
 
 function initialize() {
-  // cameraQuaternion.value.copy(camera.q);
+  camera = new PerspectiveCamera(
+    45,
+    props.availableWidth / props.availableHeight,
+    0.1,
+    500
+  );
+
   const xyGrid = new GridHelper();
   // xyGrid.translateZ(1);
   xyGrid.rotateX(Math.PI / 2);
@@ -361,12 +380,18 @@ function initialize() {
     lowerHyperboloidGeometry,
     new MeshStandardMaterial(hyperboloidMaterial)
   );
+  if (showLowerSheet.value) {
+    visibleLayers.value.push("lowerSheet");
+  }
+  if (showPoincareDisk.value) {
+    visibleLayers.value.push("poincare");
+  }
   lowerHyperboloidMesh.name = "Lower Sheet";
   upperHyperboloidMesh.name = "Upper Sheet";
   lowerHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.lowerSheet);
   upperHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.upperSheet);
   rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
-  rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheet)
+  rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
   scene.add(upperHyperboloidMesh);
   scene.add(lowerHyperboloidMesh);
 
@@ -375,7 +400,6 @@ function initialize() {
   scene.add(unitSphere);
   if (showSphere.value) {
     rayCaster.layers.enable(HYPERBOLIC_LAYER.unitSphere);
-    camera.layers.enable(HYPERBOLIC_LAYER.unitSphere);
   }
 
   /* Show Klein disk? */
@@ -387,6 +411,7 @@ let pointTool: PointHandler = new PointHandler(scene);
 let lineTool: LineHandler | null = null;
 let sphericalLineTool: SphericalLineHandler | null = null;
 let kleinLineTool: KleinLineHandler | null = null;
+let poincareTool: PoincareLineHandler | null = null;
 // let textTool: TextHandler | null = null;
 
 const txtObject = new Text();
@@ -438,13 +463,17 @@ watch(
           sphericalLineTool = new SphericalLineHandler(scene, unitSphere);
         if (kleinLineTool === null)
           kleinLineTool = new KleinLineHandler(scene, kleinDisk);
+        if (poincareTool === null)
+          poincareTool = new PoincareLineHandler(scene, poincareDisk);
         // Extend the line to the end of the hyperboloid
         lineTool.setInfiniteMode(true);
         sphericalLineTool.setInfiniteMode(true);
+        console.debug("Add PoincareTool");
         kleinLineTool.setInfiniteMode(true);
-        currentTools.push(lineTool);
-        currentTools.push(sphericalLineTool);
+        // currentTools.push(lineTool);
+        // currentTools.push(sphericalLineTool);
         currentTools.push(kleinLineTool);
+        currentTools.push(poincareTool);
         break;
       case "segment":
         if (lineTool === null) lineTool = new LineHandler(scene);
@@ -482,18 +511,21 @@ onMounted(() => {
   console.debug(
     `Mounted size ${props.availableWidth}x${props.availableHeight}`
   );
-  camera = new PerspectiveCamera(
-    45,
-    props.availableWidth / props.availableHeight,
-    0.1,
-    500
-  );
+    camera.aspect = props.availableWidth / props.availableHeight;
+
   camera.position.set(8, 7, 6);
   camera.up.set(0, 0, 1);
   camera.lookAt(0, 0, 0);
+  camera.updateProjectionMatrix();
   camera.layers.enable(HYPERBOLIC_LAYER.upperSheet);
+  camera.layers.enable(HYPERBOLIC_LAYER.upperSheetPoints);
+  camera.layers.enable(HYPERBOLIC_LAYER.upperSheetLines);
   camera.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
+  camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetPoints);
+  camera.layers.enable(HYPERBOLIC_LAYER.lowerShettLines);
   if (showKleinDisk.value) camera.layers.enable(HYPERBOLIC_LAYER.kleinDisk);
+  if (showPoincareDisk.value)
+    camera.layers.enable(HYPERBOLIC_LAYER.poincareDisk);
 
   // txtObject.position.set(0, 0, -1);
   // txtObject.sync();

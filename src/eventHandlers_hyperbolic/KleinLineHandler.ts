@@ -17,6 +17,9 @@ export class KleinLineHandler extends PoseTracker {
     this.disk = d;
     this.kleinStart.layers.set(HYPERBOLIC_LAYER.kleinDisk);
     this.kleinEnd.layers.set(HYPERBOLIC_LAYER.kleinDisk);
+    this.boundaryStart.layers.set(HYPERBOLIC_LAYER.kleinDisk);
+    this.boundaryEnd.layers.set(HYPERBOLIC_LAYER.kleinDisk);
+    this.kleinLine.layers.set(HYPERBOLIC_LAYER.kleinDisk);
   }
 
   setInfiniteMode(onOff: boolean) {

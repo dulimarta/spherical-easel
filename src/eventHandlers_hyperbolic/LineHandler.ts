@@ -13,7 +13,6 @@ import { PoseTracker } from "./PoseTracker";
 import { createPoint } from "@/mesh/MeshFactory";
 import { AddHyperbolicLineCommand } from "@/commands/AddHyperbolicLineCommand";
 import { HELine } from "@/models-hyperbolic/HELine";
-import { HYPERBOLIC_LAYER } from "@/global-settings";
 
 const Z_AXIS = new Vector3(0, 0, 1);
 const ORIGIN = new Vector3(0, 0, 0);
@@ -77,6 +76,7 @@ export class LineHandler extends PoseTracker {
       this.planeNormal
         .crossVectors(this.second.position, this.first.position)
         .normalize();
+      if (this.planeNormal.isZero()) return;
       // With the lookAt() function below, the coordinate frame of hPlane would be as follows:
       // - Its X-axis is on the XY plane (i.e. its z component is zero)
       // - Its Y-axis is on a plane perpendicular to the XY-plane]

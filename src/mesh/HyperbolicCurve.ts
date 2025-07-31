@@ -1,8 +1,8 @@
 import { Curve, Vector3 } from "three";
 
-/* This class generate a hyperbola on a plane through the X-axis by
+/* This class generates a hyperbola on a plane through the origin by
  * computing the intersection between the plane and the hyperboloid.
- * The calculation is based on the following paper:
+ * The technique is based on the following paper:
  *
  * Peter Paul Klein, "On the Intersection Equation of a Hyperboloid and a Plane",
  *   Applied Mathematics, 2013, 4, 40-49
@@ -25,16 +25,19 @@ export class HyperbolicCurve extends Curve<Vector3> {
     super();
   }
 
-  // The setPointsAndDirections() method set the two points the curve passes thru.
+  // The setPointsAndDirections() method sets the two points the curve passes thru.
   // The plane of intersection passes thru the origin and these two points.
   // The two direction vectors span the plane these two vectors are in general
   // different from the two points, but all the four vectors are on the same plane.
-  // The two direction vectors are carefully choses such that d1 is always on the
-  // XY plane and d2 is on a plane perpendicular to the XY plane
+  // The two direction vectors are carefully chosen such that d1 is always on the
+  // XY plane and d2 is on a plane perpendicular to the XY plane.
+  // This choice of d1 also has another advantage; d1 is also the normal vector
+  // of the plane of symmetry of the hyperbola, make it easier to determine whether
+  // the two endpoints of the hyperbola are on the same or different halves.
   setPointsAndDirections(
     p1: Vector3, // Position of the first point
     p2: Vector3, // Position of the second point
-    d1: Vector3,
+    d1: Vector3, // The two direction vectors that define the plane
     d2: Vector3,
     isInfinite: boolean
   ): void {
@@ -51,7 +54,7 @@ export class HyperbolicCurve extends Curve<Vector3> {
          aCoeff * sinh(t) * dir1 + bCoeff * cosh(t) * dir2
        Hence it Z-coordinate is computed from
          aCoeff * sinh(t) * dir1.z + bCoeff * cosh(t) * dir2.z
-       But dir1.z is intentionally chosen such that dir1.z is zero. Therefore the Z-coordinate
+       But dir1.z is intentionally chosen such that dir1.z is zero. Therefore, the Z-coordinate
        depends only on
           bCoeff * cosh(t) * dir2.z
        The min and max of the t values that correspond the the Z-coordinate of P1 and P2

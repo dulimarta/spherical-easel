@@ -26,8 +26,8 @@ export class HELine extends HENodule {
     new MeshStandardMaterial({ color: this.normalColor })
   );
   constructor(
-    startPos: Vector3 = new Vector3(),
-    endPos: Vector3 = new Vector3(),
+    startPos: Vector3 = new Vector3(0, 0, 1),
+    endPos: Vector3 = new Vector3(0, 0, 1),
     isInfinite: boolean = false
   ) {
     super();
@@ -64,6 +64,7 @@ export class HELine extends HENodule {
   }
   public shallowUpdate(): void {
     this.planeNormal.crossVectors(this.endPoint, this.startPoint).normalize();
+    if (this.planeNormal.isZero()) return;
     this.planeCoordinateFrame.lookAt(ORIGIN, this.planeNormal, Z_AXIS);
     this.planeCoordinateFrame.extractBasis(
       this.planeDir1,
