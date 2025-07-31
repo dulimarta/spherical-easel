@@ -12,9 +12,10 @@ export class KleinLineHandler extends PoseTracker {
   private kleinLine = create2DLine(0.02);
   private pointsAdded = false;
   private infiniteLine = false;
-  constructor(s: Scene, d: Object3D) {
+  constructor(s: Scene, d: Object3D, useInfiniteLine: boolean) {
     super(s);
     this.disk = d;
+    this.infiniteLine = useInfiniteLine;
     this.kleinStart.layers.set(HYPERBOLIC_LAYER.kleinDisk);
     this.kleinEnd.layers.set(HYPERBOLIC_LAYER.kleinDisk);
     this.boundaryStart.layers.set(HYPERBOLIC_LAYER.kleinDisk);
@@ -22,9 +23,6 @@ export class KleinLineHandler extends PoseTracker {
     this.kleinLine.layers.set(HYPERBOLIC_LAYER.kleinDisk);
   }
 
-  setInfiniteMode(onOff: boolean) {
-    this.infiniteLine = onOff;
-  }
   mousePressed(
     event: MouseEvent,
     pos2D: Vector2,

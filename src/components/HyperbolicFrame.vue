@@ -460,30 +460,30 @@ watch(
       case "line":
         if (lineTool === null) lineTool = new LineHandler(scene);
         if (sphericalLineTool === null)
-          sphericalLineTool = new SphericalLineHandler(scene, unitSphere);
+          sphericalLineTool = new SphericalLineHandler(scene, unitSphere, true);
         if (kleinLineTool === null)
-          kleinLineTool = new KleinLineHandler(scene, kleinDisk);
+          kleinLineTool = new KleinLineHandler(scene, kleinDisk, true);
+        if (poincareTool === null)
+          poincareTool = new PoincareLineHandler(scene, poincareDisk, true);
+
         // Extend the line to the end of the hyperboloid
         lineTool.setInfiniteMode(true);
-        sphericalLineTool.setInfiniteMode(true);
         console.debug("Add PoincareTool");
-        kleinLineTool.setInfiniteMode(true);
         // currentTools.push(lineTool);
         // currentTools.push(sphericalLineTool);
-        currentTools.push(kleinLineTool);
+        // currentTools.push(kleinLineTool);
+        currentTools.push(poincareTool)
         break;
       case "segment":
         if (lineTool === null) lineTool = new LineHandler(scene);
         if (sphericalLineTool === null)
-          sphericalLineTool = new SphericalLineHandler(scene, unitSphere);
+          sphericalLineTool = new SphericalLineHandler(scene, unitSphere, false);
         if (kleinLineTool === null)
-          kleinLineTool = new KleinLineHandler(scene, kleinDisk);
+          kleinLineTool = new KleinLineHandler(scene, kleinDisk, false);
         if (poincareTool === null)
-          poincareTool = new PoincareLineHandler(scene, poincareDisk);
+          poincareTool = new PoincareLineHandler(scene, poincareDisk, false);
         // Constrain the line to fit between the two end points
         lineTool.setInfiniteMode(false);
-        sphericalLineTool.setInfiniteMode(false);
-        kleinLineTool.setInfiniteMode(false);
         // currentTools.push(lineTool);
         // currentTools.push(sphericalLineTool);
         // currentTools.push(kleinLineTool);

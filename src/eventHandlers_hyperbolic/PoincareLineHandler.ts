@@ -17,30 +17,27 @@ export class PoincareLineHandler extends PoseTracker {
   private poincareEnd = createPoint(0.05, "green");
   private poincareInverse = new Vector3();
   private circleCenter = createPoint(0.06, "orange");
-  private boundaryStart = createPoint(0.05, "yellow");
-  private boundaryEnd = createPoint(0.05, "cyan");
-  private torus: Mesh;
-  // private poincareLine = create2DLine(0.02);
+  private boundaryStart = createPoint(0.05, "fuchsia");
+  private boundaryEnd = createPoint(0.05, "palegreen");
+  private poincareLine: Mesh;
   private pointsAdded = false;
   private infiniteLine = false;
-  constructor(s: Scene, d: Object3D) {
+  constructor(s: Scene, d: Object3D, useInfiniteLine: boolean) {
     super(s);
     this.disk = d;
+    this.infiniteLine = useInfiniteLine;
     this.poincareStart.layers.set(HYPERBOLIC_LAYER.poincareDisk);
     this.poincareEnd.layers.set(HYPERBOLIC_LAYER.poincareDisk);
     this.circleCenter.layers.set(HYPERBOLIC_LAYER.poincareDisk);
     this.boundaryStart.layers.set(HYPERBOLIC_LAYER.poincareDisk);
     this.boundaryEnd.layers.set(HYPERBOLIC_LAYER.poincareDisk);
-    this.torus = new Mesh(
+    this.poincareLine = new Mesh(
       new TorusGeometry(1, 0.02),
       new MeshStandardMaterial({ color: "brown" })
     );
-    this.torus.layers.set(HYPERBOLIC_LAYER.poincareDisk);
+    this.poincareLine.layers.set(HYPERBOLIC_LAYER.poincareDisk);
   }
 
-  setInfiniteMode(onOff: boolean) {
-    this.infiniteLine = onOff;
-  }
   mousePressed(
     event: MouseEvent,
     pos2D: Vector2,
@@ -87,17 +84,18 @@ export class PoincareLineHandler extends PoseTracker {
       this.computePoincareCircle(
         this.poincareStart.position,
         this.poincareEnd.position,
-        this.poincareInverse
+        this.poincareInverse,
+        poincareRadius
       );
       if (!this.pointsAdded) {
         this.disk.add(this.poincareStart);
         this.disk.add(this.poincareEnd);
         // this.disk.add(this.circleCenter);
-        this.disk.add(this.torus);
+        this.disk.add(this.poincareLine);
         // this.disk.add(this.poincareLine);
         if (this.infiniteLine) {
-          // this.disk.add(this.boundaryStart);
-          // this.disk.add(this.boundaryEnd);
+          this.disk.add(this.boundaryStart);
+          this.disk.add(this.boundaryEnd);
         }
         this.pointsAdded = true;
       }
@@ -105,7 +103,7 @@ export class PoincareLineHandler extends PoseTracker {
       this.disk.remove(this.poincareStart);
       this.disk.remove(this.poincareEnd);
       // this.disk.remove(this.circleCenter);
-      this.disk.remove(this.torus);
+      this.disk.remove(this.poincareLine);
       this.disk.remove(this.boundaryStart);
       this.disk.remove(this.boundaryEnd);
       this.pointsAdded = false;
@@ -117,7 +115,7 @@ export class PoincareLineHandler extends PoseTracker {
     this.disk.remove(this.poincareStart);
     this.disk.remove(this.poincareEnd);
     // this.disk.remove(this.circleCenter);
-    this.disk.remove(this.torus);
+    this.disk.remove(this.poincareLine);
     this.disk.remove(this.boundaryStart);
     this.disk.remove(this.boundaryEnd);
     this.pointsAdded = false;
@@ -126,7 +124,8 @@ export class PoincareLineHandler extends PoseTracker {
   private computePoincareCircle(
     p: Vector3,
     q: Vector3,
-    r: Vector3
+    r: Vector3,
+    diskRadius: number
     // bp: Vector3,
     // bq: Vector3
   ) {
@@ -164,13 +163,37 @@ export class PoincareLineHandler extends PoseTracker {
     const radius =
       Math.sqrt(M12 * M12 + M13 * M13 - 4 * M11 * M14) / (2 * Math.abs(M11));
     this.circleCenter.position.set(ctrX, ctrY, 0);
-    this.torus.position.set(ctrX, ctrY, 0);
+    this.poincareLine.position.set(ctrX, ctrY, 0);
 
+    let dx1: number;
+    let dx2: number;
+    let dy1: number;
+    let dy2: number;
+    if (this.infiniteLine) {
+      // Find intersection of the two circles using the following reference
+      // https://math.stackexchange.com/questions/256100/how-can-i-find-the-points-at-which-two-circles-intersect
+
+      // with special case (x1,y1) = (0,0)
+      const d = Math.sqrt(ctrX * ctrX + ctrY * ctrY); // distance between circle centers
+      const l = (diskRadius * diskRadius - radius * radius + d * d) / (2 * d); // distance to common chord
+      const h = Math.sqrt(diskRadius * diskRadius - l * l); // half length of the common chord
+      const xBeg = (l * ctrX + h * ctrY) / d;
+      const xEnd = (l * ctrX - h * ctrY) / d;
+      const yBeg = (l * ctrY - h * ctrX) / d;
+      const yEnd = (l * ctrY + h * ctrX) / d;
+      this.boundaryStart.position.set(xBeg, yBeg, 0);
+      this.boundaryEnd.position.set(xEnd, yEnd, 0);
+      dx1 = xBeg - ctrX;
+      dx2 = xEnd - ctrX;
+      dy1 = yBeg - ctrY;
+      dy2 = yEnd - ctrY;
+    } else {
+      dx1 = x1 - ctrX;
+      dx2 = x2 - ctrX;
+      dy1 = y1 - ctrY;
+      dy2 = y2 - ctrY;
+    }
     // Determine the start and end angles of the arc
-    const dx1 = x1 - ctrX;
-    const dx2 = x2 - ctrX;
-    const dy1 = y1 - ctrY;
-    const dy2 = y2 - ctrY;
     const cross = dx1 * dy2 - dx2 * dy1; // Z component of cross product
     let angle1 = Math.atan2(dy1, dx1);
     let angle2 = Math.atan2(dy2, dx2);
@@ -185,8 +208,14 @@ export class PoincareLineHandler extends PoseTracker {
     if (arcSpan < 0) arcSpan += 2 * Math.PI;
 
     // Replace the torus with a new one
-    this.torus.geometry.dispose();
-    this.torus.geometry = new TorusGeometry(radius, 0.02, 24, 90, arcSpan);
-    this.torus.geometry.rotateZ(cross > 0 ? angle1 : angle2);
+    this.poincareLine.geometry.dispose();
+    this.poincareLine.geometry = new TorusGeometry(
+      radius,
+      0.02,
+      24,
+      90,
+      arcSpan
+    );
+    this.poincareLine.geometry.rotateZ(cross > 0 ? angle1 : angle2);
   }
 }

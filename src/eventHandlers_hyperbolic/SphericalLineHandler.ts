@@ -28,14 +28,10 @@ export class SphericalLineHandler extends PoseTracker {
   private startPoint = createPoint(0.05, "aqua");
   private infiniteLine = false;
   private sphere: Object3D;
-  constructor(s: Scene, sph: Object3D) {
+  constructor(s: Scene, sph: Object3D, useInfiniteLine: boolean) {
     super(s);
     this.sphere = sph;
-  }
-
-  setInfiniteMode(onOff: boolean) {
-    this.prototypeLine.markInfinite(onOff);
-    this.infiniteLine = onOff;
+    this.infiniteLine = useInfiniteLine;
   }
 
   mouseMoved(
