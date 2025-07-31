@@ -262,8 +262,8 @@ const poincareCircle = new Mesh(
     color: "Yellow"
   })
 );
-const Rk = kleinDiskElevation.value // Klein Radius
-const poincareRadius = (Rk*Rk)/(Rk+1)
+const Rk = kleinDiskElevation.value; // Klein Radius
+const poincareRadius = (Rk * Rk) / (Rk + 1);
 poincareCircle.scale.set(poincareRadius, poincareRadius, 1);
 poincareDisk.add(poincareCircle);
 if (showPoincareDisk.value) scene.add(poincareDisk);
@@ -324,7 +324,7 @@ watch(kleinDiskElevation, h => {
   const poincareRadius = (h * h) / (h + 1);
   poincareCircle.scale.set(poincareRadius, poincareRadius, 1);
   // Poincare disk is 1 unit below Klein Disk
-  poincareDisk.position.z = h - 1;
+  // poincareDisk.position.z = h - 1;
 });
 
 function initialize() {
@@ -469,24 +469,28 @@ watch(
         // Extend the line to the end of the hyperboloid
         lineTool.setInfiniteMode(true);
         console.debug("Add PoincareTool");
-        // currentTools.push(lineTool);
-        // currentTools.push(sphericalLineTool);
-        // currentTools.push(kleinLineTool);
-        currentTools.push(poincareTool)
+        currentTools.push(lineTool);
+        currentTools.push(sphericalLineTool);
+        currentTools.push(kleinLineTool);
+        currentTools.push(poincareTool);
         break;
       case "segment":
         if (lineTool === null) lineTool = new LineHandler(scene);
         if (sphericalLineTool === null)
-          sphericalLineTool = new SphericalLineHandler(scene, unitSphere, false);
+          sphericalLineTool = new SphericalLineHandler(
+            scene,
+            unitSphere,
+            false
+          );
         if (kleinLineTool === null)
           kleinLineTool = new KleinLineHandler(scene, kleinDisk, false);
         if (poincareTool === null)
           poincareTool = new PoincareLineHandler(scene, poincareDisk, false);
         // Constrain the line to fit between the two end points
         lineTool.setInfiniteMode(false);
-        // currentTools.push(lineTool);
-        // currentTools.push(sphericalLineTool);
-        // currentTools.push(kleinLineTool);
+        currentTools.push(lineTool);
+        currentTools.push(sphericalLineTool);
+        currentTools.push(kleinLineTool);
         currentTools.push(poincareTool);
         break;
       // case "text":
@@ -511,7 +515,7 @@ onMounted(() => {
   console.debug(
     `Mounted size ${props.availableWidth}x${props.availableHeight}`
   );
-    camera.aspect = props.availableWidth / props.availableHeight;
+  camera.aspect = props.availableWidth / props.availableHeight;
 
   camera.position.set(8, 7, 6);
   camera.up.set(0, 0, 1);
