@@ -463,8 +463,6 @@ watch(
           sphericalLineTool = new SphericalLineHandler(scene, unitSphere);
         if (kleinLineTool === null)
           kleinLineTool = new KleinLineHandler(scene, kleinDisk);
-        if (poincareTool === null)
-          poincareTool = new PoincareLineHandler(scene, poincareDisk);
         // Extend the line to the end of the hyperboloid
         lineTool.setInfiniteMode(true);
         sphericalLineTool.setInfiniteMode(true);
@@ -473,7 +471,6 @@ watch(
         // currentTools.push(lineTool);
         // currentTools.push(sphericalLineTool);
         currentTools.push(kleinLineTool);
-        currentTools.push(poincareTool);
         break;
       case "segment":
         if (lineTool === null) lineTool = new LineHandler(scene);
@@ -481,13 +478,16 @@ watch(
           sphericalLineTool = new SphericalLineHandler(scene, unitSphere);
         if (kleinLineTool === null)
           kleinLineTool = new KleinLineHandler(scene, kleinDisk);
+        if (poincareTool === null)
+          poincareTool = new PoincareLineHandler(scene, poincareDisk);
         // Constrain the line to fit between the two end points
         lineTool.setInfiniteMode(false);
         sphericalLineTool.setInfiniteMode(false);
         kleinLineTool.setInfiniteMode(false);
-        currentTools.push(lineTool);
-        currentTools.push(sphericalLineTool);
-        currentTools.push(kleinLineTool);
+        // currentTools.push(lineTool);
+        // currentTools.push(sphericalLineTool);
+        // currentTools.push(kleinLineTool);
+        currentTools.push(poincareTool);
         break;
       // case "text":
       //   if (textTool === null) textTool = new TextHandler(scene);
