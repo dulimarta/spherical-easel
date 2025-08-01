@@ -3,7 +3,8 @@
     id="cursorInfo"
     :style="{
       position: 'fixed',
-      backgroundColor: '#FFF7'
+      backgroundColor: '#FFF7',
+      color: isOutside ? 'grey' : 'black'
     }">
     <span class="mx-2">
       Keys
@@ -14,19 +15,17 @@
         mdi-apple-keyboard-control
       </v-icon>
     </span>
-    <span
-      class="mr-1"
-      :style="{
-        color: isOutside ? 'red' : 'black'
-      }">
-      <span class="mr-1">
+    <span class="mr-1">
+      <!--span class="mr-1">
         Canvas: ({{ elementX.toFixed(0) }}, {{ elementY.toFixed(0) }}) |
-        {{ mouseCoordNormalized.toFixed(3) }}
-      </span>
+      </!--span-->
       <span v-if="onSurface">
-        World:{{ rayIntersectionPoint.position.toFixed(2) }}
+        World:{{ rayIntersectionPosition.toFixed(2) }}
       </span>
-      <span class="ml-1">In Camera {{ positionInCameraCF.toFixed(2) }}</span>
+      <span class="ml-1">
+        In Camera {{ positionInCameraCF.toFixed(2) }} Dolly Distance:
+        {{ cameraDistance.toFixed(1) }}
+      </span>
     </span>
   </span>
   <v-tooltip activator="#cursorInfo" location="bottom" class="opacity-70">
@@ -162,6 +161,8 @@ import { HYPERBOLIC_LAYER } from "@/global-settings";
 import { useIdle } from "@vueuse/core";
 import { KleinLineHandler } from "@/eventHandlers_hyperbolic/KleinLineHandler";
 import { PoincareLineHandler } from "@/eventHandlers_hyperbolic/PoincareLineHandler";
+import { reactive } from "vue";
+import { DispatcherEvent } from "camera-controls/dist/EventDispatcher";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
 const { idle } = useIdle(250); // in milliseconds
@@ -169,7 +170,7 @@ const {
   surfaceIntersections,
   objectIntersections,
   cameraQuaternion,
-  // cameraInverseMatrix,
+  cameraInverseMatrix,
   kleinDiskElevation
 } = storeToRefs(hyperStore);
 const { actionMode } = storeToRefs(seStore);
@@ -210,6 +211,8 @@ const clock = new Clock(); // used by camera control animation
 const rayCaster = new Raycaster();
 const mouseCoordNormalized: Ref<THREE.Vector2> = ref(new THREE.Vector2()); // used by RayCaster
 let camera: PerspectiveCamera;
+const cameraDistance = ref(0);
+const tmpMatrix4 = new Matrix4();
 const positionInCameraCF = ref(new Vector3());
 let renderer: WebGLRenderer;
 let cameraController: CameraControls;
@@ -229,6 +232,23 @@ const unitSphere = new Mesh(
     opacity: 0.75
   })
 );
+let currentTools: Array<HyperbolicToolStrategy> = []; //new PointHandler();
+let pointTool: PointHandler = new PointHandler(scene);
+let lineTool: LineHandler | null = null;
+let sphericalLineTool: SphericalLineHandler | null = null;
+let kleinLineTool: KleinLineHandler | null = null;
+let poincareTool: PoincareLineHandler | null = null;
+// let textTool: TextHandler | null = null;
+
+const txtObject = new Text();
+// txtObject.name = `La${HENodule.POINT_COUNT}`;
+txtObject.text = `Hello`;
+txtObject.anchorX = "center";
+txtObject.anchorY = "bottom";
+// txtObject.position.set(0, 0, 0);
+txtObject.fontSize = 0.02;
+txtObject.color = "yellow"; //0x000000;
+// txtObject.position.set(0, 0, -0.3);
 
 // To enable resizing the "disk" using scaling trick and constraining
 // the scaling only to the "disk" (and not other objects attached on on)
@@ -244,7 +264,7 @@ const kleinCircle = new Mesh(
 );
 kleinCircle.layers.set(HYPERBOLIC_LAYER.kleinDisk);
 const kleinDisk = new Group();
-// WARNING: setting lers on a THREE.Group has no effect on its children
+// WARNING: setting layers on a THREE.Group has no effect on its children
 // kleinDisk.layers.set(HYPERBOLIC_LAYER.kleinDisk);
 kleinDisk.add(kleinCircle);
 // Apply position adjustment to the Group
@@ -267,7 +287,7 @@ const poincareRadius = (Rk * Rk) / (Rk + 1);
 poincareCircle.scale.set(poincareRadius, poincareRadius, 1);
 poincareDisk.add(poincareCircle);
 if (showPoincareDisk.value) scene.add(poincareDisk);
-const rayIntersectionPoint = createPoint(0.05, "white");
+const rayIntersectionPosition = reactive(new Vector3());
 
 watch(visibleLayers, (layers: Array<string>) => {
   showKleinDisk.value = layers.includes("klein");
@@ -406,24 +426,6 @@ function initialize() {
   scene.add(kleinDisk);
 }
 
-let currentTools: Array<HyperbolicToolStrategy> = []; //new PointHandler();
-let pointTool: PointHandler = new PointHandler(scene);
-let lineTool: LineHandler | null = null;
-let sphericalLineTool: SphericalLineHandler | null = null;
-let kleinLineTool: KleinLineHandler | null = null;
-let poincareTool: PoincareLineHandler | null = null;
-// let textTool: TextHandler | null = null;
-
-const txtObject = new Text();
-// txtObject.name = `La${HENodule.POINT_COUNT}`;
-txtObject.text = `Hello`;
-txtObject.anchorX = "center";
-txtObject.anchorY = "bottom";
-// txtObject.position.set(0, 0, 0);
-txtObject.fontSize = 0.02;
-txtObject.color = "yellow"; //0x000000;
-// txtObject.position.set(0, 0, -0.3);
-
 function doRender() {
   // console.debug("Enable camera control", enableCameraControl.value)
   if (enableCameraControl.value) {
@@ -544,6 +546,7 @@ onMounted(() => {
 
   cameraQuaternion.value.copy(camera.quaternion);
   cameraController = new CameraControls(camera, webglCanvas.value!);
+  cameraDistance.value = cameraController.distance;
   renderer = new WebGLRenderer({
     canvas: webglCanvas.value!,
     antialias: true
@@ -560,7 +563,16 @@ onMounted(() => {
   useEventListener("mousemove", threeMouseTracker);
   useEventListener(webglCanvas.value, "mousedown", doMouseDown);
   useEventListener(webglCanvas.value, "mouseup", doMouseUp);
+
+  useEventListener(cameraController, "control", updateCameraDetails);
+  useEventListener(cameraController, "update", updateCameraDetails);
 });
+
+function updateCameraDetails(ev: DispatcherEvent) {
+  // console.debug("CC::" + ev.type);
+  const cc = ev.target as CameraControls;
+  cameraDistance.value = cc.distance;
+}
 
 onUpdated(() => {
   // console.debug(`onUpdated size ${props.availableWidth}x${props.availableHeight}`)
@@ -641,8 +653,10 @@ function threeMouseTracker(ev: MouseEvent) {
   // );
 
   let firstIntersection: THREE.Intersection | null;
+  // console.debug(
+  //   `Number of all intersections ${surfaceIntersections.value.length}`
+  // );
   if (surfaceIntersections.value.length > 0) {
-    // console.debug(`Number of all intersections ${surfaceIntersections.value.length}`)
     // We are interested only in intersection with named objects
     // const namedIntersections = mouseIntersections.value.filter(
     //   z => z.object.name.length > 0 // we are interested only in named objects
@@ -664,12 +678,19 @@ function threeMouseTracker(ev: MouseEvent) {
         firstIntersection.normal
       );
     }
-    // console.debug(`First intersection ${firstIntersection.object.name}`);
-    rayIntersectionPoint.position.copy(firstIntersection.point);
+    // console.debug(
+    //   `First intersection ${
+    //     firstIntersection.object.name
+    //   } ${firstIntersection.point.toFixed(2)}`
+    // );
+    rayIntersectionPosition.copy(firstIntersection.point);
+    positionInCameraCF.value
+      .copy(rayIntersectionPosition)
+      .applyMatrix4(camera.matrixWorld);
+    // console.debug("CC distance", cameraController.distance);
   } else {
     onSurface.value = null;
     firstIntersection = null;
-    scene.remove(rayIntersectionPoint);
     camera.remove(txtObject);
   }
 
@@ -682,6 +703,7 @@ function threeMouseTracker(ev: MouseEvent) {
     );
   });
   // doMouseMove(!isOutside.value, onSurface.value, position3d);
+  renderer.render(scene, camera);
 }
 
 function hyperboloidPlus(u: number, v: number, pt: Vector3) {

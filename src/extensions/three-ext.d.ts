@@ -42,3 +42,9 @@ declare module "three/src/math/Vector3" {
     isZero(tolerance?: number): boolean;
   }
 }
+
+declare module "three/src/math/Matrix4" {
+  interface Matrix4 {
+    toFixed(precision: number): string;
+  }
+}

@@ -70,17 +70,30 @@ export class PoincareLineHandler extends PoseTracker {
     // console.debug(`Dragging in Poincare P2 ${x2 * x2 + y2 * y2} vs ${z2 * z2}`);
     if (x1 * x1 + y1 * y1 <= z1 * z1 && x2 * x2 + y2 * y2 <= z2 * z2) {
       const kleinRadius = PoseTracker.hyperStore.$state.kleinDiskElevation;
+      // Calculate the radius of Poincare disk from Klein disk with the assumption
+      // that:
+      // - Klein disk is the projection plane with center (COP) at (0,0,0)
+      // - Poincare disk is the projection plane with center at (0,0,-1)
+      // - The tho projection planes are "virtually" separated by 1 unit
+      //   with the Poincare disk being closer to the COP.
       const poincareRadius = (kleinRadius * kleinRadius) / (kleinRadius + 1);
       const poincareScale = kleinRadius / (Math.abs(z2) + 1);
       this.poincareEnd.position
         .set(x2, y2, 0)
         .multiplyScalar(poincareScale * Math.sign(z2));
+
+      // The construction of Poincare line is referenced from here:
+      // https://math.stackexchange.com/questions/1322444/how-to-construct-a-line-on-a-poincare-disk
       const { x: xe, y: ye } = this.poincareEnd.position;
+
+      // Compute the inverse of the end point
       this.poincareInverse
         .copy(this.poincareEnd.position)
         .multiplyScalar(
           (poincareRadius * poincareRadius) / (xe * xe + ye * ye)
         );
+
+      // A circle through 3 points (start, end, inverseEnd)
       this.computePoincareCircle(
         this.poincareStart.position,
         this.poincareEnd.position,
@@ -92,7 +105,6 @@ export class PoincareLineHandler extends PoseTracker {
         this.disk.add(this.poincareEnd);
         // this.disk.add(this.circleCenter);
         this.disk.add(this.poincareLine);
-        // this.disk.add(this.poincareLine);
         if (this.infiniteLine) {
           this.disk.add(this.boundaryStart);
           this.disk.add(this.boundaryEnd);
@@ -194,17 +206,17 @@ export class PoincareLineHandler extends PoseTracker {
       dy2 = y2 - ctrY;
     }
     // Determine the start and end angles of the arc
-    const cross = dx1 * dy2 - dx2 * dy1; // Z component of cross product
+    const isClockwise = dx1 * dy2 - dx2 * dy1 > 0; // Z component of cross product
     let angle1 = Math.atan2(dy1, dx1);
     let angle2 = Math.atan2(dy2, dx2);
-    let arcSpan = cross > 0 ? angle2 - angle1 : angle1 - angle2;
-    console.debug(
-      `Angle range ${angle1.toDegrees().toFixed(0)} ${angle2
-        .toDegrees()
-        .toFixed(0)} ${arcSpan > Math.PI ? "Wide" : "Normal"} Arc span ${arcSpan
-        .toDegrees()
-        .toFixed(0)}`
-    );
+    let arcSpan = isClockwise ? angle2 - angle1 : angle1 - angle2;
+    // console.debug(
+    //   `Angle range ${angle1.toDegrees().toFixed(0)} ${angle2
+    //     .toDegrees()
+    //     .toFixed(0)} ${arcSpan > Math.PI ? "Wide" : "Normal"} Arc span ${arcSpan
+    //     .toDegrees()
+    //     .toFixed(0)}`
+    // );
     if (arcSpan < 0) arcSpan += 2 * Math.PI;
 
     // Replace the torus with a new one
@@ -216,6 +228,6 @@ export class PoincareLineHandler extends PoseTracker {
       90,
       arcSpan
     );
-    this.poincareLine.geometry.rotateZ(cross > 0 ? angle1 : angle2);
+    this.poincareLine.geometry.rotateZ(isClockwise ? angle1 : angle2);
   }
 }

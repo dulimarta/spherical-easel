@@ -13,7 +13,7 @@ import {
 import { Mouse3D } from "./mouseTypes";
 import { HEStoreType } from "@/stores/hyperbolic";
 import { HENodule } from "@/models-hyperbolic/HENodule";
-import { createPoint } from "@/mesh/MeshFactory";
+import { create2DLine, createPoint } from "@/mesh/MeshFactory";
 
 // const ORIGIN = new Vector3(0, 0, 0);
 const Y_AXIS = new Vector3(0, 1, 0);
@@ -35,25 +35,14 @@ export class PoseTracker implements HyperbolicToolStrategy {
   private aPoint = createPoint();
   private auxLineCF = new Matrix4();
   private auxRotationAxis = new Vector3();
-  private auxLine = new Mesh(
-    new CylinderGeometry(0.01, 0.01, 100),
-    // auxLineTube,
-    new MeshStandardMaterial({ color: "khaki" })
-  );
+  private auxLine = create2DLine(0.02, "khaki");
   private secondaryIntersections: Array<Mesh> = [];
 
   private normalArrow = new ArrowHelper(); // ArrowHelper to show the normal vector of mouse intersection point
 
   private hitObject: HENodule | null = null;
-  // protected mouseCoordNormalized = new Vector2();
-  // private rayCaster = new Raycaster();
-  // private mousePoint = new Mesh(
-  //   new SphereGeometry(0.05),
-  //   new MeshStandardMaterial({ color: "white" })
-  // );
   constructor(scene: Scene) {
     this.scene = scene;
-    // this.canvas = canvas;
     this.normalArrow.setColor(0xffffff);
     this.normalArrow.setLength(1, 0.2, 0.2);
     this.aPoint.add(this.normalArrow);
@@ -109,14 +98,12 @@ export class PoseTracker implements HyperbolicToolStrategy {
         const pointDistance = this.second.position.length();
         let scaleFactor = 0;
         if (pointDistance > 1) {
-          // if (PoseTracker.hyperStore.$state.showSphere) {
-          //   /* Second point on hyperboloid, compute scale factor to project it down to the sphere */
-          //   scaleFactor = 1 / pointDistance;
-          // }
+          /* Second point on hyperboloid, compute scale factor to project it down to the sphere */
+          scaleFactor = 1 / pointDistance;
         } else {
           /* Second point on sphere, compute the scale factor to project it up to the hyperboloid */
-          const scaleSquared = -1 / (x1 * x1 + y1 * y1 - z1 * z1);
-          if (scaleSquared > 0) scaleFactor = Math.sqrt(scaleSquared);
+          // const scaleSquared = -1 / (x1 * x1 + y1 * y1 - z1 * z1);
+          // if (scaleSquared > 0) scaleFactor = Math.sqrt(scaleSquared);
         }
         if (scaleFactor > 0) {
           // Draw the associated point and its antipode

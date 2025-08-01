@@ -1,4 +1,4 @@
-import { Vector2, Vector3 } from "three";
+import { Vector2, Vector3, Matrix4 } from "three";
 import SETTINGS from "@/global-settings";
 
 Vector2.prototype.toFixed = function (precision: number): string {
@@ -51,4 +51,8 @@ Vector3.prototype.isZero = function (tolerance?: number): boolean {
     Math.abs(this.y) <= useTolerance &&
     Math.abs(this.z) <= useTolerance
   );
+};
+
+Matrix4.prototype.toFixed = function (precision: number): string {
+  return "[" + this.elements.map(x => x.toFixed(precision)).join() + "]";
 };
