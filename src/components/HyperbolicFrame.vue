@@ -163,6 +163,7 @@ import { KleinLineHandler } from "@/eventHandlers_hyperbolic/KleinLineHandler";
 import { PoincareLineHandler } from "@/eventHandlers_hyperbolic/PoincareLineHandler";
 import { reactive } from "vue";
 import { DispatcherEvent } from "camera-controls/dist/EventDispatcher";
+import { CircleHandler } from "@/eventHandlers_hyperbolic/CircleHandler";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
 const { idle } = useIdle(250); // in milliseconds
@@ -238,6 +239,7 @@ let lineTool: LineHandler | null = null;
 let sphericalLineTool: SphericalLineHandler | null = null;
 let kleinLineTool: KleinLineHandler | null = null;
 let poincareTool: PoincareLineHandler | null = null;
+let circleTool: CircleHandler | null = null;
 // let textTool: TextHandler | null = null;
 
 const txtObject = new Text();
@@ -282,9 +284,8 @@ const poincareCircle = new Mesh(
     color: "Yellow"
   })
 );
-const Rk = kleinDiskElevation.value; // Klein Radius
-const poincareRadius = (Rk * Rk) / (Rk + 1);
-poincareCircle.scale.set(poincareRadius, poincareRadius, 1);
+// const poincareRadius = (Rk * Rk) / (Rk + 1);
+poincareCircle.scale.set(kleinDiskElevation.value, kleinDiskElevation.value, 1);
 poincareDisk.add(poincareCircle);
 if (showPoincareDisk.value) scene.add(poincareDisk);
 const rayIntersectionPosition = reactive(new Vector3());
@@ -341,8 +342,8 @@ watch(idle, idleValue => {
 watch(kleinDiskElevation, h => {
   kleinCircle.scale.set(h, h, 1);
   kleinDisk.position.z = h;
-  const poincareRadius = (h * h) / (h + 1);
-  poincareCircle.scale.set(poincareRadius, poincareRadius, 1);
+  // const poincareRadius = (h * h) / (h + 1);
+  poincareCircle.scale.set(h, h, 1);
   // Poincare disk is 1 unit below Klein Disk
   // poincareDisk.position.z = h - 1;
 });
@@ -499,6 +500,10 @@ watch(
       //   if (textTool === null) textTool = new TextHandler(scene);
       //   currentTool = textTool;
       //   break;
+      case "circle":
+        if (circleTool === null) circleTool = new CircleHandler(scene);
+        currentTools.push(circleTool);
+        break;
       default:
         enableCameraControl.value = true;
       // currentTools. = null;
@@ -572,6 +577,11 @@ function updateCameraDetails(ev: DispatcherEvent) {
   // console.debug("CC::" + ev.type);
   const cc = ev.target as CameraControls;
   cameraDistance.value = cc.distance;
+  if (surfaceIntersections.value.length > 0) {
+    positionInCameraCF.value
+      .copy(surfaceIntersections.value[0].point)
+      .applyMatrix4(camera.matrixWorld);
+  }
 }
 
 onUpdated(() => {

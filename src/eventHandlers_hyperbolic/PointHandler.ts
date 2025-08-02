@@ -5,14 +5,14 @@ import { createPoint } from "@/mesh/MeshFactory";
 import { HYPERBOLIC_LAYER } from "@/global-settings";
 const Z_AXIS = new Vector3(0, 0, 1);
 export class PointHandler extends PoseTracker {
-  kleinPoint = createPoint();
-  pointcarePoint = createPoint();
+  // kleinPoint = createPoint();
+  // pointcarePoint = createPoint();
   kleinPointAdded = false;
   constructor(scene: Scene) {
     super(scene);
     this.scene = scene;
-    this.kleinPoint.layers.set(HYPERBOLIC_LAYER.kleinDisk);
-    this.pointcarePoint.layers.set(HYPERBOLIC_LAYER.poincareDisk);
+    // this.kleinPoint.layers.set(HYPERBOLIC_LAYER.kleinDisk);
+    // this.pointcarePoint.layers.set(HYPERBOLIC_LAYER.poincareDisk);
   }
   mouseMoved(
     event: MouseEvent,
@@ -27,18 +27,18 @@ export class PointHandler extends PoseTracker {
       // const zAngle = Z_AXIS.angleTo(position);
       if (x * x + y * y <= z * z) {
         const kleinZPos = PointHandler.hyperStore.$state.kleinDiskElevation;
-        this.kleinPoint.position.set(x / z, y / z, 1).multiplyScalar(kleinZPos);
+        // this.kleinPoint.position.set(x / z, y / z, 1).multiplyScalar(kleinZPos);
 
         // The projection below assumes that the point is on the upper hyperboloid (positive Z)
         // and center of projection at (0,0,-1)
         const poincareZ = PoseTracker.hyperStore.$state.kleinDiskElevation - 1;
         const poincareScale = (poincareZ + 1) / (Math.abs(z) + 1);
-        this.pointcarePoint.position
-          .set(x, y, 0)
-          .multiplyScalar(poincareScale * Math.sign(z));
+        // this.pointcarePoint.position
+        //   .set(x, y, 0)
+        //   .multiplyScalar(poincareScale * Math.sign(z));
         if (!this.kleinPointAdded) {
-          this.scene.add(this.kleinPoint);
-          this.scene.add(this.pointcarePoint);
+          // this.scene.add(this.kleinPoint);
+          // this.scene.add(this.pointcarePoint);
           this.kleinPointAdded = true;
         }
         return;
@@ -46,8 +46,8 @@ export class PointHandler extends PoseTracker {
         console.debug("Point is not on hyperboloid");
       }
     }
-    this.scene.remove(this.kleinPoint);
-    this.scene.remove(this.pointcarePoint);
+    // this.scene.remove(this.kleinPoint);
+    // this.scene.remove(this.pointcarePoint);
     this.kleinPointAdded = false;
     // }
   }

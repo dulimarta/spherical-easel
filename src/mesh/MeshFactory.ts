@@ -2,7 +2,8 @@ import {
   CylinderGeometry,
   Mesh,
   MeshStandardMaterial,
-  SphereGeometry
+  SphereGeometry,
+  TubeGeometry
 } from "three";
 
 export function createPoint(
@@ -21,3 +22,8 @@ export function create2DLine(width: number = 0.03, color: string = "white") {
     new MeshStandardMaterial({ color })
   );
 }
+
+// export function create2DCircle(radius: number = 1, width = 0.05, color: string = "white") {
+//   const geo = new TubeGeometry()
+
+// }

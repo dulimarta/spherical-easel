@@ -15,56 +15,20 @@ When the Klein disk is translated to  $z = h$, the coordinates become
 \end{equation}
 ```
 
-A Klein point at $(x_K, y_K)$ is mapped to a Poincare point
-$(x_P,y_P)$ at
+For points inside the disk of Radius $R$, Poincar&egrave; is always closer the center
+than its Klein counter part. If $d_P$ is the distance of a Poincare point
+to the center of the disk and $d_K$ is the distance its associated Klein
+point to the center of the disk, then $d_P < d_K$.
+
+On a unit disk, these two distances are related by:
 
 ```math
-\begin{align}
-(x_P,y_P) &=
-\left(
-    \frac{2x_K}{1+x_K^2 + y_K^2},
-    \frac{2y_K}{1+x_K^2 + y_K^2}
-\right)\\
-&= 
-\left(
-    \frac{2\frac{hx}{z}}
-    {1 + \left(\frac{hx}{z}\right)^2 + \left(\frac{hy}{z}\right)^2},
-    \frac{2\frac{hy}{z}}
-    {1 + \left(\frac{hx}{z}\right)^2 + \left(\frac{hy}{z}\right)^2}
-\right)\\
-&= \frac{2h}{z}
-\left(
-    \frac{x}
-    {1 + \frac{h^2x^2 + h^2y^2}{z^2}},
-    \frac{y}
-    {1 + \frac{h^2x^2 + h^2y^2}{z^2}}
-\right)\\
-&= \frac{2h}{z}
-\left(
-    \frac{x}
-    {1 + h^2\frac{x^2 + y^2}{z^2}},
-    \frac{y}
-    {1 + h^2\frac{x^2 + y^2}{z^2}}
-\right)\\
-\end{align}
+d_K = \frac{2d_P}{1 + d_P^2}
+\qquad
+d_P = \frac{d_k}{1 + \sqrt{1 -  d_K^2}}
 ```
 
-But a point $(x,y,z)$ on a two-sheet **unit** hyperboloid satisfies
-$$x^2+y^2-z^2 = -1\quad\text{or}\quad x^2+y^2 = z^2 - 1$$
-Therefore,
-
-```math
-(x_P,y_P) = \frac{2h}{z}
-\left(
-    \frac{x}
-    {1 + h^2\frac{z^2 - 1}{z^2}},
-    \frac{y}
-    {1 + h^2\frac{z^2 - 1}{z^2}}
-\right) = \frac{2h}{z + h^2\frac{z^2 - 1}{z}}
-(x, y)
-```
-
-## Derivation via Projection
+## Derivation via Projection?
 
 Or direct from "perspective project" with center at $(0,0,-1)$ and projection plane at $z=d$
 $$

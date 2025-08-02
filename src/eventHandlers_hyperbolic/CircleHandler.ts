@@ -11,16 +11,23 @@ import {
 import { PoseTracker } from "./PoseTracker";
 import { createPoint } from "@/mesh/MeshFactory";
 
+/* Techniques used here
+
+   Hyp points |-> Klein points |-> Poincare Points |-> Poincare Circle |-> Klein Circle |-> Hyp Circles
+
+   1. The coordinates of the input circle points (C:center & P:perimeter) on the hyperboloid are projected 
+      to the Klein disk as D & Q
+   2. D & Q are transformed into Poincare points (E & R)
+   3. Generate a Euclidean circle S using center point E and perimeter point R
+   4. Transform points on S to a circle T on Klein disk
+   5. Project back T to to the hyperboloid surface
+ */
 export class CircleHandler extends PoseTracker {
   centerPointP = createPoint(0.08, "SaddleBrown");
   circlePointP = createPoint(0.08, "SandyBrown");
   centerPointKl = createPoint(0.08, "DarkGreen");
   circlePointKl = createPoint(0.08, "LimeGreen");
 
-  // tempCircle = new Mesh(
-  //   new TorusGeometry(1, 0.2),
-  //   new MeshStandardMaterial({ color: "white" })
-  // );
   pathP = new HyperbolicCircle("toKlein");
   pCircle = new Mesh(
     new TubeGeometry(),
@@ -149,14 +156,25 @@ class HyperbolicCircle extends Curve<Vector3> {
     if (this.transform === "toKlein") {
       scale = 2 / (1 + d * d);
     }
+    let zCoord = 0;
     if (this.transform) {
-      console.debug(
-        `t=${tInput.toFixed(3)} => (${x.toFixed(2)},${y.toFixed(2)}) Scale ${
-          this.transform ?? "Identity"
-        } from ${d.toFixed(2)} to  ${scale.toFixed(2)}`
-      );
+      // console.debug(
+      //   `t=${tInput.toFixed(3)} => (${x.toFixed(2)},${y.toFixed(2)}) Scale ${
+      //     this.transform ?? "Identity"
+      //   } from ${d.toFixed(2)} to  ${scale.toFixed(2)}`
+      // );
+      const kx = (x * scale) / R;
+      const ky = (y * scale) / R;
+      const denom = Math.sqrt(1 - kx * kx - ky * ky);
+      // console.debug(
+      //   `(${x.toFixed(2)},${y.toFixed(2)}) (${kx.toFixed(2)},${ky.toFixed(
+      //     2
+      //   )}) ==> ${d.toFixed(4)} ${denom.toFixed(4)}`
+      // );
+      optTarget.set(kx, ky, 1).multiplyScalar(1 / denom);
+    } else {
+      optTarget.set(x, y, 0).multiplyScalar(scale);
     }
-    optTarget.set(x, y, 0).multiplyScalar(scale);
     return optTarget;
   }
 }

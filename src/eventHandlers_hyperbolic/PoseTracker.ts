@@ -16,6 +16,8 @@ import { HYPERBOLIC_LAYER } from "@/global-settings";
 
 // const ORIGIN = new Vector3(0, 0, 0);
 const Y_AXIS = new Vector3(0, 1, 0);
+const Z_MINUS1 = new Vector3(0, 0, -1);
+const TMP_MAT4 = new Matrix4();
 export class PoseTracker implements HyperbolicToolStrategy {
   static hyperStore: HEStoreType;
 
@@ -32,6 +34,8 @@ export class PoseTracker implements HyperbolicToolStrategy {
   };
   protected isDragging = false;
   private aPoint = createPoint();
+  private kleinPoint = createPoint(0.07, "SeaGreen");
+  private poincarePoint = createPoint(0.07, "GoldenRod");
   private auxLineCF = new Matrix4();
   private auxRotationAxis = new Vector3();
   private auxLine = create2DLine(0.02, "khaki");
@@ -53,6 +57,9 @@ export class PoseTracker implements HyperbolicToolStrategy {
       const p = createPoint(0.06, "red");
       this.secondaryIntersections.push(p);
     }
+    // const d = PoseTracker.hyperStore.$state.kleinDiskElevation;
+    this.kleinPoint.layers.set(HYPERBOLIC_LAYER.poincareDisk);
+    this.poincarePoint.layers.set(HYPERBOLIC_LAYER.poincareDisk);
   }
   mouseMoved(
     event: MouseEvent,
@@ -79,6 +86,7 @@ export class PoseTracker implements HyperbolicToolStrategy {
     if (position && this.hitObject === null) {
       this.referencePointOnHyperboloid = position.length() > 1;
       this.aPoint.position.copy(position);
+      const { x, y, z } = position;
       if (this.referencePointOnHyperboloid) {
         this.aPoint.layers.set(
           position.z > 0
@@ -87,6 +95,8 @@ export class PoseTracker implements HyperbolicToolStrategy {
         );
       } else this.aPoint.layers.set(HYPERBOLIC_LAYER.unitSphere);
       this.scene.add(this.aPoint);
+      this.scene.add(this.kleinPoint);
+      this.scene.add(this.poincarePoint);
       this.normalArrow.setDirection(direction!);
       this.second.position.copy(position);
       this.secondaryIntersections.forEach(p => this.scene.remove(p));
@@ -99,8 +109,18 @@ export class PoseTracker implements HyperbolicToolStrategy {
           .crossVectors(Y_AXIS, this.second.position)
           .normalize();
         this.auxLineCF.makeRotationAxis(this.auxRotationAxis, angle);
+
         this.auxLineGroup.matrix.copy(this.auxLineCF);
+        // this.poincareAuxGroup.position.setZ(-1);
+
         this.scene.add(this.auxLineGroup);
+        TMP_MAT4.makeTranslation(
+          0,
+          0,
+          -PoseTracker.hyperStore.$state.kleinDiskElevation
+        );
+        Z_MINUS1.setZ(-PoseTracker.hyperStore.$state.kleinDiskElevation);
+        this.auxLineCF.lookAt(Z_MINUS1, position, Y_AXIS).premultiply(TMP_MAT4);
         const { x: x1, y: y1, z: z1 } = this.second.position;
         // Always add the antipode
         this.secondaryIntersections[0].position.set(-x1, -y1, -z1);
@@ -110,6 +130,8 @@ export class PoseTracker implements HyperbolicToolStrategy {
               ? HYPERBOLIC_LAYER.lowerSheetPoints
               : HYPERBOLIC_LAYER.upperSheetPoints
           );
+
+          // .multiplyScalar(2 * this.poincareRadius);
         } else {
           this.secondaryIntersections[0].layers.set(
             HYPERBOLIC_LAYER.unitSphere
@@ -167,11 +189,32 @@ export class PoseTracker implements HyperbolicToolStrategy {
           this.scene.add(this.secondaryIntersections[1]);
           this.scene.add(this.secondaryIntersections[2]);
         }
+
+        // Show Klein Point
+        const R = PoseTracker.hyperStore.$state.kleinDiskElevation;
+        this.kleinPoint.position
+          .set(x / Math.abs(z), y / Math.abs(z), 0)
+          .multiplyScalar(R);
+        const kd = Math.sqrt(x * x + y * y) / z;
+        const pd = kd / (1 + Math.sqrt(1 - kd * kd));
+        // const pd = (2 * kd) / (1 + kd * kd);
+        // Show Poincare Point, infer its position from its Klein counterpart
+        this.poincarePoint.position
+          .set(x / Math.abs(z), y / Math.abs(z), 0)
+          .multiplyScalar(R * pd);
+        // console.debug(
+        //   `Klein distance is ${kd.toFixed(
+        //     3
+        //   )} Desired Poincare distance ${pd.toFixed(3)}`
+        // );
       } else {
         this.scene.remove(this.auxLineGroup);
+        this.scene.remove(this.kleinPoint);
+        this.scene.remove(this.poincarePoint);
       }
     } else {
       this.scene.remove(this.aPoint);
+      this.scene.remove(this.auxLineGroup);
       this.second.position.set(Number.NaN, Number.NaN, Number.NaN);
     }
     this.second.normalized2D.copy(scrPos);

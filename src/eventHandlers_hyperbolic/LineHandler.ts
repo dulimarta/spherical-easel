@@ -3,7 +3,6 @@ import {
   Vector3,
   Scene,
   Mesh,
-  TubeGeometry,
   MeshStandardMaterial,
   PlaneGeometry,
   DoubleSide,
