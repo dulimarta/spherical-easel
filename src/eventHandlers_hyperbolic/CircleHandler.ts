@@ -3,13 +3,13 @@ import {
   Mesh,
   MeshStandardMaterial,
   Scene,
-  TorusGeometry,
   TubeGeometry,
   Vector2,
   Vector3
 } from "three";
 import { PoseTracker } from "./PoseTracker";
 import { createPoint } from "@/mesh/MeshFactory";
+import { HYPERBOLIC_LAYER } from "@/global-settings";
 
 /* Techniques used here
 
@@ -23,19 +23,20 @@ import { createPoint } from "@/mesh/MeshFactory";
    5. Project back T to to the hyperboloid surface
  */
 export class CircleHandler extends PoseTracker {
+  centerPointH = createPoint();
   centerPointP = createPoint(0.08, "SaddleBrown");
   circlePointP = createPoint(0.08, "SandyBrown");
   centerPointKl = createPoint(0.08, "DarkGreen");
   circlePointKl = createPoint(0.08, "LimeGreen");
 
-  pathP = new HyperbolicCircle("toKlein");
+  pathP = new HyperbolicCircle();
   pCircle = new Mesh(
     new TubeGeometry(),
     new MeshStandardMaterial({
       color: "gold"
     })
   );
-  pathK = new HyperbolicCircle();
+  pathK = new HyperbolicCircle("toKlein");
   kCircle = new Mesh(
     new TubeGeometry(),
     new MeshStandardMaterial({
@@ -44,8 +45,24 @@ export class CircleHandler extends PoseTracker {
       opacity: 0.5
     })
   );
+  pathH = new HyperbolicCircle("toHyperboloid");
+  hCircle = new Mesh(
+    new TubeGeometry(),
+    new MeshStandardMaterial({
+      color: "white",
+      transparent: true,
+      opacity: 0.5
+    })
+  );
   constructor(s: Scene) {
     super(s);
+    this.centerPointP.layers.set(HYPERBOLIC_LAYER.poincareDisk);
+    this.circlePointP.layers.set(HYPERBOLIC_LAYER.poincareDisk);
+    this.centerPointKl.layers.set(HYPERBOLIC_LAYER.poincareDisk);
+    this.circlePointKl.layers.set(HYPERBOLIC_LAYER.poincareDisk);
+    this.kCircle.layers.set(HYPERBOLIC_LAYER.poincareDisk);
+    this.pCircle.layers.set(HYPERBOLIC_LAYER.poincareDisk);
+    this.hCircle.layers.set(HYPERBOLIC_LAYER.upperSheet);
   }
 
   mouseMoved(
@@ -59,7 +76,8 @@ export class CircleHandler extends PoseTracker {
       console.debug("Circle Handler");
       let { x: x1, y: y1, z: z1 } = this.first.position;
       let { x: x2, y: y2, z: z2 } = this.second.position;
-
+      this.centerPointH.position.set(x1, y1, z1);
+      this.scene.add(this.centerPointH);
       // Convert the input positions to points on Klein disk
       x1 /= z1;
       y1 /= z1;
@@ -72,16 +90,8 @@ export class CircleHandler extends PoseTracker {
       const pd1 = kd1 / (1 + Math.sqrt(1 - kd1 * kd1));
       const pd2 = kd2 / (1 + Math.sqrt(1 - kd2 * kd2));
       const R = PoseTracker.hyperStore.$state.kleinDiskElevation;
-      // Show the Klein points & circles
-      this.centerPointKl.position.set(x1, y1, 0).multiplyScalar(R);
-      this.circlePointKl.position.set(x2, y2, 0).multiplyScalar(R);
-      this.pathK.setPoints(
-        this.centerPointKl.position,
-        this.circlePointKl.position
-      );
-      this.kCircle.geometry.dispose();
-      this.kCircle.geometry = new TubeGeometry(this.pathK, 60, 0.05);
-      // Poincare Setup
+      // Show Poincare Points and Circles
+
       this.centerPointP.position.set(x1, y1, 0).multiplyScalar(pd1 * R);
       this.circlePointP.position.set(x2, y2, 0).multiplyScalar(pd2 * R);
       this.pathP.setPoints(
@@ -89,10 +99,29 @@ export class CircleHandler extends PoseTracker {
         this.circlePointP.position
       );
       this.pCircle.geometry.dispose();
-      this.pCircle.geometry = new TubeGeometry(this.pathP, 60, 0.05);
-      // this.scene.add(this.kCircle);
+      this.pCircle.geometry = new TubeGeometry(this.pathP, 100, 0.03);
+
+      // Show the Klein points
+      this.centerPointKl.position.set(x1, y1, 0).multiplyScalar(R);
+      this.circlePointKl.position.set(x2, y2, 0).multiplyScalar(R);
+      // Show the Klein circle via transformation from Poincare points
+      this.pathK.setPoints(
+        this.centerPointP.position,
+        this.circlePointP.position
+      );
+      this.kCircle.geometry.dispose();
+      this.kCircle.geometry = new TubeGeometry(this.pathK, 100, 0.03);
+
+      // Show the hyperbolic circle via transformation from Poincare points
+      this.pathH.setPoints(
+        this.centerPointP.position,
+        this.circlePointP.position
+      );
+      this.hCircle.geometry.dispose();
+      this.hCircle.geometry = new TubeGeometry(this.pathH, 100, 0.03);
       this.scene.add(this.pCircle);
       this.scene.add(this.kCircle);
+      this.scene.add(this.hCircle);
       this.scene.add(this.circlePointP);
       this.scene.add(this.centerPointP);
       this.scene.add(this.centerPointKl);
@@ -100,6 +129,7 @@ export class CircleHandler extends PoseTracker {
     } else {
       this.scene.remove(this.pCircle);
       this.scene.remove(this.kCircle);
+      this.scene.remove(this.hCircle);
       this.scene.remove(this.circlePointP);
       this.scene.remove(this.centerPointP);
       this.scene.remove(this.circlePointKl);
@@ -113,9 +143,9 @@ class HyperbolicCircle extends Curve<Vector3> {
   ctrX: number = 0;
   ctrY: number = 0;
   radius: number = 1;
-  transform: "toKlein" | null;
+  transform: "toKlein" | "toHyperboloid" | null;
 
-  constructor(applyTransform: null | "toKlein" = null) {
+  constructor(applyTransform: null | "toKlein" | "toHyperboloid" = null) {
     super();
     this.transform = applyTransform;
   }
@@ -126,19 +156,8 @@ class HyperbolicCircle extends Curve<Vector3> {
     const dy = circ.y - ctr.y;
     // The radius must be the Poincare radius
     this.radius = Math.sqrt(dx * dx + dy * dy);
-    // if (this.transform === "toKlein") {
-    //   // Move the center to coordinates in klein Disk
-    //   const d =
-    //     Math.sqrt(ctr.x * ctr.x + ctr.y * ctr.y) /
-    //     PoseTracker.hyperStore.$state.kleinDiskElevation;
-    //   const scale = (2 * d) / (1 + d * d);
-    //   console.debug(`Circle center is scaled up from ${d} to ${scale}`);
-    //   this.ctrX *= ctr.x * scale;
-    //   this.ctrY *= ctr.y * scale;
-    // } else {
     this.ctrX = ctr.x;
     this.ctrY = ctr.y;
-    // }
 
     this.updateArcLengths();
   }
@@ -155,9 +174,9 @@ class HyperbolicCircle extends Curve<Vector3> {
     let scale: number = 1;
     if (this.transform === "toKlein") {
       scale = 2 / (1 + d * d);
-    }
-    let zCoord = 0;
-    if (this.transform) {
+      optTarget.set(x, y, 0).multiplyScalar(scale);
+    } else if (this.transform === "toHyperboloid") {
+      scale = 2 / (1 + d * d);
       // console.debug(
       //   `t=${tInput.toFixed(3)} => (${x.toFixed(2)},${y.toFixed(2)}) Scale ${
       //     this.transform ?? "Identity"

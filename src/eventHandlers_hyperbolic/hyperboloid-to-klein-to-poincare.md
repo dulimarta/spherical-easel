@@ -28,8 +28,16 @@ d_K = \frac{2d_P}{1 + d_P^2}
 d_P = \frac{d_k}{1 + \sqrt{1 -  d_K^2}}
 ```
 
+When points are not on a unit disk, sometimes what we need is just the scaling factor between the two coordinate systems:
+
+```math
+\frac{\text{Klein}}{\text{Poincare}} = \frac{2}{1 + d_P^2}
+\qquad
+\frac{\text{Poincare}}{\text{Klein}} = \frac{1}{1 + \sqrt{1 -  d_K^2}}
+```
+
 ## Derivation via Projection?
 
-Or direct from "perspective project" with center at $(0,0,-1)$ and projection plane at $z=d$
+Or viewed as a "perspective projection" with center at $(0,0,-1)$ and projection plane at $z=d$ from a hyperboloid point $(x,y,z)$
 $$
 (x_P, y_P) = \frac{d+1}{z+1}(x,y)
