@@ -30,7 +30,8 @@
                     :disabled="!validEntries">
                     {{ t("Signin") }}
                   </v-btn>
-                  <v-btn id="signup"
+                  <v-btn
+                    id="signup"
                     @click="doSignup"
                     :disabled="isSigningUp && !validEntries">
                     {{ t("Signup") }}
@@ -123,8 +124,14 @@ const userName = ref("");
 const messageType: Ref<"info" | "error" | "warning"> = ref("info");
 const router = useRouter();
 const acctStore = useAccountStore();
-const usrEmail: Ref<string> = ref(import.meta.env.VITE_APP_TESTUSER);
-const usrPassword: Ref<string> = ref(import.meta.env.VITE_APP_TESTPASSWORD);
+const usrEmail: Ref<string> = ref(
+  import.meta.env.MODE === "production" ? "" : import.meta.env.VITE_APP_TESTUSER
+);
+const usrPassword: Ref<string> = ref(
+  import.meta.env.MODE === "production"
+    ? ""
+    : import.meta.env.VITE_APP_TESTPASSWORD
+);
 const passwordConfirm = ref(import.meta.env.VITE_APP_TESTPASSWORD);
 const emailReges = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
 const emailRules = [
