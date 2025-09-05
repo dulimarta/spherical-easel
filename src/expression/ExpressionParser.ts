@@ -1,4 +1,4 @@
-import { useI18n } from "vue-i18n";
+import { useI18n, createI18n } from "vue-i18n";
 
 export enum TokenType {
   /* 0 */ PLUS,
@@ -60,7 +60,7 @@ class Lexer {
   private curr?: Lexicon;
   private t;
   constructor(input: string) {
-    this.t = useI18n().t;
+    this.t = createI18n({});
     // JS strings are an iterable object
     // The iterator provides two important properties:
     // .done which is set to true when we reach the end of iteration

@@ -13,8 +13,9 @@ export default mergeConfig(
       setupFiles: ["./vitest-setup.mts"],
       environment: "jsdom",
       include: [
-        "**/construction-*.spec.ts"
-        //"**/sphereframe.spec.ts"
+        "**/construction-*.spec.ts",
+        "**/expression/__tests__/*.spec.ts"
+        // "**/sphereframe.spec.ts"
         //"**/parametric-cusp-values.spec.ts",
         //"**/parametric-coord.spec.ts",
         //"**/eventHandlers/__tests__/*.spec.ts"

@@ -15,15 +15,12 @@ describe("SEExpression", () => {
     it("evaluates integer constant with no sign", () => {
       expect(parser.evaluate("5")).toBeCloseTo(5, 2);
     });
-
     it("evaluates floating point constant", () => {
       expect(parser.evaluate("5.3")).toBeCloseTo(5.3, 2);
     });
-
     it("evaluates floating point constant with no leading digits", () => {
       expect(parser.evaluate(".345")).toBeCloseTo(0.345, 3);
     });
-
     it("evaluates integer constant with leading -", () => {
       expect(parser.evaluate("-25")).toBeCloseTo(-25, 0);
     });
