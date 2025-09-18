@@ -45,7 +45,8 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "vitest.d.ts",
-    "src/assets/languages/*.json" // this is needed by import in i18n.ts
+    "src/assets/languages/*.json", // this is needed by import in i18n.ts
+    "src/types/glsl.d.ts" //  importing .glsl files
   ],
   "verbose": true
   // "globals": {

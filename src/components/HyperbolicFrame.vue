@@ -139,6 +139,8 @@ import {
   // ExtendedTriangle
 } from "three-mesh-bvh";
 // import type { UseMouseEventExtractor } from "@vueuse/core";
+import vertexShader from "../mesh/vertex.glsl";
+import fragmentShader from "../mesh/fragment.glsl";
 
 import {
   useMouseInElement,
@@ -355,6 +357,22 @@ function initialize() {
     0.1,
     500
   );
+  // Add hyperbolic polar grid to the upper and lower sheets
+  const curve = new THREE.CubicBezierCurve3(
+    new THREE.Vector3(-10, 0, 0),
+    new THREE.Vector3(-5, 15, 0),
+    new THREE.Vector3(20, 15, 0),
+    new THREE.Vector3(10, 0, 0)
+  );
+
+  const points = curve.getPoints(50);
+  const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+  const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+
+  // Create the final object to add to the scene
+  const curveObject = new THREE.Line(geometry, material);
+  scene.add(curveObject);
 
   const xyGrid = new GridHelper();
   // xyGrid.translateZ(1);
@@ -379,6 +397,14 @@ function initialize() {
     120,
     300
   );
+
+  // Create the ShaderMaterial with the GLSL code.
+  const customShaderMaterial = new THREE.ShaderMaterial({
+    vertexShader: vertexShader,
+    fragmentShader: fragmentShader,
+    transparent: true // Crucial for enabling opacity
+  });
+
   const hyperboloidMaterial: THREE.MeshStandardMaterialParameters = {
     color: "chocolate",
     side: DoubleSide,
@@ -388,7 +414,8 @@ function initialize() {
   };
   const upperHyperboloidMesh = new Mesh(
     upperHyperboloidGeometry,
-    new MeshStandardMaterial(hyperboloidMaterial)
+    customShaderMaterial
+    //new MeshStandardMaterial(hyperboloidMaterial)
   );
 
   const lowerHyperboloidGeometry = new ParametricGeometry(
@@ -716,14 +743,23 @@ function threeMouseTracker(ev: MouseEvent) {
   renderer.render(scene, camera);
 }
 
+// Parametric function for the upper sheet of the hyperboloid in polar coordinates 0 <= u <= 1 and 0 <= v <= 1
 function hyperboloidPlus(u: number, v: number, pt: Vector3) {
-  const theta = v * 2 * Math.PI;
-  const x = Math.sinh(2 * u) * Math.cos(theta);
-  const y = Math.sinh(2 * u) * Math.sin(theta);
-  const z = Math.cosh(2 * u);
+  const scale = 3;
+  const myU = 2 * scale * u - scale; // map to -scale <= u <= scale
+  const myV = 2 * scale * v - scale; // map to -scale <= v <= scale
+  const x = Math.sinh(myU) * Math.cosh(myV);
+  const y = Math.sinh(myV);
+  const z = Math.cosh(myU) * Math.cosh(myV);
+
+  // const theta = v * 2 * Math.PI;
+  // const x = Math.sinh(2 * u) * Math.cos(theta);
+  // const y = Math.sinh(2 * u) * Math.sin(theta);
+  // const z = Math.cosh(2 * u);
   pt.set(x, y, z);
 }
 
+// Parametric function for the lower sheet of the hyperboloid in polar coordinates 0 <= u <= 1 and 0 <= v <= 1
 function hyperboloidMinus(u: number, v: number, pt: Vector3) {
   const theta = v * 2 * Math.PI;
   const x = Math.sinh(2 * u) * Math.cos(theta);
