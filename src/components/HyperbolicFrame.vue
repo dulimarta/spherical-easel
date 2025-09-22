@@ -52,7 +52,7 @@
       alignItems: 'flex-start'
     }">
     <v-hover open-delay="250" close-delay="250">
-      <template #default="{ isHovering, props }">
+      <template #default="{ props }">
         <div
           v-bind="props"
           :style="{
@@ -60,7 +60,7 @@
             flexDirection: 'column',
             alignItems: 'flex-start'
           }">
-          <v-slider
+          <!-- <v-slider
             :style="{ marginLeft: '8px' }"
             v-if="
               isHovering &&
@@ -75,9 +75,9 @@
             thumb-label
             :min-width="visibleLayers.includes('klein') ? undefined : '200'"
             min="1"
-            :max="Math.round(Math.cosh(2))"></v-slider>
+            :max="Math.round(Math.cosh(2))"></v-slider> -->
           <v-btn-toggle v-model="visibleLayers" multiple>
-            <v-btn size="small" color="green-lighten-3" value="klein">
+            <!-- <v-btn size="small" color="green-lighten-3" value="klein">
               Klein
             </v-btn>
             <v-btn size="small" color="yellow-lighten-2" value="poincare">
@@ -85,7 +85,7 @@
             </v-btn>
             <v-btn icon color="green-darken-3" value="sphere">
               <v-icon>mdi-circle-outline</v-icon>
-            </v-btn>
+            </v-btn> -->
             <v-btn icon color="orange" value="lowerSheet">
               <!-- Use CSS trick to rotate the semicircle icon to look like lower sheet :-) -->
               <v-icon
@@ -155,7 +155,7 @@ import { PointHandler } from "@/eventHandlers_hyperbolic/PointHandler";
 import { useSEStore } from "@/stores/se";
 import { LineHandler } from "@/eventHandlers_hyperbolic/LineHandler";
 import { SphericalLineHandler } from "@/eventHandlers_hyperbolic/SphericalLineHandler";
-import { createPoint } from "@/mesh/MeshFactory";
+import { createGridCircle } from "@/mesh/MeshFactory";
 import { onBeforeMount } from "vue";
 import { TextHandler } from "@/eventHandlers_hyperbolic/TextHandler";
 import { Text } from "troika-three-text";
@@ -225,22 +225,22 @@ const pointLight = new PointLight(0xffffff, 100);
 pointLight.position.set(3, 3, 5);
 scene.add(ambientLight);
 scene.add(pointLight);
-const unitSphere = new Mesh(
-  new SphereGeometry(1),
-  new MeshStandardMaterial({
-    color: "green",
-    side: DoubleSide,
-    roughness: 0.3,
-    transparent: true,
-    opacity: 0.75
-  })
-);
+// const unitSphere = new Mesh(
+//   new SphereGeometry(1),
+//   new MeshStandardMaterial({
+//     color: "green",
+//     side: DoubleSide,
+//     roughness: 0.3,
+//     transparent: true,
+//     opacity: 0.75
+//   })
+// );
 let currentTools: Array<HyperbolicToolStrategy> = []; //new PointHandler();
 let pointTool: PointHandler = new PointHandler(scene);
 let lineTool: LineHandler | null = null;
-let sphericalLineTool: SphericalLineHandler | null = null;
-let kleinLineTool: KleinLineHandler | null = null;
-let poincareTool: PoincareLineHandler | null = null;
+// let sphericalLineTool: SphericalLineHandler | null = null;
+// let kleinLineTool: KleinLineHandler | null = null;
+// let poincareTool: PoincareLineHandler | null = null;
 let circleTool: CircleHandler | null = null;
 // let textTool: TextHandler | null = null;
 
@@ -258,66 +258,67 @@ txtObject.color = "yellow"; //0x000000;
 // the scaling only to the "disk" (and not other objects attached on on)
 // we represent the Klein "disk" as a THREE.Group() and make the circle
 // as a child of this group
-const kleinCircle = new Mesh(
-  new THREE.CircleGeometry(1, 30),
-  new MeshStandardMaterial({
-    transparent: true,
-    opacity: 0.5,
-    color: "ForestGreen"
-  })
-);
-kleinCircle.layers.set(HYPERBOLIC_LAYER.kleinDisk);
-const kleinDisk = new Group();
-// WARNING: setting layers on a THREE.Group has no effect on its children
-// kleinDisk.layers.set(HYPERBOLIC_LAYER.kleinDisk);
-kleinDisk.add(kleinCircle);
-// Apply position adjustment to the Group
-kleinDisk.position.z = kleinDiskElevation.value;
-// Apply scaling only to the circle
-kleinCircle.scale.set(kleinDiskElevation.value, kleinDiskElevation.value, 1);
+
+// const kleinCircle = new Mesh(
+//   new THREE.CircleGeometry(1, 30),
+//   new MeshStandardMaterial({
+//     transparent: true,
+//     opacity: 0.5,
+//     color: "ForestGreen"
+//   })
+// );
+// kleinCircle.layers.set(HYPERBOLIC_LAYER.kleinDisk);
+// const kleinDisk = new Group();
+// // WARNING: setting layers on a THREE.Group has no effect on its children
+// // kleinDisk.layers.set(HYPERBOLIC_LAYER.kleinDisk);
+// kleinDisk.add(kleinCircle);
+// // Apply position adjustment to the Group
+// kleinDisk.position.z = kleinDiskElevation.value;
+// // Apply scaling only to the circle
+// kleinCircle.scale.set(kleinDiskElevation.value, kleinDiskElevation.value, 1);
 
 // Poincare
-const poincareDisk = new Group();
-const poincareCircle = new Mesh(
-  new THREE.CircleGeometry(1, 30),
-  new MeshStandardMaterial({
-    transparent: true,
-    opacity: 0.5,
-    color: "Yellow"
-  })
-);
-// const poincareRadius = (Rk * Rk) / (Rk + 1);
-poincareCircle.scale.set(kleinDiskElevation.value, kleinDiskElevation.value, 1);
-poincareDisk.add(poincareCircle);
-if (showPoincareDisk.value) scene.add(poincareDisk);
+// const poincareDisk = new Group();
+// const poincareCircle = new Mesh(
+//   new THREE.CircleGeometry(1, 30),
+//   new MeshStandardMaterial({
+//     transparent: true,
+//     opacity: 0.5,
+//     color: "Yellow"
+//   })
+// );
+// // const poincareRadius = (Rk * Rk) / (Rk + 1);
+// poincareCircle.scale.set(kleinDiskElevation.value, kleinDiskElevation.value, 1);
+// poincareDisk.add(poincareCircle);
+// if (showPoincareDisk.value) scene.add(poincareDisk);
 const rayIntersectionPosition = reactive(new Vector3());
 
 watch(visibleLayers, (layers: Array<string>) => {
-  showKleinDisk.value = layers.includes("klein");
-  if (showKleinDisk.value) {
-    camera.layers.enable(HYPERBOLIC_LAYER.kleinDisk);
-    scene.add(kleinDisk);
-  } else {
-    scene.remove(kleinDisk);
-    camera.layers.disable(HYPERBOLIC_LAYER.kleinDisk);
-  }
-  showSphere.value = layers.includes("sphere");
-  if (showSphere.value) {
-    camera.layers.enable(HYPERBOLIC_LAYER.unitSphere);
-    // camera.layers.enable(HYPERBOLIC_LAYER.foregroundSpherical);
-    rayCaster.layers.enable(HYPERBOLIC_LAYER.unitSphere);
-  } else {
-    camera.layers.disable(HYPERBOLIC_LAYER.unitSphere);
-    // camera.layers.disable(HYPERBOLIC_LAYER.foregroundSpherical);
-    rayCaster.layers.disable(HYPERBOLIC_LAYER.unitSphere);
-  }
-  showPoincareDisk.value = layers.includes("poincare");
-  if (showPoincareDisk.value) {
-    scene.add(poincareDisk);
-  } else {
-    scene.remove(poincareDisk);
-    camera.layers.disable(HYPERBOLIC_LAYER.poincareDisk);
-  }
+  // showKleinDisk.value = layers.includes("klein");
+  // if (showKleinDisk.value) {
+  //   camera.layers.enable(HYPERBOLIC_LAYER.kleinDisk);
+  //   scene.add(kleinDisk);
+  // } else {
+  //   scene.remove(kleinDisk);
+  //   camera.layers.disable(HYPERBOLIC_LAYER.kleinDisk);
+  // }
+  // showSphere.value = layers.includes("sphere");
+  // if (showSphere.value) {
+  //   camera.layers.enable(HYPERBOLIC_LAYER.unitSphere);
+  //   // camera.layers.enable(HYPERBOLIC_LAYER.foregroundSpherical);
+  //   rayCaster.layers.enable(HYPERBOLIC_LAYER.unitSphere);
+  // } else {
+  //   camera.layers.disable(HYPERBOLIC_LAYER.unitSphere);
+  //   // camera.layers.disable(HYPERBOLIC_LAYER.foregroundSpherical);
+  //   rayCaster.layers.disable(HYPERBOLIC_LAYER.unitSphere);
+  // }
+  // showPoincareDisk.value = layers.includes("poincare");
+  // if (showPoincareDisk.value) {
+  //   scene.add(poincareDisk);
+  // } else {
+  //   scene.remove(poincareDisk);
+  //   camera.layers.disable(HYPERBOLIC_LAYER.poincareDisk);
+  // }
   showLowerSheet.value = layers.includes("lowerSheet");
   if (showLowerSheet.value) {
     camera.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
@@ -341,14 +342,14 @@ watch(idle, idleValue => {
   }
 });
 
-watch(kleinDiskElevation, h => {
-  kleinCircle.scale.set(h, h, 1);
-  kleinDisk.position.z = h;
-  // const poincareRadius = (h * h) / (h + 1);
-  poincareCircle.scale.set(h, h, 1);
-  // Poincare disk is 1 unit below Klein Disk
-  // poincareDisk.position.z = h - 1;
-});
+// watch(kleinDiskElevation, h => {
+//   kleinCircle.scale.set(h, h, 1);
+//   kleinDisk.position.z = h;
+//   // const poincareRadius = (h * h) / (h + 1);
+//   poincareCircle.scale.set(h, h, 1);
+//   // Poincare disk is 1 unit below Klein Disk
+//   // poincareDisk.position.z = h - 1;
+// });
 
 function initialize() {
   camera = new PerspectiveCamera(
@@ -358,21 +359,12 @@ function initialize() {
     500
   );
   // Add hyperbolic polar grid to the upper and lower sheets
-  const curve = new THREE.CubicBezierCurve3(
-    new THREE.Vector3(-10, 0, 0),
-    new THREE.Vector3(-5, 15, 0),
-    new THREE.Vector3(20, 15, 0),
-    new THREE.Vector3(10, 0, 0)
-  );
-
-  const points = curve.getPoints(50);
-  const geometry = new THREE.BufferGeometry().setFromPoints(points);
-
-  const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
-
-  // Create the final object to add to the scene
-  const curveObject = new THREE.Line(geometry, material);
-  scene.add(curveObject);
+  const circle = createGridCircle(Math.sinh(1), -Math.cosh(1), 50);
+  scene.add(circle);
+  const circle1 = createGridCircle(Math.sinh(1.5), -Math.cosh(1.5), 50, 0.01);
+  scene.add(circle1);
+  const circle2 = createGridCircle(Math.sinh(2), -Math.cosh(2), 50);
+  scene.add(circle2);
 
   const xyGrid = new GridHelper();
   // xyGrid.translateZ(1);
@@ -392,6 +384,7 @@ function initialize() {
   scene.add(arrowX);
   scene.add(arrowY);
   scene.add(arrowZ);
+
   const upperHyperboloidGeometry = new ParametricGeometry(
     hyperboloidPlus,
     120,
@@ -402,7 +395,7 @@ function initialize() {
   const customShaderMaterial = new THREE.ShaderMaterial({
     vertexShader: vertexShader,
     fragmentShader: fragmentShader,
-    transparent: true // Crucial for enabling opacity
+    transparent: true // enabling opacity
   });
 
   const hyperboloidMaterial: THREE.MeshStandardMaterialParameters = {
@@ -431,9 +424,9 @@ function initialize() {
   if (showLowerSheet.value) {
     visibleLayers.value.push("lowerSheet");
   }
-  if (showPoincareDisk.value) {
-    visibleLayers.value.push("poincare");
-  }
+  // if (showPoincareDisk.value) {
+  //   visibleLayers.value.push("poincare");
+  // }
   lowerHyperboloidMesh.name = "Lower Sheet";
   upperHyperboloidMesh.name = "Upper Sheet";
   lowerHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.lowerSheet);
@@ -443,15 +436,15 @@ function initialize() {
   scene.add(upperHyperboloidMesh);
   scene.add(lowerHyperboloidMesh);
 
-  unitSphere.name = "Unit Sphere";
-  unitSphere.layers.set(HYPERBOLIC_LAYER.unitSphere);
-  scene.add(unitSphere);
-  if (showSphere.value) {
-    rayCaster.layers.enable(HYPERBOLIC_LAYER.unitSphere);
-  }
+  // unitSphere.name = "Unit Sphere";
+  // unitSphere.layers.set(HYPERBOLIC_LAYER.unitSphere);
+  // scene.add(unitSphere);
+  // if (showSphere.value) {
+  //   rayCaster.layers.enable(HYPERBOLIC_LAYER.unitSphere);
+  // }
 
   /* Show Klein disk? */
-  scene.add(kleinDisk);
+  // scene.add(kleinDisk);
 }
 
 function doRender() {
@@ -489,39 +482,39 @@ watch(
         break;
       case "line":
         if (lineTool === null) lineTool = new LineHandler(scene);
-        if (sphericalLineTool === null)
-          sphericalLineTool = new SphericalLineHandler(scene, unitSphere, true);
-        if (kleinLineTool === null)
-          kleinLineTool = new KleinLineHandler(scene, kleinDisk, true);
-        if (poincareTool === null)
-          poincareTool = new PoincareLineHandler(scene, poincareDisk, true);
+        // if (sphericalLineTool === null)
+        //   sphericalLineTool = new SphericalLineHandler(scene, unitSphere, true);
+        // if (kleinLineTool === null)
+        //   kleinLineTool = new KleinLineHandler(scene, kleinDisk, true);
+        // if (poincareTool === null)
+        //   poincareTool = new PoincareLineHandler(scene, poincareDisk, true);
 
         // Extend the line to the end of the hyperboloid
         lineTool.setInfiniteMode(true);
         console.debug("Add PoincareTool");
         currentTools.push(lineTool);
-        currentTools.push(sphericalLineTool);
-        currentTools.push(kleinLineTool);
-        currentTools.push(poincareTool);
+        // currentTools.push(sphericalLineTool);
+        // currentTools.push(kleinLineTool);
+        // currentTools.push(poincareTool);
         break;
       case "segment":
         if (lineTool === null) lineTool = new LineHandler(scene);
-        if (sphericalLineTool === null)
-          sphericalLineTool = new SphericalLineHandler(
-            scene,
-            unitSphere,
-            false
-          );
-        if (kleinLineTool === null)
-          kleinLineTool = new KleinLineHandler(scene, kleinDisk, false);
-        if (poincareTool === null)
-          poincareTool = new PoincareLineHandler(scene, poincareDisk, false);
+        // if (sphericalLineTool === null)
+        //   sphericalLineTool = new SphericalLineHandler(
+        //     scene,
+        //     unitSphere,
+        //     false
+        //   );
+        // if (kleinLineTool === null)
+        //   kleinLineTool = new KleinLineHandler(scene, kleinDisk, false);
+        // if (poincareTool === null)
+        //   poincareTool = new PoincareLineHandler(scene, poincareDisk, false);
         // Constrain the line to fit between the two end points
         lineTool.setInfiniteMode(false);
         currentTools.push(lineTool);
-        currentTools.push(sphericalLineTool);
-        currentTools.push(kleinLineTool);
-        currentTools.push(poincareTool);
+        // currentTools.push(sphericalLineTool);
+        // currentTools.push(kleinLineTool);
+        // currentTools.push(poincareTool);
         break;
       // case "text":
       //   if (textTool === null) textTool = new TextHandler(scene);
@@ -743,19 +736,28 @@ function threeMouseTracker(ev: MouseEvent) {
   renderer.render(scene, camera);
 }
 
-// Parametric function for the upper sheet of the hyperboloid in polar coordinates 0 <= u <= 1 and 0 <= v <= 1
+// Parametric function for the upper sheet of the hyperboloid where 0 <= u <= 1 and 0 <= v <= 1, the point is returned in pt
 function hyperboloidPlus(u: number, v: number, pt: Vector3) {
-  const scale = 3;
-  const myU = 2 * scale * u - scale; // map to -scale <= u <= scale
-  const myV = 2 * scale * v - scale; // map to -scale <= v <= scale
-  const x = Math.sinh(myU) * Math.cosh(myV);
-  const y = Math.sinh(myV);
-  const z = Math.cosh(myU) * Math.cosh(myV);
+  // This is a one-to-one mapping from R^2 to a sheet of the hyperboloid.
+  // https://math.stackexchange.com/questions/697245/parametrization-of-the-hyperboloid-of-two-sheets
+  // Maybe this is useful if we run into multi-value issues
+  // The edges of this do not form a rectangle in 3D
+  // const scale = 3;
+  // const myU = 2 * scale * u - scale; // map to -scale <= u <= scale
+  // const myV = 2 * scale * v - scale; // map to -scale <= v <= scale
+  // const x = Math.sinh(myU) * Math.cosh(myV);
+  // const y = Math.sinh(myV);
+  // const z = Math.cosh(myU) * Math.cosh(myV);
 
-  // const theta = v * 2 * Math.PI;
-  // const x = Math.sinh(2 * u) * Math.cos(theta);
-  // const y = Math.sinh(2 * u) * Math.sin(theta);
-  // const z = Math.cosh(2 * u);
+  // This is the standard polar coordinate parameterization
+  // https://en.wikipedia.org/wiki/Hyperboloid_of_two_sheets#Parametrization
+  // where u is the radial coordinate and v is the angular coordinate
+  const scale = 2;
+  u = u * scale; // map to 0 <= u <= scale
+  const theta = v * 2 * Math.PI;
+  const x = Math.sinh(u) * Math.cos(theta);
+  const y = Math.sinh(u) * Math.sin(theta);
+  const z = Math.cosh(u);
   pt.set(x, y, z);
 }
 
