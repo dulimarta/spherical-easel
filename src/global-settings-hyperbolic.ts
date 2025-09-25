@@ -1,9 +1,9 @@
 import colors from "vuetify/util/colors";
 export const SETTINGS = {
-  Z_MAX: 10 // Maximum z-coordinate for points in the upper sheet, negative for lower sheet
+  Z_MAX: Math.acosh(10) // Maximum z-coordinate for points in the upper sheet, negative for lower sheet
 };
 export enum HYPERBOLIC_LAYER {
-  // ThreeJS constraint: max 32 layers
+  // These are not layers in the sense of spherical easel. They are groups of objects that can be added or removed from the scene. ThreeJS constraint: max 32 layers
   upperSheet,
   upperSheetPoints,
   upperSheetLines,

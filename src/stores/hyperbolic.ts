@@ -15,7 +15,7 @@ import { markRaw } from "vue";
 import { ref, Ref } from "vue";
 import { useThreeFont } from "@/composables/useThreeFont";
 import { HELine } from "@/models-hyperbolic/HELine";
-import { HYPERBOLIC_LAYER } from "@/global-settings-spherical";
+import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import { Text } from "troika-three-text";
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const surfaceIntersections: Ref<Intersection[]> = ref([]);

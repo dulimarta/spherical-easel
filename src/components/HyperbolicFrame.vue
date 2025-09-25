@@ -154,18 +154,20 @@ import { HyperbolicToolStrategy } from "@/eventHandlers-hyperbolic/ToolStrategy"
 import { PointHandler } from "@/eventHandlers-hyperbolic/PointHandler";
 import { useSEStore } from "@/stores/se";
 import { LineHandler } from "@/eventHandlers-hyperbolic/LineHandler";
-import { SphericalLineHandler } from "@/eventHandlers-hyperbolic/SphericalLineHandler";
+// import { SphericalLineHandler } from "@/eventHandlers-hyperbolic/SphericalLineHandler";
 import { createGridCircle } from "@/plottables-hyperbolic/MeshFactory";
 import { onBeforeMount } from "vue";
 import { TextHandler } from "@/eventHandlers-hyperbolic/TextHandler";
 import { Text } from "troika-three-text";
-import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
+
 import { useIdle } from "@vueuse/core";
-import { KleinLineHandler } from "@/eventHandlers-hyperbolic/KleinLineHandler";
-import { PoincareLineHandler } from "@/eventHandlers-hyperbolic/PoincareLineHandler";
+// import { KleinLineHandler } from "@/eventHandlers-hyperbolic/KleinLineHandler";
+// import { PoincareLineHandler } from "@/eventHandlers-hyperbolic/PoincareLineHandler";
 import { reactive } from "vue";
 import { DispatcherEvent } from "camera-controls/dist/EventDispatcher";
 import { CircleHandler } from "@/eventHandlers-hyperbolic/CircleHandler";
+import SETTINGS, { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
+
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
 const { idle } = useIdle(250); // in milliseconds
@@ -182,7 +184,7 @@ const hasUpdatedCameraControls = ref(false);
 const visibleLayers: Ref<string[]> = ref([]);
 const showKleinDisk = ref(false);
 const showPoincareDisk = ref(true);
-const showSphere = ref(false);
+// const showSphere = ref(false);
 const showLowerSheet = ref(true);
 type ImportantSurface = "Upper" | "Lower" | "Sphere" | null;
 let onSurface: Ref<ImportantSurface> = ref(null);
@@ -752,8 +754,7 @@ function hyperboloidPlus(u: number, v: number, pt: Vector3) {
   // This is the standard polar coordinate parameterization
   // https://en.wikipedia.org/wiki/Hyperboloid_of_two_sheets#Parametrization
   // where u is the radial coordinate and v is the angular coordinate
-  const scale = 2;
-  u = u * scale; // map to 0 <= u <= scale
+  u = u * SETTINGS.Z_MAX; // map to 0 <= u <= SETTINGS.Z_MAX
   const theta = v * 2 * Math.PI;
   const x = Math.sinh(u) * Math.cos(theta);
   const y = Math.sinh(u) * Math.sin(theta);
@@ -763,10 +764,11 @@ function hyperboloidPlus(u: number, v: number, pt: Vector3) {
 
 // Parametric function for the lower sheet of the hyperboloid in polar coordinates 0 <= u <= 1 and 0 <= v <= 1
 function hyperboloidMinus(u: number, v: number, pt: Vector3) {
+  u = u * SETTINGS.Z_MAX; // map to 0 >= u >= -SETTINGS.Z_MAX
   const theta = v * 2 * Math.PI;
-  const x = Math.sinh(2 * u) * Math.cos(theta);
-  const y = Math.sinh(2 * u) * Math.sin(theta);
-  const z = -Math.cosh(2 * u);
+  const x = Math.sinh(u) * Math.cos(theta);
+  const y = Math.sinh(u) * Math.sin(theta);
+  const z = -Math.cosh(u);
   pt.set(x, y, z);
 }
 </script>

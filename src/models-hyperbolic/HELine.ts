@@ -7,7 +7,7 @@ import {
 } from "three";
 import { HENodule } from "./HENodule";
 import { HyperbolicCurve } from "@/plottables-hyperbolic/HyperbolicCurve";
-import { HYPERBOLIC_LAYER } from "@/global-settings-spherical";
+import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 
 const ORIGIN = new Vector3();
 const Z_AXIS = new Vector3(0, 0, 1);
