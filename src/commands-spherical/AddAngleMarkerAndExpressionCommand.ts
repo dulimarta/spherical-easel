@@ -1,10 +1,10 @@
 import { Command } from "./Command";
-import { SEPoint } from "@/models/SEPoint";
-import { SELabel } from "@/models/SELabel";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SELine } from "@/models/SELine";
-import { SESegment } from "@/models/SESegment";
-import { SENodule } from "@/models/SENodule";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
+import { SELine } from "@/models-spherical/SELine";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
 import { AngleMode, SavedNames, ValueDisplayMode } from "@/types";
 import { StyleCategory } from "@/types/Styles";

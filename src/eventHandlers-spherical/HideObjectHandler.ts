@@ -1,13 +1,13 @@
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import Highlighter from "./Highlighter";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { SetNoduleDisplayCommand } from "@/commands-spherical/SetNoduleDisplayCommand";
-import { SEPoint } from "@/models/SEPoint";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
-import { SELabel } from "@/models/SELabel";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 
 export default class HideObjectHandler extends Highlighter {
   /**

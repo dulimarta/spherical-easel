@@ -1,9 +1,9 @@
 import { Command } from "./Command";
-import { SELabel } from "@/models/SELabel";
-import { SENodule } from "@/models/SENodule";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Matrix4, Vector3 } from "three";
-import { SEParametric } from "@/models/SEParametric";
-import { SEExpression } from "@/models/SEExpression";
+import { SEParametric } from "@/models-spherical/SEParametric";
+import { SEExpression } from "@/models-spherical/SEExpression";
 import {
   CoordExpression,
   MinMaxExpression,

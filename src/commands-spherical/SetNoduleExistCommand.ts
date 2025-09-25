@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Labelable } from "@/types";
 import SETTINGS from "@/global-settings";
 import { toSVGType } from "@/types";

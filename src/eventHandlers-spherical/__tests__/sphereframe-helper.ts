@@ -3,7 +3,7 @@ import { VueWrapper } from "@vue/test-utils";
 
 export const TEST_MOUSE_X = 111;
 export const TEST_MOUSE_Y = 137;
-import { SEPoint } from "../../models/SEPoint";
+import { SEPoint } from "../../models-spherical/SEPoint";
 import { ActionMode } from "../../types";
 import { SEStoreType } from "../../stores/se";
 
@@ -67,7 +67,7 @@ export async function makePoint(
   store: SEStoreType,
   isBackground: boolean
 ): Promise<SEPoint> {
-  store.setActionMode("point")
+  store.setActionMode("point");
   await drawPointAt(wrapper, TEST_MOUSE_X, TEST_MOUSE_Y, isBackground);
   const count = store.sePoints.length;
   // The most recent point
@@ -86,7 +86,7 @@ export async function makePoint(
  * @returns
  */
 export async function dragMouse(
-  wrapper:VueWrapper,
+  wrapper: VueWrapper,
   fromXScreen: number,
   fromYScreen: number,
   fromBg: boolean,

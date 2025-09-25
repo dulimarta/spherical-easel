@@ -56,18 +56,18 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, Ref } from "vue";
 import * as THREE from "three";
-import { SELabel } from "@/models/SELabel";
+import { SELabel } from "@/models-spherical/SELabel";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { AddEarthPointCommand } from "@/commands-spherical/AddEarthPointCommand";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
-import { SEEarthPoint } from "@/models/SEEarthPoint";
+import { SEEarthPoint } from "@/models-spherical/SEEarthPoint";
 import { Loader } from "@googlemaps/js-api-loader";
 import { useI18n } from "vue-i18n";
 import { useEarthCoordinate } from "@/composables/earth";
-// import { SEParametric } from "@/models/SEParametric";
-// import { SEPoint } from "@/models/SEPoint";
-import EventBus from "@/eventHandlers/EventBus";
+// import { SEParametric } from "@/models-spherical/SEParametric";
+// import { SEPoint } from "@/models-spherical/SEPoint";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 type ComponentProps = {
   isLine?: boolean;
   drawLine?: boolean;

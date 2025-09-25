@@ -1,7 +1,7 @@
 import { ActionMode, ToolButtonType } from "@/types";
 import { Command } from "@/commands-spherical/Command";
-import EventBus from "@/eventHandlers/EventBus";
-import MouseHandler from "@/eventHandlers/MouseHandler";
+import EventBus from "@/eventHandlers-spherical/EventBus";
+import MouseHandler from "@/eventHandlers-spherical/MouseHandler";
 
 // Note: when adding a new tool, will also need to add a new case in SphereFrame.vue switchActionMode()
 export const TOOL_DICTIONARY: Map<ActionMode, ToolButtonType> = new Map();

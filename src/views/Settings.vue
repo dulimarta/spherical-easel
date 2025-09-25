@@ -74,7 +74,7 @@
       </v-window-item>
       <v-window-item>
         <v-sheet elevation="2" class="pa-2">
-          <h3>{{ t('settings.title') }}</h3>
+          <h3>{{ t("settings.title") }}</h3>
           <v-container fluid>
             <v-row>
               <v-col cols="4">
@@ -129,8 +129,9 @@
       <v-col cols="auto"></v-col>
     </v-row>
   </v-container>
-  <v-snackbar v-model="passwordResetSnackbar" location="top"
-  timeout="5000">A password reset link has been sent to {{ userEmail }}</v-snackbar>
+  <v-snackbar v-model="passwordResetSnackbar" location="top" timeout="5000">
+    A password reset link has been sent to {{ userEmail }}
+  </v-snackbar>
 </template>
 
 <style lang="scss" scoped>
@@ -173,7 +174,7 @@ import {
 } from "firebase/firestore";
 import { UserProfile } from "@/types";
 import FavoriteToolsPicker from "@/components/FavoriteToolsPicker.vue";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { computed, onMounted, Ref, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
@@ -199,7 +200,7 @@ const userDisplayName = ref("");
 const userLocation = ref("");
 const userRole = ref("Community Member");
 const selectedTab = ref(0);
-const passwordResetSnackbar = ref(false)
+const passwordResetSnackbar = ref(false);
 // eslint-disable-next-line no-unused-vars
 let authSubscription!: Unsubscribe;
 const profileEnabled = ref(false);
@@ -266,13 +267,15 @@ function doSave(): void {
 
 function doChangePassword(): void {
   if (userEmail.value)
-    sendPasswordResetEmail(appAuth, userEmail.value).then(() => {
-      EventBus.fire("show-alert", {
-        key: "A password reset link has been delivered by email",
-        type: "info"
+    sendPasswordResetEmail(appAuth, userEmail.value)
+      .then(() => {
+        EventBus.fire("show-alert", {
+          key: "A password reset link has been delivered by email",
+          type: "info"
+        });
+      })
+      .finally(() => {
+        passwordResetSnackbar.value = true;
       });
-    }).finally(() => {
-      passwordResetSnackbar.value = true
-    });
 }
 </script>

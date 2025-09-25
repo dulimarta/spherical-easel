@@ -5,7 +5,7 @@ import MouseHandler from "./MouseHandler";
 import EventBus from "./EventBus";
 import SETTINGS from "@/global-settings";
 
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 
 export enum ZoomMode {
   MAGNIFY,

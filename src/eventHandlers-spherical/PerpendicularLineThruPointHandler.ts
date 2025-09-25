@@ -1,10 +1,10 @@
 import Highlighter from "./Highlighter";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { AddPerpendicularLineThruPointCommand } from "@/commands-spherical/AddPerpendicularLineThruPointCommand";
-import { SELine } from "@/models/SELine";
-import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
-import { SELabel } from "@/models/SELabel";
+import { SELine } from "@/models-spherical/SELine";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SELabel } from "@/models-spherical/SELabel";
 import {
   SEOneDimensional,
   SEOneOrTwoDimensional,
@@ -12,25 +12,25 @@ import {
   NormalAndPerpendicularPoint
 } from "@/types";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
-import { SEPoint } from "@/models/SEPoint";
+import { SEPoint } from "@/models-spherical/SEPoint";
 import { Vector3 } from "three";
-import Line from "@/plottables/Line";
-import Point from "@/plottables/Point";
-import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
+import Line from "@/plottables-spherical/Line";
+import Point from "@/plottables-spherical/Point";
+import { SEPerpendicularLineThruPoint } from "@/models-spherical/SEPerpendicularLineThruPoint";
 import SETTINGS from "@/global-settings";
 import { AddIntersectionPointCommand } from "@/commands-spherical/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands-spherical/AddPointOnOneOrTwoDimensionalCommand";
-import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
+import { SEPointOnOneOrTwoDimensional } from "@/models-spherical/SEPointOnOneOrTwoDimensional";
 import { AddPointCommand } from "@/commands-spherical/AddPointCommand";
 import EventBus from "./EventBus";
-import { SEEllipse } from "@/models/SEEllipse";
-import { SEParametric } from "@/models/SEParametric";
-import { SEPencil } from "@/models/SEPencil";
+import { SEEllipse } from "@/models-spherical/SEEllipse";
+import { SEParametric } from "@/models-spherical/SEParametric";
+import { SEPencil } from "@/models-spherical/SEPencil";
 import { AddPencilCommand } from "@/commands-spherical/AddPencilCommand";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParentsInfo } from "@/commands-spherical/AddIntersectionPointOtherParentsInfo";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands-spherical/SetPointUserCreatedValueCommand";
 
 type TemporaryPlottable = {

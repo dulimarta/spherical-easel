@@ -1,10 +1,10 @@
 import { Command } from "./Command";
-import { SELabel } from "@/models/SELabel";
+import { SELabel } from "@/models-spherical/SELabel";
 import { Vector3 } from "three";
 import { SavedNames } from "@/types";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { StyleCategory } from "@/types/Styles";
-import { SELongitude } from "@/models/SELongitude";
+import { SELongitude } from "@/models-spherical/SELongitude";
 import { toSVGType } from "@/types";
 
 export class AddLongitudeCommand extends Command {

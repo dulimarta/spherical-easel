@@ -1,12 +1,12 @@
 import { Command } from "./Command";
-import { SENodule } from "@/models/SENodule";
-import { SEExpression } from "@/models/SEExpression";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SEExpression } from "@/models-spherical/SEExpression";
 import { AddExpressionCommand } from "./AddExpressionCommand";
-import { SEPoint } from "@/models/SEPoint";
+import { SEPoint } from "@/models-spherical/SEPoint";
 import {
   CoordinateSelection,
   SEPointCoordinate
-} from "@/models/SEPointCoordinate";
+} from "@/models-spherical/SEPointCoordinate";
 import { SavedNames } from "@/types";
 import { toSVGType } from "@/types";
 

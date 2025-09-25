@@ -9,7 +9,7 @@
  * the actual action of the command.
  */
 
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { Matrix4, Vector3 } from "three";
 import { SEStoreType } from "@/stores/se";
 import { HEStoreType } from "@/stores/hyperbolic";
@@ -20,8 +20,8 @@ import {
   toSVGType
 } from "@/types/index";
 import SETTINGS, { LAYER } from "@/global-settings";
-import { SENodule } from "@/models/SENodule";
-import { SELabel } from "@/models/SELabel";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SELabel } from "@/models-spherical/SELabel";
 
 export abstract class Command {
   protected static store: SEStoreType;

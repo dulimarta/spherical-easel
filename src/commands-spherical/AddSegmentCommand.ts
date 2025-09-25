@@ -1,9 +1,9 @@
 import { Command } from "./Command";
-import { SESegment } from "@/models/SESegment";
-import { SEPoint } from "@/models/SEPoint";
-import { SELabel } from "@/models/SELabel";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SELabel } from "@/models-spherical/SELabel";
 import { Vector3 } from "three";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
 import { toSVGType } from "@/types";

@@ -1,11 +1,10 @@
 import { Command } from "./Command";
-import { SEExpression } from "@/models/SEExpression";
-import { SENodule } from "@/models/SENodule";
-import { SECalculation } from "@/models/SECalculation";
+import { SEExpression } from "@/models-spherical/SEExpression";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SECalculation } from "@/models-spherical/SECalculation";
 import { AddExpressionCommand } from "./AddExpressionCommand";
 import { SavedNames, ValueDisplayMode } from "@/types";
 import { toSVGType } from "@/types";
-
 
 export class AddCalculationCommand extends AddExpressionCommand {
   // private seExpression: SEExpression;
@@ -24,8 +23,6 @@ export class AddCalculationCommand extends AddExpressionCommand {
     super(seExpression, parents);
     this.arithmeticExpression = arithmeticExpression;
   }
-
-
 
   toOpcode(): null | string | Array<string> {
     return [

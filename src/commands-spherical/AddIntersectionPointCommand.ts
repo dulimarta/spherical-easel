@@ -1,8 +1,8 @@
 import { Command } from "./Command";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { SavedNames, SEOneDimensional, SEOneOrTwoDimensional } from "@/types";
-import { SELabel } from "@/models/SELabel";
-import { SENodule } from "@/models/SENodule";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { toSVGType } from "@/types";

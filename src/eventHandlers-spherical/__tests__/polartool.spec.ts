@@ -5,7 +5,7 @@ import SphereFrame from "@/components/SphereFrame.vue";
 import { createWrapper } from "$/vue-helper";
 import { SEStoreType, useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import Handler from "../PolarObjectHandler";
 import { Command } from "@/commands-spherical/Command";
 

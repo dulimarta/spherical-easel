@@ -1,8 +1,8 @@
 import { Command } from "./Command";
-import { SENodule } from "@/models/SENodule";
-import { SECircle } from "@/models/SECircle";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SECircle } from "@/models-spherical/SECircle";
 import { SavedNames } from "@/types";
-import { SEInversion } from "@/models/SEInversion";
+import { SEInversion } from "@/models-spherical/SEInversion";
 import { toSVGType } from "@/types";
 
 export class AddInversionCommand extends Command {

@@ -1,5 +1,5 @@
 import { SENodule } from "./SENodule";
-import Ellipse from "@/plottables/Ellipse";
+import Ellipse from "@/plottables-spherical/Ellipse";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
@@ -15,10 +15,10 @@ import {
   DEFAULT_ELLIPSE_FRONT_STYLE
 } from "@/types/Styles";
 import { Labelable } from "@/types";
-// import { SELabel } from "@/models/SELabel";
+// import { SELabel } from "@/models-spherical/SELabel";
 import i18n from "@/i18n";
-import NonFreeEllipse from "@/plottables/NonFreeEllipse";
-import { DisplayStyle } from "@/plottables/Nodule";
+import NonFreeEllipse from "@/plottables-spherical/NonFreeEllipse";
+import { DisplayStyle } from "@/plottables-spherical/Nodule";
 import { SELabel } from "./SELabel";
 import { SEPoint } from "./SEPoint";
 const { t } = i18n.global;
@@ -33,7 +33,7 @@ export class SEEllipse
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public declare ref: Ellipse;
+  declare public ref: Ellipse;
   /**
    * Pointer to the label of this SESegment
    */

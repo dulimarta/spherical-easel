@@ -146,7 +146,7 @@
 </template>
 
 <script setup lang="ts">
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { ref, Ref, computed, onMounted } from "vue";
 import SETTINGS from "@/global-settings";
 import { useI18n } from "vue-i18n";

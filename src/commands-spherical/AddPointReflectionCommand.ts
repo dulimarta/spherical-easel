@@ -1,8 +1,8 @@
 import { Command } from "./Command";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { SavedNames } from "@/types";
-import { SEPointReflection } from "@/models/SEPointReflection";
-import { SEPoint } from "@/models/SEPoint";
+import { SEPointReflection } from "@/models-spherical/SEPointReflection";
+import { SEPoint } from "@/models-spherical/SEPoint";
 import { toSVGType } from "@/types";
 
 export class AddPointReflectionCommand extends Command {

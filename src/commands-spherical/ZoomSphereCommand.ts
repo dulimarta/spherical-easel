@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { toSVGReturnType, toSVGType } from "@/types";
 
 export class ZoomSphereCommand extends Command {

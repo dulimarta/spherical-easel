@@ -1,13 +1,13 @@
 import { Command } from "./Command";
-import { SECircle } from "@/models/SECircle";
-import { SEPoint } from "@/models/SEPoint";
-import { SELabel } from "@/models/SELabel";
-import { SENodule } from "@/models/SENodule";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
-import { SEExpression } from "@/models/SEExpression";
-import { SEMeasuredCircle } from "@/models/SEMeasuredCircle";
+import { SEExpression } from "@/models-spherical/SEExpression";
+import { SEMeasuredCircle } from "@/models-spherical/SEMeasuredCircle";
 import { toSVGType } from "@/types";
 
 export class AddMeasuredCircleCommand extends Command {

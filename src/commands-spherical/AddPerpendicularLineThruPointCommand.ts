@@ -1,9 +1,9 @@
 import { Command } from "./Command";
-import { SEPoint } from "@/models/SEPoint";
-import { SELabel } from "@/models/SELabel";
-import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SEPerpendicularLineThruPoint } from "@/models-spherical/SEPerpendicularLineThruPoint";
 import { SavedNames, SEOneDimensional } from "@/types";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 

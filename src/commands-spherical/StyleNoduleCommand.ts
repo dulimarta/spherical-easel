@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import Nodule from "@/plottables/Nodule";
+import Nodule from "@/plottables-spherical/Nodule";
 import { StyleOptions, StyleCategory } from "../types/Styles";
 import { toSVGType } from "@/types";
 

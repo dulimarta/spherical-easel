@@ -1,8 +1,8 @@
 import { Command } from "./Command";
-import { SEExpression } from "../models/SEExpression";
+import { SEExpression } from "../models-spherical/SEExpression";
 
 import { SavedNames, ValueDisplayMode } from "../types";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { toSVGType } from "@/types";
 
 export class SetValueDisplayModeCommand extends Command {

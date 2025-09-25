@@ -1,12 +1,12 @@
 import { Command } from "./Command";
-import { SELabel } from "@/models/SELabel";
-import { SENodule } from "@/models/SENodule";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
-import { SETransformedPoint } from "@/models/SETransformedPoint";
-import { SEEllipse } from "@/models/SEEllipse";
-import { SEIsometryEllipse } from "@/models/SEIsometryEllipse";
+import { SETransformedPoint } from "@/models-spherical/SETransformedPoint";
+import { SEEllipse } from "@/models-spherical/SEEllipse";
+import { SEIsometryEllipse } from "@/models-spherical/SEIsometryEllipse";
 import { toSVGType } from "@/types";
 
 export class AddIsometryEllipseCommand extends Command {

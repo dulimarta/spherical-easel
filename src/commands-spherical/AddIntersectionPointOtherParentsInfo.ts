@@ -5,10 +5,10 @@ import {
   SEOneDimensional,
   toSVGType
 } from "@/types";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SENodule } from "@/models/SENodule";
-import { SELine } from "@/models/SELine";
-import { SESegment } from "@/models/SESegment";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SELine } from "@/models-spherical/SELine";
+import { SESegment } from "@/models-spherical/SESegment";
 
 export class AddIntersectionPointOtherParentsInfo extends Command {
   private otherParentsInfo: SEIntersectionReturnType;

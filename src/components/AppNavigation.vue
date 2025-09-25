@@ -117,7 +117,7 @@ import {
   inject
 } from "vue";
 import ToolGroups from "@/components/ToolGroups.vue";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import ObjectTree from "./ObjectTree.vue";
 import ConstructionLoader from "./ConstructionLoader.vue";
 import EarthToolVue from "@/components/EarthTool.vue";

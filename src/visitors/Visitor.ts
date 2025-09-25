@@ -1,14 +1,14 @@
-import { SEPoint } from "@/models/SEPoint";
-import { SELine } from "@/models/SELine";
-import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
-import { SELabel } from "@/models/SELabel";
-import { SEEllipse } from "@/models/SEEllipse";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SEParametric } from "@/models/SEParametric";
-import { SEPolygon } from "@/models/SEPolygon";
-import { SEText } from "@/models/SEText";
-// import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SELine } from "@/models-spherical/SELine";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SEEllipse } from "@/models-spherical/SEEllipse";
+import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
+import { SEParametric } from "@/models-spherical/SEParametric";
+import { SEPolygon } from "@/models-spherical/SEPolygon";
+import { SEText } from "@/models-spherical/SEText";
+// import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
 /**
  * Use the Visitor design pattern to apply operation on different types
  * of geometric objects. The non-abstract class that implements this

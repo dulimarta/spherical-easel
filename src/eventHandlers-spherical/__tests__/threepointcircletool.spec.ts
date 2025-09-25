@@ -10,10 +10,10 @@ import {
   drawThreePointCircle
 } from "./sphereframe-helper";
 import SETTINGS from "@/global-settings";
-import { SECircle } from "@/models/SECircle";
+import { SECircle } from "@/models-spherical/SECircle";
 import { Vector3 } from "three";
 import { createTestingPinia } from "@pinia/testing";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import Handler from "../CircleHandler";
 import { Command } from "@/commands-spherical/Command";
 const R = SETTINGS.boundaryCircle.radius;

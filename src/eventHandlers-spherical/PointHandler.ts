@@ -1,18 +1,18 @@
-import { SEPoint } from "@/models/SEPoint";
-import Point from "@/plottables/Point";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import Point from "@/plottables-spherical/Point";
 import { AddPointCommand } from "@/commands-spherical/AddPointCommand";
 import Highlighter from "./Highlighter";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
+import { SEPointOnOneOrTwoDimensional } from "@/models-spherical/SEPointOnOneOrTwoDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands-spherical/AddPointOnOneOrTwoDimensionalCommand";
-import { SELabel } from "@/models/SELabel";
+import { SELabel } from "@/models-spherical/SELabel";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import EventBus from "./EventBus";
 import { SEOneOrTwoDimensional } from "@/types";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { SetPointUserCreatedValueCommand } from "@/commands-spherical/SetPointUserCreatedValueCommand";
 

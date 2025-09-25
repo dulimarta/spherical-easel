@@ -12,8 +12,8 @@ import {
   drawOneDimensional,
   drawPointAt
 } from "./sphereframe-helper";
-import { SENodule } from "@/models/SENodule";
-import { SEPoint } from "@/models/SEPoint";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SEPoint } from "@/models-spherical/SEPoint";
 import { Command } from "@/commands-spherical/Command";
 import Handler from "../PerpendicularLineThruPointHandler";
 import SETTINGS from "@/global-settings";

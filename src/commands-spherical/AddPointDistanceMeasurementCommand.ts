@@ -1,8 +1,8 @@
 import { Command } from "./Command";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { AddExpressionCommand } from "./AddExpressionCommand";
-import { SEPoint } from "@/models/SEPoint";
-import { SEPointDistance } from "@/models/SEPointDistance";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SEPointDistance } from "@/models-spherical/SEPointDistance";
 import { SavedNames, ValueDisplayMode } from "@/types";
 import { toSVGType } from "@/types";
 

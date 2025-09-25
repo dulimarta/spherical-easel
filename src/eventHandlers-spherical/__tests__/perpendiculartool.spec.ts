@@ -5,7 +5,7 @@ import { createWrapper } from "$/vue-helper";
 import { SEStoreType, useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
 import { drawOneDimensional, drawPointAt } from "./sphereframe-helper";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Command } from "@/commands-spherical/Command";
 import Handler from "../PerpendicularLineThruPointHandler";
 

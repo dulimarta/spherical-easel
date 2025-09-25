@@ -4,14 +4,14 @@ import { Matrix4, Vector3 } from "three";
 import EventBus from "./EventBus";
 import { RotateSphereCommand } from "@/commands-spherical/RotateSphereCommand";
 import SETTINGS from "@/global-settings";
-import { SEPoint } from "@/models/SEPoint";
-import { SELine } from "@/models/SELine";
-import { SESegment } from "@/models/SESegment";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SELine } from "@/models-spherical/SELine";
+import { SESegment } from "@/models-spherical/SESegment";
 import Highlighter from "./Highlighter";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import i18n from "../i18n";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { SECircle } from "@/models/SECircle";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
+import { SECircle } from "@/models-spherical/SECircle";
 
 const desiredZAxis = new Vector3();
 const deltaT = 1000 / SETTINGS.rotate.momentum.framesPerSecond; // The momentum rotation is refreshed every deltaT milliseconds

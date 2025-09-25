@@ -1,17 +1,17 @@
 import Highlighter from "./Highlighter";
-import { SELabel } from "@/models/SELabel";
+import { SELabel } from "@/models-spherical/SELabel";
 import { SetNoduleDisplayCommand } from "@/commands-spherical/SetNoduleDisplayCommand";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Labelable } from "@/types";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { Command } from "@/commands-spherical/Command";
 import { randInt } from "three/src/math/MathUtils";
 import EventBus from "./EventBus";
-import { SEPoint } from "@/models/SEPoint";
+import { SEPoint } from "@/models-spherical/SEPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands-spherical/SetPointUserCreatedValueCommand";
 
 export default class ToggleLabelDisplayHandler extends Highlighter {

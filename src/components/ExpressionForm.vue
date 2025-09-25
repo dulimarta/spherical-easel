@@ -52,10 +52,10 @@
 </template>
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
-import { SECalculation } from "@/models/SECalculation";
+import { SECalculation } from "@/models-spherical/SECalculation";
 import { AddCalculationCommand } from "@/commands-spherical/AddCalculationCommand";
 import { ExpressionParser } from "@/expression/ExpressionParser";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";

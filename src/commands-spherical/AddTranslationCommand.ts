@@ -1,10 +1,10 @@
 import { Command } from "./Command";
-import { SENodule } from "@/models/SENodule";
-import { SETranslation } from "@/models/SETranslation";
-import { SESegment } from "@/models/SESegment";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SETranslation } from "@/models-spherical/SETranslation";
+import { SESegment } from "@/models-spherical/SESegment";
 import { SavedNames } from "@/types";
-import { SELine } from "@/models/SELine";
-import { SEExpression } from "@/models/SEExpression";
+import { SELine } from "@/models-spherical/SELine";
+import { SEExpression } from "@/models-spherical/SEExpression";
 import { toSVGType } from "@/types";
 
 export class AddTranslationCommand extends Command {

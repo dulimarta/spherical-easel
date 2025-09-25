@@ -1,21 +1,21 @@
-import EventBus from "@/eventHandlers/EventBus";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { SECircle } from "@/models/SECircle";
-import { SEEllipse } from "@/models/SEEllipse";
-import { SEExpression } from "@/models/SEExpression";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SELabel } from "@/models/SELabel";
-import { SELine } from "@/models/SELine";
-import { SENodule } from "@/models/SENodule";
-import { SEParametric } from "@/models/SEParametric";
-import { SEPencil } from "@/models/SEPencil";
-import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
-import { SEPoint } from "@/models/SEPoint";
-import { SEPolygon } from "@/models/SEPolygon";
-import { SESegment } from "@/models/SESegment";
-import { SETransformation } from "@/models/SETransformation";
-import Nodule, { DisplayStyle } from "@/plottables/Nodule";
+import EventBus from "@/eventHandlers-spherical/EventBus";
+import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SEEllipse } from "@/models-spherical/SEEllipse";
+import { SEExpression } from "@/models-spherical/SEExpression";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SELine } from "@/models-spherical/SELine";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SEParametric } from "@/models-spherical/SEParametric";
+import { SEPencil } from "@/models-spherical/SEPencil";
+import { SEPerpendicularLineThruPoint } from "@/models-spherical/SEPerpendicularLineThruPoint";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SEPolygon } from "@/models-spherical/SEPolygon";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SETransformation } from "@/models-spherical/SETransformation";
+import Nodule, { DisplayStyle } from "@/plottables-spherical/Nodule";
 import {
   ActionMode,
   FillStyle,
@@ -52,7 +52,7 @@ import { Matrix4, Vector2, Vector3 } from "three";
 import { Group } from "two.js/src/group";
 import SETTINGS from "@/global-settings";
 import Two from "two.js";
-import { SEText } from "@/models/SEText";
+import { SEText } from "@/models-spherical/SEText";
 import { rank_of_type } from "@/utils/helpingfunctions";
 
 const sePencils: Array<SEPencil> = [];

@@ -45,7 +45,7 @@ import { useSEStore } from "./se";
 import { watch } from "vue";
 import { mergeIntoImageUrl } from "@/utils/helpingfunctions";
 import { watchDebounced } from "@vueuse/core";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 
 let appStorage: FirebaseStorage;
 let appDB: Firestore;

@@ -4,11 +4,11 @@ import {
   SEIntersectionReturnType,
   SEOneDimensional
 } from "@/types";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SENodule } from "@/models/SENodule";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
+import { SENodule } from "@/models-spherical/SENodule";
 import { toSVGType } from "@/types";
-import { SELine } from "@/models/SELine";
-import { SESegment } from "@/models/SESegment";
+import { SELine } from "@/models-spherical/SELine";
+import { SESegment } from "@/models-spherical/SESegment";
 
 export class ChangeIntersectionPointPrincipleParents extends Command {
   private oldParentInfo: SEIntersectionReturnType;

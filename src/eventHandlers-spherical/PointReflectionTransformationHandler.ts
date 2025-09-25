@@ -1,21 +1,21 @@
 import Highlighter from "./Highlighter";
-import EventBus from "@/eventHandlers/EventBus";
-import { SEPoint } from "@/models/SEPoint";
-import { SEPointReflection } from "@/models/SEPointReflection";
+import EventBus from "@/eventHandlers-spherical/EventBus";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SEPointReflection } from "@/models-spherical/SEPointReflection";
 import { AddPointReflectionCommand } from "@/commands-spherical/AddPointReflectionCommand";
 import { Vector3 } from "three";
 import { SEOneOrTwoDimensional } from "@/types";
-import Point from "@/plottables/Point";
+import Point from "@/plottables-spherical/Point";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
-import { SELabel } from "@/models/SELabel";
-import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SEPointOnOneOrTwoDimensional } from "@/models-spherical/SEPointOnOneOrTwoDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands-spherical/AddPointOnOneOrTwoDimensionalCommand";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { AddPointCommand } from "@/commands-spherical/AddPointCommand";
 import SETTINGS from "@/global-settings";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands-spherical/SetPointUserCreatedValueCommand";
 
 export default class PointReflectionTransformationHandler extends Highlighter {

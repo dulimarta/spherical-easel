@@ -9,7 +9,7 @@ import {
   DEFAULT_NONFREEPOINT_FRONT_STYLE,
   DEFAULT_NONFREEPOINT_BACK_STYLE
 } from "@/types/Styles";
-import Point from "@/plottables/Point";
+import Point from "@/plottables-spherical/Point";
 import { toSVGType } from "@/types";
 
 /**
@@ -33,10 +33,7 @@ export default class NonFreePoint extends Point {
       StyleCategory.Front,
       DEFAULT_NONFREEPOINT_FRONT_STYLE
     );
-    this.styleOptions.set(
-      StyleCategory.Back,
-      DEFAULT_NONFREEPOINT_BACK_STYLE
-    );
+    this.styleOptions.set(StyleCategory.Back, DEFAULT_NONFREEPOINT_BACK_STYLE);
   }
 
   /**
@@ -80,7 +77,7 @@ export default class NonFreePoint extends Point {
 
     this.backPoint.scale =
       (((Point.pointScaleFactor * this.nonFreePointScalePercent) / 100) *
-        (backStyle?.dynamicBackStyle ?? false
+        ((backStyle?.dynamicBackStyle ?? false)
           ? Nodule.contrastPointRadiusPercent(radiusPercentFront)
           : radiusPercentBack)) /
       100;
@@ -92,7 +89,7 @@ export default class NonFreePoint extends Point {
 
     this.glowingBackPoint.scale =
       (((Point.pointScaleFactor * this.nonFreePointScalePercent) / 100) *
-        (backStyle?.dynamicBackStyle ?? false
+        ((backStyle?.dynamicBackStyle ?? false)
           ? Nodule.contrastStrokeWidthPercent(radiusPercentFront)
           : radiusPercentBack)) /
       100;

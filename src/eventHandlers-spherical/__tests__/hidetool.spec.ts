@@ -11,7 +11,7 @@ import {
   mouseClickOnSphere
 } from "./sphereframe-helper";
 import SETTINGS from "@/global-settings";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
 import { Command } from "@/commands-spherical/Command";
 import Handler from "../HideObjectHandler";

@@ -1,4 +1,4 @@
-import Point from "../plottables/Point";
+import Point from "../plottables-spherical/Point";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SENodule } from "./SENodule";
@@ -15,8 +15,8 @@ import { Labelable, ObjectState } from "@/types";
 // => RotationVisitor => SEPointOnOneDimensional => SEPoint (again)
 // import { SEStore } from "@/store";
 import i18n from "@/i18n";
-import NonFreePoint from "@/plottables/NonFreePoint";
-import { DisplayStyle } from "@/plottables/Nodule";
+import NonFreePoint from "@/plottables-spherical/NonFreePoint";
+import { DisplayStyle } from "@/plottables-spherical/Nodule";
 import { SELabel } from "./SELabel";
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_POINT_FRONT_STYLE),
@@ -25,7 +25,7 @@ const styleSet = new Set([
 
 export class SEPoint extends SENodule implements Visitable, Labelable {
   /* This should be the only reference to the plotted version of this SEPoint */
-  public declare ref: Point;
+  declare public ref: Point;
 
   /**
    * This determines if a point has been visible before so that the

@@ -1,4 +1,4 @@
-import Label from "../plottables/Label";
+import Label from "../plottables-spherical/Label";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SENodule } from "./SENodule";

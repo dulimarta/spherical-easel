@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts" setup>
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { useSEStore } from "@/stores/se";
 import { ToolButtonType } from "@/types";
 import { ref, onMounted, onBeforeUnmount } from "vue";

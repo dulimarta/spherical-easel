@@ -10,7 +10,7 @@ import {
 import { ObjectState, ValueDisplayMode } from "@/types";
 import { Labelable } from "@/types";
 import i18n from "@/i18n";
-import Polygon from "@/plottables/Polygon";
+import Polygon from "@/plottables-spherical/Polygon";
 import { SEExpression } from "./SEExpression";
 import { SESegment } from "./SESegment";
 import { SEAngleMarker } from "./SEAngleMarker";
@@ -25,7 +25,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public declare ref: Polygon;
+  declare public ref: Polygon;
   /**
    * Pointer to the label of this SEPolygon
    */

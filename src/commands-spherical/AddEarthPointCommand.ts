@@ -1,11 +1,11 @@
 import { Command } from "./Command";
-import { SEPoint } from "@/models/SEPoint";
-import { SELabel } from "@/models/SELabel";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SELabel } from "@/models-spherical/SELabel";
 import { Vector3 } from "three";
 import { SavedNames } from "@/types";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { StyleCategory } from "@/types/Styles";
-import { SEEarthPoint } from "@/models/SEEarthPoint";
+import { SEEarthPoint } from "@/models-spherical/SEEarthPoint";
 import { toSVGType } from "@/types";
 
 export class AddEarthPointCommand extends Command {

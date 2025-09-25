@@ -1,10 +1,10 @@
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import Highlighter from "./Highlighter";
-import { SESegment } from "@/models/SESegment";
+import { SESegment } from "@/models-spherical/SESegment";
 import { AddLengthMeasurementCommand } from "@/commands-spherical/AddLengthMeasurementCommand";
-import { SESegmentLength } from "@/models/SESegmentLength";
-import EventBus from "@/eventHandlers/EventBus";
+import { SESegmentLength } from "@/models-spherical/SESegmentLength";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { StyleNoduleCommand } from "@/commands-spherical/StyleNoduleCommand";

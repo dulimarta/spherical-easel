@@ -6,8 +6,8 @@ import { Vector } from "two.js/src/vector";
 import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
 // import { TextMoverVisitor } from "@/visitors/TextMoverVisitor";
-import Text from "@/plottables/Text";
-import { DisplayStyle } from "@/plottables/Nodule";
+import Text from "@/plottables-spherical/Text";
+import { DisplayStyle } from "@/plottables-spherical/Nodule";
 import {
   // DEFAULT_TEXT_BACK_STYLE,
   // DEFAULT_TEXT_FRONT_STYLE,

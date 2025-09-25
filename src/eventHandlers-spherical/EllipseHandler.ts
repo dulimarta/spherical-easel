@@ -1,27 +1,27 @@
 /** @format */
 
 import { Vector3, Matrix4 } from "three";
-import Point from "@/plottables/Point";
-import Ellipse from "@/plottables/Ellipse";
+import Point from "@/plottables-spherical/Point";
+import Ellipse from "@/plottables-spherical/Ellipse";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { AddPointCommand } from "@/commands-spherical/AddPointCommand";
-import { SEPoint } from "@/models/SEPoint";
+import { SEPoint } from "@/models-spherical/SEPoint";
 import SETTINGS from "@/global-settings";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import Highlighter from "./Highlighter";
-import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
+import { SEPointOnOneOrTwoDimensional } from "@/models-spherical/SEPointOnOneOrTwoDimensional";
 import { AddIntersectionPointCommand } from "@/commands-spherical/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands-spherical/AddPointOnOneOrTwoDimensionalCommand";
 import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 
-import { SELabel } from "@/models/SELabel";
+import { SELabel } from "@/models-spherical/SELabel";
 import EventBus from "./EventBus";
-import { SEEllipse } from "@/models/SEEllipse";
+import { SEEllipse } from "@/models-spherical/SEEllipse";
 import { AddEllipseCommand } from "@/commands-spherical/AddEllipseCommand";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParentsInfo } from "@/commands-spherical/AddIntersectionPointOtherParentsInfo";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands-spherical/SetPointUserCreatedValueCommand";
 const tmpVector = new Vector3();
 

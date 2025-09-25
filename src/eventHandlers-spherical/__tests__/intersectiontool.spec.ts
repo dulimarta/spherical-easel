@@ -6,9 +6,9 @@ import { SEStoreType, useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
 import { mouseClickOnSphere, drawOneDimensional } from "./sphereframe-helper";
 import SETTINGS from "@/global-settings";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SENodule } from "@/models/SENodule";
-import { SEPoint } from "@/models/SEPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SEPoint } from "@/models-spherical/SEPoint";
 import { Command } from "@/commands-spherical/Command";
 import Handler from "../IntersectionPointHandler";
 

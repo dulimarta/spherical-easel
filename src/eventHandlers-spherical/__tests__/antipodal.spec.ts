@@ -14,7 +14,7 @@ import {
 import { createTestingPinia } from "@pinia/testing";
 import MouseHandler from "../Highlighter";
 import { Command } from "@/commands-spherical/Command";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 
 describe("Antipode Tool", () => {
   let wrapper: VueWrapper;

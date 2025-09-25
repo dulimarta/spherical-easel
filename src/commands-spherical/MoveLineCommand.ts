@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import { SELine } from "@/models/SELine";
+import { SELine } from "@/models-spherical/SELine";
 import { Vector3 } from "three";
 import { toSVGType } from "@/types";
 

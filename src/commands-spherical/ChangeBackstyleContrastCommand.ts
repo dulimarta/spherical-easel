@@ -1,7 +1,7 @@
-import Nodule from "@/plottables/Nodule";
+import Nodule from "@/plottables-spherical/Nodule";
 import { Command } from "./Command";
 import { SavedNames, toSVGType } from "@/types";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 
 export class ChangeBackStyleContrastCommand extends Command {
   private currentBackStyleContrast: number;

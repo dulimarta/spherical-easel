@@ -1,21 +1,21 @@
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import Highlighter from "./Highlighter";
 import { Vector3 } from "three";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
-import { SELabel } from "@/models/SELabel";
+import { SELabel } from "@/models-spherical/SELabel";
 import SETTINGS from "@/global-settings";
 import { SEIntersectionReturnType } from "@/types";
-import Line from "@/plottables/Line";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SENSectLine } from "@/models/SENSectLine";
-import { SEPoint } from "@/models/SEPoint";
+import Line from "@/plottables-spherical/Line";
+import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
+import { SENSectLine } from "@/models-spherical/SENSectLine";
+import { SEPoint } from "@/models-spherical/SEPoint";
 import { AddIntersectionPointCommand } from "@/commands-spherical/AddIntersectionPointCommand";
 import { AddNSectLineCommand } from "@/commands-spherical/AddNSectLineCommand";
 import { AddIntersectionPointOtherParentsInfo } from "@/commands-spherical/AddIntersectionPointOtherParentsInfo";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands-spherical/SetPointUserCreatedValueCommand";
 
 export default class NSectAngleHandler extends Highlighter {

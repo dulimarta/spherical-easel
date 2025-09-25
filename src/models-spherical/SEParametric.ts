@@ -17,7 +17,7 @@ import {
 import SETTINGS from "@/global-settings";
 import { Labelable } from "@/types";
 import i18n from "@/i18n";
-import Parametric from "@/plottables/Parametric";
+import Parametric from "@/plottables-spherical/Parametric";
 // import { SEParametricEndPoint } from "./SEParametricEndPoint";
 import {
   DEFAULT_PARAMETRIC_BACK_STYLE,
@@ -25,7 +25,7 @@ import {
 } from "@/types/Styles";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 // import { SEExpression } from "./SEExpression";
-import { DisplayStyle } from "@/plottables/Nodule";
+import { DisplayStyle } from "@/plottables-spherical/Nodule";
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_BACK_STYLE)
@@ -60,7 +60,7 @@ export class SEParametric
   /**
    * The corresponding plottable TwoJS object
    */
-  public declare ref: Parametric;
+  declare public ref: Parametric;
 
   /**
    * Pointer to the label of this SEParametric

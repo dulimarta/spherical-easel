@@ -1,24 +1,24 @@
 import Highlighter from "./Highlighter";
-import { SEPoint } from "@/models/SEPoint";
-import { SESegment } from "@/models/SESegment";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import EventBus from "@/eventHandlers/EventBus";
-import AngleMarker from "@/plottables/AngleMarker";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
+import EventBus from "@/eventHandlers-spherical/EventBus";
+import AngleMarker from "@/plottables-spherical/AngleMarker";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
-import { SELabel } from "@/models/SELabel";
+import { SELabel } from "@/models-spherical/SELabel";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { AngleMode } from "@/types";
-import { SEPolygon } from "@/models/SEPolygon";
+import { SEPolygon } from "@/models-spherical/SEPolygon";
 import { AddPolygonCommand } from "@/commands-spherical/AddPolygonAndExpressionCommand";
 import { AddAngleMarkerCommand } from "@/commands-spherical/AddAngleMarkerAndExpressionCommand";
-import { SESegmentLength } from "@/models/SESegmentLength";
+import { SESegmentLength } from "@/models-spherical/SESegmentLength";
 import { AddLengthMeasurementCommand } from "@/commands-spherical/AddLengthMeasurementCommand";
 import { StyleNoduleCommand } from "@/commands-spherical/StyleNoduleCommand";
 import { StyleCategory } from "@/types/Styles";
 import { SetNoduleDisplayCommand } from "@/commands-spherical/SetNoduleDisplayCommand";
 import { Group } from "two.js/src/group";
-import { DisplayStyle } from "@/plottables/Nodule";
+import { DisplayStyle } from "@/plottables-spherical/Nodule";
 //import Two from "two.js";
 
 export default class PolygonHandler extends Highlighter {

@@ -69,7 +69,7 @@
 </style>
 <script lang="ts" setup>
 import { ref, watch } from "vue";
-import { SESlider } from "@/models/SESlider";
+import { SESlider } from "@/models-spherical/SESlider";
 import { AddSliderMeasurementCommand } from "@/commands-spherical/AddSliderMeasurementCommand";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n({ useScope: "local" });

@@ -1,12 +1,12 @@
 import { Command } from "./Command";
 import { SavedNames, SEOneOrTwoDimensional } from "@/types";
-import { SELabel } from "@/models/SELabel";
+import { SELabel } from "@/models-spherical/SELabel";
 import SETTINGS from "@/global-settings";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
-import { SESegment } from "@/models/SESegment";
-import { SELine } from "@/models/SELine";
-import { SEPolarPoint } from "@/models/SEPolarPoint";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SELine } from "@/models-spherical/SELine";
+import { SEPolarPoint } from "@/models-spherical/SEPolarPoint";
 import { StyleCategory } from "@/types/Styles";
 import { toSVGType } from "@/types";
 

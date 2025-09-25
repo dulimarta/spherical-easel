@@ -1,18 +1,18 @@
 import SETTINGS from "@/global-settings";
-import { SECircle } from "@/models/SECircle";
-import { SELabel } from "@/models/SELabel";
-import { SELine } from "@/models/SELine";
-import { SENodule } from "@/models/SENodule";
-import { SEPoint } from "@/models/SEPoint";
-import { SESegment } from "@/models/SESegment";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SELine } from "@/models-spherical/SELine";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SESegment } from "@/models-spherical/SESegment";
 import { LabelParentTypes } from "@/types";
 import { Vector3 } from "three";
 
 function labelTypeOf(n: SENodule): LabelParentTypes {
   if (n instanceof SEPoint) return "point";
-  if (n instanceof SESegment) return "segment"
-  if (n instanceof SECircle) return "circle"
-  if (n instanceof SELine) return "line"
+  if (n instanceof SESegment) return "segment";
+  if (n instanceof SECircle) return "circle";
+  if (n instanceof SELine) return "line";
   return "point";
 }
 const tmpVector = new Vector3();

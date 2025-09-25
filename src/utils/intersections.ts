@@ -1,18 +1,18 @@
-import { SECircle } from "@/models/SECircle";
-import { SESegment } from "@/models/SESegment";
-import { SELine } from "@/models/SELine";
-import { SEEllipse } from "@/models/SEEllipse";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SELine } from "@/models-spherical/SELine";
+import { SEEllipse } from "@/models-spherical/SEEllipse";
 import {
   IntersectionReturnType,
   ParametricIntersectionType,
   SEOneDimensional
 } from "@/types";
 import { Vector3, Matrix4, Vector2 } from "three";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import SETTINGS from "@/global-settings";
-import { SEParametric } from "@/models/SEParametric";
-import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
-import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
+import { SEParametric } from "@/models-spherical/SEParametric";
+import { SETangentLineThruPoint } from "@/models-spherical/SETangentLineThruPoint";
+import { SEPointOnOneOrTwoDimensional } from "@/models-spherical/SEPointOnOneOrTwoDimensional";
 import { MinHeap } from "@datastructures-js/heap";
 import { rank_of_type } from "./helpingfunctions";
 

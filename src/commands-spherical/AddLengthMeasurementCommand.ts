@@ -1,9 +1,9 @@
 import { Command } from "./Command";
-import { SENodule } from "@/models/SENodule";
-import { SEExpression } from "@/models/SEExpression";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SEExpression } from "@/models-spherical/SEExpression";
 import { AddExpressionCommand } from "./AddExpressionCommand";
-import { SESegment } from "@/models/SESegment";
-import { SESegmentLength } from "@/models/SESegmentLength";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SESegmentLength } from "@/models-spherical/SESegmentLength";
 import { SavedNames, ValueDisplayMode } from "@/types";
 import { toSVGType } from "@/types";
 

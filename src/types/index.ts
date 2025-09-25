@@ -1,24 +1,24 @@
 // Declaration of all internal data types
 
-import { SELabel } from "@/models/SELabel";
-import { SELine } from "@/models/SELine";
-import { SECircle } from "@/models/SECircle";
-import { SESegment } from "@/models/SESegment";
-import { SENodule } from "@/models/SENodule";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SELine } from "@/models-spherical/SELine";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { Vector2, Vector3 } from "three";
-import { SEEllipse } from "@/models/SEEllipse";
-import { SEParametric } from "@/models/SEParametric";
+import { SEEllipse } from "@/models-spherical/SEEllipse";
+import { SEParametric } from "@/models-spherical/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
-import { SEPolygon } from "@/models/SEPolygon";
-import { SETranslation } from "@/models/SETranslation";
-import { SERotation } from "@/models/SERotation";
-import { SEReflection } from "@/models/SEReflection";
-import { SEPointReflection } from "@/models/SEPointReflection";
-import { SEPoint } from "@/models/SEPoint";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SEExpression } from "@/models/SEExpression";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEPolygon } from "@/models-spherical/SEPolygon";
+import { SETranslation } from "@/models-spherical/SETranslation";
+import { SERotation } from "@/models-spherical/SERotation";
+import { SEReflection } from "@/models-spherical/SEReflection";
+import { SEPointReflection } from "@/models-spherical/SEPointReflection";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
+import { SEExpression } from "@/models-spherical/SEExpression";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { LAYER } from "@/global-settings";
 // import "@types/google.maps"
 

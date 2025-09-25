@@ -1,24 +1,24 @@
 import { Vector3 } from "three";
-import Point from "@/plottables/Point";
-import Line from "@/plottables/Line";
+import Point from "@/plottables-spherical/Point";
+import Line from "@/plottables-spherical/Line";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { AddLineCommand } from "@/commands-spherical/AddLineCommand";
-import { SEPoint } from "@/models/SEPoint";
-import { SELine } from "@/models/SELine";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SELine } from "@/models-spherical/SELine";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import SETTINGS from "@/global-settings";
 import Highlighter from "./Highlighter";
-import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
+import { SEPointOnOneOrTwoDimensional } from "@/models-spherical/SEPointOnOneOrTwoDimensional";
 import { AddPointCommand } from "@/commands-spherical/AddPointCommand";
 import { AddIntersectionPointCommand } from "@/commands-spherical/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands-spherical/AddPointOnOneOrTwoDimensionalCommand";
 import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
-import { SELabel } from "@/models/SELabel";
+import { SELabel } from "@/models-spherical/SELabel";
 import EventBus from "./EventBus";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { AddIntersectionPointOtherParentsInfo } from "@/commands-spherical/AddIntersectionPointOtherParentsInfo";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands-spherical/SetPointUserCreatedValueCommand";
 
 export default class LineHandler extends Highlighter {

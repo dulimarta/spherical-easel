@@ -5,12 +5,12 @@ import { createWrapper } from "$/vue-helper";
 import { SEStoreType, useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
 import { dragMouse, drawOneDimensional } from "./sphereframe-helper";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Command } from "@/commands-spherical/Command";
 import Handler from "../MeasuredCircleHandler";
 
 import SETTINGS from "@/global-settings";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 const R = SETTINGS.boundaryCircle.radius;
 
 describe("Measured Circle Tool", () => {

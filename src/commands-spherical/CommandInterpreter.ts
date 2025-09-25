@@ -1,5 +1,5 @@
-import EventBus from "@/eventHandlers/EventBus";
-import { SENodule } from "@/models/SENodule";
+import EventBus from "@/eventHandlers-spherical/EventBus";
+import { SENodule } from "@/models-spherical/SENodule";
 import { AddAntipodalPointCommand } from "./AddAntipodalPointCommand";
 import { AddCircleCommand } from "./AddCircleCommand";
 import { AddIntersectionPointCommand } from "./AddIntersectionPointCommand";

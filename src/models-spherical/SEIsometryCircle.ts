@@ -1,7 +1,7 @@
-import { SEPoint } from "@/models/SEPoint";
-import { SECircle } from "@/models/SECircle";
-import { SETranslation } from "@/models/SETranslation";
-import { SERotation } from "@/models/SERotation";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SETranslation } from "@/models-spherical/SETranslation";
+import { SERotation } from "@/models-spherical/SERotation";
 import { ObjectState, SEIsometry } from "@/types";
 import i18n from "@/i18n";
 import { SEReflection } from "./SEReflection";

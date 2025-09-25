@@ -5,11 +5,11 @@ import { useSEStore, SEStoreType } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
 import { TEST_MOUSE_X, TEST_MOUSE_Y, dragMouse } from "./sphereframe-helper";
 import SETTINGS from "@/global-settings";
-import { SESegment } from "@/models/SESegment";
+import { SESegment } from "@/models-spherical/SESegment";
 import { Vector3 } from "three";
 import { createTestingPinia } from "@pinia/testing";
 import Handler from "../SegmentHandler";
-import { SENodule } from "@/models/dontuse-internal";
+import { SENodule } from "@/models-spherical/dontuse-internal";
 import { Command } from "@/commands-spherical/Command";
 
 describe("Segment Tool", () => {

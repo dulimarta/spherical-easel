@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import { SEPoint } from "@/models/SEPoint";
+import { SEPoint } from "@/models-spherical/SEPoint";
 import { Vector3 } from "three";
 import { toSVGType } from "@/types";
 

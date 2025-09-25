@@ -1,8 +1,8 @@
 import Highlighter from "./Highlighter";
-import { SESegment } from "@/models/SESegment";
-import EventBus from "@/eventHandlers/EventBus";
-import { SELine } from "@/models/SELine";
-import { SEReflection } from "@/models/SEReflection";
+import { SESegment } from "@/models-spherical/SESegment";
+import EventBus from "@/eventHandlers-spherical/EventBus";
+import { SELine } from "@/models-spherical/SELine";
+import { SEReflection } from "@/models-spherical/SEReflection";
 import { AddReflectionCommand } from "@/commands-spherical/AddReflectionCommand";
 import Two from "two.js";
 import { Group } from "two.js/src/group";

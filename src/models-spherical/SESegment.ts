@@ -1,5 +1,5 @@
 import { SENodule } from "./SENodule";
-import Segment from "@/plottables/Segment";
+import Segment from "@/plottables-spherical/Segment";
 import { Vector2, Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
@@ -10,14 +10,14 @@ import {
   NormalAndPerpendicularPoint,
   ObjectState
 } from "@/types";
-// import { SELabel } from "@/models/SELabel";
+// import { SELabel } from "@/models-spherical/SELabel";
 import {
   DEFAULT_SEGMENT_BACK_STYLE,
   DEFAULT_SEGMENT_FRONT_STYLE
 } from "@/types/Styles";
 import i18n from "@/i18n";
-import NonFreeSegment from "@/plottables/NonFreeSegment";
-import { DisplayStyle } from "@/plottables/Nodule";
+import NonFreeSegment from "@/plottables-spherical/NonFreeSegment";
+import { DisplayStyle } from "@/plottables-spherical/Nodule";
 import { SELabel } from "./SELabel";
 import { SEPoint } from "./SEPoint";
 const { t } = i18n.global;
@@ -34,9 +34,9 @@ export class SESegment
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public declare ref: Segment;
+  declare public ref: Segment;
   /**
-   * Pointer to the label of this SESegment import { SELabel } from "@/models/SELabel";
+   * Pointer to the label of this SESegment import { SELabel } from "@/models-spherical/SELabel";
    */
   public label?: SELabel;
   /**

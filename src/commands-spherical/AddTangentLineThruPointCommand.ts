@@ -1,9 +1,9 @@
 import { Command } from "./Command";
-import { SEPoint } from "@/models/SEPoint";
-import { SELabel } from "@/models/SELabel";
-import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SETangentLineThruPoint } from "@/models-spherical/SETangentLineThruPoint";
 import { SavedNames, SEOneDimensionalNotStraight } from "@/types";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { toSVGType } from "@/types";

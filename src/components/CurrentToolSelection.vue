@@ -41,11 +41,11 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { useSEStore } from "@/stores/se";
 import { useI18n } from "vue-i18n";
-// import EventBus from "@/eventHandlers/EventBus";
+// import EventBus from "@/eventHandlers-spherical/EventBus";
 import { ActionMode } from "@/types";
 import { storeToRefs } from "pinia";
 import SETTINGS from "@/global-settings";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { TOOL_DICTIONARY } from "./tooldictionary";
 import { Handler } from "mitt";
 

@@ -4,7 +4,7 @@ import i18n from "@/i18n";
 import { SECircle } from "./SECircle";
 import { SEExpression } from "./SEExpression";
 import { SEPoint } from "./SEPoint";
-import Circle from "@/plottables/Circle";
+import Circle from "@/plottables-spherical/Circle";
 const { t } = i18n.global;
 
 export class SEMeasuredCircle extends SECircle {

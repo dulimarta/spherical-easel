@@ -1,14 +1,14 @@
 import { Vector3, Matrix4 } from "three";
-import Point from "@/plottables/Point";
-import Circle from "@/plottables/Circle";
+import Point from "@/plottables-spherical/Point";
+import Circle from "@/plottables-spherical/Circle";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { AddPointCommand } from "@/commands-spherical/AddPointCommand";
-import { SEPoint } from "@/models/SEPoint";
-import { SECircle } from "@/models/SECircle";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SECircle } from "@/models-spherical/SECircle";
 import SETTINGS from "@/global-settings";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import Highlighter from "./Highlighter";
-import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
+import { SEPointOnOneOrTwoDimensional } from "@/models-spherical/SEPointOnOneOrTwoDimensional";
 import { AddIntersectionPointCommand } from "@/commands-spherical/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands-spherical/AddPointOnOneOrTwoDimensionalCommand";
 import {
@@ -16,25 +16,25 @@ import {
   SEIntersectionReturnType,
   SEMeasurable
 } from "@/types";
-import { SELabel } from "@/models/SELabel";
+import { SELabel } from "@/models-spherical/SELabel";
 import EventBus from "./EventBus";
-import { SESegment } from "@/models/SESegment";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SEPolygon } from "@/models/SEPolygon";
-import { SEExpression } from "@/models/SEExpression";
-import { SEMeasuredCircle } from "@/models/SEMeasuredCircle";
-import { SESegmentLength } from "@/models/SESegmentLength";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
+import { SEPolygon } from "@/models-spherical/SEPolygon";
+import { SEExpression } from "@/models-spherical/SEExpression";
+import { SEMeasuredCircle } from "@/models-spherical/SEMeasuredCircle";
+import { SESegmentLength } from "@/models-spherical/SESegmentLength";
 import { SetNoduleDisplayCommand } from "@/commands-spherical/SetNoduleDisplayCommand";
 import { AddLengthMeasurementCommand } from "@/commands-spherical/AddLengthMeasurementCommand";
 import { StyleNoduleCommand } from "@/commands-spherical/StyleNoduleCommand";
 import { StyleCategory } from "@/types/Styles";
-import { SEPointDistance } from "@/models/SEPointDistance";
+import { SEPointDistance } from "@/models-spherical/SEPointDistance";
 import { AddPointDistanceMeasurementCommand } from "@/commands-spherical/AddPointDistanceMeasurementCommand";
 import { AddMeasuredCircleCommand } from "@/commands-spherical/AddMeasuredCircleCommand";
 import { AddIntersectionPointOtherParentsInfo } from "@/commands-spherical/AddIntersectionPointOtherParentsInfo";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands-spherical/SetPointUserCreatedValueCommand";
 
 export default class MeasuredCircleHandler extends Highlighter {

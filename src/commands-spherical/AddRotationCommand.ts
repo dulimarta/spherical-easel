@@ -1,13 +1,13 @@
 import { Command } from "./Command";
-import { SENodule } from "@/models/SENodule";
-import { SETranslation } from "@/models/SETranslation";
-import { SESegment } from "@/models/SESegment";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SETranslation } from "@/models-spherical/SETranslation";
+import { SESegment } from "@/models-spherical/SESegment";
 import { SavedNames } from "@/types";
 import { AddTranslationCommand } from "./AddTranslationCommand";
-import { SERotation } from "@/models/SERotation";
-import { SEPoint } from "@/models/SEPoint";
-import { SEExpression } from "@/models/SEExpression";
-import { SEEllipse } from "@/models/SEEllipse";
+import { SERotation } from "@/models-spherical/SERotation";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SEExpression } from "@/models-spherical/SEExpression";
+import { SEEllipse } from "@/models-spherical/SEEllipse";
 import { toSVGType } from "@/types";
 
 export class AddRotationCommand extends Command {

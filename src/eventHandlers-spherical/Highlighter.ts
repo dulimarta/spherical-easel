@@ -1,21 +1,21 @@
 import MouseHandler from "./MouseHandler";
-import { SEPoint } from "@/models/SEPoint";
+import { SEPoint } from "@/models-spherical/SEPoint";
 import SETTINGS, { LAYER } from "@/global-settings";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SENodule } from "@/models/SENodule";
-import { SELine } from "@/models/SELine";
-import { SELabel } from "@/models/SELabel";
-import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SEEllipse } from "@/models/SEEllipse";
-import { SEParametric } from "@/models/SEParametric";
-import { SEPolygon } from "@/models/SEPolygon";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SELine } from "@/models-spherical/SELine";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
+import { SEEllipse } from "@/models-spherical/SEEllipse";
+import { SEParametric } from "@/models-spherical/SEParametric";
+import { SEPolygon } from "@/models-spherical/SEPolygon";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { Vector3 } from "three";
 import { AddAntipodalPointCommand } from "@/commands-spherical/AddAntipodalPointCommand";
-import { SEText } from "@/models/SEText";
+import { SEText } from "@/models-spherical/SEText";
 
 // const tmpVector = new Vector3();
 

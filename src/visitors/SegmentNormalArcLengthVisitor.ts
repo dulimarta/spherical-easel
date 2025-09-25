@@ -1,15 +1,15 @@
 import { Visitor } from "./Visitor";
-import { SEPoint } from "@/models/SEPoint";
-import { SELine } from "@/models/SELine";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SELine } from "@/models-spherical/SELine";
 import { Vector3 } from "three";
-import { SECircle } from "@/models/SECircle";
-import { SESegment } from "@/models/SESegment";
-import { SELabel } from "@/models/SELabel";
-import { SEEllipse } from "@/models/SEEllipse";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SEParametric } from "@/models/SEParametric";
-import { SEPolygon } from "@/models/SEPolygon";
-import { SEText } from "@/models/SEText";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SEEllipse } from "@/models-spherical/SEEllipse";
+import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
+import { SEParametric } from "@/models-spherical/SEParametric";
+import { SEPolygon } from "@/models-spherical/SEPolygon";
+import { SEText } from "@/models-spherical/SEText";
 
 export class SegmentNormalArcLengthVisitor implements Visitor {
   private normalVector: Vector3 = new Vector3();
@@ -76,5 +76,4 @@ export class SegmentNormalArcLengthVisitor implements Visitor {
     //Parametric curves are completely determined by their parents so no need to update them
     return false;
   }
-
 }

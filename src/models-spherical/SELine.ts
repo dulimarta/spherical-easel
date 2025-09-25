@@ -1,5 +1,5 @@
 import { SENodule } from "./SENodule";
-import Line from "@/plottables/Line";
+import Line from "@/plottables-spherical/Line";
 import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
@@ -15,8 +15,8 @@ import {
   DEFAULT_LINE_BACK_STYLE,
   DEFAULT_LINE_FRONT_STYLE
 } from "@/types/Styles";
-import { DisplayStyle } from "@/plottables/Nodule";
-import NonFreeLine from "@/plottables/NonFreeLine";
+import { DisplayStyle } from "@/plottables-spherical/Nodule";
+import NonFreeLine from "@/plottables-spherical/NonFreeLine";
 import { SELabel } from "./SELabel";
 import { SEPoint } from "./SEPoint";
 
@@ -32,7 +32,7 @@ export class SELine
   /**
    * The corresponding plottable TwoJS object
    */
-  public declare ref: Line;
+  declare public ref: Line;
   /**
    * Pointer to the label of this SESegment
    */

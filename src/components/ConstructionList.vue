@@ -214,13 +214,13 @@ import { useSEStore } from "@/stores/se";
 import { useAccountStore } from "@/stores/account";
 import { Ref, ref } from "vue";
 import { storeToRefs } from "pinia";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { runScript } from "@/commands-spherical/CommandInterpreter";
 import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
 import { useConstructionStore } from "@/stores/construction";
 import { useClipboard } from "@vueuse/core";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 
 const props = defineProps<{
   items: Array<SphericalConstruction>;

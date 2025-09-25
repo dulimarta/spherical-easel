@@ -3,7 +3,7 @@ import { SEOneDimensionalNotStraight, ObjectState } from "@/types";
 import { Vector3 } from "three";
 import i18n from "@/i18n";
 import { SEPoint } from "./SEPoint";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
 import { SEParametric } from "./SEParametric";

@@ -1,18 +1,18 @@
 import { Visitor } from "./Visitor";
-import { SEPoint } from "@/models/SEPoint";
-import { SELine } from "@/models/SELine";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SELine } from "@/models-spherical/SELine";
 import { Matrix4, Vector3, Matrix3 } from "three";
-import { SECircle } from "@/models/SECircle";
-import { SESegment } from "@/models/SESegment";
-import { SELabel } from "@/models/SELabel";
-import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
-import { SEEllipse } from "@/models/SEEllipse";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SEParametric } from "@/models/SEParametric";
-import { SEPolygon } from "@/models/SEPolygon";
-import { SELatitude } from "@/models/SELatitude";
-import { SELongitude } from "@/models/SELongitude";
-import { SEText } from "@/models/SEText";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SEPointOnOneOrTwoDimensional } from "@/models-spherical/SEPointOnOneOrTwoDimensional";
+import { SEEllipse } from "@/models-spherical/SEEllipse";
+import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
+import { SEParametric } from "@/models-spherical/SEParametric";
+import { SEPolygon } from "@/models-spherical/SEPolygon";
+import { SELatitude } from "@/models-spherical/SELatitude";
+import { SELongitude } from "@/models-spherical/SELongitude";
+import { SEText } from "@/models-spherical/SEText";
 
 export class RotationVisitor implements Visitor {
   private transformMatrix: Matrix4 = new Matrix4();

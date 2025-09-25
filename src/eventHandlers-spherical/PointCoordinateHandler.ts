@@ -1,19 +1,19 @@
 import Highlighter from "./Highlighter";
-import { SEPoint } from "@/models/SEPoint";
-import { SENodule } from "@/models/SENodule";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SENodule } from "@/models-spherical/SENodule";
 import { AddPointCoordinateMeasurementCommand } from "@/commands-spherical/AddPointCoordinateMeasurementCommand";
 import SETTINGS from "@/global-settings";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import {
   SEPointCoordinate,
   CoordinateSelection
-} from "@/models/SEPointCoordinate";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+} from "@/models-spherical/SEPointCoordinate";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { StyleNoduleCommand } from "@/commands-spherical/StyleNoduleCommand";
 import { StyleCategory } from "@/types/Styles";
 import { SetNoduleDisplayCommand } from "@/commands-spherical/SetNoduleDisplayCommand";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { SetPointUserCreatedValueCommand } from "@/commands-spherical/SetPointUserCreatedValueCommand";

@@ -1,12 +1,12 @@
 import { Command } from "./Command";
 import { SavedNames } from "@/types";
-import { SELabel } from "@/models/SELabel";
+import { SELabel } from "@/models-spherical/SELabel";
 import SETTINGS from "@/global-settings";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
-import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
-import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
-import { SEParametric } from "@/models/SEParametric";
+import { SEParametricEndPoint } from "@/models-spherical/SEParametricEndPoint";
+import { SEParametricTracePoint } from "@/models-spherical/SEParametricTracePoint";
+import { SEParametric } from "@/models-spherical/SEParametric";
 import { StyleCategory } from "@/types/Styles";
 import { toSVGType } from "@/types";
 

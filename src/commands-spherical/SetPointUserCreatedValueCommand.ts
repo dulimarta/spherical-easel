@@ -1,13 +1,13 @@
 import { Command } from "./Command";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { DisplayStyle } from "@/plottables/Nodule";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
+import { DisplayStyle } from "@/plottables-spherical/Nodule";
 // import { Labelable } from "@/types";
-// import { SEPoint } from "@/models/SEPoint";
+// import { SEPoint } from "@/models-spherical/SEPoint";
 import SETTINGS from "@/global-settings";
-// import { SENodule } from "@/models/SENodule";
+// import { SENodule } from "@/models-spherical/SENodule";
 // import { SavedNames } from "@/types";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import EventBus from "@/eventHandlers/EventBus";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { toSVGType } from "@/types";
 
 /**

@@ -1,27 +1,27 @@
 import Highlighter from "./Highlighter";
-import { SEPoint } from "@/models/SEPoint";
-import { SELine } from "@/models/SELine";
-import { SESegment } from "@/models/SESegment";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import EventBus from "@/eventHandlers/EventBus";
-import AngleMarker from "@/plottables/AngleMarker";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SELine } from "@/models-spherical/SELine";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
+import EventBus from "@/eventHandlers-spherical/EventBus";
+import AngleMarker from "@/plottables-spherical/AngleMarker";
 import { SEOneOrTwoDimensional } from "@/types";
-import Point from "@/plottables/Point";
+import Point from "@/plottables-spherical/Point";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
-import { SELabel } from "@/models/SELabel";
+import { SELabel } from "@/models-spherical/SELabel";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
-import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
+import { SEPointOnOneOrTwoDimensional } from "@/models-spherical/SEPointOnOneOrTwoDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands-spherical/AddPointOnOneOrTwoDimensionalCommand";
 import { AddPointCommand } from "@/commands-spherical/AddPointCommand";
 import { AngleMode } from "@/types";
 import { AddAngleMarkerCommand } from "@/commands-spherical/AddAngleMarkerAndExpressionCommand";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands-spherical/SetPointUserCreatedValueCommand";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 
 enum HighlightMode {
   NONE,

@@ -1,5 +1,5 @@
 import Highlighter from "./Highlighter";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import {
   ObjectState,
   SEIntersectionReturnType,
@@ -8,21 +8,21 @@ import {
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { DeleteNoduleCommand } from "@/commands-spherical/DeleteNoduleCommand";
 import { SetNoduleDisplayCommand } from "@/commands-spherical/SetNoduleDisplayCommand";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SEPoint } from "@/models/SEPoint";
-import EventBus from "@/eventHandlers/EventBus";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { ChangeIntersectionPointPrincipleParents } from "@/commands-spherical/ChangeIntersectionPointPrincipleParents";
 import i18n from "@/i18n";
 import { RemoveIntersectionPointOtherParentsInfo } from "@/commands-spherical/RemoveIntersectionPointOtherParentsInfo";
-import { SELine } from "@/models/SELine";
-import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
-import { SEParametric } from "@/models/SEParametric";
-import { SEEllipse } from "@/models/SEEllipse";
+import { SELine } from "@/models-spherical/SELine";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SEParametric } from "@/models-spherical/SEParametric";
+import { SEEllipse } from "@/models-spherical/SEEllipse";
 import { SetPointUserCreatedValueCommand } from "@/commands-spherical/SetPointUserCreatedValueCommand";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { M } from "vite/dist/node/types.d-aGj9QkWt";
 
 export default class DeleteHandler extends Highlighter {

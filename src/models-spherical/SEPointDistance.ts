@@ -2,7 +2,7 @@ import { SEPoint } from "./SEPoint";
 import { ObjectState, ValueDisplayMode } from "@/types";
 // import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { SEExpression } from "./SEExpression";
 const { t } = i18n.global;
 const emptySet = new Set<string>();

@@ -1,12 +1,12 @@
 /** @format */
 
 import { Matrix4, Vector2, Vector3 } from "three";
-import { SEPoint } from "@/models/SEPoint";
-import { SENodule } from "@/models/SENodule";
-import { SELine } from "@/models/SELine";
-import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
-import { SELabel } from "@/models/SELabel";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SELine } from "@/models-spherical/SELine";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SELabel } from "@/models-spherical/SELabel";
 import SETTINGS from "@/global-settings";
 import EventBus from "./EventBus";
 import { RotateSphereCommand } from "@/commands-spherical/RotateSphereCommand";
@@ -17,15 +17,15 @@ import { MoveSegmentCommand } from "@/commands-spherical/MoveSegmentCommand";
 import { MoveLabelCommand } from "@/commands-spherical/MoveLabelCommand";
 import { MoveTextCommand } from "@/commands-spherical/MoveTextCommand";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SEEllipse } from "@/models/SEEllipse";
-import { SEPolygon } from "@/models/SEPolygon";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
+import { SEEllipse } from "@/models-spherical/SEEllipse";
+import { SEPolygon } from "@/models-spherical/SEPolygon";
 import { ObjectState } from "@/types";
 import { SetNoduleExistCommand } from "@/commands-spherical/SetNoduleExistCommand";
-import { SESlider } from "@/models/SESlider";
+import { SESlider } from "@/models-spherical/SESlider";
 import { ChangeSliderCommand } from "@/commands-spherical/ChangeSliderCommand";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { SEText } from "@/models/SEText";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
+import { SEText } from "@/models-spherical/SEText";
 
 //import Two from "two.js";
 import { Group } from "two.js/src/group";

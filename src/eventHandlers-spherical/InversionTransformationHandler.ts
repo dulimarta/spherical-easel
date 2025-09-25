@@ -1,10 +1,10 @@
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import Highlighter from "./Highlighter";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
-import { SECircle } from "@/models/SECircle";
-import { SEInversion } from "@/models/SEInversion";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SEInversion } from "@/models-spherical/SEInversion";
 import { AddInversionCommand } from "@/commands-spherical/AddInversionCommand";
 export default class InversionTransformationHandler extends Highlighter {
   /**

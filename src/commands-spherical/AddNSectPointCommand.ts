@@ -1,11 +1,11 @@
 import { Command } from "./Command";
 import { SavedNames } from "@/types";
-import { SELabel } from "@/models/SELabel";
+import { SELabel } from "@/models-spherical/SELabel";
 import SETTINGS from "@/global-settings";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
-import { SESegment } from "@/models/SESegment";
-import { SENSectPoint } from "@/models/SENSectPoint";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SENSectPoint } from "@/models-spherical/SENSectPoint";
 import { StyleCategory } from "@/types/Styles";
 import { toSVGType } from "@/types";
 

@@ -4,9 +4,9 @@
  */
 import { toSVGType } from "@/types";
 import { Command } from "./Command";
-import { SENodule } from "@/models/SENodule";
-import { SELabel } from "@/models/SELabel";
-import EventBus from "@/eventHandlers/EventBus";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SELabel } from "@/models-spherical/SELabel";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { AddIntersectionPointOtherParentsInfo } from "./AddIntersectionPointOtherParentsInfo";
 
 type TxBeginMarker = {

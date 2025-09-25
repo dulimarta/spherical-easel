@@ -357,7 +357,7 @@ import {
   SphericalConstruction,
   TreeviewNode
 } from "@/types/ConstructionTypes";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { useConstructionStore } from "@/stores/construction";
 import FileSaver from "file-saver";
 import { computed, watch } from "vue";
@@ -365,14 +365,14 @@ import { mergeIntoImageUrl } from "@/utils/helpingfunctions";
 import { Command } from "@/commands-spherical/Command";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { VTreeview } from "vuetify/labs/VTreeview";
 import { shallowRef } from "vue";
-import { SEPoint } from "@/models/SEPoint";
-import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
-import { SELine } from "@/models/SELine";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SELine } from "@/models-spherical/SELine";
 
 enum SecretKeyState {
   NONE,

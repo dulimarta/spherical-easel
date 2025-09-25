@@ -1,11 +1,11 @@
 import { Command } from "./Command";
-import { SELabel } from "@/models/SELabel";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SESegment } from "@/models/SESegment";
-import { SENodule } from "@/models/SENodule";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
 import { SavedNames, ValueDisplayMode } from "@/types";
-import { SEPolygon } from "@/models/SEPolygon";
+import { SEPolygon } from "@/models-spherical/SEPolygon";
 import { StyleCategory } from "@/types/Styles";
 import { toSVGType } from "@/types";
 

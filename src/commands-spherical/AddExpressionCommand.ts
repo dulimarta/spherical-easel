@@ -1,6 +1,6 @@
 import { Command } from "./Command";
-import { SENodule } from "@/models/SENodule";
-import { SEExpression } from "@/models/SEExpression";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SEExpression } from "@/models-spherical/SEExpression";
 import { toSVGType } from "@/types";
 
 export abstract class AddExpressionCommand extends Command {

@@ -5,7 +5,7 @@ import { SEStoreType, useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
 import { drawEllipse } from "./sphereframe-helper";
 import { createTestingPinia } from "@pinia/testing";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Command } from "@/commands-spherical/Command";
 import Handler from "../EllipseHandler";
 

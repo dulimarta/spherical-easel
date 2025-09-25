@@ -1,12 +1,12 @@
 import { Command } from "./Command";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { toSVGType } from "@/types";
 // import { Labelable } from "@/types";
-// import { SEPoint } from "@/models/SEPoint";
+// import { SEPoint } from "@/models-spherical/SEPoint";
 //import SETTINGS from "@/global-settings";
-// import { SENodule } from "@/models/SENodule";
+// import { SENodule } from "@/models-spherical/SENodule";
 // import { SavedNames } from "@/types";
-//import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+//import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 
 /**
  * This is used when an intersection point was automatically created and the user

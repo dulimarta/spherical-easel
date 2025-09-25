@@ -13,9 +13,9 @@ import {
   drawPointAt
 } from "./sphereframe-helper";
 import SETTINGS from "@/global-settings";
-import { SEExpression } from "@/models/SEExpression";
-import { SENodule } from "@/models/SENodule";
-import { SEPoint } from "@/models/SEPoint";
+import { SEExpression } from "@/models-spherical/SEExpression";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SEPoint } from "@/models-spherical/SEPoint";
 import { Command } from "@/commands-spherical/Command";
 import { Vector3 } from "three";
 import Handler from "../SegmentLengthHandler";

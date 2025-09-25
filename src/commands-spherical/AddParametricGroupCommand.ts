@@ -1,8 +1,8 @@
 import { Command } from "./Command";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 // import { Vector3 } from "three";
-import { SEParametricGroup } from "@/models/SEParametricGroup";
-// import { SEExpression } from "@/models/SEExpression";
+import { SEParametricGroup } from "@/models-spherical/SEParametricGroup";
+// import { SEExpression } from "@/models-spherical/SEExpression";
 // import {
 //   CoordExpression,
 //   MinMaxExpression,

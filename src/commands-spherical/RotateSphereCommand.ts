@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { Matrix4 } from "three";
 import { toSVGType } from "@/types";
-import { DisplayStyle } from "@/plottables/Nodule";
+import { DisplayStyle } from "@/plottables-spherical/Nodule";
 
 export class RotateSphereCommand extends Command {
   private rotationMat: Matrix4;

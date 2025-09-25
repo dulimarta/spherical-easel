@@ -1,10 +1,10 @@
 import SETTINGS from "@/global-settings";
-import { SECircle } from "@/models/SECircle";
-import { SEEllipse } from "@/models/SEEllipse";
-import { SELine } from "@/models/SELine";
-import { SENodule } from "@/models/SENodule";
-import { SEParametric } from "@/models/SEParametric";
-import { SESegment } from "@/models/SESegment";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SEEllipse } from "@/models-spherical/SEEllipse";
+import { SELine } from "@/models-spherical/SELine";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SEParametric } from "@/models-spherical/SEParametric";
+import { SESegment } from "@/models-spherical/SESegment";
 import { SEOneDimensional } from "@/types";
 import { Vector3 } from "three";
 

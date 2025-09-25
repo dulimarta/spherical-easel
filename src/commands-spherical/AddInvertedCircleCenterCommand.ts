@@ -1,13 +1,13 @@
 import { Command } from "./Command";
-import { SELabel } from "@/models/SELabel";
-import { SENodule } from "@/models/SENodule";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
-import { SECircle } from "@/models/SECircle";
-import { SELine } from "@/models/SELine";
-import { SEInversion } from "@/models/SEInversion";
-import { SEInversionCircleCenter } from "@/models/SEInversionCircleCenter";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SELine } from "@/models-spherical/SELine";
+import { SEInversion } from "@/models-spherical/SEInversion";
+import { SEInversionCircleCenter } from "@/models-spherical/SEInversionCircleCenter";
 import { toSVGType } from "@/types";
 
 export class AddInvertedCircleCenterCommand extends Command {

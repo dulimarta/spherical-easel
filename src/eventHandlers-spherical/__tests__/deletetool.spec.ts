@@ -9,7 +9,7 @@ import {
   drawPointAt,
   mouseClickOnSphere
 } from "./sphereframe-helper";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { createTestingPinia } from "@pinia/testing";
 import { Command } from "@/commands-spherical/Command";
 import Handler from "../DeleteHandler";
@@ -17,9 +17,9 @@ import MouseHandler from "../MouseHandler";
 
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
-import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
-import { SEEllipse } from "@/models/SEEllipse";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SEEllipse } from "@/models-spherical/SEEllipse";
 const R = SETTINGS.boundaryCircle.radius;
 
 describe("SphereFrame: Delete Tool", () => {

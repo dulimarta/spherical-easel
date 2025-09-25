@@ -1,11 +1,11 @@
 import { Command } from "./Command";
-import { SENodule } from "@/models/SENodule";
-import { SETranslation } from "@/models/SETranslation";
-import { SESegment } from "@/models/SESegment";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SETranslation } from "@/models-spherical/SETranslation";
+import { SESegment } from "@/models-spherical/SESegment";
 import { SavedNames } from "@/types";
 import { AddTranslationCommand } from "./AddTranslationCommand";
-import { SEReflection } from "@/models/SEReflection";
-import { SELine } from "@/models/SELine";
+import { SEReflection } from "@/models-spherical/SEReflection";
+import { SELine } from "@/models-spherical/SELine";
 import { toSVGType } from "@/types";
 
 export class AddReflectionCommand extends Command {

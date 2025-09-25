@@ -1,7 +1,7 @@
 import { AddTextCommand } from "@/commands-spherical/AddTextCommand";
 import Highlighter from "./Highlighter";
-import { SEText } from "@/models/SEText";
-import EventBus from "@/eventHandlers/EventBus";
+import { SEText } from "@/models-spherical/SEText";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { StyleNoduleCommand } from "@/commands-spherical/StyleNoduleCommand";
 import { StyleCategory } from "@/types/Styles";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";

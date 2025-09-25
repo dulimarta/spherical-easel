@@ -2,7 +2,7 @@ import SphereFrame from "@/components/SphereFrame.vue";
 import { createWrapper } from "$/vue-helper";
 import { SEStoreType, useSEStore } from "@/stores/se";
 import { vi } from "vitest";
-import { SELine } from "@/models/SELine";
+import { SELine } from "@/models-spherical/SELine";
 import { VueWrapper } from "@vue/test-utils";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
@@ -11,7 +11,7 @@ import {
   TEST_MOUSE_Y,
   drawOneDimensional
 } from "./sphereframe-helper";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 import { createTestingPinia } from "@pinia/testing";
 import { Command } from "@/commands-spherical/Command";
 import Handler from "../LineHandler";

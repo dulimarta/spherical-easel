@@ -1,11 +1,11 @@
 import { Command } from "./Command";
-import { SEPoint } from "@/models/SEPoint";
-import { SELabel } from "@/models/SELabel";
-import { SENodule } from "@/models/SENodule";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
-import { SEThreePointCircleCenter } from "@/models/SEThreePointCircleCenter";
+import { SEThreePointCircleCenter } from "@/models-spherical/SEThreePointCircleCenter";
 import { toSVGType } from "@/types";
 
 export class AddThreePointCircleCenterCommand extends Command {

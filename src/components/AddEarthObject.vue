@@ -101,38 +101,38 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, computed, watch } from "vue";
 import { Vector3, Matrix4 } from "three";
-import { SELabel } from "@/models/SELabel";
+import { SELabel } from "@/models-spherical/SELabel";
 import { AddEarthPointCommand } from "@/commands-spherical/AddEarthPointCommand";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
-import { SEEarthPoint } from "@/models/SEEarthPoint";
+import { SEEarthPoint } from "@/models-spherical/SEEarthPoint";
 import { useI18n } from "vue-i18n";
 import { SetNoduleDisplayCommand } from "@/commands-spherical/SetNoduleDisplayCommand";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import SETTINGS from "@/global-settings";
 import { Command } from "@/commands-spherical/Command";
-import { SENodule } from "@/models/SENodule";
-import EventBus from "@/eventHandlers/EventBus";
+import { SENodule } from "@/models-spherical/SENodule";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import {
   LabelDisplayMode,
   Poles,
   SEIntersectionReturnType
 } from "@/types/index";
 import { useEarthCoordinate } from "@/composables/earth";
-import { SELongitude } from "@/models/SELongitude";
+import { SELongitude } from "@/models-spherical/SELongitude";
 import { AddLongitudeCommand } from "@/commands-spherical/AddLongitudeCommand";
-import { SELatitude } from "@/models/SELatitude";
+import { SELatitude } from "@/models-spherical/SELatitude";
 import { AddLatitudeCommand } from "@/commands-spherical/AddLatitudeCommand";
 import { AddIntersectionPointOtherParentsInfo } from "@/commands-spherical/AddIntersectionPointOtherParentsInfo";
 import { AddIntersectionPointCommand } from "@/commands-spherical/AddIntersectionPointCommand";
-import SegmentHandler from "@/eventHandlers/SegmentHandler";
-import { SEPoint } from "@/models/SEPoint";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import SegmentHandler from "@/eventHandlers-spherical/SegmentHandler";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands-spherical/SetPointUserCreatedValueCommand";
 import { StyleNoduleCommand } from "@/commands-spherical/StyleNoduleCommand";
 import { StyleCategory } from "@/types/Styles";
-import Highlighter from "@/eventHandlers/Highlighter";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import Highlighter from "@/eventHandlers-spherical/Highlighter";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { Handler } from "mitt";
 
 const store = useSEStore();

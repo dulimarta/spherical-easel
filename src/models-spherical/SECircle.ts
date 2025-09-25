@@ -1,5 +1,5 @@
 import { SENodule } from "./SENodule";
-import Circle from "@/plottables/Circle";
+import Circle from "@/plottables-spherical/Circle";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
@@ -17,8 +17,8 @@ import {
 import { Labelable } from "@/types";
 import { intersectCircles } from "@/utils/intersections";
 import i18n from "@/i18n";
-import NonFreeCircle from "@/plottables/NonFreeCircle";
-import { DisplayStyle } from "@/plottables/Nodule";
+import NonFreeCircle from "@/plottables-spherical/NonFreeCircle";
+import { DisplayStyle } from "@/plottables-spherical/Nodule";
 import { SELabel } from "./SELabel";
 import { SEPoint } from "./SEPoint";
 import { SEThreePointCircleCenter } from "./SEThreePointCircleCenter";

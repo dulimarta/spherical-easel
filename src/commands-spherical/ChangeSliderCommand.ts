@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import { SESlider } from "@/models/SESlider";
+import { SESlider } from "@/models-spherical/SESlider";
 import { toSVGType } from "@/types";
 
 export class ChangeSliderCommand extends Command {

@@ -3,7 +3,7 @@ import { createWrapper } from "$/vue-helper";
 import { VueWrapper } from "@vue/test-utils";
 import { useSEStore } from "@/stores/se";
 import { Command } from "@/commands-spherical/Command";
-import { SESlider } from "@/models/SESlider";
+import { SESlider } from "@/models-spherical/SESlider";
 
 describe("SliderForm.vue", () => {
   let wrapper: VueWrapper;

@@ -1,6 +1,6 @@
-import { SENodule } from "@/models/SENodule";
-import { SEPencil } from "@/models/SEPencil";
-import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SEPencil } from "@/models-spherical/SEPencil";
+import { SEPerpendicularLineThruPoint } from "@/models-spherical/SEPerpendicularLineThruPoint";
 import { Command } from "./Command";
 import { CommandGroup } from "./CommandGroup";
 import { toSVGType } from "@/types";

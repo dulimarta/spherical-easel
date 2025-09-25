@@ -1,7 +1,7 @@
-import Nodule from "@/plottables/Nodule";
+import Nodule from "@/plottables-spherical/Nodule";
 import { Command } from "./Command";
 import { FillStyle, SavedNames } from "@/types";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 
 export class ChangeFillStyleCommand extends Command {
   private currentFillStyle: FillStyle;

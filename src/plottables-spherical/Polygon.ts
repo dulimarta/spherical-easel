@@ -10,7 +10,7 @@ import {
   DEFAULT_POLYGON_BACK_STYLE
 } from "@/types/Styles";
 import { FillStyle, location, toSVGType, visitedIndex } from "@/types";
-import { SESegment } from "@/models/SESegment";
+import { SESegment } from "@/models-spherical/SESegment";
 //import Two from "two.js";
 import { Path } from "two.js/src/path";
 import { Anchor } from "two.js/src/anchor";

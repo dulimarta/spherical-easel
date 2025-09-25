@@ -275,7 +275,7 @@
 </template>
 <script setup lang="ts">
 import { computed, onBeforeMount, useAttrs } from "vue";
-import Nodule from "@/plottables/Nodule";
+import Nodule from "@/plottables-spherical/Nodule";
 import { StyleCategory } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 import StylePropertySlider from "./StylePropertySlider.vue";

@@ -1,11 +1,11 @@
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import Highlighter from "./Highlighter";
 import { Vector3 } from "three";
-import { SESegment } from "@/models/SESegment";
-import { SENSectPoint } from "@/models/SENSectPoint";
-import Point from "@/plottables/Point";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SENSectPoint } from "@/models-spherical/SENSectPoint";
+import Point from "@/plottables-spherical/Point";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
-import { SELabel } from "@/models/SELabel";
+import { SELabel } from "@/models-spherical/SELabel";
 import SETTINGS from "@/global-settings";
 import { AddNSectPointCommand } from "@/commands-spherical/AddNSectPointCommand";
 //import Two from "two.js";

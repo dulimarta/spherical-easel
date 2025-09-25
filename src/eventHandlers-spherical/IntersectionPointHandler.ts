@@ -1,14 +1,14 @@
 import Highlighter from "./Highlighter";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { IntersectionReturnType, SEOneDimensional } from "@/types";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import EventBus from "./EventBus";
-import { SEPoint } from "@/models/SEPoint";
+import { SEPoint } from "@/models-spherical/SEPoint";
 import { intersectTwoObjects } from "@/utils/intersections";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { rank_of_type } from "@/utils/helpingfunctions";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands-spherical/SetPointUserCreatedValueCommand";
 import { SetNoduleDisplayCommand } from "@/commands-spherical/SetNoduleDisplayCommand";
 export default class IntersectionPointHandler extends Highlighter {

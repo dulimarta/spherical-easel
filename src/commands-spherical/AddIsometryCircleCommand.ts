@@ -1,12 +1,12 @@
 import { Command } from "./Command";
-import { SELabel } from "@/models/SELabel";
-import { SENodule } from "@/models/SENodule";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
-import { SETransformedPoint } from "@/models/SETransformedPoint";
-import { SECircle } from "@/models/SECircle";
-import { SEIsometryCircle } from "@/models/SEIsometryCircle";
+import { SETransformedPoint } from "@/models-spherical/SETransformedPoint";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SEIsometryCircle } from "@/models-spherical/SEIsometryCircle";
 import { toSVGType } from "@/types";
 
 export class AddIsometryCircleCommand extends Command {

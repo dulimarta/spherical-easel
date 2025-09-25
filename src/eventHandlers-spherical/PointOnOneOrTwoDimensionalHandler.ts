@@ -1,17 +1,17 @@
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
-import Point from "@/plottables/Point";
+import Point from "@/plottables-spherical/Point";
 import Highlighter from "./Highlighter";
-import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
+import { SEPointOnOneOrTwoDimensional } from "@/models-spherical/SEPointOnOneOrTwoDimensional";
 import { SEOneOrTwoDimensional } from "@/types";
-import { SELabel } from "@/models/SELabel";
+import { SELabel } from "@/models-spherical/SELabel";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
 import { AddPointOnOneDimensionalCommand } from "@/commands-spherical/AddPointOnOneOrTwoDimensionalCommand";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
-import { SEPoint } from "@/models/SEPoint";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { SetPointUserCreatedValueCommand } from "@/commands-spherical/SetPointUserCreatedValueCommand";
 
 export default class PointOnOneDimensionalHandler extends Highlighter {

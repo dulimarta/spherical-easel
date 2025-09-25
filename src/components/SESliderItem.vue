@@ -51,14 +51,14 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
-import { SEExpression } from "@/models/SEExpression";
-import { SESlider } from "@/models/SESlider";
+import { SEExpression } from "@/models-spherical/SEExpression";
+import { SESlider } from "@/models-spherical/SESlider";
 import { SliderPlaybackMode } from "@/types";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import { onMounted } from "vue";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 
 const store = useSEStore();
 // const { sePoints } = storeToRefs(store);

@@ -139,8 +139,8 @@ import {
   // ExtendedTriangle
 } from "three-mesh-bvh";
 // import type { UseMouseEventExtractor } from "@vueuse/core";
-import vertexShader from "../mesh/vertex.glsl";
-import fragmentShader from "../mesh/fragment.glsl";
+import vertexShader from "../plottables-hyperbolic/vertex.glsl";
+import fragmentShader from "../plottables-hyperbolic/fragment.glsl";
 
 import {
   useMouseInElement,

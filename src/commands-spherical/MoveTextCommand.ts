@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import { SEText } from "@/models/SEText";
+import { SEText } from "@/models-spherical/SEText";
 import { Vector2, Vector3 } from "three";
 
 export class MoveTextCommand extends Command {

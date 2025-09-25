@@ -55,7 +55,7 @@
 <script lang="ts" setup>
 // Reference: https://webrtc.github.io/samples/
 // import VueComponent from "vue";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 import { onBeforeUnmount, onMounted, ref, Ref } from "vue";

@@ -123,7 +123,7 @@ import { useAccountStore } from "@/stores/account";
 import { toolGroups } from "./toolgroups";
 import cloneDeep from "lodash.clonedeep";
 import { useSEStore } from "@/stores/se";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 import { inject } from "vue";

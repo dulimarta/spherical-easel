@@ -1,12 +1,12 @@
 import { Command } from "./Command";
-import { SEPoint } from "@/models/SEPoint";
-import { SELabel } from "@/models/SELabel";
-import { SENodule } from "@/models/SENodule";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { SavedNames } from "@/types";
-import { SETransformation } from "@/models/SETransformation";
-import { SETransformedPoint } from "@/models/SETransformedPoint";
+import { SETransformation } from "@/models-spherical/SETransformation";
+import { SETransformedPoint } from "@/models-spherical/SETransformedPoint";
 import { toSVGType } from "@/types";
 
 export class AddTransformedPointCommand extends Command {

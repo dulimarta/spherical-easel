@@ -3,14 +3,14 @@ import { vi } from "vitest";
 import { createWrapper } from "$/vue-helper";
 import { SEStoreType, useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
-import { makePoint } from "@/eventHandlers/__tests__/sphereframe-helper";
+import { makePoint } from "@/eventHandlers-spherical/__tests__/sphereframe-helper";
 import SETTINGS from "@/global-settings";
 import { createTestingPinia } from "@pinia/testing";
 import { StyleCategory } from "@/types/Styles";
-import Nodule from "@/plottables/Nodule";
-import MouseHandler from "@/eventHandlers/MouseHandler";
+import Nodule from "@/plottables-spherical/Nodule";
+import MouseHandler from "@/eventHandlers-spherical/MouseHandler";
 import { Command } from "@/commands-spherical/Command";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 
 const R = SETTINGS.boundaryCircle.radius;
 

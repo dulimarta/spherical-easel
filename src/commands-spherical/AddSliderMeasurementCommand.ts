@@ -1,6 +1,6 @@
 import { Command } from "./Command";
-import { SENodule } from "@/models/SENodule";
-import { SESlider } from "@/models/SESlider";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SESlider } from "@/models-spherical/SESlider";
 import { AddExpressionCommand } from "./AddExpressionCommand";
 import { SavedNames } from "@/types";
 import { toSVGType } from "@/types";

@@ -140,27 +140,27 @@ import ShortcutIcon from "@/components/ShortcutIcon.vue";
 import HyperbolicFrame from "@/components/HyperbolicFrame.vue";
 /* Import Command so we can use the command paradigm */
 import { Command } from "@/commands-spherical/Command";
-import EventBus from "../eventHandlers/EventBus";
+import EventBus from "../eventHandlers-spherical/EventBus";
 
-import Circle from "@/plottables/Circle";
-import Point from "@/plottables/Point";
-import Line from "@/plottables/Line";
-import Label from "@/plottables/Label";
-import Segment from "@/plottables/Segment";
-import Ellipse from "@/plottables/Ellipse";
-import { SENodule } from "@/models/SENodule";
+import Circle from "@/plottables-spherical/Circle";
+import Point from "@/plottables-spherical/Point";
+import Line from "@/plottables-spherical/Line";
+import Label from "@/plottables-spherical/Label";
+import Segment from "@/plottables-spherical/Segment";
+import Ellipse from "@/plottables-spherical/Ellipse";
+import { SENodule } from "@/models-spherical/SENodule";
 import {
   SphericalConstruction,
   ConstructionScript
 } from "@/types/ConstructionTypes";
-import AngleMarker from "@/plottables/AngleMarker";
+import AngleMarker from "@/plottables-spherical/AngleMarker";
 
 import { runScript } from "@/commands-spherical/CommandInterpreter";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import { useConstructionStore } from "@/stores/construction";
 import { useAccountStore } from "@/stores/account";
-import Parametric from "@/plottables/Parametric";
+import Parametric from "@/plottables-spherical/Parametric";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 import {
@@ -172,7 +172,7 @@ import {
 import { useLayout, useDisplay } from "vuetify";
 import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
-import Text from "@/plottables/Text";
+import Text from "@/plottables-spherical/Text";
 import { Handler } from "mitt";
 
 const DELETE_DELAY = 5000; // in milliseconds

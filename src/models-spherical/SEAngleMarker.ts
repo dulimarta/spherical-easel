@@ -1,4 +1,4 @@
-import AngleMarker from "@/plottables/AngleMarker";
+import AngleMarker from "@/plottables-spherical/AngleMarker";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
@@ -9,13 +9,13 @@ import {
   DEFAULT_ANGLE_MARKER_FRONT_STYLE
 } from "@/types/Styles";
 import i18n from "@/i18n";
-import { DisplayStyle } from "@/plottables/Nodule";
+import { DisplayStyle } from "@/plottables-spherical/Nodule";
 import { SEExpression } from "./SEExpression";
 import { SELabel } from "./SELabel";
 import { SELine } from "./SELine";
 import { SESegment } from "./SESegment";
 import { SEPoint } from "./SEPoint";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_ANGLE_MARKER_FRONT_STYLE),

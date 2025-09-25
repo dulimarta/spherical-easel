@@ -1,5 +1,5 @@
 import { Vector2, Vector3 } from "three";
-import Nodule from "@/plottables/Nodule";
+import Nodule from "@/plottables-spherical/Nodule";
 import {
   NormalAndPerpendicularPoint,
   NormalAndTangentPoint,

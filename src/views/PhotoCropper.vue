@@ -27,7 +27,7 @@
 import { Cropper as ImageCropper } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
 
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { computed, ref, defineComponent } from "vue";
 import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";

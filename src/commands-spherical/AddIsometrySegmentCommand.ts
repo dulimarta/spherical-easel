@@ -1,13 +1,13 @@
 import { Command } from "./Command";
-import { SELabel } from "@/models/SELabel";
-import { SENodule } from "@/models/SENodule";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
 import { StyleCategory } from "@/types/Styles";
 import { SavedNames, SEIsometry } from "@/types";
-import { SETransformedPoint } from "@/models/SETransformedPoint";
-import { SEIsometrySegment } from "@/models/SEIsometrySegment";
-import { SEReflection } from "@/models/SEReflection";
-import { SESegment } from "@/models/SESegment";
+import { SETransformedPoint } from "@/models-spherical/SETransformedPoint";
+import { SEIsometrySegment } from "@/models-spherical/SEIsometrySegment";
+import { SEReflection } from "@/models-spherical/SEReflection";
+import { SESegment } from "@/models-spherical/SESegment";
 import { toSVGType } from "@/types";
 
 export class AddIsometrySegmentCommand extends Command {

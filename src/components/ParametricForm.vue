@@ -104,30 +104,30 @@ import {
   MinMaxNumber,
   SEIntersectionReturnType
 } from "@/types";
-import { SEExpression } from "@/models/SEExpression";
+import { SEExpression } from "@/models-spherical/SEExpression";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import ParametricCoordinate from "@/components/ParametricCoordinate.vue";
 import ParametricTExpression from "@/components/ParametricTExpression.vue";
 import ParametricCuspParameterValues from "@/components/ParametricCuspParameterValues.vue";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
-import { SELabel } from "@/models/SELabel";
-import { SEParametric } from "@/models/SEParametric";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SEParametric } from "@/models-spherical/SEParametric";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { AddParametricCommand } from "@/commands-spherical/AddParametricCommand";
 import { AddParametricEndPointsCommand } from "@/commands-spherical/AddParametricEndPointsCommand";
 import { AddParametricTracePointCommand } from "@/commands-spherical/AddParametricTracePointCommand";
-import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
+import { SEParametricEndPoint } from "@/models-spherical/SEParametricEndPoint";
 import { AddIntersectionPointCommand } from "@/commands-spherical/AddIntersectionPointCommand";
-import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEParametricTracePoint } from "@/models-spherical/SEParametricTracePoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { AddIntersectionPointOtherParentsInfo } from "@/commands-spherical/AddIntersectionPointOtherParentsInfo";
-import { SEPoint } from "@/models/SEPoint";
+import { SEPoint } from "@/models-spherical/SEPoint";
 import { AddAntipodalPointCommand } from "@/commands-spherical/AddAntipodalPointCommand";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n({ useScope: "local" });
 // interface ParametricDataType {
