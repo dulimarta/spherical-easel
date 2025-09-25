@@ -6,7 +6,7 @@ import {
   Vector3
 } from "three";
 import { HENodule } from "./HENodule";
-import { HYPERBOLIC_LAYER } from "@/global-settings";
+import { HYPERBOLIC_LAYER } from "@/global-settings-spherical";
 import { CircularCurve } from "@/plottables-hyperbolic/CircularCurve";
 
 const ORIGIN = new Vector3();

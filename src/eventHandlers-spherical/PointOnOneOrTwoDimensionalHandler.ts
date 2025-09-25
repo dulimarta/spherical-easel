@@ -5,7 +5,7 @@ import Highlighter from "./Highlighter";
 import { SEPointOnOneOrTwoDimensional } from "@/models-spherical/SEPointOnOneOrTwoDimensional";
 import { SEOneOrTwoDimensional } from "@/types";
 import { SELabel } from "@/models-spherical/SELabel";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { Vector3 } from "three";
 import { AddPointOnOneDimensionalCommand } from "@/commands-spherical/AddPointOnOneOrTwoDimensionalCommand";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";

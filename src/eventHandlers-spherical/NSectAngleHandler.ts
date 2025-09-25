@@ -5,7 +5,7 @@ import { Vector3 } from "three";
 import { Group } from "two.js/src/group";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { SELabel } from "@/models-spherical/SELabel";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SEIntersectionReturnType } from "@/types";
 import Line from "@/plottables-spherical/Line";
 import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";

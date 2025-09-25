@@ -14,7 +14,7 @@ import {
   ParametricVectorAndTValue,
   NormalAndTangentPoint
 } from "@/types";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { Labelable } from "@/types";
 import i18n from "@/i18n";
 import Parametric from "@/plottables-spherical/Parametric";

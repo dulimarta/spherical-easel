@@ -1,6 +1,6 @@
 import MouseHandler from "./MouseHandler";
 import { SEPoint } from "@/models-spherical/SEPoint";
-import SETTINGS, { LAYER } from "@/global-settings";
+import SETTINGS, { LAYER } from "@/global-settings-spherical";
 import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { SENodule } from "@/models-spherical/SENodule";
 import { SELine } from "@/models-spherical/SELine";

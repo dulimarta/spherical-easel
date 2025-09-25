@@ -4,7 +4,7 @@ import { createWrapper } from "$/vue-helper";
 import { SEStoreType, useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
 import { makePoint } from "@/eventHandlers-spherical/__tests__/sphereframe-helper";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { createTestingPinia } from "@pinia/testing";
 import { StyleCategory } from "@/types/Styles";
 import Nodule from "@/plottables-spherical/Nodule";

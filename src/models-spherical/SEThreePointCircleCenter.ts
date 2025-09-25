@@ -1,7 +1,7 @@
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { Vector3 } from "three";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 const { t } = i18n.global;
 import { getThreeCircleCenter } from "@/utils/helpingfunctions";
 import { SEPoint } from "./SEPoint";

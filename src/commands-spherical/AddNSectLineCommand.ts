@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SEPoint } from "@/models-spherical/SEPoint";
 import { SavedNames } from "@/types";
 import { SELabel } from "@/models-spherical/SELabel";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
 import { SENSectLine } from "@/models-spherical/SENSectLine";

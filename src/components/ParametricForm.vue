@@ -110,7 +110,7 @@ import ParametricCoordinate from "@/components/ParametricCoordinate.vue";
 import ParametricTExpression from "@/components/ParametricTExpression.vue";
 import ParametricCuspParameterValues from "@/components/ParametricCuspParameterValues.vue";
 import EventBus from "@/eventHandlers-spherical/EventBus";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { Vector3 } from "three";
 import { SELabel } from "@/models-spherical/SELabel";
 import { SEParametric } from "@/models-spherical/SEParametric";

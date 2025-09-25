@@ -1,6 +1,6 @@
 import { ToolStrategy } from "./ToolStrategy";
 import EventBus from "./EventBus";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { Command } from "@/commands-spherical/Command";
 import FileSaver from "file-saver";
 import axios from "axios";

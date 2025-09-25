@@ -1,6 +1,6 @@
 /** @format */
 
-import SETTINGS, { LAYER } from "@/global-settings";
+import SETTINGS, { LAYER } from "@/global-settings-spherical";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
 import {

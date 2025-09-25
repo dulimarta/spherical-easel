@@ -9,7 +9,7 @@ import {
 } from "@/types";
 import { Vector3, Matrix4, Vector2 } from "three";
 import { SENodule } from "@/models-spherical/SENodule";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SEParametric } from "@/models-spherical/SEParametric";
 import { SETangentLineThruPoint } from "@/models-spherical/SETangentLineThruPoint";
 import { SEPointOnOneOrTwoDimensional } from "@/models-spherical/SEPointOnOneOrTwoDimensional";

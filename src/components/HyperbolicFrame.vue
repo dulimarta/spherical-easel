@@ -159,7 +159,7 @@ import { createGridCircle } from "@/plottables-hyperbolic/MeshFactory";
 import { onBeforeMount } from "vue";
 import { TextHandler } from "@/eventHandlers-hyperbolic/TextHandler";
 import { Text } from "troika-three-text";
-import { HYPERBOLIC_LAYER } from "@/global-settings";
+import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import { useIdle } from "@vueuse/core";
 import { KleinLineHandler } from "@/eventHandlers-hyperbolic/KleinLineHandler";
 import { PoincareLineHandler } from "@/eventHandlers-hyperbolic/PoincareLineHandler";

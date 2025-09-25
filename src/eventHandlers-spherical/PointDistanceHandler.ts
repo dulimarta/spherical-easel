@@ -5,7 +5,7 @@ import { SEPointDistance } from "@/models-spherical/SEPointDistance";
 import EventBus from "@/eventHandlers-spherical/EventBus";
 import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";

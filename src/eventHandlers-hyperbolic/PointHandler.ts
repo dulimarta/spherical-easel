@@ -2,7 +2,7 @@ import { AddPointByCoordinatesCommand } from "@/commands-spherical/AddPointByCoo
 import { Scene, Vector2, Vector3 } from "three";
 import { PoseTracker } from "./PoseTracker";
 import { createPoint } from "@/plottables-hyperbolic/MeshFactory";
-import { HYPERBOLIC_LAYER } from "@/global-settings";
+import { HYPERBOLIC_LAYER } from "@/global-settings-spherical";
 const Z_AXIS = new Vector3(0, 0, 1);
 export class PointHandler extends PoseTracker {
   // kleinPoint = createPoint();

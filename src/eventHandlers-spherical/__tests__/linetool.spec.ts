@@ -4,7 +4,7 @@ import { SEStoreType, useSEStore } from "@/stores/se";
 import { vi } from "vitest";
 import { SELine } from "@/models-spherical/SELine";
 import { VueWrapper } from "@vue/test-utils";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { Vector3 } from "three";
 import {
   TEST_MOUSE_X,

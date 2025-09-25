@@ -277,7 +277,7 @@
 import { computed, onBeforeMount, useAttrs } from "vue";
 import Nodule from "@/plottables-spherical/Nodule";
 import { StyleCategory } from "@/types/Styles";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import StylePropertySlider from "./StylePropertySlider.vue";
 import StylePropertyColorPicker from "./StylePropertyColorPicker.vue";
 import DisagreementOverride from "./DisagreementOverride.vue";

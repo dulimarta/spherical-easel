@@ -9,7 +9,7 @@ import { intersectTwoObjects } from "@/utils/intersections";
 import i18n from "@/i18n";
 import { Vector3 } from "three";
 import { getAncestors } from "@/utils/helpingfunctions";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { DisplayStyle } from "@/plottables-spherical/Nodule";
 import { ChangeIntersectionPointPrincipleParents } from "@/commands-spherical/ChangeIntersectionPointPrincipleParents";
 import { SESegment } from "./SESegment";

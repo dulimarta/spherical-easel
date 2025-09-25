@@ -4,7 +4,7 @@ import { createWrapper } from "$/vue-helper";
 import { SEStoreType, useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
 import { TEST_MOUSE_X, TEST_MOUSE_Y, dragMouse } from "./sphereframe-helper";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SECircle } from "@/models-spherical/SECircle";
 import { Vector3 } from "three";
 import { createTestingPinia } from "@pinia/testing";

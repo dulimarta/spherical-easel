@@ -11,7 +11,7 @@ import { Mouse3D } from "./mouseTypes";
 import { HEStoreType } from "@/stores/hyperbolic";
 import { HENodule } from "@/models-hyperbolic/HENodule";
 import { create2DLine, createPoint } from "@/plottables-hyperbolic/MeshFactory";
-import { HYPERBOLIC_LAYER } from "@/global-settings";
+import { HYPERBOLIC_LAYER } from "@/global-settings-spherical";
 import { HyperbolicToolStrategy } from "./ToolStrategy";
 
 // const ORIGIN = new Vector3(0, 0, 0);

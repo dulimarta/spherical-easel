@@ -12,7 +12,7 @@ import { SEPointOnOneOrTwoDimensional } from "@/models-spherical/SEPointOnOneOrT
 import { AddPointOnOneDimensionalCommand } from "@/commands-spherical/AddPointOnOneOrTwoDimensionalCommand";
 import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { AddPointCommand } from "@/commands-spherical/AddPointCommand";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";

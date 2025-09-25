@@ -3,7 +3,7 @@ import Segment from "@/plottables-spherical/Segment";
 import { Vector2, Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import {
   OneDimensional,
   Labelable,

@@ -1329,17 +1329,4 @@ export enum LAYER {
 }
 //#endregion layers
 
-export enum HYPERBOLIC_LAYER { // ThreeJS constraint: max 32 layers
-  upperSheet,
-  upperSheetPoints,
-  upperSheetLines,
-  lowerSheet,
-  lowerSheetPoints,
-  lowerShettLines,
-  label,
-  /* The following three are experimental */
-  unitSphere,
-  kleinDisk,
-  poincareDisk
-}
 export default SETTINGS;

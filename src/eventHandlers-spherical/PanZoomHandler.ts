@@ -3,7 +3,7 @@ import { Vector2 } from "three";
 import { ZoomSphereCommand } from "@/commands-spherical/ZoomSphereCommand";
 import MouseHandler from "./MouseHandler";
 import EventBus from "./EventBus";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 
 import { SENodule } from "@/models-spherical/SENodule";
 

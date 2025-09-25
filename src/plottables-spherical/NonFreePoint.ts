@@ -1,7 +1,7 @@
 /** @format */
 
 // import SETTINGS from "@/global-settings";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
   StyleOptions,

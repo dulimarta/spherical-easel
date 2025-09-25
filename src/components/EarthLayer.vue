@@ -8,7 +8,7 @@
 </style>
 <script setup lang="ts">
 // se store magnification factor * 240 over orthographic camera
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import {
   Matrix4,
   Scene,

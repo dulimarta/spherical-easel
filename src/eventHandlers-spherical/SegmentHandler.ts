@@ -8,7 +8,7 @@ import { AddSegmentCommand } from "@/commands-spherical/AddSegmentCommand";
 import { AddIntersectionPointCommand } from "@/commands-spherical/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands-spherical/AddPointOnOneOrTwoDimensionalCommand";
 import { SESegment } from "@/models-spherical/SESegment";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import Highlighter from "./Highlighter";
 import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";

@@ -8,7 +8,7 @@ import AngleMarker from "@/plottables-spherical/AngleMarker";
 import { SEOneOrTwoDimensional } from "@/types";
 import Point from "@/plottables-spherical/Point";
 import { Vector3 } from "three";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SELabel } from "@/models-spherical/SELabel";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { SEPointOnOneOrTwoDimensional } from "@/models-spherical/SEPointOnOneOrTwoDimensional";

@@ -1,4 +1,4 @@
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
   StyleOptions,
@@ -25,10 +25,7 @@ export default class NonFreeLine extends Line {
       StyleCategory.Front,
       DEFAULT_NONFREE_LINE_FRONT_STYLE
     );
-    this.styleOptions.set(
-      StyleCategory.Back,
-      DEFAULT_NONFREE_LINE_BACK_STYLE
-    );
+    this.styleOptions.set(StyleCategory.Back, DEFAULT_NONFREE_LINE_BACK_STYLE);
   }
 
   /**

@@ -9,7 +9,7 @@ import {
 } from "three";
 import { PoseTracker } from "./PoseTracker";
 import { createPoint } from "@/plottables-hyperbolic/MeshFactory";
-import { HYPERBOLIC_LAYER } from "@/global-settings";
+import { HYPERBOLIC_LAYER } from "@/global-settings-spherical";
 
 /* Techniques used here
 

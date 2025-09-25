@@ -3,7 +3,7 @@ import { Group } from "two.js/src/group";
 import { Matrix4, Vector3 } from "three";
 import EventBus from "./EventBus";
 import { RotateSphereCommand } from "@/commands-spherical/RotateSphereCommand";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SEPoint } from "@/models-spherical/SEPoint";
 import { SELine } from "@/models-spherical/SELine";
 import { SESegment } from "@/models-spherical/SESegment";

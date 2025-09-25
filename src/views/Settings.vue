@@ -158,7 +158,7 @@ div#appSetting {
 
 <script lang="ts" setup>
 // import PhotoCapture from "@/views/PhotoCapture.vue";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import {
   getAuth,
   User,

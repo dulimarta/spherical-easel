@@ -9,7 +9,7 @@ import { SENodule } from "@/models-spherical/SENodule";
 import { Command } from "@/commands-spherical/Command";
 import Handler from "../MeasuredCircleHandler";
 
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 const R = SETTINGS.boundaryCircle.radius;
 

@@ -15,7 +15,7 @@ import { Vector3 } from "three";
 import Line from "@/plottables-spherical/Line";
 import Point from "@/plottables-spherical/Point";
 import { SETangentLineThruPoint } from "@/models-spherical/SETangentLineThruPoint";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { DisplayStyle } from "@/plottables-spherical/Nodule";
 import { AddIntersectionPointCommand } from "@/commands-spherical/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands-spherical/AddPointOnOneOrTwoDimensionalCommand";

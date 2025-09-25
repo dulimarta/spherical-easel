@@ -3,7 +3,7 @@ import { Matrix4, Vector3 } from "three";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SECircle } from "./SECircle";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SETransformation } from "./SETransformation";
 const { t } = i18n.global;
 export class SEInversion extends SETransformation {

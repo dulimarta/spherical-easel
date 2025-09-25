@@ -86,7 +86,7 @@ import {
   watch,
   computed
 } from "vue";
-import SETTINGS, { LAYER } from "@/global-settings";
+import SETTINGS, { LAYER } from "@/global-settings-spherical";
 import ShortcutIcon from "./ShortcutIcon.vue";
 import { ZoomSphereCommand } from "@/commands-spherical/ZoomSphereCommand";
 import { Command } from "@/commands-spherical/Command";

@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { SavedNames } from "@/types";
 import { SELabel } from "@/models-spherical/SELabel";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
 import { SEParametricTracePoint } from "@/models-spherical/SEParametricTracePoint";

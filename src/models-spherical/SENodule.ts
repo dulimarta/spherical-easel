@@ -7,7 +7,7 @@ import {
   ParametricVectorAndTValue
 } from "@/types";
 import newton from "newton-raphson-method";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { StyleCategory, StyleOptions } from "@/types/Styles";

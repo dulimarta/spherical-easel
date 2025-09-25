@@ -109,7 +109,7 @@ import { SEEarthPoint } from "@/models-spherical/SEEarthPoint";
 import { useI18n } from "vue-i18n";
 import { SetNoduleDisplayCommand } from "@/commands-spherical/SetNoduleDisplayCommand";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { Command } from "@/commands-spherical/Command";
 import { SENodule } from "@/models-spherical/SENodule";
 import EventBus from "@/eventHandlers-spherical/EventBus";

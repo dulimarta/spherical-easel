@@ -16,7 +16,7 @@ import { ChangeBackStyleContrastCommand } from "@/commands-spherical/ChangeBacks
 import { SEText } from "@/models-spherical/SEText";
 import EventBus from "@/eventHandlers-spherical/EventBus";
 import { FillStyle } from "@/types";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isArrayEqual(a: Array<any>, b: Array<any>) {

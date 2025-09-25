@@ -16,7 +16,7 @@ import { SENodule } from "@/models-spherical/SENodule";
 import { SEPoint } from "@/models-spherical/SEPoint";
 import { Command } from "@/commands-spherical/Command";
 import Handler from "../PerpendicularLineThruPointHandler";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { Vector3 } from "three";
 
 describe("Point On Object Tool", () => {

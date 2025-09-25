@@ -19,7 +19,7 @@ import { SEPoint } from "@/models-spherical/SEPoint";
 import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
 import { SEExpression } from "@/models-spherical/SEExpression";
 import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
-import { LAYER } from "@/global-settings";
+import { LAYER } from "@/global-settings-spherical";
 // import "@types/google.maps"
 
 export interface Selectable {

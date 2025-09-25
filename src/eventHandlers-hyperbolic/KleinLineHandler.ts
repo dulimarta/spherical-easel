@@ -1,7 +1,7 @@
 import { Object3D, Scene, Vector2, Vector3 } from "three";
 import { PoseTracker } from "./PoseTracker";
 import { create2DLine, createPoint } from "@/plottables-hyperbolic/MeshFactory";
-import { HYPERBOLIC_LAYER } from "@/global-settings";
+import { HYPERBOLIC_LAYER } from "@/global-settings-spherical";
 
 export class KleinLineHandler extends PoseTracker {
   disk: Object3D;

@@ -64,7 +64,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUpdate, Ref } from "vue";
 
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import Color from "color";
 import HintButton from "@/components/HintButton.vue";
 import { useI18n } from "vue-i18n";

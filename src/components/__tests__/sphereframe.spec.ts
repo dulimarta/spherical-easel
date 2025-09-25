@@ -2,9 +2,9 @@ import SphereFrame from "@/components/SphereFrame.vue";
 import { vi } from "vitest";
 import { createTestingPinia } from "@pinia/testing";
 import { createWrapper } from "$/vue-helper";
-import { SEStoreType,useSEStore } from "@/stores/se";
+import { SEStoreType, useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
-import { LAYER } from "@/global-settings";
+import { LAYER } from "@/global-settings-spherical";
 /*
 TODO: the test cases below create the object using newly created node.
 Should we include test cases where the tools select existing objects
@@ -36,7 +36,6 @@ describe("SphereFrame.vue", () => {
     wrapper = out.wrapper;
     SEStore.setActionMode("select");
     await wrapper.vm.$nextTick();
-
   });
 
   it("is an instance", () => {
@@ -52,8 +51,8 @@ describe("SphereFrame.vue", () => {
   it("has TwoJS instance and midground layer", () => {
     // expect(wrapper.vm.$data.twoInstance).toBeDefined();
     // expect(wrapper.vm.$data.layers[LAYER.midground]).toBeDefined();
-    expect(Array.isArray(SEStore.twojsLayers)).toBeTruthy()
-    expect(SEStore.twojsLayers[LAYER.midground]).toBeDefined()
+    expect(Array.isArray(SEStore.twojsLayers)).toBeTruthy();
+    expect(SEStore.twojsLayers[LAYER.midground]).toBeDefined();
   });
 
   // it("contains boundary circle of the right radius", () => {

@@ -151,7 +151,7 @@ import { SEIsometrySegment } from "@/models-spherical/SEIsometrySegment";
 import { SEIsometryEllipse } from "@/models-spherical/SEIsometryEllipse";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SEEarthPoint } from "@/models-spherical/SEEarthPoint";
 import { Poles } from "@/types";
 import { SELatitude } from "@/models-spherical/SELatitude";

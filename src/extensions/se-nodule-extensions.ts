@@ -1,4 +1,4 @@
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SECircle } from "@/models-spherical/SECircle";
 import { SELabel } from "@/models-spherical/SELabel";
 import { SELine } from "@/models-spherical/SELine";

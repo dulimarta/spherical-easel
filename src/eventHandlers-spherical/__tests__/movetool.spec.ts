@@ -12,7 +12,7 @@ import {
   drawOneDimensional,
   makePoint
 } from "./sphereframe-helper";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SEExpression } from "@/models-spherical/SEExpression";
 import { SENodule } from "@/models-spherical/SENodule";
 import { SEPoint } from "@/models-spherical/SEPoint";

@@ -2,7 +2,7 @@ import { MeshStandardMaterial, SphereGeometry, Vector3, Mesh } from "three";
 import { HENodule } from "./HENodule";
 // import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { Text } from "troika-three-text";
-import { HYPERBOLIC_LAYER } from "@/global-settings";
+import { HYPERBOLIC_LAYER } from "@/global-settings-spherical";
 export class HEPoint extends HENodule {
   private pointMesh: Mesh;
   constructor(pos: Vector3, normal: Vector3) {

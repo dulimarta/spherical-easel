@@ -5,7 +5,7 @@ import { createWrapper } from "$/vue-helper";
 import { SEStoreType, useSEStore } from "@/stores/se";
 import { VueWrapper } from "@vue/test-utils";
 import { mouseClickOnSphere, drawOneDimensional } from "./sphereframe-helper";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { SENodule } from "@/models-spherical/SENodule";
 import { SEPoint } from "@/models-spherical/SEPoint";

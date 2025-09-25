@@ -1,5 +1,5 @@
 import { ObjectState, ValueDisplayMode } from "@/types";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import i18n from "@/i18n";
 import EventBus from "@/eventHandlers-spherical/EventBus";
 import { SEExpression } from "./SEExpression";

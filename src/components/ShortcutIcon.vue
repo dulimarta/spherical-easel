@@ -20,7 +20,7 @@ import { useSEStore } from "@/stores/se";
 import { ToolButtonType } from "@/types";
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { Command } from "@/commands-spherical/Command";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { useI18n } from "vue-i18n";
 const seStore = useSEStore();
 const iconSize = ref(SETTINGS.icons.shortcutIconSize);

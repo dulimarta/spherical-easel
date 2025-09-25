@@ -19,7 +19,7 @@ import {
   svgStyleType as svgStyleType,
   toSVGType
 } from "@/types/index";
-import SETTINGS, { LAYER } from "@/global-settings";
+import SETTINGS, { LAYER } from "@/global-settings-spherical";
 import { SENodule } from "@/models-spherical/SENodule";
 import { SELabel } from "@/models-spherical/SELabel";
 

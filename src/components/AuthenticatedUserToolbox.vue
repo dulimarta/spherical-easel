@@ -364,7 +364,7 @@ import { computed, watch } from "vue";
 import { mergeIntoImageUrl } from "@/utils/helpingfunctions";
 import { Command } from "@/commands-spherical/Command";
 import { Vector3 } from "three";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { VTreeview } from "vuetify/labs/VTreeview";

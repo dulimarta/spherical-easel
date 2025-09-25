@@ -16,7 +16,7 @@ import Handler from "../DeleteHandler";
 import MouseHandler from "../MouseHandler";
 
 import { Vector3 } from "three";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SESegment } from "@/models-spherical/SESegment";
 import { SECircle } from "@/models-spherical/SECircle";
 import { SEEllipse } from "@/models-spherical/SEEllipse";

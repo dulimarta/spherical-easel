@@ -7,7 +7,7 @@ import { SELine } from "@/models-spherical/SELine";
 import { SESegment } from "@/models-spherical/SESegment";
 import { SECircle } from "@/models-spherical/SECircle";
 import { SELabel } from "@/models-spherical/SELabel";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import EventBus from "./EventBus";
 import { RotateSphereCommand } from "@/commands-spherical/RotateSphereCommand";
 import Highlighter from "./Highlighter";

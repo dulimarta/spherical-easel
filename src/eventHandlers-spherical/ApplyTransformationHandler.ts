@@ -2,7 +2,7 @@
 
 import { AddTransformedPointCommand } from "@/commands-spherical/AddTransformedPointCommand";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import i18n from "@/i18n";
 import { SECircle } from "@/models-spherical/SECircle";
 import { SEEllipse } from "@/models-spherical/SEEllipse";

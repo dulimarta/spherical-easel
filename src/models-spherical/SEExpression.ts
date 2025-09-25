@@ -2,7 +2,7 @@ import { SENodule } from "./SENodule";
 import { ValueDisplayMode } from "@/types";
 // import { SEOneOrTwoDimensional } from "@/types";
 import { Vector3 } from "three";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { Visitor } from "@/visitors/Visitor";
 import i18n from "@/i18n";
 import EventBus from "@/eventHandlers-spherical/EventBus";

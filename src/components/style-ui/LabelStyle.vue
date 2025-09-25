@@ -248,7 +248,7 @@
 import { ref, onMounted, onBeforeMount, watch, Ref } from "vue";
 import { LabelStyleOptions } from "@/types/Styles";
 import { LabelDisplayMode } from "@/types";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import PropertySlider from "./StylePropertySlider.vue";
 import PropertyColorPicker from "./StylePropertyColorPicker.vue";
 import DisagreementOverride from "./DisagreementOverride.vue";

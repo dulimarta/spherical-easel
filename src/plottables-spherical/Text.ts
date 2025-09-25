@@ -1,10 +1,10 @@
-import SETTINGS, { LAYER } from "@/global-settings";
+import SETTINGS, { LAYER } from "@/global-settings-spherical";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector2 } from "three";
 import {
   StyleOptions,
   StyleCategory,
-  DEFAULT_TEXT_TEXT_STYLE,
+  DEFAULT_TEXT_TEXT_STYLE
   // DEFAULT_TEXT_FRONT_STYLE,
   // DEFAULT_TEXT_BACK_STYLE
 } from "@/types/Styles";
@@ -36,9 +36,9 @@ export default class Text extends Nodule {
       size: SETTINGS.text.fontSize
     });
     // Set the properties of the points that never change - stroke width and some glowing options
-    this.textObject.noStroke()
+    this.textObject.noStroke();
     this.glowingTextObject.linewidth = SETTINGS.text.glowingStrokeWidth;
-    this.glowingTextObject.stroke = SETTINGS.text.glowingStrokeColor
+    this.glowingTextObject.stroke = SETTINGS.text.glowingStrokeColor;
     this.glowingTextObject.visible = false;
 
     this.styleOptions.set(StyleCategory.Label, DEFAULT_TEXT_TEXT_STYLE);
@@ -169,8 +169,9 @@ export default class Text extends Nodule {
 
         // we may want to modify this to allow changes in the text from the style panel
         // console.log("Set text in",this.name,"name=",textStyle?.labelDisplayText )
-        this.textObject.value = textStyle?.labelDisplayText ?? "TEXT ERROR"
-        this.glowingTextObject.value = textStyle?.labelDisplayText ?? "TEXT ERROR"
+        this.textObject.value = textStyle?.labelDisplayText ?? "TEXT ERROR";
+        this.glowingTextObject.value =
+          textStyle?.labelDisplayText ?? "TEXT ERROR";
         // this._text = textStyle?.labelDisplayText ?? "TEXT ERROR"
 
         if (textStyle?.labelTextStyle !== "bold") {
@@ -213,7 +214,7 @@ export default class Text extends Nodule {
     }
   }
 
-  toSVG( nonScaling?: {
+  toSVG(nonScaling?: {
     stroke: boolean;
     text: boolean;
     pointRadius: boolean;
@@ -228,7 +229,7 @@ export default class Text extends Nodule {
       layerSVGArray: [],
       type: "text"
     };
-    
+
     const frontReturnDictionary = new Map<svgStyleType, string>();
     frontReturnDictionary.set("font-family", this.textObject.family);
     frontReturnDictionary.set("font-style", this.textObject.style);
@@ -248,16 +249,15 @@ export default class Text extends Nodule {
       "<text " +
       Label.svgTransformMatrixString(
         this.textObject.rotation,
-        nonScaling?.text ? 1/nonScaling.scaleFactor : (this.textObject.scale as number),
+        nonScaling?.text
+          ? 1 / nonScaling.scaleFactor
+          : (this.textObject.scale as number),
         this.textObject.position.x,
         this.textObject.position.y
       );
 
     svgFrontString += ">" + this.textObject.value + "</text>";
-    returnSVGObject.layerSVGArray.push([
-      LAYER.foregroundText,
-      svgFrontString
-    ]);
+    returnSVGObject.layerSVGArray.push([LAYER.foregroundText, svgFrontString]);
     //console.log("text front style dictionary", returnSVGObject.frontStyleDictionary)
     return [returnSVGObject];
   }
@@ -316,12 +316,12 @@ export default class Text extends Nodule {
     });
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
-  get text():string {
+  get text(): string {
     const textStyle = this.styleOptions.get(StyleCategory.Label);
-    return textStyle?.labelDisplayText ?? ""
+    return textStyle?.labelDisplayText ?? "";
   }
 
-  public setDefaultText(txt:string):void{
-    this._defaultText = txt
+  public setDefaultText(txt: string): void {
+    this._defaultText = txt;
   }
 }

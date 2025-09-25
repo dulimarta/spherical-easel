@@ -11,7 +11,7 @@ import { SESegment } from "@/models-spherical/SESegment";
 import { SEParametric } from "@/models-spherical/SEParametric";
 import { SEPolygon } from "@/models-spherical/SEPolygon";
 import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
-import SETTINGS, { LAYER } from "@/global-settings";
+import SETTINGS, { LAYER } from "@/global-settings-spherical";
 import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";

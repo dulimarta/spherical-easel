@@ -10,7 +10,7 @@ import {
   drawPointAt,
   mouseClickOnSphere
 } from "./sphereframe-helper";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SENodule } from "@/models-spherical/SENodule";
 import { Vector3 } from "three";
 import { Command } from "@/commands-spherical/Command";

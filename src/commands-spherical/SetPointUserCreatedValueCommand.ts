@@ -3,7 +3,7 @@ import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables-spherical/Nodule";
 // import { Labelable } from "@/types";
 // import { SEPoint } from "@/models-spherical/SEPoint";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 // import { SENodule } from "@/models-spherical/SENodule";
 // import { SavedNames } from "@/types";
 import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";

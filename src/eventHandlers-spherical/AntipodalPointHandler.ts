@@ -5,7 +5,7 @@ import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { SEOneOrTwoDimensional } from "@/types";
 import { SELabel } from "@/models-spherical/SELabel";
 import { Vector3 } from "three";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import Point from "@/plottables-spherical/Point";

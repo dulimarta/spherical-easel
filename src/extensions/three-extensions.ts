@@ -1,5 +1,5 @@
 import { Vector2, Vector3, Matrix4 } from "three";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 
 Vector2.prototype.toFixed = function (precision: number): string {
   return (

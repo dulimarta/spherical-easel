@@ -16,7 +16,7 @@
 <script lang="ts" setup>
 import axios from "axios";
 import { onMounted, ref, Ref } from "vue";
-import SETTINGS from "../../src/global-settings";
+import SETTINGS from "../global-settings-spherical";
 import { IconNames } from "@/types/index";
 
 const props = defineProps<{

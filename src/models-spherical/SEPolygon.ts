@@ -2,7 +2,7 @@ import { SENodule } from "./SENodule";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import {
   DEFAULT_POLYGON_BACK_STYLE,
   DEFAULT_POLYGON_FRONT_STYLE

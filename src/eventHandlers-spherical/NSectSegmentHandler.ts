@@ -6,7 +6,7 @@ import { SENSectPoint } from "@/models-spherical/SENSectPoint";
 import Point from "@/plottables-spherical/Point";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { SELabel } from "@/models-spherical/SELabel";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { AddNSectPointCommand } from "@/commands-spherical/AddNSectPointCommand";
 //import Two from "two.js";
 import { Group } from "two.js/src/group";

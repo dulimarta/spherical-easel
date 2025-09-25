@@ -5,7 +5,7 @@ import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
 import EventBus from "@/eventHandlers-spherical/EventBus";
 import AngleMarker from "@/plottables-spherical/AngleMarker";
 import { Vector3 } from "three";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SELabel } from "@/models-spherical/SELabel";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { AngleMode } from "@/types";

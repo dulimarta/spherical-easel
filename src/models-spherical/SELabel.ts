@@ -3,7 +3,7 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { DEFAULT_LABEL_TEXT_STYLE } from "@/types/Styles";
 import {
   LabelDisplayMode,

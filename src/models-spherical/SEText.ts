@@ -3,7 +3,7 @@ import i18n from "@/i18n";
 import { SENodule } from "./SENodule";
 import { Vector2, Vector3 } from "three";
 import { Vector } from "two.js/src/vector";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { Visitor } from "@/visitors/Visitor";
 // import { TextMoverVisitor } from "@/visitors/TextMoverVisitor";
 import Text from "@/plottables-spherical/Text";

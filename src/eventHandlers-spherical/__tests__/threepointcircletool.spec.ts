@@ -9,7 +9,7 @@ import {
   dragMouse,
   drawThreePointCircle
 } from "./sphereframe-helper";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SECircle } from "@/models-spherical/SECircle";
 import { Vector3 } from "three";
 import { createTestingPinia } from "@pinia/testing";

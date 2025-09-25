@@ -2,7 +2,7 @@ import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models-spherical/SEPoint";
 import { SENodule } from "@/models-spherical/SENodule";
 import { AddPointCoordinateMeasurementCommand } from "@/commands-spherical/AddPointCoordinateMeasurementCommand";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import EventBus from "@/eventHandlers-spherical/EventBus";
 import {
   SEPointCoordinate,

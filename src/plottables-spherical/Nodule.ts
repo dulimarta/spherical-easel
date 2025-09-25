@@ -1,6 +1,6 @@
 import { Stylable } from "./Styleable";
 import { Resizeable } from "./Resizeable";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { StyleOptions, StyleCategory } from "@/types/Styles";
 import {
   FillStyle,

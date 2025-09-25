@@ -1,5 +1,5 @@
 import { Visitable } from "@/visitors/Visitable";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { OneDimensional, Labelable, ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { Vector3 } from "three";

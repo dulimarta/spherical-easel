@@ -3,7 +3,7 @@ import Point from "@/plottables-spherical/Point";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { AddPointCommand } from "@/commands-spherical/AddPointCommand";
 import { SEPoint } from "@/models-spherical/SEPoint";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import Highlighter from "./Highlighter";
 import { SEPointOnOneOrTwoDimensional } from "@/models-spherical/SEPointOnOneOrTwoDimensional";

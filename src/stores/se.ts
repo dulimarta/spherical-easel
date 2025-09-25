@@ -50,7 +50,7 @@ import { Ref, ref, computed, markRaw } from "vue";
 import { defineStore } from "pinia";
 import { Matrix4, Vector2, Vector3 } from "three";
 import { Group } from "two.js/src/group";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import Two from "two.js";
 import { SEText } from "@/models-spherical/SEText";
 import { rank_of_type } from "@/utils/helpingfunctions";

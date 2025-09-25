@@ -7,7 +7,7 @@ import { SEPointOnOneOrTwoDimensional } from "@/models-spherical/SEPointOnOneOrT
 import { AddPointOnOneDimensionalCommand } from "@/commands-spherical/AddPointOnOneOrTwoDimensionalCommand";
 import { SELabel } from "@/models-spherical/SELabel";
 import { Vector3 } from "three";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import EventBus from "./EventBus";
 import { SEOneOrTwoDimensional } from "@/types";
 //import Two from "two.js";

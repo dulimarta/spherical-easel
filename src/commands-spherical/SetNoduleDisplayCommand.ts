@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models-spherical/SENodule";
 import { Labelable, SavedNames } from "@/types";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { toSVGType } from "@/types";
 
 export class SetNoduleDisplayCommand extends Command {

@@ -352,7 +352,7 @@ import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands-spherical/SetNoduleDisplayCommand";
 import { FillStyle } from "@/types";
 import { useTemplateRef } from "vue";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { SENodule } from "@/models-spherical/SENodule";
 const styleDrawerRef = useTemplateRef("drawerOverlay");
 const showDrawer = ref(false);

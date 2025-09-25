@@ -9,7 +9,7 @@ import {
   ObjectState,
   OneDimensional
 } from "@/types";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import {
   DEFAULT_ELLIPSE_BACK_STYLE,
   DEFAULT_ELLIPSE_FRONT_STYLE

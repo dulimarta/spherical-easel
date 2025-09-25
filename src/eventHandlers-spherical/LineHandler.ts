@@ -6,7 +6,7 @@ import { AddLineCommand } from "@/commands-spherical/AddLineCommand";
 import { SEPoint } from "@/models-spherical/SEPoint";
 import { SELine } from "@/models-spherical/SELine";
 import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import Highlighter from "./Highlighter";
 import { SEPointOnOneOrTwoDimensional } from "@/models-spherical/SEPointOnOneOrTwoDimensional";
 import { AddPointCommand } from "@/commands-spherical/AddPointCommand";

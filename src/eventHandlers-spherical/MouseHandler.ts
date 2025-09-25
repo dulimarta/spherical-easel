@@ -2,7 +2,7 @@
 
 import { Vector2, Vector3 } from "three";
 import { ToolStrategy } from "./ToolStrategy";
-import SETTINGS, { LAYER } from "@/global-settings";
+import SETTINGS, { LAYER } from "@/global-settings-spherical";
 import { SEPoint } from "@/models-spherical/SEPoint";
 import { SELine } from "@/models-spherical/SELine";
 import { SECircle } from "@/models-spherical/SECircle";
