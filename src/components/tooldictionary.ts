@@ -1,5 +1,5 @@
 import { ActionMode, ToolButtonType } from "@/types";
-import { Command } from "@/commands/Command";
+import { Command } from "@/commands-spherical/Command";
 import EventBus from "@/eventHandlers/EventBus";
 import MouseHandler from "@/eventHandlers/MouseHandler";
 
@@ -336,8 +336,7 @@ TOOL_DICTIONARY.set("dummy", {
   toolGroup: "EditTools",
   toolUseMessage: "buttons.DummyToolUseMessage",
   toolTipMessage: "buttons.DummyToolTipMessage"
-})
-.set("text", {
+}).set("text", {
   action: "text",
   displayedName: "buttons.TextDisplayedName",
   toolGroup: "EditTools",

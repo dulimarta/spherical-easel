@@ -362,7 +362,7 @@ import { useConstructionStore } from "@/stores/construction";
 import FileSaver from "file-saver";
 import { computed, watch } from "vue";
 import { mergeIntoImageUrl } from "@/utils/helpingfunctions";
-import { Command } from "@/commands/Command";
+import { Command } from "@/commands-spherical/Command";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";

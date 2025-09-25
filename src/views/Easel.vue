@@ -139,7 +139,7 @@ import MessageHub from "@/components/MessageHub.vue";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
 import HyperbolicFrame from "@/components/HyperbolicFrame.vue";
 /* Import Command so we can use the command paradigm */
-import { Command } from "@/commands/Command";
+import { Command } from "@/commands-spherical/Command";
 import EventBus from "../eventHandlers/EventBus";
 
 import Circle from "@/plottables/Circle";
@@ -155,7 +155,7 @@ import {
 } from "@/types/ConstructionTypes";
 import AngleMarker from "@/plottables/AngleMarker";
 
-import { runScript } from "@/commands/CommandInterpreter";
+import { runScript } from "@/commands-spherical/CommandInterpreter";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import { useConstructionStore } from "@/stores/construction";
@@ -501,7 +501,9 @@ onBeforeRouteLeave(
   border-radius: 8px;
   border: solid white;
   background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 #toolbox-and-sphere {

@@ -215,7 +215,7 @@ import { useAccountStore } from "@/stores/account";
 import { Ref, ref } from "vue";
 import { storeToRefs } from "pinia";
 import EventBus from "@/eventHandlers/EventBus";
-import { runScript } from "@/commands/CommandInterpreter";
+import { runScript } from "@/commands-spherical/CommandInterpreter";
 import { Matrix4 } from "three";
 import { useI18n } from "vue-i18n";
 import { useConstructionStore } from "@/stores/construction";

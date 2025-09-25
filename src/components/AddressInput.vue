@@ -57,8 +57,8 @@
 import { onMounted, ref, watch, Ref } from "vue";
 import * as THREE from "three";
 import { SELabel } from "@/models/SELabel";
-import { CommandGroup } from "@/commands/CommandGroup";
-import { AddEarthPointCommand } from "@/commands/AddEarthPointCommand";
+import { CommandGroup } from "@/commands-spherical/CommandGroup";
+import { AddEarthPointCommand } from "@/commands-spherical/AddEarthPointCommand";
 import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import { SEEarthPoint } from "@/models/SEEarthPoint";

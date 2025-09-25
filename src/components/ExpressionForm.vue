@@ -53,7 +53,7 @@
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
 import { SECalculation } from "@/models/SECalculation";
-import { AddCalculationCommand } from "@/commands/AddCalculationCommand";
+import { AddCalculationCommand } from "@/commands-spherical/AddCalculationCommand";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import { useSEStore } from "@/stores/se";

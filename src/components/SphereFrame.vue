@@ -88,8 +88,8 @@ import {
 } from "vue";
 import SETTINGS, { LAYER } from "@/global-settings";
 import ShortcutIcon from "./ShortcutIcon.vue";
-import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
-import { Command } from "@/commands/Command";
+import { ZoomSphereCommand } from "@/commands-spherical/ZoomSphereCommand";
+import { Command } from "@/commands-spherical/Command";
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
 import SelectionHandler from "@/eventHandlers/SelectionHandler";

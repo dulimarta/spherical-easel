@@ -7,7 +7,7 @@ import {
   ConstructionTree,
   ConstructionPath
 } from "@/types/ConstructionTypes";
-import { Command } from "@/commands/Command";
+import { Command } from "@/commands-spherical/Command";
 import { defineStore } from "pinia";
 import { Auth, getAuth } from "firebase/auth";
 import { ref, Ref } from "vue";

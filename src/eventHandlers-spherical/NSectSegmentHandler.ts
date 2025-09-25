@@ -1,0 +1,321 @@
+import EventBus from "@/eventHandlers/EventBus";
+import Highlighter from "./Highlighter";
+import { Vector3 } from "three";
+import { SESegment } from "@/models/SESegment";
+import { SENSectPoint } from "@/models/SENSectPoint";
+import Point from "@/plottables/Point";
+import { CommandGroup } from "@/commands-spherical/CommandGroup";
+import { SELabel } from "@/models/SELabel";
+import SETTINGS from "@/global-settings";
+import { AddNSectPointCommand } from "@/commands-spherical/AddNSectPointCommand";
+//import Two from "two.js";
+import { Group } from "two.js/src/group";
+
+export default class NSectSegmentHandler extends Highlighter {
+  private selectedNValue = 2;
+
+  private bisectionOnly = false;
+
+  private temporaryPoints: Point[] = []; // indicates to the user where a new points will be created
+  private temporaryPointsAdded: boolean[] = []; // indicates if the temporary point has been added.
+
+  private temporarilySelectedSegment: SESegment | null = null;
+
+  private tmpVector = new Vector3();
+  // private _disableKeyHandler = false;
+
+  constructor(layers: Group[], bisectOnly?: boolean) {
+    super(layers);
+
+    // Create and style the temporary antipode/point marking the antipode/point being created
+    for (let i = 0; i < 9; i++) {
+      this.temporaryPoints.push(new Point());
+      NSectSegmentHandler.store.addTemporaryNodule(this.temporaryPoints[i]);
+      this.temporaryPointsAdded.push(false);
+    }
+    if (bisectOnly === true) {
+      this.bisectionOnly = bisectOnly;
+    }
+    if (!this.bisectionOnly) {
+      this.selectedNValue = 3;
+    }
+  }
+
+  /**
+   * This handles the keyboard events
+   * the user can specify how many pieces to divide segment into
+   * @param keyEvent A keyboard event -- only the digits are interpreted
+   */
+  keyPressHandler = (keyEvent: KeyboardEvent): void => {
+    // if (this._disableKeyHandler) return;
+    // This is the only place the selectedNValue can be changed so disable it if bisection is the only thing allowed
+    if (this.bisectionOnly) return;
+    // console.log(keyEvent.key);
+
+    // revert the selectedNValue back to the default
+    // this.selectedNValue = 2;
+
+    if (keyEvent.key.match(/[0-9]/)) {
+      const N = Number(keyEvent.key);
+      if (N === 1) {
+        EventBus.fire("show-alert", {
+          key: `handlers.nEqualOneSegmentNSect`,
+          keyOptions: {},
+          type: "error"
+        });
+        return;
+      }
+      if (N === 0) {
+        //N=0 is really N=10
+        this.selectedNValue = 10;
+      } else {
+        this.selectedNValue = Number(keyEvent.key);
+      }
+      this.updateTemporaryPoints();
+      EventBus.fire("show-alert", {
+        key: `handlers.nSetSegmentNSect`,
+        keyOptions: { number: this.selectedNValue },
+        type: "success"
+      });
+    }
+  };
+
+  updateTemporaryPoints(): void {
+    // add/remove the appropriate temporary objects
+    this.temporaryPoints.forEach((tempPt, ind) => {
+      if (this.temporarilySelectedSegment !== null) {
+        if (ind > this.selectedNValue - 2) {
+          // if this temp has been added before remove it
+          if (this.temporaryPointsAdded[ind]) {
+            tempPt.removeFromLayers();
+            this.temporaryPointsAdded[ind] = false;
+          }
+        } else {
+          // add this temp point, but only once
+          if (!this.temporaryPointsAdded[ind]) {
+            tempPt.addToLayers(this.layers);
+            this.temporaryPointsAdded[ind] = true;
+          }
+          //calculate the location of this point
+          const startVector = new Vector3();
+          startVector.copy(
+            this.temporarilySelectedSegment.startSEPoint.locationVector
+          );
+          const arcLength = this.temporarilySelectedSegment.arcLength;
+          const normalVector = this.temporarilySelectedSegment.normalVector;
+
+          const toAxis = new Vector3();
+          toAxis
+            .crossVectors(normalVector, startVector)
+            .multiplyScalar(arcLength > Math.PI ? -1 : 1)
+            .normalize();
+          // this point is located at
+          // startVector*cos(arcLength * index/N) + toAxis*sin(arcLength * index/N)
+          startVector.multiplyScalar(
+            Math.cos((arcLength * (ind + 1)) / this.selectedNValue)
+          );
+          toAxis.multiplyScalar(
+            Math.sin((arcLength * (ind + 1)) / this.selectedNValue)
+          );
+          this.tmpVector.addVectors(startVector, toAxis).normalize();
+
+          // Update the current location in the plottable (also updates display)
+          tempPt.positionVectorAndDisplay = this.tmpVector;
+        }
+      }
+    });
+  }
+  mousePressed(event: MouseEvent): void {
+    if (!this.isOnSphere) return;
+
+    if (this.hitSESegments.length > 0) {
+      const candidateSegment = this.hitSESegments[0];
+      if (
+        NSectSegmentHandler.store.sePoints
+          .filter(pt => pt instanceof SENSectPoint)
+          .map(pt => pt as SENSectPoint)
+          .some(pt => {
+            return (
+              pt.seSegmentParent.name === candidateSegment.name &&
+              pt.N === this.selectedNValue
+            );
+          })
+      ) {
+        if (this.selectedNValue === 2) {
+          EventBus.fire("show-alert", {
+            key: `handlers.bisectedSegmentAlready`,
+            keyOptions: {
+              segment: candidateSegment.label?.ref.shortUserName,
+              number: this.selectedNValue
+            },
+            type: "error"
+          });
+        } else {
+          EventBus.fire("show-alert", {
+            key: `handlers.nSectedSegmentAlready`,
+            keyOptions: {
+              segment: candidateSegment.label?.ref.shortUserName,
+              number: this.selectedNValue
+            },
+            type: "error"
+          });
+        }
+      } else {
+        // create the points
+        this.createNSection(candidateSegment);
+        // clear the values to prepare for the next N-section
+        this.mouseLeave(event);
+        if (this.selectedNValue === 2) {
+          EventBus.fire("show-alert", {
+            key: `segmentSuccessfullyBisected`,
+            keyOptions: {
+              segment: candidateSegment.label?.ref.shortUserName
+            },
+            type: "success"
+          });
+        } else {
+          EventBus.fire("show-alert", {
+            key: `segmentSuccessfullyNSected`,
+            keyOptions: {
+              segment: candidateSegment.label?.ref.shortUserName,
+              number: this.selectedNValue
+            },
+            type: "success"
+          });
+        }
+      }
+    }
+  }
+
+  mouseMoved(event: MouseEvent): void {
+    super.mouseMoved(event);
+
+    // glow a segment that hasn't been n-sected before
+    if (this.hitSESegments.length > 0) {
+      if (
+        !NSectSegmentHandler.store.sePoints
+          .filter(pt => pt instanceof SENSectPoint)
+          .map(pt => pt as SENSectPoint)
+          .some(pt => {
+            return (
+              pt.seSegmentParent.name === this.hitSESegments[0].name &&
+              pt.N === this.selectedNValue
+            );
+          })
+      ) {
+        this.hitSESegments[0].glowing = true;
+        this.temporarilySelectedSegment = this.hitSESegments[0];
+        this.updateTemporaryPoints();
+      }
+    } else {
+      this.mouseLeave(event);
+    }
+  }
+
+  mouseReleased(event: MouseEvent): void {
+    // No code required
+  }
+
+  mouseLeave(event: MouseEvent): void {
+    // remove all temporary points
+    this.temporaryPoints.forEach((tempPt, ind) => {
+      tempPt.removeFromLayers();
+      this.temporaryPointsAdded[ind] = false;
+    });
+    // set the temporary segment to null
+    this.temporarilySelectedSegment = null;
+  }
+
+  activate(): void {
+    super.activate();
+    window.addEventListener("keypress", this.keyPressHandler);
+  }
+
+  deactivate(): void {
+    super.deactivate();
+    // Remove the listener
+    window.removeEventListener("keypress", this.keyPressHandler);
+  }
+
+  createNSection(candidateSegment: SESegment): void {
+    const nSectingPointsCommandGroup = new CommandGroup();
+    const nSectingPointArray: SENSectPoint[] = []; // a list of the new points to be updated at the end of creation
+    // Create the N-sectioning points
+    const startVector = new Vector3();
+    startVector.copy(candidateSegment.startSEPoint.locationVector);
+    const arcLength = candidateSegment.arcLength;
+    const normalVector = candidateSegment.normalVector;
+    const toAxis = new Vector3();
+    toAxis
+      .crossVectors(normalVector, startVector)
+      .multiplyScalar(arcLength > Math.PI ? -1 : 1)
+      .normalize();
+
+    for (let i = 1; i < this.selectedNValue; i++) {
+      // this point is located at
+      // startVector*cos(arcLength * index/N) + toAxis*sin(arcLength * index/N)
+      const scaledStartVector = new Vector3();
+      scaledStartVector
+        .copy(startVector)
+        .multiplyScalar(Math.cos((arcLength * i) / this.selectedNValue));
+
+      const scaledToAxis = new Vector3();
+      scaledToAxis
+        .copy(toAxis)
+        .multiplyScalar(Math.sin((arcLength * i) / this.selectedNValue));
+
+      const nSectingPointVector = new Vector3();
+      nSectingPointVector
+        .addVectors(scaledStartVector, scaledToAxis)
+        .normalize();
+
+      // Make sure that this point doesn't exist already
+      const index = NSectSegmentHandler.store.sePoints.findIndex(pt =>
+        this.tmpVector
+          .subVectors(pt.locationVector, nSectingPointVector)
+          .isZero()
+      );
+      if (index === -1) {
+        // Create the model object for the new point and link them
+        const nSectingPoint = new SENSectPoint(
+          candidateSegment,
+          i,
+          this.selectedNValue
+        );
+
+        // Update the current location in the model object
+        nSectingPoint.locationVector = nSectingPointVector;
+
+        // Create plottable for the Label
+        const newSELabel2 = nSectingPoint.attachLabelWithOffset(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
+        );
+
+        nSectingPointsCommandGroup.addCommand(
+          new AddNSectPointCommand(nSectingPoint, candidateSegment, newSELabel2)
+        );
+
+        /////////////
+        // Create the antipode of the new point, nSectingPoint
+        NSectSegmentHandler.addCreateAntipodeCommand(
+          nSectingPoint,
+          nSectingPointsCommandGroup
+        );
+      } else {
+        console.log("An n-secting point already exists", i);
+      }
+    }
+    nSectingPointsCommandGroup.execute();
+    // now when you create an n-sect point it will be displayed immediately
+    candidateSegment.markKidsOutOfDate();
+    candidateSegment.update();
+    // nSectingPointArray.forEach(nSectingPoint => {
+    //   nSectingPoint.markKidsOutOfDate();
+    //   nSectingPoint.update();
+    // });
+  }
+}

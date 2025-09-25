@@ -6,7 +6,7 @@ import {
   Vector3
 } from "three";
 import { HENodule } from "./HENodule";
-import { HyperbolicCurve } from "@/mesh/HyperbolicCurve";
+import { HyperbolicCurve } from "@/plottables-hyperbolic/HyperbolicCurve";
 import { HYPERBOLIC_LAYER } from "@/global-settings";
 
 const ORIGIN = new Vector3();

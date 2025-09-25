@@ -257,8 +257,8 @@ import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import PopOverTabs from "./PopOverTabs.vue";
 import { useStylingStore } from "@/stores/styling";
-import { CommandGroup } from "@/commands/CommandGroup";
-import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import { CommandGroup } from "@/commands-spherical/CommandGroup";
+import { SetNoduleDisplayCommand } from "@/commands-spherical/SetNoduleDisplayCommand";
 
 type LabelDisplayModeItem = {
   text: unknown; //typeof VueI18n.TranslateResult

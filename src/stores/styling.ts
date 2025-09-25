@@ -8,11 +8,11 @@ import {
 } from "@/types/Styles";
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
-import { CommandGroup } from "@/commands/CommandGroup";
-import { ChangeFillStyleCommand } from "@/commands/ChangeFillStyleCommand";
-import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
+import { CommandGroup } from "@/commands-spherical/CommandGroup";
+import { ChangeFillStyleCommand } from "@/commands-spherical/ChangeFillStyleCommand";
+import { StyleNoduleCommand } from "@/commands-spherical/StyleNoduleCommand";
 import { SENodule } from "@/models/SENodule";
-import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackstyleContrastCommand";
+import { ChangeBackStyleContrastCommand } from "@/commands-spherical/ChangeBackstyleContrastCommand";
 import { SEText } from "@/models/SEText";
 import EventBus from "@/eventHandlers/EventBus";
 import { FillStyle } from "@/types";
