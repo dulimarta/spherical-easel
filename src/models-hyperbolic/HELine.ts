@@ -46,7 +46,7 @@ export class HELine extends HENodule {
     this.hyperbolaTube.layers.set(
       this.startPoint.z > 0
         ? HYPERBOLIC_LAYER.upperSheetLines
-        : HYPERBOLIC_LAYER.lowerShettLines
+        : HYPERBOLIC_LAYER.lowerSheetLines
     );
     this.shallowUpdate();
   }

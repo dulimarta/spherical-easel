@@ -182,8 +182,8 @@ const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
 const hasUpdatedCameraControls = ref(false);
 const visibleLayers: Ref<string[]> = ref([]);
-const showKleinDisk = ref(false);
-const showPoincareDisk = ref(true);
+// const showKleinDisk = ref(false);
+// const showPoincareDisk = ref(true);
 // const showSphere = ref(false);
 const showLowerSheet = ref(true);
 type ImportantSurface = "Upper" | "Lower" | "Sphere" | null;
@@ -295,6 +295,15 @@ txtObject.color = "yellow"; //0x000000;
 // if (showPoincareDisk.value) scene.add(poincareDisk);
 const rayIntersectionPosition = reactive(new Vector3());
 
+const zMaxClippingPlane = new THREE.Plane(
+  new THREE.Vector3(0, 0, -1),
+  Math.cosh(2)
+);
+const zMinClippingPlane = new THREE.Plane(
+  new THREE.Vector3(0, 0, 1),
+  Math.cosh(2)
+);
+
 watch(visibleLayers, (layers: Array<string>) => {
   // showKleinDisk.value = layers.includes("klein");
   // if (showKleinDisk.value) {
@@ -325,16 +334,18 @@ watch(visibleLayers, (layers: Array<string>) => {
   if (showLowerSheet.value) {
     camera.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
     camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetPoints);
-    camera.layers.enable(HYPERBOLIC_LAYER.lowerShettLines);
+    camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetLines);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
   } else {
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheet);
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetPoints);
-    camera.layers.disable(HYPERBOLIC_LAYER.lowerShettLines);
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetLines);
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheet);
   }
   renderer.render(scene, camera);
 });
+
+// Watch for idle after zooming so that we can update the label display
 watch(idle, idleValue => {
   // console.debug("Idle state", idleValue);
   // console.debug("Camera control", hasUpdatedCameraControls.value);
@@ -360,6 +371,7 @@ function initialize() {
     0.1,
     500
   );
+
   // Add hyperbolic polar grid to the upper and lower sheets
   const circle = createGridCircle(Math.sinh(1), -Math.cosh(1), 50);
   scene.add(circle);
@@ -367,6 +379,9 @@ function initialize() {
   scene.add(circle1);
   const circle2 = createGridCircle(Math.sinh(2), -Math.cosh(2), 50);
   scene.add(circle2);
+
+  // const helper = new THREE.CameraHelper(camera);
+  // scene.add(helper);
 
   const xyGrid = new GridHelper();
   // xyGrid.translateZ(1);
@@ -409,8 +424,8 @@ function initialize() {
   };
   const upperHyperboloidMesh = new Mesh(
     upperHyperboloidGeometry,
-    customShaderMaterial
-    //new MeshStandardMaterial(hyperboloidMaterial)
+    //customShaderMaterial
+    new MeshStandardMaterial(hyperboloidMaterial)
   );
 
   const lowerHyperboloidGeometry = new ParametricGeometry(
@@ -555,10 +570,10 @@ onMounted(() => {
   camera.layers.enable(HYPERBOLIC_LAYER.upperSheetLines);
   camera.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
   camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetPoints);
-  camera.layers.enable(HYPERBOLIC_LAYER.lowerShettLines);
-  if (showKleinDisk.value) camera.layers.enable(HYPERBOLIC_LAYER.kleinDisk);
-  if (showPoincareDisk.value)
-    camera.layers.enable(HYPERBOLIC_LAYER.poincareDisk);
+  camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetLines);
+  // if (showKleinDisk.value) camera.layers.enable(HYPERBOLIC_LAYER.kleinDisk);
+  // if (showPoincareDisk.value)
+  //   camera.layers.enable(HYPERBOLIC_LAYER.poincareDisk);
 
   // txtObject.position.set(0, 0, -1);
   // txtObject.sync();
@@ -573,11 +588,22 @@ onMounted(() => {
 
   cameraQuaternion.value.copy(camera.quaternion);
   cameraController = new CameraControls(camera, webglCanvas.value!);
+  // Control the parameters of the camera controller
+  cameraController.minDistance = 1.5;
+  cameraController.maxDistance = 50;
+  cameraController.dollySpeed = 0.02;
+  cameraController.polarRotateSpeed = 0.2;
+  cameraController.azimuthRotateSpeed = 0.2;
+
   cameraDistance.value = cameraController.distance;
   renderer = new WebGLRenderer({
     canvas: webglCanvas.value!,
     antialias: true
   });
+
+  renderer.localClippingEnabled = true;
+  renderer.clippingPlanes = [zMinClippingPlane, zMaxClippingPlane];
+
   renderer.setSize(props.availableWidth, props.availableHeight);
   renderer.setClearColor(0xcccccc, 1);
   renderer.setAnimationLoop(doRender);
@@ -599,6 +625,28 @@ function updateCameraDetails(ev: DispatcherEvent) {
   // console.debug("CC::" + ev.type);
   const cc = ev.target as CameraControls;
   cameraDistance.value = cc.distance;
+  console.log("Update camera dist", cc.distance);
+
+  //update the z clipping planes
+  // z_lower plane
+  // law of sines on triangle with angles fov/2 (degrees!) and polar angle (radians!) included side of length d
+  // const halfFovRad = (0.5 * camera.fov * Math.PI) / 180.0;
+  const border = 10.0;
+  zMaxClippingPlane.constant =
+    ((SETTINGS.Z_MAX - 1.5) / (50 - 1.5)) * (cc.distance - 1.5) + 50 - border;
+  zMinClippingPlane.constant =
+    ((SETTINGS.Z_MAX - 1.5) / (50 - 1.5)) * (cc.distance - 1.5) + 50 - border;
+  // zMaxClippingPlane.constant = 2 * Math.tan(halfFovRad) * cc.distance - border;
+  // zMinClippingPlane.constant = 2 * Math.tan(halfFovRad) * cc.distance - border;
+  // z_upper plane
+  // law of sines on triangle with angles fov/2 (degrees!) and pi - polar angle (radians!) included side of length d
+  // console.log("const be", zMaxClippingPlane.constant);
+  // zMinClippingPlane.constant =
+  //   (Math.sin(halfFovRad) * cc.distance) /
+  //     Math.sin(cameraController.polarAngle - halfFovRad) +
+  //   border;
+  // console.log("const af", zMaxClippingPlane.constant);
+
   if (surfaceIntersections.value.length > 0) {
     positionInCameraCF.value
       .copy(surfaceIntersections.value[0].point)
