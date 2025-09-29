@@ -123,16 +123,16 @@ describe("Label", () => {
 
   //Display
   //Test methods that affect the display of the label
- it("shows front text when z > 0 in updateDisplay", () => {
-  label.positionVector.x = 1;
-  label.positionVector.y = 0;
-  label.positionVector.z = 1; // z > 0
-  label.updateDisplay();
-  // @ts-expect-error: accessing protected for test
-  expect(label.frontText.visible).toBe(true);
-  // @ts-expect-error: accessing protected for test
-  expect(label.backText.visible).toBe(false);
-});
+  it("shows front text when z > 0 in updateDisplay", () => {
+    label.positionVector.x = 1;
+    label.positionVector.y = 0;
+    label.positionVector.z = 1; // z > 0
+    label.updateDisplay();
+    // @ts-expect-error: accessing protected for test
+    expect(label.frontText.visible).toBe(true);
+    // @ts-expect-error: accessing protected for test
+    expect(label.backText.visible).toBe(false);
+  });
 
 it("shows back text when z <= 0 in updateDisplay", () => {
   label.positionVector.x = 1;
@@ -145,17 +145,17 @@ it("shows back text when z <= 0 in updateDisplay", () => {
   expect(label.backText.visible).toBe(true);
 });
 
-  it("sets visibility correctly in frontGlowingDisplay", () => {
-    label.frontGlowingDisplay();
-    // @ts-expect-error: accessing protected for test
-    expect(label.frontText.visible).toBe(true);
-    // @ts-expect-error: accessing protected for test
-    expect(label.glowingFrontText.visible).toBe(true);
-    // @ts-expect-error: accessing protected for test
-    expect(label.backText.visible).toBe(false);
-    // @ts-expect-error: accessing protected for test
-    expect(label.glowingBackText.visible).toBe(false);
-  });
+it("sets visibility correctly in frontGlowingDisplay", () => {
+  label.frontGlowingDisplay();
+  // @ts-expect-error: accessing protected for test
+  expect(label.frontText.visible).toBe(true);
+  // @ts-expect-error: accessing protected for test
+  expect(label.glowingFrontText.visible).toBe(true);
+  // @ts-expect-error: accessing protected for test
+  expect(label.backText.visible).toBe(false);
+  // @ts-expect-error: accessing protected for test
+  expect(label.glowingBackText.visible).toBe(false);
+});
 
 it("backGlowingDisplay sets correct visibility", () => {
   label.backGlowingDisplay();
@@ -303,19 +303,19 @@ it("adjustSize sets scale for all text objects", () => {
 });
 
 // stylize
-it("stylize(DisplayStyle.ApplyCurrentVariables) sets text values", () => {
-// @ts-expect-error: protected for test
-label._value = [1, 2, 3];
-// @ts-expect-error: private for test
-label.seLabelParentType = "point";
-// Set display mode to ValueOnly
-label.updateStyle(StyleCategory.Label, { labelDisplayMode: LabelDisplayMode.ValueOnly });
-label.stylize(DisplayStyle.ApplyCurrentVariables);
-// @ts-expect-error: protected for test
-expect(label.frontText.value).toContain("(");
-// @ts-expect-error: protected for test
-expect(label.backText.value).toContain("(");
-});
+  it("stylize(DisplayStyle.ApplyCurrentVariables) sets text values", () => {
+    // @ts-expect-error: protected for test
+    label._value = [1, 2, 3];
+    // @ts-expect-error: private for test
+    label.seLabelParentType = "point";
+    // Set display mode to ValueOnly
+    label.updateStyle(StyleCategory.Label, { labelDisplayMode: LabelDisplayMode.ValueOnly });
+    label.stylize(DisplayStyle.ApplyCurrentVariables);
+    // @ts-expect-error: protected for test
+    expect(label.frontText.value).toContain("(");
+    // @ts-expect-error: protected for test
+    expect(label.backText.value).toContain("(");
+  });
 
 // toSVG
 it("toSVG returns correct SVG for front or back", () => {
