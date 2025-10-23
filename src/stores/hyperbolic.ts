@@ -17,6 +17,7 @@ import { useThreeFont } from "@/composables/useThreeFont";
 import { HELine } from "@/models-hyperbolic/HELine";
 import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import { Text } from "troika-three-text";
+import { ActionMode } from "@/types";
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const surfaceIntersections: Ref<Intersection[]> = ref([]);
   const objectIntersections: Ref<Intersection[]> = ref([]);
@@ -29,6 +30,14 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const cameraOrigin = new Vector3();
   const kleinDiskElevation = ref(Math.cosh(2));
   const { font } = useThreeFont();
+  const implementedHETools: Ref<Array<ActionMode>> = ref([
+    "point",
+    "line",
+    "segment",
+    "circle",
+    "text",
+    "move"
+  ]);
 
   // const actionMode: Ref<ActionMode> = ref("move");
   let threeJSScene: Scene;
@@ -147,6 +156,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     objectIntersections,
     cameraQuaternion,
     cameraInverseMatrix,
+    implementedHETools,
     addPoint,
     addLine,
     getObjectById,

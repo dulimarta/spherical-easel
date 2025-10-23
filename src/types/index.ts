@@ -287,6 +287,7 @@ export type ActionMode =
   | "redoAction"
   | "resetAction"
   | "text"
+  | "ray" /* hyperbolic mode only */
   | "dummy" /* Use this entry to create a new actionMode for a new tool */;
 
 export type IconNames =
@@ -693,3 +694,14 @@ export enum SliderPlaybackMode {
   LOOP,
   REFLECT
 }
+
+export type VisibleHELayersType =
+  // | "upperSheet" // Not needed because upper sheet is always shown
+  // | "upperSheetPoints"
+  // | "upperSheetLines"
+  | "lowerSheet"
+  | "lowerSheetPoints"
+  | "lowerSheetLines"
+  | "labels"
+  | "polarGrid"
+  | "pointsAtInfinity";

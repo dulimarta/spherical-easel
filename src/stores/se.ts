@@ -378,6 +378,7 @@ export const useSEStore = defineStore("se", () => {
   const canvasHeight = ref(0);
   const seNodules: Ref<Array<SENodule>> = ref([]);
   const temporaryNodules: Ref<Array<Nodule>> = ref([]);
+  const excludeToolsFromSE: Ref<Array<ActionMode>> = ref(["ray"]);
 
   const sePointIds: Ref<Array<number>> = ref([]);
   const sePoints = computed((): SEPoint[] =>
@@ -1690,6 +1691,7 @@ export const useSEStore = defineStore("se", () => {
     hasUnsavedNodules,
     inverseTotalRotationMatrix,
     isEarthMode,
+    excludeToolsFromSE,
     // layers,
     seExpressions,
     selectedSENodules,
