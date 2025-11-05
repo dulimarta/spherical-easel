@@ -25,7 +25,8 @@
       <span class="ml-1">
         In Camera {{ positionInCameraCF.toFixed(2) }} Dolly Distance:
         {{ cameraDistance.toFixed(1) }} Polar Angle:
-        {{ ((cameraPolarAngle * 180) / Math.PI).toFixed(1) }}&deg;
+        {{ ((cameraPolarAngle * 180) / Math.PI).toFixed(1) }}&deg; ZClip:
+        {{ zMaxClippingPlane.constant.toFixed(2) }}
       </span>
     </span>
   </span>
@@ -94,20 +95,21 @@ ul > ul {
 <script setup lang="ts">
 import {
   AmbientLight,
-  ArrowHelper,
+  // ArrowHelper,
   Clock,
   DoubleSide,
-  GridHelper,
-  Group,
+  // GridHelper,
+  // Group,
   Matrix4,
   Mesh,
   MeshStandardMaterial,
   PerspectiveCamera,
-  PointLight,
+  // PointLight,
   Raycaster,
   Scene,
-  SphereGeometry,
+  // SphereGeometry,
   Vector3,
+  Vector2,
   WebGLRenderer
 } from "three";
 import * as THREE from "three";
@@ -139,7 +141,8 @@ import { LineHandler } from "@/eventHandlers-hyperbolic/LineHandler";
 // import { SphericalLineHandler } from "@/eventHandlers-hyperbolic/SphericalLineHandler";
 import {
   createPolarGridCircle,
-  createPolarGridRadialLine
+  createPolarGridRadialLine,
+  createPointsAtInfinityStrip
 } from "@/plottables-hyperbolic/MeshFactory";
 import { onBeforeMount } from "vue";
 import { TextHandler } from "@/eventHandlers-hyperbolic/TextHandler";
@@ -193,7 +196,7 @@ const { shift: shiftKey, control: controlKey } = useMagicKeys({
 const scene = new Scene();
 const clock = new Clock(); // used by camera control animation
 const rayCaster = new Raycaster();
-const mouseCoordNormalized: Ref<THREE.Vector2> = ref(new THREE.Vector2()); // used by RayCaster
+const mouseCoordNormalized: Ref<Vector2> = ref(new Vector2()); // used by RayCaster
 let camera: PerspectiveCamera;
 const cameraDistance = ref(0);
 let oldCameraDistance = 0;
@@ -252,9 +255,14 @@ const zMinClippingPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 1);
 
 const upperPolarGridArray: Array<THREE.Mesh> = [];
 const lowerPolarGridArray: Array<THREE.Mesh> = [];
+let upperPointsAtInfinity: THREE.Mesh | undefined = undefined;
+let lowerPointsAtInfinity: THREE.Mesh | undefined = undefined;
 
 let maxZClippingHeight: number = 0;
 const polarGridArcThickness = 0.001;
+clock.autoStart = true;
+let customShaderMaterial: THREE.ShaderMaterial;
+let elapsedTime = 1.0;
 
 watch(visibleLayers, (layers: Array<VisibleHELayersType>) => {
   showLowerSheet.value = layers.includes("lowerSheet");
@@ -262,18 +270,25 @@ watch(visibleLayers, (layers: Array<VisibleHELayersType>) => {
   showPolarGrid.value = layers.includes("polarGrid");
 
   if (showPointsAtInfinity.value) {
+    updatePointsAtInfinity();
     camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
     if (showLowerSheet.value) {
       camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+      rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
     } else {
       camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+      rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
     }
   } else {
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
     camera.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
   }
 
   if (showPolarGrid.value) {
+    updateGrid();
     camera.layers.enable(HYPERBOLIC_LAYER.upperSheetGrid);
     if (showLowerSheet.value) {
       camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetGrid);
@@ -312,7 +327,7 @@ watch(idle, idleValue => {
 // When the lower sheet is shown (or not) update the zClipping planes and the camera lookAt
 watch(showLowerSheet, show => {
   updateView();
-  console.log("Show lower sheet", show);
+  // console.log("Show lower sheet", show);
   actionMode.value = "move";
   renderer.render(scene, camera); // update the scene
 });
@@ -411,14 +426,20 @@ onMounted(() => {
     camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetPoints);
     camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetLines);
   }
+  if (showPointsAtInfinity.value) {
+    camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+    if (showLowerSheet.value) {
+      camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+    }
+  }
 
   hyperStore.setScene(scene, camera);
 
   cameraQuaternion.value.copy(camera.quaternion);
   cameraController = new CameraControls(camera, webglCanvas.value!);
   // Control the parameters of the camera controller
-  cameraController.minDistance = 10;
-  cameraController.maxDistance = 100;
+  cameraController.minDistance = SETTINGS.dollyDistanceMin;
+  cameraController.maxDistance = SETTINGS.dollyDistanceMax;
   cameraController.dollySpeed = 0.2;
   cameraController.polarRotateSpeed = 0.2;
   cameraController.azimuthRotateSpeed = 0.2;
@@ -434,7 +455,10 @@ onMounted(() => {
   // Enable local clipping (i.e. clipping on individual materials)
   renderer.localClippingEnabled = true;
 
+  // Initial update of the view of sheets, grid and points at infinity
   updateView();
+  updateGrid();
+  updatePointsAtInfinity();
 
   // This would set the clipping planes for all objects
   // renderer.clippingPlanes = [zMinClippingPlane, zMaxClippingPlane];
@@ -467,10 +491,11 @@ function initialize() {
     45,
     props.availableWidth / props.availableHeight,
     0.1,
-    500
+    2 * SETTINGS.dollyDistanceMax
   );
 
   if (showPolarGrid.value) {
+    updateGrid();
     visibleLayers.value.push("polarGrid");
     camera.layers.enable(HYPERBOLIC_LAYER.upperSheetGrid);
     if (showLowerSheet.value) {
@@ -481,6 +506,18 @@ function initialize() {
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetGrid);
   }
 
+  if (showPointsAtInfinity.value) {
+    updatePointsAtInfinity();
+    //renderer.render(scene, camera); // update the scene
+    visibleLayers.value.push("pointsAtInfinity");
+    camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+    if (showLowerSheet.value) {
+      camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+    }
+  } else {
+    camera.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+  }
   // const helper = new THREE.CameraHelper(camera);
   // scene.add(helper);
 
@@ -517,7 +554,13 @@ function initialize() {
   );
 
   // Create the ShaderMaterial with the GLSL code.
-  const customShaderMaterial = new THREE.ShaderMaterial({
+  customShaderMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      u_time: { value: 0.0 }, //Math.abs(Math.sin(elapsedTime * 0.001)) },
+      u_resolution: { value: new THREE.Vector2() },
+      u_mouse: { value: new THREE.Vector2() },
+      u_Color: { value: new THREE.Color(0x00aaff) }
+    },
     vertexShader: vertexShader,
     fragmentShader: fragmentShader,
     transparent: true // enabling opacity
@@ -540,8 +583,8 @@ function initialize() {
 
   const upperHyperboloidMesh = new Mesh(
     upperHyperboloidGeometry,
-    //customShaderMaterial
-    new MeshStandardMaterial(hyperboloidMaterial)
+    customShaderMaterial
+    //  new MeshStandardMaterial(hyperboloidMaterial)
   );
 
   const lowerHyperboloidGeometry = new ParametricGeometry(
@@ -571,30 +614,18 @@ function initialize() {
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheet);
   }
 
-  // const pointsAtInfinityMaterial = new MeshStandardMaterial({
-  //   color: "blue",
-  //   side: DoubleSide,
-  //   roughness: 0.2,
-  //   transparent: true,
-  //   opacity: 0.75
-  // });
-
-  // const upperPointsAtInfinityGeometry = new ParametricGeometry(
-  //   upperHyperboloidStrip,
-  //   120,
-  //   300
-  // );
-
-  if (showPointsAtInfinity.value) {
-    visibleLayers.value.push("pointsAtInfinity");
-  }
-
   // Set the default tool
   actionMode.value = "move";
 }
 
 function doRender() {
-  // console.debug("Enable camera control", enableCameraControl.value)
+  //console.log("Enable camera control", enableCameraControl.value);
+  elapsedTime = clock.getElapsedTime();
+  //console.log("Elapsed time:", elapsedTime * 1.0);
+  customShaderMaterial.uniforms.u_time.value = Math.abs(
+    Math.sin(elapsedTime / 2)
+  );
+
   if (enableCameraControl.value) {
     const deltaTime = clock.getDelta();
     const hasUpdated = cameraController.update(deltaTime);
@@ -624,6 +655,9 @@ function updateCameraDetails(ev: DispatcherEvent) {
     SETTINGS.minDollyDistanceChangeForGridUpdate
   ) {
     updateGrid(); // called after updateView so that clipping planes are set
+    if (showPointsAtInfinity.value) {
+      updatePointsAtInfinity();
+    }
     oldCameraDistance = cc.distance;
   }
 
@@ -695,6 +729,7 @@ function updateView() {
   );
 }
 
+//update the polar grid
 function updateGrid() {
   // The zMin and zMax clipping planes are set so we can now add the polar grid at this zoom level
   // Remove the old grid from the scene
@@ -774,6 +809,58 @@ function updateGrid() {
     }
   }
 }
+
+//update the points at infinity
+function updatePointsAtInfinity() {
+  // The zMin and zMax clipping planes are set so we can now add the polar grid at this zoom level
+  // Remove the old points at infinity from the scene
+  if (lowerPointsAtInfinity !== undefined) {
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+    scene.remove(lowerPointsAtInfinity);
+    lowerPointsAtInfinity.geometry.dispose();
+    (lowerPointsAtInfinity.material as THREE.ShaderMaterial).dispose();
+    lowerPointsAtInfinity = undefined;
+  }
+  if (upperPointsAtInfinity !== undefined) {
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+    scene.remove(upperPointsAtInfinity);
+    upperPointsAtInfinity.geometry.dispose();
+    (upperPointsAtInfinity.material as THREE.ShaderMaterial).dispose();
+    upperPointsAtInfinity = undefined;
+  }
+  // Create new points at infinity strip appropriate for the current camera distance (both number and thickness)
+  if (showPointsAtInfinity.value) {
+    upperPointsAtInfinity = createPointsAtInfinityStrip({
+      zPosition:
+        zMaxClippingPlane.constant +
+        (SETTINGS.pointsAtInfinityWidth + 0.005) * cameraDistance.value,
+      zRadius:
+        zMaxClippingPlane.constant +
+        (SETTINGS.pointsAtInfinityWidth + 0.005) * cameraDistance.value,
+      thickness: 0.3 * SETTINGS.pointsAtInfinityWidth * cameraDistance.value
+    });
+    upperPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
+    scene.add(upperPointsAtInfinity);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+
+    if (showLowerSheet.value) {
+      lowerPointsAtInfinity = createPointsAtInfinityStrip({
+        zPosition:
+          zMaxClippingPlane.constant +
+          (SETTINGS.pointsAtInfinityWidth + 0.005) * cameraDistance.value,
+        zRadius:
+          zMaxClippingPlane.constant +
+          (SETTINGS.pointsAtInfinityWidth + 0.005) * cameraDistance.value,
+        thickness: 0.3 * SETTINGS.pointsAtInfinityWidth * cameraDistance.value,
+        upper: false
+      });
+      lowerPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+      scene.add(lowerPointsAtInfinity);
+      rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+    }
+  }
+}
+
 function doMouseDown(ev: MouseEvent) {
   // console.debug("MouseDown");
 

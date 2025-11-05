@@ -1,3 +1,4 @@
+import { THREESubset } from "camera-controls/dist/types";
 import {
   Vector3,
   Mesh,
@@ -11,8 +12,10 @@ import {
   SphereGeometry,
   MeshStandardMaterial,
   CylinderGeometry,
-  LineCurve3
+  LineCurve3,
+  MeshStandardMaterialParameters
 } from "three";
+import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 
 export function createPoint(
   size: number = 0.05,
@@ -31,91 +34,110 @@ export function create2DLine(width: number = 0.03, color: string = "white") {
   );
 }
 
-//OLD
-// export function createPolarGridCircle({
-//   radius,
-//   zPosition,
-//   numPoints = 50,
-//   thickness = 0.02,
-//   center = { x: 0, y: 0 },
-//   clippingPlanes = []
-// }: {
-//   radius: number;
-//   zPosition: number;
-//   numPoints?: number;
-//   thickness?: number;
-//   center?: { x: number; y: number };
-//   clippingPlanes?: Array<Plane>;
-// }): Mesh {
-//   const curvePath = new CurvePath<Vector3>();
+export function createPointsAtInfinityStrip({
+  zRadius,
+  zPosition,
+  numPoints = 50,
+  thickness = 0.02,
+  center = { x: 0, y: 0 },
+  upper = true
+}: {
+  zRadius: number;
+  zPosition: number;
+  numPoints?: number;
+  thickness?: number;
+  center?: { x: number; y: number };
+  clippingPlanes?: Array<Plane>;
+  upper?: boolean;
+}): Mesh {
+  const pointsAtInfinityMaterial: MeshStandardMaterialParameters = {
+    color: "darkgray",
+    side: DoubleSide,
+    roughness: 0.2,
+    transparent: false,
+    opacity: 1.0
+  };
 
-//   // Use the standard approximation for a circle with four cubic Bezier curves.
-//   // d is the distance of the control points from the endpoints along the tangents.
-//   const k = (4 / 3) * (Math.sqrt(2) - 1);
-//   const d = radius * k;
+  const curvePath = new CurvePath<Vector3>();
 
-//   const { x, y } = center;
+  const k = (4 / 3) * (Math.sqrt(2) - 1);
+  const d = zRadius * k;
+  const { x, y } = center;
 
-//   // Define the start and control points for each quadrant
-//   const points = [
-//     // First Quadrant (90 to 0 degrees)
-//     new Vector3(x, y + radius, zPosition), // Start Point
-//     new Vector3(x + d, y + radius, zPosition), // Control Point 1
-//     new Vector3(x + radius, y + d, zPosition), // Control Point 2
-//     new Vector3(x + radius, y, zPosition), // End Point
+  zPosition = upper ? zPosition : -zPosition;
+  // Define control points for four cubic Bezier segments approximating a circle
+  const points = [
+    new Vector3(x, y + zRadius, zPosition),
+    new Vector3(x + d, y + zRadius, zPosition),
+    new Vector3(x + zRadius, y + d, zPosition),
+    new Vector3(x + zRadius, y, zPosition),
 
-//     // Fourth Quadrant (0 to -90 degrees)
-//     new Vector3(x + radius, y, zPosition), // Start Point
-//     new Vector3(x + radius, y - d, zPosition), // Control Point 1
-//     new Vector3(x + d, y - radius, zPosition), // Control Point 2
-//     new Vector3(x, y - radius, zPosition), // End Point
+    new Vector3(x + zRadius, y, zPosition),
+    new Vector3(x + zRadius, y - d, zPosition),
+    new Vector3(x + d, y - zRadius, zPosition),
+    new Vector3(x, y - zRadius, zPosition),
 
-//     // Third Quadrant (-90 to -180 degrees)
-//     new Vector3(x, y - radius, zPosition), // Start Point
-//     new Vector3(x - d, y - radius, zPosition), // Control Point 1
-//     new Vector3(x - radius, y - d, zPosition), // Control Point 2
-//     new Vector3(x - radius, y, zPosition), // End Point
+    new Vector3(x, y - zRadius, zPosition),
+    new Vector3(x - d, y - zRadius, zPosition),
+    new Vector3(x - zRadius, y - d, zPosition),
+    new Vector3(x - zRadius, y, zPosition),
 
-//     // Second Quadrant (-180 to -270 degrees)
-//     new Vector3(x - radius, y, zPosition), // Start Point
-//     new Vector3(x - radius, y + d, zPosition), // Control Point 1
-//     new Vector3(x - d, y + radius, zPosition), // Control Point 2
-//     new Vector3(x, y + radius, zPosition) // End Point
-//   ];
+    new Vector3(x - zRadius, y, zPosition),
+    new Vector3(x - zRadius, y + d, zPosition),
+    new Vector3(x - d, y + zRadius, zPosition),
+    new Vector3(x, y + zRadius, zPosition)
+  ];
 
-//   // Add four CubicBezierCurve3 segments to the path
-//   curvePath.add(
-//     new CubicBezierCurve3(points[0], points[1], points[2], points[3])
-//   );
-//   curvePath.add(
-//     new CubicBezierCurve3(points[4], points[5], points[6], points[7])
-//   );
-//   curvePath.add(
-//     new CubicBezierCurve3(points[8], points[9], points[10], points[11])
-//   );
-//   curvePath.add(
-//     new CubicBezierCurve3(points[12], points[13], points[14], points[15])
-//   );
+  // Build the path
+  for (let i = 0; i < 16; i += 4) {
+    curvePath.add(
+      new CubicBezierCurve3(
+        points[i],
+        points[i + 1],
+        points[i + 2],
+        points[i + 3]
+      )
+    );
+  }
 
-//   const radialSegments = 8; // Number of segments around the tube's circumference
-//   const closed = true; // Whether the tube is closed or open
+  const radialSegments = 16;
+  const closed = true;
 
-//   const geometry = new TubeGeometry(
-//     curvePath,
-//     numPoints,
-//     thickness,
-//     radialSegments,
-//     closed
-//   );
-//   const meshMaterial = new MeshStandardMaterial({
-//     color: "gray",
-//     // side: DoubleSide,
-//     roughness: 0.3,
-//     clippingPlanes: clippingPlanes
-//   });
-//   const circleEdge = new Mesh(geometry, meshMaterial);
-//   return circleEdge;
-// }
+  const upperPointsAtInfinityGeometry = new TubeGeometry(
+    curvePath,
+    numPoints,
+    thickness,
+    radialSegments,
+    closed
+  );
+  // const upperPointsAtInfinityGeometry = new ParametricGeometry(
+  //   pointsAtInfinity,
+  //   120,
+  //   300
+  // );
+
+  // function pointsAtInfinity(u: number, v: number, pt: Vector3) {
+  //   u = (u - 1 / 2) * width + zPosition;
+  //   const theta = v * 2 * Math.PI;
+  //   // Set the strip to be on the hyperboloid
+  //   // const x = Math.sinh(u) * Math.cos(theta);
+  //   // const y = Math.sinh(u) * Math.sin(theta);
+  //   // const z = Math.sign(zPosition) * Math.cosh(u);
+
+  //   // Set the strip to be on the boundary cone
+  //   const x = Math.cosh(u) * Math.cos(theta);
+  //   const y = Math.cosh(u) * Math.sin(theta);
+  //   const z = Math.sign(zPosition) * Math.cosh(u);
+  //   pt.set(x, y, z);
+  // }
+  const mesh = new Mesh(
+    upperPointsAtInfinityGeometry,
+    //customShaderMaterial
+    new MeshStandardMaterial(pointsAtInfinityMaterial)
+  );
+  mesh.name = upper ? `UpperPointsAtInfinity` : `LowerPointsAtInfinity`;
+  return mesh;
+}
 
 export function createPolarGridCircle({
   zRadius,
