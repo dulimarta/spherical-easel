@@ -15,10 +15,18 @@ const mockGetDoc = vi.fn(async (docRef: any) => {
 
 const mockSetDoc = vi.fn(async (docRef: any, data: any, options?: any) => {
   if (options?.merge) {
+    const existing = mockUserData[docRef.uid] || {};
     mockUserData[docRef.uid] = {
-      ...mockUserData[docRef.uid],
+      ...existing,
       ...data
     };
+    // Deep merge for preferences
+    if (data.preferences && existing.preferences) {
+      mockUserData[docRef.uid].preferences = {
+        ...existing.preferences,
+        ...data.preferences
+      };
+    }
   } else {
     mockUserData[docRef.uid] = data;
   }
@@ -112,6 +120,43 @@ describe("user preferences utility functions", () => {
       result = await loadUserPreferences("user-shadefill");
       expect(result?.defaultFill).toBe(FillStyle.ShadeFill);
     });
+
+    it("should load notification levels from preferences", async () => {
+      mockUserData["test-user"] = {
+        preferences: {
+          notificationLevels: ["success", "error"]
+        }
+      };
+
+      const result = await loadUserPreferences("test-user");
+      expect(result?.notificationLevels).toEqual(["success", "error"]);
+    });
+
+    it("should load empty notification levels array", async () => {
+      mockUserData["test-user"] = {
+        preferences: {
+          notificationLevels: []
+        }
+      };
+
+      const result = await loadUserPreferences("test-user");
+      expect(result?.notificationLevels).toEqual([]);
+    });
+
+    it("should load both defaultFill and notificationLevels", async () => {
+      mockUserData["test-user"] = {
+        preferences: {
+          defaultFill: FillStyle.PlainFill,
+          notificationLevels: ["info", "warning"]
+        }
+      };
+
+      const result = await loadUserPreferences("test-user");
+      expect(result).toEqual({
+        defaultFill: FillStyle.PlainFill,
+        notificationLevels: ["info", "warning"]
+      });
+    });
   });
 
   describe("saveUserPrefs", () => {
@@ -196,6 +241,66 @@ describe("user preferences utility functions", () => {
 
       const data = mockUserData["test-user"];
       expect(data.preferences.defaultFill).toBe(FillStyle.PlainFill);
+      expect(data.displayName).toBe("Test User");
+    });
+
+    it("should save notification levels", async () => {
+      await saveUserPreferences("test-user", {
+        notificationLevels: ["success", "error"]
+      });
+
+      const data = mockUserData["test-user"];
+      expect(data).toEqual({
+        preferences: {
+          notificationLevels: ["success", "error"]
+        }
+      });
+    });
+
+    it("should save empty notification levels array", async () => {
+      await saveUserPreferences("test-user", {
+        notificationLevels: []
+      });
+
+      const data = mockUserData["test-user"];
+      expect(data).toEqual({
+        preferences: {
+          notificationLevels: []
+        }
+      });
+    });
+
+    it("should save both defaultFill and notificationLevels", async () => {
+      await saveUserPreferences("test-user", {
+        defaultFill: FillStyle.PlainFill,
+        notificationLevels: ["info", "warning"]
+      });
+
+      const data = mockUserData["test-user"];
+      expect(data).toEqual({
+        preferences: {
+          defaultFill: FillStyle.PlainFill,
+          notificationLevels: ["info", "warning"]
+        }
+      });
+    });
+
+    it("should update notification levels without overwriting other preferences", async () => {
+      mockUserData["test-user"] = {
+        displayName: "Test User",
+        preferences: {
+          defaultFill: FillStyle.ShadeFill,
+          notificationLevels: ["success", "info", "error", "warning"]
+        }
+      };
+
+      await saveUserPreferences("test-user", {
+        notificationLevels: ["error", "warning"]
+      });
+
+      const data = mockUserData["test-user"];
+      expect(data.preferences.defaultFill).toBe(FillStyle.ShadeFill);
+      expect(data.preferences.notificationLevels).toEqual(["error", "warning"]);
       expect(data.displayName).toBe("Test User");
     });
   });

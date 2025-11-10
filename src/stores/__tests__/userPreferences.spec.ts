@@ -37,6 +37,11 @@ describe("userPreferences store", () => {
       expect(store.defaultFill).toBeNull();
     });
 
+    it("should initialize with null notificationLevels", () => {
+      const store = useUserPreferencesStore();
+      expect(store.notificationLevels).toBeNull();
+    });
+
     it("should initialize with loading false", () => {
       const store = useUserPreferencesStore();
       expect(store.loading).toBe(false);
@@ -148,6 +153,52 @@ describe("userPreferences store", () => {
       expect(store.defaultFill).toBe(FillStyle.ShadeFill);
       expect(Nodule.globalFillStyle).toBe(FillStyle.ShadeFill);
     });
+
+    it("should load notification levels when provided", async () => {
+      mockLoadUserPreferences.mockResolvedValue({
+        notificationLevels: ["success", "error"]
+      });
+
+      const store = useUserPreferencesStore();
+      await store.load();
+
+      expect(store.notificationLevels).toEqual(["success", "error"]);
+    });
+
+    it("should default notification levels to all types when not provided", async () => {
+      mockLoadUserPreferences.mockResolvedValue({
+        defaultFill: FillStyle.PlainFill
+      });
+
+      const store = useUserPreferencesStore();
+      await store.load();
+
+      expect(store.notificationLevels).toEqual(["success", "info", "error", "warning"]);
+    });
+
+    it("should load empty notification levels array", async () => {
+      mockLoadUserPreferences.mockResolvedValue({
+        notificationLevels: []
+      });
+
+      const store = useUserPreferencesStore();
+      await store.load();
+
+      expect(store.notificationLevels).toEqual([]);
+    });
+
+    it("should load both defaultFill and notificationLevels together", async () => {
+      mockLoadUserPreferences.mockResolvedValue({
+        defaultFill: FillStyle.ShadeFill,
+        notificationLevels: ["info", "warning"]
+      });
+
+      const store = useUserPreferencesStore();
+      await store.load();
+
+      expect(store.defaultFill).toBe(FillStyle.ShadeFill);
+      expect(store.notificationLevels).toEqual(["info", "warning"]);
+    });
   });
 
   describe("save function", () => {
@@ -158,7 +209,8 @@ describe("userPreferences store", () => {
       await store.save();
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: FillStyle.PlainFill
+        defaultFill: FillStyle.PlainFill,
+        notificationLevels: null
       });
     });
 
@@ -169,7 +221,8 @@ describe("userPreferences store", () => {
       await store.save();
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: null
+        defaultFill: null,
+        notificationLevels: null
       });
     });
 
@@ -192,21 +245,61 @@ describe("userPreferences store", () => {
       store.defaultFill = FillStyle.NoFill;
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: FillStyle.NoFill
+        defaultFill: FillStyle.NoFill,
+        notificationLevels: null
       });
 
       // Test PlainFill
       store.defaultFill = FillStyle.PlainFill;
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: FillStyle.PlainFill
+        defaultFill: FillStyle.PlainFill,
+        notificationLevels: null
       });
 
       // Test ShadeFill
       store.defaultFill = FillStyle.ShadeFill;
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: FillStyle.ShadeFill
+        defaultFill: FillStyle.ShadeFill,
+        notificationLevels: null
+      });
+    });
+
+    it("should save notification levels preference", async () => {
+      const store = useUserPreferencesStore();
+      store.notificationLevels = ["success", "error"];
+
+      await store.save();
+
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: null,
+        notificationLevels: ["success", "error"]
+      });
+    });
+
+    it("should save empty notification levels array", async () => {
+      const store = useUserPreferencesStore();
+      store.notificationLevels = [];
+
+      await store.save();
+
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: null,
+        notificationLevels: []
+      });
+    });
+
+    it("should save both defaultFill and notificationLevels together", async () => {
+      const store = useUserPreferencesStore();
+      store.defaultFill = FillStyle.PlainFill;
+      store.notificationLevels = ["info", "warning"];
+
+      await store.save();
+
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: FillStyle.PlainFill,
+        notificationLevels: ["info", "warning"]
       });
     });
   });
@@ -229,7 +322,8 @@ describe("userPreferences store", () => {
       // Save modified preference
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: FillStyle.PlainFill
+        defaultFill: FillStyle.PlainFill,
+        notificationLevels: ["success", "info", "error", "warning"]
       });
     });
 
@@ -259,11 +353,59 @@ describe("userPreferences store", () => {
       // Save same value
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: FillStyle.PlainFill
+        defaultFill: FillStyle.PlainFill,
+        notificationLevels: ["success", "info", "error", "warning"]
       });
 
       // Verify value unchanged
       expect(store.defaultFill).toBe(FillStyle.PlainFill);
+    });
+
+    it("should handle notification levels workflow", async () => {
+      mockLoadUserPreferences.mockResolvedValue({
+        notificationLevels: ["success", "info", "error", "warning"]
+      });
+
+      const store = useUserPreferencesStore();
+      
+      // Load initial preference
+      await store.load();
+      expect(store.notificationLevels).toEqual(["success", "info", "error", "warning"]);
+
+      // Modify preference
+      store.notificationLevels = ["error", "warning"];
+
+      // Save modified preference
+      await store.save();
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: null,
+        notificationLevels: ["error", "warning"]
+      });
+    });
+
+    it("should handle toggling notification levels", async () => {
+      mockLoadUserPreferences.mockResolvedValue({
+        notificationLevels: ["success", "info", "error", "warning"]
+      });
+
+      const store = useUserPreferencesStore();
+      await store.load();
+
+      // Remove a level
+      store.notificationLevels = ["success", "error", "warning"];
+      await store.save();
+      expect(mockSaveUserPreferences).toHaveBeenLastCalledWith("test-user-123", {
+        defaultFill: null,
+        notificationLevels: ["success", "error", "warning"]
+      });
+
+      // Add it back
+      store.notificationLevels = ["success", "info", "error", "warning"];
+      await store.save();
+      expect(mockSaveUserPreferences).toHaveBeenLastCalledWith("test-user-123", {
+        defaultFill: null,
+        notificationLevels: ["success", "info", "error", "warning"]
+      });
     });
   });
 });
