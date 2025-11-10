@@ -104,7 +104,7 @@
       location="top"
       contained>
       <v-card class="bg-white" :max-width="600">
-        <v-card-text>
+        <v-card-text class="notification-list-container">
           <v-alert
             class="my-1 py-0"
             border="start"
@@ -118,6 +118,22 @@
             :text="pretty(msg)"
             v-on:update:model-value="deleteMessageByIndex(index)"></v-alert>
         </v-card-text>
+        <v-divider />
+        <v-card-actions class="notification-level-toggles-container">
+          <v-btn
+            v-for="msgType in messageTypes"
+            :key="msgType.value"
+            icon
+            size="small"
+            :color="selectedMessageType.includes(msgType.value) ? getIconColor(msgType.value) : 'grey'"
+            @click="toggleMessageType(msgType.value)"
+            class="mx-1">
+            <v-icon>{{ getIconForType(msgType.value) }}</v-icon>
+            <v-tooltip activator="parent" location="top">
+              {{ msgType.title }}
+            </v-tooltip>
+          </v-btn>
+        </v-card-actions>
       </v-card>
     </v-menu>
     <v-btn
@@ -147,10 +163,11 @@
 
 <script setup lang="ts">
 import EventBus from "@/eventHandlers/EventBus";
-import { ref, Ref, computed, onMounted } from "vue";
-import SETTINGS from "@/global-settings";
+import { ref, Ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useI18n } from "vue-i18n";
 import { watch } from "vue";
+import { useUserPreferencesStore } from "@/stores/userPreferences";
+import { onBeforeRouteLeave } from "vue-router";
 
 type MessageType = {
   key: string;
@@ -163,35 +180,71 @@ type MessageType = {
 };
 type AlertType = "success" | "info" | "error" | "warning";
 
+const ALERT_TYPES: AlertType[] = ["success", "info", "error", "warning"];
+
 const DELETE_DELAY = 3000;
 const { t } = useI18n({ useScope: "local" });
+const prefsStore = useUserPreferencesStore();
 const filterMenuVisible = ref(false);
 const notifyMe = ref(true);
 const msgPopupVisible = ref(false);
 const showPurgeMessages = ref(false);
 const showAllType = ref(true);
+const notificationPrefsChanged = ref(false);
 
 const messageTypes = computed(() =>
-  SETTINGS.messageTypes.map((s: string) => ({
+  ALERT_TYPES.map((s: AlertType) => ({
     value: s,
     title: t(s)
   }))
 );
 const selectedMessageType: Ref<Array<string>> = ref(
-  messageTypes.value.map(m => m.value)
+  prefsStore.notificationLevels ?? messageTypes.value.map(m => m.value)
 );
 const messages: Ref<MessageType[]> = ref([]);
 let deleteTimer;
 
 onMounted((): void => {
-  EventBus.listen("show-alert", addMessage);
+  EventBus.listen("show-alert", (m: unknown) => addMessage(m as MessageType));
 });
+
+// Save notification preferences before navigating away
+onBeforeRouteLeave(async () => {
+  if (notificationPrefsChanged.value) {
+    await saveNotificationPreferences();
+  }
+});
+
+// Save notification preferences before component unmounts
+onBeforeUnmount(async () => {
+  if (notificationPrefsChanged.value) {
+    await saveNotificationPreferences();
+  }
+});
+
+async function saveNotificationPreferences() {
+  try {
+    await prefsStore.save();
+    notificationPrefsChanged.value = false;
+  } catch (e) {
+    console.error("Failed to save notification preferences:", e);
+  }
+}
 
 watch(
   () => selectedMessageType.value,
   filtered => {
-    if (filtered.length !== SETTINGS.messageTypes.length) {
+    if (filtered.length !== ALERT_TYPES.length) {
       showAllType.value = false;
+    }
+  }
+);
+
+watch(
+  () => prefsStore.notificationLevels,
+  (newLevels) => {
+    if (newLevels && newLevels.length > 0) {
+      selectedMessageType.value = [...newLevels];
     }
   }
 );
@@ -202,7 +255,7 @@ function titleCase(s: string): string {
 function doSelectAllMessageType() {
   if (showAllType.value) {
     selectedMessageType.value.splice(0);
-    selectedMessageType.value.push(...SETTINGS.messageTypes);
+    selectedMessageType.value.push(...ALERT_TYPES);
   }
 }
 const currentMsg = computed((): MessageType | null =>
@@ -226,7 +279,7 @@ function pretty(m: MessageType): string {
 }
 const filteredMessages = computed(
   (): Array<MessageType> =>
-    selectedMessageType.value.length === SETTINGS.messageTypes.length
+    selectedMessageType.value.length === ALERT_TYPES.length
       ? messages.value
       : messages.value.filter((m: MessageType) =>
           selectedMessageType.value.includes(m.type)
@@ -261,6 +314,53 @@ function cancelDeleteMessages() {
   }
   showPurgeMessages.value = false;
 }
+
+function toggleMessageType(type: string) {
+  const index = selectedMessageType.value.indexOf(type);
+  if (index > -1) {
+    // Remove it
+    selectedMessageType.value.splice(index, 1);
+  } else {
+    // Add it
+    selectedMessageType.value.push(type);
+  }
+  // Update the preference store (but don't save to Firebase yet)
+  prefsStore.notificationLevels = [...selectedMessageType.value];
+  // Mark that preferences have changed
+  notificationPrefsChanged.value = true;
+}
+
+function getIconForType(type: string): string {
+  switch (type) {
+    case "success":
+      return "mdi-check-circle";
+    case "info":
+      return "mdi-information";
+    case "error":
+      return "mdi-alert-circle";
+    case "warning":
+      return "mdi-alert";
+    default://I don't think this is going to happen but a default is a good idea
+      return "mdi-message";
+  }
+}
+
+function getIconColor(type: string): string {
+  switch (type) {
+    case "success":
+      return "green";
+    case "info":
+      return "blue";
+    case "error":
+      return "red";
+    case "warning":
+      return "orange";
+    case "directive":
+      return "purple";
+    default:
+      return "grey";
+  }
+}
 </script>
 <style scoped>
 #msg-display-area {
@@ -276,6 +376,19 @@ function cancelDeleteMessages() {
   padding: 0;
   border-radius: 8px;
   align-items: center;
+}
+
+.notification-list-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notification-level-toggles-container {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px;
+  flex-wrap: nowrap;
 }
 </style>
 <i18n locale="en" lang="json">
