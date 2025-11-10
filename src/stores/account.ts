@@ -22,6 +22,7 @@ import {
   signInWithPopup,
   signOut
 } from "firebase/auth";
+import { useUserPreferencesStore } from "@/stores/userPreferences";
 
 // Declare helper functions OUTSIDE the store definition
 
@@ -123,6 +124,8 @@ export const useAccountStore = defineStore("acct", () => {
         console.debug("Initialize user profile with login provider data?");
         await setDoc(userDocRef, { ...userProfile.value });
       }
+      const prefsStore = useUserPreferencesStore();
+      await prefsStore.load(u.uid);
     });
   }
 

@@ -14,7 +14,7 @@
     </v-window-item>
     <v-window-item>
       <v-sheet elevation="2" class="pa-2">
-        <h3 v-t="'settings.title'"></h3>
+        <h3>{{ t('settings.title') }}</h3>
         <v-container fluid>
           <v-row>
             <v-col cols="4">
@@ -31,22 +31,42 @@
                 </v-radio-group>
               </v-sheet>
             </v-col>
+            <!-- Selection Precision temporarily disabled -->
+            <!--
             <v-col cols="4">
               <v-sheet rounded="lg" elevation="2">
                 <v-radio-group inline label="Selection Precision">
-                  <v-radio label="Less"></v-radio>
-                  <v-radio label="More"></v-radio>
+                  <v-radio label="Less" value="less"></v-radio>
+                  <v-radio label="More" value="more"></v-radio>
                 </v-radio-group>
               </v-sheet>
             </v-col>
+            -->
           </v-row>
         </v-container>
+          <v-divider class="my-3" />
+          <h4>Default Fill</h4>
+          <v-row>
+            <v-col cols="6">
+              <v-select
+                v-model="prefsStore.defaultFill"
+                :items="fillStyleItems"
+                item-title="text"
+                item-value="value"
+                label="Default Fill Style"
+                @update:modelValue="() => (profileChanged = true)"
+              />
+            </v-col>
+          </v-row>
+        <!-- Label options temporarily disabled -->
+        <!--
         <h3>Label options</h3>
         <v-radio-group label="Object Label" inline>
-          <v-radio label="None"></v-radio>
-          <v-radio label="All"></v-radio>
-          <v-radio label="Default"></v-radio>
+          <v-radio label="None" value="none"></v-radio>
+          <v-radio label="All" value="all"></v-radio>
+          <v-radio label="Default" value="default"></v-radio>
         </v-radio-group>
+        -->
       </v-sheet>
     </v-window-item>
 
@@ -67,6 +87,8 @@ import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useAccountStore } from "@/stores/account";
+import { useUserPreferencesStore } from "@/stores/userPreferences";
+import { FillStyle } from "@/types";
 const router = useRouter();
 type LocaleName = {
   locale: string;
@@ -74,14 +96,27 @@ type LocaleName = {
 };
 const { t } = useI18n();
 const acctStore = useAccountStore();
+const prefsStore = useUserPreferencesStore();
 // const imageUpload: Ref<HTMLInputElement | null> = ref(null);
 const decimalPrecision = ref(3);
 const selectedTab = ref(0);
 const profileChanged = ref(false)
+const fillStyleItems = [
+  { text: t("noFill"), value: FillStyle.NoFill },
+  { text: t("plainFill"), value: FillStyle.PlainFill },
+  { text: t("shadeFill"), value: FillStyle.ShadeFill }
+];
 // The displayed favorite tools (includes defaults)
 
 async function doSave(): Promise<void> {
   await acctStore.saveUserProfile();
+  // persist any preference changes
+  try {
+    await prefsStore.save();
+  } catch (e) {
+    // ignore save errors for now
+    console.debug("Could not save preferences:", e);
+  }
   EventBus.fire("show-alert", {
     key: "Your profile has been update",
     type: "info"
@@ -96,6 +131,10 @@ function doReturn() {
 </script>
 <i18n locale="en">
   {
+    "settings.title": "Application Settings",
+    "noFill": "No Fill",
+    "plainFill": "Solid",
+    "shadeFill": "Shading",
     "userProfile": "User Profile",
     "tools": "Tools",
     "saveAndReturn": "Save & Return",
