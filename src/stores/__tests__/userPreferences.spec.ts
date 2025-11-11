@@ -37,6 +37,12 @@ describe("userPreferences store", () => {
       expect(store.defaultFill).toBeNull();
     });
 
+    it("should initialize with decimal precisions of 3", () => {
+      const store = useUserPreferencesStore();
+      expect(store.easelDecimalPrecision).toBe(3);
+      expect(store.hierarchyDecimalPrecision).toBe(3);
+    });
+
     it("should initialize with loading false", () => {
       const store = useUserPreferencesStore();
       expect(store.loading).toBe(false);
@@ -46,7 +52,9 @@ describe("userPreferences store", () => {
   describe("load function", () => {
     it("should load preferences for current user when no uid provided", async () => {
       mockLoadUserPreferences.mockResolvedValue({
-        defaultFill: FillStyle.PlainFill
+        defaultFill: FillStyle.PlainFill,
+        easelDecimalPrecision: 4,
+        hierarchyDecimalPrecision: 5
       });
 
       const store = useUserPreferencesStore();
@@ -54,11 +62,15 @@ describe("userPreferences store", () => {
 
       expect(mockLoadUserPreferences).toHaveBeenCalledWith("test-user-123");
       expect(store.defaultFill).toBe(FillStyle.PlainFill);
+      expect(store.easelDecimalPrecision).toBe(4);
+      expect(store.hierarchyDecimalPrecision).toBe(5);
     });
 
     it("should load preferences for specific uid when provided", async () => {
       mockLoadUserPreferences.mockResolvedValue({
-        defaultFill: FillStyle.ShadeFill
+        defaultFill: FillStyle.ShadeFill,
+        easelDecimalPrecision: 5,
+        hierarchyDecimalPrecision: 4
       });
 
       const store = useUserPreferencesStore();
@@ -66,6 +78,8 @@ describe("userPreferences store", () => {
 
       expect(mockLoadUserPreferences).toHaveBeenCalledWith("specific-user-456");
       expect(store.defaultFill).toBe(FillStyle.ShadeFill);
+      expect(store.easelDecimalPrecision).toBe(5);
+      expect(store.hierarchyDecimalPrecision).toBe(4);
     });
 
     it("should set loading state during load operation", async () => {
@@ -90,6 +104,16 @@ describe("userPreferences store", () => {
       await store.load();
 
       expect(store.defaultFill).toBeNull();
+    });
+
+    it("should set decimal precisions to 3 when no preferences exist", async () => {
+      mockLoadUserPreferences.mockResolvedValue(null);
+
+      const store = useUserPreferencesStore();
+      await store.load();
+
+      expect(store.easelDecimalPrecision).toBe(3);
+      expect(store.hierarchyDecimalPrecision).toBe(3);
     });
 
     it("should apply preference to Nodule.globalFillStyle when loaded", async () => {
@@ -148,6 +172,37 @@ describe("userPreferences store", () => {
       expect(store.defaultFill).toBe(FillStyle.ShadeFill);
       expect(Nodule.globalFillStyle).toBe(FillStyle.ShadeFill);
     });
+
+    it("should handle decimal precision values 0 and above", async () => {
+      const store = useUserPreferencesStore();
+
+      // Test 0
+      mockLoadUserPreferences.mockResolvedValue({
+        easelDecimalPrecision: 0,
+        hierarchyDecimalPrecision: 0
+      });
+      await store.load();
+      expect(store.easelDecimalPrecision).toBe(0);
+      expect(store.hierarchyDecimalPrecision).toBe(0);
+
+      // Test high use case
+      mockLoadUserPreferences.mockResolvedValue({
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3
+      });
+      await store.load();
+      expect(store.easelDecimalPrecision).toBe(3);
+      expect(store.hierarchyDecimalPrecision).toBe(3);
+
+      // Test max number
+      mockLoadUserPreferences.mockResolvedValue({
+        easelDecimalPrecision: Number.MAX_VALUE,
+        hierarchyDecimalPrecision: Number.MAX_VALUE
+      });
+      await store.load();
+      expect(store.easelDecimalPrecision).toBe(Number.MAX_VALUE);
+      expect(store.hierarchyDecimalPrecision).toBe(Number.MAX_VALUE);
+    });
   });
 
   describe("save function", () => {
@@ -158,7 +213,23 @@ describe("userPreferences store", () => {
       await store.save();
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: FillStyle.PlainFill
+        defaultFill: FillStyle.PlainFill,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3
+      });
+    });
+
+    it("should save current decimal precision preferences", async () => {
+      const store = useUserPreferencesStore();
+      store.easelDecimalPrecision = 4;
+      store.hierarchyDecimalPrecision = 5;
+
+      await store.save();
+
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: null,
+        easelDecimalPrecision: 4,
+        hierarchyDecimalPrecision: 5
       });
     });
 
@@ -169,7 +240,9 @@ describe("userPreferences store", () => {
       await store.save();
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: null
+        defaultFill: null,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3
       });
     });
 
@@ -192,21 +265,61 @@ describe("userPreferences store", () => {
       store.defaultFill = FillStyle.NoFill;
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: FillStyle.NoFill
+        defaultFill: FillStyle.NoFill,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3
       });
 
       // Test PlainFill
       store.defaultFill = FillStyle.PlainFill;
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: FillStyle.PlainFill
+        defaultFill: FillStyle.PlainFill,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3
       });
 
       // Test ShadeFill
       store.defaultFill = FillStyle.ShadeFill;
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: FillStyle.ShadeFill
+        defaultFill: FillStyle.ShadeFill,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3
+      });
+    });
+
+    it("should save decimal precision values 0 and above", async () => {
+      const store = useUserPreferencesStore();
+
+      // Test 0
+      store.easelDecimalPrecision = 0;
+      store.hierarchyDecimalPrecision = 0;
+      await store.save();
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: null,
+        easelDecimalPrecision: 0,
+        hierarchyDecimalPrecision: 0
+      });
+
+      // Test high use case
+      store.easelDecimalPrecision = 3;
+      store.hierarchyDecimalPrecision = 3;
+      await store.save();
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: null,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3
+      });
+
+      // Test max number
+      store.easelDecimalPrecision = Number.MAX_VALUE;
+      store.hierarchyDecimalPrecision = Number.MAX_VALUE;
+      await store.save();
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: null,
+        easelDecimalPrecision: Number.MAX_VALUE,
+        hierarchyDecimalPrecision: Number.MAX_VALUE
       });
     });
   });
@@ -214,7 +327,9 @@ describe("userPreferences store", () => {
   describe("integration scenarios", () => {
     it("should support load -> modify -> save workflow", async () => {
       mockLoadUserPreferences.mockResolvedValue({
-        defaultFill: FillStyle.NoFill
+        defaultFill: FillStyle.NoFill,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3
       });
 
       const store = useUserPreferencesStore();
@@ -229,7 +344,9 @@ describe("userPreferences store", () => {
       // Save modified preference
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: FillStyle.PlainFill
+        defaultFill: FillStyle.PlainFill,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3
       });
     });
 
@@ -259,7 +376,9 @@ describe("userPreferences store", () => {
       // Save same value
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: FillStyle.PlainFill
+        defaultFill: FillStyle.PlainFill,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3
       });
 
       // Verify value unchanged

@@ -1,3 +1,4 @@
+import SETTINGS from "@/global-settings";
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { loadUserPreferences, saveUserPreferences } from "@/utils/userPreferences";
@@ -7,6 +8,8 @@ import Nodule from "@/plottables/Nodule";
 
 export const useUserPreferencesStore = defineStore("userPreferences", () => {
   const defaultFill = ref<FillStyle | null>(null);
+  const easelDecimalPrecision = ref<number>(SETTINGS.decimalPrecision);
+  const hierarchyDecimalPrecision = ref<number>(SETTINGS.decimalPrecision);
   const loading = ref(false);
 
   async function load(uid?: string) {
@@ -16,6 +19,8 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
     loading.value = true;
     const prefs = await loadUserPreferences(resolvedUid);
     defaultFill.value = prefs?.defaultFill ?? null;
+    easelDecimalPrecision.value = prefs?.easelDecimalPrecision ?? SETTINGS.decimalPrecision;
+    hierarchyDecimalPrecision.value = prefs?.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision;
     // Apply the preference to the runtime global fill style if present
     if (defaultFill.value !== null && defaultFill.value !== undefined) {
       Nodule.globalFillStyle = defaultFill.value as FillStyle;
@@ -28,8 +33,12 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
     const uid = auth.currentUser?.uid;
     if (!uid) throw new Error("Not authenticated");
     // Persist the current value (allow null to be stored as null)
-    await saveUserPreferences(uid, { defaultFill: defaultFill.value });
+    await saveUserPreferences(uid, {
+      defaultFill: defaultFill.value,
+      easelDecimalPrecision: easelDecimalPrecision.value,
+      hierarchyDecimalPrecision: hierarchyDecimalPrecision.value
+    });
   }
 
-  return { defaultFill, loading, load, save };
+  return { defaultFill, easelDecimalPrecision, hierarchyDecimalPrecision, loading, load, save };
 });
