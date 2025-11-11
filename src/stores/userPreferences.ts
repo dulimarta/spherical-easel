@@ -5,8 +5,11 @@ import { getAuth } from "firebase/auth";
 import { FillStyle } from "@/types";
 import Nodule from "@/plottables/Nodule";
 
+const DEFAULT_NOTIFICATION_LEVELS = ["success", "info", "error", "warning"];
+
 export const useUserPreferencesStore = defineStore("userPreferences", () => {
   const defaultFill = ref<FillStyle | null>(null);
+  const notificationLevels = ref<string[] | null>(null);
   const loading = ref(false);
 
   async function load(uid?: string) {
@@ -20,6 +23,8 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
     if (defaultFill.value !== null && defaultFill.value !== undefined) {
       Nodule.globalFillStyle = defaultFill.value as FillStyle;
     }
+    // Load notification levels, defaulting to all types if not set
+    notificationLevels.value = prefs?.notificationLevels ?? [...DEFAULT_NOTIFICATION_LEVELS];
     loading.value = false;
   }
 
@@ -28,8 +33,11 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
     const uid = auth.currentUser?.uid;
     if (!uid) throw new Error("Not authenticated");
     // Persist the current value (allow null to be stored as null)
-    await saveUserPreferences(uid, { defaultFill: defaultFill.value });
+    await saveUserPreferences(uid, { 
+      defaultFill: defaultFill.value,
+      notificationLevels: notificationLevels.value
+    });
   }
 
-  return { defaultFill, loading, load, save };
+  return { defaultFill, notificationLevels, loading, load, save };
 });
