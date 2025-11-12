@@ -1,11 +1,15 @@
 import { doc, getDoc, setDoc, getFirestore } from "firebase/firestore";
 import { FillStyle } from "@/types";
 
+// Add new boundary circle preferences to the type definition
 export type UserPreferences = {
   defaultFill?: FillStyle | null;
   notificationLevels?: string[] | null;
+  boundaryColor?: string | null;
+  boundaryWidth?: number | null;
 };
 
+// Load user preferences from Firestore
 export async function loadUserPreferences(uid: string): Promise<UserPreferences | null> {
   const db = getFirestore();
   const snap = await getDoc(doc(db, "users", uid));
@@ -17,6 +21,7 @@ export async function loadUserPreferences(uid: string): Promise<UserPreferences 
   return prefs ? (prefs as UserPreferences) : null;
 }
 
+// Save user preferences to Firestore
 export async function saveUserPreferences(uid: string, prefs: Partial<UserPreferences>) {
   const db = getFirestore();
   const toSave: Record<string, unknown> = {};
