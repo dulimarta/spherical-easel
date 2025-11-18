@@ -20,25 +20,37 @@
         <h3>{{ t("settings.title") }}</h3>
 
         <!-- Decimal precision -->
+        <h4>Decimal Precision</h4>
         <v-container fluid>
           <v-row>
-            <v-col cols="4"></v-col>
-            <v-col cols="4">
+            <v-col cols="6">
               <v-sheet rounded="lg" elevation="2">
-                <v-radio-group
-                  v-model="decimalPrecision"
-                  inline
-                  label="Decimal Precision"
-                >
-                  <v-radio label="3" value="3"></v-radio>
-                  <v-radio label="5" value="5"></v-radio>
-                  <v-radio label="7" value="7"></v-radio>
-                </v-radio-group>
+                <v-slider v-model="prefsStore.easelDecimalPrecision"
+                          min="0"
+                          max="12"
+                          step="1"
+                          inline
+                          thumb-label="always"
+                          label="Easel Decimal Precision"
+                          @update:modelValue="() => (profileChanged = true)">
+                </v-slider>
+              </v-sheet>
+            </v-col>
+            <v-col cols="6">
+              <v-sheet rounded="lg" elevation="2">
+                <v-slider v-model="prefsStore.hierarchyDecimalPrecision"
+                          min="0"
+                          max="7"
+                          step="1"
+                          inline
+                          thumb-label="always"
+                          label="Hierarchy Decimal Precision"
+                          @update:modelValue="() => (profileChanged = true)">
+                </v-slider>
               </v-sheet>
             </v-col>
           </v-row>
         </v-container>
-
         <v-divider class="my-3" />
 
         <!-- Default fill style -->

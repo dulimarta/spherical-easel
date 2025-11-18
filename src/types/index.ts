@@ -668,6 +668,8 @@ export interface UserProfile {
   // without polluting top-level fields on the user document.
   preferences?: {
     defaultFill?: FillStyle;
+    easelDecimalPrecision?: number;
+    hierarchyDecimalPrecision?: number;
     notificationLevels?: string[];
   };
 }
