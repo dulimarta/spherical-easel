@@ -5,6 +5,7 @@ import i18n from "@/i18n";
 import { Vector3 } from "three";
 import { SELine } from "./SELine";
 import { SEPoint } from "./SEPoint";
+import { PreferenceRef } from "../utils/preferenceRef";
 const { t } = i18n.global;
 
 export class SEPolarLine
@@ -44,9 +45,9 @@ export class SEPolarLine
     return String(
       i18n.global.t(`objectTree.polarLine`, {
         pt: this.polarPointParent.label?.ref.shortUserName,
-        normalX: this._normalVector.x.toFixed(SETTINGS.decimalPrecision),
-        normalY: this._normalVector.y.toFixed(SETTINGS.decimalPrecision),
-        normalZ: this._normalVector.z.toFixed(SETTINGS.decimalPrecision)
+        normalX: this._normalVector.x.toFixed(PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision),
+        normalY: this._normalVector.y.toFixed(PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision),
+        normalZ: this._normalVector.z.toFixed(PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision)
       })
     );
   }

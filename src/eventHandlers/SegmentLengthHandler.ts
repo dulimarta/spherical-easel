@@ -12,6 +12,7 @@ import { StyleCategory } from "@/types/Styles";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { LabelDisplayMode, ValueDisplayMode } from "@/types";
 import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
+import { PreferenceRef } from "../utils/preferenceRef";
 
 export default class SegmentLengthHandler extends Highlighter {
   constructor(layers: Group[]) {
@@ -48,7 +49,7 @@ export default class SegmentLengthHandler extends Highlighter {
       segmentList[0].glowing = true;
       const len = segmentList[0].arcLength;
       this.infoText.text = `Arc length ${(len / Math.PI).toFixed(
-        SETTINGS.decimalPrecision
+        PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision
       )}\u{1D7B9}`;
     }
   }

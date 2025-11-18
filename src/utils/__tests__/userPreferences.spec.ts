@@ -1,3 +1,4 @@
+import SETTINGS from "@/global-settings";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { FillStyle } from "@/types";
 
@@ -74,13 +75,17 @@ describe("user preferences utility functions", () => {
       mockUserData["test-user"] = {
         displayName: "Test User",
         preferences: {
-          defaultFill: FillStyle.PlainFill
+          defaultFill: FillStyle.PlainFill,
+          easelDecimalPrecision: SETTINGS.decimalPrecision,
+          hierarchyDecimalPrecision: SETTINGS.decimalPrecision
         }
       };
 
       const result = await loadUserPreferences("test-user");
       expect(result).toEqual({
-        defaultFill: FillStyle.PlainFill
+        defaultFill: FillStyle.PlainFill,
+        easelDecimalPrecision: SETTINGS.decimalPrecision,
+        hierarchyDecimalPrecision: SETTINGS.decimalPrecision
       });
     });
 
@@ -119,6 +124,44 @@ describe("user preferences utility functions", () => {
       };
       result = await loadUserPreferences("user-shadefill");
       expect(result?.defaultFill).toBe(FillStyle.ShadeFill);
+    });
+
+    it("should load decimal precision values 0 and up correctly", async () => {
+      mockUserData["user-easelzero"] = {
+        preferences: { easelDecimalPrecision: 0 }
+      };
+      let result = await loadUserPreferences("user-easelzero");
+      expect(result?.easelDecimalPrecision).toBe(0);
+
+      mockUserData["user-hierarchyzero"] = {
+        preferences: { hierarchyDecimalPrecision: 0 }
+      };
+      result = await loadUserPreferences("user-hierarchyzero");
+      expect(result?.hierarchyDecimalPrecision).toBe(0);
+
+      mockUserData["user-easelthree"] = {
+        preferences: { easelDecimalPrecision: 3 }
+      };
+      result = await loadUserPreferences("user-easelthree");
+      expect(result?.easelDecimalPrecision).toBe(3);
+
+      mockUserData["user-hierarchythree"] = {
+        preferences: { hierarchyDecimalPrecision: 3 }
+      };
+      result = await loadUserPreferences("user-hierarchythree");
+      expect(result?.hierarchyDecimalPrecision).toBe(3);
+
+      mockUserData["user-easelmax"] = {
+        preferences: { easelDecimalPrecision: Number.MAX_VALUE }
+      };
+      result = await loadUserPreferences("user-easelmax");
+      expect(result?.easelDecimalPrecision).toBe(Number.MAX_VALUE);
+
+      mockUserData["user-hierarchymax"] = {
+        preferences: { hierarchyDecimalPrecision: Number.MAX_VALUE }
+      };
+      result = await loadUserPreferences("user-hierarchymax");
+      expect(result?.hierarchyDecimalPrecision).toBe(Number.MAX_VALUE);
     });
 
     it("should load notification levels from preferences", async () => {
@@ -162,13 +205,17 @@ describe("user preferences utility functions", () => {
   describe("saveUserPrefs", () => {
     it("should save preferences under nested preferences key", async () => {
       await saveUserPreferences("test-user", {
-        defaultFill: FillStyle.PlainFill
+        defaultFill: FillStyle.PlainFill,
+        easelDecimalPrecision: 5,
+        hierarchyDecimalPrecision: 4
       });
 
       const data = mockUserData["test-user"];
       expect(data).toEqual({
         preferences: {
-          defaultFill: FillStyle.PlainFill
+          defaultFill: FillStyle.PlainFill,
+          easelDecimalPrecision: 5,
+          hierarchyDecimalPrecision: 4
         }
       });
     });
@@ -180,7 +227,9 @@ describe("user preferences utility functions", () => {
       };
 
       await saveUserPreferences("test-user", {
-        defaultFill: FillStyle.ShadeFill
+        defaultFill: FillStyle.ShadeFill,
+        easelDecimalPrecision: 4,
+        hierarchyDecimalPrecision: 5
       });
 
       const data = mockUserData["test-user"];
@@ -188,7 +237,9 @@ describe("user preferences utility functions", () => {
         displayName: "Test User",
         favoriteTools: "#",
         preferences: {
-          defaultFill: FillStyle.ShadeFill
+          defaultFill: FillStyle.ShadeFill,
+          easelDecimalPrecision: 4,
+          hierarchyDecimalPrecision: 5
         }
       });
     });
@@ -219,7 +270,9 @@ describe("user preferences utility functions", () => {
       vi.clearAllMocks();
 
       await saveUserPreferences("test-user", {
-        defaultFill: undefined
+        defaultFill: undefined,
+        easelDecimalPrecision: undefined,
+        hierarchyDecimalPrecision: undefined
       });
 
       expect(mockSetDoc).not.toHaveBeenCalled();

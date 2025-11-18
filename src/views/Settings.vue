@@ -13,61 +13,61 @@
       <FavoriteToolsPicker />
     </v-window-item>
     <v-window-item>
-      <v-sheet elevation="2" class="pa-2">
-        <h3>{{ t('settings.title') }}</h3>
-        <v-container fluid>
-          <v-row>
-            <v-col cols="4">
-            </v-col>
-            <v-col cols="4">
-              <v-sheet rounded="lg" elevation="2">
-                <v-radio-group
-                  v-model="decimalPrecision"
-                  inline
-                  label="Decimal Precision">
-                  <v-radio label="3" value="3"></v-radio>
-                  <v-radio label="5" value="5"></v-radio>
-                  <v-radio label="7" value="7"></v-radio>
-                </v-radio-group>
-              </v-sheet>
-            </v-col>
-            <!-- Selection Precision temporarily disabled -->
+        <v-sheet elevation="2" class="pa-2">
+            <h3>{{ t('settings.title') }}</h3>
+            <h4>Decimal Precision</h4>
+            <v-container fluid>
+                <v-row>
+                    <v-col cols="6">
+                        <v-sheet rounded="lg" elevation="2">
+                            <v-slider v-model="prefsStore.easelDecimalPrecision"
+                                      min="0"
+                                      max="12"
+                                      step="1"
+                                      inline
+                                      thumb-label="always"
+                                      label="Easel Decimal Precision"
+                                      @update:modelValue="() => (profileChanged = true)">
+                            </v-slider>
+                        </v-sheet>
+                    </v-col>
+                    <v-col cols="6">
+                        <v-sheet rounded="lg" elevation="2">
+                            <v-slider v-model="prefsStore.hierarchyDecimalPrecision"
+                                      min="0"
+                                      max="7"
+                                      step="1"
+                                      inline
+                                      thumb-label="always"
+                                      label="Hierarchy Decimal Precision"
+                                      @update:modelValue="() => (profileChanged = true)">
+                            </v-slider>
+                        </v-sheet>
+                    </v-col>
+                </v-row>
+            </v-container>
+            <v-divider class="my-3" />
+            <h4>Default Fill</h4>
+            <v-row>
+                <v-col cols="6">
+                    <v-select v-model="prefsStore.defaultFill"
+                              :items="fillStyleItems"
+                              item-title="text"
+                              item-value="value"
+                              label="Default Fill Style"
+                              @update:modelValue="() => (profileChanged = true)" />
+                </v-col>
+            </v-row>
+            <!-- Label options temporarily disabled -->
             <!--
-            <v-col cols="4">
-              <v-sheet rounded="lg" elevation="2">
-                <v-radio-group inline label="Selection Precision">
-                  <v-radio label="Less" value="less"></v-radio>
-                  <v-radio label="More" value="more"></v-radio>
-                </v-radio-group>
-              </v-sheet>
-            </v-col>
-            -->
-          </v-row>
-        </v-container>
-          <v-divider class="my-3" />
-          <h4>Default Fill</h4>
-          <v-row>
-            <v-col cols="6">
-              <v-select
-                v-model="prefsStore.defaultFill"
-                :items="fillStyleItems"
-                item-title="text"
-                item-value="value"
-                label="Default Fill Style"
-                @update:modelValue="() => (profileChanged = true)"
-              />
-            </v-col>
-          </v-row>
-        <!-- Label options temporarily disabled -->
-        <!--
-        <h3>Label options</h3>
-        <v-radio-group label="Object Label" inline>
-          <v-radio label="None" value="none"></v-radio>
-          <v-radio label="All" value="all"></v-radio>
-          <v-radio label="Default" value="default"></v-radio>
-        </v-radio-group>
-        -->
-      </v-sheet>
+    <h3>Label options</h3>
+    <v-radio-group label="Object Label" inline>
+      <v-radio label="None" value="none"></v-radio>
+      <v-radio label="All" value="all"></v-radio>
+      <v-radio label="Default" value="default"></v-radio>
+    </v-radio-group>
+    -->
+        </v-sheet>
     </v-window-item>
 
   </v-window>
