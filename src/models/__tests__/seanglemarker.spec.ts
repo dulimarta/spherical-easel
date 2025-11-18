@@ -9,6 +9,8 @@ import {
   DEFAULT_ANGLE_MARKER_BACK_STYLE,
   DEFAULT_ANGLE_MARKER_FRONT_STYLE
 } from "@/types/Styles";
+import Label from "@/plottables/Label";
+import { SENodule } from "@/models/SENodule";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SELine } from "@/models/SELine";
@@ -215,7 +217,6 @@ describe("SEAngleMarker: noduleDescription returns a proper text description of 
   });
 
   // TODO: angleMode.NONE defaults to line and segment
-  //TODO: check if parent labels get called
   it("lines AngleMarker gets a string and accesses components", async () => {
     testSEAngleMarkerLines = new SEAngleMarker(
       AngleMode.LINES,
@@ -223,15 +224,9 @@ describe("SEAngleMarker: noduleDescription returns a proper text description of 
       createLine(),
       createLine()
     );
-    //testSEAngleMarkerLines._firstSEParent.label = { ref: { _shortUserName: String } };
-    //testSEAngleMarkerLines._secondSEParent.label = { ref: { _shortUserName: String } };
     const measureSpy = vi.spyOn(testSEAngleMarkerLines, "_measure", "get");
-    //const firstParentSpy = vi.spyOn(testSEAngleMarkerLines._firstSEParent.label.ref, "_shortUserName", "get");
-    //const secondParentSpy = vi.spyOn(testSEAngleMarkerLines._secondSEParent.label.ref, "_shortUserName", "get");
 
     expectTypeOf(testSEAngleMarkerLines.noduleDescription).toBeString();
-    //expect(firstParentSpy).toHaveBeenCalled();
-    //expect(secondParentSpy).toHaveBeenCalled();
     expect(measureSpy).toHaveBeenCalled();
   });
 
@@ -409,17 +404,138 @@ describe("SEAngleMarker: PointDirectionScalar getters properly read the angleMar
     expectTypeOf(testSEAngleMarkerNone.firstPointDirectionScalar).toBeNumber();
   });
 });
-/*
-describe("SEAngleMarker: isHitAt properly detects if the unitIdealVector is very close to the vertex vector", () => {
-    let testSEAngleMarkerNone: any;
-    beforeEach(() => {
-        testSEAngleMarkerNone = new SEAngleMarker(
-            AngleMode.NONE,
-            1.0
-        );
-    });
+
+describe("SEAngleMarker: isHitAt properly detects if a given vector is close to the vertex vector", () => {
+  let testSEAngleMarkerNone: any;
+  let hitVectorLocation: Vector3;
+
+  let maxAngle = SETTINGS.angleMarker.defaultRadius + SETTINGS.angleMarker.hitIdealDistance;
+  let maxAdjDistance = Math.cos(maxAngle);
+  let maxOppDistance = Math.sin(maxAngle);
+
+  let maxAngleMinZoom = maxAngle * (1 / SETTINGS.zoom.minMagnification);
+  let maxAdjDistanceMinZoom = Math.cos(maxAngleMinZoom);
+  let maxOppDistanceMinZoom = Math.sin(maxAngleMinZoom);
+
+  let maxAngleMaxZoom = maxAngle * (1 / SETTINGS.zoom.maxMagnification);
+  let maxAdjDistanceMaxZoom = Math.cos(maxAngleMaxZoom);
+  let maxOppDistanceMaxZoom = Math.sin(maxAngleMaxZoom);
+
+  beforeEach(() => {
+    testSEAngleMarkerNone = new SEAngleMarker(
+      AngleMode.NONE,
+      1.0,
+      createPoint(),
+      createPoint()
+    );
+    testSEAngleMarkerNone._vertexVector = new Vector3(0, 0, 1);
+    /* Creates a 90 degree angle facing positively x. */
+    testSEAngleMarkerNone._startVector = new Vector3(Math.cos(SETTINGS.angleMarker.defaultRadius), -Math.cos(SETTINGS.angleMarker.defaultRadius), 1).normalize();
+    testSEAngleMarkerNone._endVector = new Vector3(Math.cos(SETTINGS.angleMarker.defaultRadius), Math.cos(SETTINGS.angleMarker.defaultRadius), 1).normalize();
+  });
+
+  it("returns true if within angle and max range at 1 zoom", async () => {
+    /* Test x+ direction from vertex vector and vector itself. */
+    // Returns a non-hit if on border, so must use just under of border value.
+    hitVectorLocation = new Vector3(maxOppDistance * 0.99, 0, maxAdjDistance);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, 1)).toBeTruthy();
+
+    hitVectorLocation = new Vector3(0, 0, 1);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, 1)).toBeTruthy();
+  });
+
+  it("returns true if within angle and max range at 1 zoom", async () => {
+    /* Test four directions around vector and opposite vector. */
+    hitVectorLocation = new Vector3(0, maxOppDistance, maxAdjDistance);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, 1)).toBeFalsy();
+    hitVectorLocation = new Vector3(0, maxOppDistance * 1.1, maxAdjDistance);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, 1)).toBeFalsy();
+
+    hitVectorLocation = new Vector3(0, -maxOppDistance, maxAdjDistance);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, 1)).toBeFalsy();
+    hitVectorLocation = new Vector3(0, -maxOppDistance * 1.1, maxAdjDistance);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, 1)).toBeFalsy();
+
+    hitVectorLocation = new Vector3(maxOppDistance * 1.1, 0, maxAdjDistance);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, 1)).toBeFalsy();
+
+    hitVectorLocation = new Vector3(-maxOppDistance, 0, maxAdjDistance);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, 1)).toBeFalsy();
+    hitVectorLocation = new Vector3(-maxOppDistance * 1.1, 0, maxAdjDistance);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, 1)).toBeFalsy();
+
+    hitVectorLocation = new Vector3(0, 0, -1);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, 1)).toBeFalsy();
+  });
+
+  it("returns true if within angle and max range at minimum zoom", async () => {
+    /* Test x+ direction from vertex vector and vector itself. */
+    // Does not correctly register hit at minimum zoom. angleToVertex increases.
+    /*hitVectorLocation = new Vector3(maxOppDistanceMinZoom * 0.99, 0, maxAdjDistanceMinZoom);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.minMagnification)).toBeTruthy();*/
+
+    hitVectorLocation = new Vector3(0, 0, 1);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.minMagnification)).toBeTruthy();
+  });
+
+  it("returns true if within angle and max range at minimum zoom", async () => {
+    /* Test four directions around vector and opposite vector. */
+    hitVectorLocation = new Vector3(0, maxOppDistanceMinZoom, maxAdjDistanceMinZoom);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.minMagnification)).toBeFalsy();
+    hitVectorLocation = new Vector3(0, maxOppDistanceMinZoom * 1.1, maxAdjDistanceMinZoom);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.minMagnification)).toBeFalsy();
+
+    hitVectorLocation = new Vector3(0, -maxOppDistanceMinZoom, maxAdjDistanceMinZoom);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.minMagnification)).toBeFalsy();
+    hitVectorLocation = new Vector3(0, -maxOppDistanceMinZoom * 1.1, maxAdjDistanceMinZoom);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.minMagnification)).toBeFalsy();
+
+    hitVectorLocation = new Vector3(maxOppDistance * 1.1, 0, maxAdjDistance);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, 1)).toBeFalsy();
+
+    hitVectorLocation = new Vector3(-maxOppDistanceMinZoom, 0, maxAdjDistanceMinZoom);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.minMagnification)).toBeFalsy();
+    hitVectorLocation = new Vector3(-maxOppDistanceMinZoom * 1.1, 0, maxAdjDistanceMinZoom);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.minMagnification)).toBeFalsy();
+
+    hitVectorLocation = new Vector3(0, 0, -1);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.minMagnification)).toBeFalsy();
+  });
+
+  it("returns true if within angle and max range at maximum zoom", async () => {
+    /* Test x+ direction from vertex vector and vector itself. */
+    hitVectorLocation = new Vector3(maxOppDistanceMaxZoom * 0.99, 0, maxAdjDistanceMaxZoom);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.minMagnification)).toBeTruthy();
+
+    hitVectorLocation = new Vector3(0, 0, 1);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.minMagnification)).toBeTruthy();
+  });
+
+  it("returns true if within angle and max range at maximum zoom", async () => {
+    /* Test four directions around vector and opposite vector. */
+    hitVectorLocation = new Vector3(0, maxOppDistanceMaxZoom, maxAdjDistanceMaxZoom);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.maxMagnification)).toBeFalsy();
+    hitVectorLocation = new Vector3(0, maxOppDistanceMaxZoom * 1.1, maxAdjDistanceMaxZoom);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.maxMagnification)).toBeFalsy();
+
+    hitVectorLocation = new Vector3(0, -maxOppDistanceMaxZoom, maxAdjDistanceMaxZoom);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.maxMagnification)).toBeFalsy();
+    hitVectorLocation = new Vector3(0, -maxOppDistanceMaxZoom * 1.1, maxAdjDistanceMaxZoom);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.maxMagnification)).toBeFalsy();
+
+    hitVectorLocation = new Vector3(maxOppDistance * 1.1, 0, maxAdjDistance);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, 1)).toBeFalsy();
+
+    hitVectorLocation = new Vector3(-maxOppDistanceMaxZoom, 0, maxAdjDistanceMaxZoom);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.maxMagnification)).toBeFalsy();
+    hitVectorLocation = new Vector3(-maxOppDistanceMaxZoom * 1.1, 0, maxAdjDistanceMaxZoom);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.maxMagnification)).toBeFalsy();
+
+    hitVectorLocation = new Vector3(0, 0, -1);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.maxMagnification)).toBeFalsy();
+  });
 });
-*/
+
 describe("SEAngleMarker: update properly updates angleMarker model", () => {
   let testSEAngleMarkerNone: any;
   beforeEach(() => {
@@ -475,6 +591,114 @@ describe("SEAngleMarker: update properly updates angleMarker model", () => {
 /*
 describe("SEAngleMarker: shallowUpdate properly updates angleMarker model", () => {
   let testSEAngleMarkerNone: any;
+  let testSEAngleMarkerLines: any;
+  let testSEAngleMarkerPoints: any;
+  let testSEAngleMarkerSegments: any;
+  let testSEAngleMarkerLineAndSegment: any;
+  let testSEAngleMarkerSegmentsOrLineAndSegment: any;
+  beforeEach(() => {
+    testSEAngleMarkerNone = new SEAngleMarker(
+      AngleMode.NONE,
+      1.0,
+      createPoint(),
+      createPoint()
+    );
+    testSEAngleMarkerLines = new SEAngleMarker(
+      AngleMode.LINES,
+      1.0,
+      createLine(),
+      createLine()
+    );
+
+    testSEAngleMarkerPoints = new SEAngleMarker(
+      AngleMode.POINTS,
+      1.0,
+      createPoint(),
+      createPoint(),
+      createPoint()
+    );
+    testSEAngleMarkerSegments = new SEAngleMarker(
+      AngleMode.SEGMENTS,
+      1.0,
+      createSegment(),
+      createSegment()
+    );
+    testSEAngleMarkerLineAndSegment = new SEAngleMarker(
+      AngleMode.LINEANDSEGMENT,
+      1.0,
+      createLine(),
+      createSegment()
+    );
+    testSEAngleMarkerSegmentsOrLineAndSegment = new SEAngleMarker(
+      AngleMode.LINEANDSEGMENT,
+      1.0,
+      createLine(),
+      createSegment()
+    );
+  });
+  
+  it("updates vectors on all angleMarker types", async () => {
+    
+  });
+});
+*//*
+describe("SEAngleMarker: closestVector returns the vector closest to the unitIdealVector", () => {
+  let testSEAngleMarkerNone: any;
+  let unitIdealVector: Vector3;
+  beforeEach(() => {
+    testSEAngleMarkerNone = new SEAngleMarker(
+      AngleMode.NONE,
+      1.0,
+      createPoint(),
+      createPoint()
+    );
+
+    unitIdealVector = new Vector3(0, 0, 0);
+  });
+
+  it("returns the correct vector when one is equal to the given vector", async () => {
+    testSEAngleMarkerNone._vertexVector = new Vector3(0, 0, 0);
+    testSEAngleMarkerNone._startVector = new Vector3(1, 1, 1);
+    testSEAngleMarkerNone._endVector = new Vector3(1, 1, 1);
+    testSEAngleMarkerNone.update();
+
+    expect(testSEAngleMarkerNone.closestVector(unitIdealVector)).toEqual(testSEAngleMarkerNone._vertexVector);
+
+    testSEAngleMarkerNone._vertexVector = new Vector3(1, 1, 1);
+    testSEAngleMarkerNone._startVector = new Vector3(0, 0, 0);
+    testSEAngleMarkerNone._endVector = new Vector3(1, 1, 1);
+    testSEAngleMarkerNone.update();
+
+    expect(testSEAngleMarkerNone.closestVector(unitIdealVector)).toEqual(testSEAngleMarkerNone._startVector);
+
+    testSEAngleMarkerNone._vertexVector = new Vector3(1, 1, 1);
+    testSEAngleMarkerNone._startVector = new Vector3(1, 1, 1);
+    testSEAngleMarkerNone._endVector = new Vector3(0, 0, 0);
+    testSEAngleMarkerNone.update();
+
+    expect(testSEAngleMarkerNone.closestVector(unitIdealVector)).toEqual(testSEAngleMarkerNone._endVector);
+  });
+});
+*/
+describe("SEAngleMarker: closestLabelLocationVector returns a label vector within range", () => {
+  let testSEAngleMarkerNone: any;
+  let proposedVectorLocation: Vector3;
+
+  /* "maxDist" in the function is the max angle away. maxAdjDistance is the max distance 
+  away we can go on the axis we are already on (these tests start fully along x, y, or 
+  z). maxOppDistance is just the rest we can attribute to the unit vector. */
+  let maxAngle = SETTINGS.angleMarker.maxLabelDistance + AngleMarker.currentRadiusDoubleArc;
+  let maxAdjDistance = Math.cos(maxAngle);
+  let maxOppDistance = Math.sin(maxAngle);
+
+  let maxAngleMinZoom = maxAngle * (1 / SETTINGS.zoom.minMagnification);
+  let maxAdjDistanceMinZoom = Math.cos(maxAngleMinZoom);
+  let maxOppDistanceMinZoom = Math.sin(maxAngleMinZoom);
+
+  let maxAngleMaxZoom = maxAngle * (1 / SETTINGS.zoom.maxMagnification);
+  let maxAdjDistanceMaxZoom = Math.cos(maxAngleMaxZoom);
+  let maxOppDistanceMaxZoom = Math.sin(maxAngleMaxZoom);
+
   beforeEach(() => {
     testSEAngleMarkerNone = new SEAngleMarker(
       AngleMode.NONE,
@@ -483,28 +707,128 @@ describe("SEAngleMarker: shallowUpdate properly updates angleMarker model", () =
       createPoint()
     );
   });
+  
+  it("does not return a new label location if within max distance at 1 zoom", async () => {
+    /* Test four directions around vector and vector itself. */
+    testSEAngleMarkerNone._vertexVector = new Vector3(0, 0, 1);
+
+    proposedVectorLocation = new Vector3(0, maxOppDistance, maxAdjDistance);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, 1)).toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(0, -maxOppDistance, maxAdjDistance);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, 1)).toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(maxOppDistance, 0, maxAdjDistance);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, 1)).toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(-maxOppDistance, 0, maxAdjDistance);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, 1)).toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(0, 0, 1);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, 1)).toEqual(proposedVectorLocation);
+  });
+  
+  it("returns a new label location if outside of max distance at 1 zoom", async () => {
+    /* Test four directions around vector and opposite veector. */
+    testSEAngleMarkerNone._vertexVector = new Vector3(0, 0, 1);
+
+    proposedVectorLocation = new Vector3(0, maxOppDistance * 1.1, maxAdjDistance);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, 1)).not.toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(0, -maxOppDistance * 1.1, maxAdjDistance);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, 1)).not.toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(maxOppDistance * 1.1, 0, maxAdjDistance);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, 1)).not.toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(-maxOppDistance * 1.1, 0, maxAdjDistance);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, 1)).not.toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(0, 0, -1);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, 1)).not.toEqual(proposedVectorLocation);
+  });
+  
+  it("does not return a new label location if within max distance at minimum zoom", async () => {
+    /* Test four directions around vector and vector itself. */
+    testSEAngleMarkerNone._vertexVector = new Vector3(0, 0, 1);
+
+    proposedVectorLocation = new Vector3(0, maxOppDistanceMinZoom, maxAdjDistanceMinZoom);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.minMagnification)).toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(0, -maxOppDistanceMinZoom, maxAdjDistanceMinZoom);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.minMagnification)).toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(maxOppDistanceMinZoom, 0, maxAdjDistanceMinZoom);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.minMagnification)).toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(-maxOppDistanceMinZoom, 0, maxAdjDistanceMinZoom);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.minMagnification)).toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(0, 0, 1);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.minMagnification)).toEqual(proposedVectorLocation);
+  });
+
+  it("returns a new label location if outside of max distance at minimum zoom", async () => {
+    /* Test four directions around vector and opposite veector. */
+    testSEAngleMarkerNone._vertexVector = new Vector3(0, 0, 1);
+
+    proposedVectorLocation = new Vector3(0, maxOppDistanceMinZoom * 1.1, maxAdjDistanceMinZoom);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.minMagnification)).not.toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(0, -maxOppDistanceMinZoom * 1.1, maxAdjDistanceMinZoom);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.minMagnification)).not.toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(maxOppDistanceMinZoom * 1.1, 0, maxAdjDistanceMinZoom);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.minMagnification)).not.toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(-maxOppDistanceMinZoom * 1.1, 0, maxAdjDistanceMinZoom);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.minMagnification)).not.toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(0, 0, -1);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.minMagnification)).not.toEqual(proposedVectorLocation);
+  });
+
+  it("does not return a new label location if within max distance at maximum zoom", async () => {
+    /* Test four directions around vector and vector itself. */
+    testSEAngleMarkerNone._vertexVector = new Vector3(0, 0, 1);
+
+    proposedVectorLocation = new Vector3(0, maxOppDistanceMaxZoom, maxAdjDistanceMaxZoom);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.maxMagnification)).toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(0, -maxOppDistanceMaxZoom, maxAdjDistanceMaxZoom);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.maxMagnification)).toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(maxOppDistanceMaxZoom, 0, maxAdjDistanceMaxZoom);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.maxMagnification)).toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(-maxOppDistanceMaxZoom, 0, maxAdjDistanceMaxZoom);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.maxMagnification)).toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(0, 0, 1);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.maxMagnification)).toEqual(proposedVectorLocation);
+  });
+
+  it("returns a new label location if outside of max distance at maximum zoom", async () => {
+    /* Test four directions around vector and opposite veector. */
+    testSEAngleMarkerNone._vertexVector = new Vector3(0, 0, 1);
+
+    proposedVectorLocation = new Vector3(0, maxOppDistanceMaxZoom * 1.1, maxAdjDistanceMaxZoom);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.maxMagnification)).not.toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(0, -maxOppDistanceMaxZoom * 1.1, maxAdjDistanceMaxZoom);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.maxMagnification)).not.toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(maxOppDistanceMaxZoom * 1.1, 0, maxAdjDistanceMaxZoom);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.maxMagnification)).not.toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(-maxOppDistanceMaxZoom * 1.1, 0, maxAdjDistanceMaxZoom);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.maxMagnification)).not.toEqual(proposedVectorLocation);
+
+    proposedVectorLocation = new Vector3(0, 0, -1);
+    expect(testSEAngleMarkerNone.closestLabelLocationVector(proposedVectorLocation, SETTINGS.zoom.maxMagnification)).not.toEqual(proposedVectorLocation);
+  });
 });
 
-describe("SEAngleMarker: closestVector returns the vector closest to the unitIdealVector", () => {
-    let testSEAngleMarkerNone: any;
-    beforeEach(() => {
-        testSEAngleMarkerNone = new SEAngleMarker(
-            AngleMode.NONE,
-            1.0
-        );
-    });
-});
-
-describe("SEAngleMarker: closestLabelLocationVector returns the vector near the SEAngleMarkers that is closest to the idealUnitSphereVector", () => {
-    let testSEAngleMarkerNone: any;
-    beforeEach(() => {
-        testSEAngleMarkerNone = new SEAngleMarker(
-            AngleMode.NONE,
-            1.0
-        );
-    });
-});
-*/
 describe("SEAngleMarker: accept returns if an object can act on the angleMarker", () => {
   let testSEAngleMarkerNone: any;
   let testSEAngleMarkerLines: any;
@@ -649,7 +973,9 @@ describe("SEAngleMarker: accept returns if an object can act on the angleMarker"
 });
 /*
 describe("SEAngleMarker: measureAngle returns the angleMarker's angle", () => {
-    let testSEAngleMarkerNone: any;
+  let testSEAngleMarkerNone: any;
+  let testVectorLocation: Vector3;
+
   beforeEach(() => {
     testSEAngleMarkerNone = new SEAngleMarker(
       AngleMode.NONE,
@@ -657,27 +983,116 @@ describe("SEAngleMarker: measureAngle returns the angleMarker's angle", () => {
       createPoint(),
       createPoint()
     );
+
+    testSEAngleMarkerNone._startVector = new Vector3(1, 0, 0);
+    testSEAngleMarkerNone._vertexVector = new Vector3(0, 1, 0);
+  });
+
+
+});
+*/
+describe("SEAngleMarker: inRegion returns if a test vector is within the triangle of the given vectors", () => {
+  let testSEAngleMarkerNone: any;
+  let boundaryVectorOne: Vector3;
+  let boundaryVectorTwo: Vector3;
+  let boundaryVectorThree: Vector3;
+  let testVectorLocation: Vector3;
+
+  beforeEach(() => {
+    testSEAngleMarkerNone = new SEAngleMarker(
+      AngleMode.NONE,
+      1.0,
+      createPoint(),
+      createPoint()
+    );
+
+    /* Set positive hit zone to be x+ y+ z+ */
+    boundaryVectorOne = new Vector3(1, 0, 0);
+    boundaryVectorTwo = new Vector3(0, 1, 0);
+    boundaryVectorThree = new Vector3(0, 0, 1);
+  });
+
+  it("returns true if test vector is inside boundary", async () => {
+    /* Test just inside each point and in the middle. */
+    testVectorLocation = new Vector3(1, 0.1, 0.1).normalize();
+    expect(testSEAngleMarkerNone.inRegion(boundaryVectorOne, boundaryVectorTwo, boundaryVectorThree, testVectorLocation)).toBeTruthy();
+
+    testVectorLocation = new Vector3(0.1, 1, 0.1).normalize();
+    expect(testSEAngleMarkerNone.inRegion(boundaryVectorOne, boundaryVectorTwo, boundaryVectorThree, testVectorLocation)).toBeTruthy();
+
+    testVectorLocation = new Vector3(0.1, 0.1, 1).normalize();
+    expect(testSEAngleMarkerNone.inRegion(boundaryVectorOne, boundaryVectorTwo, boundaryVectorThree, testVectorLocation)).toBeTruthy();
+
+    testVectorLocation = new Vector3(1, 1, 1).normalize();
+    expect(testSEAngleMarkerNone.inRegion(boundaryVectorOne, boundaryVectorTwo, boundaryVectorThree, testVectorLocation)).toBeTruthy();
+  });
+
+  it("returns true if test vector is on boundary line", async () => {
+    /* Test on each point and on each line. */
+    testVectorLocation = new Vector3(1, 0, 0);
+    expect(testSEAngleMarkerNone.inRegion(boundaryVectorOne, boundaryVectorTwo, boundaryVectorThree, testVectorLocation)).toBeTruthy();
+
+    testVectorLocation = new Vector3(0, 1, 0);
+    expect(testSEAngleMarkerNone.inRegion(boundaryVectorOne, boundaryVectorTwo, boundaryVectorThree, testVectorLocation)).toBeTruthy();
+
+    testVectorLocation = new Vector3(0, 0, 1);
+    expect(testSEAngleMarkerNone.inRegion(boundaryVectorOne, boundaryVectorTwo, boundaryVectorThree, testVectorLocation)).toBeTruthy();
+
+    testVectorLocation = new Vector3(0.5, 0.5, 0);
+    expect(testSEAngleMarkerNone.inRegion(boundaryVectorOne, boundaryVectorTwo, boundaryVectorThree, testVectorLocation)).toBeTruthy();
+
+    testVectorLocation = new Vector3(0.5, 0, 0.5);
+    expect(testSEAngleMarkerNone.inRegion(boundaryVectorOne, boundaryVectorTwo, boundaryVectorThree, testVectorLocation)).toBeTruthy();
+
+    testVectorLocation = new Vector3(0, 0.5, 0.5);
+    expect(testSEAngleMarkerNone.inRegion(boundaryVectorOne, boundaryVectorTwo, boundaryVectorThree, testVectorLocation)).toBeTruthy();
+  });
+
+  it("returns false if test vector is outside boundary", async () => {
+    /* Test just outside each point and opposite the middle. */
+    testVectorLocation = new Vector3(1, -0.1, -0.1).normalize();
+    expect(testSEAngleMarkerNone.inRegion(boundaryVectorOne, boundaryVectorTwo, boundaryVectorThree, testVectorLocation)).toBeFalsy();
+
+    testVectorLocation = new Vector3(-0.1, 1, -0.1).normalize();
+    expect(testSEAngleMarkerNone.inRegion(boundaryVectorOne, boundaryVectorTwo, boundaryVectorThree, testVectorLocation)).toBeFalsy();
+
+    testVectorLocation = new Vector3(-0.1, -0.1, 1).normalize();
+    expect(testSEAngleMarkerNone.inRegion(boundaryVectorOne, boundaryVectorTwo, boundaryVectorThree, testVectorLocation)).toBeFalsy();
+
+    testVectorLocation = new Vector3(-1, -1, -1).normalize();
+    expect(testSEAngleMarkerNone.inRegion(boundaryVectorOne, boundaryVectorTwo, boundaryVectorThree, testVectorLocation)).toBeFalsy();
   });
 });
-
-describe("SEAngleMarker: inRegion returns if a test vector is within the angleMarker's angle", () => {
-    let testSEAngleMarkerNone: any;
-    beforeEach(() => {
-        testSEAngleMarkerNone = new SEAngleMarker(
-            AngleMode.NONE,
-            1.0
-        );
-    });
-});
-
+/*
 describe("SEAngleMarker: projectToSegment projects a given vector to a given line segment", () => {
-    let testSEAngleMarkerNone: any;
-    beforeEach(() => {
-        testSEAngleMarkerNone = new SEAngleMarker(
-            AngleMode.NONE,
-            1.0
-        );
-    });
+  let testSEAngleMarkerNone: any;
+  let segmentVectorOne: Vector3;
+  let segmentVectorTwo: Vector3;
+  let testVectorLocation: Vector3;
+
+  beforeEach(() => {
+    testSEAngleMarkerNone = new SEAngleMarker(
+      AngleMode.NONE,
+      1.0,
+      createPoint(),
+      createPoint()
+    );
+
+    /* Set segment to be from halfway between x+ and y+ axes and halfway between y+ and z+ axes. *//*
+    segmentVectorOne = new Vector3(1, 0, 0);
+    segmentVectorTwo = new Vector3(0, 1, 0);
+
+    let segmentLength = segmentVectorOne.angleTo(segmentVectorTwo);
+  });
+
+  it("returns correct vector if base of test vector is on segment", async () => {
+    testVectorLocation = new Vector3(-0.5, 0.5, 0);
+    console.log(testSEAngleMarkerNone.projectToSegment(segmentVectorOne, segmentVectorTwo, testVectorLocation))
+  });
+
+  it("returns correct vector if tip of test vector is on segment", async () => {
+
+  });
 });
 */
 describe("SEAngleMarker: getLabel getter properly reads the model's label", () => {
