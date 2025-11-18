@@ -121,6 +121,7 @@ import ThreePointCircleHandler from "@/eventHandlers/ThreePointCircleHandler";
 import MeasuredCircleHandler from "@/eventHandlers/MeasuredCircleHandler";
 import TranslationTransformationHandler from "@/eventHandlers/TranslationTransformationHandler";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
+import { getAuth } from "firebase/auth";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
@@ -150,6 +151,8 @@ import { Group } from "two.js/src/group";
 import { useMagicKeys } from "@vueuse/core";
 import { watchEffect } from "vue";
 import { Handler } from "mitt";
+import { useUserPreferencesStore } from "@/stores/userPreferences";
+
 
 type ComponentProps = {
   availableHeight: number;
@@ -168,7 +171,8 @@ const {
   seCircles
 } = storeToRefs(seStore);
 const acctStore = useAccountStore();
-const { favoriteTools } = storeToRefs(acctStore);
+const prefsStore = useUserPreferencesStore();
+const { boundaryColor, boundaryWidth } = storeToRefs(prefsStore);
 const { t } = useI18n({ useScope: "local" });
 
 const props = withDefaults(defineProps<ComponentProps>(), {
@@ -178,6 +182,8 @@ const props = withDefaults(defineProps<ComponentProps>(), {
 
 const canvas: Ref<HTMLDivElement | null> = ref(null);
 const animateClass = ref("");
+
+const { favoriteTools } = storeToRefs(acctStore);
 
 const shortCutIcons = computed((): Array<Array<ToolButtonType>> => {
   // console.debug("Updating shortcut icons");
@@ -282,85 +288,45 @@ watchEffect(() => {
     showMousePos.value = !showMousePos.value;
   }
 });
-onBeforeMount((): void => {
+onBeforeMount(async (): Promise<void> => {
+  // Initialize Two.js right away
   twoInstance = new Two({
     width: props.availableWidth,
     height: props.availableHeight,
     autostart: true
-
-    // ratio: window.devicePixelRatio
   });
-  // twoInstance.scene.matrix.manual = true;
-  // Clear layer array
-  // groups.splice(0);
 
-  //#region addlayers
-  // Record the text layer number so that the y axis is not flipped for them
+  // Build Two.js layers
   const textLayers = [
     LAYER.foregroundText,
     LAYER.foregroundLabel,
     LAYER.backgroundLabel,
     LAYER.foregroundLabelGlowing,
     LAYER.backgroundLabelGlowing
-  ].map(Number); // shortcut for .map(x => Number(x))
+  ].map(Number);
 
-  // Create a detached group to prevent duplicate group ID
-  // in TwoJS scene (https://github.com/jonobr1/two.js/issues/639)
-  const dummy_group = new Two.Group();
-  // let groups: Array<Two.Group> = []
   for (const layer in LAYER) {
-    const layerIdx = Number(layer);
-    if (!isNaN(layerIdx)) {
-      // Create the layers
+    const idx = Number(layer);
+    if (!isNaN(idx)) {
       const newLayer = new Two.Group();
-      // newLayer.matrix.manual = true;
-      // Undo the y-flip on text layers
-      if (textLayers.indexOf(layerIdx) >= 0) {
-        // Not in textLayers
-        newLayer.scale = new Two.Vector(1, -1);
-        // newLayer.matrix.scale(1, -1);
-      }
-
+      if (textLayers.includes(idx)) newLayer.scale = new Two.Vector(1, -1);
       newLayer.addTo(twoInstance.scene);
       layers.push(newLayer);
     }
   }
-  //#endregion addlayers
 
-  // The midground is where the temporary objects and the boundary circle were drawn TODO: Needed?
-  // Add the groups to the store
   seStore.init();
   seStore.setLayers(twoInstance, layers);
 
-  // Draw the boundary circle in the default radius
-  // and scale it later to fit the canvas
+  // Create the boundary circle immediately using defaults
   boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
   boundaryCircle.noFill();
   boundaryCircle.stroke = SETTINGS.boundaryCircle.color;
-  boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
+  boundaryCircle.linewidth =
+    SETTINGS.boundaryCircle.lineWidth / (zoomMagnificationFactor.value || 1);
   boundaryCircle.addTo(layers[Number(LAYER.midground)]);
 
-  // Draw horizontal and vertical lines (just for debugging)
-  // const R = SETTINGS.boundaryCircle.radius;
-  // const hLine = new Line(-R, 0, R, 0);
-  // const vLine = new Line(0, -R, 0, R);
-  // hLine.stroke = "red";
-  // vLine.stroke = "green";
-  // sphereCanvas.add(
-  //   hLine,
-  //   vLine,
-  //   new Line(100, -R, 100, R),
-  //   new Line(-R, 100, R, 100)
-  // );
-  //visitor = new RotationVisitor();
-
-  // Create the tools/handlers
-  rotateTool = new RotateHandler(layers);
-  currentTool = rotateTool;
-  // Postpone the instantiation of the remaining tools to on-demand
-  // to avoid runtime error when the tools depend of Pinia initialization
-
-  // Add Event Bus (a Vue component) listeners to change the display of the sphere - rotate and Zoom/Pan
+  // Register event listeners
   EventBus.listen("sphere-rotate", handleSphereRotation);
   EventBus.listen("zoom-updated", updateView);
   EventBus.listen("construction-loaded", animateCanvas);
@@ -377,20 +343,39 @@ onBeforeMount((): void => {
     setTransformationForTool as Handler<unknown>
   );
   EventBus.listen("delete-node", deleteNode as Handler<unknown>);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   EventBus.listen("cursor-position", (arg: any) => {
     const rawPos = arg.raw.map((s: number) => s.toFixed(2)).join(",");
     const normPos = arg.normalized.map((s: number) => s.toFixed(2)).join(",");
     mousePos.value = `(${normPos}) (${rawPos})`;
   });
-  // EventBus.listen("dialog-box-is-active", dialogBoxIsActive);
   EventBus.listen("update-fill-objects", updateObjectsWithFill);
-  // EventBus.listen("export-current-svg-for-icon", getCurrentSVGForIcon);
   EventBus.listen(
     "show-text-edit-dialog",
     showTextObjectEditDialog as Handler<unknown>
   );
+
+  // Then asynchronously load preferences *after* everything is drawn
+  const auth = getAuth();
+  const uid = auth.currentUser?.uid;
+  if (uid) {
+    try {
+      await prefsStore.load(uid);
+      console.debug(" Preferences loaded after mount, applying now");
+      // Apply color and width once available
+      if (prefsStore.boundaryColor)
+        boundaryCircle.stroke = prefsStore.boundaryColor;
+      if (prefsStore.boundaryWidth)
+        boundaryCircle.linewidth =
+          prefsStore.boundaryWidth / (zoomMagnificationFactor.value || 1);
+      twoInstance.update();
+    } catch (err) {
+      console.warn("Could not load user preferences:", err);
+    }
+  }
 });
+
+
+
 
 onMounted((): void => {
   console.debug("SphereFrame::onMounted");
@@ -529,6 +514,25 @@ watch(
     boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth / newFactor;
   }
 );
+
+// Watch for boundary circle color and width preference changes
+watch(
+  [boundaryColor, boundaryWidth],
+  ([color, width]) => {
+    console.log("Watcher triggered:", color, width);
+    if (!boundaryCircle) return;
+
+    // Update the circle stroke color and line width
+    if (color) boundaryCircle.stroke = color;
+    if (width)
+      boundaryCircle.linewidth = width / (zoomMagnificationFactor.value || 1);
+
+    twoInstance.update(); // Refresh rendering
+  },
+  { immediate: true }
+);
+
+
 /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
 
 // The translation element of the CSS transform matrix
