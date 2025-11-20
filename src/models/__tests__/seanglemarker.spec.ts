@@ -588,35 +588,21 @@ describe("SEAngleMarker: update properly updates angleMarker model", () => {
     expect(updateKidsSpy).toHaveBeenCalled();
   });
 });
-/*
+
 describe("SEAngleMarker: shallowUpdate properly updates angleMarker model", () => {
-  let testSEAngleMarkerNone: any;
   let testSEAngleMarkerLines: any;
   let testSEAngleMarkerPoints: any;
   let testSEAngleMarkerSegments: any;
   let testSEAngleMarkerLineAndSegment: any;
   let testSEAngleMarkerSegmentsOrLineAndSegment: any;
-  beforeEach(() => {
-    testSEAngleMarkerNone = new SEAngleMarker(
-      AngleMode.NONE,
-      1.0,
-      createPoint(),
-      createPoint()
-    );
-    testSEAngleMarkerLines = new SEAngleMarker(
-      AngleMode.LINES,
-      1.0,
-      createLine(),
-      createLine()
-    );
 
-    testSEAngleMarkerPoints = new SEAngleMarker(
-      AngleMode.POINTS,
-      1.0,
-      createPoint(),
-      createPoint(),
-      createPoint()
-    );
+  const sampleVertex = new Vector3(0, 0, 1);
+  const sampleStart = new Vector3(0, 1, 0);
+  const sampleEnd = new Vector3(1, 0, 0);
+  const zeroVector = new Vector3(0, 0, 0);
+
+  beforeEach(() => {
+    
     testSEAngleMarkerSegments = new SEAngleMarker(
       AngleMode.SEGMENTS,
       1.0,
@@ -637,11 +623,57 @@ describe("SEAngleMarker: shallowUpdate properly updates angleMarker model", () =
     );
   });
   
-  it("updates vectors on all angleMarker types", async () => {
-    
+  it("updates vectors on points angleMarker", async () => {
+    testSEAngleMarkerPoints = new SEAngleMarker(
+      AngleMode.POINTS,
+      1.0,
+      createPoint(),
+      createPoint(),
+      createPoint()
+    );
+
+    testSEAngleMarkerPoints._firstSEParent.locationVector = sampleStart;
+    testSEAngleMarkerPoints._secondSEParent.locationVector = sampleVertex;
+    testSEAngleMarkerPoints._thirdSEParent.locationVector = sampleEnd;
+
+    testSEAngleMarkerPoints.shallowUpdate();
+    expect(testSEAngleMarkerPoints._vertexVector).toEqual(sampleVertex);
+    expect(testSEAngleMarkerPoints._startVector).not.toEqual(zeroVector);
+    expect(testSEAngleMarkerPoints._endVector).not.toEqual(zeroVector);
+  });
+
+  it("updates vectors on lines angleMarker", async () => {
+    testSEAngleMarkerLines = new SEAngleMarker(
+      AngleMode.LINES,
+      1.0,
+      createLine(),
+      createLine()
+    );
+
+    testSEAngleMarkerLines._firstSEParent.startSEPoint.locationVector = sampleStart;
+    testSEAngleMarkerLines._firstSEParent.endSEPoint.locationVector = sampleVertex;
+    testSEAngleMarkerLines._secondSEParent.startSEPoint.locationVector = sampleVertex;
+    testSEAngleMarkerLines._secondSEParent.endSEPoint.locationVector = sampleEnd;
+
+    testSEAngleMarkerLines.shallowUpdate();
+    expect(testSEAngleMarkerLines._vertexVector).toEqual(sampleVertex);
+    expect(testSEAngleMarkerLines._startVector).not.toEqual(zeroVector);
+    expect(testSEAngleMarkerLines._endVector).not.toEqual(zeroVector);
+  });
+
+  it("updates vectors on segments angleMarker", async () => {
+
+  });
+
+  it("updates vectors on segment and line angleMarker", async () => {
+
+  });
+
+  it("updates plottable, angle, display, and visibility", async () => {
+
   });
 });
-*/
+
 describe("SEAngleMarker: closestVector returns the vector on the angleMarker closest to the given vector", () => {
   let testSEAngleMarkerNone: any;
   let testVector: Vector3;
