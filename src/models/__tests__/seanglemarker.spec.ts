@@ -417,11 +417,11 @@ describe("SEAngleMarker: isHitAt properly detects if a given vector is on the an
   let maxAdjDistance = Math.cos(maxAngle);
   let maxOppDistance = Math.sin(maxAngle);
 
-  let maxAngleMinZoom = maxAngle / SETTINGS.zoom.minMagnification;
+  let maxAngleMinZoom = SETTINGS.angleMarker.defaultRadius + (SETTINGS.angleMarker.hitIdealDistance / SETTINGS.zoom.minMagnification);
   let maxAdjDistanceMinZoom = Math.cos(maxAngleMinZoom);
   let maxOppDistanceMinZoom = Math.sin(maxAngleMinZoom);
 
-  let maxAngleMaxZoom = maxAngle / SETTINGS.zoom.maxMagnification;
+  let maxAngleMaxZoom = SETTINGS.angleMarker.defaultRadius + (SETTINGS.angleMarker.hitIdealDistance / SETTINGS.zoom.maxMagnification);
   let maxAdjDistanceMaxZoom = Math.cos(maxAngleMaxZoom);
   let maxOppDistanceMaxZoom = Math.sin(maxAngleMaxZoom);
 
@@ -475,11 +475,10 @@ describe("SEAngleMarker: isHitAt properly detects if a given vector is on the an
     expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, 1)).toBeFalsy();
   });
 
-  // TODO FIX
   it("returns true if within angle and max range at minimum zoom", async () => {
     /* Test x+ direction from vertex vector and vector itself. */
-    //hitVectorLocation = new Vector3(maxOppDistanceMinZoom * 0.99, 0, maxAdjDistanceMinZoom);
-    //expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.minMagnification)).toBeTruthy();
+    hitVectorLocation = new Vector3(maxOppDistanceMinZoom * 0.99, 0, maxAdjDistanceMinZoom);
+    expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.minMagnification)).toBeTruthy();
 
     hitVectorLocation = new Vector3(0, 0, 1);
     expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.minMagnification)).toBeTruthy();
@@ -518,7 +517,6 @@ describe("SEAngleMarker: isHitAt properly detects if a given vector is on the an
     expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.minMagnification)).toBeTruthy();
   });
 
-  // TODO FIX
   it("returns false if outside of angle and max range at maximum zoom", async () => {
     /* Test four directions around vector and opposite vector. */
     hitVectorLocation = new Vector3(0, maxOppDistanceMaxZoom, maxAdjDistanceMaxZoom);
@@ -531,6 +529,7 @@ describe("SEAngleMarker: isHitAt properly detects if a given vector is on the an
     hitVectorLocation = new Vector3(0, -0.1, 1);
     expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, SETTINGS.zoom.maxMagnification)).toBeFalsy();
 
+    // TODO: FIX, border doesn't seem to be where it ought to be. Could be an error in tests. Worth looking into if there's more time.
     //hitVectorLocation = new Vector3(maxOppDistanceMaxZoom, 0, maxAdjDistanceMaxZoom);
     //expect(testSEAngleMarkerNone.isHitAt(hitVectorLocation, 1)).toBeFalsy();
 
@@ -1313,7 +1312,7 @@ describe("SEAngleMarker: inRegion returns if a test vector is within the triangl
   });
 });
 
-// NOTE: projectToSegment (from what I understand) projects to a plane, not a segment.
+/* Note: projectToSegment (from what I understand) projects to a plane, not a segment. */
 describe("SEAngleMarker: projectToSegment projects a given vector to a given \"line segment\"", () => {
   let testSEAngleMarkerNone: any;
   let segmentVectorOne: Vector3;
