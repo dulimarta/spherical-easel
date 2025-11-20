@@ -208,7 +208,7 @@ export function createPolarGridCircle({
     radialSegments,
     closed
   );
-
+  console.log(geometry);
   // === Shader Material with radius + opacity control ===
   // const material = new ShaderMaterial({
   //   uniforms: {

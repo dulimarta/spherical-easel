@@ -261,8 +261,7 @@ let lowerPointsAtInfinity: THREE.Mesh | undefined = undefined;
 let maxZClippingHeight: number = 0;
 const polarGridArcThickness = 0.001;
 clock.autoStart = true;
-let customShaderMaterial: THREE.ShaderMaterial;
-let elapsedTime = 1.0;
+// let customShaderMaterial: THREE.ShaderMaterial;
 
 watch(visibleLayers, (layers: Array<VisibleHELayersType>) => {
   showLowerSheet.value = layers.includes("lowerSheet");
@@ -328,7 +327,7 @@ watch(idle, idleValue => {
 watch(showLowerSheet, show => {
   updateView();
   // console.log("Show lower sheet", show);
-  actionMode.value = "move";
+  actionMode.value = "rotate";
   renderer.render(scene, camera); // update the scene
 });
 
@@ -391,7 +390,8 @@ watch(
         if (circleTool === null) circleTool = new CircleHandler(scene);
         currentTools.push(circleTool);
         break;
-      case "move":
+      case "rotate":
+        console.log("rotate tool selected");
         enableCameraControl.value = true;
         break;
       default:
@@ -409,9 +409,7 @@ onBeforeMount(() => {
 });
 
 onMounted(() => {
-  console.debug(
-    `Mounted size ${props.availableWidth}x${props.availableHeight}`
-  );
+  console.log(`Mounted size ${props.availableWidth}x${props.availableHeight}`);
   camera.aspect = props.availableWidth / props.availableHeight;
 
   camera.position.set(8, 7, 6);
@@ -554,17 +552,17 @@ function initialize() {
   );
 
   // Create the ShaderMaterial with the GLSL code.
-  customShaderMaterial = new THREE.ShaderMaterial({
-    uniforms: {
-      u_time: { value: 0.0 }, //Math.abs(Math.sin(elapsedTime * 0.001)) },
-      u_resolution: { value: new THREE.Vector2() },
-      u_mouse: { value: new THREE.Vector2() },
-      u_Color: { value: new THREE.Color(0x00aaff) }
-    },
-    vertexShader: vertexShader,
-    fragmentShader: fragmentShader,
-    transparent: true // enabling opacity
-  });
+  // customShaderMaterial = new THREE.ShaderMaterial({
+  //   uniforms: {
+  //     u_time: { value: 0.0 }, //Math.abs(Math.sin(1 * 0.001)) },
+  //     u_resolution: { value: new THREE.Vector2() },
+  //     u_mouse: { value: new THREE.Vector2() },
+  //     u_Color: { value: new THREE.Color(0x00aaff) }
+  //   },
+  //   vertexShader: vertexShader,
+  //   fragmentShader: fragmentShader,
+  //   transparent: true // enabling opacity
+  // });
 
   const hyperboloidMaterial: THREE.MeshStandardMaterialParameters = {
     color: "chocolate",
@@ -575,6 +573,69 @@ function initialize() {
     clippingPlanes: [zMinClippingPlane, zMaxClippingPlane]
   };
 
+  const testMaterial = new MeshStandardMaterial(hyperboloidMaterial);
+
+  testMaterial.onBeforeCompile = shader => {
+    //shader.uniforms.uStartFadeHeight = {
+    //   value: 90
+    // };
+    shader.uniforms.uStartFadeHeight = {
+      value: zMaxClippingPlane.constant - 1.0
+    }; // height of start of fade
+    shader.uniforms.uEndFadeHeight = { value: zMaxClippingPlane.constant }; // height of end of fade
+    shader.uniforms.uEndFadeHeight = { value: 100 }; // height of end of fade
+    shader.uniforms.uStartOpacity = { value: 1.0 }; //  opacity at the start of fade
+    shader.uniforms.uEndOpacity = { value: 0.75 }; // opacity at the end of fade
+    shader.uniforms.uBaseOpacity = { value: 1.0 }; // max opacity
+
+    // Pass the vertex height to the fragment shader
+    shader.vertexShader = shader.vertexShader.replace(
+      `#include <common>`,
+      `#include <common>
+       varying float vHeight;`
+    );
+
+    shader.vertexShader = shader.vertexShader.replace(
+      `#include <begin_vertex>`,
+      `#include <begin_vertex>
+       vHeight = transformed.z;`
+    );
+
+    // Use vHeight in fragment shader to adjust opacity
+    shader.fragmentShader = shader.fragmentShader.replace(
+      `#include <common>`,
+      `#include <common>
+       uniform float uStartFadeHeight;
+       uniform float uEndFadeHeight;
+       uniform float uEndOpacity;
+       uniform float uStartOpacity;
+       uniform float uBaseOpacity;
+       varying float vHeight;`
+    );
+
+    shader.fragmentShader = shader.fragmentShader.replace(
+      `#include <dithering_fragment>`,
+      `
+      float heightFactor = clamp(
+        (vHeight - uStartFadeHeight) / (uEndFadeHeight - uStartFadeHeight),
+        0.0,
+        1.0
+      );
+      float opacityFactor = mix(
+        uStartOpacity,
+        uEndOpacity,
+        heightFactor
+      );
+      gl_FragColor.a *= opacityFactor * uBaseOpacity;
+      #include <dithering_fragment>
+      `
+    );
+
+    // Keep uniforms for later updates
+    testMaterial.userData.shader = shader;
+    console.log("Shader modified");
+  };
+
   const upperHyperboloidGeometry = new ParametricGeometry(
     upperHyperboloid,
     120,
@@ -583,8 +644,8 @@ function initialize() {
 
   const upperHyperboloidMesh = new Mesh(
     upperHyperboloidGeometry,
-    customShaderMaterial
-    //  new MeshStandardMaterial(hyperboloidMaterial)
+    //customShaderMaterial
+    testMaterial //new MeshStandardMaterial(hyperboloidMaterial)
   );
 
   const lowerHyperboloidGeometry = new ParametricGeometry(
@@ -615,21 +676,14 @@ function initialize() {
   }
 
   // Set the default tool
-  actionMode.value = "move";
+  actionMode.value = "rotate";
 }
 
 function doRender() {
-  //console.log("Enable camera control", enableCameraControl.value);
-  elapsedTime = clock.getElapsedTime();
-  //console.log("Elapsed time:", elapsedTime * 1.0);
-  customShaderMaterial.uniforms.u_time.value = Math.abs(
-    Math.sin(elapsedTime / 2)
-  );
-
   if (enableCameraControl.value) {
     const deltaTime = clock.getDelta();
     const hasUpdated = cameraController.update(deltaTime);
-    // console.debug("Enable camera control?", hasUpdatedControls);
+    //console.log("Enable camera control, hasUpdated", hasUpdated);
     if (hasUpdated) {
       hasUpdatedCameraControls.value = true;
       // console.log(
@@ -727,6 +781,19 @@ function updateView() {
     zCoordLookAt,
     true
   );
+  // update the clipping planes in the shader materials
+  // console.log(scene);
+  const mesh = scene.getObjectByName("Upper Sheet") as THREE.Mesh;
+  // console.log("Upper Sheet mesh", mesh);
+  const hyperboloidMaterial = mesh.material as THREE.MeshStandardMaterial;
+  // console.log("Hyperboloid material", hyperboloidMaterial);
+  // console.log("shader", hyperboloidMaterial.userData.shader);
+  if (hyperboloidMaterial.userData.shader !== undefined) {
+    hyperboloidMaterial.userData.shader.uniforms.uEndFadeHeight.value =
+      zMaxClippingPlane.constant;
+    hyperboloidMaterial.userData.shader.uniforms.uStartFadeHeight.value =
+      zMaxClippingPlane.constant * 0.85;
+  }
 }
 
 //update the polar grid

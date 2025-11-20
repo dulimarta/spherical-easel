@@ -36,7 +36,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     "segment",
     "circle",
     "text",
-    "move"
+    "rotate"
   ]);
 
   // const actionMode: Ref<ActionMode> = ref("move");
