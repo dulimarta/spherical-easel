@@ -38,9 +38,14 @@
       </v-icon>
       <v-icon v-else size="x-large" class="overlayicon">mdi-plus-circle</v-icon>
     </v-overlay>
-    <v-tooltip location="bottom" activator="parent">
-      <span class="tooltip">{{ t(button.toolTipMessage) }}</span>
-    </v-tooltip>
+<v-tooltip
+  v-if="shouldShowToolTooltip(button.action)"
+  location="bottom"
+  activator="parent"
+>
+  <span class="tooltip">{{ t(button.toolTipMessage) }}</span>
+</v-tooltip>
+
   </v-card>
 </template>
 
@@ -52,6 +57,8 @@ import { StyleValue } from "vue";
 import SETTINGS from "@/global-settings";
 import { onMounted, watch } from "vue";
 import { onBeforeMount } from "vue";
+import { useUserPreferencesStore } from "@/stores/userPreferences";
+import { MINIMAL_TOOLTIP_SET } from "@/utils/tooltipModes";
 type ToolButtonProps = {
   button: ToolButtonType;
   selected: boolean;
@@ -84,6 +91,19 @@ const vuetifyIconAlias = computed(
     // otherwise use the action name as the Vuetify icon alias
     props.button.icon ?? "$" + props.button.action
 );
+const prefs = useUserPreferencesStore();
+
+function shouldShowToolTooltip(action: string) {
+  const mode = prefs.tooltipMode;
+
+  if (mode === "none" || mode === "easel-only") return false;
+
+  if (mode === "minimal") {
+    return MINIMAL_TOOLTIP_SET.includes(action);
+  }
+
+  return true;
+}
 
 onMounted(() => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

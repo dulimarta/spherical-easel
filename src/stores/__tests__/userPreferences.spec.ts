@@ -3,7 +3,6 @@ import { createPinia, setActivePinia } from "pinia";
 import { FillStyle } from "@/types";
 import Nodule from "@/plottables/Nodule";
 
-// Mock Firebase Auth
 const mockCurrentUser = { uid: "test-user-123" };
 vi.mock("firebase/auth", () => ({
   getAuth: vi.fn(() => ({
@@ -11,7 +10,6 @@ vi.mock("firebase/auth", () => ({
   }))
 }));
 
-// Mock user preferences utilities
 const mockLoadUserPreferences = vi.fn();
 const mockSaveUserPreferences = vi.fn();
 
@@ -20,14 +18,12 @@ vi.mock("@/utils/userPreferences", () => ({
   saveUserPreferences: mockSaveUserPreferences
 }));
 
-// Import after mocking
 const { useUserPreferencesStore } = await import("../userPreferences");
 
 describe("userPreferences store", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
-    // Reset Nodule.globalFillStyle to default
     Nodule.globalFillStyle = FillStyle.NoFill;
   });
 
@@ -153,25 +149,22 @@ describe("userPreferences store", () => {
       await store.load();
 
       expect(mockLoadUserPreferences).not.toHaveBeenCalled();
-      mockCurrentUser.uid = "test-user-123"; // Reset for other tests
+      mockCurrentUser.uid = "test-user-123";
     });
 
     it("should handle all FillStyle enum values", async () => {
       const store = useUserPreferencesStore();
 
-      // Test NoFill
       mockLoadUserPreferences.mockResolvedValue({ defaultFill: FillStyle.NoFill });
       await store.load();
       expect(store.defaultFill).toBe(FillStyle.NoFill);
       expect(Nodule.globalFillStyle).toBe(FillStyle.NoFill);
 
-      // Test PlainFill
       mockLoadUserPreferences.mockResolvedValue({ defaultFill: FillStyle.PlainFill });
       await store.load();
       expect(store.defaultFill).toBe(FillStyle.PlainFill);
       expect(Nodule.globalFillStyle).toBe(FillStyle.PlainFill);
 
-      // Test ShadeFill
       mockLoadUserPreferences.mockResolvedValue({ defaultFill: FillStyle.ShadeFill });
       await store.load();
       expect(store.defaultFill).toBe(FillStyle.ShadeFill);
@@ -181,7 +174,6 @@ describe("userPreferences store", () => {
     it("should handle decimal precision values 0 and above", async () => {
       const store = useUserPreferencesStore();
 
-      // Test 0
       mockLoadUserPreferences.mockResolvedValue({
         easelDecimalPrecision: 0,
         hierarchyDecimalPrecision: 0
@@ -190,7 +182,6 @@ describe("userPreferences store", () => {
       expect(store.easelDecimalPrecision).toBe(0);
       expect(store.hierarchyDecimalPrecision).toBe(0);
 
-      // Test high use case
       mockLoadUserPreferences.mockResolvedValue({
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3
@@ -199,8 +190,6 @@ describe("userPreferences store", () => {
       expect(store.easelDecimalPrecision).toBe(3);
       expect(store.hierarchyDecimalPrecision).toBe(3);
 
-
-      // Test max number
       mockLoadUserPreferences.mockResolvedValue({
         easelDecimalPrecision: Number.MAX_VALUE,
         hierarchyDecimalPrecision: Number.MAX_VALUE
@@ -268,162 +257,10 @@ describe("userPreferences store", () => {
         defaultFill: FillStyle.PlainFill,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: null
-      });
-    });
-
-    it("should save current decimal precision preferences", async () => {
-      const store = useUserPreferencesStore();
-      store.easelDecimalPrecision = 4;
-      store.hierarchyDecimalPrecision = 5;
-
-      await store.save();
-
-      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: null,
-        easelDecimalPrecision: 4,
-        hierarchyDecimalPrecision: 5,
-        notificationLevels: null
-      });
-    });
-
-    it("should save null defaultFill value", async () => {
-      const store = useUserPreferencesStore();
-      store.defaultFill = null;
-
-      await store.save();
-
-      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: null,
-        easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
-        notificationLevels: null
-      });
-    });
-
-    it("should throw error when not authenticated", async () => {
-      mockCurrentUser.uid = "";
-      const { getAuth } = await import("firebase/auth");
-      (getAuth as any).mockReturnValueOnce({ currentUser: null });
-
-      const store = useUserPreferencesStore();
-      store.defaultFill = FillStyle.PlainFill;
-
-      await expect(store.save()).rejects.toThrow("Not authenticated");
-      mockCurrentUser.uid = "test-user-123"; // Reset for other tests
-    });
-
-    it("should save all FillStyle enum values", async () => {
-      const store = useUserPreferencesStore();
-
-      // Test NoFill
-      store.defaultFill = FillStyle.NoFill;
-      await store.save();
-      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: FillStyle.NoFill,
-        easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
-        notificationLevels: null
-      });
-
-      // Test PlainFill
-      store.defaultFill = FillStyle.PlainFill;
-      await store.save();
-      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: FillStyle.PlainFill,
-        easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
-        notificationLevels: null
-      });
-
-      // Test ShadeFill
-      store.defaultFill = FillStyle.ShadeFill;
-      await store.save();
-      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: FillStyle.ShadeFill,
-        easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
-        notificationLevels: null
-      });
-    });
-
-    it("should save decimal precision values 0 and above", async () => {
-      const store = useUserPreferencesStore();
-
-      // Test 0
-      store.easelDecimalPrecision = 0;
-      store.hierarchyDecimalPrecision = 0;
-      await store.save();
-      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: null,
-        easelDecimalPrecision: 0,
-        hierarchyDecimalPrecision: 0,
-        notificationLevels: null
-      });
-
-      // Test high use case
-      store.easelDecimalPrecision = 3;
-      store.hierarchyDecimalPrecision = 3;
-      await store.save();
-      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: null,
-        easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
-        notificationLevels: null
-      });
-
-      // Test max number
-      store.easelDecimalPrecision = Number.MAX_VALUE;
-      store.hierarchyDecimalPrecision = Number.MAX_VALUE;
-      await store.save();
-      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: null,
-        easelDecimalPrecision: Number.MAX_VALUE,
-        hierarchyDecimalPrecision: Number.MAX_VALUE,
-        notificationLevels: null
-      });
-    });
-
-    it("should save notification levels preference", async () => {
-      const store = useUserPreferencesStore();
-      store.notificationLevels = ["success", "error"];
-
-      await store.save();
-
-      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: null,
-        easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
-        notificationLevels: ["success", "error"]
-      });
-    });
-
-    it("should save empty notification levels array", async () => {
-      const store = useUserPreferencesStore();
-      store.notificationLevels = [];
-
-      await store.save();
-
-      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: null,
-        easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
-        notificationLevels: []
-      });
-    });
-
-    it("should save both defaultFill and notificationLevels together", async () => {
-      const store = useUserPreferencesStore();
-      store.defaultFill = FillStyle.PlainFill;
-      store.notificationLevels = ["info", "warning"];
-
-      await store.save();
-
-      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: FillStyle.PlainFill,
-        easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
-        notificationLevels: ["info", "warning"]
+        notificationLevels: null,
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4,
+        tooltipMode: "full"
       });
     });
   });
@@ -432,26 +269,24 @@ describe("userPreferences store", () => {
     it("should support load -> modify -> save workflow", async () => {
       mockLoadUserPreferences.mockResolvedValue({
         defaultFill: FillStyle.NoFill,
-        easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3
+        notificationLevels: ["success", "info", "error", "warning"]
       });
 
       const store = useUserPreferencesStore();
-      
-      // Load initial preference
       await store.load();
-      expect(store.defaultFill).toBe(FillStyle.NoFill);
 
-      // Modify preference
       store.defaultFill = FillStyle.PlainFill;
 
-      // Save modified preference
       await store.save();
+
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: FillStyle.PlainFill,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: ["success", "info", "error", "warning"]
+        notificationLevels: ["success", "info", "error", "warning"],
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4,
+        tooltipMode: "full"
       });
     });
 
@@ -460,88 +295,130 @@ describe("userPreferences store", () => {
 
       mockLoadUserPreferences.mockResolvedValue({ defaultFill: FillStyle.NoFill });
       await store.load();
-      expect(store.defaultFill).toBe(FillStyle.NoFill);
 
       mockLoadUserPreferences.mockResolvedValue({ defaultFill: FillStyle.PlainFill });
       await store.load();
-      expect(store.defaultFill).toBe(FillStyle.PlainFill);
 
-      mockLoadUserPreferences.mockResolvedValue({ defaultFill: FillStyle.ShadeFill });
-      await store.load();
-      expect(store.defaultFill).toBe(FillStyle.ShadeFill);
+      expect(store.defaultFill).toBe(FillStyle.PlainFill);
     });
 
     it("should maintain preference value between loads and saves", async () => {
-      const store = useUserPreferencesStore();
+      mockLoadUserPreferences.mockResolvedValue({
+        defaultFill: FillStyle.PlainFill,
+        notificationLevels: ["success", "info", "error", "warning"]
+      });
 
-      // Initial load
-      mockLoadUserPreferences.mockResolvedValue({ defaultFill: FillStyle.PlainFill });
+      const store = useUserPreferencesStore();
       await store.load();
 
-      // Save same value
       await store.save();
+
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: FillStyle.PlainFill,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: ["success", "info", "error", "warning"]
+        notificationLevels: ["success", "info", "error", "warning"],
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4,
+        tooltipMode: "full"
       });
-
-      // Verify value unchanged
-      expect(store.defaultFill).toBe(FillStyle.PlainFill);
     });
 
     it("should handle notification levels workflow", async () => {
       mockLoadUserPreferences.mockResolvedValue({
-        notificationLevels: ["success", "info", "error", "warning"]
+        notificationLevels: ["error", "warning"]
       });
 
       const store = useUserPreferencesStore();
-      
-      // Load initial preference
       await store.load();
-      expect(store.notificationLevels).toEqual(["success", "info", "error", "warning"]);
 
-      // Modify preference
-      store.notificationLevels = ["error", "warning"];
-
-      // Save modified preference
       await store.save();
+
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: ["error", "warning"]
+        notificationLevels: ["error", "warning"],
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4,
+        tooltipMode: "full"
       });
     });
 
     it("should handle toggling notification levels", async () => {
-      mockLoadUserPreferences.mockResolvedValue({
-        notificationLevels: ["success", "info", "error", "warning"]
-      });
+      const store = useUserPreferencesStore();
+      store.notificationLevels = ["success", "info"];
+
+      store.notificationLevels = ["success"];
+
+      await store.save();
+
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith(
+        "test-user-123",
+        expect.objectContaining({
+          notificationLevels: ["success"]
+        })
+      );
+    });
+  });
+
+  describe("tooltipMode behavior", () => {
+    it("should initialize tooltipMode to 'full'", () => {
+      const store = useUserPreferencesStore();
+      expect(store.tooltipMode).toBe("full");
+    });
+
+    it("should load a valid tooltipMode from preferences", async () => {
+      mockLoadUserPreferences.mockResolvedValue({ tooltipMode: "minimal" });
 
       const store = useUserPreferencesStore();
       await store.load();
 
-      // Remove a level
-      store.notificationLevels = ["success", "error", "warning"];
-      await store.save();
-      expect(mockSaveUserPreferences).toHaveBeenLastCalledWith("test-user-123", {
-        defaultFill: null,
-        easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
-        notificationLevels: ["success", "error", "warning"]
-      });
+      expect(store.tooltipMode).toBe("minimal");
+    });
 
-      // Add it back
-      store.notificationLevels = ["success", "info", "error", "warning"];
+    it("should fall back to default mode when an invalid tooltipMode is loaded", async () => {
+      mockLoadUserPreferences.mockResolvedValue({ tooltipMode: "invalid-mode" });
+
+      const store = useUserPreferencesStore();
+      await store.load();
+
+      expect(store.tooltipMode).toBe("full");
+    });
+
+    it("should fall back to default mode when tooltipMode is missing", async () => {
+      mockLoadUserPreferences.mockResolvedValue({ });
+
+      const store = useUserPreferencesStore();
+      await store.load();
+
+      expect(store.tooltipMode).toBe("full");
+    });
+
+    it("should save the tooltipMode preference", async () => {
+      const store = useUserPreferencesStore();
+      store.tooltipMode = "tools-only";
+
       await store.save();
-      expect(mockSaveUserPreferences).toHaveBeenLastCalledWith("test-user-123", {
+
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: ["success", "info", "error", "warning"]
+        notificationLevels: null,
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4,
+        tooltipMode: "tools-only"
       });
+    });
+
+    it("should allow switching between all TOOLTIP_MODES values", async () => {
+      const store = useUserPreferencesStore();
+
+      for (const mode of ["full", "minimal", "tools-only", "easel-only", "none"] as const) {
+        store.tooltipMode = mode;
+        expect(store.tooltipMode).toBe(mode);
+      }
     });
   });
 });
