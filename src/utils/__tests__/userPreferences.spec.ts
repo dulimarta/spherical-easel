@@ -77,7 +77,7 @@ describe("user preferences utility functions", () => {
         preferences: {
           defaultFill: FillStyle.PlainFill,
           easelDecimalPrecision: SETTINGS.decimalPrecision,
-          hierarchyDecimalPrecision: SETTINGS.decimalPrecision
+          objectTreeDecimalPrecision: SETTINGS.decimalPrecision
         }
       };
 
@@ -85,7 +85,7 @@ describe("user preferences utility functions", () => {
       expect(result).toEqual({
         defaultFill: FillStyle.PlainFill,
         easelDecimalPrecision: SETTINGS.decimalPrecision,
-        hierarchyDecimalPrecision: SETTINGS.decimalPrecision
+        objectTreeDecimalPrecision: SETTINGS.decimalPrecision
       });
     });
 
@@ -134,10 +134,10 @@ describe("user preferences utility functions", () => {
       expect(result?.easelDecimalPrecision).toBe(0);
 
       mockUserData["user-hierarchyzero"] = {
-        preferences: { hierarchyDecimalPrecision: 0 }
+        preferences: { objectTreeDecimalPrecision: 0 }
       };
       result = await loadUserPreferences("user-hierarchyzero");
-      expect(result?.hierarchyDecimalPrecision).toBe(0);
+      expect(result?.objectTreeDecimalPrecision).toBe(0);
 
       mockUserData["user-easelthree"] = {
         preferences: { easelDecimalPrecision: 3 }
@@ -146,10 +146,10 @@ describe("user preferences utility functions", () => {
       expect(result?.easelDecimalPrecision).toBe(3);
 
       mockUserData["user-hierarchythree"] = {
-        preferences: { hierarchyDecimalPrecision: 3 }
+        preferences: { objectTreeDecimalPrecision: 3 }
       };
       result = await loadUserPreferences("user-hierarchythree");
-      expect(result?.hierarchyDecimalPrecision).toBe(3);
+      expect(result?.objectTreeDecimalPrecision).toBe(3);
 
       mockUserData["user-easelmax"] = {
         preferences: { easelDecimalPrecision: Number.MAX_VALUE }
@@ -158,10 +158,10 @@ describe("user preferences utility functions", () => {
       expect(result?.easelDecimalPrecision).toBe(Number.MAX_VALUE);
 
       mockUserData["user-hierarchymax"] = {
-        preferences: { hierarchyDecimalPrecision: Number.MAX_VALUE }
+        preferences: { objectTreeDecimalPrecision: Number.MAX_VALUE }
       };
       result = await loadUserPreferences("user-hierarchymax");
-      expect(result?.hierarchyDecimalPrecision).toBe(Number.MAX_VALUE);
+      expect(result?.objectTreeDecimalPrecision).toBe(Number.MAX_VALUE);
     });
 
     it("should load notification levels from preferences", async () => {
@@ -207,7 +207,7 @@ describe("user preferences utility functions", () => {
       await saveUserPreferences("test-user", {
         defaultFill: FillStyle.PlainFill,
         easelDecimalPrecision: 5,
-        hierarchyDecimalPrecision: 4
+        objectTreeDecimalPrecision: 4
       });
 
       const data = mockUserData["test-user"];
@@ -215,7 +215,7 @@ describe("user preferences utility functions", () => {
         preferences: {
           defaultFill: FillStyle.PlainFill,
           easelDecimalPrecision: 5,
-          hierarchyDecimalPrecision: 4
+          objectTreeDecimalPrecision: 4
         }
       });
     });
@@ -229,7 +229,7 @@ describe("user preferences utility functions", () => {
       await saveUserPreferences("test-user", {
         defaultFill: FillStyle.ShadeFill,
         easelDecimalPrecision: 4,
-        hierarchyDecimalPrecision: 5
+        objectTreeDecimalPrecision: 5
       });
 
       const data = mockUserData["test-user"];
@@ -239,7 +239,7 @@ describe("user preferences utility functions", () => {
         preferences: {
           defaultFill: FillStyle.ShadeFill,
           easelDecimalPrecision: 4,
-          hierarchyDecimalPrecision: 5
+          objectTreeDecimalPrecision: 5
         }
       });
     });
@@ -272,7 +272,7 @@ describe("user preferences utility functions", () => {
       await saveUserPreferences("test-user", {
         defaultFill: undefined,
         easelDecimalPrecision: undefined,
-        hierarchyDecimalPrecision: undefined
+        objectTreeDecimalPrecision: undefined
       });
 
       expect(mockSetDoc).not.toHaveBeenCalled();

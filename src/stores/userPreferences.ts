@@ -11,7 +11,7 @@ const DEFAULT_NOTIFICATION_LEVELS = ["success", "info", "error", "warning"];
 export const useUserPreferencesStore = defineStore("userPreferences", () => {
   const defaultFill = ref<FillStyle | null>(null);
   const easelDecimalPrecision = ref<number>(SETTINGS.decimalPrecision);
-  const hierarchyDecimalPrecision = ref<number>(SETTINGS.decimalPrecision);
+  const objectTreeDecimalPrecision = ref<number>(SETTINGS.decimalPrecision);
   const notificationLevels = ref<string[] | null>(null);
   const boundaryColor = ref("#000000FF");
   const boundaryWidth = ref(4);
@@ -27,7 +27,7 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
 
     defaultFill.value = prefs?.defaultFill ?? null;
     easelDecimalPrecision.value = prefs?.easelDecimalPrecision ?? SETTINGS.decimalPrecision;
-    hierarchyDecimalPrecision.value = prefs?.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision;
+    objectTreeDecimalPrecision.value = prefs?.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision;
     // Apply the preference to the runtime global fill style if present
     if (defaultFill.value !== null && defaultFill.value !== undefined) {
       Nodule.globalFillStyle = defaultFill.value as FillStyle;
@@ -52,12 +52,12 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
     await saveUserPreferences(uid, {
       defaultFill: defaultFill.value,
       easelDecimalPrecision: easelDecimalPrecision.value,
-      hierarchyDecimalPrecision: hierarchyDecimalPrecision.value,
+      objectTreeDecimalPrecision: objectTreeDecimalPrecision.value,
       notificationLevels: notificationLevels.value,
       boundaryColor: boundaryColor.value,
       boundaryWidth: boundaryWidth.value
     });
   }
 
-  return { defaultFill, easelDecimalPrecision, hierarchyDecimalPrecision, notificationLevels, loading, load, save };
+  return { defaultFill, easelDecimalPrecision, objectTreeDecimalPrecision, notificationLevels, loading, load, save };
 });
