@@ -20,6 +20,7 @@ import NonFreeSegment from "@/plottables/NonFreeSegment";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { SELabel } from "./SELabel";
 import { SEPoint } from "./SEPoint";
+import { PreferenceRef } from "../utils/preferenceRef";
 const { t } = i18n.global;
 
 const styleSet = new Set([
@@ -157,9 +158,9 @@ export class SESegment
       i18n.global.t(`objectTree.segmentThrough`, {
         pt1: this._startSEPoint.label?.ref.shortUserName,
         pt2: this._endSEPoint.label?.ref.shortUserName,
-        normalX: this._normalVector.x.toFixed(SETTINGS.decimalPrecision),
-        normalY: this._normalVector.y.toFixed(SETTINGS.decimalPrecision),
-        normalZ: this._normalVector.z.toFixed(SETTINGS.decimalPrecision)
+        normalX: this._normalVector.x.toFixed(PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision),
+        normalY: this._normalVector.y.toFixed(PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision),
+        normalZ: this._normalVector.z.toFixed(PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision)
       })
     );
   }

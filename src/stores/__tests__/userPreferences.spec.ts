@@ -37,6 +37,12 @@ describe("userPreferences store", () => {
       expect(store.defaultFill).toBeNull();
     });
 
+    it("should initialize with decimal precisions of 3", () => {
+      const store = useUserPreferencesStore();
+      expect(store.easelDecimalPrecision).toBe(3);
+      expect(store.hierarchyDecimalPrecision).toBe(3);
+    });
+
     it("should initialize with null notificationLevels", () => {
       const store = useUserPreferencesStore();
       expect(store.notificationLevels).toBeNull();
@@ -56,7 +62,9 @@ describe("userPreferences store", () => {
   describe("load function", () => {
     it("should load preferences for current user when no uid provided", async () => {
       mockLoadUserPreferences.mockResolvedValue({
-        defaultFill: FillStyle.PlainFill
+        defaultFill: FillStyle.PlainFill,
+        easelDecimalPrecision: 4,
+        hierarchyDecimalPrecision: 5
       });
 
       const store = useUserPreferencesStore();
@@ -64,11 +72,15 @@ describe("userPreferences store", () => {
 
       expect(mockLoadUserPreferences).toHaveBeenCalledWith("test-user-123");
       expect(store.defaultFill).toBe(FillStyle.PlainFill);
+      expect(store.easelDecimalPrecision).toBe(4);
+      expect(store.hierarchyDecimalPrecision).toBe(5);
     });
 
     it("should load preferences for specific uid when provided", async () => {
       mockLoadUserPreferences.mockResolvedValue({
-        defaultFill: FillStyle.ShadeFill
+        defaultFill: FillStyle.ShadeFill,
+        easelDecimalPrecision: 5,
+        hierarchyDecimalPrecision: 4
       });
 
       const store = useUserPreferencesStore();
@@ -76,6 +88,8 @@ describe("userPreferences store", () => {
 
       expect(mockLoadUserPreferences).toHaveBeenCalledWith("specific-user-456");
       expect(store.defaultFill).toBe(FillStyle.ShadeFill);
+      expect(store.easelDecimalPrecision).toBe(5);
+      expect(store.hierarchyDecimalPrecision).toBe(4);
     });
 
     it("should set loading state during load operation", async () => {
@@ -100,6 +114,16 @@ describe("userPreferences store", () => {
       await store.load();
 
       expect(store.defaultFill).toBeNull();
+    });
+
+    it("should set decimal precisions to 3 when no preferences exist", async () => {
+      mockLoadUserPreferences.mockResolvedValue(null);
+
+      const store = useUserPreferencesStore();
+      await store.load();
+
+      expect(store.easelDecimalPrecision).toBe(3);
+      expect(store.hierarchyDecimalPrecision).toBe(3);
     });
 
     it("should apply preference to Nodule.globalFillStyle when loaded", async () => {
@@ -157,6 +181,38 @@ describe("userPreferences store", () => {
       await store.load();
       expect(store.defaultFill).toBe(FillStyle.ShadeFill);
       expect(Nodule.globalFillStyle).toBe(FillStyle.ShadeFill);
+    });
+
+    it("should handle decimal precision values 0 and above", async () => {
+      const store = useUserPreferencesStore();
+
+      // Test 0
+      mockLoadUserPreferences.mockResolvedValue({
+        easelDecimalPrecision: 0,
+        hierarchyDecimalPrecision: 0
+      });
+      await store.load();
+      expect(store.easelDecimalPrecision).toBe(0);
+      expect(store.hierarchyDecimalPrecision).toBe(0);
+
+      // Test high use case
+      mockLoadUserPreferences.mockResolvedValue({
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3
+      });
+      await store.load();
+      expect(store.easelDecimalPrecision).toBe(3);
+      expect(store.hierarchyDecimalPrecision).toBe(3);
+
+
+      // Test max number
+      mockLoadUserPreferences.mockResolvedValue({
+        easelDecimalPrecision: Number.MAX_VALUE,
+        hierarchyDecimalPrecision: Number.MAX_VALUE
+      });
+      await store.load();
+      expect(store.easelDecimalPrecision).toBe(Number.MAX_VALUE);
+      expect(store.hierarchyDecimalPrecision).toBe(Number.MAX_VALUE);
     });
 
     it("should load notification levels when provided", async () => {
@@ -274,8 +330,25 @@ describe("userPreferences store", () => {
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: FillStyle.PlainFill,
-        notificationLevels: null,
         momentumDecay: null
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        notificationLevels: null
+      });
+    });
+
+    it("should save current decimal precision preferences", async () => {
+      const store = useUserPreferencesStore();
+      store.easelDecimalPrecision = 4;
+      store.hierarchyDecimalPrecision = 5;
+
+      await store.save();
+
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: null,
+        easelDecimalPrecision: 4,
+        hierarchyDecimalPrecision: 5,
+        notificationLevels: null
       });
     });
 
@@ -287,8 +360,10 @@ describe("userPreferences store", () => {
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
-        notificationLevels: null,
         momentumDecay: null
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        notificationLevels: null
       });
     });
 
@@ -312,8 +387,10 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: FillStyle.NoFill,
-        notificationLevels: null,
         momentumDecay: null
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        notificationLevels: null
       });
 
       // Test PlainFill
@@ -321,8 +398,10 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: FillStyle.PlainFill,
-        notificationLevels: null,
         momentumDecay: null
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        notificationLevels: null
       });
 
       // Test ShadeFill
@@ -330,8 +409,47 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: FillStyle.ShadeFill,
-        notificationLevels: null,
         momentumDecay: null
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        notificationLevels: null
+      });
+    });
+
+    it("should save decimal precision values 0 and above", async () => {
+      const store = useUserPreferencesStore();
+
+      // Test 0
+      store.easelDecimalPrecision = 0;
+      store.hierarchyDecimalPrecision = 0;
+      await store.save();
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: null,
+        easelDecimalPrecision: 0,
+        hierarchyDecimalPrecision: 0,
+        notificationLevels: null
+      });
+
+      // Test high use case
+      store.easelDecimalPrecision = 3;
+      store.hierarchyDecimalPrecision = 3;
+      await store.save();
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: null,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        notificationLevels: null
+      });
+
+      // Test max number
+      store.easelDecimalPrecision = Number.MAX_VALUE;
+      store.hierarchyDecimalPrecision = Number.MAX_VALUE;
+      await store.save();
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: null,
+        easelDecimalPrecision: Number.MAX_VALUE,
+        hierarchyDecimalPrecision: Number.MAX_VALUE,
+        notificationLevels: null
       });
     });
 
@@ -343,8 +461,10 @@ describe("userPreferences store", () => {
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
-        notificationLevels: ["success", "error"],
         momentumDecay: null
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        notificationLevels: ["success", "error"]
       });
     });
 
@@ -356,8 +476,10 @@ describe("userPreferences store", () => {
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
-        notificationLevels: [],
         momentumDecay: null
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        notificationLevels: []
       });
     });
 
@@ -424,8 +546,10 @@ describe("userPreferences store", () => {
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: FillStyle.PlainFill,
-        notificationLevels: ["info", "warning"],
         momentumDecay: 25
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        notificationLevels: ["info", "warning"]
       });
     });
   });
@@ -433,7 +557,9 @@ describe("userPreferences store", () => {
   describe("integration scenarios", () => {
     it("should support load -> modify -> save workflow", async () => {
       mockLoadUserPreferences.mockResolvedValue({
-        defaultFill: FillStyle.NoFill
+        defaultFill: FillStyle.NoFill,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3
       });
 
       const store = useUserPreferencesStore();
@@ -449,8 +575,10 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: FillStyle.PlainFill,
-        notificationLevels: ["success", "info", "error", "warning"],
         momentumDecay: 3
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        notificationLevels: ["success", "info", "error", "warning"]
       });
     });
 
@@ -481,8 +609,10 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: FillStyle.PlainFill,
-        notificationLevels: ["success", "info", "error", "warning"],
         momentumDecay: 3
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        notificationLevels: ["success", "info", "error", "warning"]
       });
 
       // Verify value unchanged
@@ -507,8 +637,10 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
-        notificationLevels: ["error", "warning"],
         momentumDecay: 3
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        notificationLevels: ["error", "warning"]
       });
     });
 
@@ -525,8 +657,10 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenLastCalledWith("test-user-123", {
         defaultFill: null,
-        notificationLevels: ["success", "error", "warning"],
         momentumDecay: 3
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        notificationLevels: ["success", "error", "warning"]
       });
 
       // Add it back
@@ -588,6 +722,8 @@ describe("userPreferences store", () => {
         defaultFill: FillStyle.ShadeFill,
         notificationLevels: ["error", "warning"],
         momentumDecay: 45
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
       });
     });
   });
