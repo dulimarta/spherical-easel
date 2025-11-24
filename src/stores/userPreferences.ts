@@ -57,7 +57,7 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
       hierarchyDecimalPrecision: hierarchyDecimalPrecision.value,
       notificationLevels: notificationLevels.value,
       boundaryColor: boundaryColor.value,
-      boundaryWidth: boundaryWidth.value
+      boundaryWidth: boundaryWidth.value,
       momentumDecay: momentumDecay.value
     });
   }
