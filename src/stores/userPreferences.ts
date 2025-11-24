@@ -10,6 +10,7 @@ const DEFAULT_NOTIFICATION_LEVELS = ["success", "info", "error", "warning"];
 export const useUserPreferencesStore = defineStore("userPreferences", () => {
   const defaultFill = ref<FillStyle | null>(null);
   const notificationLevels = ref<string[] | null>(null);
+  const momentumDecay = ref<number | null>(null);
   const loading = ref(false);
 
   async function load(uid?: string) {
@@ -25,6 +26,8 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
     }
     // Load notification levels, defaulting to all types if not set
     notificationLevels.value = prefs?.notificationLevels ?? [...DEFAULT_NOTIFICATION_LEVELS];
+    // Load momentum decay, defaulting to 3 seconds if not set
+    momentumDecay.value = prefs?.momentumDecay ?? 3;
     loading.value = false;
   }
 
@@ -35,9 +38,10 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
     // Persist the current value (allow null to be stored as null)
     await saveUserPreferences(uid, { 
       defaultFill: defaultFill.value,
-      notificationLevels: notificationLevels.value
+      notificationLevels: notificationLevels.value,
+      momentumDecay: momentumDecay.value
     });
   }
 
-  return { defaultFill, notificationLevels, loading, load, save };
+  return { defaultFill, notificationLevels, momentumDecay, loading, load, save };
 });

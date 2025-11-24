@@ -923,6 +923,8 @@ export const useSEStore = defineStore("se", () => {
       updateDisabledTools("expression");
     }
   }
+
+  
   //#region rotateSphere
   function rotateSphere(rotationMat: Matrix4): void {
     // Update the inverseTotalRotationMatrix. We have a new rotationMat which is transforming by

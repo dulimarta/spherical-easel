@@ -669,6 +669,7 @@ export interface UserProfile {
   preferences?: {
     defaultFill?: FillStyle;
     notificationLevels?: string[];
+    momentumDecay?: number;
   };
 }
 

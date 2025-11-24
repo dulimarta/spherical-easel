@@ -4,6 +4,7 @@ import { FillStyle } from "@/types";
 export type UserPreferences = {
   defaultFill?: FillStyle | null;
   notificationLevels?: string[] | null;
+  momentumDecay?: number | null;
 };
 
 export async function loadUserPreferences(uid: string): Promise<UserPreferences | null> {
