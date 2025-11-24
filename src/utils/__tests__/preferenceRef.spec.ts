@@ -11,7 +11,7 @@ describe("Singleton instance initializes properly", () => {
   });
 
   it("should create an instance of the singleton if hierarchy precision has been called", async () => {
-    let testVar = PreferenceRef.instance.hierarchyDecimalPrecision;
+    let testVar = PreferenceRef.instance.objectTreeDecimalPrecision;
     expect(PreferenceRef.instance).not.toBeNull();
   });
 });
@@ -23,13 +23,13 @@ describe("Singleton attributes get assigned properly", () => {
 
   it("should give decimal precision attributes a number value if initialized", async () => {
     expectTypeOf(PreferenceRef.instance.easelDecimalPrecision).toBeNumber();
-    expectTypeOf(PreferenceRef.instance.hierarchyDecimalPrecision).toBeNumber();
+    expectTypeOf(PreferenceRef.instance.objectTreeDecimalPrecision).toBeNumber();
   });
 
   it("assign the values from given object", async () => {
-    PreferenceRef.update({ easelDecimalPrecision: 4, hierarchyDecimalPrecision: 5 })
+    PreferenceRef.update({ easelDecimalPrecision: 4, objectTreeDecimalPrecision: 5 })
     expect(PreferenceRef.instance.easelDecimalPrecision).toBe(4);
-    expect(PreferenceRef.instance.hierarchyDecimalPrecision).toBe(5);
+    expect(PreferenceRef.instance.objectTreeDecimalPrecision).toBe(5);
   });
 });
 
@@ -39,12 +39,12 @@ describe("Singleton attributes update properly", () => {
   });
 
   it("should update decimal precisions", async () => {
-    PreferenceRef.update({ easelDecimalPrecision: 4, hierarchyDecimalPrecision: 5 })
+    PreferenceRef.update({ easelDecimalPrecision: 4, objectTreeDecimalPrecision: 5 })
     expect(PreferenceRef.instance.easelDecimalPrecision).toBe(4);
-    expect(PreferenceRef.instance.hierarchyDecimalPrecision).toBe(5);
+    expect(PreferenceRef.instance.objectTreeDecimalPrecision).toBe(5);
 
-    PreferenceRef.update({ easelDecimalPrecision: 5, hierarchyDecimalPrecision: 4 })
+    PreferenceRef.update({ easelDecimalPrecision: 5, objectTreeDecimalPrecision: 4 })
     expect(PreferenceRef.instance.easelDecimalPrecision).toBe(5);
-    expect(PreferenceRef.instance.hierarchyDecimalPrecision).toBe(4);
+    expect(PreferenceRef.instance.objectTreeDecimalPrecision).toBe(4);
   });
 });

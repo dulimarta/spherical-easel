@@ -38,13 +38,13 @@
             </v-col>
             <v-col cols="6">
               <v-sheet rounded="lg" elevation="2">
-                <v-slider v-model="prefsStore.hierarchyDecimalPrecision"
+                <v-slider v-model="prefsStore.objectTreeDecimalPrecision"
                           min="0"
                           max="7"
                           step="1"
                           inline
                           thumb-label="always"
-                          label="Hierarchy Decimal Precision"
+                          label="Object Tree Decimal Precision"
                           @update:modelValue="() => (profileChanged = true)">
                 </v-slider>
               </v-sheet>
