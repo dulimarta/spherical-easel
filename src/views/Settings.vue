@@ -51,22 +51,9 @@
             </v-col>
           </v-row>
         </v-container>
-          <v-divider class="my-3" />
-          <h4>Default Fill</h4>
-          <v-row>
-            <v-col cols="6">
-              <v-select
-                v-model="prefsStore.defaultFill"
-                :items="fillStyleItems"
-                item-title="text"
-                item-value="value"
-                label="Default Fill Style"
-                @update:modelValue="() => (profileChanged = true)"
-              />
-            </v-col>
-          </v-row>
-          <v-divider class="my-3" />
-          <h4>Rotation Momentum Decay</h4>
+
+        <v-divider class="my-3" />
+        <h4>Rotation Momentum Decay</h4>
           <v-row>
             <v-col cols="6">
               <v-slider

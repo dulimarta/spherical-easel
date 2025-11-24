@@ -62,5 +62,5 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
     });
   }
 
-  return { defaultFill, easelDecimalPrecision, objectTreeDecimalPrecision, notificationLevels, loading, load, save };
+  return { defaultFill, easelDecimalPrecision, objectTreeDecimalPrecision, notificationLevels, boundaryColor, boundaryWidth, momentumDecay, loading, load, save };
 });
