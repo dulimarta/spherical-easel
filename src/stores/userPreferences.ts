@@ -13,6 +13,7 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
   const easelDecimalPrecision = ref<number>(SETTINGS.decimalPrecision);
   const hierarchyDecimalPrecision = ref<number>(SETTINGS.decimalPrecision);
   const notificationLevels = ref<string[] | null>(null);
+  const momentumDecay = ref<number | null>(null);
   const boundaryColor = ref("#000000FF");
   const boundaryWidth = ref(4);
   const loading = ref(false);
@@ -35,7 +36,8 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
 
     // Load notification levels
     notificationLevels.value = prefs?.notificationLevels ?? [...DEFAULT_NOTIFICATION_LEVELS];
-
+    // Load momentum decay, defaulting to 3 seconds if not set
+    momentumDecay.value = prefs?.momentumDecay ?? 3;
     // Load boundary circle preferences
     boundaryColor.value = prefs?.boundaryColor ?? "#000000FF";
     boundaryWidth.value = prefs?.boundaryWidth ?? 4;
@@ -55,9 +57,10 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
       hierarchyDecimalPrecision: hierarchyDecimalPrecision.value,
       notificationLevels: notificationLevels.value,
       boundaryColor: boundaryColor.value,
-      boundaryWidth: boundaryWidth.value
+      boundaryWidth: boundaryWidth.value,
+      momentumDecay: momentumDecay.value
     });
   }
 
-  return { defaultFill, easelDecimalPrecision, hierarchyDecimalPrecision, notificationLevels, loading, load, save };
+  return { defaultFill, easelDecimalPrecision, hierarchyDecimalPrecision, notificationLevels, momentumDecay, loading, load, save };
 });

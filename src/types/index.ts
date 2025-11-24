@@ -671,6 +671,7 @@ export interface UserProfile {
     easelDecimalPrecision?: number;
     hierarchyDecimalPrecision?: number;
     notificationLevels?: string[];
+    momentumDecay?: number;
   };
 }
 
