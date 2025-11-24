@@ -12,13 +12,20 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import i18n from "../i18n";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SECircle } from "@/models/SECircle";
+import { useUserPreferencesStore } from "@/stores/userPreferences";
 
 const desiredZAxis = new Vector3();
 const deltaT = 1000 / SETTINGS.rotate.momentum.framesPerSecond; // The momentum rotation is refreshed every deltaT milliseconds
-const endTime = Math.max(
-  0,
-  Math.min(SETTINGS.rotate.momentum.decayTime * 1000, 300000)
-); // The momentum rotation will end after this many milliseconds. 300000 milliseconds is 5 minutes
+
+/**
+ * Get the momentum decay end time from user preferences, or default to SETTINGS
+ * @returns The momentum rotation will end after this many milliseconds. 300000 milliseconds is 5 minutes
+ */
+function getEndTime(): number {
+  const prefsStore = useUserPreferencesStore();
+  const decayTime = prefsStore.momentumDecay ?? SETTINGS.rotate.momentum.decayTime;
+  return Math.max(0, Math.min(decayTime * 1000, 300000));
+}
 
 /**
  * Temporay vectors to compute the angle of rotation in certain cases
@@ -517,6 +524,8 @@ export default class RotateHandler extends Highlighter {
     }
   }
 
+
+  
   mouseReleased(event: MouseEvent): void {
     // If the user is not rotating, then either a rotation hasn't started or a rotation was recorded
     if (!this.userIsRotating) return;
@@ -542,7 +551,7 @@ export default class RotateHandler extends Highlighter {
     if (!this.momentumMode) {
       if (
         SETTINGS.rotate.momentum.enabled &&
-        endTime > 0 &&
+        getEndTime() > 0 &&
         this.derivative != 0 &&
         event.timeStamp - this.previousTime <
           SETTINGS.rotate.momentum.pauseTimeToTemporarilyDisableMomentum * 1000
@@ -616,6 +625,7 @@ export default class RotateHandler extends Highlighter {
    * @param callNumber The number of times this method has been called, used to stop recursion
    */
   async momentum(callNumber: number): Promise<void> {
+    const endTime = getEndTime();
     // Check to see if momentum mode is still enable and the time elapsed since the first momentum call is less than the endTime
     if (this.momentumMode && callNumber * deltaT < endTime) {
       // LINEAR angular velocity

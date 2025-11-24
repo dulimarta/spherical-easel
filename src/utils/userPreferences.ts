@@ -8,6 +8,7 @@ export type UserPreferences = {
   easelDecimalPrecision?: number;
   objectTreeDecimalPrecision?: number;
   notificationLevels?: string[] | null;
+  momentumDecay?: number | null;
   boundaryColor?: string | null;
   boundaryWidth?: number | null;
 };

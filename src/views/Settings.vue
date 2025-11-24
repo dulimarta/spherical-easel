@@ -51,6 +51,35 @@
             </v-col>
           </v-row>
         </v-container>
+          <v-divider class="my-3" />
+          <h4>Default Fill</h4>
+          <v-row>
+            <v-col cols="6">
+              <v-select
+                v-model="prefsStore.defaultFill"
+                :items="fillStyleItems"
+                item-title="text"
+                item-value="value"
+                label="Default Fill Style"
+                @update:modelValue="() => (profileChanged = true)"
+              />
+            </v-col>
+          </v-row>
+          <v-divider class="my-3" />
+          <h4>Rotation Momentum Decay</h4>
+          <v-row>
+            <v-col cols="6">
+              <v-slider
+                v-model="momentumDecay"
+                :min="0"
+                :max="60"
+                :step="1"
+                label="Decay Time (seconds)"
+                thumb-label
+                @update:modelValue="onMomentumDecayChange"
+              />
+            </v-col>
+          </v-row>
         <v-divider class="my-3" />
 
         <!-- Default fill style -->
@@ -157,18 +186,25 @@ const decimalPrecision = ref(3);
 const selectedTab = ref(0);
 const profileChanged = ref(false);
 
+const momentumDecay = ref(prefsStore.momentumDecay ?? 0);
+
 // Color picker toggle
 const colorPickerMenu = ref(false);
 
 // Line width options
 const lineWidthOptions = Array.from({ length: 10 }, (_, i) => i + 1);
-
-// Fill style options
+  
 const fillStyleItems = [
   { text: t("noFill"), value: FillStyle.NoFill },
   { text: t("plainFill"), value: FillStyle.PlainFill },
   { text: t("shadeFill"), value: FillStyle.ShadeFill }
 ];
+  
+// The displayed favorite tools (includes defaults)
+function onMomentumDecayChange() {
+  prefsStore.momentumDecay = momentumDecay.value;
+  profileChanged.value = true;
+}
 
 // Save user preferences
 async function doSave(): Promise<void> {

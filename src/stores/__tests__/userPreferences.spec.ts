@@ -48,6 +48,11 @@ describe("userPreferences store", () => {
       expect(store.notificationLevels).toBeNull();
     });
 
+    it("should initialize with null momentumDecay", () => {
+      const store = useUserPreferencesStore();
+      expect(store.momentumDecay).toBeNull();
+    });
+
     it("should initialize with loading false", () => {
       const store = useUserPreferencesStore();
       expect(store.loading).toBe(false);
@@ -255,6 +260,65 @@ describe("userPreferences store", () => {
       expect(store.defaultFill).toBe(FillStyle.ShadeFill);
       expect(store.notificationLevels).toEqual(["info", "warning"]);
     });
+
+    it("should load momentum decay when provided", async () => {
+      mockLoadUserPreferences.mockResolvedValue({
+        momentumDecay: 10
+      });
+
+      const store = useUserPreferencesStore();
+      await store.load();
+
+      expect(store.momentumDecay).toBe(10);
+    });
+
+    it("should default momentum decay to 3 when not provided", async () => {
+      mockLoadUserPreferences.mockResolvedValue({
+        defaultFill: FillStyle.PlainFill
+      });
+
+      const store = useUserPreferencesStore();
+      await store.load();
+
+      expect(store.momentumDecay).toBe(3);
+    });
+
+    it("should load momentum decay of 0", async () => {
+      mockLoadUserPreferences.mockResolvedValue({
+        momentumDecay: 0
+      });
+
+      const store = useUserPreferencesStore();
+      await store.load();
+
+      expect(store.momentumDecay).toBe(0);
+    });
+
+    it("should load momentum decay at maximum value 60", async () => {
+      mockLoadUserPreferences.mockResolvedValue({
+        momentumDecay: 60
+      });
+
+      const store = useUserPreferencesStore();
+      await store.load();
+
+      expect(store.momentumDecay).toBe(60);
+    });
+
+    it("should load all preferences together", async () => {
+      mockLoadUserPreferences.mockResolvedValue({
+        defaultFill: FillStyle.ShadeFill,
+        notificationLevels: ["info", "warning"],
+        momentumDecay: 15
+      });
+
+      const store = useUserPreferencesStore();
+      await store.load();
+
+      expect(store.defaultFill).toBe(FillStyle.ShadeFill);
+      expect(store.notificationLevels).toEqual(["info", "warning"]);
+      expect(store.momentumDecay).toBe(15);
+    });
   });
 
   describe("save function", () => {
@@ -266,9 +330,12 @@ describe("userPreferences store", () => {
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: FillStyle.PlainFill,
+        momentumDecay: null,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: null
+        notificationLevels: null,
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
       });
     });
 
@@ -281,9 +348,12 @@ describe("userPreferences store", () => {
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
+        momentumDecay: null,
         easelDecimalPrecision: 4,
         hierarchyDecimalPrecision: 5,
-        notificationLevels: null
+        notificationLevels: null,
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
       });
     });
 
@@ -295,9 +365,12 @@ describe("userPreferences store", () => {
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
+        momentumDecay: null,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: null
+        notificationLevels: null,
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
       });
     });
 
@@ -321,9 +394,12 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: FillStyle.NoFill,
+        momentumDecay: null,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: null
+        notificationLevels: null,
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
       });
 
       // Test PlainFill
@@ -331,9 +407,12 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: FillStyle.PlainFill,
+        momentumDecay: null,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: null
+        notificationLevels: null,
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
       });
 
       // Test ShadeFill
@@ -341,9 +420,12 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: FillStyle.ShadeFill,
+        momentumDecay: null,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: null
+        notificationLevels: null,
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
       });
     });
 
@@ -356,9 +438,12 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
+        momentumDecay: null,
         easelDecimalPrecision: 0,
         hierarchyDecimalPrecision: 0,
-        notificationLevels: null
+        notificationLevels: null,
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
       });
 
       // Test high use case
@@ -367,9 +452,12 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
+        momentumDecay: null,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: null
+        notificationLevels: null,
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
       });
 
       // Test max number
@@ -378,9 +466,12 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
+        momentumDecay: null,
         easelDecimalPrecision: Number.MAX_VALUE,
         hierarchyDecimalPrecision: Number.MAX_VALUE,
-        notificationLevels: null
+        notificationLevels: null,
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
       });
     });
 
@@ -392,9 +483,12 @@ describe("userPreferences store", () => {
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
+        momentumDecay: null,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: ["success", "error"]
+        notificationLevels: ["success", "error"],
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
       });
     });
 
@@ -406,9 +500,12 @@ describe("userPreferences store", () => {
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
+        momentumDecay: null,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: []
+        notificationLevels: [],
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
       });
     });
 
@@ -421,9 +518,82 @@ describe("userPreferences store", () => {
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: FillStyle.PlainFill,
+        notificationLevels: ["info", "warning"],
+        momentumDecay: null,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: ["info", "warning"]
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
+      });
+    });
+
+    it("should save momentum decay preference", async () => {
+      const store = useUserPreferencesStore();
+      store.momentumDecay = 20;
+
+      await store.save();
+
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: null,
+        notificationLevels: null,
+        momentumDecay: 20,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
+      });
+    });
+
+    it("should save momentum decay of 0", async () => {
+      const store = useUserPreferencesStore();
+      store.momentumDecay = 0;
+
+      await store.save();
+
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: null,
+        notificationLevels: null,
+        momentumDecay: 0,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
+      });
+    });
+
+    it("should save momentum decay at maximum value 60", async () => {
+      const store = useUserPreferencesStore();
+      store.momentumDecay = 60;
+
+      await store.save();
+
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: null,
+        notificationLevels: null,
+        momentumDecay: 60,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
+      });
+    });
+
+    it("should save all preferences together", async () => {
+      const store = useUserPreferencesStore();
+      store.defaultFill = FillStyle.PlainFill;
+      store.notificationLevels = ["info", "warning"];
+      store.momentumDecay = 25;
+
+      await store.save();
+
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: FillStyle.PlainFill,
+        momentumDecay: 25,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        notificationLevels: ["info", "warning"],
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
       });
     });
   });
@@ -449,9 +619,12 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: FillStyle.PlainFill,
+        momentumDecay: 3,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: ["success", "info", "error", "warning"]
+        notificationLevels: ["success", "info", "error", "warning"],
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
       });
     });
 
@@ -482,9 +655,12 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: FillStyle.PlainFill,
+        momentumDecay: 3,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: ["success", "info", "error", "warning"]
+        notificationLevels: ["success", "info", "error", "warning"],
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
       });
 
       // Verify value unchanged
@@ -509,9 +685,12 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
+        momentumDecay: 3,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: ["error", "warning"]
+        notificationLevels: ["error", "warning"],
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
       });
     });
 
@@ -528,9 +707,12 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenLastCalledWith("test-user-123", {
         defaultFill: null,
+        momentumDecay: 3,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: ["success", "error", "warning"]
+        notificationLevels: ["success", "error", "warning"],
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
       });
 
       // Add it back
@@ -538,9 +720,76 @@ describe("userPreferences store", () => {
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenLastCalledWith("test-user-123", {
         defaultFill: null,
+        notificationLevels: ["success", "info", "error", "warning"],
+        momentumDecay: 3,
         easelDecimalPrecision: 3,
         hierarchyDecimalPrecision: 3,
-        notificationLevels: ["success", "info", "error", "warning"]
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
+      });
+    });
+
+    it("should handle momentum decay workflow", async () => {
+      mockLoadUserPreferences.mockResolvedValue({
+        momentumDecay: 10
+      });
+
+      const store = useUserPreferencesStore();
+      
+      // Load initial preference
+      await store.load();
+      expect(store.momentumDecay).toBe(10);
+
+      // Modify preference
+      store.momentumDecay = 30;
+
+      // Save modified preference
+      await store.save();
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: null,
+        notificationLevels: ["success", "info", "error", "warning"],
+        momentumDecay: 30,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
+      });
+    });
+
+    it("should handle all preferences workflow together", async () => {
+      mockLoadUserPreferences.mockResolvedValue({
+        defaultFill: FillStyle.PlainFill,
+        notificationLevels: ["success", "info"],
+        momentumDecay: 15,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
+      });
+
+      const store = useUserPreferencesStore();
+      
+      // Load all preferences
+      await store.load();
+      expect(store.defaultFill).toBe(FillStyle.PlainFill);
+      expect(store.notificationLevels).toEqual(["success", "info"]);
+      expect(store.momentumDecay).toBe(15);
+
+      // Modify all preferences
+      store.defaultFill = FillStyle.ShadeFill;
+      store.notificationLevels = ["error", "warning"];
+      store.momentumDecay = 45;
+
+      // Save all modified preferences
+      await store.save();
+      expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+        defaultFill: FillStyle.ShadeFill,
+        notificationLevels: ["error", "warning"],
+        momentumDecay: 45,
+        easelDecimalPrecision: 3,
+        hierarchyDecimalPrecision: 3,
+        boundaryColor: "#000000FF",
+        boundaryWidth: 4
       });
     });
   });

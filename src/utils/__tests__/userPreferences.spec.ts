@@ -200,6 +200,56 @@ describe("user preferences utility functions", () => {
         notificationLevels: ["info", "warning"]
       });
     });
+
+    it("should load momentum decay from preferences", async () => {
+      mockUserData["test-user"] = {
+        preferences: {
+          momentumDecay: 20
+        }
+      };
+
+      const result = await loadUserPreferences("test-user");
+      expect(result?.momentumDecay).toBe(20);
+    });
+
+    it("should load momentum decay of 0", async () => {
+      mockUserData["test-user"] = {
+        preferences: {
+          momentumDecay: 0
+        }
+      };
+
+      const result = await loadUserPreferences("test-user");
+      expect(result?.momentumDecay).toBe(0);
+    });
+
+    it("should load momentum decay at maximum value 60", async () => {
+      mockUserData["test-user"] = {
+        preferences: {
+          momentumDecay: 60
+        }
+      };
+
+      const result = await loadUserPreferences("test-user");
+      expect(result?.momentumDecay).toBe(60);
+    });
+
+    it("should load all preferences together", async () => {
+      mockUserData["test-user"] = {
+        preferences: {
+          defaultFill: FillStyle.PlainFill,
+          notificationLevels: ["info", "warning"],
+          momentumDecay: 15
+        }
+      };
+
+      const result = await loadUserPreferences("test-user");
+      expect(result).toEqual({
+        defaultFill: FillStyle.PlainFill,
+        notificationLevels: ["info", "warning"],
+        momentumDecay: 15
+      });
+    });
   });
 
   describe("saveUserPrefs", () => {
@@ -354,6 +404,83 @@ describe("user preferences utility functions", () => {
       const data = mockUserData["test-user"];
       expect(data.preferences.defaultFill).toBe(FillStyle.ShadeFill);
       expect(data.preferences.notificationLevels).toEqual(["error", "warning"]);
+      expect(data.displayName).toBe("Test User");
+    });
+
+    it("should save momentum decay", async () => {
+      await saveUserPreferences("test-user", {
+        momentumDecay: 30
+      });
+
+      const data = mockUserData["test-user"];
+      expect(data).toEqual({
+        preferences: {
+          momentumDecay: 30
+        }
+      });
+    });
+
+    it("should save momentum decay of 0", async () => {
+      await saveUserPreferences("test-user", {
+        momentumDecay: 0
+      });
+
+      const data = mockUserData["test-user"];
+      expect(data).toEqual({
+        preferences: {
+          momentumDecay: 0
+        }
+      });
+    });
+
+    it("should save momentum decay at maximum value 60", async () => {
+      await saveUserPreferences("test-user", {
+        momentumDecay: 60
+      });
+
+      const data = mockUserData["test-user"];
+      expect(data).toEqual({
+        preferences: {
+          momentumDecay: 60
+        }
+      });
+    });
+
+    it("should save all preferences together", async () => {
+      await saveUserPreferences("test-user", {
+        defaultFill: FillStyle.PlainFill,
+        notificationLevels: ["info", "warning"],
+        momentumDecay: 25
+      });
+
+      const data = mockUserData["test-user"];
+      expect(data).toEqual({
+        preferences: {
+          defaultFill: FillStyle.PlainFill,
+          notificationLevels: ["info", "warning"],
+          momentumDecay: 25
+        }
+      });
+    });
+
+    it("should update momentum decay without overwriting other preferences", async () => {
+      mockUserData["test-user"] = {
+        displayName: "Test User",
+        preferences: {
+          defaultFill: FillStyle.ShadeFill,
+          notificationLevels: ["success", "error"],
+          momentumDecay: 10
+        }
+      };
+
+      await saveUserPreferences("test-user", {
+        momentumDecay: 45
+      });
+
+      const data = mockUserData["test-user"];
+      expect(data.preferences.defaultFill).toBe(FillStyle.ShadeFill);
+      expect(data.preferences.notificationLevels).toEqual(["success", "error"]);
+      expect(data.preferences.momentumDecay).toBe(45);
       expect(data.displayName).toBe("Test User");
     });
   });
