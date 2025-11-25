@@ -8,7 +8,7 @@
     <v-icon :size="iconSize">
       {{ model.icon ?? "$" + model.action }}
     </v-icon>
-    <v-tooltip activator="parent" location="bottom">
+    <v-tooltip v-if="showTooltip" activator="parent" location="bottom">
       {{ t(model.toolTipMessage) }}
     </v-tooltip>
   </v-btn>
@@ -18,10 +18,17 @@
 import EventBus from "@/eventHandlers/EventBus";
 import { useSEStore } from "@/stores/se";
 import { ToolButtonType } from "@/types";
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 import { Command } from "@/commands/Command";
 import SETTINGS from "@/global-settings";
 import { useI18n } from "vue-i18n";
+import { useUserPreferencesStore } from "@/stores/userPreferences";
+
+const prefs = useUserPreferencesStore();
+const showTooltip = computed(() => {
+  return prefs.tooltipMode === "full" || prefs.tooltipMode === "tools-only";
+});
+
 const seStore = useSEStore();
 const iconSize = ref(SETTINGS.icons.shortcutIconSize);
 const shortCutButtonSize = ref(SETTINGS.icons.shortcutButtonSize);
@@ -30,23 +37,22 @@ const props = defineProps<{
   model: ToolButtonType;
 }>();
 let disabled = ref(false);
-/** mounted() is part of VueJS lifecycle hooks */
+
 onMounted((): void => {
-  // console.debug("Incoming model is ", props.model)
   if (props.model.action === "undoAction") {
     EventBus.listen("undo-enabled", setEnabled);
-    disabled.value = Command.commandHistory.length == 0; // initially value
+    disabled.value = Command.commandHistory.length == 0;
   } else if (props.model.action === "redoAction") {
     EventBus.listen("redo-enabled", setEnabled);
-    disabled.value = Command.redoHistory.length == 0; // initially value
+    disabled.value = Command.redoHistory.length == 0;
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const zIcons = SETTINGS.icons as unknown as Record<string, any>;
   if (
     zIcons[props.model.action] &&
     typeof zIcons[props.model.action].props.mdiIcon == "string"
   ) {
-    iconSize.value = SETTINGS.icons.shortcutIconSize * 0.6; // mdiIcons are smaller
+    iconSize.value = SETTINGS.icons.shortcutIconSize * 0.6;
   }
 });
 
