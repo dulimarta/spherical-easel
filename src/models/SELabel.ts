@@ -9,7 +9,8 @@ import {
   LabelDisplayMode,
   LabelParentTypes,
   Labelable,
-  ObjectState
+  ObjectState,
+  ValueDisplayMode
 } from "@/types";
 import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
@@ -22,6 +23,7 @@ import { SEEarthPoint } from "./SEEarthPoint";
 import { SELatitude } from "./SELatitude";
 import { SELongitude } from "./SELongitude";
 import { SEPoint } from "./SEPoint";
+import { PreferenceRef } from "../utils/preferenceRef";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LABEL_TEXT_STYLE)
@@ -70,6 +72,17 @@ export class SELabel extends SENodule implements Visitable {
       label.shortUserName = `Am${this.parent.angleMarkerNumber}`;
       label.defaultName = `Am${this.parent.angleMarkerNumber}`;
       label.value = [this.parent.value];
+
+      // Initialize numeric display mode for angle labels from user preferences
+      const mm = PreferenceRef.instance.measurementMode;
+      if (mm === "degrees") {
+        this.ref.valueDisplayMode = ValueDisplayMode.DegreeDecimals;
+      } else if (mm === "pi") {
+        this.ref.valueDisplayMode = ValueDisplayMode.MultipleOfPi;
+      } else {
+        this.ref.valueDisplayMode = ValueDisplayMode.Number;
+      }
+
     } else if (this.parent instanceof SEPolygon) {
       // polygons are an exception which are both plottable and an expression.
       // As expressions MUST have a name of a measurement token (ie. M###), we can't

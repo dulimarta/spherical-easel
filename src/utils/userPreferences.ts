@@ -11,6 +11,7 @@ export type UserPreferences = {
   momentumDecay?: number | null;
   boundaryColor?: string | null;
   boundaryWidth?: number | null;
+  measurementMode?: "degrees" | "radians" | "pi";
 };
 
 // Load user preferences from Firestore
@@ -19,8 +20,6 @@ export async function loadUserPreferences(uid: string): Promise<UserPreferences 
   const snap = await getDoc(doc(db, "users", uid));
   if (!snap.exists()) return null;
   const data = snap.data();
-  // preferences are stored as a nested object on the user document
-  // under the `preferences` key.
   const prefs = (data as any)?.preferences;
   PreferenceRef.update(prefs);
   return prefs ? (prefs as UserPreferences) : null;
@@ -35,7 +34,6 @@ export async function saveUserPreferences(uid: string, prefs: Partial<UserPrefer
     if (v !== undefined) toSave[k] = v;
   });
   if (Object.keys(toSave).length === 0) return;
-  // Save under the nested `preferences` key to keep user doc fields separate
   await setDoc(doc(db, "users", uid), { preferences: toSave }, { merge: true });
 }
 

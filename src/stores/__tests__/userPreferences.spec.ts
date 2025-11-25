@@ -20,6 +20,24 @@ vi.mock("@/utils/userPreferences", () => ({
   saveUserPreferences: mockSaveUserPreferences
 }));
 
+let mockPreferenceRef = {
+  measurementMode: "degrees"
+};
+
+vi.mock("@/utils/preferenceRef", () => ({
+  PreferenceRef: {
+    get instance() {
+      return mockPreferenceRef;
+    },
+    set instance(val) {
+      mockPreferenceRef = val;
+    },
+    update(newPrefs: any) {
+      Object.assign(mockPreferenceRef, newPrefs);
+    }
+  }
+}));
+
 // Import after mocking
 const { useUserPreferencesStore } = await import("../userPreferences");
 
@@ -40,7 +58,7 @@ describe("userPreferences store", () => {
     it("should initialize with decimal precisions of 3", () => {
       const store = useUserPreferencesStore();
       expect(store.easelDecimalPrecision).toBe(3);
-      expect(store.hierarchyDecimalPrecision).toBe(3);
+      expect(store.objectTreeDecimalPrecision).toBe(3);
     });
 
     it("should initialize with null notificationLevels", () => {
@@ -64,7 +82,7 @@ describe("userPreferences store", () => {
       mockLoadUserPreferences.mockResolvedValue({
         defaultFill: FillStyle.PlainFill,
         easelDecimalPrecision: 4,
-        hierarchyDecimalPrecision: 5
+        objectTreeDecimalPrecision: 5
       });
 
       const store = useUserPreferencesStore();
@@ -73,14 +91,14 @@ describe("userPreferences store", () => {
       expect(mockLoadUserPreferences).toHaveBeenCalledWith("test-user-123");
       expect(store.defaultFill).toBe(FillStyle.PlainFill);
       expect(store.easelDecimalPrecision).toBe(4);
-      expect(store.hierarchyDecimalPrecision).toBe(5);
+      expect(store.objectTreeDecimalPrecision).toBe(5);
     });
 
     it("should load preferences for specific uid when provided", async () => {
       mockLoadUserPreferences.mockResolvedValue({
         defaultFill: FillStyle.ShadeFill,
         easelDecimalPrecision: 5,
-        hierarchyDecimalPrecision: 4
+        objectTreeDecimalPrecision: 4
       });
 
       const store = useUserPreferencesStore();
@@ -89,7 +107,7 @@ describe("userPreferences store", () => {
       expect(mockLoadUserPreferences).toHaveBeenCalledWith("specific-user-456");
       expect(store.defaultFill).toBe(FillStyle.ShadeFill);
       expect(store.easelDecimalPrecision).toBe(5);
-      expect(store.hierarchyDecimalPrecision).toBe(4);
+      expect(store.objectTreeDecimalPrecision).toBe(4);
     });
 
     it("should set loading state during load operation", async () => {
@@ -123,7 +141,7 @@ describe("userPreferences store", () => {
       await store.load();
 
       expect(store.easelDecimalPrecision).toBe(3);
-      expect(store.hierarchyDecimalPrecision).toBe(3);
+      expect(store.objectTreeDecimalPrecision).toBe(3);
     });
 
     it("should apply preference to Nodule.globalFillStyle when loaded", async () => {
@@ -189,30 +207,30 @@ describe("userPreferences store", () => {
       // Test 0
       mockLoadUserPreferences.mockResolvedValue({
         easelDecimalPrecision: 0,
-        hierarchyDecimalPrecision: 0
+        objectTreeDecimalPrecision: 0
       });
       await store.load();
       expect(store.easelDecimalPrecision).toBe(0);
-      expect(store.hierarchyDecimalPrecision).toBe(0);
+      expect(store.objectTreeDecimalPrecision).toBe(0);
 
       // Test high use case
       mockLoadUserPreferences.mockResolvedValue({
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3
+        objectTreeDecimalPrecision: 3
       });
       await store.load();
       expect(store.easelDecimalPrecision).toBe(3);
-      expect(store.hierarchyDecimalPrecision).toBe(3);
+      expect(store.objectTreeDecimalPrecision).toBe(3);
 
 
       // Test max number
       mockLoadUserPreferences.mockResolvedValue({
         easelDecimalPrecision: Number.MAX_VALUE,
-        hierarchyDecimalPrecision: Number.MAX_VALUE
+        objectTreeDecimalPrecision: Number.MAX_VALUE
       });
       await store.load();
       expect(store.easelDecimalPrecision).toBe(Number.MAX_VALUE);
-      expect(store.hierarchyDecimalPrecision).toBe(Number.MAX_VALUE);
+      expect(store.objectTreeDecimalPrecision).toBe(Number.MAX_VALUE);
     });
 
     it("should load notification levels when provided", async () => {
@@ -332,17 +350,18 @@ describe("userPreferences store", () => {
         defaultFill: FillStyle.PlainFill,
         momentumDecay: null,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         notificationLevels: null,
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
     });
 
     it("should save current decimal precision preferences", async () => {
       const store = useUserPreferencesStore();
       store.easelDecimalPrecision = 4;
-      store.hierarchyDecimalPrecision = 5;
+      store.objectTreeDecimalPrecision = 5;
 
       await store.save();
 
@@ -350,10 +369,11 @@ describe("userPreferences store", () => {
         defaultFill: null,
         momentumDecay: null,
         easelDecimalPrecision: 4,
-        hierarchyDecimalPrecision: 5,
+        objectTreeDecimalPrecision: 5,
         notificationLevels: null,
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
     });
 
@@ -367,10 +387,11 @@ describe("userPreferences store", () => {
         defaultFill: null,
         momentumDecay: null,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         notificationLevels: null,
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
     });
 
@@ -396,10 +417,11 @@ describe("userPreferences store", () => {
         defaultFill: FillStyle.NoFill,
         momentumDecay: null,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         notificationLevels: null,
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
 
       // Test PlainFill
@@ -409,10 +431,11 @@ describe("userPreferences store", () => {
         defaultFill: FillStyle.PlainFill,
         momentumDecay: null,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         notificationLevels: null,
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
 
       // Test ShadeFill
@@ -422,10 +445,11 @@ describe("userPreferences store", () => {
         defaultFill: FillStyle.ShadeFill,
         momentumDecay: null,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         notificationLevels: null,
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
     });
 
@@ -434,44 +458,48 @@ describe("userPreferences store", () => {
 
       // Test 0
       store.easelDecimalPrecision = 0;
-      store.hierarchyDecimalPrecision = 0;
+      store.objectTreeDecimalPrecision = 0;
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
         momentumDecay: null,
         easelDecimalPrecision: 0,
-        hierarchyDecimalPrecision: 0,
+        objectTreeDecimalPrecision: 0,
         notificationLevels: null,
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
+
       });
 
       // Test high use case
       store.easelDecimalPrecision = 3;
-      store.hierarchyDecimalPrecision = 3;
+      store.objectTreeDecimalPrecision = 3;
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
         momentumDecay: null,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         notificationLevels: null,
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
 
       // Test max number
       store.easelDecimalPrecision = Number.MAX_VALUE;
-      store.hierarchyDecimalPrecision = Number.MAX_VALUE;
+      store.objectTreeDecimalPrecision = Number.MAX_VALUE;
       await store.save();
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
         momentumDecay: null,
         easelDecimalPrecision: Number.MAX_VALUE,
-        hierarchyDecimalPrecision: Number.MAX_VALUE,
+        objectTreeDecimalPrecision: Number.MAX_VALUE,
         notificationLevels: null,
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
     });
 
@@ -485,10 +513,11 @@ describe("userPreferences store", () => {
         defaultFill: null,
         momentumDecay: null,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         notificationLevels: ["success", "error"],
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
     });
 
@@ -502,10 +531,11 @@ describe("userPreferences store", () => {
         defaultFill: null,
         momentumDecay: null,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         notificationLevels: [],
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
     });
 
@@ -521,9 +551,10 @@ describe("userPreferences store", () => {
         notificationLevels: ["info", "warning"],
         momentumDecay: null,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
     });
 
@@ -538,9 +569,10 @@ describe("userPreferences store", () => {
         notificationLevels: null,
         momentumDecay: 20,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
     });
 
@@ -555,9 +587,10 @@ describe("userPreferences store", () => {
         notificationLevels: null,
         momentumDecay: 0,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
     });
 
@@ -572,9 +605,10 @@ describe("userPreferences store", () => {
         notificationLevels: null,
         momentumDecay: 60,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
     });
 
@@ -590,10 +624,11 @@ describe("userPreferences store", () => {
         defaultFill: FillStyle.PlainFill,
         momentumDecay: 25,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         notificationLevels: ["info", "warning"],
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
     });
   });
@@ -603,7 +638,7 @@ describe("userPreferences store", () => {
       mockLoadUserPreferences.mockResolvedValue({
         defaultFill: FillStyle.NoFill,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3
+        objectTreeDecimalPrecision: 3
       });
 
       const store = useUserPreferencesStore();
@@ -621,10 +656,11 @@ describe("userPreferences store", () => {
         defaultFill: FillStyle.PlainFill,
         momentumDecay: 3,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         notificationLevels: ["success", "info", "error", "warning"],
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
     });
 
@@ -657,10 +693,11 @@ describe("userPreferences store", () => {
         defaultFill: FillStyle.PlainFill,
         momentumDecay: 3,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         notificationLevels: ["success", "info", "error", "warning"],
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
 
       // Verify value unchanged
@@ -687,10 +724,11 @@ describe("userPreferences store", () => {
         defaultFill: null,
         momentumDecay: 3,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         notificationLevels: ["error", "warning"],
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
     });
 
@@ -709,10 +747,11 @@ describe("userPreferences store", () => {
         defaultFill: null,
         momentumDecay: 3,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         notificationLevels: ["success", "error", "warning"],
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
 
       // Add it back
@@ -723,9 +762,10 @@ describe("userPreferences store", () => {
         notificationLevels: ["success", "info", "error", "warning"],
         momentumDecay: 3,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
     });
 
@@ -750,9 +790,10 @@ describe("userPreferences store", () => {
         notificationLevels: ["success", "info", "error", "warning"],
         momentumDecay: 30,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
     });
 
@@ -762,9 +803,10 @@ describe("userPreferences store", () => {
         notificationLevels: ["success", "info"],
         momentumDecay: 15,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
 
       const store = useUserPreferencesStore();
@@ -787,10 +829,78 @@ describe("userPreferences store", () => {
         notificationLevels: ["error", "warning"],
         momentumDecay: 45,
         easelDecimalPrecision: 3,
-        hierarchyDecimalPrecision: 3,
+        objectTreeDecimalPrecision: 3,
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        measurementMode: "degrees"
       });
     });
+  });
+
+describe("measurement mode behavior", () => {
+  let store: ReturnType<typeof useUserPreferencesStore>;
+
+  beforeEach(() => {
+
+    vi.clearAllMocks();
+
+    mockPreferenceRef.measurementMode = "degrees";
+
+    setActivePinia(createPinia());
+    store = useUserPreferencesStore();
+
+  });
+
+  it("should initialize measurementMode to 'degrees'", () => {
+    expect(store.measurementMode).toBe("degrees");
+  });
+
+  it("should default measurementMode to 'degrees' when not provided", async () => {
+    mockLoadUserPreferences.mockResolvedValue({});
+
+    await store.load();
+
+    expect(store.measurementMode).toBe("degrees");
+    expect(mockPreferenceRef.measurementMode).toBe("degrees");
+  });
+
+  it("should save measurementMode when changed", async () => {
+    store.measurementMode = "pi";
+    await store.save();
+
+    expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
+      defaultFill: null,
+      momentumDecay: null,
+      easelDecimalPrecision: 3,
+      objectTreeDecimalPrecision: 3,
+      notificationLevels: null,
+      boundaryColor: "#000000FF",
+      boundaryWidth: 4,
+      measurementMode: "pi"
+    });
+  });
+
+  it("load → modify measurementMode → save should persist correct value", async () => {
+    mockLoadUserPreferences.mockResolvedValue({
+      measurementMode: "radians"
+    });
+
+    await store.load();
+    expect(store.measurementMode).toBe("radians");
+
+    store.measurementMode = "degrees";
+    await store.save();
+
+    expect(mockSaveUserPreferences).toHaveBeenLastCalledWith("test-user-123", {
+      defaultFill: null,
+      momentumDecay: 3,
+      easelDecimalPrecision: 3,
+      objectTreeDecimalPrecision: 3,
+      notificationLevels: ["success", "info", "error", "warning"],
+      boundaryColor: "#000000FF",
+      boundaryWidth: 4,
+      measurementMode: "degrees"
+    });
+  });
   });
 });
