@@ -158,9 +158,9 @@ export class SESegment
       i18n.global.t(`objectTree.segmentThrough`, {
         pt1: this._startSEPoint.label?.ref.shortUserName,
         pt2: this._endSEPoint.label?.ref.shortUserName,
-        normalX: this._normalVector.x.toFixed(PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision),
-        normalY: this._normalVector.y.toFixed(PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision),
-        normalZ: this._normalVector.z.toFixed(PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision)
+        normalX: this._normalVector.x.toFixed(PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision),
+        normalY: this._normalVector.y.toFixed(PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision),
+        normalZ: this._normalVector.z.toFixed(PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision)
       })
     );
   }

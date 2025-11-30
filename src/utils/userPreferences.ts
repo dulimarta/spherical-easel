@@ -5,8 +5,9 @@ import { PreferenceRef } from "../utils/preferenceRef";
 export type UserPreferences = {
   defaultFill?: FillStyle | null;
   easelDecimalPrecision?: number;
-  hierarchyDecimalPrecision?: number;
+  objectTreeDecimalPrecision?: number;
   notificationLevels?: string[] | null;
+  momentumDecay?: number | null;
   boundaryColor?: string | null;
   boundaryWidth?: number | null;
   tooltipMode?: "full" | "minimal" | "tools-only" | "easel-only" | "none";

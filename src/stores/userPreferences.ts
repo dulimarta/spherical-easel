@@ -14,8 +14,9 @@ export type TooltipMode = typeof TOOLTIP_MODES[number];
 export const useUserPreferencesStore = defineStore("userPreferences", () => {
   const defaultFill = ref<FillStyle | null>(null);
   const easelDecimalPrecision = ref<number>(SETTINGS.decimalPrecision);
-  const hierarchyDecimalPrecision = ref<number>(SETTINGS.decimalPrecision);
+  const objectTreeDecimalPrecision = ref<number>(SETTINGS.decimalPrecision);
   const notificationLevels = ref<string[] | null>(null);
+  const momentumDecay = ref<number | null>(null);
   const boundaryColor = ref("#000000FF");
   const boundaryWidth = ref(4);
   const tooltipMode = ref<TooltipMode>(DEFAULT_TOOLTIP_MODE);
@@ -33,7 +34,7 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
 
     defaultFill.value = prefs?.defaultFill ?? null;
     easelDecimalPrecision.value = prefs?.easelDecimalPrecision ?? SETTINGS.decimalPrecision;
-    hierarchyDecimalPrecision.value = prefs?.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision;
+    objectTreeDecimalPrecision.value = prefs?.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision;
     // Apply the preference to the runtime global fill style if present
     if (defaultFill.value !== null && defaultFill.value !== undefined) {
       Nodule.globalFillStyle = defaultFill.value as FillStyle;
@@ -41,7 +42,8 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
 
     // Load notification levels
     notificationLevels.value = prefs?.notificationLevels ?? [...DEFAULT_NOTIFICATION_LEVELS];
-
+    // Load momentum decay, defaulting to 3 seconds if not set
+    momentumDecay.value = prefs?.momentumDecay ?? 3;
     // Load boundary circle preferences
     boundaryColor.value = prefs?.boundaryColor ?? "#000000FF";
     boundaryWidth.value = prefs?.boundaryWidth ?? 4;
@@ -66,13 +68,14 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
     await saveUserPreferences(uid, {
       defaultFill: defaultFill.value,
       easelDecimalPrecision: easelDecimalPrecision.value,
-      hierarchyDecimalPrecision: hierarchyDecimalPrecision.value,
+      objectTreeDecimalPrecision: objectTreeDecimalPrecision.value,
       notificationLevels: notificationLevels.value,
       boundaryColor: boundaryColor.value,
       boundaryWidth: boundaryWidth.value,
-      tooltipMode: tooltipMode.value
+      tooltipMode: tooltipMode.value,
+      momentumDecay: momentumDecay.value
     });
   }
 
-  return { defaultFill, easelDecimalPrecision, tooltipMode, hierarchyDecimalPrecision, notificationLevels, loading, load, save };
+  return { defaultFill, easelDecimalPrecision, objectTreeDecimalPrecision, notificationLevels, tooltipMode, momentumDecay, loading, load, save };
 });

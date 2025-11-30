@@ -49,7 +49,7 @@ export default class SegmentLengthHandler extends Highlighter {
       segmentList[0].glowing = true;
       const len = segmentList[0].arcLength;
       this.infoText.text = `Arc length ${(len / Math.PI).toFixed(
-        PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision
+        PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision
       )}\u{1D7B9}`;
     }
   }

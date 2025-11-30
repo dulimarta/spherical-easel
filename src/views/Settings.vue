@@ -43,16 +43,15 @@
             </v-col>
             <v-col cols="6">
               <v-sheet rounded="lg" elevation="2">
-                <v-slider
-                  v-model="prefsStore.hierarchyDecimalPrecision"
-                  min="0"
-                  max="7"
-                  step="1"
-                  inline
-                  thumb-label="always"
-                  label="Hierarchy Decimal Precision"
-                  @update:modelValue="() => (profileChanged = true)"
-                />
+                <v-slider v-model="prefsStore.objectTreeDecimalPrecision"
+                          min="0"
+                          max="7"
+                          step="1"
+                          inline
+                          thumb-label="always"
+                          label="Object Tree Decimal Precision"
+                          @update:modelValue="() => (profileChanged = true)">
+                </v-slider>
               </v-sheet>
             </v-col>
           </v-row>
@@ -190,18 +189,25 @@ const decimalPrecision = ref(3);
 const selectedTab = ref(0);
 const profileChanged = ref(false);
 
+const momentumDecay = ref(prefsStore.momentumDecay ?? 0);
+
 // Color picker toggle
 const colorPickerMenu = ref(false);
 
 // Line width options
 const lineWidthOptions = Array.from({ length: 10 }, (_, i) => i + 1);
-
-// Fill style options
+  
 const fillStyleItems = [
   { text: t("noFill"), value: FillStyle.NoFill },
   { text: t("plainFill"), value: FillStyle.PlainFill },
   { text: t("shadeFill"), value: FillStyle.ShadeFill }
 ];
+  
+// The displayed favorite tools (includes defaults)
+function onMomentumDecayChange() {
+  prefsStore.momentumDecay = momentumDecay.value;
+  profileChanged.value = true;
+}
 
 // Save user preferences
 async function doSave(): Promise<void> {

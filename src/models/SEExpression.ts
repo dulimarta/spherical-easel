@@ -81,19 +81,19 @@ export abstract class SEExpression extends SENodule {
     switch (this._valueDisplayMode) {
       case ValueDisplayMode.Number:
         return String(
-          this.value.toFixed(PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision)
+          this.value.toFixed(PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision)
         );
       case ValueDisplayMode.MultipleOfPi:
         return (
           (this.value / Math.PI).toFixed(
-            PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision
+            PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision
           ) + "\u{1D7B9}"
         );
       case ValueDisplayMode.DegreeDecimals:
         return (
           this.value
             .toDegrees()
-            .toFixed(PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision) +
+            .toFixed(PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision) +
           "\u{00B0}"
         );
       case ValueDisplayMode.EarthModeMiles:
@@ -103,14 +103,14 @@ export abstract class SEExpression extends SENodule {
               this.value *
               SETTINGS.earthMode.radiusMiles *
               SETTINGS.earthMode.radiusMiles
-            ).toFixed(PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision) +
+            ).toFixed(PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision) +
             t(`units.mi`) +
             "\u{00B2}"
           );
         } else {
           return (
             (this.value * SETTINGS.earthMode.radiusMiles).toFixed(
-              PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision
+              PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision
             ) + t(`units.mi`)
           );
         }
@@ -121,21 +121,21 @@ export abstract class SEExpression extends SENodule {
               this.value *
               SETTINGS.earthMode.radiusKilometers *
               SETTINGS.earthMode.radiusKilometers
-            ).toFixed(PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision) +
+            ).toFixed(PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision) +
             t(`units.km`) +
             "\u{00B2}"
           );
         } else {
           return (
             (this.value * SETTINGS.earthMode.radiusKilometers).toFixed(
-              PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision
+              PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision
             ) + t(`units.km`)
           );
         }
       default: // return the number mode string as a default, but warn the user
         console.warn(`ValueDisplayMode for ${this.name} was undefined`);
         return String(
-          this.value.toFixed(PreferenceRef.instance.hierarchyDecimalPrecision ?? SETTINGS.decimalPrecision)
+          this.value.toFixed(PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision)
         );
     }
   }

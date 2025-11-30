@@ -4,27 +4,36 @@
    refactoring large amounts of code. */
 
 import SETTINGS from "@/global-settings";
+import { UserPreferences } from "./userPreferences";
 
 export class PreferenceRef {
   private static _instance: PreferenceRef;
   public easelDecimalPrecision: number;
-  public hierarchyDecimalPrecision: number;
+  public objectTreeDecimalPrecision: number;
 
   /* Sets to default values until updated. */
-  private constructor(prefsStore: any) {
+  private constructor(prefsStore: UserPreferences) {
     if (prefsStore != null) {
-      this.easelDecimalPrecision = prefsStore.easelDecimalPrecision;
-      this.hierarchyDecimalPrecision = prefsStore.hierarchyDecimalPrecision;
+      if (prefsStore.easelDecimalPrecision !== undefined) {
+        this.easelDecimalPrecision = prefsStore.easelDecimalPrecision;
+      } else {
+        this.easelDecimalPrecision = SETTINGS.decimalPrecision;
+      }
+      if (prefsStore.objectTreeDecimalPrecision !== undefined) {
+        this.objectTreeDecimalPrecision = prefsStore.objectTreeDecimalPrecision;
+      } else {
+        this.objectTreeDecimalPrecision = SETTINGS.decimalPrecision;
+      }
     } else {
       this.easelDecimalPrecision = SETTINGS.decimalPrecision;
-      this.hierarchyDecimalPrecision = SETTINGS.decimalPrecision;
+      this.objectTreeDecimalPrecision = SETTINGS.decimalPrecision;
     }
   }
 
   public static get instance() {
     return this._instance || (this._instance = new this({
       easelDecimalPrecision: SETTINGS.decimalPrecision,
-      hierarchyDecimalPrecision: SETTINGS.decimalPrecision
+      objectTreeDecimalPrecision: SETTINGS.decimalPrecision
     }));
   }
 
