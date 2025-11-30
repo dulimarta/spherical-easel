@@ -14,10 +14,6 @@ import { Anchor } from "two.js/src/anchor";
 import { Path } from "two.js/src/path";
 import { Line } from "two.js/src/shapes/line";
 
-Number.prototype.modTwoPi = function (): number {
-    return ((Number(this) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-};
-
 vi.mock("@/global-settings/LAYER", () => {
     enum mockLAYER {
         backgroundGlowing,

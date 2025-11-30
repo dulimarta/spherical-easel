@@ -836,10 +836,10 @@ describe("userPreferences store", () => {
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
-        momentumDecay: null,
+        momentumDecay: 20,
         easelDecimalPrecision: 3,
         objectTreeDecimalPrecision: 3,
-        notificationLevels: ["success", "error"],
+        notificationLevels: null,
         boundaryColor: "#000000FF",
         boundaryWidth: 4,
         tooltipMode: "full",
@@ -855,10 +855,10 @@ describe("userPreferences store", () => {
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: null,
-        momentumDecay: null,
+        momentumDecay: 0,
         easelDecimalPrecision: 3,
         objectTreeDecimalPrecision: 3,
-        notificationLevels: [],
+        notificationLevels: null,
         boundaryColor: "#000000FF",
         boundaryWidth: 4,
         tooltipMode: "full",
@@ -873,9 +873,9 @@ describe("userPreferences store", () => {
       await store.save();
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: FillStyle.PlainFill,
-        notificationLevels: ["info", "warning"],
-        momentumDecay: null,
+        defaultFill: null,
+        notificationLevels: null,
+        momentumDecay: 60,
         easelDecimalPrecision: 3,
         objectTreeDecimalPrecision: 3,
         boundaryColor: "#000000FF",
@@ -894,9 +894,9 @@ describe("userPreferences store", () => {
       await store.save();
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: null,
-        notificationLevels: null,
-        momentumDecay: 20,
+        defaultFill: FillStyle.PlainFill,
+        notificationLevels: ["info", "warning"],
+        momentumDecay: 25,
         easelDecimalPrecision: 3,
         objectTreeDecimalPrecision: 3,
         boundaryColor: "#000000FF",
@@ -926,6 +926,7 @@ describe("userPreferences store", () => {
         easelDecimalPrecision: 3,
         objectTreeDecimalPrecision: 3,
         notificationLevels: ["success", "info", "error", "warning"],
+        momentumDecay: 3,
         boundaryColor: "#000000FF",
         boundaryWidth: 4,
         tooltipMode: "full",
@@ -953,7 +954,9 @@ describe("userPreferences store", () => {
         objectTreeDecimalPrecision: 3,
         notificationLevels: ["success", "info", "error", "warning"],
         boundaryColor: "#000000FF",
-        boundaryWidth: 4
+        boundaryWidth: 4,
+        tooltipMode: "full",
+        measurementMode: "degrees"
       });
 
       const store = useUserPreferencesStore();
@@ -963,9 +966,10 @@ describe("userPreferences store", () => {
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
         defaultFill: FillStyle.PlainFill,
+        momentumDecay: 3,
         easelDecimalPrecision: 3,
         objectTreeDecimalPrecision: 3,
-        notificationLevels: ["info", "warning"],
+        notificationLevels: ["success", "info", "error", "warning"],
         boundaryColor: "#000000FF",
         boundaryWidth: 4,
         tooltipMode: "full",
@@ -987,8 +991,8 @@ describe("userPreferences store", () => {
       await store.save();
 
       expect(mockSaveUserPreferences).toHaveBeenCalledWith("test-user-123", {
-        defaultFill: null,
-        momentumDecay: null,
+        defaultFill: FillStyle.NoFill,
+        momentumDecay: 3,
         easelDecimalPrecision: 3,
         objectTreeDecimalPrecision: 3,
         notificationLevels: ["error", "warning"],
@@ -1060,7 +1064,7 @@ describe("userPreferences store", () => {
         momentumDecay: 3,
         easelDecimalPrecision: 3,
         objectTreeDecimalPrecision: 3,
-        notificationLevels: null,
+        notificationLevels: ["success", "info", "error", "warning"],
         boundaryColor: "#000000FF",
         boundaryWidth: 4,
         measurementMode: "degrees",
@@ -1088,6 +1092,7 @@ describe("userPreferences store", () => {
         notificationLevels: ["success", "error", "warning"],
         boundaryColor: "#000000FF",
         boundaryWidth: 4,
+        tooltipMode: "full",
         measurementMode: "degrees"
       });
 
@@ -1102,6 +1107,7 @@ describe("userPreferences store", () => {
         objectTreeDecimalPrecision: 3,
         boundaryColor: "#000000FF",
         boundaryWidth: 4,
+        tooltipMode: "full",
         measurementMode: "degrees"
       });
     });
