@@ -52,12 +52,11 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
     // Load tooltip preferences
    if (prefs?.tooltipMode && (TOOLTIP_MODES as readonly string[]).includes(prefs.tooltipMode)) {
      tooltipMode.value = prefs.tooltipMode;
-}  else {
+   } else {
      tooltipMode.value = DEFAULT_TOOLTIP_MODE;
    }
 
-
-    loading.value = false;
+   loading.value = false;
   }
 
   // Save preferences to Firestore

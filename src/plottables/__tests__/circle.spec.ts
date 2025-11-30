@@ -10,35 +10,6 @@ import {
     DEFAULT_CIRCLE_BACK_STYLE
 } from "@/types/Styles";
 
-Array.prototype.rotate = function (count: number) {
-    const len = this.length >>> 0;
-    let _count = count >> 0;
-    _count = ((_count % len) + len) % len;
-
-    Array.prototype.push.apply(
-        this,
-        Array.prototype.splice.call(this, 0, _count)
-    );
-    return this;
-};
-
-Number.prototype.toDegrees = function (): number {
-    return (Number(this) / Math.PI) * 180;
-};
-
-Number.prototype.modTwoPi = function (): number {
-    return ((Number(this) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-};
-
-Number.prototype.zeroOut = function (tol?: number): number {
-    if (tol == undefined) {
-        tol = 10 ** -10;
-    }
-    if (Math.abs(Number(this)) < tol) {
-        return 0;
-    } else return Number(this);
-};
-
 vi.mock("@/global-settings/LAYER", () => {
     enum mockLAYER {
         backgroundGlowing,

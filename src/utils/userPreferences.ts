@@ -22,7 +22,7 @@ export async function loadUserPreferences(uid: string): Promise<UserPreferences 
   if (!snap.exists()) return null;
 
   const data = snap.data();
-  const prefs = (data as any)?.preferences;
+  const prefs = (data as any)?.preferences ?? null;
 
   // Sync PreferenceRef (if used elsewhere)
   PreferenceRef.update(prefs);
