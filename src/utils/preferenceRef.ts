@@ -10,8 +10,8 @@ export class PreferenceRef {
   private static _instance: PreferenceRef;
   public easelDecimalPrecision: number;
   public objectTreeDecimalPrecision: number;
+  public measurementMode: "degrees" | "radians" | "pi";
 
-  /* Sets to default values until updated. */
   private constructor(prefsStore: UserPreferences) {
     if (prefsStore != null) {
       if (prefsStore.easelDecimalPrecision !== undefined) {
@@ -19,25 +19,39 @@ export class PreferenceRef {
       } else {
         this.easelDecimalPrecision = SETTINGS.decimalPrecision;
       }
+
       if (prefsStore.objectTreeDecimalPrecision !== undefined) {
         this.objectTreeDecimalPrecision = prefsStore.objectTreeDecimalPrecision;
       } else {
         this.objectTreeDecimalPrecision = SETTINGS.decimalPrecision;
       }
+
+      if (prefsStore.measurementMode !== undefined) {
+        this.measurementMode = prefsStore.measurementMode as
+          | "degrees"
+          | "radians"
+          | "pi";
+      } else {
+        this.measurementMode = "degrees";
+      }
     } else {
       this.easelDecimalPrecision = SETTINGS.decimalPrecision;
       this.objectTreeDecimalPrecision = SETTINGS.decimalPrecision;
+      this.measurementMode = "degrees";
     }
   }
 
   public static get instance() {
-    return this._instance || (this._instance = new this({
-      easelDecimalPrecision: SETTINGS.decimalPrecision,
-      objectTreeDecimalPrecision: SETTINGS.decimalPrecision
-    }));
+    return (
+      this._instance ||
+      (this._instance = new this({
+        easelDecimalPrecision: SETTINGS.decimalPrecision,
+        objectTreeDecimalPrecision: SETTINGS.decimalPrecision,
+        measurementMode: "degrees"
+      }))
+    );
   }
 
-  /* Update attributes, used in load and save in utils/userPreferences.ts */
   public static update(prefsStore: any) {
     this._instance = new this(prefsStore);
   }

@@ -169,6 +169,8 @@ import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
 import Text from "@/plottables/Text";
 import { Handler } from "mitt";
+import { useUserPreferencesStore } from "@/stores/userPreferences";
+import { PreferenceRef } from "@/utils/preferenceRef";
 
 const DELETE_DELAY = 5000; // in milliseconds
 /**

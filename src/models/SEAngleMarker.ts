@@ -16,6 +16,7 @@ import { SELine } from "./SELine";
 import { SESegment } from "./SESegment";
 import { SEPoint } from "./SEPoint";
 import { SENodule } from "@/models/SENodule";
+import { PreferenceRef } from "@/utils/preferenceRef";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_ANGLE_MARKER_FRONT_STYLE),
@@ -248,7 +249,7 @@ export class SEAngleMarker
       this.name +
       ": " +
       this.label?.ref.shortUserName +
-      ` ${this.prettyValue()}`
+      ` ${this.prettyValue(this._valueDisplayMode)}`
     );
   }
 
@@ -905,6 +906,30 @@ export class SEAngleMarker
       );
       // Set the measure in the plottable anglemarker so that export to SVG works correctly
       this.ref.angleMarkerValue = this._measure;
+
+      // update the measure
+this._measure = this.measureAngle(
+  this._startVector,
+  this._vertexVector,
+  this._endVector
+);
+
+this.ref.angleMarkerValue = this._measure;
+
+const mm = PreferenceRef.instance.measurementMode;
+if (mm === "degrees") {
+  this._valueDisplayMode = ValueDisplayMode.DegreeDecimals;
+} else if (mm === "pi") {
+  this._valueDisplayMode = ValueDisplayMode.MultipleOfPi;
+} else {
+  this._valueDisplayMode = ValueDisplayMode.Number;
+}
+
+if (this.label?.ref) {
+  this.label.ref.valueDisplayMode = this._valueDisplayMode;
+}
+
+
 
       // display the new angleMarker
       this.ref.updateDisplay();

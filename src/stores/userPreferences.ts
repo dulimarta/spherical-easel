@@ -7,7 +7,10 @@ import { FillStyle } from "@/types";
 import Nodule from "@/plottables/Nodule";
 
 const DEFAULT_NOTIFICATION_LEVELS = ["success", "info", "error", "warning"];
+const DEFAULT_TOOLTIP_MODE: TooltipMode = "full"
 
+export const TOOLTIP_MODES = ["full", "minimal", "tools-only", "easel-only", "none"] as const;
+export type TooltipMode = typeof TOOLTIP_MODES[number];
 export const useUserPreferencesStore = defineStore("userPreferences", () => {
   const defaultFill = ref<FillStyle | null>(null);
   const easelDecimalPrecision = ref<number>(SETTINGS.decimalPrecision);
@@ -16,7 +19,11 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
   const momentumDecay = ref<number | null>(null);
   const boundaryColor = ref("#000000FF");
   const boundaryWidth = ref(4);
+  const measurementMode = ref<"degrees" | "radians" | "pi">("degrees");
+  const tooltipMode = ref<TooltipMode>(DEFAULT_TOOLTIP_MODE);
   const loading = ref(false);
+
+  
 
   // Load preferences from Firestore
   async function load(uid?: string) {
@@ -29,18 +36,26 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
     defaultFill.value = prefs?.defaultFill ?? null;
     easelDecimalPrecision.value = prefs?.easelDecimalPrecision ?? SETTINGS.decimalPrecision;
     objectTreeDecimalPrecision.value = prefs?.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision;
-    // Apply the preference to the runtime global fill style if present
+
     if (defaultFill.value !== null && defaultFill.value !== undefined) {
       Nodule.globalFillStyle = defaultFill.value as FillStyle;
     }
 
-    // Load notification levels
     notificationLevels.value = prefs?.notificationLevels ?? [...DEFAULT_NOTIFICATION_LEVELS];
-    // Load momentum decay, defaulting to 3 seconds if not set
     momentumDecay.value = prefs?.momentumDecay ?? 3;
-    // Load boundary circle preferences
+
     boundaryColor.value = prefs?.boundaryColor ?? "#000000FF";
     boundaryWidth.value = prefs?.boundaryWidth ?? 4;
+
+    measurementMode.value = prefs?.measurementMode ?? "degrees";
+    
+    // Load tooltip preferences
+   if (prefs?.tooltipMode && (TOOLTIP_MODES as readonly string[]).includes(prefs.tooltipMode)) {
+     tooltipMode.value = prefs.tooltipMode;
+}  else {
+     tooltipMode.value = DEFAULT_TOOLTIP_MODE;
+   }
+
 
     loading.value = false;
   }
@@ -50,7 +65,7 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
     const auth = getAuth();
     const uid = auth.currentUser?.uid;
     if (!uid) throw new Error("Not authenticated");
-    // Persist the current value (allow null to be stored as null)
+
     await saveUserPreferences(uid, {
       defaultFill: defaultFill.value,
       easelDecimalPrecision: easelDecimalPrecision.value,
@@ -58,9 +73,24 @@ export const useUserPreferencesStore = defineStore("userPreferences", () => {
       notificationLevels: notificationLevels.value,
       boundaryColor: boundaryColor.value,
       boundaryWidth: boundaryWidth.value,
-      momentumDecay: momentumDecay.value
+      tooltipMode: tooltipMode.value,
+      momentumDecay: momentumDecay.value,
+      measurementMode: measurementMode.value
     });
   }
 
-  return { defaultFill, easelDecimalPrecision, objectTreeDecimalPrecision, notificationLevels, boundaryColor, boundaryWidth, momentumDecay, loading, load, save };
+  return { 
+    defaultFill,
+    easelDecimalPrecision,
+    objectTreeDecimalPrecision,
+    notificationLevels,
+    boundaryColor,
+    boundaryWidth,
+    tooltipMode,
+    momentumDecay,
+    measurementMode,
+    loading,
+    load,
+    save
+  };
 });

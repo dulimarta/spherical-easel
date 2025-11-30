@@ -26,7 +26,21 @@ export abstract class SEExpression extends SENodule {
     //DO NOT MODIFY THIS NAME! THIS SHOULD BE THE ONLY VALUE THIS FIELD EVER GETS
     // This is the key value for for the SECalculation, see its construction for the Map<string,number>
     this.name = `M${SENodule.EXPR_COUNT}`;
+
+    this.applyUserMeasurementMode();
   }
+
+protected applyUserMeasurementMode(): void {
+  const pref = PreferenceRef.instance.measurementMode;
+
+  if (pref === "degrees") {
+    this._valueDisplayMode = ValueDisplayMode.DegreeDecimals;
+  } else if (pref === "pi") {
+    this._valueDisplayMode = ValueDisplayMode.MultipleOfPi;
+  } else {
+    this._valueDisplayMode = ValueDisplayMode.Number;
+  }
+}
 
   /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number
    * The setter must update the plottable label (if the expression is attached to a label)
