@@ -15,6 +15,7 @@ import { SEExpression } from "./SEExpression";
 import { SESegment } from "./SESegment";
 import { SEAngleMarker } from "./SEAngleMarker";
 import { SELabel } from "./SELabel";
+import { PreferenceRef } from "@/utils/preferenceRef";
 const { t } = i18n.global;
 
 const styleSet = new Set([
@@ -488,10 +489,24 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
       this._angleMarkers.forEach(ang => {
         sumOfAngles += ang.value;
       });
-      this._area = sumOfAngles - (this._n - 2) * Math.PI;
 
-      //update the area
-      this.ref.area = this._area;
+this._area = sumOfAngles - (this._n - 2) * Math.PI;
+this.ref.area = this._area;
+
+const mm = PreferenceRef.instance.measurementMode;
+if (mm === "degrees") {
+  this._valueDisplayMode = ValueDisplayMode.DegreeDecimals;
+} else if (mm === "pi") {
+  this._valueDisplayMode = ValueDisplayMode.MultipleOfPi;
+} else {
+  this._valueDisplayMode = ValueDisplayMode.Number;
+}
+
+if (this.label?.ref) {
+  this.label.ref.valueDisplayMode = this._valueDisplayMode;
+  this.label.ref.value = [this._area];
+}
+
     }
 
     if (this.showing && this._exists) {

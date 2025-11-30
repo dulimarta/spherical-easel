@@ -56,23 +56,35 @@
             </v-col>
           </v-row>
         </v-container>
-
-        <v-divider class="my-3" />
-
-        <!-- Default fill style -->
-        <h4>Default Fill</h4>
-        <v-row>
-          <v-col cols="6">
-            <v-select
-              v-model="prefsStore.defaultFill"
-              :items="fillStyleItems"
-              item-title="text"
-              item-value="value"
-              label="Default Fill Style"
-              @update:modelValue="() => (profileChanged = true)"
-            />
-          </v-col>
-        </v-row>
+          <v-divider class="my-3" />
+          <h4>Default Fill</h4>
+          <v-row>
+            <v-col cols="6">
+              <v-select
+                v-model="prefsStore.defaultFill"
+                :items="fillStyleItems"
+                item-title="text"
+                item-value="value"
+                label="Default Fill Style"
+                @update:modelValue="() => (profileChanged = true)"
+              />
+            </v-col>
+          </v-row>
+          <v-divider class="my-3" />
+          <h4>Rotation Momentum Decay</h4>
+          <v-row>
+            <v-col cols="6">
+              <v-slider
+                v-model="momentumDecay"
+                :min="0"
+                :max="60"
+                :step="1"
+                label="Decay Time (seconds)"
+                thumb-label
+                @update:modelValue="onMomentumDecayChange"
+              />
+            </v-col>
+          </v-row>
 
         <v-divider class="my-3" />
 
@@ -129,6 +141,24 @@
 
         <v-divider class="my-3" />
 
+<h4>Measurement Mode</h4>
+<v-row>
+  <v-col cols="6">
+    <v-select
+      v-model="prefsStore.measurementMode"
+      :items="[
+        { text: 'Degrees', value: 'degrees' },
+        { text: 'Radians', value: 'radians' },
+        { text: 'Pi Multiples', value: 'pi' }
+      ]"
+      item-title="text"
+      item-value="value"
+      label="Measurement Mode"
+      @update:modelValue="() => (profileChanged = true)"
+    />
+  </v-col>
+</v-row>
+
 <h4>Tooltip Visibility</h4>
 <v-row>
   <v-col cols="6" sm="4" md="3">
@@ -155,6 +185,7 @@
     </v-window-item>
   </v-window>
 
+
   <v-divider />
 
   <div class="mt-3" :style="{ display: 'flex', justifyContent: 'center' }">
@@ -180,6 +211,9 @@ import { useRouter } from "vue-router";
 import { useAccountStore } from "@/stores/account";
 import { useUserPreferencesStore } from "@/stores/userPreferences";
 import { FillStyle } from "@/types";
+import { PreferenceRef } from "@/utils/preferenceRef";
+import { watch } from "vue";
+
 
 const router = useRouter();
 const { t } = useI18n();
@@ -228,6 +262,16 @@ async function doSave(): Promise<void> {
 function doReturn() {
   router.back();
 }
+
+watch(() => prefsStore.measurementMode, (newVal) => {
+  PreferenceRef.update({
+    easelDecimalPrecision: prefsStore.easelDecimalPrecision,
+    objectTreeDecimalPrecision: prefsStore.objectTreeDecimalPrecision,
+    measurementMode: newVal
+  });
+});
+
+
 </script>
 
 <i18n locale="en">

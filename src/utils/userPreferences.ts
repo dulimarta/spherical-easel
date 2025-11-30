@@ -10,6 +10,7 @@ export type UserPreferences = {
   momentumDecay?: number | null;
   boundaryColor?: string | null;
   boundaryWidth?: number | null;
+  measurementMode?: "degrees" | "radians" | "pi";
   tooltipMode?: "full" | "minimal" | "tools-only" | "easel-only" | "none";
 };
 
@@ -21,7 +22,7 @@ export async function loadUserPreferences(uid: string): Promise<UserPreferences 
   if (!snap.exists()) return null;
 
   const data = snap.data();
-  const prefs = (data as any)?.preferences ?? {};
+  const prefs = (data as any)?.preferences;
 
   // Sync PreferenceRef (if used elsewhere)
   PreferenceRef.update(prefs);

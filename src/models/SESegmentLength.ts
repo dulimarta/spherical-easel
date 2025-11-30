@@ -5,6 +5,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import { SEExpression } from "./SEExpression";
 import { SESegment } from "./SESegment";
 import { SENodule } from "@/models/SENodule";
+import { PreferenceRef } from "@/utils/preferenceRef";
 const emptySet = new Set<string>();
 const { t } = i18n.global;
 
@@ -56,6 +57,21 @@ export class SESegmentLength extends SEExpression {
 
     if (this.exists) {
       super.shallowUpdate();
+
+const mm = PreferenceRef.instance.measurementMode;
+if (mm === "degrees") {
+  this._valueDisplayMode = ValueDisplayMode.DegreeDecimals;
+} else if (mm === "pi") {
+  this._valueDisplayMode = ValueDisplayMode.MultipleOfPi;
+} else {
+  this._valueDisplayMode = ValueDisplayMode.Number;
+}
+
+if (this.seSegment.label?.ref) {
+  this.seSegment.label.ref.valueDisplayMode = this._valueDisplayMode;
+  this.seSegment.label.ref.value = [this.value];
+}
+
       // When this updates send its value to the label of the segment
       if (this.seSegment.label) {
         this.seSegment.label.ref.value = [this.value];
