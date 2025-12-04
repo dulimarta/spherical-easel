@@ -16,6 +16,7 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { Vector3 } from "three";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { SEText } from "@/models/SEText";
+import { allowEaselTooltip } from "@/utils/tooltipModes";
 
 // const tmpVector = new Vector3();
 
@@ -123,6 +124,10 @@ export default abstract class Highlighter extends MouseHandler {
 
     // only display text if we are not in production mode
     if (import.meta.env.MODE !== "production") {
+      if (!allowEaselTooltip()) {
+        this.infoText.hide();
+        return;
+      }
       // Pull the name field from all these objects into one array of strings
       const text = [
         ...this.hitSEPoints,

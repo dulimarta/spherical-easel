@@ -664,6 +664,15 @@ export interface UserProfile {
   favoriteTools: string;
   preferredLanguage: string;
   userStarredConstructions: Array<string>;
+  // User preferences are stored in a nested object so we can add more prefs
+  // without polluting top-level fields on the user document.
+  preferences?: {
+    defaultFill?: FillStyle;
+    easelDecimalPrecision?: number;
+    hierarchyDecimalPrecision?: number;
+    notificationLevels?: string[];
+    momentumDecay?: number;
+  };
 }
 
 export enum AngleMode {

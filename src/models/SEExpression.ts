@@ -6,6 +6,7 @@ import SETTINGS from "@/global-settings";
 import { Visitor } from "@/visitors/Visitor";
 import i18n from "@/i18n";
 import EventBus from "@/eventHandlers/EventBus";
+import { PreferenceRef } from "../utils/preferenceRef";
 const { t } = i18n.global;
 
 // const emptySet = new Set<string>();
@@ -25,7 +26,21 @@ export abstract class SEExpression extends SENodule {
     //DO NOT MODIFY THIS NAME! THIS SHOULD BE THE ONLY VALUE THIS FIELD EVER GETS
     // This is the key value for for the SECalculation, see its construction for the Map<string,number>
     this.name = `M${SENodule.EXPR_COUNT}`;
+
+    this.applyUserMeasurementMode();
   }
+
+protected applyUserMeasurementMode(): void {
+  const pref = PreferenceRef.instance.measurementMode;
+
+  if (pref === "degrees") {
+    this._valueDisplayMode = ValueDisplayMode.DegreeDecimals;
+  } else if (pref === "pi") {
+    this._valueDisplayMode = ValueDisplayMode.MultipleOfPi;
+  } else {
+    this._valueDisplayMode = ValueDisplayMode.Number;
+  }
+}
 
   /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number
    * The setter must update the plottable label (if the expression is attached to a label)
@@ -80,19 +95,19 @@ export abstract class SEExpression extends SENodule {
     switch (this._valueDisplayMode) {
       case ValueDisplayMode.Number:
         return String(
-          this.value.toFixed(fullPrecision ? 20 : SETTINGS.decimalPrecision)
+          this.value.toFixed(PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision)
         );
       case ValueDisplayMode.MultipleOfPi:
         return (
           (this.value / Math.PI).toFixed(
-            fullPrecision ? 20 : SETTINGS.decimalPrecision
+            PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision
           ) + "\u{1D7B9}"
         );
       case ValueDisplayMode.DegreeDecimals:
         return (
           this.value
             .toDegrees()
-            .toFixed(fullPrecision ? 20 : SETTINGS.decimalPrecision) +
+            .toFixed(PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision) +
           "\u{00B0}"
         );
       case ValueDisplayMode.EarthModeMiles:
@@ -102,14 +117,14 @@ export abstract class SEExpression extends SENodule {
               this.value *
               SETTINGS.earthMode.radiusMiles *
               SETTINGS.earthMode.radiusMiles
-            ).toFixed(fullPrecision ? 20 : SETTINGS.decimalPrecision) +
+            ).toFixed(PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision) +
             t(`units.mi`) +
             "\u{00B2}"
           );
         } else {
           return (
             (this.value * SETTINGS.earthMode.radiusMiles).toFixed(
-              fullPrecision ? 20 : SETTINGS.decimalPrecision
+              PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision
             ) + t(`units.mi`)
           );
         }
@@ -120,21 +135,21 @@ export abstract class SEExpression extends SENodule {
               this.value *
               SETTINGS.earthMode.radiusKilometers *
               SETTINGS.earthMode.radiusKilometers
-            ).toFixed(fullPrecision ? 20 : SETTINGS.decimalPrecision) +
+            ).toFixed(PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision) +
             t(`units.km`) +
             "\u{00B2}"
           );
         } else {
           return (
             (this.value * SETTINGS.earthMode.radiusKilometers).toFixed(
-              fullPrecision ? 20 : SETTINGS.decimalPrecision
+              PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision
             ) + t(`units.km`)
           );
         }
       default: // return the number mode string as a default, but warn the user
         console.warn(`ValueDisplayMode for ${this.name} was undefined`);
         return String(
-          this.value.toFixed(fullPrecision ? 20 : SETTINGS.decimalPrecision)
+          this.value.toFixed(PreferenceRef.instance.objectTreeDecimalPrecision ?? SETTINGS.decimalPrecision)
         );
     }
   }

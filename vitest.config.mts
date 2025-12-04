@@ -14,7 +14,11 @@ export default mergeConfig(
       environment: "jsdom",
       include: [
         "**/construction-*.spec.ts",
-        "**/expression/__tests__/*.spec.ts"
+        "**/expression/__tests__/*.spec.ts",
+        "**/utils/__tests__/*.spec.ts",
+        "**/stores/__tests__/*.spec.ts",
+        "**/plottables/__tests__/*.spec.ts",
+        "**/models/__tests__/*.spec.ts"
         // "**/sphereframe.spec.ts"
         //"**/parametric-cusp-values.spec.ts",
         //"**/parametric-coord.spec.ts",

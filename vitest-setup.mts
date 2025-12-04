@@ -7,6 +7,8 @@ import { vi, expect } from "vitest"
 import "vitest-canvas-mock"
 import "./src/extensions/three-extensions"
 import "./src/extensions/se-nodule-extensions"
+import "./src/extensions/array-extensions"
+import "./src/extensions/number-extensions"
 import { Vector3 } from "three"
 if (!globalThis.defined) {
   config.global.plugins = [bahasa]
