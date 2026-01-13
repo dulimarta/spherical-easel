@@ -4,7 +4,10 @@ export const SETTINGS = {
   dollyDistanceMax: 500,
   dollyDistanceMin: 10,
   pointsAtInfinityWidth: 0.01, // The width/radius of the strip at the top of the hyperboloid mesh to which points at infinity are constrained
-  minDollyDistanceChangeForGridUpdate: 0.5 // The minimum change in dolly distance (camera to origin) required to trigger a grid update
+  minDollyDistanceChangeForGridUpdate: 0.15, // The minimum change in dolly distance (camera to origin) required to trigger a grid update
+  fadePercentage: 0.85, // The percentage of the height of the hyperboloid at which fading (opacity lowers) begins
+  startOpacityFade: 1.0, // The opacity at the start of the fade of hyperboloid
+  endOpacityFade: 0.85 // The opacity at the end of the fade hyperboloid
 };
 export enum HYPERBOLIC_LAYER {
   // These are not layers in the sense of spherical easel - layers that are displayed in a certain order to render the background behind the foreground. They are groups of objects that can be added or removed from the scene. ThreeJS constraint: max 32 layers

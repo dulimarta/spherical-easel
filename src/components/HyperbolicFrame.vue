@@ -23,10 +23,14 @@
         World:{{ rayIntersectionPosition.toFixed(2) }}
       </span>
       <span class="ml-1">
-        In Camera {{ positionInCameraCF.toFixed(2) }} Dolly Distance:
-        {{ cameraDistance.toFixed(1) }} Polar Angle:
-        {{ ((cameraPolarAngle * 180) / Math.PI).toFixed(1) }}&deg; ZClip:
+        In Camera {{ positionInCameraCF.toFixed(2) }}
+        Dolly Distance:
+        {{ cameraDistance.toFixed(1) }}
+        Polar Angle:
+        {{ ((cameraPolarAngle * 180) / Math.PI).toFixed(1) }}&deg; ZMaxClip:
         {{ zMaxClippingPlane.constant.toFixed(2) }}
+        ZMinClip:
+        {{ zMinClippingPlane.constant.toFixed(2) }}
       </span>
     </span>
   </span>
@@ -93,6 +97,7 @@ ul > ul {
 }
 </style>
 <script setup lang="ts">
+// ThreeJS imports and Camera Controls
 import {
   AmbientLight,
   // ArrowHelper,
@@ -114,46 +119,49 @@ import {
 } from "three";
 import * as THREE from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
-import { onUpdated, onMounted, Ref, ref, useTemplateRef } from "vue";
 import CameraControls from "camera-controls";
-import {
-  acceleratedRaycast
-  // computeBoundsTree,
-  // disposeBoundsTree,
-  // ExtendedTriangle
-} from "three-mesh-bvh";
-// import type { UseMouseEventExtractor } from "@vueuse/core";
-import vertexShader from "../plottables-hyperbolic/vertex.glsl";
-import fragmentShader from "../plottables-hyperbolic/fragment.glsl";
+import { DispatcherEvent } from "camera-controls/dist/EventDispatcher";
+import { acceleratedRaycast } from "three-mesh-bvh";
 
+// Vue imports
 import {
+  onUpdated,
+  onBeforeMount,
+  onMounted,
+  Ref,
+  ref,
+  useTemplateRef,
+  watch,
+  reactive
+} from "vue";
+import {
+  useIdle,
   useMouseInElement,
   useEventListener,
   useMagicKeys
 } from "@vueuse/core";
+
+// Store imports
 import { useHyperbolicStore } from "@/stores/hyperbolic";
+import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
-import { watch } from "vue";
+
+// Tool Handlers
 import { HyperbolicToolStrategy } from "@/eventHandlers-hyperbolic/ToolStrategy";
 import { PointHandler } from "@/eventHandlers-hyperbolic/PointHandler";
-import { useSEStore } from "@/stores/se";
+import { CircleHandler } from "@/eventHandlers-hyperbolic/CircleHandler";
 import { LineHandler } from "@/eventHandlers-hyperbolic/LineHandler";
-// import { SphericalLineHandler } from "@/eventHandlers-hyperbolic/SphericalLineHandler";
-import {
-  createPolarGridCircle,
-  createPolarGridRadialLine,
-  createPointsAtInfinityStrip
-} from "@/plottables-hyperbolic/MeshFactory";
-import { onBeforeMount } from "vue";
 import { TextHandler } from "@/eventHandlers-hyperbolic/TextHandler";
 import { Text } from "troika-three-text";
 
-import { useIdle } from "@vueuse/core";
-
-import { reactive } from "vue";
-import { DispatcherEvent } from "camera-controls/dist/EventDispatcher";
-import { CircleHandler } from "@/eventHandlers-hyperbolic/CircleHandler";
 import SETTINGS, { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
+import {
+  createPolarGridCircle,
+  createPolarGridRadialLine,
+  createPointsAtInfinity,
+  createHyperboloidSheet,
+  createBoundaryCone
+} from "@/plottables-hyperbolic/MeshFactory";
 import { VisibleHELayersType } from "@/types";
 
 const hyperStore = useHyperbolicStore();
@@ -168,7 +176,7 @@ const visibleLayers: Ref<VisibleHELayersType[]> = ref([]);
 const showLowerSheet = ref(false);
 const showPointsAtInfinity = ref(false);
 const showPolarGrid = ref(true);
-type ImportantSurface = "Upper" | "Lower" | "Sphere" | null;
+type ImportantSurface = "Upper" | "Lower" | null;
 let onSurface: Ref<ImportantSurface> = ref(null);
 // Inject new BVH functions into current THREE-JS Mesh/BufferGeometry definitions
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
@@ -214,17 +222,17 @@ scene.add(ambientLight);
 // scene.add(pointLight);
 
 const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.5);
-directionalLight1.position.set(0, 1, 1);
-directionalLight1.target.position.set(0, 0, 0);
+directionalLight1.position.set(0, 10, 10);
+directionalLight1.target.position.set(0, 0, 1);
 const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
-directionalLight2.position.set(1, 0, 1);
-directionalLight2.target.position.set(0, 0, 0);
+directionalLight2.position.set(10, 0, 10);
+directionalLight2.target.position.set(0, 0, 1);
 const directionalLight3 = new THREE.DirectionalLight(0xffffff, 0.5);
-directionalLight3.position.set(1, 0, -1);
-directionalLight3.target.position.set(0, 0, 0);
+directionalLight3.position.set(10, 0, -10);
+directionalLight3.target.position.set(0, 0, -1);
 const directionalLight4 = new THREE.DirectionalLight(0xffffff, 0.5);
-directionalLight4.position.set(0, 1, -1);
-directionalLight4.target.position.set(0, 0, 0);
+directionalLight4.position.set(0, 10, -10);
+directionalLight4.target.position.set(0, 0, -1);
 scene.add(directionalLight1);
 scene.add(directionalLight2);
 scene.add(directionalLight3);
@@ -233,9 +241,6 @@ scene.add(directionalLight4);
 let currentTools: Array<HyperbolicToolStrategy> = []; //new PointHandler();
 let pointTool: PointHandler = new PointHandler(scene);
 let lineTool: LineHandler | null = null;
-// let sphericalLineTool: SphericalLineHandler | null = null;
-// let kleinLineTool: KleinLineHandler | null = null;
-// let poincareTool: PoincareLineHandler | null = null;
 let circleTool: CircleHandler | null = null;
 // let textTool: TextHandler | null = null;
 
@@ -250,16 +255,16 @@ txtObject.color = "yellow"; //0x000000;
 
 const rayIntersectionPosition = reactive(new Vector3());
 
-const zMaxClippingPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 1);
-const zMinClippingPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 1);
+const zMaxClippingPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 1); // negative normal for zMax so that the visible side is below the plane
+const zMinClippingPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 1); // positive normal for zMin so that the visible side is above the plane
 
 const upperPolarGridArray: Array<THREE.Mesh> = [];
 const lowerPolarGridArray: Array<THREE.Mesh> = [];
+// points at infinity meshes are not all created in initialize() and then shown or hidden like the polar grid lines. As the user updates the view (zooms in or out) the points at infinity meshes are recreated to match the current view
 let upperPointsAtInfinity: THREE.Mesh | undefined = undefined;
 let lowerPointsAtInfinity: THREE.Mesh | undefined = undefined;
+let maxZClippingHeight: number = 0; //set in initialize()
 
-let maxZClippingHeight: number = 0;
-const polarGridArcThickness = 0.001;
 clock.autoStart = true;
 // let customShaderMaterial: THREE.ShaderMaterial;
 
@@ -287,7 +292,6 @@ watch(visibleLayers, (layers: Array<VisibleHELayersType>) => {
   }
 
   if (showPolarGrid.value) {
-    updateGrid();
     camera.layers.enable(HYPERBOLIC_LAYER.upperSheetGrid);
     if (showLowerSheet.value) {
       camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetGrid);
@@ -435,12 +439,14 @@ onMounted(() => {
 
   cameraQuaternion.value.copy(camera.quaternion);
   cameraController = new CameraControls(camera, webglCanvas.value!);
-  // Control the parameters of the camera controller
+  // Set the parameters of the camera controller
   cameraController.minDistance = SETTINGS.dollyDistanceMin;
   cameraController.maxDistance = SETTINGS.dollyDistanceMax;
   cameraController.dollySpeed = 0.2;
   cameraController.polarRotateSpeed = 0.2;
   cameraController.azimuthRotateSpeed = 0.2;
+  cameraController.smoothTime = 0.22;
+  cameraController.draggingSmoothTime = 0.12;
 
   cameraDistance.value = cameraController.distance;
   oldCameraDistance = cameraController.distance;
@@ -455,10 +461,9 @@ onMounted(() => {
 
   // Initial update of the view of sheets, grid and points at infinity
   updateView();
-  updateGrid();
   updatePointsAtInfinity();
 
-  // This would set the clipping planes for all objects
+  // This would set the clipping planes for all objects - globally!
   // renderer.clippingPlanes = [zMinClippingPlane, zMaxClippingPlane];
 
   renderer.setSize(props.availableWidth, props.availableHeight);
@@ -492,30 +497,6 @@ function initialize() {
     2 * SETTINGS.dollyDistanceMax
   );
 
-  if (showPolarGrid.value) {
-    updateGrid();
-    visibleLayers.value.push("polarGrid");
-    camera.layers.enable(HYPERBOLIC_LAYER.upperSheetGrid);
-    if (showLowerSheet.value) {
-      camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetGrid);
-    }
-  } else {
-    camera.layers.disable(HYPERBOLIC_LAYER.upperSheetGrid);
-    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetGrid);
-  }
-
-  if (showPointsAtInfinity.value) {
-    updatePointsAtInfinity();
-    //renderer.render(scene, camera); // update the scene
-    visibleLayers.value.push("pointsAtInfinity");
-    camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
-    if (showLowerSheet.value) {
-      camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-    }
-  } else {
-    camera.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
-    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-  }
   // const helper = new THREE.CameraHelper(camera);
   // scene.add(helper);
 
@@ -538,7 +519,8 @@ function initialize() {
   // scene.add(arrowY);
   // scene.add(arrowZ);
 
-  //set the maximum value of the clipping plane so that the entire hyperboloid and grid lines is shown at max zoom out
+  //set the maximum value of the clipping plane so that the entire hyperboloid and grid lines are shown at max zoom out
+  // This is the maximum value of the zMaxClippingPlane.constant that is set in the updateView function
   const fovRad = ((camera.fov - SETTINGS.angularBorder) * Math.PI) / 180;
   const tanFov2 = Math.tan(fovRad / 2);
   const d = SETTINGS.dollyDistanceMax;
@@ -551,113 +533,17 @@ function initialize() {
       (tanFov2 * tanFov2 - 1)
   );
 
-  // Create the ShaderMaterial with the GLSL code.
-  // customShaderMaterial = new THREE.ShaderMaterial({
-  //   uniforms: {
-  //     u_time: { value: 0.0 }, //Math.abs(Math.sin(1 * 0.001)) },
-  //     u_resolution: { value: new THREE.Vector2() },
-  //     u_mouse: { value: new THREE.Vector2() },
-  //     u_Color: { value: new THREE.Color(0x00aaff) }
-  //   },
-  //   vertexShader: vertexShader,
-  //   fragmentShader: fragmentShader,
-  //   transparent: true // enabling opacity
-  // });
-
-  const hyperboloidMaterial: THREE.MeshStandardMaterialParameters = {
-    color: "chocolate",
-    side: DoubleSide,
-    roughness: 0.2,
-    transparent: true,
-    opacity: 0.75,
-    clippingPlanes: [zMinClippingPlane, zMaxClippingPlane]
-  };
-
-  const testMaterial = new MeshStandardMaterial(hyperboloidMaterial);
-
-  testMaterial.onBeforeCompile = shader => {
-    //shader.uniforms.uStartFadeHeight = {
-    //   value: 90
-    // };
-    shader.uniforms.uStartFadeHeight = {
-      value: zMaxClippingPlane.constant - 1.0
-    }; // height of start of fade
-    shader.uniforms.uEndFadeHeight = { value: zMaxClippingPlane.constant }; // height of end of fade
-    shader.uniforms.uEndFadeHeight = { value: 100 }; // height of end of fade
-    shader.uniforms.uStartOpacity = { value: 1.0 }; //  opacity at the start of fade
-    shader.uniforms.uEndOpacity = { value: 0.75 }; // opacity at the end of fade
-    shader.uniforms.uBaseOpacity = { value: 1.0 }; // max opacity
-
-    // Pass the vertex height to the fragment shader
-    shader.vertexShader = shader.vertexShader.replace(
-      `#include <common>`,
-      `#include <common>
-       varying float vHeight;`
-    );
-
-    shader.vertexShader = shader.vertexShader.replace(
-      `#include <begin_vertex>`,
-      `#include <begin_vertex>
-       vHeight = transformed.z;`
-    );
-
-    // Use vHeight in fragment shader to adjust opacity
-    shader.fragmentShader = shader.fragmentShader.replace(
-      `#include <common>`,
-      `#include <common>
-       uniform float uStartFadeHeight;
-       uniform float uEndFadeHeight;
-       uniform float uEndOpacity;
-       uniform float uStartOpacity;
-       uniform float uBaseOpacity;
-       varying float vHeight;`
-    );
-
-    shader.fragmentShader = shader.fragmentShader.replace(
-      `#include <dithering_fragment>`,
-      `
-      float heightFactor = clamp(
-        (vHeight - uStartFadeHeight) / (uEndFadeHeight - uStartFadeHeight),
-        0.0,
-        1.0
-      );
-      float opacityFactor = mix(
-        uStartOpacity,
-        uEndOpacity,
-        heightFactor
-      );
-      gl_FragColor.a *= opacityFactor * uBaseOpacity;
-      #include <dithering_fragment>
-      `
-    );
-
-    // Keep uniforms for later updates
-    testMaterial.userData.shader = shader;
-    console.log("Shader modified");
-  };
-
-  const upperHyperboloidGeometry = new ParametricGeometry(
-    upperHyperboloid,
-    120,
-    300
-  );
-
-  const upperHyperboloidMesh = new Mesh(
-    upperHyperboloidGeometry,
-    //customShaderMaterial
-    testMaterial //new MeshStandardMaterial(hyperboloidMaterial)
-  );
-
-  const lowerHyperboloidGeometry = new ParametricGeometry(
-    lowerHyperboloid,
-    120,
-    300
-  );
-  // lowerHyperboloidGeometry.computeBoundsTree();
-  const lowerHyperboloidMesh = new Mesh(
-    lowerHyperboloidGeometry,
-    new MeshStandardMaterial(hyperboloidMaterial)
-  );
+  // create the hyperboloid sheets
+  const upperHyperboloidMesh = createHyperboloidSheet({
+    upper: true,
+    clippingPlane: zMaxClippingPlane,
+    maxZClippingHeight: maxZClippingHeight
+  });
+  const lowerHyperboloidMesh = createHyperboloidSheet({
+    upper: false,
+    clippingPlane: zMinClippingPlane,
+    maxZClippingHeight: maxZClippingHeight
+  });
 
   lowerHyperboloidMesh.name = "Lower Sheet";
   upperHyperboloidMesh.name = "Upper Sheet";
@@ -675,6 +561,101 @@ function initialize() {
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheet);
   }
 
+  // create the boundary cone
+  const upperCone = createBoundaryCone({
+    upper: true,
+    clippingPlane: zMaxClippingPlane,
+    maxZClippingHeight: maxZClippingHeight
+  });
+  const lowerCone = createBoundaryCone({
+    upper: false,
+    clippingPlane: zMinClippingPlane,
+    maxZClippingHeight: maxZClippingHeight
+  });
+
+  scene.add(upperCone);
+  scene.add(lowerCone);
+  upperCone.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
+  lowerCone.layers.set(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+  upperCone.name = "Upper Cone";
+  lowerCone.name = "Lower Cone";
+
+  // create the radial polar grid lines (Create once and manage visibility and thickness later)
+  for (let upperLower = 0; upperLower < 2; upperLower++) {
+    const numRadialLines = 12;
+    for (
+      let theta = 0;
+      theta < 2 * Math.PI;
+      theta += (2 * Math.PI) / numRadialLines
+    ) {
+      const radialLineMesh = createPolarGridRadialLine({
+        radianAngle: theta,
+        zMax: maxZClippingHeight,
+        clippingPlane: upperLower === 0 ? zMaxClippingPlane : zMinClippingPlane,
+        upper: upperLower === 0
+      });
+
+      radialLineMesh.layers.set(
+        upperLower === 0
+          ? HYPERBOLIC_LAYER.upperSheetGrid
+          : HYPERBOLIC_LAYER.lowerSheetGrid
+      );
+      scene.add(radialLineMesh);
+      if (upperLower === 0) {
+        upperPolarGridArray.push(radialLineMesh);
+      } else {
+        lowerPolarGridArray.push(radialLineMesh);
+      }
+    }
+  }
+
+  // create the circular polar grid lines
+  for (let upperLower = 0; upperLower < 2; upperLower++) {
+    for (let r = 0.5; Math.cosh(r) < maxZClippingHeight; r += 0.5) {
+      const radialLineMesh = createPolarGridCircle({
+        intrinsicRadius: r,
+        clippingPlane: upperLower === 0 ? zMaxClippingPlane : zMinClippingPlane,
+        upper: upperLower === 0
+      });
+
+      radialLineMesh.layers.set(
+        upperLower === 0
+          ? HYPERBOLIC_LAYER.upperSheetGrid
+          : HYPERBOLIC_LAYER.lowerSheetGrid
+      );
+      scene.add(radialLineMesh);
+      if (upperLower === 0) {
+        upperPolarGridArray.push(radialLineMesh);
+      } else {
+        lowerPolarGridArray.push(radialLineMesh);
+      }
+    }
+  }
+
+  if (showPolarGrid.value) {
+    visibleLayers.value.push("polarGrid");
+    camera.layers.enable(HYPERBOLIC_LAYER.upperSheetGrid);
+    if (showLowerSheet.value) {
+      camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetGrid);
+    }
+  } else {
+    camera.layers.disable(HYPERBOLIC_LAYER.upperSheetGrid);
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetGrid);
+  }
+
+  if (showPointsAtInfinity.value) {
+    updatePointsAtInfinity();
+    //renderer.render(scene, camera); // update the scene
+    visibleLayers.value.push("pointsAtInfinity");
+    camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+    if (showLowerSheet.value) {
+      camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+    }
+  } else {
+    camera.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+  }
+
   // Set the default tool
   actionMode.value = "rotate";
 }
@@ -683,7 +664,6 @@ function doRender() {
   if (enableCameraControl.value) {
     const deltaTime = clock.getDelta();
     const hasUpdated = cameraController.update(deltaTime);
-    //console.log("Enable camera control, hasUpdated", hasUpdated);
     if (hasUpdated) {
       hasUpdatedCameraControls.value = true;
       // console.log(
@@ -708,7 +688,6 @@ function updateCameraDetails(ev: DispatcherEvent) {
     Math.abs(oldCameraDistance - cc.distance) >
     SETTINGS.minDollyDistanceChangeForGridUpdate
   ) {
-    updateGrid(); // called after updateView so that clipping planes are set
     if (showPointsAtInfinity.value) {
       updatePointsAtInfinity();
     }
@@ -726,6 +705,7 @@ function updateCameraDetails(ev: DispatcherEvent) {
 // Set the clipping planes (which only depend on the camera (dolly)distance
 // and the field of view (fov) so that the maximally visible part of the
 // hyperboloid is shown
+// Adjust the shading of the sheets and the polar grid line thickness accordingly
 function updateView() {
   // Default value, when both sheets are shown look at the origin.
   var zCoordLookAt = 0;
@@ -738,7 +718,6 @@ function updateView() {
       Math.tan((((camera.fov - SETTINGS.angularBorder) / 2) * Math.PI) / 180) *
       cameraController.distance *
       Math.sqrt(1 / 2);
-
     zMinClippingPlane.constant = zMaxClippingPlane.constant;
   } else {
     // When only the upper sheet is shown, we set the zClippingPlane so that
@@ -747,6 +726,7 @@ function updateView() {
     // and the display is essentially a circle
     const fovRad = ((camera.fov - SETTINGS.angularBorder) * Math.PI) / 180;
     const tanFov2 = Math.tan(fovRad / 2);
+
     const d = cameraController.distance;
     zMaxClippingPlane.constant =
       (tanFov2 * tanFov2 * (d + 1) -
@@ -781,105 +761,47 @@ function updateView() {
     zCoordLookAt,
     true
   );
-  // update the clipping planes in the shader materials
-  // console.log(scene);
-  const mesh = scene.getObjectByName("Upper Sheet") as THREE.Mesh;
-  // console.log("Upper Sheet mesh", mesh);
-  const hyperboloidMaterial = mesh.material as THREE.MeshStandardMaterial;
-  // console.log("Hyperboloid material", hyperboloidMaterial);
-  // console.log("shader", hyperboloidMaterial.userData.shader);
-  if (hyperboloidMaterial.userData.shader !== undefined) {
-    hyperboloidMaterial.userData.shader.uniforms.uEndFadeHeight.value =
-      zMaxClippingPlane.constant;
-    hyperboloidMaterial.userData.shader.uniforms.uStartFadeHeight.value =
-      zMaxClippingPlane.constant * 0.85;
-  }
-}
-
-//update the polar grid
-function updateGrid() {
-  // The zMin and zMax clipping planes are set so we can now add the polar grid at this zoom level
-  // Remove the old grid from the scene
-  upperPolarGridArray.forEach(c => {
-    scene.remove(c);
-    c.geometry.dispose();
-    (c.material as THREE.ShaderMaterial).dispose();
-  });
-  upperPolarGridArray.splice(0);
-
-  lowerPolarGridArray.forEach(c => {
-    scene.remove(c);
-    c.geometry.dispose();
-    (c.material as THREE.ShaderMaterial).dispose();
-  });
-  lowerPolarGridArray.splice(0);
-
-  // Create new grid circles and radial lines appropriate for the current camera distance (both number and thickness)
-  // loop if need to create lower sheet grid
-  for (let loop = 0; loop < (showLowerSheet.value ? 2 : 1); loop++) {
-    for (let r = 0.1; r < Math.acosh(zMaxClippingPlane.constant); ) {
-      // for (let r = 0.1; r < Math.acosh(maxZClippingHeight); ) {
-      const circleMesh = createPolarGridCircle({
-        zRadius: Math.sinh(r),
-        zPosition: Math.cosh(r),
-        numPoints: 100,
-        thickness: polarGridArcThickness * cameraDistance.value,
-        upper: loop === 0
-      });
-      circleMesh.layers.set(
-        loop === 0
-          ? HYPERBOLIC_LAYER.upperSheetGrid
-          : HYPERBOLIC_LAYER.lowerSheetGrid
-      );
-      scene.add(circleMesh);
-      if (loop === 0) {
-        upperPolarGridArray.push(circleMesh);
-      } else {
-        lowerPolarGridArray.push(circleMesh);
-      }
-      if (r < 0.2) {
-        r = 0.5;
-      } else {
-        r += 0.5;
-      }
+  // update the fade in the shader materials for the upper and lower sheets
+  for (let upper = 0; upper < 2; upper++) {
+    const mesh = scene.getObjectByName(
+      upper === 0 ? "Upper Sheet" : "Lower Sheet"
+    ) as THREE.Mesh;
+    // console.log("Lower Sheet mesh", mesh);
+    const hyperboloidMaterial = mesh.material as THREE.MeshStandardMaterial;
+    // console.log("Hyperboloid material", hyperboloidMaterial);
+    // console.log("shader", hyperboloidMaterial.userData.shader);
+    if (hyperboloidMaterial.userData.shader !== undefined) {
+      hyperboloidMaterial.userData.shader.uniforms.uEndFadeHeight.value =
+        (upper === 0 ? 1 : -1) * zMaxClippingPlane.constant;
+      hyperboloidMaterial.userData.shader.uniforms.uStartFadeHeight.value =
+        (upper === 0 ? 1 : -1) *
+        zMaxClippingPlane.constant *
+        SETTINGS.fadePercentage;
     }
-    const numRadialLines = 12;
-    for (
-      let theta = 0;
-      theta < 2 * Math.PI;
-      theta += (2 * Math.PI) / numRadialLines
-    ) {
-      const radialLineMesh = createPolarGridRadialLine({
-        radianAngle: theta,
-        numPoints: 100,
-        zMax: zMaxClippingPlane.constant,
-        thickness: polarGridArcThickness * cameraDistance.value,
-        clippingPlanes: [zMaxClippingPlane, zMinClippingPlane],
-        upper: loop === 0
-      });
-      // (radialLineMesh.material as THREE.MeshStandardMaterial).clippingPlanes = [
-      //   zMaxClippingPlane,
-      //   zMinClippingPlane
-      // ];
-
-      radialLineMesh.layers.set(
-        loop === 0
-          ? HYPERBOLIC_LAYER.upperSheetGrid
-          : HYPERBOLIC_LAYER.lowerSheetGrid
-      );
-      scene.add(radialLineMesh);
-      if (loop === 0) {
-        upperPolarGridArray.push(radialLineMesh);
-      } else {
-        lowerPolarGridArray.push(radialLineMesh);
-      }
+    if (!showLowerSheet.value) {
+      upper = 2; // break the loop because the lower sheet is not shown
     }
   }
+
+  // OLD CODE FOR POLAR GRID LINE THICKNESS UPDATE - before it was a 2D material
+  // for (const mesh of upperPolarGridArray) {
+  //   const gridMaterial = mesh.material as THREE.MeshStandardMaterial;
+  //   if (gridMaterial.userData.shader !== undefined) {
+  //     // console.log("shader", gridMaterial.userData.shader);
+  //     // const resolution = gridMaterial.userData.shader.u_resolution.value;
+  //     // console.log(`Resolution is: ${resolution.x} x ${resolution.y}`);
+
+  //     // gridMaterial.userData.shader.uniforms.uLineWidth.value =
+  //     //   polarGridArcThickness * cameraDistance.value;
+  //     gridMaterial.userData.shader.uniforms.uEndFadeHeight.value =
+  //       zMaxClippingPlane.constant;
+  //     gridMaterial.userData.shader.uniforms.uStartFadeHeight.value =
+  //       zMaxClippingPlane.constant * SETTINGS.fadePercentage;
+  //   }
+  // }
 }
 
-//update the points at infinity
 function updatePointsAtInfinity() {
-  // The zMin and zMax clipping planes are set so we can now add the polar grid at this zoom level
   // Remove the old points at infinity from the scene
   if (lowerPointsAtInfinity !== undefined) {
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
@@ -897,28 +819,28 @@ function updatePointsAtInfinity() {
   }
   // Create new points at infinity strip appropriate for the current camera distance (both number and thickness)
   if (showPointsAtInfinity.value) {
-    upperPointsAtInfinity = createPointsAtInfinityStrip({
+    upperPointsAtInfinity = createPointsAtInfinity({
       zPosition:
         zMaxClippingPlane.constant +
         (SETTINGS.pointsAtInfinityWidth + 0.005) * cameraDistance.value,
       zRadius:
         zMaxClippingPlane.constant +
-        (SETTINGS.pointsAtInfinityWidth + 0.005) * cameraDistance.value,
-      thickness: 0.3 * SETTINGS.pointsAtInfinityWidth * cameraDistance.value
+        (SETTINGS.pointsAtInfinityWidth + 0.005) * cameraDistance.value
+      //thickness: 0.3 * SETTINGS.pointsAtInfinityWidth * cameraDistance.value
     });
     upperPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
     scene.add(upperPointsAtInfinity);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
 
     if (showLowerSheet.value) {
-      lowerPointsAtInfinity = createPointsAtInfinityStrip({
+      lowerPointsAtInfinity = createPointsAtInfinity({
         zPosition:
           zMaxClippingPlane.constant +
           (SETTINGS.pointsAtInfinityWidth + 0.005) * cameraDistance.value,
         zRadius:
           zMaxClippingPlane.constant +
           (SETTINGS.pointsAtInfinityWidth + 0.005) * cameraDistance.value,
-        thickness: 0.3 * SETTINGS.pointsAtInfinityWidth * cameraDistance.value,
+        //thickness: 0.3 * SETTINGS.pointsAtInfinityWidth * cameraDistance.value,
         upper: false
       });
       lowerPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.lowerSheetInfPoints);
@@ -1015,8 +937,6 @@ function threeMouseTracker(ev: MouseEvent) {
       onSurface.value = firstIntersection.object.name
         .substring(0, 6)
         .toUpperCase() as ImportantSurface;
-    else if (firstIntersection.object.name.endsWith("Sphere"))
-      onSurface.value = "Sphere";
     else {
       onSurface.value = null;
       console.debug(
@@ -1051,50 +971,4 @@ function threeMouseTracker(ev: MouseEvent) {
   // doMouseMove(!isOutside.value, onSurface.value, position3d);
   renderer.render(scene, camera);
 }
-
-// Parametric function for the upper sheet of the hyperboloid where 0 <= u <= 1 and 0 <= v <= 1, the point is returned in pt
-function upperHyperboloid(u: number, v: number, pt: Vector3) {
-  // This is a one-to-one mapping from R^2 to a sheet of the hyperboloid.
-  // https://math.stackexchange.com/questions/697245/parametrization-of-the-hyperboloid-of-two-sheets
-  // Maybe this is useful if we run into multi-value issues
-  // The edges of this do not form a rectangle in 3D
-  // const scale = 3;
-  // const myU = 2 * scale * u - scale; // map to -scale <= u <= scale
-  // const myV = 2 * scale * v - scale; // map to -scale <= v <= scale
-  // const x = Math.sinh(myU) * Math.cosh(myV);
-  // const y = Math.sinh(myV);
-  // const z = Math.cosh(myU) * Math.cosh(myV);
-
-  // This is the standard polar coordinate parameterization
-  // https://en.wikipedia.org/wiki/Hyperboloid_of_two_sheets#Parametrization
-  // where u is the radial coordinate and v is the angular coordinate
-  u = u * (Math.acosh(maxZClippingHeight) + 1); // add one because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene.
-  const theta = v * 2 * Math.PI;
-  const x = Math.sinh(u) * Math.cos(theta);
-  const y = Math.sinh(u) * Math.sin(theta);
-  const z = Math.cosh(u);
-  pt.set(x, y, z);
-}
-
-// Parametric function for the lower sheet of the hyperboloid in polar coordinates 0 <= u <= 1 and 0 <= v <= 1
-function lowerHyperboloid(u: number, v: number, pt: Vector3) {
-  u = u * (Math.acosh(maxZClippingHeight) + 1);
-  const theta = v * 2 * Math.PI;
-  const x = Math.sinh(u) * Math.cos(theta);
-  const y = Math.sinh(u) * Math.sin(theta);
-  const z = -Math.cosh(u);
-  pt.set(x, y, z);
-}
-
-// function upperHyperboloidStrip(u: number, v: number, pt: Vector3) {
-//   // This is the standard polar coordinate parameterization
-//   // https://en.wikipedia.org/wiki/Hyperboloid_of_two_sheets#Parametrization
-//   // where u is the radial coordinate and v is the angular coordinate
-//   u = u * SETTINGS.Z_MAX; // map to 0 <= u <= SETTINGS.Z_MAX
-//   const theta = v * 2 * Math.PI;
-//   const x = Math.sinh(u) * Math.cos(theta);
-//   const y = Math.sinh(u) * Math.sin(theta);
-//   const z = Math.cosh(u);
-//   pt.set(x, y, z);
-// }
 </script>
