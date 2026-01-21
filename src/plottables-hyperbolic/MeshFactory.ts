@@ -206,7 +206,8 @@ export function createPointsAtInfinity({
 }): Mesh {
   const coneMaterial = new MeshPhysicalMaterial({
     color: "blue",
-    clippingPlanes: clippingPlanes
+    clippingPlanes: clippingPlanes,
+    side: DoubleSide
   });
 
   const coneGeometry = new ParametricGeometry(

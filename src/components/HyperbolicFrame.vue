@@ -438,8 +438,10 @@ onMounted(() => {
   // Set the parameters of the camera controller
   cameraController.minDistance = SETTINGS.dollyDistanceMin;
   cameraController.maxDistance = SETTINGS.dollyDistanceMax;
+  cameraController.minPolarAngle = 0.1; // radians
+  cameraController.maxPolarAngle = Math.PI - 0.1; // radians
   cameraController.dollySpeed = 0.2;
-  cameraController.polarRotateSpeed = 0.2;
+  cameraController.polarRotateSpeed = 0.5;
   cameraController.azimuthRotateSpeed = 0.2;
   cameraController.smoothTime = 0.22;
   cameraController.draggingSmoothTime = 0.12;
@@ -813,7 +815,7 @@ function updateView() {
   //               \   |
   //                \  |
   //                 \ |
-  //                  (0,0,1)
+  //                  (0,0,LookAt)
   // Law of cosines for find length S
   const temp1 = zMaxClippingPlane.constant - zCoordLookAt;
   const S = Math.sqrt(
