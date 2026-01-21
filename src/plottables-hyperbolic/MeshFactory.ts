@@ -28,10 +28,118 @@ export function createPoint(
   size: number = 0.05,
   color: string = "white"
 ): Mesh {
-  return new Mesh(
-    new SphereGeometry(size),
-    new MeshStandardMaterial({ color })
-  );
+  const material = new MeshStandardMaterial({
+    color: color,
+    roughness: 0.3
+    //clippingPlanes: [minClippingPlane, maxClippingPlane] //No clipping planes for points
+  });
+  material.onBeforeCompile = shader => {
+    // add a uniform for desired screen-space radius
+    shader.uniforms.uPixelRadius = { value: 20.0 }; // pixels
+
+    // expose uniform
+    shader.vertexShader = shader.vertexShader.replace(
+      `#include <common>`,
+      `
+    #include <common>
+    uniform float uPixelRadius;
+    `
+    );
+
+    // replace the projection step
+    shader.vertexShader = shader.vertexShader.replace(
+      `#include <project_vertex>`,
+      `
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+
+    // Convert pixel radius to NDC scale
+    float ndcScale = uPixelRadius / resolution.y;
+
+    // Scale sphere so its screen-space size is constant
+    mvPosition.xyz *= ndcScale * mvPosition.w;
+
+    gl_Position = projectionMatrix * mvPosition;
+    `
+    );
+  };
+  material.onBeforeCompile = shader => {
+    shader.uniforms.resolution = { value: new Vector2() };
+
+    shader.vertexShader = shader.vertexShader.replace(
+      `#include <common>`,
+      `
+    #include <common>
+    uniform vec2 resolution;
+    uniform float uPixelRadius;
+    `
+    );
+
+    shader.vertexShader = shader.vertexShader.replace(
+      `#include <project_vertex>`,
+      `
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    float ndcScale = uPixelRadius / resolution.y;
+    mvPosition.xyz *= ndcScale * mvPosition.w;
+    gl_Position = projectionMatrix * mvPosition;
+    `
+    );
+
+    material.userData.shader = shader;
+  };
+
+  // material.onBeforeCompile = shader => {
+  //   shader.uniforms.uLineWidth = { value: 10.0 }; // dynamic
+
+  //   // Pass the vertex height to the fragment shader
+  //   shader.vertexShader = shader.vertexShader.replace(
+  //     `#include <color_vertex>`,
+  //     `
+  //     #include <color_vertex>
+  //     uniform float uLineWidth;
+  //     `
+  //   );
+  //   shader.vertexShader = shader.vertexShader.replace(
+  //     `#include <begin_vertex>`,
+  //     `
+  //     #include <begin_vertex>
+  //     transformed = normal*uLineWidth + transformed;// old naive thickness adjustment
+  //     `
+  //   );
+
+  // Old Attempt to adjust thickness based on camera distance
+  // `#include <begin_vertex>
+  //   vec4 clip = projectionMatrix * modelViewMatrix * vec4(position, 1.0); // position in clip space
+  //   vec3 ndc = clip.xyz / clip.w; //Normalized Device Coordinates -- this is the perspective divide and the result is the position in NDC space
+  //   vec4 myNormal = transpose(inverse(projectionMatrix * modelViewMatrix)) * vec4(normal,1); // Transform normal to clip space
+  //   vec3 myNDCNormal = myNormal.xyz / myNormal.w; // Normal in NDC space
+  //   vec2 offset = myNDCNormal.xy;
+  //   offset = normalize(offset); // Normal direction in screen space
+  //   ndc.xy += offset * uLineWidth;
+  //   vec4 tempTransformed = inverse(modelViewMatrix) * inverse(projectionMatrix) * vec4(ndc * clip.w, clip.w);
+  //   transformed = tempTransformed.xyz;
+  //   vHeight = transformed.z;`
+
+  // Another Attempt to adjust thickness based on camera distance
+  // // The normalMatrix is the correct matrix for transforming normals.
+  //       vec3 transformedNormal_viewSpace = normalize(normalMatrix * normal);
+
+  //       // This is a correction to use the view-space normal for calculating the screen-space offset
+  //       // The offset in view-space is scaled by the perspective projection
+  //       vec2 offset_viewSpace = transformedNormal_viewSpace.xy / -mvPosition.z;
+
+  //       // The scaling factor for the screen-space offset
+  //       float pixelRatio = uLineWidth / uResolution.x;
+
+  //       // Apply the screen-space offset in clip space
+  //       gl_Position.xy += offset_viewSpace * gl_Position.w * pixelRatio;
+
+  // Another Attempt to adjust thickness based on camera distance
+  // #include <project_vertex> // this will define variables used by other chunks in the preprocessing
+  // // Transform the vertex to camera space
+  // vec4 myPosition = modelViewMatrix * vec4(position, 1.0);
+  //};
+
+  return new Mesh(new SphereGeometry(size), material);
 }
 
 export function create2DLine(width: number = 0.03, color: string = "white") {
@@ -41,143 +149,110 @@ export function create2DLine(width: number = 0.03, color: string = "white") {
   );
 }
 
+// export function createPointsAtInfinity({
+//   zHeight,
+//   thickness = 10
+// }: {
+//   zHeight: number;
+//   thickness?: number;
+// }): Mesh {
+//   const circlePoints: number[] = [];
+//   const error = 0.004; // maximum allowable error (as a world space distance) in the linear segments approximating the circle
+//   // Calculate number of points needed to achieve the desired maximum error in linear approximation of circle
+//   const numPoints = Math.ceil(Math.PI / Math.acos(1 - error / zHeight));
+//   // Build the path
+//   for (let angle = 0; angle < 2 * Math.PI; angle += (2 * Math.PI) / numPoints) {
+//     circlePoints.push(
+//       zHeight * Math.cos(angle),
+//       zHeight * Math.sin(angle),
+//       zHeight
+//     );
+//   }
+//   // Close the circle
+//   circlePoints.push(circlePoints[0], circlePoints[1], circlePoints[2]);
+
+//   const pointsAtInfinityGeometry = new LineGeometry();
+//   pointsAtInfinityGeometry.setPositions(circlePoints);
+
+//   const pointsAtInfinityMaterial = new LineMaterial({
+//     color: "blue",
+//     linewidth: thickness, // Width in pixels
+//     resolution: new Vector2(window.innerWidth, window.innerHeight),
+//     transparent: false
+//   });
+
+//   const mesh = new Mesh(
+//     pointsAtInfinityGeometry,
+//     //customShaderMaterial
+//     pointsAtInfinityMaterial
+//   );
+
+//   return mesh;
+// }
+
+/**
+ * Creates the cone on which the points at infinity lie, the  portion of the cone representing the points at infinity are between the given clipping planes.
+ * @param param0
+ * @returns
+ */
 export function createPointsAtInfinity({
-  zRadius,
-  zPosition,
-  // numPoints = 100,
-  thickness = 10,
-  center = { x: 0, y: 0 },
+  maxZClippingHeight,
+  clippingPlanes,
   upper = true
 }: {
-  zRadius: number;
-  zPosition: number;
-  //numPoints?: number;
-  thickness?: number;
-  center?: { x: number; y: number };
-  clippingPlanes?: Array<Plane>;
+  maxZClippingHeight: number;
+  clippingPlanes: Plane[];
   upper?: boolean;
 }): Mesh {
-  // OLD Tube Geometry - Comment this out while testing line geometry version below
-  // const curvePath = new CurvePath<Vector3>();
-
-  // const k = (4 / 3) * (Math.sqrt(2) - 1);
-  // const d = zRadius * k;
-  // const { x, y } = center;
-
-  // zPosition = upper ? zPosition : -zPosition;
-  // // Define control points for four cubic Bezier segments approximating a circle
-  // const points = [
-  //   new Vector3(x, y + zRadius, zPosition),
-  //   new Vector3(x + d, y + zRadius, zPosition),
-  //   new Vector3(x + zRadius, y + d, zPosition),
-  //   new Vector3(x + zRadius, y, zPosition),
-
-  //   new Vector3(x + zRadius, y, zPosition),
-  //   new Vector3(x + zRadius, y - d, zPosition),
-  //   new Vector3(x + d, y - zRadius, zPosition),
-  //   new Vector3(x, y - zRadius, zPosition),
-
-  //   new Vector3(x, y - zRadius, zPosition),
-  //   new Vector3(x - d, y - zRadius, zPosition),
-  //   new Vector3(x - zRadius, y - d, zPosition),
-  //   new Vector3(x - zRadius, y, zPosition),
-
-  //   new Vector3(x - zRadius, y, zPosition),
-  //   new Vector3(x - zRadius, y + d, zPosition),
-  //   new Vector3(x - d, y + zRadius, zPosition),
-  //   new Vector3(x, y + zRadius, zPosition)
-  // ];
-
-  // // Build the path
-  // for (let i = 0; i < 16; i += 4) {
-  //   curvePath.add(
-  //     new CubicBezierCurve3(
-  //       points[i],
-  //       points[i + 1],
-  //       points[i + 2],
-  //       points[i + 3]
-  //     )
-  //   );
-  // }
-
-  // const radialSegments = 3;
-  // const closed = true;
-
-  // const pointsAtInfinityGeometry = new TubeGeometry(
-  //   curvePath,
-  //   numPoints,
-  //   thickness,
-  //   radialSegments,
-  //   closed
-  // );
-  // const pointsAtInfinityMaterial: MeshStandardMaterialParameters = {
-  //   color: "darkgray",
-  //   side: DoubleSide,
-  //   roughness: 0.2,
-  //   transparent: false,
-  //   opacity: 1.0
-  // };
-  // const mesh = new Mesh(
-  //   pointsAtInfinityGeometry,
-  //   //customShaderMaterial
-  //   new Mesh(pointsAtInfinityMaterial)
-  // );
-
-  const circlePoints: number[] = [];
-  const error = 0.004; // maximum allowable error (as a world space distance) in the linear segments approximating the circle
-  const numPoints = Math.ceil(Math.PI / Math.acos(1 - error / zRadius)); // Calculate number of points needed to achieve the desired maximum error in linear approximation of circle
-  // Build the path
-  for (let angle = 0; angle < 2 * Math.PI; angle += (2 * Math.PI) / numPoints) {
-    circlePoints.push(
-      zRadius * Math.cos(angle),
-      zRadius * Math.sin(angle),
-      upper ? zPosition : -zPosition
-    );
-  }
-  // Close the circle
-  circlePoints.push(circlePoints[0], circlePoints[1], circlePoints[2]);
-
-  const pointsAtInfinityGeometry = new LineGeometry();
-  pointsAtInfinityGeometry.setPositions(circlePoints);
-
-  const pointsAtInfinityMaterial = new LineMaterial({
+  const coneMaterial = new MeshPhysicalMaterial({
     color: "blue",
-    linewidth: thickness, // Width in pixels
-    resolution: new Vector2(window.innerWidth, window.innerHeight),
-    transparent: false
+    clippingPlanes: clippingPlanes
   });
 
-  const mesh = new Mesh(
-    pointsAtInfinityGeometry,
-    //customShaderMaterial
-    pointsAtInfinityMaterial
+  const coneGeometry = new ParametricGeometry(
+    (u, v, out) => {
+      let r = u * maxZClippingHeight * (upper ? 1 : -1); // 0 to +/-maxZClippingHeight
+      if (r == 0) {
+        r = 0.0001 * (upper ? 1 : -1); // avoid singularity at the tip
+      }
+      const theta = v * 2 * Math.PI;
+      // This is how points on the hyperboloid are calculated
+      // u = u * (Math.acosh(maxZClippingHeight) + 1);
+      // const x = Math.sinh(u) * Math.cos(theta);
+      // const y = Math.sinh(u) * Math.sin(theta);
+      // const z = Math.cosh(u);
+
+      const x = r * Math.cos(theta);
+      const y = r * Math.sin(theta);
+      const z = r;
+      out.set(x, y, z);
+    },
+    120,
+    300
   );
-  mesh.name = upper ? `UpperPointsAtInfinity` : `LowerPointsAtInfinity`;
-  return mesh;
+  const coneMesh = new Mesh(coneGeometry, coneMaterial);
+
+  return coneMesh;
 }
 
 export function createPolarGridCircle({
   intrinsicRadius, // The intrinsic hyperbolic radius
   clippingPlane,
   thickness = 2, //pixels
-  error = 0.004, // maximum allowable error (as a world space distance) in the linear segments approximating the circle
   upper = true
 }: {
   intrinsicRadius: number;
   clippingPlane: Plane;
-  numPoints?: number;
   thickness?: number;
-  error?: number;
   upper?: boolean;
 }): Mesh {
   const circlePoints: number[] = [];
+  // Calculate number of points needed to achieve the desired maximum error in linear approximation of circle
+  const error = 0.004; // maximum allowable error (as a world space distance) in the linear segments approximating the circle
   const numPoints = Math.ceil(
     Math.PI / Math.acos(1 - error / Math.sinh(intrinsicRadius))
-  ); // Calculate number of points needed to achieve the desired maximum error in linear approximation of circle
+  );
 
-  // console.log(
-  //   `Creating polar grid circle at intrinsic radius ${intrinsicRadius} with ${numPoints} points to achieve max error ${error}`
-  // );
   // Build the path
   for (let angle = 0; angle < 2 * Math.PI; angle += (2 * Math.PI) / numPoints) {
     circlePoints.push(
@@ -207,8 +282,8 @@ export function createPolarGridCircle({
 
 // OLD TUBE GEOMETRY ATTEMPT - I couldn't get constant thickness in screen space working this way
 // export function createPolarGridCircle({
-//   zRadius,
-//   zPosition,
+//   zHeight,
+//   zHeight,
 //   maxClippingPlane,
 //   minClippingPlane,
 //   numPoints = 50,
@@ -216,8 +291,8 @@ export function createPolarGridCircle({
 //   center = { x: 0, y: 0 },
 //   upper = true
 // }: {
-//   zRadius: number;
-//   zPosition: number;
+//   zHeight: number;
+//   zHeight: number;
 //   maxClippingPlane: Plane;
 //   minClippingPlane: Plane;
 //   numPoints?: number;
@@ -228,31 +303,31 @@ export function createPolarGridCircle({
 //   const curvePath = new CurvePath<Vector3>();
 
 //   const k = (4 / 3) * (Math.sqrt(2) - 1);
-//   const d = zRadius * k;
+//   const d = zHeight * k;
 //   const { x, y } = center;
 
-//   zPosition = upper ? zPosition : -zPosition;
+//   zHeight = upper ? zHeight : -zHeight;
 //   // Define control points for four cubic Bezier segments approximating a circle
 //   const points = [
-//     new Vector3(x, y + zRadius, zPosition),
-//     new Vector3(x + d, y + zRadius, zPosition),
-//     new Vector3(x + zRadius, y + d, zPosition),
-//     new Vector3(x + zRadius, y, zPosition),
+//     new Vector3(x, y + zHeight, zHeight),
+//     new Vector3(x + d, y + zHeight, zHeight),
+//     new Vector3(x + zHeight, y + d, zHeight),
+//     new Vector3(x + zHeight, y, zHeight),
 
-//     new Vector3(x + zRadius, y, zPosition),
-//     new Vector3(x + zRadius, y - d, zPosition),
-//     new Vector3(x + d, y - zRadius, zPosition),
-//     new Vector3(x, y - zRadius, zPosition),
+//     new Vector3(x + zHeight, y, zHeight),
+//     new Vector3(x + zHeight, y - d, zHeight),
+//     new Vector3(x + d, y - zHeight, zHeight),
+//     new Vector3(x, y - zHeight, zHeight),
 
-//     new Vector3(x, y - zRadius, zPosition),
-//     new Vector3(x - d, y - zRadius, zPosition),
-//     new Vector3(x - zRadius, y - d, zPosition),
-//     new Vector3(x - zRadius, y, zPosition),
+//     new Vector3(x, y - zHeight, zHeight),
+//     new Vector3(x - d, y - zHeight, zHeight),
+//     new Vector3(x - zHeight, y - d, zHeight),
+//     new Vector3(x - zHeight, y, zHeight),
 
-//     new Vector3(x - zRadius, y, zPosition),
-//     new Vector3(x - zRadius, y + d, zPosition),
-//     new Vector3(x - d, y + zRadius, zPosition),
-//     new Vector3(x, y + zRadius, zPosition)
+//     new Vector3(x - zHeight, y, zHeight),
+//     new Vector3(x - zHeight, y + d, zHeight),
+//     new Vector3(x - d, y + zHeight, zHeight),
+//     new Vector3(x, y + zHeight, zHeight)
 //   ];
 
 //   // Build the path
@@ -344,11 +419,12 @@ export function createPolarGridCircle({
 //   };
 
 //   const mesh = new Mesh(geometry, material);
-//   mesh.name = `PolarGridCircle_r=${zRadius.toFixed(2)}`;
+//   mesh.name = `PolarGridCircle_r=${zHeight.toFixed(2)}`;
 //   return mesh;
 // }
 
 // zMax is the maximum z height of the radial line
+
 export function createPolarGridRadialLine({
   radianAngle,
   zMax, // maximum z height of the radial line
@@ -752,17 +828,15 @@ export function createBoundaryCone({
       // const x = Math.sinh(u) * Math.cos(theta);
       // const y = Math.sinh(u) * Math.sin(theta);
       // const z = Math.cosh(u);
-      // When these get close to the boundary cone, the
 
       const x = r * Math.cos(theta);
       const y = r * Math.sin(theta);
-      const z = r + 0.001; // because z = sqrt(x² + y²)
+      const z = r + 0.001; // small offset to avoid z-fighting with hyperboloid
       out.set(x, y, z);
     },
     120,
     300
   );
-  //coneGeometry.translate(0, 0, upper ? 0.001 : -0.001); // try to avoid z-fighting with hyperboloid
   coneMaterial.depthWrite = false; // try to avoid z-fighting with hyperboloid
   const coneMesh = new Mesh(coneGeometry, coneMaterial);
 

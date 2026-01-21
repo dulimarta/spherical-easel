@@ -34,8 +34,6 @@ export class PoseTracker implements HyperbolicToolStrategy {
   };
   protected isDragging = false;
   private aPoint = createPoint();
-  private kleinPoint = createPoint(0.07, "SeaGreen");
-  private poincarePoint = createPoint(0.07, "GoldenRod");
   private auxLineCF = new Matrix4();
   private auxRotationAxis = new Vector3();
   private auxLine = create2DLine(0.02, "khaki");
@@ -57,10 +55,9 @@ export class PoseTracker implements HyperbolicToolStrategy {
       const p = createPoint(0.06, "red");
       this.secondaryIntersections.push(p);
     }
-    // const d = PoseTracker.hyperStore.$state.kleinDiskElevation;
-    this.kleinPoint.layers.set(HYPERBOLIC_LAYER.poincareDisk);
-    this.poincarePoint.layers.set(HYPERBOLIC_LAYER.poincareDisk);
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mouseMoved(
     event: MouseEvent,
     scrPos: Vector2,
@@ -93,10 +90,8 @@ export class PoseTracker implements HyperbolicToolStrategy {
             ? HYPERBOLIC_LAYER.upperSheetPoints
             : HYPERBOLIC_LAYER.lowerSheetPoints
         );
-      } else this.aPoint.layers.set(HYPERBOLIC_LAYER.unitSphere);
+      }
       this.scene.add(this.aPoint);
-      this.scene.add(this.kleinPoint);
-      this.scene.add(this.poincarePoint);
       this.normalArrow.setDirection(direction!);
       this.second.position.copy(position);
       this.secondaryIntersections.forEach(p => this.scene.remove(p));
@@ -130,12 +125,6 @@ export class PoseTracker implements HyperbolicToolStrategy {
               ? HYPERBOLIC_LAYER.lowerSheetPoints
               : HYPERBOLIC_LAYER.upperSheetPoints
           );
-
-          // .multiplyScalar(2 * this.poincareRadius);
-        } else {
-          this.secondaryIntersections[0].layers.set(
-            HYPERBOLIC_LAYER.unitSphere
-          );
         }
         this.scene.add(this.secondaryIntersections[0]);
         const pointDistance = this.second.position.length();
@@ -163,12 +152,6 @@ export class PoseTracker implements HyperbolicToolStrategy {
           );
           if (this.referencePointOnHyperboloid) {
             this.auxLine.scale.set(1, 2 * pointDistance, 1);
-            this.secondaryIntersections[1].layers.set(
-              HYPERBOLIC_LAYER.unitSphere
-            );
-            this.secondaryIntersections[2].layers.set(
-              HYPERBOLIC_LAYER.unitSphere
-            );
           } else {
             this.auxLine.scale.set(
               1,
@@ -189,28 +172,8 @@ export class PoseTracker implements HyperbolicToolStrategy {
           this.scene.add(this.secondaryIntersections[1]);
           this.scene.add(this.secondaryIntersections[2]);
         }
-
-        // Show Klein Point
-        const R = PoseTracker.hyperStore.$state.kleinDiskElevation;
-        this.kleinPoint.position
-          .set(x / Math.abs(z), y / Math.abs(z), 0)
-          .multiplyScalar(R);
-        const kd = Math.sqrt(x * x + y * y) / z;
-        const pd = kd / (1 + Math.sqrt(1 - kd * kd));
-        // const pd = (2 * kd) / (1 + kd * kd);
-        // Show Poincare Point, infer its position from its Klein counterpart
-        this.poincarePoint.position
-          .set(x / Math.abs(z), y / Math.abs(z), 0)
-          .multiplyScalar(R * pd);
-        // console.debug(
-        //   `Klein distance is ${kd.toFixed(
-        //     3
-        //   )} Desired Poincare distance ${pd.toFixed(3)}`
-        // );
       } else {
         this.scene.remove(this.auxLineGroup);
-        this.scene.remove(this.kleinPoint);
-        this.scene.remove(this.poincarePoint);
       }
     } else {
       this.scene.remove(this.aPoint);
@@ -222,6 +185,7 @@ export class PoseTracker implements HyperbolicToolStrategy {
     else this.second.normal.set(Number.NaN, Number.NaN, Number.NaN);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mousePressed(
     event: MouseEvent,
     pos2D: Vector2,
@@ -235,6 +199,7 @@ export class PoseTracker implements HyperbolicToolStrategy {
     else this.first.normal.set(Number.NaN, Number.NaN, Number.NaN);
     this.isDragging = true;
   }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mouseReleased(event: MouseEvent, p: Vector3, d: Vector3): void {
     // console.debug("PoseTracker::mouseReleased");
@@ -243,9 +208,17 @@ export class PoseTracker implements HyperbolicToolStrategy {
       this.scene.remove(this.auxLineGroup);
     }
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  mouseLeave(event: MouseEvent): void {
+    this.isDragging = false;
+    //Not implemented
+  }
+
   activate(): void {
     // throw new Error("Method not implemented.");
   }
+
   deactivate(): void {
     // throw new Error("Method not implemented.");
   }

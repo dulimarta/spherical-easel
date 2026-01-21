@@ -28,7 +28,6 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const cameraScale = new Vector3();
   const rayCastDirection = new Vector3();
   const cameraOrigin = new Vector3();
-  const kleinDiskElevation = ref(Math.cosh(2));
   const { font } = useThreeFont();
   const implementedHETools: Ref<Array<ActionMode>> = ref([
     "point",
@@ -59,7 +58,6 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     // console.debug("Camera inverse details", cameraOrigin, q, s);
     rayCaster = new Raycaster();
   }
-
   function getObjectById(id: string) {
     // console.debug(`Searching for ${id} in`, objectMap);
     return objectMap.get(id) ?? null;
@@ -112,7 +110,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
         // }
         return occlusions.length === 0;
       });
-    console.debug(
+    console.log(
       "Visible objects",
       visibleObjects.map(obj => obj.name).join(", ")
     );
@@ -150,7 +148,6 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     });
   }
   return {
-    kleinDiskElevation,
     font,
     surfaceIntersections,
     objectIntersections,

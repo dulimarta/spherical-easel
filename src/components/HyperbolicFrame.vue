@@ -163,6 +163,7 @@ import {
   createBoundaryCone
 } from "@/plottables-hyperbolic/MeshFactory";
 import { VisibleHELayersType } from "@/types";
+import Settings from "@/views/Settings.vue";
 
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
@@ -255,12 +256,30 @@ txtObject.color = "yellow"; //0x000000;
 
 const rayIntersectionPosition = reactive(new Vector3());
 
-const zMaxClippingPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 1); // negative normal for zMax so that the visible side is below the plane
-const zMinClippingPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 1); // positive normal for zMin so that the visible side is above the plane
+const zMaxClippingPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 1); // negative normal for zMax so that the visible side is below the plane z = zMaxClippingPlane.constant
+const zMinClippingPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 1); // positive normal for zMin so that the visible side is above the plane z = -zMinClippingPlane.constant
+
+// Clipping planes that define the visible strip on the cones for the points at infinity
+const upperPointsAtInfinityClippingPlanePlus = new THREE.Plane(
+  new THREE.Vector3(0, 0, -1),
+  1
+);
+const upperPointsAtInfinityClippingPlaneMinus = new THREE.Plane(
+  new THREE.Vector3(0, 0, 1),
+  1
+);
+const lowerPointsAtInfinityClippingPlanePlus = new THREE.Plane(
+  new THREE.Vector3(0, 0, 1),
+  1
+);
+const lowerPointsAtInfinityClippingPlaneMinus = new THREE.Plane(
+  new THREE.Vector3(0, 0, -1),
+  1
+);
 
 const upperPolarGridArray: Array<THREE.Mesh> = [];
 const lowerPolarGridArray: Array<THREE.Mesh> = [];
-// points at infinity meshes are not all created in initialize() and then shown or hidden like the polar grid lines. As the user updates the view (zooms in or out) the points at infinity meshes are recreated to match the current view
+// OLD -- points at infinity meshes are not all created in initialize() and then shown or hidden like the polar grid lines. As the user updates the view (zooms in or out) the points at infinity meshes are recreated to match the current view
 let upperPointsAtInfinity: THREE.Mesh | undefined = undefined;
 let lowerPointsAtInfinity: THREE.Mesh | undefined = undefined;
 let maxZClippingHeight: number = 0; //set in initialize()
@@ -352,39 +371,16 @@ watch(
         break;
       case "line":
         if (lineTool === null) lineTool = new LineHandler(scene);
-        // if (sphericalLineTool === null)
-        //   sphericalLineTool = new SphericalLineHandler(scene, unitSphere, true);
-        // if (kleinLineTool === null)
-        //   kleinLineTool = new KleinLineHandler(scene, kleinDisk, true);
-        // if (poincareTool === null)
-        //   poincareTool = new PoincareLineHandler(scene, poincareDisk, true);
-
         // Extend the line to the end of the hyperboloid
         lineTool.setInfiniteMode(true);
         // console.debug("Add PoincareTool");
         currentTools.push(lineTool);
-        // currentTools.push(sphericalLineTool);
-        // currentTools.push(kleinLineTool);
-        // currentTools.push(poincareTool);
         break;
       case "segment":
         if (lineTool === null) lineTool = new LineHandler(scene);
-        // if (sphericalLineTool === null)
-        //   sphericalLineTool = new SphericalLineHandler(
-        //     scene,
-        //     unitSphere,
-        //     false
-        //   );
-        // if (kleinLineTool === null)
-        //   kleinLineTool = new KleinLineHandler(scene, kleinDisk, false);
-        // if (poincareTool === null)
-        //   poincareTool = new PoincareLineHandler(scene, poincareDisk, false);
-        // Constrain the line to fit between the two end points
+
         lineTool.setInfiniteMode(false);
         currentTools.push(lineTool);
-        // currentTools.push(sphericalLineTool);
-        // currentTools.push(kleinLineTool);
-        // currentTools.push(poincareTool);
         break;
       // case "text":
       //   if (textTool === null) textTool = new TextHandler(scene);
@@ -473,9 +469,10 @@ onMounted(() => {
 
   // textRenderer.render(scene, camera);
   // visualContent.value!.appendChild(textRenderer.domElement);
-  useEventListener("mousemove", threeMouseTracker);
+  useEventListener("mousemove", threeMouseTrackerThenMouseMove);
   useEventListener(webglCanvas.value, "mousedown", doMouseDown);
   useEventListener(webglCanvas.value, "mouseup", doMouseUp);
+  useEventListener(webglCanvas.value, "mouseleave", doMouseLeave);
 
   useEventListener(cameraController, "control", updateCameraDetails);
   useEventListener(cameraController, "update", updateCameraDetails);
@@ -555,7 +552,7 @@ function initialize() {
 
   rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheet);
   if (showLowerSheet.value) {
-    visibleLayers.value.push("lowerSheet");
+    visibleLayers.value.push("lowerSheet"); // push lower sheet to visible layers, because it is visible at initialization otherwise the vue button handles the visibleLayers array
     rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
   } else {
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheet);
@@ -580,7 +577,30 @@ function initialize() {
   upperCone.name = "Upper Cone";
   lowerCone.name = "Lower Cone";
 
-  // create the radial polar grid lines (Create once and manage visibility and thickness later)
+  // Create the points at infinity cones
+  upperPointsAtInfinity = createPointsAtInfinity({
+    maxZClippingHeight: 1.2 * maxZClippingHeight,
+    clippingPlanes: [
+      upperPointsAtInfinityClippingPlanePlus,
+      upperPointsAtInfinityClippingPlaneMinus
+    ],
+    upper: true
+  });
+  upperPointsAtInfinity.name = `Upper Points At Infinity`;
+  upperPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
+
+  lowerPointsAtInfinity = createPointsAtInfinity({
+    maxZClippingHeight: 1.2 * maxZClippingHeight,
+    clippingPlanes: [
+      lowerPointsAtInfinityClippingPlanePlus,
+      lowerPointsAtInfinityClippingPlaneMinus
+    ],
+    upper: false
+  });
+  lowerPointsAtInfinity.name = `Lower Points At Infinity`;
+  lowerPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+
+  // create the radial polar grid lines
   for (let upperLower = 0; upperLower < 2; upperLower++) {
     const numRadialLines = 12;
     for (
@@ -633,7 +653,7 @@ function initialize() {
   }
 
   if (showPolarGrid.value) {
-    visibleLayers.value.push("polarGrid");
+    visibleLayers.value.push("polarGrid"); // push polar grid to visible layers, because it is visible at initialization otherwise the vue button handles the visibleLayers array
     camera.layers.enable(HYPERBOLIC_LAYER.upperSheetGrid);
     if (showLowerSheet.value) {
       camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetGrid);
@@ -646,7 +666,7 @@ function initialize() {
   if (showPointsAtInfinity.value) {
     updatePointsAtInfinity();
     //renderer.render(scene, camera); // update the scene
-    visibleLayers.value.push("pointsAtInfinity");
+    visibleLayers.value.push("pointsAtInfinity"); // push points at infinity to visible layers, because it is visible at initialization otherwise the vue button handles the visibleLayers array
     camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
     if (showLowerSheet.value) {
       camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
@@ -655,6 +675,9 @@ function initialize() {
     camera.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
   }
+
+  //OLD set the raycaster to detect intersections with line material
+  //rayCaster.params.Line.threshold = 100;
 
   // Set the default tool
   actionMode.value = "rotate";
@@ -739,7 +762,7 @@ function updateView() {
     // that is depends on the polar angle of the camera
     // when the polar is 0, look at (0,0,1)
     // Then the polar is Pi/2 loot at a point halfway from the (0,0,1) to the (0,0,zClippingPlane.constant)
-    // Pi/2- polar and polar have the same zCoordLookAt value
+    // Pi/2 - polar and polar have the same zCoordLookAt value
     zCoordLookAt =
       (1 / Math.PI) *
         Math.min(
@@ -761,6 +784,85 @@ function updateView() {
     zCoordLookAt,
     true
   );
+  // update the clipping planes for the points at infinity cones to make the points at infinity strip
+  //                  /|
+  //                /  |
+  //              /    |
+  //            /      |
+  //          /        |
+  //         /         Gap (bottom of strip and hyperboloid) or gap + thickness
+  //       /           |
+  //    /              |
+  //  /                |
+  // /fixed angle    B |
+  // --------S---------|
+  // \               A |
+  //  \                |
+  //   \               |
+  //    \              |
+  //     \             |
+  //      \            |
+  //       \           |
+  //   Dolly Distance  |
+  //         \         Clipping Plane Constant - LookAt
+  //          \        |
+  //           \       |
+  //            \      |
+  //           polar Angle
+  //              \    |
+  //               \   |
+  //                \  |
+  //                 \ |
+  //                  (0,0,1)
+  // Law of cosines for find length S
+  const temp1 = zMaxClippingPlane.constant - zCoordLookAt;
+  const S = Math.sqrt(
+    cameraController.distance * cameraController.distance +
+      temp1 * temp1 -
+      2 *
+        cameraController.distance *
+        temp1 *
+        Math.cos(cameraController.polarAngle)
+  );
+  console.log("Length S:", S);
+  // Law of cosines to find angle a
+  const angleA = Math.acos(
+    (cameraController.distance * cameraController.distance -
+      S * S -
+      temp1 * temp1) /
+      (-2 * S * temp1)
+  );
+
+  const angleB = Math.PI - angleA;
+  // Law of sines to find angle Gap and Gap + Width
+  upperPointsAtInfinityClippingPlaneMinus.constant =
+    -1 *
+    (zMaxClippingPlane.constant +
+      (S * Math.sin(SETTINGS.pointsAtInfinityAngularGap)) /
+        Math.sin(SETTINGS.pointsAtInfinityAngularGap + angleB));
+  upperPointsAtInfinityClippingPlanePlus.constant =
+    zMaxClippingPlane.constant +
+    (S *
+      Math.sin(
+        SETTINGS.pointsAtInfinityAngularGap +
+          SETTINGS.pointsAtInfinityAngularWidth
+      )) /
+      Math.sin(
+        SETTINGS.pointsAtInfinityAngularGap +
+          SETTINGS.pointsAtInfinityAngularWidth +
+          angleB
+      );
+
+  // console.log("Upper Points at Infinity Clipping Planes:", {
+  //   minus: upperPointsAtInfinityClippingPlaneMinus.constant,
+  //   plus: upperPointsAtInfinityClippingPlanePlus.constant
+  // });
+
+  lowerPointsAtInfinityClippingPlaneMinus.constant =
+    upperPointsAtInfinityClippingPlaneMinus.constant;
+  lowerPointsAtInfinityClippingPlanePlus.constant =
+    -upperPointsAtInfinityClippingPlanePlus.constant;
+
   // update the fade in the shader materials for the upper and lower sheets
   for (let upper = 0; upper < 2; upper++) {
     const mesh = scene.getObjectByName(
@@ -801,52 +903,67 @@ function updateView() {
   // }
 }
 
-function updatePointsAtInfinity() {
-  // Remove the old points at infinity from the scene
-  if (lowerPointsAtInfinity !== undefined) {
-    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-    scene.remove(lowerPointsAtInfinity);
-    lowerPointsAtInfinity.geometry.dispose();
-    (lowerPointsAtInfinity.material as THREE.ShaderMaterial).dispose();
-    lowerPointsAtInfinity = undefined;
-  }
-  if (upperPointsAtInfinity !== undefined) {
-    rayCaster.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
-    scene.remove(upperPointsAtInfinity);
-    upperPointsAtInfinity.geometry.dispose();
-    (upperPointsAtInfinity.material as THREE.ShaderMaterial).dispose();
-    upperPointsAtInfinity = undefined;
-  }
-  // Create new points at infinity strip appropriate for the current camera distance (both number and thickness)
-  if (showPointsAtInfinity.value) {
-    upperPointsAtInfinity = createPointsAtInfinity({
-      zPosition:
-        zMaxClippingPlane.constant +
-        (SETTINGS.pointsAtInfinityWidth + 0.005) * cameraDistance.value,
-      zRadius:
-        zMaxClippingPlane.constant +
-        (SETTINGS.pointsAtInfinityWidth + 0.005) * cameraDistance.value
-      //thickness: 0.3 * SETTINGS.pointsAtInfinityWidth * cameraDistance.value
-    });
-    upperPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
-    scene.add(upperPointsAtInfinity);
-    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+// function updatePointsAtInfinity() {
+//   // Remove the old points at infinity from the scene
+//   if (lowerPointsAtInfinity !== undefined) {
+//     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+//     scene.remove(lowerPointsAtInfinity);
+//     lowerPointsAtInfinity.geometry.dispose();
+//     (lowerPointsAtInfinity.material as THREE.ShaderMaterial).dispose();
+//     lowerPointsAtInfinity = undefined;
+//   }
+//   if (upperPointsAtInfinity !== undefined) {
+//     rayCaster.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+//     scene.remove(upperPointsAtInfinity);
+//     upperPointsAtInfinity.geometry.dispose();
+//     (upperPointsAtInfinity.material as THREE.ShaderMaterial).dispose();
+//     upperPointsAtInfinity = undefined;
+//   }
+//   // Create new points at infinity strip appropriate for the current camera distance
+//   if (showPointsAtInfinity.value) {
+//     upperPointsAtInfinity = createPointsAtInfinity({
+//       zHeight:
+//         zMaxClippingPlane.constant +
+//         (SETTINGS.pointsAtInfinityWidth + 0.005) * cameraDistance.value
+//     });
+//     upperPointsAtInfinity.name = `Upper Points At Infinity`;
 
-    if (showLowerSheet.value) {
-      lowerPointsAtInfinity = createPointsAtInfinity({
-        zPosition:
-          zMaxClippingPlane.constant +
-          (SETTINGS.pointsAtInfinityWidth + 0.005) * cameraDistance.value,
-        zRadius:
-          zMaxClippingPlane.constant +
-          (SETTINGS.pointsAtInfinityWidth + 0.005) * cameraDistance.value,
-        //thickness: 0.3 * SETTINGS.pointsAtInfinityWidth * cameraDistance.value,
-        upper: false
-      });
-      lowerPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-      scene.add(lowerPointsAtInfinity);
-      rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-    }
+//     upperPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
+//     scene.add(upperPointsAtInfinity);
+//     rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+
+//     if (showLowerSheet.value) {
+//       lowerPointsAtInfinity = createPointsAtInfinity({
+//         zHeight:
+//           -zMaxClippingPlane.constant -
+//           (SETTINGS.pointsAtInfinityWidth + 0.005) * cameraDistance.value
+//       });
+//       lowerPointsAtInfinity.name = `Lower Points At Infinity`;
+//       lowerPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+//       scene.add(lowerPointsAtInfinity);
+//       rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+//     }
+//   }
+// }
+
+// Update the points at infinity by adjusting the pointsAtInfinity clipping planes
+function updatePointsAtInfinity() {
+  // Update the clipping planes for the points at infinity based on the current camera distance
+  if (showPointsAtInfinity.value) {
+    // Add the points at infinity to the scene if not already present
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+    scene.add(lowerPointsAtInfinity!);
+
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+    scene.add(upperPointsAtInfinity!);
+
+    // update the clipping planes based on the current camera distance
+  } else {
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+    scene.remove(lowerPointsAtInfinity!);
+
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+    scene.remove(upperPointsAtInfinity!);
   }
 }
 
@@ -889,7 +1006,16 @@ function doMouseUp(ev: MouseEvent) {
     });
 }
 
-function threeMouseTracker(ev: MouseEvent) {
+function doMouseLeave(ev: MouseEvent) {
+  // console.debug("MouseLeave");
+  currentTools.forEach(t => {
+    t.mouseLeave(ev);
+  });
+}
+
+// Use the rayCaster to find the intersection point(s) of the mouse with the objects in the scene then
+// call the mouseMoved function of the current tool
+function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   mouseCoordNormalized.value.x =
     2 * (elementX.value / renderer.domElement.clientWidth) - 1;
   mouseCoordNormalized.value.y =
@@ -899,11 +1025,11 @@ function threeMouseTracker(ev: MouseEvent) {
   //     `from VueUse (${elementX.value}, ${elementY.value})`
   // );
   rayCaster.setFromCamera(mouseCoordNormalized.value, camera);
-  const regex = /(Sheet|Sphere|LabelPlane)$/; // For filtering cursor intersection point(s)
+  const regex = /(Sheet|Cone|Infinity)$/; // For filtering cursor intersection point(s)
   [surfaceIntersections.value, objectIntersections.value] = rayCaster
     .intersectObjects(scene.children, true)
     .filter((iSect, idx) => {
-      // console.debug(
+      // console.log(
       //   `Raycast intersect #${idx} ${iSect.object.name}`,
       //   iSect.normal?.toFixed(2)
       //   // iSect.object.name.match(regex)
@@ -939,10 +1065,10 @@ function threeMouseTracker(ev: MouseEvent) {
         .toUpperCase() as ImportantSurface;
     else {
       onSurface.value = null;
-      console.debug(
-        `Intersection with ${firstIntersection.object.name}`,
-        firstIntersection.normal
-      );
+      // console.log(
+      //   `Intersection with ${firstIntersection.object.name}`,
+      //   firstIntersection.normal
+      // );
     }
     // console.debug(
     //   `First intersection ${

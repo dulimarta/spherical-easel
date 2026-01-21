@@ -12,7 +12,7 @@ export abstract class HENodule {
   protected _kids: HENodule[] = [];
   public id: number;
   public name = "";
-  // public mesh: Array<Mesh> = [];
+
   public group = new Group();
   constructor() {
     this.id = NODE_COUNT++;
@@ -26,7 +26,7 @@ export abstract class HENodule {
     const idx = this._parents.findIndex(node => node.id === n.id);
     if (idx >= 0) this._parents.splice(idx, 1);
   }
-  private addKind(n: HENodule) {
+  private addKid(n: HENodule) {
     this._kids.push(n);
   }
 
@@ -35,7 +35,7 @@ export abstract class HENodule {
     if (idx >= 0) this._parents.splice(idx, 1);
   }
   public registerChild(n: HENodule) {
-    this.addKind(n);
+    this.addKid(n);
     n.addParent(this);
   }
   public unregisterChild(n: HENodule) {
