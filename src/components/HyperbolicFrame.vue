@@ -269,11 +269,11 @@ const upperPointsAtInfinityClippingPlaneMinus = new THREE.Plane(
   1
 );
 const lowerPointsAtInfinityClippingPlanePlus = new THREE.Plane(
-  new THREE.Vector3(0, 0, 1),
+  new THREE.Vector3(0, 0, -1),
   1
 );
 const lowerPointsAtInfinityClippingPlaneMinus = new THREE.Plane(
-  new THREE.Vector3(0, 0, -1),
+  new THREE.Vector3(0, 0, 1),
   1
 );
 
@@ -438,8 +438,8 @@ onMounted(() => {
   // Set the parameters of the camera controller
   cameraController.minDistance = SETTINGS.dollyDistanceMin;
   cameraController.maxDistance = SETTINGS.dollyDistanceMax;
-  cameraController.minPolarAngle = 0.1; // radians
-  cameraController.maxPolarAngle = Math.PI - 0.1; // radians
+  // cameraController.minPolarAngle = 0.1; // radians
+  // cameraController.maxPolarAngle = Math.PI - 0.1; // radians
   cameraController.dollySpeed = 0.2;
   cameraController.polarRotateSpeed = 0.5;
   cameraController.azimuthRotateSpeed = 0.2;
@@ -579,9 +579,10 @@ function initialize() {
   upperCone.name = "Upper Cone";
   lowerCone.name = "Lower Cone";
 
-  // Create the points at infinity cones
+  // Create the cones from which the points at infinity
+  // will be displayed by clipping between two planes
   upperPointsAtInfinity = createPointsAtInfinity({
-    maxZClippingHeight: 1.2 * maxZClippingHeight,
+    maxZClippingHeight: 1.5 * maxZClippingHeight,
     clippingPlanes: [
       upperPointsAtInfinityClippingPlanePlus,
       upperPointsAtInfinityClippingPlaneMinus
@@ -592,7 +593,7 @@ function initialize() {
   upperPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
 
   lowerPointsAtInfinity = createPointsAtInfinity({
-    maxZClippingHeight: 1.2 * maxZClippingHeight,
+    maxZClippingHeight: 1.5 * maxZClippingHeight,
     clippingPlanes: [
       lowerPointsAtInfinityClippingPlanePlus,
       lowerPointsAtInfinityClippingPlaneMinus
@@ -787,83 +788,63 @@ function updateView() {
     true
   );
   // update the clipping planes for the points at infinity cones to make the points at infinity strip
-  //                  /|
-  //                /  |
-  //              /    |
-  //            /      |
-  //          /        |
-  //         /         Gap (bottom of strip and hyperboloid) or gap + thickness
-  //       /           |
-  //    /              |
-  //  /                |
-  // /fixed angle    B |
-  // --------S---------|
-  // \               A |
-  //  \                |
-  //   \               |
-  //    \              |
-  //     \             |
-  //      \            |
-  //       \           |
-  //   Dolly Distance  |
-  //         \         Clipping Plane Constant - LookAt
-  //          \        |
-  //           \       |
-  //            \      |
-  //           polar Angle
-  //              \    |
-  //               \   |
-  //                \  |
-  //                 \ |
-  //                  (0,0,LookAt)
-  // Law of cosines for find length S
-  const temp1 = zMaxClippingPlane.constant - zCoordLookAt;
-  const S = Math.sqrt(
-    cameraController.distance * cameraController.distance +
-      temp1 * temp1 -
-      2 *
-        cameraController.distance *
-        temp1 *
-        Math.cos(cameraController.polarAngle)
-  );
-  console.log("Length S:", S);
-  // Law of cosines to find angle a
-  const angleA = Math.acos(
-    (cameraController.distance * cameraController.distance -
-      S * S -
-      temp1 * temp1) /
-      (-2 * S * temp1)
+
+  // Set up the variables for the calculation
+  const dSin =
+    cameraController.distance * Math.sin(cameraController.polarAngle);
+  const dCos =
+    cameraController.distance * Math.cos(cameraController.polarAngle);
+  const la = zCoordLookAt;
+  const cp = zMaxClippingPlane.constant;
+
+  // Let A be the camera position, (dSin,0,dCos + la)
+  // where dSin/dCos is the sine/cosine of the polar angle multiplied by the camera distance
+
+  // Let B be the left most point on the boundary cone at the height
+  // of the clipping plane: (0, -cp, cp )
+  // Assuming the camera is at A above the x axis.
+
+  // Let C be the point at 45 degree (away from the z axis) in the y-z plane above and to the left of point B. C is the end point of either the gap or the gap + width line segment.
+  //   For example, C could be at (0, -cp - G/sqrt(2), cp + G/sqrt(2))
+
+  // The angle ABC is determined by the dot product
+  // BA.CB/(|BA||CB|) = cos(ABC)
+  // Notice that G (or Gap + Width) cancels on the left hand side
+
+  // Then the length of the side BC is found by the law of sines
+  // |AB|/sin(ACB) = |CB|/sin(CAB), since we want ACB to be fixed (this is the angular length of the gap or gap + width) and ACB = 180 - ABC - CAB and so sin(ACB) = sin(ABC + CAB) Thus |CB| = |AB| sin(CAB)/sin(ABC + CAB)
+
+  const lenAB = Math.sqrt(
+    dSin * dSin + cp * cp + (dCos + la - cp) * (dCos + la - cp)
   );
 
-  const angleB = Math.PI - angleA;
-  // Law of sines to find angle Gap and Gap + Width
+  const angleABC = Math.acos(((1 / Math.sqrt(2)) * (dCos + la)) / lenAB);
+
   upperPointsAtInfinityClippingPlaneMinus.constant =
     -1 *
     (zMaxClippingPlane.constant +
-      (S * Math.sin(SETTINGS.pointsAtInfinityAngularGap)) /
-        Math.sin(SETTINGS.pointsAtInfinityAngularGap + angleB));
+      ((1 / Math.sqrt(2)) *
+        (lenAB * Math.sin(SETTINGS.pointsAtInfinityAngularGap))) /
+        Math.sin(SETTINGS.pointsAtInfinityAngularGap + angleABC));
+
   upperPointsAtInfinityClippingPlanePlus.constant =
     zMaxClippingPlane.constant +
-    (S *
-      Math.sin(
-        SETTINGS.pointsAtInfinityAngularGap +
-          SETTINGS.pointsAtInfinityAngularWidth
-      )) /
+    ((1 / Math.sqrt(2)) *
+      (lenAB *
+        Math.sin(
+          SETTINGS.pointsAtInfinityAngularGap +
+            SETTINGS.pointsAtInfinityAngularWidth
+        ))) /
       Math.sin(
         SETTINGS.pointsAtInfinityAngularGap +
           SETTINGS.pointsAtInfinityAngularWidth +
-          angleB
+          angleABC
       );
 
-  // console.log("Upper Points at Infinity Clipping Planes:", {
-  //   minus: upperPointsAtInfinityClippingPlaneMinus.constant,
-  //   plus: upperPointsAtInfinityClippingPlanePlus.constant
-  // });
-
   lowerPointsAtInfinityClippingPlaneMinus.constant =
-    upperPointsAtInfinityClippingPlaneMinus.constant;
+    upperPointsAtInfinityClippingPlanePlus.constant;
   lowerPointsAtInfinityClippingPlanePlus.constant =
-    -upperPointsAtInfinityClippingPlanePlus.constant;
+    upperPointsAtInfinityClippingPlaneMinus.constant;
 
   // update the fade in the shader materials for the upper and lower sheets
   for (let upper = 0; upper < 2; upper++) {
