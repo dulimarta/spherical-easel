@@ -159,8 +159,7 @@ import {
   createPolarGridCircle,
   createPolarGridRadialLine,
   createPointsAtInfinity,
-  createHyperboloidSheet,
-  createBoundaryCone
+  createHyperboloidSheet
 } from "@/plottables-hyperbolic/MeshFactory";
 import { VisibleHELayersType } from "@/types";
 import Settings from "@/views/Settings.vue";
@@ -561,23 +560,23 @@ function initialize() {
   }
 
   // create the boundary cone
-  const upperCone = createBoundaryCone({
-    upper: true,
-    clippingPlane: zMaxClippingPlane,
-    maxZClippingHeight: maxZClippingHeight
-  });
-  const lowerCone = createBoundaryCone({
-    upper: false,
-    clippingPlane: zMinClippingPlane,
-    maxZClippingHeight: maxZClippingHeight
-  });
+  // const upperCone = createBoundaryCone({
+  //   upper: true,
+  //   clippingPlane: zMaxClippingPlane,
+  //   maxZClippingHeight: maxZClippingHeight
+  // });
+  // const lowerCone = createBoundaryCone({
+  //   upper: false,
+  //   clippingPlane: zMinClippingPlane,
+  //   maxZClippingHeight: maxZClippingHeight
+  // });
 
-  scene.add(upperCone);
-  scene.add(lowerCone);
-  upperCone.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
-  lowerCone.layers.set(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-  upperCone.name = "Upper Cone";
-  lowerCone.name = "Lower Cone";
+  // scene.add(upperCone);
+  // scene.add(lowerCone);
+  // upperCone.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
+  // lowerCone.layers.set(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+  // upperCone.name = "Upper Cone";
+  // lowerCone.name = "Lower Cone";
 
   // Create the cones from which the points at infinity
   // will be displayed by clipping between two planes
@@ -1008,7 +1007,7 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   //     `from VueUse (${elementX.value}, ${elementY.value})`
   // );
   rayCaster.setFromCamera(mouseCoordNormalized.value, camera);
-  const regex = /(Sheet|Cone|Infinity)$/; // For filtering cursor intersection point(s)
+  const regex = /(Sheet|Infinity)$/; // For filtering cursor intersection point(s)
   [surfaceIntersections.value, objectIntersections.value] = rayCaster
     .intersectObjects(scene.children, true)
     .filter((iSect, idx) => {
@@ -1017,17 +1016,47 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
       //   iSect.normal?.toFixed(2)
       //   // iSect.object.name.match(regex)
       // );
-      return iSect.object.name.length > 0;
+      if (iSect.object.name.length === 0) {
+        return false; // the intersection is not with a named object, ignore it
+      } else {
+        if (iSect.object.name.endsWith("Sheet")) {
+          // only intersections with the visible parts of the sheet should be returned
+          if (showLowerSheet.value) {
+            return (
+              iSect.point.z >= -zMinClippingPlane.constant &&
+              iSect.point.z <= zMaxClippingPlane.constant
+            );
+          } else {
+            return iSect.point.z <= zMaxClippingPlane.constant;
+          }
+        } else if (iSect.object.name.endsWith("Infinity")) {
+          // only intersections with the visible points at infinity should be returned
+          if (showLowerSheet.value) {
+            return (
+              (iSect.point.z <=
+                upperPointsAtInfinityClippingPlanePlus.constant &&
+                iSect.point.z >=
+                  -upperPointsAtInfinityClippingPlaneMinus.constant) ||
+              (iSect.point.z <=
+                lowerPointsAtInfinityClippingPlanePlus.constant &&
+                iSect.point.z >=
+                  -lowerPointsAtInfinityClippingPlaneMinus.constant)
+            );
+          } else {
+            return (
+              iSect.point.z <=
+                upperPointsAtInfinityClippingPlanePlus.constant &&
+              iSect.point.z >= -upperPointsAtInfinityClippingPlaneMinus.constant
+            );
+          }
+        } else {
+          return true; // intersection with other named objects are always returned
+        }
+      }
     })
-    .partition(x => x.object.name.match(regex) !== null);
-  // let position3d: Vector3 | null;
-  // txtObject.position.copy(positionInCameraCF.value);
-  // txtObject.sync();
-  // console.debug(
-  //   "Cursor pos in camera CF",
-  //   labelLayerIntersections.value[0].point,
-  //   positionInCameraCF.value.toFixed(3)
-  // );
+    .partition(x => {
+      return x.object.name.match(regex) !== null;
+    });
 
   let firstIntersection: THREE.Intersection | null;
   // console.debug(
