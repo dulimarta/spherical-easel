@@ -1,56 +1,63 @@
-import { Scene, Vector2, Vector3 } from "three";
+import {
+  Vector2,
+  Vector3,
+  Scene,
+  Mesh,
+  MeshStandardMaterial,
+  PlaneGeometry,
+  DoubleSide,
+  Matrix4,
+  Intersection,
+  Object3D,
+  Object3DEventMap
+} from "three";
 import { PoseTracker } from "./PoseTracker";
-import { Text } from "troika-three-text";
-export class TextHandler extends PoseTracker {
-  constructor(s: Scene) {
-    super(s);
-  }
+import { createPoint } from "@/plottables-hyperbolic/MeshFactory";
+import { AddHyperbolicLineCommand } from "@/commands-spherical/AddHyperbolicLineCommand";
+import { HELine } from "@/models-hyperbolic/HELine";
+import { get } from "@vueuse/core";
 
+const Z_AXIS = new Vector3(0, 0, 1);
+const ORIGIN = new Vector3(0, 0, 0);
+export class TextHandler extends PoseTracker {
+  protected _infiniteMode = false;
+  constructor(scene: Scene) {
+    super(scene);
+    this.scene = scene;
+  }
+  set infiniteLineMode(value: boolean) {
+    this._infiniteMode = value;
+  }
+  get infiniteLineMode(): boolean {
+    return this._infiniteMode;
+  }
   mouseMoved(
     event: MouseEvent,
-    normalizedScreenPosition: Vector2,
-    position: Vector3 | null,
-    normalDirection: Vector3 | null
+    scrPos: Vector2,
+    intersectionList: Intersection<Object3D<Object3DEventMap>>[]
   ): void {
-    // throw new Error("Method not implemented.");
+    // Process the intersection list and set the flags
+    super.mousePressed(event, scrPos, intersectionList);
   }
+
   mousePressed(
     event: MouseEvent,
-    normalizedScreenPosition: Vector2,
-    position: Vector3 | null,
-    normalDirection: Vector3 | null
-  ): void {
-    super.mousePressed(
-      event,
-      normalizedScreenPosition,
-      position,
-      normalDirection
-    );
-    if (position) {
-      const aText = new Text();
-      aText.position.copy(position);
-    }
+    scrPos: Vector2,
+    intersectionList: Intersection<Object3D<Object3DEventMap>>[]
+  ): void {}
 
-    // throw new Error("Method not implemented.");
-  }
   mouseReleased(
     event: MouseEvent,
-    position: Vector3 | null,
-    normalDirection: Vector3 | null
+    scrPos: Vector2,
+    intersectionList: Intersection<Object3D<Object3DEventMap>>[]
   ): void {
     // throw new Error("Method not implemented.");
   }
+
   activate(): void {
     // throw new Error("Method not implemented.");
-    // if (TextHandler.textRenderer === null) {
-    //   TextHandler.textRenderer = new CSS2DRenderer();
-    //   TextHandler.textRenderer.setSize(window.innerWidth, window.innerHeight);
-    //   TextHandler.textRenderer.domElement.style.position = "absolute";
-    //   // TextHandler.textRenderer.domElement.style.top = 0;
-    //   document.body.appendChild(TextHandler.textRenderer.domElement);
-    // }
   }
   deactivate(): void {
-    // throw new Error("Method not implemented.");
+    super.deactivate();
   }
 }

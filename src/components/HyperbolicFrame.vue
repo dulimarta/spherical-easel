@@ -105,10 +105,13 @@ import {
   DoubleSide,
   // GridHelper,
   // Group,
+  Intersection,
   Matrix4,
   Mesh,
   MeshStandardMaterial,
   PerspectiveCamera,
+  Object3D,
+  Object3DEventMap,
   // PointLight,
   Raycaster,
   Scene,
@@ -177,7 +180,10 @@ const showLowerSheet = ref(false);
 const showPointsAtInfinity = ref(false);
 const showPolarGrid = ref(true);
 type ImportantSurface = "Upper" | "Lower" | null;
-let onSurface: Ref<ImportantSurface> = ref(null);
+const intersectionList: Ref<
+  THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>>[]
+> = ref([]);
+let onSurface: Ref<ImportantSurface> = ref(null); // For the display of the information under the mouse cursor when over a hyperbolic sheet
 // Inject new BVH functions into current THREE-JS Mesh/BufferGeometry definitions
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 // THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
@@ -242,7 +248,7 @@ let currentTools: Array<HyperbolicToolStrategy> = []; //new PointHandler();
 let pointTool: PointHandler = new PointHandler(scene);
 let lineTool: LineHandler | null = null;
 let circleTool: CircleHandler | null = null;
-// let textTool: TextHandler | null = null;
+let textTool: TextHandler | null = null;
 
 const txtObject = new Text();
 // txtObject.name = `La${HENodule.POINT_COUNT}`;
@@ -371,20 +377,20 @@ watch(
       case "line":
         if (lineTool === null) lineTool = new LineHandler(scene);
         // Extend the line to the end of the hyperboloid
-        lineTool.setInfiniteMode(true);
+        lineTool.infiniteLineMode = true;
         // console.debug("Add PoincareTool");
         currentTools.push(lineTool);
         break;
       case "segment":
         if (lineTool === null) lineTool = new LineHandler(scene);
 
-        lineTool.setInfiniteMode(false);
+        lineTool.infiniteLineMode = false;
         currentTools.push(lineTool);
         break;
-      // case "text":
-      //   if (textTool === null) textTool = new TextHandler(scene);
-      //   currentTool = textTool;
-      //   break;
+      case "text":
+        if (textTool === null) textTool = new TextHandler(scene);
+        currentTools.push(textTool);
+        break;
       case "circle":
         if (circleTool === null) circleTool = new CircleHandler(scene);
         currentTools.push(circleTool);
@@ -952,40 +958,24 @@ function updatePointsAtInfinity() {
 function doMouseDown(ev: MouseEvent) {
   // console.debug("MouseDown");
 
-  if (surfaceIntersections.value.length > 0) {
-    currentTools.forEach(t => {
-      t.mousePressed(
-        ev,
-        mouseCoordNormalized.value,
-        surfaceIntersections.value[0].point,
-        surfaceIntersections.value[0].normal!
-      );
-    });
-    // const { x, y, z } = labelLayerIntersections.value[0].point;
+  // if (intersectionList.value.length > 0) {
+  currentTools.forEach(t => {
+    t.mousePressed(ev, mouseCoordNormalized.value, intersectionList.value);
+  });
+  // const { x, y, z } = labelLayerIntersections.value[0].point;
 
-    // txtObject.sync();
-    // camera.add(txtObject);
-  } else
-    currentTools.forEach(t => {
-      t.mousePressed(ev, mouseCoordNormalized.value, null, null);
-    });
+  // txtObject.sync();
+  // camera.add(txtObject);
+  // } else
+  //   currentTools.forEach(t => {
+  //     t.mousePressed(ev, mouseCoordNormalized.value, null, null);
+  //   });
 }
 
 function doMouseUp(ev: MouseEvent) {
-  // console.debug("MouseUp");
-  if (surfaceIntersections.value.length > 0)
-    currentTools.forEach(t => {
-      t.mouseReleased(
-        ev,
-        // mouseCoordNormalized.value,
-        surfaceIntersections.value[0].point,
-        surfaceIntersections.value[0].normal!
-      );
-    });
-  else
-    currentTools.forEach(t => {
-      t.mouseReleased(ev, null, null);
-    });
+  currentTools.forEach(t => {
+    t.mouseReleased(ev, mouseCoordNormalized.value, intersectionList.value);
+  });
 }
 
 function doMouseLeave(ev: MouseEvent) {
@@ -1007,8 +997,8 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   //     `from VueUse (${elementX.value}, ${elementY.value})`
   // );
   rayCaster.setFromCamera(mouseCoordNormalized.value, camera);
-  const regex = /(Sheet|Infinity)$/; // For filtering cursor intersection point(s)
-  [surfaceIntersections.value, objectIntersections.value] = rayCaster
+
+  intersectionList.value = rayCaster
     .intersectObjects(scene.children, true)
     .filter((iSect, idx) => {
       // console.log(
@@ -1050,63 +1040,45 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
             );
           }
         } else {
+          // Here we have an intersection with an object
+          //  we must make sure it exists, is visible and is user created but since selection is done graphically, if is is not visible or doesn't exist or is not user created, it won't be intersected - unless we add some flexibility for selecting objects when you are near them
           return true; // intersection with other named objects are always returned
         }
       }
-    })
-    .partition(x => {
+    });
+
+  const regex = /(Sheet|Infinity)$/; // For filtering cursor intersection point(s)
+  [surfaceIntersections.value, objectIntersections.value] =
+    intersectionList.value.partition(x => {
       return x.object.name.match(regex) !== null;
     });
 
-  let firstIntersection: THREE.Intersection | null;
-  // console.debug(
-  //   `Number of all intersections ${surfaceIntersections.value.length}`
-  // );
-  if (surfaceIntersections.value.length > 0) {
-    // We are interested only in intersection with named objects
-    // const namedIntersections = mouseIntersections.value.filter(
-    //   z => z.object.name.length > 0 // we are interested only in named objects
-    // );
-    firstIntersection = surfaceIntersections.value[0];
+  let firstIntersection: THREE.Intersection | null =
+    surfaceIntersections.value[0];
+  // If the mouse is over a surface, update the text displayed at the top of the screen
+  if (firstIntersection) {
     txtObject.text = firstIntersection.object.name;
-    if (currentTools.length === 0) camera.add(txtObject);
-    // position3d = firstIntersection.point;
     if (firstIntersection.object.name.endsWith("Sheet"))
       onSurface.value = firstIntersection.object.name
         .substring(0, 6)
         .toUpperCase() as ImportantSurface;
     else {
       onSurface.value = null;
-      // console.log(
-      //   `Intersection with ${firstIntersection.object.name}`,
-      //   firstIntersection.normal
-      // );
     }
-    // console.debug(
-    //   `First intersection ${
-    //     firstIntersection.object.name
-    //   } ${firstIntersection.point.toFixed(2)}`
-    // );
     rayIntersectionPosition.copy(firstIntersection.point);
     positionInCameraCF.value
       .copy(rayIntersectionPosition)
       .applyMatrix4(camera.matrixWorld);
-    // console.debug("CC distance", cameraController.distance);
   } else {
     onSurface.value = null;
     firstIntersection = null;
-    camera.remove(txtObject);
+    // camera.remove(txtObject);
   }
 
   currentTools.forEach(t => {
-    t.mouseMoved(
-      ev,
-      mouseCoordNormalized.value,
-      firstIntersection?.point ?? null,
-      firstIntersection?.normal ?? null
-    );
+    t.mouseMoved(ev, mouseCoordNormalized.value, intersectionList.value);
   });
-  // doMouseMove(!isOutside.value, onSurface.value, position3d);
+
   renderer.render(scene, camera);
 }
 </script>

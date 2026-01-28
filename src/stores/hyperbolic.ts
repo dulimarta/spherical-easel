@@ -18,10 +18,18 @@ import { HELine } from "@/models-hyperbolic/HELine";
 import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import { Text } from "troika-three-text";
 import { ActionMode } from "@/types";
+import { HELabel } from "@/models-hyperbolic/HELabel";
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
-  const surfaceIntersections: Ref<Intersection[]> = ref([]);
-  const objectIntersections: Ref<Intersection[]> = ref([]);
+  const surfaceIntersections: Ref<Intersection[]> = ref([]); // intersections with hyperbolic surfaces computed in hyperbolic frame - Is this for anything more than display for development?
+  const objectIntersections: Ref<Intersection[]> = ref([]); // intersections with hyperbolic surfaces computed in hyperbolic frame - Is this for anything more than display for development?
   const objectMap: Map<string, HENodule> = new Map();
+  const pointsMap: Map<string, HEPoint> = new Map();
+  const linesMap: Map<string, HELine> = new Map();
+  const labelsMap: Map<string, HELabel> = new Map();
+  //const circlesMap: Map<string, HECircle> = new Map();
+  //const segmentsMap: Map<string, HESegment> = new Map();
+  //const conicsMap: Map<string, HEConic> = new Map();
+
   const cameraQuaternion: Ref<Quaternion> = ref(new Quaternion());
   // const cameraCF = new Matrix4();
   const cameraInverseMatrix = ref(new Matrix4());
@@ -65,18 +73,22 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   function addPoint(point: HEPoint) {
     point.addToScene(threeJSScene);
     objectMap.set(point.name, markRaw(point));
+    pointsMap.set(point.name, markRaw(point));
   }
   function removePoint(point: HEPoint) {
     point.removeFromScene(threeJSScene);
     objectMap.delete(point.name);
+    pointsMap.delete(point.name);
   }
   function addLine(line: HELine) {
     line.addToScene(threeJSScene);
     objectMap.set(line.name, markRaw(line));
+    linesMap.set(line.name, markRaw(line));
   }
   function removeLine(line: HELine) {
     line.removeFromScene(threeJSScene);
     objectMap.delete(line.name);
+    linesMap.delete(line.name);
   }
   function adjustTextPose(quat: Quaternion) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

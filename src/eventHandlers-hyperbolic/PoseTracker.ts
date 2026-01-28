@@ -5,7 +5,10 @@ import {
   Mesh,
   ArrowHelper,
   Matrix4,
-  Group
+  Group,
+  Intersection,
+  Object3D,
+  Object3DEventMap
 } from "three";
 import { Mouse3D } from "./mouseTypes";
 import { HEStoreType } from "@/stores/hyperbolic";
@@ -22,197 +25,80 @@ export class PoseTracker implements HyperbolicToolStrategy {
   static hyperStore: HEStoreType;
 
   protected scene: Scene;
-  protected first: Mouse3D = {
-    normalized2D: new Vector2(),
-    position: new Vector3(),
-    normal: new Vector3()
-  };
-  protected second: Mouse3D = {
-    normalized2D: new Vector2(),
-    position: new Vector3(),
-    normal: new Vector3()
-  };
-  protected isDragging = false;
-  private aPoint = createPoint();
-  private auxLineCF = new Matrix4();
-  private auxRotationAxis = new Vector3();
-  private auxLine = create2DLine(0.02, "khaki");
-  private auxLineGroup = new Group();
-  private secondaryIntersections: Array<Mesh> = [];
+  protected hitObjects: HENodule[] = []; //these are the object the tool could potentially interact with
+  protected hitSurfaces: Mesh[] = []; // these are the actual mesh surfaces intersected by the mouse ray
+  protected onHyperboloid = false; // true if the mouse is over the hyperboloid surface
+  protected objectHit = false; // true if the mouse is over an object
 
   private normalArrow = new ArrowHelper(); // ArrowHelper to show the normal vector of mouse intersection point
 
-  private hitObject: HENodule | null = null;
-  private referencePointOnHyperboloid = false;
   constructor(scene: Scene) {
     this.scene = scene;
     this.normalArrow.setColor(0xffffff);
     this.normalArrow.setLength(1, 0.2, 0.2);
-    this.aPoint.add(this.normalArrow);
-    this.auxLineGroup.add(this.auxLine);
-    this.auxLineGroup.matrixAutoUpdate = false;
-    for (let k = 0; k < 3; k++) {
-      const p = createPoint(0.06, "red");
-      this.secondaryIntersections.push(p);
-    }
   }
 
+  // add normal arrow to scene if mouse over a location on the hyperboloid
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mouseMoved(
     event: MouseEvent,
     scrPos: Vector2,
-    position: Vector3 | null,
-    direction: Vector3 | null
+    intersectionList: Intersection<Object3D<Object3DEventMap>>[]
   ): void {
-    this.hitObject?.normalDisplay();
-    this.hitObject = null;
-    if (PoseTracker.hyperStore.objectIntersections.length > 0) {
-      const firstIntersect = PoseTracker.hyperStore.objectIntersections[0];
-      // console.debug("Hit object", firstIntersect.object.name);
-      this.hitObject = PoseTracker.hyperStore.getObjectById(
-        firstIntersect.object.name
-      );
-      // console.debug(`Changing color of`, this.hitObject);
-      if (this.hitObject) {
-        this.scene.remove(this.aPoint);
-        this.hitObject.glowingDisplay();
-      } else {
-        this.scene.add(this.aPoint);
-      }
-    }
-    if (position && this.hitObject === null) {
-      this.referencePointOnHyperboloid = position.length() > 1;
-      this.aPoint.position.copy(position);
-      const { x, y, z } = position;
-      if (this.referencePointOnHyperboloid) {
-        this.aPoint.layers.set(
-          position.z > 0
-            ? HYPERBOLIC_LAYER.upperSheetPoints
-            : HYPERBOLIC_LAYER.lowerSheetPoints
-        );
-      }
-      this.scene.add(this.aPoint);
-      this.normalArrow.setDirection(direction!);
-      this.second.position.copy(position);
-      this.secondaryIntersections.forEach(p => this.scene.remove(p));
+    // clear previous highlights and boolean flags
+    this.hitObjects.forEach(heNodule => heNodule.normalDisplay());
+    this.hitSurfaces.splice(0);
+    this.objectHit = false;
+    this.onHyperboloid = false;
 
-      if (event.shiftKey) {
-        // When shift key is pressed show all the associated points
-        // on the sphere and hyperboloid(s)
-        const angle = this.second.position.angleTo(Y_AXIS);
-        this.auxRotationAxis
-          .crossVectors(Y_AXIS, this.second.position)
-          .normalize();
-        this.auxLineCF.makeRotationAxis(this.auxRotationAxis, angle);
+    this.hitObjects = intersectionList
+      .map(intersect => {
+        return PoseTracker.hyperStore.getObjectById(intersect.object.name);
+      })
+      .filter((obj): obj is HENodule => obj !== null);
 
-        this.auxLineGroup.matrix.copy(this.auxLineCF);
-        // this.poincareAuxGroup.position.setZ(-1);
-
-        this.scene.add(this.auxLineGroup);
-        TMP_MAT4.makeTranslation(
-          0,
-          0,
-          -PoseTracker.hyperStore.$state.kleinDiskElevation
-        );
-        Z_MINUS1.setZ(-PoseTracker.hyperStore.$state.kleinDiskElevation);
-        this.auxLineCF.lookAt(Z_MINUS1, position, Y_AXIS).premultiply(TMP_MAT4);
-        const { x: x1, y: y1, z: z1 } = this.second.position;
-        // Always add the antipode
-        this.secondaryIntersections[0].position.set(-x1, -y1, -z1);
-        if (this.referencePointOnHyperboloid) {
-          this.secondaryIntersections[0].layers.set(
-            position.z > 0
-              ? HYPERBOLIC_LAYER.lowerSheetPoints
-              : HYPERBOLIC_LAYER.upperSheetPoints
-          );
-        }
-        this.scene.add(this.secondaryIntersections[0]);
-        const pointDistance = this.second.position.length();
-        let scaleFactor = 0;
-        if (pointDistance > 1) {
-          /* Second point on hyperboloid, compute scale factor to project it down to the sphere */
-          scaleFactor = 1 / pointDistance;
-        } else {
-          /* Second point on sphere, compute the scale factor to project it up to the hyperboloid */
-          const scaleSquared = -1 / (x1 * x1 + y1 * y1 - z1 * z1);
-          if (scaleSquared > 0) scaleFactor = Math.sqrt(scaleSquared);
-        }
-        // If scaleFactor is positive then the auxiliary line intersects the other surface(s)
-        if (scaleFactor > 0) {
-          // Draw the associated point and its antipode
-          this.secondaryIntersections[1].position.set(
-            scaleFactor * x1,
-            scaleFactor * y1,
-            scaleFactor * z1
-          );
-          this.secondaryIntersections[2].position.set(
-            -scaleFactor * x1,
-            -scaleFactor * y1,
-            -scaleFactor * z1
-          );
-          if (this.referencePointOnHyperboloid) {
-            this.auxLine.scale.set(1, 2 * pointDistance, 1);
-          } else {
-            this.auxLine.scale.set(
-              1,
-              2 * this.secondaryIntersections[1].position.length(),
-              1
-            );
-            this.secondaryIntersections[1].layers.set(
-              z1 > 0
-                ? HYPERBOLIC_LAYER.upperSheetPoints
-                : HYPERBOLIC_LAYER.lowerSheetPoints
-            );
-            this.secondaryIntersections[2].layers.set(
-              z1 > 0
-                ? HYPERBOLIC_LAYER.lowerSheetPoints
-                : HYPERBOLIC_LAYER.upperSheetPoints
-            );
-          }
-          this.scene.add(this.secondaryIntersections[1]);
-          this.scene.add(this.secondaryIntersections[2]);
-        }
-      } else {
-        this.scene.remove(this.auxLineGroup);
-      }
+    if (this.hitObjects.length > 0) {
+      this.objectHit = true;
     } else {
-      this.scene.remove(this.aPoint);
-      this.scene.remove(this.auxLineGroup);
-      this.second.position.set(Number.NaN, Number.NaN, Number.NaN);
+      // Check for hyperboloid surface intersections
+      intersectionList.forEach(intersect => {
+        if (intersect.object.layers.test(HYPERBOLIC_LAYER.upperSheet)) {
+          this.hitSurfaces.push(intersect.object as Mesh);
+        }
+      });
+      if (this.hitSurfaces.length > 0) {
+        this.onHyperboloid = true;
+      }
     }
-    this.second.normalized2D.copy(scrPos);
-    if (direction) this.second.normal.copy(direction);
-    else this.second.normal.set(Number.NaN, Number.NaN, Number.NaN);
+
+    this.normalArrow.setDirection(direction!);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mousePressed(
     event: MouseEvent,
-    pos2D: Vector2,
-    pos3D: Vector3 | null,
-    n: Vector3 | null
+    scrPos: Vector2,
+    intersectionList: Intersection<Object3D<Object3DEventMap>>[]
   ): void {
-    this.first.normalized2D.copy(pos2D);
-    if (pos3D) this.first.position.copy(pos3D);
-    else this.first.position.set(Number.NaN, Number.NaN, Number.NaN);
-    if (n) this.first.normal.copy(n);
-    else this.first.normal.set(Number.NaN, Number.NaN, Number.NaN);
-    this.isDragging = true;
+    //Not implemented
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  mouseReleased(event: MouseEvent, p: Vector3, d: Vector3): void {
-    // console.debug("PoseTracker::mouseReleased");
-    this.isDragging = false;
-    if (!event.shiftKey) {
-      this.scene.remove(this.auxLineGroup);
-    }
+  mouseReleased(
+    event: MouseEvent,
+    scrPos: Vector2,
+    intersectionList: Intersection<Object3D<Object3DEventMap>>[]
+  ): void {
+    //Not implemented
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mouseLeave(event: MouseEvent): void {
-    this.isDragging = false;
-    //Not implemented
+    // clear previous highlights
+    this.hitObjects.forEach(heNodule => heNodule.normalDisplay());
+    this.hitSurfaces.splice(0);
+    this.objectHit = false;
+    this.onHyperboloid = false;
   }
 
   activate(): void {
@@ -220,6 +106,10 @@ export class PoseTracker implements HyperbolicToolStrategy {
   }
 
   deactivate(): void {
-    // throw new Error("Method not implemented.");
+    // clear previous highlights
+    this.hitObjects.forEach(heNodule => heNodule.normalDisplay());
+    this.hitSurfaces.splice(0);
+    this.objectHit = false;
+    this.onHyperboloid = false;
   }
 }
