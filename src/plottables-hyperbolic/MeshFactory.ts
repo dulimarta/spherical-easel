@@ -148,7 +148,7 @@ export function create2DLine(width: number = 0.03, color: string = "white") {
     new MeshStandardMaterial({ color })
   );
 }
-
+// The problem with this that the raycaster will rarely hit the line mesh because the line is rendered infinitesimally thin in 3D space.
 // export function createPointsAtInfinity({
 //   zHeight,
 //   thickness = 10

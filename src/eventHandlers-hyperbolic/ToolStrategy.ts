@@ -1,28 +1,22 @@
 // Use Strategy design pattern to enable switching tool behavior at runtime
 
-import {
-  Vector2,
-  Vector3,
-  Intersection,
-  Object3D,
-  Object3DEventMap
-} from "three";
+import { Vector2, Vector3, Intersection } from "three";
 
 export interface HyperbolicToolStrategy {
   mouseMoved(
     event: MouseEvent,
     normalizedScreenPosition: Vector2,
-    intersections: Intersection<Object3D<Object3DEventMap>>[]
+    intersections: Intersection[]
   ): void;
   mousePressed(
     event: MouseEvent,
     normalizedScreenPosition: Vector2,
-    intersections: Intersection<Object3D<Object3DEventMap>>[]
+    intersections: Intersection[]
   ): void;
   mouseReleased(
     event: MouseEvent,
     normalizedScreenPosition: Vector2,
-    intersections: Intersection<Object3D<Object3DEventMap>>[]
+    intersections: Intersection[]
   ): void;
   mouseLeave(event: MouseEvent): void;
   activate(): void;

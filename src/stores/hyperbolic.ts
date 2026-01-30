@@ -20,8 +20,10 @@ import { Text } from "troika-three-text";
 import { ActionMode } from "@/types";
 import { HELabel } from "@/models-hyperbolic/HELabel";
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
-  const surfaceIntersections: Ref<Intersection[]> = ref([]); // intersections with hyperbolic surfaces computed in hyperbolic frame - Is this for anything more than display for development?
-  const objectIntersections: Ref<Intersection[]> = ref([]); // intersections with hyperbolic surfaces computed in hyperbolic frame - Is this for anything more than display for development?
+  const surfaceIntersections: Ref<Intersection[]> = ref([]); // intersections with hyperbolic surfaces computed in hyperbolic frame
+  const objectIntersections: Ref<Intersection[]> = ref([]); // intersections with hyperbolic surfaces computed in hyperbolic frame
+  const closestIntersectionIsSurface: Ref<boolean> = ref(false);
+
   const objectMap: Map<string, HENodule> = new Map();
   const pointsMap: Map<string, HEPoint> = new Map();
   const linesMap: Map<string, HELine> = new Map();
@@ -163,6 +165,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     font,
     surfaceIntersections,
     objectIntersections,
+    closestIntersectionIsSurface,
     cameraQuaternion,
     cameraInverseMatrix,
     implementedHETools,

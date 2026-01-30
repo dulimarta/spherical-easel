@@ -20,10 +20,11 @@
         Canvas: ({{ elementX.toFixed(0) }}, {{ elementY.toFixed(0) }}) |
       </!--span-->
       <span v-if="onSurface">
-        World:{{ rayIntersectionPosition.toFixed(2) }}
+        World:{{ rayIntersectionPosition.toFixed(2) }} In Camera
+        {{ positionInCameraCF.toFixed(2) }}
       </span>
+      <br />
       <span class="ml-1">
-        In Camera {{ positionInCameraCF.toFixed(2) }}
         Dolly Distance:
         {{ cameraDistance.toFixed(1) }}
         Polar Angle:
@@ -110,8 +111,6 @@ import {
   Mesh,
   MeshStandardMaterial,
   PerspectiveCamera,
-  Object3D,
-  Object3DEventMap,
   // PointLight,
   Raycaster,
   Scene,
@@ -170,8 +169,12 @@ import Settings from "@/views/Settings.vue";
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
 const { idle } = useIdle(250); // in milliseconds
-const { surfaceIntersections, objectIntersections, cameraQuaternion } =
-  storeToRefs(hyperStore);
+const {
+  surfaceIntersections,
+  objectIntersections,
+  closestIntersectionIsSurface,
+  cameraQuaternion
+} = storeToRefs(hyperStore);
 const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
 const hasUpdatedCameraControls = ref(false);
@@ -1047,18 +1050,24 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
       }
     });
 
+  if (intersectionList.value.length !== 0) {
+    closestIntersectionIsSurface.value =
+      intersectionList.value[0].object.name.match(/(Sheet|Infinity)$/) !== null;
+  } else {
+    closestIntersectionIsSurface.value = false;
+  }
+
   const regex = /(Sheet|Infinity)$/; // For filtering cursor intersection point(s)
   [surfaceIntersections.value, objectIntersections.value] =
     intersectionList.value.partition(x => {
       return x.object.name.match(regex) !== null;
     });
 
-  let firstIntersection: THREE.Intersection | null =
-    surfaceIntersections.value[0];
+  let firstIntersection: THREE.Intersection | null = intersectionList.value[0];
   // If the mouse is over a surface, update the text displayed at the top of the screen
   if (firstIntersection) {
     txtObject.text = firstIntersection.object.name;
-    if (firstIntersection.object.name.endsWith("Sheet"))
+    if (firstIntersection.object.name.match(regex))
       onSurface.value = firstIntersection.object.name
         .substring(0, 6)
         .toUpperCase() as ImportantSurface;
@@ -1072,7 +1081,6 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   } else {
     onSurface.value = null;
     firstIntersection = null;
-    // camera.remove(txtObject);
   }
 
   currentTools.forEach(t => {

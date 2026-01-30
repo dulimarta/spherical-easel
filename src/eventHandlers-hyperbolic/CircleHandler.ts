@@ -7,9 +7,7 @@ import {
   PlaneGeometry,
   DoubleSide,
   Matrix4,
-  Intersection,
-  Object3D,
-  Object3DEventMap
+  Intersection
 } from "three";
 import { PoseTracker } from "./PoseTracker";
 import { createPoint } from "@/plottables-hyperbolic/MeshFactory";
@@ -34,7 +32,7 @@ export class CircleHandler extends PoseTracker {
   mouseMoved(
     event: MouseEvent,
     scrPos: Vector2,
-    intersectionList: Intersection<Object3D<Object3DEventMap>>[]
+    intersectionList: Intersection[]
   ): void {
     // Process the intersection list and set the flags
     super.mousePressed(event, scrPos, intersectionList);
@@ -43,13 +41,13 @@ export class CircleHandler extends PoseTracker {
   mousePressed(
     event: MouseEvent,
     scrPos: Vector2,
-    intersectionList: Intersection<Object3D<Object3DEventMap>>[]
+    intersectionList: Intersection[]
   ): void {}
 
   mouseReleased(
     event: MouseEvent,
     scrPos: Vector2,
-    intersectionList: Intersection<Object3D<Object3DEventMap>>[]
+    intersectionList: Intersection[]
   ): void {
     // throw new Error("Method not implemented.");
   }

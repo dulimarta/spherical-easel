@@ -6,11 +6,8 @@ import {
   ArrowHelper,
   Matrix4,
   Group,
-  Intersection,
-  Object3D,
-  Object3DEventMap
+  Intersection
 } from "three";
-import { Mouse3D } from "./mouseTypes";
 import { HEStoreType } from "@/stores/hyperbolic";
 import { HENodule } from "@/models-hyperbolic/HENodule";
 import { create2DLine, createPoint } from "@/plottables-hyperbolic/MeshFactory";
@@ -25,15 +22,14 @@ export class PoseTracker implements HyperbolicToolStrategy {
   static hyperStore: HEStoreType;
 
   protected scene: Scene;
-  protected hitObjects: HENodule[] = []; //these are the object the tool could potentially interact with
-  protected hitSurfaces: Mesh[] = []; // these are the actual mesh surfaces intersected by the mouse ray
-  protected onHyperboloid = false; // true if the mouse is over the hyperboloid surface
-  protected objectHit = false; // true if the mouse is over an object
+  protected hitObjects: HENodule[] = []; //these are the object the tool could potentially interact with (sorted by distance from the camera, closest first)
+  protected hitSurfaces: Mesh[] = []; // these are the actual mesh surfaces intersected by the mouse ray (sorted by distance from the camera, closest first)
 
   private normalArrow = new ArrowHelper(); // ArrowHelper to show the normal vector of mouse intersection point
 
   constructor(scene: Scene) {
     this.scene = scene;
+    // this.scene.add(this.normalArrow);
     this.normalArrow.setColor(0xffffff);
     this.normalArrow.setLength(1, 0.2, 0.2);
   }
@@ -43,42 +39,43 @@ export class PoseTracker implements HyperbolicToolStrategy {
   mouseMoved(
     event: MouseEvent,
     scrPos: Vector2,
-    intersectionList: Intersection<Object3D<Object3DEventMap>>[]
+    intersectionList: Intersection[]
   ): void {
-    // clear previous highlights and boolean flags
+    // clear previous highlights and flags
     this.hitObjects.forEach(heNodule => heNodule.normalDisplay());
+    this.hitObjects.splice(0);
     this.hitSurfaces.splice(0);
-    this.objectHit = false;
-    this.onHyperboloid = false;
 
-    this.hitObjects = intersectionList
+    if (intersectionList.length === 0) {
+      return;
+    }
+
+    this.hitObjects = PoseTracker.hyperStore.objectIntersections
       .map(intersect => {
-        return PoseTracker.hyperStore.getObjectById(intersect.object.name);
+        return PoseTracker.hyperStore.getObjectById(intersect.object.name); // returns null for surfaces
       })
       .filter((obj): obj is HENodule => obj !== null);
 
-    if (this.hitObjects.length > 0) {
-      this.objectHit = true;
+    if (PoseTracker.hyperStore.closestIntersectionIsSurface) {
+      this.scene.add(this.normalArrow);
+      // this.normalArrow.visible = true;
+      this.normalArrow.position.copy(
+        PoseTracker.hyperStore.surfaceIntersections[0].point
+      );
+      this.normalArrow.setDirection(
+        PoseTracker.hyperStore.surfaceIntersections[0].normal!
+      );
     } else {
-      // Check for hyperboloid surface intersections
-      intersectionList.forEach(intersect => {
-        if (intersect.object.layers.test(HYPERBOLIC_LAYER.upperSheet)) {
-          this.hitSurfaces.push(intersect.object as Mesh);
-        }
-      });
-      if (this.hitSurfaces.length > 0) {
-        this.onHyperboloid = true;
-      }
+      // this.normalArrow.visible = false;
+      this.scene.remove(this.normalArrow);
     }
-
-    this.normalArrow.setDirection(direction!);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mousePressed(
     event: MouseEvent,
     scrPos: Vector2,
-    intersectionList: Intersection<Object3D<Object3DEventMap>>[]
+    intersectionList: Intersection[]
   ): void {
     //Not implemented
   }
@@ -87,18 +84,19 @@ export class PoseTracker implements HyperbolicToolStrategy {
   mouseReleased(
     event: MouseEvent,
     scrPos: Vector2,
-    intersectionList: Intersection<Object3D<Object3DEventMap>>[]
+    intersectionList: Intersection[]
   ): void {
     //Not implemented
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mouseLeave(event: MouseEvent): void {
-    // clear previous highlights
+    // clear previous highlights and flags
     this.hitObjects.forEach(heNodule => heNodule.normalDisplay());
+    this.hitObjects.splice(0);
     this.hitSurfaces.splice(0);
-    this.objectHit = false;
-    this.onHyperboloid = false;
+    // this.normalArrow.visible = false;
+    this.scene.remove(this.normalArrow);
   }
 
   activate(): void {
@@ -106,10 +104,11 @@ export class PoseTracker implements HyperbolicToolStrategy {
   }
 
   deactivate(): void {
-    // clear previous highlights
+    // clear previous highlights and flags
     this.hitObjects.forEach(heNodule => heNodule.normalDisplay());
+    this.hitObjects.splice(0);
     this.hitSurfaces.splice(0);
-    this.objectHit = false;
-    this.onHyperboloid = false;
+    // this.normalArrow.visible = false;
+    this.scene.remove(this.normalArrow);
   }
 }
