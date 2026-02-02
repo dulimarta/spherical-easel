@@ -87,8 +87,8 @@
     </v-hover>
   </div>
   <canvas
-    ref="webglCanvas"
-    id="webglCanvas"
+    ref="webGPUCanvas"
+    id="webGPUCanvas"
     :width="props.availableWidth"
     :height="props.availableHeight" />
 </template>
@@ -116,9 +116,9 @@ import {
   Scene,
   // SphereGeometry,
   Vector3,
-  Vector2,
-  WebGLRenderer
+  Vector2
 } from "three";
+import WebGPURenderer from "three/examples/jsm/renderers/webgpu/WebGPURenderer.js";
 import * as THREE from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import CameraControls from "camera-controls";
@@ -201,14 +201,14 @@ const props = withDefaults(defineProps<ComponentProps>(), {
   availableWidth: 240
 });
 
-const webglCanvas = useTemplateRef<HTMLCanvasElement>("webglCanvas");
-const { elementX, elementY, isOutside } = useMouseInElement(webglCanvas, {});
+const webGPUCanvas = useTemplateRef<HTMLCanvasElement>("webGPUCanvas");
+const { elementX, elementY, isOutside } = useMouseInElement(webGPUCanvas, {});
 const { shift: shiftKey, control: controlKey } = useMagicKeys({
   passive: false
 });
 // const { pressed } = useMousePressed({
 //   drag: true,
-//   target: webglCanvas
+//   target: webGPUCanvas
 // });
 const scene = new Scene();
 const clock = new Clock(); // used by camera control animation
@@ -220,7 +220,7 @@ let oldCameraDistance = 0;
 const cameraPolarAngle = ref(0);
 const tmpMatrix4 = new Matrix4();
 const positionInCameraCF = ref(new Vector3());
-let renderer: WebGLRenderer;
+let renderer: WebGPURenderer;
 let cameraController: CameraControls;
 CameraControls.install({ THREE });
 const ambientLight = new AmbientLight(0xffffff, 1.5);
@@ -416,7 +416,7 @@ onBeforeMount(() => {
   initialize();
 });
 
-onMounted(() => {
+onMounted(async () => {
   console.log(`Mounted size ${props.availableWidth}x${props.availableHeight}`);
   camera.aspect = props.availableWidth / props.availableHeight;
 
@@ -442,7 +442,7 @@ onMounted(() => {
   hyperStore.setScene(scene, camera);
 
   cameraQuaternion.value.copy(camera.quaternion);
-  cameraController = new CameraControls(camera, webglCanvas.value!);
+  cameraController = new CameraControls(camera, webGPUCanvas.value!);
   // Set the parameters of the camera controller
   cameraController.minDistance = SETTINGS.dollyDistanceMin;
   cameraController.maxDistance = SETTINGS.dollyDistanceMax;
@@ -457,10 +457,12 @@ onMounted(() => {
   cameraDistance.value = cameraController.distance;
   oldCameraDistance = cameraController.distance;
   cameraPolarAngle.value = cameraController.polarAngle;
-  renderer = new WebGLRenderer({
-    canvas: webglCanvas.value!,
+  renderer = new WebGPURenderer({
+    canvas: webGPUCanvas.value!,
     antialias: true
   });
+  await renderer.init();
+  renderer.setSize(window.innerWidth, window.innerHeight);
 
   // Enable local clipping (i.e. clipping on individual materials)
   renderer.localClippingEnabled = true;
@@ -480,9 +482,9 @@ onMounted(() => {
   // textRenderer.render(scene, camera);
   // visualContent.value!.appendChild(textRenderer.domElement);
   useEventListener("mousemove", threeMouseTrackerThenMouseMove);
-  useEventListener(webglCanvas.value, "mousedown", doMouseDown);
-  useEventListener(webglCanvas.value, "mouseup", doMouseUp);
-  useEventListener(webglCanvas.value, "mouseleave", doMouseLeave);
+  useEventListener(webGPUCanvas.value, "mousedown", doMouseDown);
+  useEventListener(webGPUCanvas.value, "mouseup", doMouseUp);
+  useEventListener(webGPUCanvas.value, "mouseleave", doMouseLeave);
 
   useEventListener(cameraController, "control", updateCameraDetails);
   useEventListener(cameraController, "update", updateCameraDetails);

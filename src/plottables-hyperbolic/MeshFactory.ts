@@ -1,25 +1,22 @@
 import SETTINGS from "@/global-settings-hyperbolic";
-import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
-import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
+//import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
+import { MeshStandardNodeMaterial } from "three/examples/jsm/nodes/Nodes.js";
+//import { MeshStandardNodeMaterial } from "three/examples/jsm/nodes/materials/MeshStandardNodeMaterial.js";
+//import { NodeMaterial } from "three/examples/jsm/nodes/materials/NodeMaterial.js";
+import { MeshPhysicalNodeMaterial } from "three/examples/jsm/nodes/Nodes.js";
+//import { MeshPhysicalNodeMaterial } from "three/examples/jsm/nodes/materials/MeshPhysicalNodeMaterial.js";
+//import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { THREESubset } from "camera-controls/dist/types";
 import {
   Vector3,
   Mesh,
-  ShaderMaterial,
-  Uniform,
   DoubleSide,
   Plane,
-  CurvePath,
-  CubicBezierCurve3,
-  TubeGeometry,
   SphereGeometry,
-  MeshStandardMaterial,
   CylinderGeometry,
-  LineCurve3,
   MeshStandardMaterialParameters,
-  Vector2,
-  MeshPhysicalMaterial
+  Vector2
 } from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import { error } from "happy-dom/lib/PropertySymbol";
@@ -145,7 +142,7 @@ export function createPoint(
 export function create2DLine(width: number = 0.03, color: string = "white") {
   return new Mesh(
     new CylinderGeometry(width, width, 1),
-    new MeshStandardMaterial({ color })
+    new MeshStandardNodeMaterial({ color })
   );
 }
 // The problem with this that the raycaster will rarely hit the line mesh because the line is rendered infinitesimally thin in 3D space.
@@ -204,7 +201,7 @@ export function createPointsAtInfinity({
   clippingPlanes: Plane[];
   upper?: boolean;
 }): Mesh {
-  const coneMaterial = new MeshPhysicalMaterial({
+  const coneMaterial = new MeshPhysicalNodeMaterial({
     color: "blue",
     clippingPlanes: clippingPlanes,
     side: DoubleSide
@@ -265,18 +262,22 @@ export function createPolarGridCircle({
   // Close the circle
   circlePoints.push(circlePoints[0], circlePoints[1], circlePoints[2]);
 
-  const geometry = new LineGeometry();
-  geometry.setPositions(circlePoints);
+  // const geometry = new LineGeometry();
+  // geometry.setPositions(circlePoints);
 
-  const material = new LineMaterial({
-    color: "grey",
-    linewidth: thickness, // Width in pixels
-    resolution: new Vector2(window.innerWidth, window.innerHeight),
-    clippingPlanes: [clippingPlane],
-    transparent: false
-  });
+  // const material = new LineMaterial({
+  //   color: "grey",
+  //   linewidth: thickness, // Width in pixels
+  //   resolution: new Vector2(window.innerWidth, window.innerHeight),
+  //   clippingPlanes: [clippingPlane],
+  //   transparent: false
+  // });
 
-  const mesh = new Mesh(geometry, material);
+  // const mesh = new Mesh(geometry, material);
+  const mesh = new Mesh(
+    new CylinderGeometry(thickness, thickness, 1),
+    new MeshStandardNodeMaterial({ color: "white" })
+  );
   mesh.name = `PolarGridCircle_r=${intrinsicRadius.toFixed(2)}`;
   return mesh;
 }
@@ -456,22 +457,26 @@ export function createPolarGridRadialLine({
     );
     nextTValue += 0.01 * Math.exp(1.3 * nextTValue); //controls the spacing of the points along the hyperbolic radial line. The points on the radial do not need to be uniformly spaced in t - more points near zero are better for accuracy, because eventually the hyperboloid radial lines are almost linear.
   }
-  const geometry = new LineGeometry();
-  geometry.setPositions(points);
+  // const geometry = new LineGeometry();
+  // geometry.setPositions(points);
 
-  const material = new LineMaterial({
-    color: "grey",
-    linewidth: thickness, // Width in pixels
-    resolution: new Vector2(window.innerWidth, window.innerHeight),
-    clippingPlanes: [clippingPlane],
-    transparent: false
-    //depthWrite: false, // Recommended for transparent lines
-    // optional:
-    // dashed: true,
-    // dashSize: 2,
-    // gapSize: 100
-  });
-  const lineMesh = new Line2(geometry, material);
+  // const material = new LineMaterial({
+  //   color: "grey",
+  //   linewidth: thickness, // Width in pixels
+  //   resolution: new Vector2(window.innerWidth, window.innerHeight),
+  //   clippingPlanes: [clippingPlane],
+  //   transparent: false
+  //   //depthWrite: false, // Recommended for transparent lines
+  //   // optional:
+  //   // dashed: true,
+  //   // dashSize: 2,
+  //   // gapSize: 100
+  // });
+  const lineMesh = new Mesh(
+    new CylinderGeometry(thickness, thickness, 1),
+    new MeshStandardNodeMaterial({ color: "white" })
+  );
+  // const lineMesh = new Line2(geometry, material);
   //const mesh = new Mesh(geometry, material);
   lineMesh.name = `PolarGridRadialLine_angle=${radianAngle.toFixed(2)}`;
 
@@ -667,7 +672,7 @@ export function createHyperboloidSheet({
     clippingPlanes: [clippingPlane]
   };
 
-  const hyperboloidMaterial = new MeshStandardMaterial(
+  const hyperboloidMaterial = new MeshStandardNodeMaterial(
     hyperboloidMaterialParameters
   );
 
@@ -797,7 +802,7 @@ export function createBoundaryCone({
   maxZClippingHeight: number;
   upper?: boolean;
 }): Mesh {
-  const coneMaterial = new MeshPhysicalMaterial({
+  const coneMaterial = new MeshPhysicalNodeMaterial({
     color: 0x88ccff, // base color
     roughness: 0.0, // very smooth surface
     transmission: 0.5, // glasslike transparency

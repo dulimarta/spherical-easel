@@ -12,6 +12,9 @@ import glsl from "vite-plugin-glsl";
 import VueI18nPlugin from "@intlify/unplugin-vue-i18n/vite";
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 export default defineConfig({
+  build: {
+    target: "esnext"
+  },
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url))
@@ -19,6 +22,9 @@ export default defineConfig({
     extensions: [".mjs", ".js", ".ts", ".jsx", ".tsx", ".json", ".vue"]
   },
   optimizeDeps: {
+    esbuildOptions: {
+      target: "esnext"
+    },
     exclude: ["fsevents"]
   },
   plugins: [
