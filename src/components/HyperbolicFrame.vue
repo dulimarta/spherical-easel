@@ -103,13 +103,9 @@ import {
   AmbientLight,
   // ArrowHelper,
   Clock,
-  DoubleSide,
   // GridHelper,
   // Group,
-  Intersection,
   Matrix4,
-  Mesh,
-  MeshStandardMaterial,
   PerspectiveCamera,
   // PointLight,
   Raycaster,
@@ -119,7 +115,6 @@ import {
   Vector2
 } from "three";
 import * as THREE from "three/webgpu";
-import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import CameraControls from "camera-controls";
 import { DispatcherEvent } from "camera-controls/dist/EventDispatcher";
 import { acceleratedRaycast } from "three-mesh-bvh";
@@ -164,6 +159,8 @@ import {
 } from "@/plottables-hyperbolic/MeshFactory";
 import { VisibleHELayersType } from "@/types";
 import Settings from "@/views/Settings.vue";
+import { PlaneParameters } from "@/types";
+import { float, uniform } from "three/tsl";
 
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
@@ -263,26 +260,32 @@ txtObject.color = "yellow"; //0x000000;
 
 const rayIntersectionPosition = reactive(new Vector3());
 
-const zMaxClippingPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 1); // negative normal for zMax so that the visible side is below the plane z = zMaxClippingPlane.constant
-const zMinClippingPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 1); // positive normal for zMin so that the visible side is above the plane z = -zMinClippingPlane.constant
+const zMaxClippingPlane: PlaneParameters = {
+  normal: new THREE.Vector3(0, 0, -1),
+  constant: uniform(float(1.0))
+}; // negative normal for zMax so that the visible side is below the plane z = zMaxClippingPlane.constant.value
+const zMinClippingPlane: PlaneParameters = {
+  normal: new THREE.Vector3(0, 0, 1),
+  constant: uniform(float(1.0))
+}; // positive normal for zMin so that the visible side is above the plane z = -zMinClippingPlane.constant.value
 
 // Clipping planes that define the visible strip on the cones for the points at infinity
-const upperPointsAtInfinityClippingPlanePlus = new THREE.Plane(
-  new THREE.Vector3(0, 0, -1),
-  1
-);
-const upperPointsAtInfinityClippingPlaneMinus = new THREE.Plane(
-  new THREE.Vector3(0, 0, 1),
-  1
-);
-const lowerPointsAtInfinityClippingPlanePlus = new THREE.Plane(
-  new THREE.Vector3(0, 0, -1),
-  1
-);
-const lowerPointsAtInfinityClippingPlaneMinus = new THREE.Plane(
-  new THREE.Vector3(0, 0, 1),
-  1
-);
+const upperPointsAtInfinityClippingPlanePlus: PlaneParameters = {
+  normal: new THREE.Vector3(0, 0, -1),
+  constant: uniform(float(1.0))
+};
+const upperPointsAtInfinityClippingPlaneMinus: PlaneParameters = {
+  normal: new THREE.Vector3(0, 0, 1),
+  constant: uniform(float(1.0))
+};
+const lowerPointsAtInfinityClippingPlanePlus: PlaneParameters = {
+  normal: new THREE.Vector3(0, 0, -1),
+  constant: uniform(float(1.0))
+};
+const lowerPointsAtInfinityClippingPlaneMinus: PlaneParameters = {
+  normal: new THREE.Vector3(0, 0, 1),
+  constant: uniform(float(1.0))
+};
 
 const upperPolarGridArray: Array<THREE.Mesh> = [];
 const lowerPolarGridArray: Array<THREE.Mesh> = [];
@@ -340,7 +343,7 @@ watch(visibleLayers, (layers: Array<VisibleHELayersType>) => {
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetLines);
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheet);
   }
-  renderer.render(scene, camera);
+  renderer.renderAsync(scene, camera);
 });
 
 // Watch for idle after zooming so that we can update the label display
@@ -358,7 +361,7 @@ watch(showLowerSheet, show => {
   updateView();
   // console.log("Show lower sheet", show);
   actionMode.value = "rotate";
-  renderer.render(scene, camera); // update the scene
+  renderer.renderAsync(scene, camera); // update the scene
 });
 
 // Action mode watcher
@@ -470,15 +473,12 @@ onMounted(async () => {
   updateView();
   updatePointsAtInfinity();
 
-  // This would set the clipping planes for all objects - globally!
-  // renderer.clippingPlanes = [zMinClippingPlane, zMaxClippingPlane];
-
   renderer.setSize(props.availableWidth, props.availableHeight);
   renderer.setClearColor(0xcccccc, 1);
   renderer.setAnimationLoop(doRender);
-  renderer.render(scene, camera);
+  renderer.renderAsync(scene, camera);
 
-  // textRenderer.render(scene, camera);
+  // textRenderer.renderAsync(scene, camera);
   // visualContent.value!.appendChild(textRenderer.domElement);
   useEventListener("mousemove", threeMouseTrackerThenMouseMove);
   useEventListener(webGPUCanvas.value, "mousedown", doMouseDown);
@@ -494,7 +494,7 @@ onUpdated(() => {
   camera.aspect = props.availableWidth / props.availableHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(props.availableWidth, props.availableHeight);
-  renderer.render(scene, camera);
+  renderer.renderAsync(scene, camera);
 });
 
 function initialize() {
@@ -677,7 +677,7 @@ function initialize() {
 
   if (showPointsAtInfinity.value) {
     updatePointsAtInfinity();
-    //renderer.render(scene, camera); // update the scene
+    //renderer.renderAsync(scene, camera); // update the scene
     visibleLayers.value.push("pointsAtInfinity"); // push points at infinity to visible layers, because it is visible at initialization otherwise the vue button handles the visibleLayers array
     camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
     if (showLowerSheet.value) {
@@ -707,7 +707,7 @@ function doRender() {
       //   camera.matrixWorld.elements
       // );
       cameraQuaternion.value.copy(camera.quaternion);
-      renderer.render(scene, camera);
+      renderer.renderAsync(scene, camera);
     }
   }
 }
@@ -749,7 +749,9 @@ function updateView() {
     // the image still fit on the field of view. The largest visual amount occurs with the
     // camera is looking directly (i.e. orthogonal) at the the plane(s) that make angle of 45 degrees
     // with the horizontal plane.
-    zMaxClippingPlane.constant =
+    (
+      zMaxClippingPlane.constant as unknown as THREE.NodeUniform<unknown>
+    ).value =
       Math.tan((((camera.fov - SETTINGS.angularBorder) / 2) * Math.PI) / 180) *
       cameraController.distance *
       Math.sqrt(1 / 2);
@@ -1088,6 +1090,6 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
     t.mouseMoved(ev, mouseCoordNormalized.value, intersectionList.value);
   });
 
-  renderer.render(scene, camera);
+  renderer.renderAsync(scene, camera);
 }
 </script>

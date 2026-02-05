@@ -1,6 +1,19 @@
 import SETTINGS from "@/global-settings-hyperbolic";
 import * as THREE from "three/webgpu";
-import { color, texture, uv, time } from "three/tsl";
+import {
+  positionWorld,
+  dot,
+  uniform,
+  Discard,
+  float,
+  vec3,
+  vec4,
+  select,
+  If,
+  Fn,
+  positionLocal,
+  varying
+} from "three/tsl";
 import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { THREESubset } from "camera-controls/dist/types";
 import {
@@ -9,12 +22,11 @@ import {
   DoubleSide,
   Plane,
   SphereGeometry,
-  CylinderGeometry,
-  MeshStandardMaterialParameters,
-  Vector2
+  CylinderGeometry
 } from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
-import { error } from "happy-dom/lib/PropertySymbol";
+import { PlaneParameters } from "@/types";
+import { ColorNodeUniform } from "three/src/renderers/common/nodes/NodeUniform.js";
 
 export function createPoint(
   size: number = 0.05,
@@ -218,22 +230,44 @@ export function createHyperboloidSheet({
   maxZClippingHeight,
   upper = true
 }: {
-  clippingPlane: Plane;
+  clippingPlane: PlaneParameters;
   maxZClippingHeight: number;
   upper?: boolean;
 }): Mesh {
-  const hyperboloidMaterialParameters: MeshStandardMaterialParameters = {
+  const hyperboloidMaterial = new THREE.MeshPhysicalNodeMaterial({
     color: "chocolate",
     side: DoubleSide,
-    roughness: 0.2,
-    transparent: true,
-    opacity: 0.75,
-    clippingPlanes: [clippingPlane]
-  };
+    metalness: 0.1,
+    roughness: 0.3,
+    opacity: 0.75
+  });
+  const clippingPlaneConstant = uniform(float(clippingPlane.constant));
 
-  const hyperboloidMaterial = new THREE.MeshStandardNodeMaterial(
-    hyperboloidMaterialParameters
+  // const positionFunc = Fn(() => {
+  //   varying(positionLocal);
+  //   return positionLocal;
+  // });
+
+  // hyperboloidMaterial.positionNode = positionFunc();
+
+  const planeNormal = vec3(
+    clippingPlane.normal.x,
+    clippingPlane.normal.y,
+    clippingPlane.normal.z
   );
+  const distanceToPlane = dot(positionWorld, planeNormal).add(
+    clippingPlaneConstant
+  );
+
+  const clippingLogic = Fn(() => {
+    // 1. Perform the discard check
+    positionLocal.z.greaterThan(clippingPlane.constant).discard();
+
+    // 2. If we didn't discard, return the base color
+    return vec4(0.0, 0.46, 1.0, 1.0); // A nice blue
+  });
+
+  hyperboloidMaterial.colorNode = clippingLogic();
 
   const hyperboloidGeometry = new ParametricGeometry(
     upper ? upperHyperboloid : lowerHyperboloid,
@@ -241,10 +275,7 @@ export function createHyperboloidSheet({
     300
   );
 
-  const hyperboloidMesh = new Mesh(
-    hyperboloidGeometry,
-    hyperboloidMaterial //new MeshStandardMaterial(hyperboloidMaterial)
-  );
+  const hyperboloidMesh = new Mesh(hyperboloidGeometry, hyperboloidMaterial);
 
   return hyperboloidMesh;
 
