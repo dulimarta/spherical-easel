@@ -1,11 +1,6 @@
 import SETTINGS from "@/global-settings-hyperbolic";
-//import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
-import { MeshStandardNodeMaterial } from "three/examples/jsm/nodes/Nodes.js";
-//import { MeshStandardNodeMaterial } from "three/examples/jsm/nodes/materials/MeshStandardNodeMaterial.js";
-//import { NodeMaterial } from "three/examples/jsm/nodes/materials/NodeMaterial.js";
-import { MeshPhysicalNodeMaterial } from "three/examples/jsm/nodes/Nodes.js";
-//import { MeshPhysicalNodeMaterial } from "three/examples/jsm/nodes/materials/MeshPhysicalNodeMaterial.js";
-//import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
+import * as THREE from "three/webgpu";
+import { color, texture, uv, time } from "three/tsl";
 import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { THREESubset } from "camera-controls/dist/types";
 import {
@@ -25,124 +20,18 @@ export function createPoint(
   size: number = 0.05,
   color: string = "white"
 ): Mesh {
-  const material = new MeshStandardMaterial({
+  const material = new THREE.MeshStandardNodeMaterial({
     color: color,
     roughness: 0.3
     //clippingPlanes: [minClippingPlane, maxClippingPlane] //No clipping planes for points
   });
-  material.onBeforeCompile = shader => {
-    // add a uniform for desired screen-space radius
-    shader.uniforms.uPixelRadius = { value: 20.0 }; // pixels
-
-    // expose uniform
-    shader.vertexShader = shader.vertexShader.replace(
-      `#include <common>`,
-      `
-    #include <common>
-    uniform float uPixelRadius;
-    `
-    );
-
-    // replace the projection step
-    shader.vertexShader = shader.vertexShader.replace(
-      `#include <project_vertex>`,
-      `
-    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-
-    // Convert pixel radius to NDC scale
-    float ndcScale = uPixelRadius / resolution.y;
-
-    // Scale sphere so its screen-space size is constant
-    mvPosition.xyz *= ndcScale * mvPosition.w;
-
-    gl_Position = projectionMatrix * mvPosition;
-    `
-    );
-  };
-  material.onBeforeCompile = shader => {
-    shader.uniforms.resolution = { value: new Vector2() };
-
-    shader.vertexShader = shader.vertexShader.replace(
-      `#include <common>`,
-      `
-    #include <common>
-    uniform vec2 resolution;
-    uniform float uPixelRadius;
-    `
-    );
-
-    shader.vertexShader = shader.vertexShader.replace(
-      `#include <project_vertex>`,
-      `
-    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-    float ndcScale = uPixelRadius / resolution.y;
-    mvPosition.xyz *= ndcScale * mvPosition.w;
-    gl_Position = projectionMatrix * mvPosition;
-    `
-    );
-
-    material.userData.shader = shader;
-  };
-
-  // material.onBeforeCompile = shader => {
-  //   shader.uniforms.uLineWidth = { value: 10.0 }; // dynamic
-
-  //   // Pass the vertex height to the fragment shader
-  //   shader.vertexShader = shader.vertexShader.replace(
-  //     `#include <color_vertex>`,
-  //     `
-  //     #include <color_vertex>
-  //     uniform float uLineWidth;
-  //     `
-  //   );
-  //   shader.vertexShader = shader.vertexShader.replace(
-  //     `#include <begin_vertex>`,
-  //     `
-  //     #include <begin_vertex>
-  //     transformed = normal*uLineWidth + transformed;// old naive thickness adjustment
-  //     `
-  //   );
-
-  // Old Attempt to adjust thickness based on camera distance
-  // `#include <begin_vertex>
-  //   vec4 clip = projectionMatrix * modelViewMatrix * vec4(position, 1.0); // position in clip space
-  //   vec3 ndc = clip.xyz / clip.w; //Normalized Device Coordinates -- this is the perspective divide and the result is the position in NDC space
-  //   vec4 myNormal = transpose(inverse(projectionMatrix * modelViewMatrix)) * vec4(normal,1); // Transform normal to clip space
-  //   vec3 myNDCNormal = myNormal.xyz / myNormal.w; // Normal in NDC space
-  //   vec2 offset = myNDCNormal.xy;
-  //   offset = normalize(offset); // Normal direction in screen space
-  //   ndc.xy += offset * uLineWidth;
-  //   vec4 tempTransformed = inverse(modelViewMatrix) * inverse(projectionMatrix) * vec4(ndc * clip.w, clip.w);
-  //   transformed = tempTransformed.xyz;
-  //   vHeight = transformed.z;`
-
-  // Another Attempt to adjust thickness based on camera distance
-  // // The normalMatrix is the correct matrix for transforming normals.
-  //       vec3 transformedNormal_viewSpace = normalize(normalMatrix * normal);
-
-  //       // This is a correction to use the view-space normal for calculating the screen-space offset
-  //       // The offset in view-space is scaled by the perspective projection
-  //       vec2 offset_viewSpace = transformedNormal_viewSpace.xy / -mvPosition.z;
-
-  //       // The scaling factor for the screen-space offset
-  //       float pixelRatio = uLineWidth / uResolution.x;
-
-  //       // Apply the screen-space offset in clip space
-  //       gl_Position.xy += offset_viewSpace * gl_Position.w * pixelRatio;
-
-  // Another Attempt to adjust thickness based on camera distance
-  // #include <project_vertex> // this will define variables used by other chunks in the preprocessing
-  // // Transform the vertex to camera space
-  // vec4 myPosition = modelViewMatrix * vec4(position, 1.0);
-  //};
-
   return new Mesh(new SphereGeometry(size), material);
 }
 
 export function create2DLine(width: number = 0.03, color: string = "white") {
   return new Mesh(
     new CylinderGeometry(width, width, 1),
-    new MeshStandardNodeMaterial({ color })
+    new THREE.MeshStandardNodeMaterial({ color })
   );
 }
 // The problem with this that the raycaster will rarely hit the line mesh because the line is rendered infinitesimally thin in 3D space.
@@ -201,7 +90,7 @@ export function createPointsAtInfinity({
   clippingPlanes: Plane[];
   upper?: boolean;
 }): Mesh {
-  const coneMaterial = new MeshPhysicalNodeMaterial({
+  const coneMaterial = new THREE.MeshPhysicalNodeMaterial({
     color: "blue",
     clippingPlanes: clippingPlanes,
     side: DoubleSide
@@ -276,156 +165,11 @@ export function createPolarGridCircle({
   // const mesh = new Mesh(geometry, material);
   const mesh = new Mesh(
     new CylinderGeometry(thickness, thickness, 1),
-    new MeshStandardNodeMaterial({ color: "white" })
+    new THREE.MeshStandardNodeMaterial({ color: "white" })
   );
   mesh.name = `PolarGridCircle_r=${intrinsicRadius.toFixed(2)}`;
   return mesh;
 }
-
-// OLD TUBE GEOMETRY ATTEMPT - I couldn't get constant thickness in screen space working this way
-// export function createPolarGridCircle({
-//   zHeight,
-//   zHeight,
-//   maxClippingPlane,
-//   minClippingPlane,
-//   numPoints = 50,
-//   thickness = 0.02,
-//   center = { x: 0, y: 0 },
-//   upper = true
-// }: {
-//   zHeight: number;
-//   zHeight: number;
-//   maxClippingPlane: Plane;
-//   minClippingPlane: Plane;
-//   numPoints?: number;
-//   thickness?: number;
-//   center?: { x: number; y: number };
-//   upper?: boolean;
-// }): Mesh {
-//   const curvePath = new CurvePath<Vector3>();
-
-//   const k = (4 / 3) * (Math.sqrt(2) - 1);
-//   const d = zHeight * k;
-//   const { x, y } = center;
-
-//   zHeight = upper ? zHeight : -zHeight;
-//   // Define control points for four cubic Bezier segments approximating a circle
-//   const points = [
-//     new Vector3(x, y + zHeight, zHeight),
-//     new Vector3(x + d, y + zHeight, zHeight),
-//     new Vector3(x + zHeight, y + d, zHeight),
-//     new Vector3(x + zHeight, y, zHeight),
-
-//     new Vector3(x + zHeight, y, zHeight),
-//     new Vector3(x + zHeight, y - d, zHeight),
-//     new Vector3(x + d, y - zHeight, zHeight),
-//     new Vector3(x, y - zHeight, zHeight),
-
-//     new Vector3(x, y - zHeight, zHeight),
-//     new Vector3(x - d, y - zHeight, zHeight),
-//     new Vector3(x - zHeight, y - d, zHeight),
-//     new Vector3(x - zHeight, y, zHeight),
-
-//     new Vector3(x - zHeight, y, zHeight),
-//     new Vector3(x - zHeight, y + d, zHeight),
-//     new Vector3(x - d, y + zHeight, zHeight),
-//     new Vector3(x, y + zHeight, zHeight)
-//   ];
-
-//   // Build the path
-//   for (let i = 0; i < 16; i += 4) {
-//     curvePath.add(
-//       new CubicBezierCurve3(
-//         points[i],
-//         points[i + 1],
-//         points[i + 2],
-//         points[i + 3]
-//       )
-//     );
-//   }
-
-//   const radialSegments = 16;
-//   const closed = true;
-
-//   const geometry = new TubeGeometry(
-//     curvePath,
-//     numPoints,
-//     thickness,
-//     radialSegments,
-//     closed
-//   );
-
-//   const material = new MeshStandardMaterial({
-//     color: "gray",
-//     roughness: 0.3,
-//     clippingPlanes: [minClippingPlane, maxClippingPlane]
-//   });
-
-//   material.onBeforeCompile = shader => {
-//     shader.uniforms.uStartFadeHeight = {
-//       value: SETTINGS.fadePercentage * maxClippingPlane.constant
-//     }; // height of start of fade
-//     shader.uniforms.uEndFadeHeight = { value: maxClippingPlane.constant }; // height of end of fade
-//     shader.uniforms.uStartOpacity = { value: SETTINGS.startOpacityFade }; //  opacity at the start of fade
-//     shader.uniforms.uEndOpacity = { value: SETTINGS.endOpacityFade }; // opacity at the end of fade
-//     shader.uniforms.uBaseOpacity = { value: 1.0 }; // max opacity
-//     shader.uniforms.uLineWidth = { value: thickness }; // dynamic
-
-//     // Pass the vertex height to the fragment shader
-//     shader.vertexShader = shader.vertexShader.replace(
-//       `#include <common>`,
-//       `#include <common>
-//       uniform float uLineWidth;
-//       varying float vHeight;`
-//     );
-
-//     shader.vertexShader = shader.vertexShader.replace(
-//       `#include <begin_vertex>`,
-//       `#include <begin_vertex>
-//       transformed = normal*uLineWidth + transformed;
-//       vHeight = transformed.z;`
-//     );
-
-//     // Use vHeight in fragment shader to adjust opacity
-//     shader.fragmentShader = shader.fragmentShader.replace(
-//       `#include <common>`,
-//       `#include <common>
-//        uniform float uStartFadeHeight;
-//        uniform float uEndFadeHeight;
-//        uniform float uEndOpacity;
-//        uniform float uStartOpacity;
-//        uniform float uBaseOpacity;
-//        varying float vHeight;`
-//     );
-
-//     shader.fragmentShader = shader.fragmentShader.replace(
-//       `#include <dithering_fragment>`,
-//       `
-//       float heightFactor = clamp(
-//         (vHeight - uStartFadeHeight) / (uEndFadeHeight - uStartFadeHeight),
-//         0.0,
-//         1.0
-//       );
-//       float opacityFactor = mix(
-//         uStartOpacity,
-//         uEndOpacity,
-//         heightFactor
-//       );
-//       gl_FragColor.a *= opacityFactor * uBaseOpacity;
-//       #include <dithering_fragment>
-//       `
-//     );
-
-//     // Keep uniforms for later updates
-//     material.userData.shader = shader;
-//   };
-
-//   const mesh = new Mesh(geometry, material);
-//   mesh.name = `PolarGridCircle_r=${zHeight.toFixed(2)}`;
-//   return mesh;
-// }
-
-// zMax is the maximum z height of the radial line
 
 export function createPolarGridRadialLine({
   radianAngle,
@@ -457,24 +201,10 @@ export function createPolarGridRadialLine({
     );
     nextTValue += 0.01 * Math.exp(1.3 * nextTValue); //controls the spacing of the points along the hyperbolic radial line. The points on the radial do not need to be uniformly spaced in t - more points near zero are better for accuracy, because eventually the hyperboloid radial lines are almost linear.
   }
-  // const geometry = new LineGeometry();
-  // geometry.setPositions(points);
 
-  // const material = new LineMaterial({
-  //   color: "grey",
-  //   linewidth: thickness, // Width in pixels
-  //   resolution: new Vector2(window.innerWidth, window.innerHeight),
-  //   clippingPlanes: [clippingPlane],
-  //   transparent: false
-  //   //depthWrite: false, // Recommended for transparent lines
-  //   // optional:
-  //   // dashed: true,
-  //   // dashSize: 2,
-  //   // gapSize: 100
-  // });
   const lineMesh = new Mesh(
     new CylinderGeometry(thickness, thickness, 1),
-    new MeshStandardNodeMaterial({ color: "white" })
+    new THREE.MeshStandardNodeMaterial({ color: "white" })
   );
   // const lineMesh = new Line2(geometry, material);
   //const mesh = new Mesh(geometry, material);
@@ -482,177 +212,6 @@ export function createPolarGridRadialLine({
 
   return lineMesh;
 }
-// OLD TUBE GEOMETRY ATTEMPT - I couldn't get constant thickness in screen space working this way
-// const curvePath = new CurvePath<Vector3>();
-// for (let i = 0; i < points.length - 1; i++) {
-//   curvePath.add(new LineCurve3(points[i], points[i + 1]));
-// }
-// const radialSegments = 30;
-// const closed = false;
-
-// const geometry = new TubeGeometry(
-//   curvePath,
-//   numPoints,
-//   thickness,
-//   radialSegments,
-//   closed
-// );
-// const material = new MeshStandardMaterial({
-//   color: "gray",
-//   roughness: 0.3
-//   //clippingPlanes: [minClippingPlane, maxClippingPlane]
-// });
-
-// material.onBeforeCompile = shader => {
-//   shader.uniforms.uStartFadeHeight = {
-//     value: SETTINGS.fadePercentage * maxClippingPlane.constant
-//   }; // height of start of fade
-//   shader.uniforms.uEndFadeHeight = { value: maxClippingPlane.constant }; // height of end of fade
-//   shader.uniforms.uStartOpacity = { value: SETTINGS.startOpacityFade }; //  opacity at the start of fade
-//   shader.uniforms.uEndOpacity = { value: SETTINGS.endOpacityFade }; // opacity at the end of fade
-//   shader.uniforms.uBaseOpacity = { value: 1.0 }; // max opacity
-//   // shader.uniforms.uLineWidth = { value: 10.0 }; // dynamic
-//   // shader.uniforms.initialTubeThickness = { value: thickness };
-//   // shader.uniforms.uResolution = {
-//   //   value: new Vector2(window.innerWidth, window.innerHeight)
-//   //};
-
-//   // Pass the vertex height to the fragment shader
-//   shader.vertexShader = shader.vertexShader.replace(
-//     `#include <color_vertex>`,
-//     `
-//     //uniform float uLineWidth;
-//     //uniform vec2 uResolution;
-//     //attribute vec3 tangent;
-//     #include <color_vertex>
-//     varying float vHeight;
-//     `
-//   );
-//   shader.vertexShader = shader.vertexShader.replace(
-//     `#include <begin_vertex>`,
-//     `#include <begin_vertex>
-//     //transformed = normal*uLineWidth + transformed;// old naive thickness adjustment
-//     vHeight = transformed.z;`
-//   );
-//   //   shader.vertexShader = shader.vertexShader.replace(
-//   //     `#include <project_vertex>`,
-//   //     `
-//   //     vec4 mvPosition = modelViewMatrix * vec4( transformed, 1.0 );
-//   //     //gl_Position = projectionMatrix * mvPosition;
-
-//   //     vec4 position_clipSpace = projectionMatrix * mvPosition;
-//   //     vec3 ndcPosition = position_clipSpace.xyz / position_clipSpace.w;
-//   //     mat4 A = mat4(
-//   //                 vec4(0.5 * uResolution.x, 0.0, 0.0, 0.0),  // Column 0
-//   //                 vec4(0.0, 0.5 * uResolution.y, 0.0, 0.0),  // Column 1
-//   //                 vec4(0.0, 0.0, 1.0, 0.0),   // Column 2
-//   //                 vec4(0.5 * uResolution.x, 0.5 * uResolution.y, 0.0, 1.0) // Column 3
-//   //             );
-//   //     vec4 screenPosition = A * vec4(ndcPosition, 1.0);
-
-//   //     vec4 unitScreenNormal = normalize(transpose(inverse(A*projectionMatrix * modelViewMatrix)) * vec4(normal, 0.0)); // The w component is 0 for normals, so after transformation it remains 0
-
-//   //     vec4 screenVertex = screenPosition + unitScreenNormal * 0.02;// * uLineWidth; // uLinewidth is almost pixels, but the initial tube thickness is added.
-
-//   //     // Convert back to NDC
-//   //     vec4 ndcVertex = inverse(A) * screenVertex;
-
-//   //     // Reconstruct clip space position
-//   //     gl_Position = vec4(ndcVertex.xyz * position_clipSpace.w, position_clipSpace.w);
-//   //     `
-//   //   );
-
-//   // OLD NAIVE THICKNESS ADJUSTMENT
-//   // shader.vertexShader = shader.vertexShader.replace(
-//   //   `#include <begin_vertex>`,
-//   //   `#include <begin_vertex>
-//   //   transformed = normal*uLineWidth + transformed
-//   //   vHeight = transformed.z`
-//   // );
-
-//   // Old Attempt to adjust thickness based on camera distance
-//   // `#include <begin_vertex>
-//   //   vec4 clip = projectionMatrix * modelViewMatrix * vec4(position, 1.0); // position in clip space
-//   //   vec3 ndc = clip.xyz / clip.w; //Normalized Device Coordinates -- this is the perspective divide and the result is the position in NDC space
-//   //   vec4 myNormal = transpose(inverse(projectionMatrix * modelViewMatrix)) * vec4(normal,1); // Transform normal to clip space
-//   //   vec3 myNDCNormal = myNormal.xyz / myNormal.w; // Normal in NDC space
-//   //   vec2 offset = myNDCNormal.xy;
-//   //   offset = normalize(offset); // Normal direction in screen space
-//   //   ndc.xy += offset * uLineWidth;
-//   //   vec4 tempTransformed = inverse(modelViewMatrix) * inverse(projectionMatrix) * vec4(ndc * clip.w, clip.w);
-//   //   transformed = tempTransformed.xyz;
-//   //   vHeight = transformed.z;`
-
-//   // Another Attempt to adjust thickness based on camera distance
-//   // // The normalMatrix is the correct matrix for transforming normals.
-//   //       vec3 transformedNormal_viewSpace = normalize(normalMatrix * normal);
-
-//   //       // This is a correction to use the view-space normal for calculating the screen-space offset
-//   //       // The offset in view-space is scaled by the perspective projection
-//   //       vec2 offset_viewSpace = transformedNormal_viewSpace.xy / -mvPosition.z;
-
-//   //       // The scaling factor for the screen-space offset
-//   //       float pixelRatio = uLineWidth / uResolution.x;
-
-//   //       // Apply the screen-space offset in clip space
-//   //       gl_Position.xy += offset_viewSpace * gl_Position.w * pixelRatio;
-
-//   // Another Attempt to adjust thickness based on camera distance
-//   // #include <project_vertex> // this will define variables used by other chunks in the preprocessing
-//   // // Transform the vertex to camera space
-//   // vec4 myPosition = modelViewMatrix * vec4(position, 1.0);
-
-//   // // Transform tangent to camera space
-//   // vec4 tCam = normalize((modelViewMatrix * vec4(tangent, 0.0)));
-
-//   // // Get 2D screen-space perpendicular direction
-//   // vec2 tangentNDC = normalize( (projectionMatrix * tCam).xy );
-//   // vec2 perpNDC = vec2(-tangentNDC.y, tangentNDC.x);
-
-//   // // Pixel size → NDC
-//   // vec2 scale = vec2(uLineWidth / uResolution.x, uLineWidth / uResolution.y);   // convert pixels to NDC
-//   // vec2 offsetNDC = perpNDC * scale;
-
-//   // // Offset original clip-space position
-//   // vec4 clipPos = projectionMatrix * myPosition;
-//   // clipPos.xy += offsetNDC * clipPos.w;
-
-//   // gl_Position = clipPos;
-
-//   // Use vHeight in fragment shader to adjust opacity
-//   shader.fragmentShader = shader.fragmentShader.replace(
-//     `#include <common>`,
-//     `#include <common>
-//      uniform float uStartFadeHeight;
-//      uniform float uEndFadeHeight;
-//      uniform float uEndOpacity;
-//      uniform float uStartOpacity;
-//      uniform float uBaseOpacity;
-//      varying float vHeight;`
-//   );
-
-//   shader.fragmentShader = shader.fragmentShader.replace(
-//     `gl_FragColor = vec4( color, material.opacity );`,
-//     `
-//     float heightFactor = clamp(
-//       (vHeight - uStartFadeHeight) / (uEndFadeHeight - uStartFadeHeight),
-//       0.0,
-//       1.0
-//     );
-//     float opacityFactor = mix(
-//       uStartOpacity,
-//       uEndOpacity,
-//       heightFactor
-//     );
-//     //gl_FragColor.a *= opacityFactor * uBaseOpacity;
-//     //gl_FragColor = vec4( color, opacityFactor * uBaseOpacity );
-//     gl_FragColor = vec4( color, material.opacity );
-//     `
-//   );
-
-//   // Keep uniforms for later updates
-//   material.userData.shader = shader;
-// };
 
 export function createHyperboloidSheet({
   clippingPlane,
@@ -672,66 +231,9 @@ export function createHyperboloidSheet({
     clippingPlanes: [clippingPlane]
   };
 
-  const hyperboloidMaterial = new MeshStandardNodeMaterial(
+  const hyperboloidMaterial = new THREE.MeshStandardNodeMaterial(
     hyperboloidMaterialParameters
   );
-
-  hyperboloidMaterial.onBeforeCompile = shader => {
-    shader.uniforms.uStartFadeHeight = {
-      value: SETTINGS.fadePercentage * clippingPlane.constant
-    }; // height of start of fade
-    shader.uniforms.uEndFadeHeight = { value: clippingPlane.constant }; // height of end of fade
-    shader.uniforms.uStartOpacity = { value: SETTINGS.startOpacityFade }; //  opacity at the start of fade
-    shader.uniforms.uEndOpacity = { value: SETTINGS.endOpacityFade }; // opacity at the end of fade
-    shader.uniforms.uBaseOpacity = { value: 1.0 }; // base line opacity
-
-    // Pass the vertex height to the fragment shader
-    shader.vertexShader = shader.vertexShader.replace(
-      `#include <common>`,
-      `#include <common>
-       varying float vHeight;`
-    );
-
-    shader.vertexShader = shader.vertexShader.replace(
-      `#include <begin_vertex>`,
-      `#include <begin_vertex>
-       vHeight = transformed.z;`
-    );
-
-    // Use vHeight in fragment shader to adjust opacity
-    shader.fragmentShader = shader.fragmentShader.replace(
-      `#include <common>`,
-      `#include <common>
-       uniform float uStartFadeHeight;
-       uniform float uEndFadeHeight;
-       uniform float uEndOpacity;
-       uniform float uStartOpacity;
-       uniform float uBaseOpacity;
-       varying float vHeight;`
-    );
-
-    shader.fragmentShader = shader.fragmentShader.replace(
-      `#include <dithering_fragment>`,
-      `
-      float heightFactor = smoothstep(
-        0.0,
-        1.0,
-        (vHeight - uStartFadeHeight) / (uEndFadeHeight - uStartFadeHeight)
-      );
-      float opacityFactor = mix(
-        uStartOpacity,
-        uEndOpacity,
-        heightFactor
-      );
-      gl_FragColor.a *= opacityFactor * uBaseOpacity;
-      #include <dithering_fragment>
-      `
-    );
-
-    // Keep uniforms for later updates
-    hyperboloidMaterial.userData.shader = shader;
-    // console.log("Shader modified");
-  };
 
   const hyperboloidGeometry = new ParametricGeometry(
     upper ? upperHyperboloid : lowerHyperboloid,
@@ -802,7 +304,7 @@ export function createBoundaryCone({
   maxZClippingHeight: number;
   upper?: boolean;
 }): Mesh {
-  const coneMaterial = new MeshPhysicalNodeMaterial({
+  const coneMaterial = new THREE.MeshPhysicalNodeMaterial({
     color: 0x88ccff, // base color
     roughness: 0.0, // very smooth surface
     transmission: 0.5, // glasslike transparency

@@ -118,8 +118,7 @@ import {
   Vector3,
   Vector2
 } from "three";
-import WebGPURenderer from "three/examples/jsm/renderers/webgpu/WebGPURenderer.js";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import CameraControls from "camera-controls";
 import { DispatcherEvent } from "camera-controls/dist/EventDispatcher";
@@ -220,7 +219,7 @@ let oldCameraDistance = 0;
 const cameraPolarAngle = ref(0);
 const tmpMatrix4 = new Matrix4();
 const positionInCameraCF = ref(new Vector3());
-let renderer: WebGPURenderer;
+let renderer: THREE.WebGPURenderer;
 let cameraController: CameraControls;
 CameraControls.install({ THREE });
 const ambientLight = new AmbientLight(0xffffff, 1.5);
@@ -457,7 +456,7 @@ onMounted(async () => {
   cameraDistance.value = cameraController.distance;
   oldCameraDistance = cameraController.distance;
   cameraPolarAngle.value = cameraController.polarAngle;
-  renderer = new WebGPURenderer({
+  renderer = new THREE.WebGPURenderer({
     canvas: webGPUCanvas.value!,
     antialias: true
   });

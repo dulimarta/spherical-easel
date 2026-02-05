@@ -3,16 +3,25 @@
     "pretty": true,
     "removeComments": true,
     "composite": true,
+    
     "target": "ESNext",
     "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
     "strict": true,
+    "jsx": "preserve",
+    "skipLibCheck": true,
+
     "strictFunctionTypes": true,
     "strictNullChecks": true,
     // "declaration": false, // Setting this to false, helps to resolve compiler error in the Pinia store
-    "jsx": "preserve",
+    
     // "importHelpers": true,
     "noImplicitAny": false,
-    "moduleResolution": "node",
+
     // "experimentalDecorators": true,
     "esModuleInterop": true,
     // "allowSyntheticDefaultImports": true,
@@ -34,8 +43,7 @@
       "$/*": ["./tests/*"]
     },
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
-    "resolveJsonModule": true,
-    "isolatedModules": true,
+
     "allowSyntheticDefaultImports": true
   },
   "exclude": ["node_modules"],
