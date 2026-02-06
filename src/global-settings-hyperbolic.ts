@@ -1,3 +1,4 @@
+import { max, min } from "three/tsl";
 import colors from "vuetify/util/colors";
 export const SETTINGS = {
   angularBorder: 4, // in degrees of the angular radius of the border around the viewport
@@ -8,8 +9,12 @@ export const SETTINGS = {
   minDollyDistanceChangeForGridUpdate: 0.15, // The minimum change in dolly distance (camera to origin) required to trigger a grid update
   fadePercentage: 0.85, // The percentage of the height of the hyperboloid at which fading (opacity lowers) begins
   startOpacityFade: 1.0, // The opacity at the start of the fade of hyperboloid
-  endOpacityFade: 0.85 // The opacity at the end of the fade hyperboloid
+  endOpacityFade: 0.85, // The opacity at the end of the fade hyperboloid
+  maxFieldOfView: 45, // The maximum field of view for the perspective camera in degrees.
+  minFieldOfView: 10, // The minimum field of view for the perspective camera in degrees.
+  maxZClip: 150 //set the maximum value of zUpperClip so that the entire hyperboloid and grid lines are shown at max dolly distance
 };
+
 export enum HYPERBOLIC_LAYER {
   // These are not layers in the sense of spherical easel - layers that are displayed in a certain order to render the background behind the foreground. They are groups of objects that can be added or removed from the scene. ThreeJS constraint: max 32 layers
   upperSheet,

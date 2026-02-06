@@ -12,7 +12,9 @@ import {
   If,
   Fn,
   positionLocal,
-  varying
+  varying,
+  materialReference,
+  cond
 } from "three/tsl";
 import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { THREESubset } from "camera-controls/dist/types";
@@ -226,45 +228,40 @@ export function createPolarGridRadialLine({
 }
 
 export function createHyperboloidSheet({
-  clippingPlane,
-  maxZClippingHeight,
+  zClipInitial,
   upper = true
 }: {
-  clippingPlane: PlaneParameters;
-  maxZClippingHeight: number;
+  zClipInitial: number;
   upper?: boolean;
-}): Mesh {
-  const hyperboloidMaterial = new THREE.MeshPhysicalNodeMaterial({
+}): {
+  mesh: THREE.Mesh;
+  zClipUpdateFunction: (newVal: number) => void;
+} {
+  const hyperboloidMaterial = new THREE.MeshStandardNodeMaterial({
     color: "chocolate",
     side: DoubleSide,
-    metalness: 0.1,
-    roughness: 0.3,
-    opacity: 0.75
+    // metalness: 0.1,
+    // roughness: 0
+    opacity: 0.75,
+    transparent: true
   });
-  const clippingPlaneConstant = uniform(float(clippingPlane.constant));
 
-  // const positionFunc = Fn(() => {
-  //   varying(positionLocal);
-  //   return positionLocal;
-  // });
+  // color: "chocolate",
+  //   side: DoubleSide,
+  //   roughness: 0.2,
+  //   transparent: true,
+  //   opacity: 0.75,
+  const zClip = uniform(zClipInitial);
 
-  // hyperboloidMaterial.positionNode = positionFunc();
-
-  const planeNormal = vec3(
-    clippingPlane.normal.x,
-    clippingPlane.normal.y,
-    clippingPlane.normal.z
-  );
-  const distanceToPlane = dot(positionWorld, planeNormal).add(
-    clippingPlaneConstant
-  );
+  const colorNode = materialReference("color", "color");
 
   const clippingLogic = Fn(() => {
-    // 1. Perform the discard check
-    positionLocal.z.greaterThan(clippingPlane.constant).discard();
-
-    // 2. If we didn't discard, return the base color
-    return vec4(0.0, 0.46, 1.0, 1.0); // A nice blue
+    if (upper) {
+      positionLocal.z.greaterThan(zClip).discard(); // if upper sheet greater than zClip is discarded
+    } else {
+      positionLocal.z.lessThan(zClip).discard(); // if lower sheet less than zClip is discarded
+    }
+    return colorNode;
   });
 
   hyperboloidMaterial.colorNode = clippingLogic();
@@ -277,53 +274,12 @@ export function createHyperboloidSheet({
 
   const hyperboloidMesh = new Mesh(hyperboloidGeometry, hyperboloidMaterial);
 
-  return hyperboloidMesh;
-
-  // Parametric function for the upper sheet of the hyperboloid where 0 <= u <= 1 and 0 <= v <= 1, the point is returned in pt
-  function upperHyperboloid(u: number, v: number, pt: Vector3) {
-    // This is a one-to-one mapping from R^2 to a sheet of the hyperboloid.
-    // https://math.stackexchange.com/questions/697245/parametrization-of-the-hyperboloid-of-two-sheets
-    // Maybe this is useful if we run into multi-value issues
-    // The edges of this do not form a rectangle in 3D
-    // const scale = 3;
-    // const myU = 2 * scale * u - scale; // map to -scale <= u <= scale
-    // const myV = 2 * scale * v - scale; // map to -scale <= v <= scale
-    // const x = Math.sinh(myU) * Math.cosh(myV);
-    // const y = Math.sinh(myV);
-    // const z = Math.cosh(myU) * Math.cosh(myV);
-
-    // This is the standard polar coordinate parameterization
-    // https://en.wikipedia.org/wiki/Hyperboloid_of_two_sheets#Parametrization
-    // where u is the radial coordinate and v is the angular coordinate
-    u = u * (Math.acosh(maxZClippingHeight) + 1); // add one because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene.
-    const theta = v * 2 * Math.PI;
-    const x = Math.sinh(u) * Math.cos(theta);
-    const y = Math.sinh(u) * Math.sin(theta);
-    const z = Math.cosh(u);
-    pt.set(x, y, z);
-  }
-
-  // Parametric function for the lower sheet of the hyperboloid in polar coordinates 0 <= u <= 1 and 0 <= v <= 1
-  function lowerHyperboloid(u: number, v: number, pt: Vector3) {
-    u = u * (Math.acosh(maxZClippingHeight) + 1);
-    const theta = v * 2 * Math.PI;
-    const x = Math.sinh(u) * Math.cos(theta);
-    const y = Math.sinh(u) * Math.sin(theta);
-    const z = -Math.cosh(u);
-    pt.set(x, y, z);
-  }
-
-  // function upperHyperboloidStrip(u: number, v: number, pt: Vector3) {
-  //   // This is the standard polar coordinate parameterization
-  //   // https://en.wikipedia.org/wiki/Hyperboloid_of_two_sheets#Parametrization
-  //   // where u is the radial coordinate and v is the angular coordinate
-  //   u = u * SETTINGS.Z_MAX; // map to 0 <= u <= SETTINGS.Z_MAX
-  //   const theta = v * 2 * Math.PI;
-  //   const x = Math.sinh(u) * Math.cos(theta);
-  //   const y = Math.sinh(u) * Math.sin(theta);
-  //   const z = Math.cosh(u);
-  //   pt.set(x, y, z);
-  // }
+  return {
+    mesh: hyperboloidMesh,
+    zClipUpdateFunction: (newVal: number) => {
+      zClip.value = newVal;
+    }
+  };
 }
 
 export function createBoundaryCone({
@@ -380,4 +336,38 @@ export function createBoundaryCone({
   const coneMesh = new Mesh(coneGeometry, coneMaterial);
 
   return coneMesh;
+}
+
+// Parametric function for the upper sheet of the hyperboloid where 0 <= u <= 1 and 0 <= v <= 1, the point is returned in pt
+function upperHyperboloid(u: number, v: number, pt: Vector3) {
+  // This is a one-to-one mapping from R^2 to a sheet of the hyperboloid.
+  // https://math.stackexchange.com/questions/697245/parametrization-of-the-hyperboloid-of-two-sheets
+  // Maybe this is useful if we run into multi-value issues
+  // The edges of this do not form a rectangle in 3D
+  // const scale = 3;
+  // const myU = 2 * scale * u - scale; // map to -scale <= u <= scale
+  // const myV = 2 * scale * v - scale; // map to -scale <= v <= scale
+  // const x = Math.sinh(myU) * Math.cosh(myV);
+  // const y = Math.sinh(myV);
+  // const z = Math.cosh(myU) * Math.cosh(myV);
+
+  // This is the standard polar coordinate parameterization
+  // https://en.wikipedia.org/wiki/Hyperboloid_of_two_sheets#Parametrization
+  // where u is the radial coordinate and v is the angular coordinate
+  u = u * (Math.acosh(SETTINGS.maxZClip) + 1); // add one because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene.
+  const theta = v * 2 * Math.PI;
+  const x = Math.sinh(u) * Math.cos(theta);
+  const y = Math.sinh(u) * Math.sin(theta);
+  const z = Math.cosh(u);
+  pt.set(x, y, z);
+}
+
+// Parametric function for the lower sheet of the hyperboloid in polar coordinates 0 <= u <= 1 and 0 <= v <= 1
+function lowerHyperboloid(u: number, v: number, pt: Vector3) {
+  u = u * (Math.acosh(SETTINGS.maxZClip) + 1);
+  const theta = v * 2 * Math.PI;
+  const x = Math.sinh(u) * Math.cos(theta);
+  const y = Math.sinh(u) * Math.sin(theta);
+  const z = -Math.cosh(u);
+  pt.set(x, y, z);
 }

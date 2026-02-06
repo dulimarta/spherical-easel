@@ -15,7 +15,7 @@ import { markRaw } from "vue";
 import { ref, Ref } from "vue";
 import { useThreeFont } from "@/composables/useThreeFont";
 import { HELine } from "@/models-hyperbolic/HELine";
-import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
+import SETTINGS, { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import { Text } from "troika-three-text";
 import { ActionMode } from "@/types";
 import { HELabel } from "@/models-hyperbolic/HELabel";
@@ -161,6 +161,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
       t.quaternion.copy(quat);
     });
   }
+
   return {
     font,
     surfaceIntersections,
