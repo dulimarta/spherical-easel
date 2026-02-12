@@ -706,12 +706,3 @@ export type VisibleHELayersType =
   | "labels"
   | "polarGrid"
   | "pointsAtInfinity";
-
-/* Parameters defining a plane in 3D space, if used for a clipping plane:
-  - If normal.dot(x,y,z) + constant < 0 then the point (x,y,z) is clipped away
-  - If normal.dot(x,y,z) + constant >= 0 then the point (x,y,z) is kept
-  */
-export type PlaneParameters = {
-  normal: Vector3;
-  constant: number;
-};

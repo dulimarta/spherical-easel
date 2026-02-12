@@ -158,6 +158,7 @@ import {
   createHyperboloidSheet
 } from "@/plottables-hyperbolic/MeshFactory";
 import { VisibleHELayersType } from "@/types";
+import { label, uniform } from "three/tsl";
 
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
@@ -258,18 +259,22 @@ txtObject.color = "yellow"; //0x000000;
 const rayIntersectionPosition = reactive(new Vector3());
 
 // The z coordinate of all points in the current view are between zUpperClip and zLowerClip
-let zUpperClip = 1.0;
-let zLowerClip = -1.0;
-let updateUpperZClipGraphically: (newVal: number) => void = () => {};
-let updateLowerZClipGraphically: (newVal: number) => void = () => {};
+let zUpperClip = ref(1.0); // this is a ref so it can be displayed on the screen, but beyond this doesn't need to be at ref
+let zLowerClip = ref(-1.0);
+const zUpperClipUniform = uniform(zUpperClip.value, "float");
+const zLowerClipUniform = uniform(zLowerClip.value, "float");
 
 // The z coordinate of all point of the upperPointsAtInfinity are between zUpperPAIClipPlus and zUpperPAIClipMinus,
 let zUpperPAIClipPlus = 2.0;
 let zUpperPAIClipMinus = 1.5;
+const zUpperPAIClipPlusUniform = uniform(zUpperPAIClipPlus, "float");
+const zUpperPAIClipMinusUniform = uniform(zUpperPAIClipMinus, "float");
 
 // The z coordinate of all point of the lowerPointsAtInfinity are between zLowerPAIClipPlus and zLowerPAIClipMinus,
 let zLowerPAIClipPlus = -1.5;
 let zLowerPAIClipMinus = -2.0;
+const zLowerPAIClipPlusUniform = uniform(zLowerPAIClipPlus, "float");
+const zLowerPAIClipMinusUniform = uniform(zLowerPAIClipMinus, "float");
 
 // Arrays to store the polar grid lines
 let upperPolarGridArray: Array<THREE.Mesh> = [];
@@ -512,19 +517,8 @@ function initialize() {
   // scene.add(arrowZ);
 
   // create the hyperboloid sheets
-  const upperHyperboloidMeshObject = createHyperboloidSheet({
-    upper: true,
-    zClipInitial: zUpperClip
-  });
-  const upperHyperboloidMesh = upperHyperboloidMeshObject.mesh;
-  updateUpperZClipGraphically = upperHyperboloidMeshObject.zClipUpdateFunction;
-
-  const lowerHyperboloidMeshObject = createHyperboloidSheet({
-    upper: false,
-    zClipInitial: zLowerClip
-  });
-  const lowerHyperboloidMesh = lowerHyperboloidMeshObject.mesh;
-  updateLowerZClipGraphically = lowerHyperboloidMeshObject.zClipUpdateFunction;
+  const upperHyperboloidMesh = createHyperboloidSheet(zUpperClipUniform, true);
+  const lowerHyperboloidMesh = createHyperboloidSheet(zLowerClipUniform, false);
 
   lowerHyperboloidMesh.name = "Lower Sheet";
   upperHyperboloidMesh.name = "Upper Sheet";
@@ -541,7 +535,7 @@ function initialize() {
   } else {
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheet);
   }
-  /**
+
   // create the boundary cone
   // const upperCone = createBoundaryCone({
   //   upper: true,
@@ -563,23 +557,16 @@ function initialize() {
   // Create the cones from which the points at infinity
   // will be displayed by clipping between two planes
   upperPointsAtInfinity = createPointsAtInfinity({
-    maxZClippingHeight: 1.5 * SETTINGS.maxZClip,
-    clippingPlanes: [
-      zUpperPAIClipPlus,
-      zUpperPAIClipMinus
-
-    ],
+    upperZValue: zUpperPAIClipPlusUniform,
+    lowerZValue: zUpperPAIClipMinusUniform,
     upper: true
   });
   upperPointsAtInfinity.name = `Upper Points At Infinity`;
   upperPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
 
   lowerPointsAtInfinity = createPointsAtInfinity({
-    maxZClippingHeight: 1.5 *SETTINGS.maxZClip,
-    clippingPlanes: [
-      zLowerClipPlus,
-      zLowerClipMinus
-    ],
+    upperZValue: zLowerPAIClipPlusUniform,
+    lowerZValue: zLowerPAIClipMinusUniform,
     upper: false
   });
   lowerPointsAtInfinity.name = `Lower Points At Infinity`;
@@ -593,10 +580,16 @@ function initialize() {
       theta < 2 * Math.PI;
       theta += (2 * Math.PI) / numRadialLines
     ) {
-      const radialLineMesh = createPolarGridRadialLine({
+      const radialLineMeshObject = createPolarGridRadialLine({
         radianAngle: theta,
-        zMax: SETTINGS.maxZClip,
-        clippingPlane: upperLower === 0 ? zUpperClip : zLowerClip = 1.0     radialLineMesh.layers.set(
+        zClip: upperLower === 0 ? zUpperClipUniform : zLowerClipUniform,
+        upper: upperLower === 0
+      });
+      const radialLineMesh = radialLineMeshObject.mesh;
+      radialLineMeshObject.zClipUpdateFunction(1.0);
+
+      //console.log("zClip");
+      radialLineMesh.layers.set(
         upperLower === 0
           ? HYPERBOLIC_LAYER.upperSheetGrid
           : HYPERBOLIC_LAYER.lowerSheetGrid
@@ -615,7 +608,11 @@ function initialize() {
     for (let r = 0.5; Math.cosh(r) < SETTINGS.maxZClip; r += 0.5) {
       const radialLineMesh = createPolarGridCircle({
         intrinsicRadius: r,
-        clippingPlane: upperLower === 0 ? zUpperClip : zLowerClip = 1.0     radialLineMesh.layers.set(
+        zClip: upperLower === 0 ? zUpperClipUniform : zLowerClipUniform,
+        upper: upperLower === 0
+      });
+
+      radialLineMesh.layers.set(
         upperLower === 0
           ? HYPERBOLIC_LAYER.upperSheetGrid
           : HYPERBOLIC_LAYER.lowerSheetGrid
@@ -652,9 +649,6 @@ function initialize() {
     camera.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
   }
-*/
-  //OLD set the raycaster to detect intersections with line material
-  //rayCaster.params.Line.threshold = 100;
 
   // Set the default tool
   actionMode.value = "rotate";
@@ -715,11 +709,11 @@ function updateView() {
     // the image still fit on the field of view. The largest visual amount occurs with the
     // camera is looking directly (i.e. orthogonal) at the the plane(s) that make angle of 45 degrees
     // with the horizontal plane.
-    zUpperClip =
+    zUpperClip.value =
       Math.tan((((camera.fov - SETTINGS.angularBorder) / 2) * Math.PI) / 180) *
       cameraController.distance *
       Math.sqrt(1 / 2);
-    zLowerClip = -zUpperClip;
+    zLowerClip.value = -zUpperClip.value;
   } else {
     // When only the upper sheet is shown, we set the zClippingPlane so that
     // the when the largest visual amount of the upper sheet is shown, it is
@@ -729,12 +723,12 @@ function updateView() {
     const tanFov2 = Math.tan(fovRad / 2);
 
     const d = cameraController.distance;
-    zUpperClip =
+    zUpperClip.value =
       (tanFov2 * tanFov2 * (d + 1) -
         Math.sqrt(-1 + tanFov2 * tanFov2 * (2 + 2 * d + d * d))) /
       (tanFov2 * tanFov2 - 1);
 
-    zLowerClip = 0;
+    zLowerClip.value = 0;
 
     //When the lower sheet is not shown, we want to look at a point
     // that is depends on the polar angle of the camera
@@ -747,11 +741,13 @@ function updateView() {
           cameraController.polarAngle,
           Math.PI - cameraController.polarAngle
         ) *
-        (zUpperClip - 1) +
+        (zUpperClip.value - 1) +
       1;
   }
-  updateUpperZClipGraphically(zUpperClip);
-  updateLowerZClipGraphically(zLowerClip);
+
+  //update the graphical display
+  zUpperClipUniform.value = zUpperClip.value;
+  zLowerClipUniform.value = zLowerClip.value;
 
   const currentCameraPosition = new Vector3();
   cameraController.getPosition(currentCameraPosition);
@@ -772,7 +768,7 @@ function updateView() {
   const dCos =
     cameraController.distance * Math.cos(cameraController.polarAngle);
   const la = zCoordLookAt;
-  const cp = zUpperClip;
+  const cp = zUpperClip.value;
 
   // Let A be the camera position, (dSin,0,dCos + la)
   // where dSin/dCos is the sine/cosine of the polar angle multiplied by the camera distance
@@ -798,14 +794,13 @@ function updateView() {
   const angleABC = Math.acos(((1 / Math.sqrt(2)) * (dCos + la)) / lenAB);
 
   zUpperPAIClipMinus =
-    -1 *
-    (zUpperClip +
-      ((1 / Math.sqrt(2)) *
-        (lenAB * Math.sin(SETTINGS.pointsAtInfinityAngularGap))) /
-        Math.sin(SETTINGS.pointsAtInfinityAngularGap + angleABC));
+    zUpperClip.value +
+    ((1 / Math.sqrt(2)) *
+      (lenAB * Math.sin(SETTINGS.pointsAtInfinityAngularGap))) /
+      Math.sin(SETTINGS.pointsAtInfinityAngularGap + angleABC);
 
   zUpperPAIClipPlus =
-    zUpperClip +
+    zUpperClip.value +
     ((1 / Math.sqrt(2)) *
       (lenAB *
         Math.sin(
@@ -821,90 +816,39 @@ function updateView() {
   zLowerPAIClipMinus = -zUpperPAIClipPlus;
   zLowerPAIClipPlus = -zUpperPAIClipMinus;
 
+  // console.log(
+  //   `zUpperPAIClipMinus: ${zUpperPAIClipMinus}, zUpperPAIClipPlus: ${zUpperPAIClipPlus}`
+  // );
+
+  //update the graphical display
+  zUpperPAIClipMinusUniform.value = zUpperPAIClipMinus;
+  zUpperPAIClipPlusUniform.value = zUpperPAIClipPlus;
+  zLowerPAIClipMinusUniform.value = zLowerPAIClipMinus;
+  zLowerPAIClipPlusUniform.value = zLowerPAIClipPlus;
+
   // update the fade in the shader materials for the upper and lower sheets
-  for (let upper = 0; upper < 2; upper++) {
-    const mesh = scene.getObjectByName(
-      upper === 0 ? "Upper Sheet" : "Lower Sheet"
-    ) as THREE.Mesh;
-    // console.log("Lower Sheet mesh", mesh);
-    const hyperboloidMaterial = mesh.material as THREE.MeshStandardMaterial;
-    // console.log("Hyperboloid material", hyperboloidMaterial);
-    // console.log("shader", hyperboloidMaterial.userData.shader);
-    if (hyperboloidMaterial.userData.shader !== undefined) {
-      hyperboloidMaterial.userData.shader.uniforms.uEndFadeHeight.value =
-        (upper === 0 ? 1 : -1) * zUpperClip;
-      hyperboloidMaterial.userData.shader.uniforms.uStartFadeHeight.value =
-        (upper === 0 ? 1 : -1) * zUpperClip * SETTINGS.fadePercentage;
-    }
-    if (!showLowerSheet.value) {
-      upper = 2; // break the loop because the lower sheet is not shown
-    }
-  }
-
-  // OLD CODE FOR POLAR GRID LINE THICKNESS UPDATE - before it was a 2D material
-  // for (const mesh of upperPolarGridArray) {
-  //   const gridMaterial = mesh.material as THREE.MeshStandardMaterial;
-  //   if (gridMaterial.userData.shader !== undefined) {
-  //     // console.log("shader", gridMaterial.userData.shader);
-  //     // const resolution = gridMaterial.userData.shader.u_resolution.value;
-  //     // console.log(`Resolution is: ${resolution.x} x ${resolution.y}`);
-
-  //     // gridMaterial.userData.shader.uniforms.uLineWidth.value =
-  //     //   polarGridArcThickness * cameraDistance.value;
-  //     gridMaterial.userData.shader.uniforms.uEndFadeHeight.value =
-  //       zUpperClip.constant;
-  //     gridMaterial.userData.shader.uniforms.uStartFadeHeight.value =
-  //       zUpperClip.constant * SETTINGS.fadePercentage;
+  // for (let upper = 0; upper < 2; upper++) {
+  //   const mesh = scene.getObjectByName(
+  //     upper === 0 ? "Upper Sheet" : "Lower Sheet"
+  //   ) as THREE.Mesh;
+  //   // console.log("Lower Sheet mesh", mesh);
+  //   const hyperboloidMaterial = mesh.material as THREE.MeshStandardMaterial;
+  //   // console.log("Hyperboloid material", hyperboloidMaterial);
+  //   // console.log("shader", hyperboloidMaterial.userData.shader);
+  //   if (hyperboloidMaterial.userData.shader !== undefined) {
+  //     hyperboloidMaterial.userData.shader.uniforms.uEndFadeHeight.value =
+  //       (upper === 0 ? 1 : -1) * zUpperClip.value;
+  //     hyperboloidMaterial.userData.shader.uniforms.uStartFadeHeight.value =
+  //       (upper === 0 ? 1 : -1) * zUpperClip.value * SETTINGS.fadePercentage;
+  //   }
+  //   if (!showLowerSheet.value) {
+  //     upper = 2; // break the loop because the lower sheet is not shown
   //   }
   // }
 }
 
-// function updatePointsAtInfinity() {
-//   // Remove the old points at infinity from the scene
-//   if (lowerPointsAtInfinity !== undefined) {
-//     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-//     scene.remove(lowerPointsAtInfinity);
-//     lowerPointsAtInfinity.geometry.dispose();
-//     (lowerPointsAtInfinity.material as THREE.ShaderMaterial).dispose();
-//     lowerPointsAtInfinity = undefined;
-//   }
-//   if (upperPointsAtInfinity !== undefined) {
-//     rayCaster.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
-//     scene.remove(upperPointsAtInfinity);
-//     upperPointsAtInfinity.geometry.dispose();
-//     (upperPointsAtInfinity.material as THREE.ShaderMaterial).dispose();
-//     upperPointsAtInfinity = undefined;
-//   }
-//   // Create new points at infinity strip appropriate for the current camera distance
-//   if (showPointsAtInfinity.value) {
-//     upperPointsAtInfinity = createPointsAtInfinity({
-//       zHeight:
-//         zUpperClip.constant +
-//         (SETTINGS.pointsAtInfinityWidth + 0.005) * cameraDistance.value
-//     });
-//     upperPointsAtInfinity.name = `Upper Points At Infinity`;
-
-//     upperPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
-//     scene.add(upperPointsAtInfinity);
-//     rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
-
-//     if (showLowerSheet.value) {
-//       lowerPointsAtInfinity = createPointsAtInfinity({
-//         zHeight:
-//           -zUpperClip.constant -
-//           (SETTINGS.pointsAtInfinityWidth + 0.005) * cameraDistance.value
-//       });
-//       lowerPointsAtInfinity.name = `Lower Points At Infinity`;
-//       lowerPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-//       scene.add(lowerPointsAtInfinity);
-//       rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-//     }
-//   }
-// }
-
-// Update the points at infinity by adjusting the pointsAtInfinity clipping planes
+//remove or add the points at infinity to the scene
 function updatePointsAtInfinity() {
-  // Update the clipping planes for the points at infinity based on the current camera distance
   if (showPointsAtInfinity.value) {
     // Add the points at infinity to the scene if not already present
     rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
@@ -912,8 +856,6 @@ function updatePointsAtInfinity() {
 
     rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
     scene.add(upperPointsAtInfinity!);
-
-    // update the clipping planes based on the current camera distance
   } else {
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
     scene.remove(lowerPointsAtInfinity!);
@@ -980,17 +922,20 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
         if (iSect.object.name.endsWith("Sheet")) {
           // only intersections with the visible parts of the sheet should be returned
           if (showLowerSheet.value) {
-            return iSect.point.z >= zLowerClip && iSect.point.z <= zUpperClip;
+            return (
+              iSect.point.z >= zLowerClip.value &&
+              iSect.point.z <= zUpperClip.value
+            );
           } else {
-            return iSect.point.z <= zUpperClip;
+            return iSect.point.z <= zUpperClip.value;
           }
         } else if (iSect.object.name.endsWith("Infinity")) {
           // only intersections with the visible points at infinity should be returned
           if (showLowerSheet.value) {
             return (
-              (iSect.point.z <= zUpperPAIClipPlus &&
-                iSect.point.z >= zUpperPAIClipMinus) ||
-              (iSect.point.z <= zLowerPAIClipPlus &&
+              (iSect.point.z <= zUpperPAIClipPlus.value &&
+                iSect.point.z >= zUpperPAIClipMinus.value) ||
+              (iSect.point.z <= zLowerPAIClipPlus.value &&
                 iSect.point.z >= zLowerPAIClipMinus)
             );
           } else {

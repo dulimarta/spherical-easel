@@ -8,38 +8,44 @@ import {
   float,
   vec3,
   vec4,
+  mat4,
   select,
   If,
   Fn,
   positionLocal,
   varying,
   materialReference,
-  cond
+  cond,
+  color,
+  stack
 } from "three/tsl";
-import { Line2 } from "three/examples/jsm/lines/Line2.js";
-import { THREESubset } from "camera-controls/dist/types";
+// import { Line2 } from "three/examples/jsm/lines/Line2.js";
+import { Line2 } from "three/addons/lines/Line2.js";
 import {
   Vector3,
   Mesh,
   DoubleSide,
   Plane,
   SphereGeometry,
-  CylinderGeometry
+  CylinderGeometry,
+  Vector2,
+  LineCurve3
 } from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
-import { PlaneParameters } from "@/types";
-import { ColorNodeUniform } from "three/src/renderers/common/nodes/NodeUniform.js";
+
+import { LineGeometry } from "three/examples/jsm/Addons.js";
+import { grey } from "vuetify/util/colors";
 
 export function createPoint(
   size: number = 0.05,
   color: string = "white"
 ): Mesh {
-  const material = new THREE.MeshStandardNodeMaterial({
+  const lineMaterial = new THREE.MeshStandardNodeMaterial({
     color: color,
     roughness: 0.3
     //clippingPlanes: [minClippingPlane, maxClippingPlane] //No clipping planes for points
   });
-  return new Mesh(new SphereGeometry(size), material);
+  return new Mesh(new SphereGeometry(size), lineMaterial);
 }
 
 export function create2DLine(width: number = 0.03, color: string = "white") {
@@ -96,54 +102,71 @@ export function create2DLine(width: number = 0.03, color: string = "white") {
  * @returns
  */
 export function createPointsAtInfinity({
-  maxZClippingHeight,
-  clippingPlanes,
+  upperZValue,
+  lowerZValue,
   upper = true
 }: {
-  maxZClippingHeight: number;
-  clippingPlanes: Plane[];
+  upperZValue: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
+  lowerZValue: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
   upper?: boolean;
 }): Mesh {
   const coneMaterial = new THREE.MeshPhysicalNodeMaterial({
     color: "blue",
-    clippingPlanes: clippingPlanes,
     side: DoubleSide
   });
 
-  const coneGeometry = new ParametricGeometry(
-    (u, v, out) => {
-      let r = u * maxZClippingHeight * (upper ? 1 : -1); // 0 to +/-maxZClippingHeight
-      if (r == 0) {
-        r = 0.0001 * (upper ? 1 : -1); // avoid singularity at the tip
-      }
-      const theta = v * 2 * Math.PI;
-      // This is how points on the hyperboloid are calculated
-      // u = u * (Math.acosh(maxZClippingHeight) + 1);
-      // const x = Math.sinh(u) * Math.cos(theta);
-      // const y = Math.sinh(u) * Math.sin(theta);
-      // const z = Math.cosh(u);
+  const posFunc = Fn(() => {
+    // Scale and translate the original tube segment {(x,y,z) | x^2 + y^2 = 1, 0<=z<=1 } to
+    //  {(x,y,z) | x^2 + y^2 = 1, lowerZValue <= z <= upperZValue}
+    const scaleTranslateMatrix = mat4(
+      // column 1
+      1,
+      0,
+      0,
+      0,
+      // column 2
+      0,
+      1,
+      0,
+      0,
+      // column 3
+      0,
+      0,
+      upperZValue.sub(lowerZValue),
+      0,
+      // column 4
+      0,
+      0,
+      lowerZValue,
+      1
+    );
+    const pos = scaleTranslateMatrix.mul(vec4(positionLocal, 1)).xyz;
 
-      const x = r * Math.cos(theta);
-      const y = r * Math.sin(theta);
-      const z = r;
-      out.set(x, y, z);
-    },
-    120,
-    300
-  );
-  const coneMesh = new Mesh(coneGeometry, coneMaterial);
+    // Project the scaled and moved tube segment to the surface x^2 + y^2 = z^2
+    return pos.mul(vec3(pos.z, pos.z, 1));
+  });
+
+  coneMaterial.positionNode = posFunc();
+
+  // The center line of the initial tube.
+  const path = new LineCurve3(new Vector3(0, 0, 0), new Vector3(0, 0, 1));
+  const geometry = new THREE.TubeGeometry(path, 64, 1, 128, false);
+
+  // now transform the geometry to be a strip of the cone (x^2 + y^2 = z^2) between the planes z = upperZValue and z = lowerZValue using TSL in the vertex shader
+
+  const coneMesh = new Mesh(geometry, coneMaterial);
 
   return coneMesh;
 }
 
 export function createPolarGridCircle({
   intrinsicRadius, // The intrinsic hyperbolic radius
-  clippingPlane,
+  zClip,
   thickness = 2, //pixels
   upper = true
 }: {
   intrinsicRadius: number;
-  clippingPlane: Plane;
+  zClip: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
   thickness?: number;
   upper?: boolean;
 }): Mesh {
@@ -165,96 +188,17 @@ export function createPolarGridCircle({
   // Close the circle
   circlePoints.push(circlePoints[0], circlePoints[1], circlePoints[2]);
 
-  // const geometry = new LineGeometry();
-  // geometry.setPositions(circlePoints);
+  const geometry = new LineGeometry();
+  geometry.setPositions(circlePoints);
 
-  // const material = new LineMaterial({
-  //   color: "grey",
-  //   linewidth: thickness, // Width in pixels
-  //   resolution: new Vector2(window.innerWidth, window.innerHeight),
-  //   clippingPlanes: [clippingPlane],
-  //   transparent: false
-  // });
-
-  // const mesh = new Mesh(geometry, material);
-  const mesh = new Mesh(
-    new CylinderGeometry(thickness, thickness, 1),
-    new THREE.MeshStandardNodeMaterial({ color: "white" })
-  );
-  mesh.name = `PolarGridCircle_r=${intrinsicRadius.toFixed(2)}`;
-  return mesh;
-}
-
-export function createPolarGridRadialLine({
-  radianAngle,
-  zMax, // maximum z height of the radial line
-  clippingPlane,
-  thickness = 2, // in pixels
-  upper = true
-}: {
-  radianAngle: number;
-  zMax: number;
-  clippingPlane: Plane;
-  thickness?: number;
-  upper?: boolean;
-}): Mesh {
-  const points: number[] = [];
-
-  let nextTValue = 0;
-  let myContinue = true;
-  for (let i = 0; myContinue; i++) {
-    if (nextTValue > Math.acosh(zMax + 1.0)) {
-      nextTValue = Math.acosh(zMax + 1.0);
-      // add one to zMax because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene.
-      myContinue = false;
-    }
-    points.push(
-      Math.sinh(nextTValue) * Math.cos(radianAngle),
-      Math.sinh(nextTValue) * Math.sin(radianAngle),
-      upper ? Math.cosh(nextTValue) : -Math.cosh(nextTValue)
-    );
-    nextTValue += 0.01 * Math.exp(1.3 * nextTValue); //controls the spacing of the points along the hyperbolic radial line. The points on the radial do not need to be uniformly spaced in t - more points near zero are better for accuracy, because eventually the hyperboloid radial lines are almost linear.
-  }
-
-  const lineMesh = new Mesh(
-    new CylinderGeometry(thickness, thickness, 1),
-    new THREE.MeshStandardNodeMaterial({ color: "white" })
-  );
-  // const lineMesh = new Line2(geometry, material);
-  //const mesh = new Mesh(geometry, material);
-  lineMesh.name = `PolarGridRadialLine_angle=${radianAngle.toFixed(2)}`;
-
-  return lineMesh;
-}
-
-export function createHyperboloidSheet({
-  zClipInitial,
-  upper = true
-}: {
-  zClipInitial: number;
-  upper?: boolean;
-}): {
-  mesh: THREE.Mesh;
-  zClipUpdateFunction: (newVal: number) => void;
-} {
-  const hyperboloidMaterial = new THREE.MeshStandardNodeMaterial({
-    color: "chocolate",
-    side: DoubleSide,
-    // metalness: 0.1,
-    // roughness: 0
-    opacity: 0.75,
+  const lineMaterial = new THREE.Line2NodeMaterial({
+    color: "grey",
+    linewidth: thickness, // Width in pixels
     transparent: true
   });
 
-  // color: "chocolate",
-  //   side: DoubleSide,
-  //   roughness: 0.2,
-  //   transparent: true,
-  //   opacity: 0.75,
-  const zClip = uniform(zClipInitial);
-
+  // THIS CLIPPING LOGIC DOESN'T WORK DESPITE BEING THE SAME AS FOR THE HYPERBOLOID SHEETS
   const colorNode = materialReference("color", "color");
-
   const clippingLogic = Fn(() => {
     if (upper) {
       positionLocal.z.greaterThan(zClip).discard(); // if upper sheet greater than zClip is discarded
@@ -262,6 +206,114 @@ export function createHyperboloidSheet({
       positionLocal.z.lessThan(zClip).discard(); // if lower sheet less than zClip is discarded
     }
     return colorNode;
+  });
+  lineMaterial.colorNode = clippingLogic();
+
+  // @ts-expect-error: Line2 constructor type definition is outdated for WebGPU materials
+  const mesh = new Line2(geometry, lineMaterial);
+
+  mesh.name = `PolarGridCircle_r=${intrinsicRadius.toFixed(2)}`;
+  return mesh;
+}
+
+export function createPolarGridRadialLine({
+  radianAngle,
+  zClip,
+  thickness = 2, //pixels
+  upper = true
+}: {
+  radianAngle: number;
+  zClip: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
+  thickness?: number;
+  upper?: boolean;
+}): {
+  mesh: Mesh;
+  zClipUpdateFunction: (newVal: number) => void;
+} {
+  const points: number[] = [];
+
+  let nextTValue = 0.01;
+  let myContinue = true;
+  for (let i = 0; myContinue; i++) {
+    if (nextTValue > Math.acosh(SETTINGS.maxZClip + 1.0)) {
+      nextTValue = Math.acosh(SETTINGS.maxZClip + 1.0);
+      // add one to zMax because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene.
+      myContinue = false;
+    }
+    points.push(
+      Math.sinh(nextTValue) * Math.cos(radianAngle),
+      Math.sinh(nextTValue) * Math.sin(radianAngle),
+      (upper ? 1 : -1) * Math.cosh(nextTValue)
+    );
+    nextTValue += 0.01 * Math.exp(1.3 * nextTValue); //controls the spacing of the points along the hyperbolic radial line. The points on the radial do not need to be uniformly spaced in t - more points near zero are better for accuracy, because eventually the hyperboloid radial lines are almost linear.
+  }
+
+  const geometry = new LineGeometry();
+  geometry.setPositions(points);
+
+  const lineMaterial = new THREE.Line2NodeMaterial({
+    linewidth: thickness, // Width in pixels
+    transparent: true,
+    color: "grey",
+    blending: THREE.NormalBlending //If this is not set the radial lines near (0,0,1) looks whitish grey
+  });
+
+  // THIS CLIPPING LOGIC DOESN'T WORK THE NODE MESH IS VERY DIFFERENT THAN LINE NODE MATERIAL
+  const colorNode = materialReference("color", "color");
+
+  const clippingLogic = Fn(() => {
+    let returnNode = color("blue");
+    if (upper) {
+      If(positionLocal.z.greaterThan(zClip), () => {
+        returnNode = color("red"); // This never executes
+      });
+      //positionLocal.z.greaterThan(zClip).discard(); // if upper sheet greater than zClip is discarded
+    } else {
+      //return color("blue");
+      positionLocal.z.lessThan(zClip).discard(); // if lower sheet less than zClip is discarded
+    }
+    return returnNode;
+  });
+  lineMaterial.fragmentNode = clippingLogic();
+
+  // @ts-expect-error: Line2 constructor type definition is outdated for WebGPU materials
+  const lineMesh = new Line2(geometry, lineMaterial);
+  // lineMesh.computeLineDistances();
+
+  return {
+    mesh: lineMesh,
+    zClipUpdateFunction: (newVal: number) => {
+      console.log("Updating zClip to", newVal);
+      zClip.value = newVal;
+    }
+  };
+}
+
+export function createHyperboloidSheet(
+  zClip: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>,
+  upper: boolean
+): THREE.Mesh {
+  const hyperboloidMaterial = new THREE.MeshPhysicalNodeMaterial({
+    color: "chocolate",
+    side: DoubleSide,
+    metalness: 0.1,
+    roughness: 0.2,
+    opacity: 0.8,
+    transparent: true,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.1
+  });
+  const baseColor = color(hyperboloidMaterial.color); //Chocolate
+
+  //const zClip = uniform(zClipInitial);
+
+  const clippingLogic = Fn(() => {
+    if (upper) {
+      positionLocal.z.greaterThan(zClip).discard(); // if upper sheet greater then zClip is discarded
+    } else {
+      positionLocal.z.lessThan(zClip).discard(); // if lower sheet less then zClip is discarded
+    }
+    return baseColor.mul(1.2);
   });
 
   hyperboloidMaterial.colorNode = clippingLogic();
@@ -274,12 +326,7 @@ export function createHyperboloidSheet({
 
   const hyperboloidMesh = new Mesh(hyperboloidGeometry, hyperboloidMaterial);
 
-  return {
-    mesh: hyperboloidMesh,
-    zClipUpdateFunction: (newVal: number) => {
-      zClip.value = newVal;
-    }
-  };
+  return hyperboloidMesh;
 }
 
 export function createBoundaryCone({
@@ -353,8 +400,8 @@ function upperHyperboloid(u: number, v: number, pt: Vector3) {
 
   // This is the standard polar coordinate parameterization
   // https://en.wikipedia.org/wiki/Hyperboloid_of_two_sheets#Parametrization
-  // where u is the radial coordinate and v is the angular coordinate
-  u = u * (Math.acosh(SETTINGS.maxZClip) + 1); // add one because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene.
+  // // where u is the radial coordinate and v is the angular coordinate
+  u = u * (Math.acosh(SETTINGS.maxZClip) + 1) + 0.001; // add one because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene. Adding 0.001 to avoid clumping of points at the tip which causes rendering issues.
   const theta = v * 2 * Math.PI;
   const x = Math.sinh(u) * Math.cos(theta);
   const y = Math.sinh(u) * Math.sin(theta);
@@ -364,7 +411,7 @@ function upperHyperboloid(u: number, v: number, pt: Vector3) {
 
 // Parametric function for the lower sheet of the hyperboloid in polar coordinates 0 <= u <= 1 and 0 <= v <= 1
 function lowerHyperboloid(u: number, v: number, pt: Vector3) {
-  u = u * (Math.acosh(SETTINGS.maxZClip) + 1);
+  u = u * (Math.acosh(SETTINGS.maxZClip) + 1) + 0.001; // add one because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene. Adding 0.001 to avoid clumping of points at the tip which causes rendering issues.
   const theta = v * 2 * Math.PI;
   const x = Math.sinh(u) * Math.cos(theta);
   const y = Math.sinh(u) * Math.sin(theta);
