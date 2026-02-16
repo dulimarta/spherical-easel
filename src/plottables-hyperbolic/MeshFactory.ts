@@ -18,7 +18,8 @@ import {
   cond,
   color,
   stack,
-  smoothstep
+  smoothstep,
+  PI
 } from "three/tsl";
 // import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { Line2 } from "three/addons/lines/Line2.js";
@@ -122,7 +123,6 @@ export function createPointsAtInfinity({
     transparent: true
   });
 
-  const posZ = varying(positionWorld.z);
   const posFunc = Fn(() => {
     // Scale and translate the original tube segment {(x,y,z) | x^2 + y^2 = 1, 0<=z<=1 } to
     //  {(x,y,z) | x^2 + y^2 = z^2, lowerZValue <= z <= upperZValue}
@@ -139,27 +139,19 @@ export function createPointsAtInfinity({
 
   pointAtInfinityMaterial.positionNode = posFunc();
 
-  const baseColor = color(pointAtInfinityMaterial.color);
+  //Add opacity to the edges of the points at infinity
+  pointAtInfinityMaterial.opacityNode = smoothstep(
+    lowerZValue,
+    lowerZValue.mul(1.01),
+    positionLocal.z
+  ).sub(smoothstep(upperZValue.mul(0.99), upperZValue, positionLocal.z));
 
-  //Attempt to add opacity to the edges of the points at infinity
-  //
-  // pointAtInfinityMaterial.opacityNode = smoothstep(0.0, 0.15, posZ).sub(
-  //   smoothstep(0.85, 1, posZ)
-  // );
-
-  // pointAtInfinityMaterial.opacityNode = smoothstep(
-  //   lowerZValue,
-  //   lowerZValue.mul(1.2),
-  //   posZ
-  // )
-  //   .sub(smoothstep(upperZValue.mul(0.8), upperZValue, posZ))
-  //   .oneMinus();
-
-  // The center line of the initial(untransformed) tube.
+  // path is the center line of the initial(untransformed) tube.
   const path = new LineCurve3(new Vector3(0, 0, 0), new Vector3(0, 0, 1));
   const geometry = new THREE.TubeGeometry(path, 64, 1, 128, false);
 
   const pointAtInfinityMesh = new Mesh(geometry, pointAtInfinityMaterial);
+
   // --- Override the raycast for the mesh otherwise the ray caster detects only the untransformed mesh---
   pointAtInfinityMesh.raycast = function (raycaster, intersects) {
     // Check the intersection of the ray with the transformed points at infinity
