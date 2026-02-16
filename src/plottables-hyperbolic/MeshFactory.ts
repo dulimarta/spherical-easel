@@ -160,7 +160,6 @@ export function createPointsAtInfinity({
   const geometry = new THREE.TubeGeometry(path, 64, 1, 128, false);
 
   const pointAtInfinityMesh = new Mesh(geometry, pointAtInfinityMaterial);
-
   // --- Override the raycast for the mesh otherwise the ray caster detects only the untransformed mesh---
   pointAtInfinityMesh.raycast = function (raycaster, intersects) {
     // Check the intersection of the ray with the transformed points at infinity
@@ -211,7 +210,6 @@ export function createPointsAtInfinity({
 
       const distance = raycaster.ray.origin.distanceTo(_intersectionPoint);
 
-      console.log(_intersectionPoint.toFixed(2));
       intersects.push({
         distance: distance,
         point: _intersectionPoint,
