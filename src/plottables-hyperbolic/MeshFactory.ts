@@ -123,33 +123,16 @@ export function createPointsAtInfinity({
   const posZ = varying(positionWorld.z);
   const posFunc = Fn(() => {
     // Scale and translate the original tube segment {(x,y,z) | x^2 + y^2 = 1, 0<=z<=1 } to
-    //  {(x,y,z) | x^2 + y^2 = 1, lowerZValue <= z <= upperZValue}
-    const scaleTranslateMatrix = mat4(
-      // column 1
-      1,
-      0,
-      0,
-      0,
-      // column 2
-      0,
-      1,
-      0,
-      0,
-      // column 3
-      0,
-      0,
-      upperZValue.sub(lowerZValue),
-      0,
-      // column 4
-      0,
-      0,
-      lowerZValue,
-      1
-    );
-    const pos = scaleTranslateMatrix.mul(vec4(positionLocal, 1)).xyz; //position.z local is between 0 and 1
-
+    //  {(x,y,z) | x^2 + y^2 = z^2, lowerZValue <= z <= upperZValue}
+    const transformedZ = positionLocal.z
+      .mul(upperZValue.sub(lowerZValue))
+      .add(lowerZValue);
     // Project the scaled and moved tube segment to the surface x^2 + y^2 = z^2
-    return pos.mul(vec3(pos.z, pos.z, 1));
+    return vec3(
+      positionLocal.x.mul(transformedZ),
+      positionLocal.y.mul(transformedZ),
+      transformedZ
+    );
   });
 
   pointAtInfinityMaterial.positionNode = posFunc();
@@ -160,19 +143,17 @@ export function createPointsAtInfinity({
   //   smoothstep(0.85, 1, posZ)
   // );
 
-  pointAtInfinityMaterial.opacityNode = smoothstep(
-    lowerZValue,
-    lowerZValue.mul(1.2),
-    posZ
-  )
-    .sub(smoothstep(upperZValue.mul(0.8), upperZValue, posZ))
-    .oneMinus();
+  // pointAtInfinityMaterial.opacityNode = smoothstep(
+  //   lowerZValue,
+  //   lowerZValue.mul(1.2),
+  //   posZ
+  // )
+  //   .sub(smoothstep(upperZValue.mul(0.8), upperZValue, posZ))
+  //   .oneMinus();
 
   // The center line of the initial tube.
   const path = new LineCurve3(new Vector3(0, 0, 0), new Vector3(0, 0, 1));
   const geometry = new THREE.TubeGeometry(path, 64, 1, 128, false);
-
-  // now transform the geometry to be a strip of the cone (x^2 + y^2 = z^2) between the planes z = upperZValue and z = lowerZValue using TSL in the vertex shader
 
   const pointAtInfinityMesh = new Mesh(geometry, pointAtInfinityMaterial);
 

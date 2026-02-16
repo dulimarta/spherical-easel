@@ -9,7 +9,7 @@ export const SETTINGS = {
   minDollyDistanceChangeForGridUpdate: 0.15, // The minimum change in dolly distance (camera to origin) required to trigger a grid update
   fadePercentage: 0.98, // The percentage of the height of the hyperboloid at which fading (opacity lowers) begins
   startOpacityFade: 0.95, // The opacity at the start of the fade of hyperboloid and below
-  endOpacityFade: 0.75, // The opacity at the end of the fade hyperboloid
+  endOpacityFade: 0.65, // The opacity at the end of the fade hyperboloid
   maxFieldOfView: 45, // The maximum field of view for the perspective camera in degrees.
   minFieldOfView: 10, // The minimum field of view for the perspective camera in degrees.
   maxZClip: 150 //set the maximum value of zUpperClip so that the entire hyperboloid and grid lines are shown at max dolly distance
