@@ -17,7 +17,8 @@ import {
   materialReference,
   cond,
   color,
-  stack
+  stack,
+  smoothstep
 } from "three/tsl";
 // import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { Line2 } from "three/addons/lines/Line2.js";
@@ -35,6 +36,9 @@ import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeom
 
 import { LineGeometry } from "three/examples/jsm/Addons.js";
 import { grey } from "vuetify/util/colors";
+import { smootherstep } from "three/src/math/MathUtils.js";
+import { updateShorthandPropertyAssignment } from "typescript";
+import { mx_bilerp_0 } from "three/src/nodes/materialx/lib/mx_noise.js";
 
 export function createPoint(
   size: number = 0.05,
@@ -110,11 +114,13 @@ export function createPointsAtInfinity({
   lowerZValue: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
   upper?: boolean;
 }): Mesh {
-  const coneMaterial = new THREE.MeshPhysicalNodeMaterial({
+  const pointAtInfinityMaterial = new THREE.MeshPhysicalNodeMaterial({
     color: "blue",
-    side: DoubleSide
+    side: DoubleSide,
+    transparent: true
   });
 
+  const posZ = varying(positionWorld.z);
   const posFunc = Fn(() => {
     // Scale and translate the original tube segment {(x,y,z) | x^2 + y^2 = 1, 0<=z<=1 } to
     //  {(x,y,z) | x^2 + y^2 = 1, lowerZValue <= z <= upperZValue}
@@ -140,13 +146,27 @@ export function createPointsAtInfinity({
       lowerZValue,
       1
     );
-    const pos = scaleTranslateMatrix.mul(vec4(positionLocal, 1)).xyz;
+    const pos = scaleTranslateMatrix.mul(vec4(positionLocal, 1)).xyz; //position.z local is between 0 and 1
 
     // Project the scaled and moved tube segment to the surface x^2 + y^2 = z^2
     return pos.mul(vec3(pos.z, pos.z, 1));
   });
 
-  coneMaterial.positionNode = posFunc();
+  pointAtInfinityMaterial.positionNode = posFunc();
+
+  const baseColor = color(pointAtInfinityMaterial.color);
+
+  // pointAtInfinityMaterial.opacityNode = smoothstep(0.0, 0.15, posZ).sub(
+  //   smoothstep(0.85, 1, posZ)
+  // );
+
+  pointAtInfinityMaterial.opacityNode = smoothstep(
+    lowerZValue,
+    lowerZValue.mul(1.2),
+    posZ
+  )
+    .sub(smoothstep(upperZValue.mul(0.8), upperZValue, posZ))
+    .oneMinus();
 
   // The center line of the initial tube.
   const path = new LineCurve3(new Vector3(0, 0, 0), new Vector3(0, 0, 1));
@@ -154,9 +174,9 @@ export function createPointsAtInfinity({
 
   // now transform the geometry to be a strip of the cone (x^2 + y^2 = z^2) between the planes z = upperZValue and z = lowerZValue using TSL in the vertex shader
 
-  const coneMesh = new Mesh(geometry, coneMaterial);
+  const pointAtInfinityMesh = new Mesh(geometry, pointAtInfinityMaterial);
 
-  return coneMesh;
+  return pointAtInfinityMesh;
 }
 
 export function createPolarGridCircle({
@@ -262,7 +282,7 @@ export function createPolarGridRadialLine({
   const colorNode = materialReference("color", "color");
 
   const clippingLogic = Fn(() => {
-    let returnNode = color("blue");
+    let returnNode = color("grey");
     if (upper) {
       If(positionLocal.z.greaterThan(zClip), () => {
         returnNode = color("red"); // This never executes
@@ -306,6 +326,7 @@ export function createHyperboloidSheet(
   const baseColor = color(hyperboloidMaterial.color); //Chocolate
 
   //const zClip = uniform(zClipInitial);
+  const localPositionZ = varying(positionLocal.z);
 
   const clippingLogic = Fn(() => {
     if (upper) {
@@ -313,10 +334,21 @@ export function createHyperboloidSheet(
     } else {
       positionLocal.z.lessThan(zClip).discard(); // if lower sheet less then zClip is discarded
     }
+
     return baseColor.mul(1.2);
   });
 
   hyperboloidMaterial.colorNode = clippingLogic();
+
+  // Smooth the opacity of the top edge of the hyperboloid
+  hyperboloidMaterial.opacityNode = smoothstep(
+    zClip.mul(SETTINGS.fadePercentage),
+    zClip,
+    localPositionZ
+  )
+    .oneMinus()
+    .mul(float(SETTINGS.startOpacityFade).sub(float(SETTINGS.endOpacityFade)))
+    .add(float(SETTINGS.endOpacityFade));
 
   const hyperboloidGeometry = new ParametricGeometry(
     upper ? upperHyperboloid : lowerHyperboloid,

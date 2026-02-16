@@ -7,9 +7,9 @@ export const SETTINGS = {
   pointsAtInfinityAngularWidth: 0.01, // The angular width of the strip at the top of the hyperboloid mesh to which points at infinity are constrained
   pointsAtInfinityAngularGap: 0.02, // The angular gap between the points at infinity strip and the edge of the hyperboloid mesh
   minDollyDistanceChangeForGridUpdate: 0.15, // The minimum change in dolly distance (camera to origin) required to trigger a grid update
-  fadePercentage: 0.85, // The percentage of the height of the hyperboloid at which fading (opacity lowers) begins
-  startOpacityFade: 1.0, // The opacity at the start of the fade of hyperboloid
-  endOpacityFade: 0.85, // The opacity at the end of the fade hyperboloid
+  fadePercentage: 0.98, // The percentage of the height of the hyperboloid at which fading (opacity lowers) begins
+  startOpacityFade: 0.95, // The opacity at the start of the fade of hyperboloid and below
+  endOpacityFade: 0.75, // The opacity at the end of the fade hyperboloid
   maxFieldOfView: 45, // The maximum field of view for the perspective camera in degrees.
   minFieldOfView: 10, // The minimum field of view for the perspective camera in degrees.
   maxZClip: 150 //set the maximum value of zUpperClip so that the entire hyperboloid and grid lines are shown at max dolly distance

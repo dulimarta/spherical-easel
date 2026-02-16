@@ -437,6 +437,8 @@ onMounted(async () => {
   // Set the parameters of the camera controller
   cameraController.minDistance = SETTINGS.dollyDistanceMin;
   cameraController.maxDistance = SETTINGS.dollyDistanceMax;
+  cameraController.maxZoom = SETTINGS.maxFieldOfView;
+  cameraController.minZoom = SETTINGS.minFieldOfView;
   // cameraController.minPolarAngle = 0.1; // radians
   // cameraController.maxPolarAngle = Math.PI - 0.1; // radians
   cameraController.dollySpeed = 0.2;
@@ -911,11 +913,11 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   intersectionList.value = rayCaster
     .intersectObjects(scene.children, true)
     .filter((iSect, idx) => {
-      // console.log(
-      //   `Raycast intersect #${idx} ${iSect.object.name}`,
-      //   iSect.normal?.toFixed(2)
-      //   // iSect.object.name.match(regex)
-      // );
+      console.log(
+        `Raycast intersect #${idx} ${iSect.object.name}`,
+        iSect.normal?.toFixed(2)
+        // iSect.object.name.match(regex)
+      );
       if (iSect.object.name.length === 0) {
         return false; // the intersection is not with a named object, ignore it
       } else {
@@ -933,9 +935,9 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
           // only intersections with the visible points at infinity should be returned
           if (showLowerSheet.value) {
             return (
-              (iSect.point.z <= zUpperPAIClipPlus.value &&
-                iSect.point.z >= zUpperPAIClipMinus.value) ||
-              (iSect.point.z <= zLowerPAIClipPlus.value &&
+              (iSect.point.z <= zUpperPAIClipPlus &&
+                iSect.point.z >= zUpperPAIClipMinus) ||
+              (iSect.point.z <= zLowerPAIClipPlus &&
                 iSect.point.z >= zLowerPAIClipMinus)
             );
           } else {
