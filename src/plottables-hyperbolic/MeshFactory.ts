@@ -129,7 +129,7 @@ export function createPointsAtInfinity({
     const transformedZ = positionLocal.z
       .mul(upperZValue.sub(lowerZValue))
       .add(lowerZValue);
-    // Project the scaled and moved tube segment to the surface x^2 + y^2 = z^2
+
     return vec3(
       positionLocal.x.mul(transformedZ),
       positionLocal.y.mul(transformedZ),
@@ -139,12 +139,20 @@ export function createPointsAtInfinity({
 
   pointAtInfinityMaterial.positionNode = posFunc();
 
-  //Add opacity to the edges of the points at infinity
-  pointAtInfinityMaterial.opacityNode = smoothstep(
-    lowerZValue,
-    lowerZValue.mul(1.01),
-    positionLocal.z
-  ).sub(smoothstep(upperZValue.mul(0.99), upperZValue, positionLocal.z));
+  // Add opacity to the edges of the points at infinity
+  if (upper) {
+    pointAtInfinityMaterial.opacityNode = smoothstep(
+      lowerZValue,
+      lowerZValue.mul(1.01),
+      positionLocal.z
+    ).sub(smoothstep(upperZValue.mul(0.99), upperZValue, positionLocal.z));
+  } else {
+    pointAtInfinityMaterial.opacityNode = smoothstep(
+      upperZValue,
+      upperZValue.mul(1.01),
+      positionLocal.z
+    ).sub(smoothstep(lowerZValue.mul(0.99), lowerZValue, positionLocal.z));
+  }
 
   // path is the center line of the initial(untransformed) tube.
   const path = new LineCurve3(new Vector3(0, 0, 0), new Vector3(0, 0, 1));
@@ -209,8 +217,7 @@ export function createPointsAtInfinity({
           .clone()
           .multiply(new Vector3(1, 1, -1))
           .normalize(),
-        object: this,
-        uv: new THREE.Vector2(0, _intersectionPoint.z) // Approximation for UV
+        object: this
       });
     });
   };
@@ -256,7 +263,7 @@ export function createPolarGridCircle({
     transparent: true
   });
 
-  // THIS CLIPPING LOGIC DOESN'T WORK DESPITE BEING THE SAME AS FOR THE HYPERBOLOID SHEETS
+  // THIS CLIPPING LOGIC DOESN'T WORK. :-(
   const colorNode = materialReference("color", "color");
   const clippingLogic = Fn(() => {
     if (upper) {

@@ -258,7 +258,7 @@ txtObject.color = "yellow"; //0x000000;
 
 const rayIntersectionPosition = reactive(new Vector3());
 
-// The z coordinate of all points in the current view are between zUpperClip and zLowerClip
+// The z coordinate of all points on the hyperboloid(s) are between zUpperClip and zLowerClip
 let zUpperClip = ref(1.0); // this is a ref so it can be displayed on the screen, but beyond this doesn't need to be at ref
 let zLowerClip = ref(-1.0);
 const zUpperClipUniform = uniform(zUpperClip.value, "float");
@@ -283,6 +283,9 @@ let lowerPolarGridArray: Array<THREE.Mesh> = [];
 let upperPointsAtInfinity: THREE.Mesh | undefined = undefined;
 let lowerPointsAtInfinity: THREE.Mesh | undefined = undefined;
 
+let upperHyperboloidSheet: THREE.Mesh | undefined = undefined;
+let lowerHyperboloidSheet: THREE.Mesh | undefined = undefined;
+
 clock.autoStart = true;
 // let customShaderMaterial: THREE.ShaderMaterial;
 
@@ -290,7 +293,10 @@ watch(visibleLayers, (layers: Array<VisibleHELayersType>) => {
   showLowerSheet.value = layers.includes("lowerSheet");
   showPointsAtInfinity.value = layers.includes("pointsAtInfinity");
   showPolarGrid.value = layers.includes("polarGrid");
+  updateVisibleLayers();
+});
 
+function updateVisibleLayers(): void {
   if (showPointsAtInfinity.value) {
     camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
@@ -325,14 +331,19 @@ watch(visibleLayers, (layers: Array<VisibleHELayersType>) => {
 
   if (showPolarGrid.value) {
     camera.layers.enable(HYPERBOLIC_LAYER.upperSheetGrid);
+    upperPolarGridArray.forEach(grid => scene.add(grid));
     if (showLowerSheet.value) {
       camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetGrid);
+      lowerPolarGridArray.forEach(grid => scene.add(grid));
     } else {
       camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetGrid);
+      lowerPolarGridArray.forEach(grid => scene.remove(grid));
     }
   } else {
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetGrid);
     camera.layers.disable(HYPERBOLIC_LAYER.upperSheetGrid);
+    lowerPolarGridArray.forEach(grid => scene.remove(grid));
+    upperPolarGridArray.forEach(grid => scene.remove(grid));
   }
 
   if (showLowerSheet.value) {
@@ -340,14 +351,20 @@ watch(visibleLayers, (layers: Array<VisibleHELayersType>) => {
     camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetPoints);
     camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetLines);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
+    if (lowerHyperboloidSheet) {
+      scene.add(lowerHyperboloidSheet);
+    }
   } else {
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheet);
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetPoints);
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetLines);
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheet);
+    if (lowerHyperboloidSheet) {
+      scene.remove(lowerHyperboloidSheet);
+    }
   }
   renderer.renderAsync(scene, camera);
-});
+}
 
 // Watch for idle after zooming so that we can update the label display
 watch(idle, idleValue => {
@@ -475,7 +492,8 @@ onMounted(async () => {
   renderer.localClippingEnabled = true;
 
   // Initial update of the view of sheets, grid and points at infinity
-  updateView();
+  updateVisibleLayers(); // Use the visibleLayers to update the display
+  updateView(); // update the look at, zClipping values for Points at infinity and hyperboloids
 
   renderer.setSize(props.availableWidth, props.availableHeight);
   renderer.setClearColor(0xcccccc, 1);
@@ -532,25 +550,17 @@ function initialize() {
   // scene.add(arrowZ);
 
   // create the hyperboloid sheets
-  const upperHyperboloidMesh = createHyperboloidSheet(zUpperClipUniform, true);
+  upperHyperboloidSheet = createHyperboloidSheet(zUpperClipUniform, true);
 
-  const lowerHyperboloidMesh = createHyperboloidSheet(zLowerClipUniform, false);
+  lowerHyperboloidSheet = createHyperboloidSheet(zLowerClipUniform, false);
 
-  lowerHyperboloidMesh.name = "Lower Sheet";
-  upperHyperboloidMesh.name = "Upper Sheet";
-  lowerHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.lowerSheet);
-  upperHyperboloidMesh.layers.set(HYPERBOLIC_LAYER.upperSheet);
+  lowerHyperboloidSheet.name = "Lower Sheet";
+  upperHyperboloidSheet.name = "Upper Sheet";
+  lowerHyperboloidSheet.layers.set(HYPERBOLIC_LAYER.lowerSheet);
+  upperHyperboloidSheet.layers.set(HYPERBOLIC_LAYER.upperSheet);
 
-  scene.add(upperHyperboloidMesh);
-  scene.add(lowerHyperboloidMesh);
-
+  scene.add(upperHyperboloidSheet); // The upper sheet is NEVER removed from the scene
   rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheet);
-  if (showLowerSheet.value) {
-    visibleLayers.value.push("lowerSheet"); // push lower sheet to visible layers, because it is visible at initialization otherwise the vue button handles the visibleLayers array
-    rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
-  } else {
-    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheet);
-  }
 
   // create the boundary cone
   // const upperCone = createBoundaryCone({
@@ -610,7 +620,6 @@ function initialize() {
           ? HYPERBOLIC_LAYER.upperSheetGrid
           : HYPERBOLIC_LAYER.lowerSheetGrid
       );
-      scene.add(radialLineMesh);
       if (upperLower === 0) {
         upperPolarGridArray.push(radialLineMesh);
       } else {
@@ -633,7 +642,6 @@ function initialize() {
           ? HYPERBOLIC_LAYER.upperSheetGrid
           : HYPERBOLIC_LAYER.lowerSheetGrid
       );
-      scene.add(radialLineMesh);
       if (upperLower === 0) {
         upperPolarGridArray.push(radialLineMesh);
       } else {
@@ -642,30 +650,15 @@ function initialize() {
     }
   }
 
+  // push (polar grid)|(points at infinity)|(lower sheet) to visible layers, because it is visible at initialization otherwise the vue button handles the visibleLayers array
   if (showPolarGrid.value) {
-    visibleLayers.value.push("polarGrid"); // push polar grid to visible layers, because it is visible at initialization otherwise the vue button handles the visibleLayers array
-    camera.layers.enable(HYPERBOLIC_LAYER.upperSheetGrid);
-    if (showLowerSheet.value) {
-      camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetGrid);
-    }
-  } else {
-    camera.layers.disable(HYPERBOLIC_LAYER.upperSheetGrid);
-    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetGrid);
+    visibleLayers.value.push("polarGrid");
   }
-
   if (showPointsAtInfinity.value) {
-    visibleLayers.value.push("pointsAtInfinity"); // push points at infinity to visible layers, because it is visible at initialization otherwise the vue button handles the visibleLayers array
-    camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
-    scene.add(upperPointsAtInfinity);
-    if (showLowerSheet.value) {
-      camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-      scene.add(lowerPointsAtInfinity);
-    }
-  } else {
-    camera.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
-    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-    scene.remove(lowerPointsAtInfinity);
-    scene.remove(upperPointsAtInfinity);
+    visibleLayers.value.push("pointsAtInfinity");
+  }
+  if (showLowerSheet.value) {
+    visibleLayers.value.push("lowerSheet");
   }
 
   // Set the default tool
