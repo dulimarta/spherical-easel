@@ -520,6 +520,7 @@ function initialize() {
 
   // create the hyperboloid sheets
   const upperHyperboloidMesh = createHyperboloidSheet(zUpperClipUniform, true);
+
   const lowerHyperboloidMesh = createHyperboloidSheet(zLowerClipUniform, false);
 
   lowerHyperboloidMesh.name = "Lower Sheet";

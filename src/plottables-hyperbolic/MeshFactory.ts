@@ -40,6 +40,8 @@ import { smootherstep } from "three/src/math/MathUtils.js";
 import { updateShorthandPropertyAssignment } from "typescript";
 import { mx_bilerp_0 } from "three/src/nodes/materialx/lib/mx_noise.js";
 
+const _intersectionPoint = new THREE.Vector3();
+
 export function createPoint(
   size: number = 0.05,
   color: string = "white"
@@ -139,6 +141,8 @@ export function createPointsAtInfinity({
 
   const baseColor = color(pointAtInfinityMaterial.color);
 
+  //Attempt to add opacity to the edges of the points at infinity
+  //
   // pointAtInfinityMaterial.opacityNode = smoothstep(0.0, 0.15, posZ).sub(
   //   smoothstep(0.85, 1, posZ)
   // );
@@ -151,11 +155,75 @@ export function createPointsAtInfinity({
   //   .sub(smoothstep(upperZValue.mul(0.8), upperZValue, posZ))
   //   .oneMinus();
 
-  // The center line of the initial tube.
+  // The center line of the initial(untransformed) tube.
   const path = new LineCurve3(new Vector3(0, 0, 0), new Vector3(0, 0, 1));
   const geometry = new THREE.TubeGeometry(path, 64, 1, 128, false);
 
   const pointAtInfinityMesh = new Mesh(geometry, pointAtInfinityMaterial);
+
+  // --- Override the raycast for the mesh otherwise the ray caster detects only the untransformed mesh---
+  pointAtInfinityMesh.raycast = function (raycaster, intersects) {
+    // Check the intersection of the ray with the transformed points at infinity
+    const ox = raycaster.ray.origin.x;
+    const oy = raycaster.ray.origin.y;
+    const oz = raycaster.ray.origin.z;
+    const dx = raycaster.ray.direction.x;
+    const dy = raycaster.ray.direction.y;
+    const dz = raycaster.ray.direction.z;
+
+    // Expand substitutions for intersection of Ray P(t) with Cone Surface
+    // (ox + t*dx)^2 + (oy + t*dy)^2 = (oz + t*dz)^2
+
+    // A term (t^2)
+    const A = dx * dx + dy * dy - dz * dz;
+
+    // B term (t)
+    const B = 2 * (ox * dx + oy * dy - oz * dz);
+
+    // C term (constant)
+    const C = ox * ox + oy * oy - oz * oz;
+
+    // Solve the Quadratic
+    const discriminant = B * B - 4 * A * C;
+
+    if (discriminant < 0) return; // No intersection
+
+    const sqrtDisc = Math.sqrt(discriminant);
+    const t1 = (-B - sqrtDisc) / (2 * A);
+    const t2 = (-B + sqrtDisc) / (2 * A);
+
+    // Check both solutions (entry and exit points)
+    [t1, t2].forEach(t => {
+      if (t < raycaster.near || t > raycaster.far) return;
+
+      // Calculate intersection point in local space
+      _intersectionPoint
+        .copy(raycaster.ray.direction)
+        .multiplyScalar(t)
+        .add(raycaster.ray.origin);
+
+      // Check that the ray intersects the cone in the correct strip
+      if (
+        _intersectionPoint.z < lowerZValue.value ||
+        _intersectionPoint.z > upperZValue.value
+      )
+        return;
+
+      const distance = raycaster.ray.origin.distanceTo(_intersectionPoint);
+
+      console.log(_intersectionPoint.toFixed(2));
+      intersects.push({
+        distance: distance,
+        point: _intersectionPoint,
+        normal: _intersectionPoint
+          .clone()
+          .multiply(new Vector3(1, 1, -1))
+          .normalize(),
+        object: this,
+        uv: new THREE.Vector2(0, _intersectionPoint.z) // Approximation for UV
+      });
+    });
+  };
 
   return pointAtInfinityMesh;
 }
