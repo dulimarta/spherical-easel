@@ -1,30 +1,19 @@
 import SETTINGS from "@/global-settings-hyperbolic";
 import * as THREE from "three/webgpu";
 import {
-  positionWorld,
-  dot,
   uniform,
-  Discard,
   float,
   vec3,
   vec4,
-  mat4,
-  select,
-  If,
   Fn,
   positionLocal,
   varying,
-  materialReference,
-  cond,
   color,
-  stack,
   smoothstep,
-  PI,
   attribute,
   uv,
   mix,
-  modelWorldMatrix,
-  step
+  modelWorldMatrix
 } from "three/tsl";
 // import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { Line2 } from "three/addons/lines/Line2.js";
@@ -39,27 +28,29 @@ import {
   LineCurve3
 } from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
-
 import { LineGeometry } from "three/examples/jsm/Addons.js";
-import { grey } from "vuetify/util/colors";
-import { smootherstep } from "three/src/math/MathUtils.js";
-import { updateShorthandPropertyAssignment } from "typescript";
-import { mx_bilerp_0 } from "three/src/nodes/materialx/lib/mx_noise.js";
 
 const _intersectionPoint = new THREE.Vector3();
 
-export function createPoint(
-  size: number = 0.05,
-  color: string = "white"
-): Mesh {
-  const lineMaterial = new THREE.MeshStandardNodeMaterial({
+export function createPoint(color: string = "white"): {
+  mesh: Mesh;
+  position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<Vector3>>;
+  radius: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
+} {
+  const position = uniform(new Vector3(0, 0, 0), "vec3");
+  const radius = uniform(1.0, "float");
+  const sphereMaterial = new THREE.MeshStandardNodeMaterial({
     color: color,
     roughness: 0.3
-    //clippingPlanes: [minClippingPlane, maxClippingPlane] //No clipping planes for points
   });
-  return new Mesh(new SphereGeometry(size), lineMaterial);
-}
+  sphereMaterial.positionNode = positionLocal.add(position).mul(radius);
 
+  return {
+    mesh: new Mesh(new SphereGeometry(), sphereMaterial),
+    position: position,
+    radius: radius
+  };
+}
 export function create2DLine(width: number = 0.03, color: string = "white") {
   return new Mesh(
     new CylinderGeometry(width, width, 1),
@@ -270,7 +261,7 @@ export function createPolarGridCircle({
     alphaTest: 0.1,
     depthTest: true,
     depthWrite: true
-    // polygonOffset: true,
+    // polygonOffset: true, // attempt to limit z fighting when polar angle is 0 or pi
     // polygonOffsetFactor: -1.0, // Nudge the line toward the camera
     // polygonOffsetUnits: -4.0 // Higher value = more aggressive nudge
   });
@@ -356,7 +347,7 @@ export function createPolarGridRadialLine({
     alphaTest: 0.1,
     depthTest: true,
     depthWrite: true
-    // polygonOffset: true,
+    // polygonOffset: true, // attempt to limit z fighting when polar angle is 0 or pi
     // polygonOffsetFactor: -1.0, // Nudge the line toward the camera
     // polygonOffsetUnits: -4.0 // Higher value = more aggressive nudge
   });
@@ -387,13 +378,17 @@ export function createPolarGridRadialLine({
     clipPixel.discard();
 
     return smoothstep(
-      zClip.mul(SETTINGS.fadePercentage),
+      zClip.mul(SETTINGS.fadePercentage * 1.0),
       zClip,
       intermediatePositionWorldZ
     )
       .oneMinus()
-      .mul(float(1.0).sub(float(SETTINGS.endOpacityFade * 0)))
-      .add(float(SETTINGS.endOpacityFade * 0.0)); // Th
+      .mul(
+        float(SETTINGS.startOpacityFade).sub(
+          float(SETTINGS.endOpacityFade * 1.0)
+        )
+      )
+      .add(float(SETTINGS.endOpacityFade * 1.0)); // Th
   });
 
   // Apply to your material

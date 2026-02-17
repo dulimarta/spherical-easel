@@ -861,20 +861,16 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
     2 * (elementX.value / renderer.domElement.clientWidth) - 1;
   mouseCoordNormalized.value.y =
     1 - 2 * (elementY.value / renderer.domElement.clientHeight);
-  // console.debug(
-  //   `Coordinate from event (${ev.offsetX},${ev.offsetY}) ` +
-  //     `from VueUse (${elementX.value}, ${elementY.value})`
-  // );
   rayCaster.setFromCamera(mouseCoordNormalized.value, camera);
 
   intersectionList.value = rayCaster
     .intersectObjects(scene.children, true)
     .filter((iSect, idx) => {
-      // console.log(
-      //   `Raycast intersect #${idx} ${iSect.object.name}`,
-      //   iSect.normal?.toFixed(2)
-      //   // iSect.object.name.match(regex)
-      // );
+      console.log(
+        `Raycast intersect #${idx} ${iSect.object.name}`,
+        iSect.point.toFixed(2)
+        // iSect.object.name.match(regex)
+      );
       if (iSect.object.name.length === 0) {
         return false; // the intersection is not with a named object, ignore it
       } else {
