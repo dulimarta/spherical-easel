@@ -28,10 +28,6 @@ export enum HYPERBOLIC_LAYER {
   lowerSheetInfPoints,
   lowerSheetLines,
   labels
-  /* The following three are experimental */
-  // unitSphere,
-  // kleinDisk,
-  // poincareDisk
 }
 
 export default SETTINGS;

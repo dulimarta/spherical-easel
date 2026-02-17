@@ -446,20 +446,6 @@ onMounted(async () => {
   camera.up.set(0, 0, 1);
   camera.lookAt(0, 0, 1);
   camera.updateProjectionMatrix();
-  camera.layers.enable(HYPERBOLIC_LAYER.upperSheet);
-  camera.layers.enable(HYPERBOLIC_LAYER.upperSheetPoints);
-  camera.layers.enable(HYPERBOLIC_LAYER.upperSheetLines);
-  if (showLowerSheet.value) {
-    camera.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
-    camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetPoints);
-    camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetLines);
-  }
-  if (showPointsAtInfinity.value) {
-    camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
-    if (showLowerSheet.value) {
-      camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-    }
-  }
 
   hyperStore.setScene(scene, camera);
 
@@ -530,19 +516,19 @@ function initialize() {
   // const helper = new THREE.CameraHelper(camera);
   // scene.add(helper);
 
-  // const xyGrid = new GridHelper();
+  // const xyGrid = new THREE.PolarGridHelper();
   // // xyGrid.translateZ(1);
   // xyGrid.rotateX(Math.PI / 2);
   // scene.add(xyGrid);
 
-  // Insert the grid BEFORE the arrow helper
-  // const arrowX = new ArrowHelper(new Vector3(1, 0, 0));
+  // // Insert the grid BEFORE the arrow helper
+  // const arrowX = new THREE.ArrowHelper(new Vector3(1, 0, 0));
   // arrowX.setColor(0xff0000);
   // arrowX.setLength(2, 0.2, 0.2);
-  // const arrowY = new ArrowHelper(new Vector3(0, 1, 0));
+  // const arrowY = new THREE.ArrowHelper(new Vector3(0, 1, 0));
   // arrowY.setColor(0x00ff00);
   // arrowY.setLength(2, 0.2, 0.2);
-  // const arrowZ = new ArrowHelper(new Vector3(0, 0, 1));
+  // const arrowZ = new THREE.ArrowHelper(new Vector3(0, 0, 1));
   // arrowZ.setColor(0x0000ff);
   // arrowZ.setLength(2, 0.2, 0.2);
   // scene.add(arrowX);
@@ -551,7 +537,6 @@ function initialize() {
 
   // create the hyperboloid sheets
   upperHyperboloidSheet = createHyperboloidSheet(zUpperClipUniform, true);
-
   lowerHyperboloidSheet = createHyperboloidSheet(zLowerClipUniform, false);
 
   lowerHyperboloidSheet.name = "Lower Sheet";
@@ -559,7 +544,8 @@ function initialize() {
   lowerHyperboloidSheet.layers.set(HYPERBOLIC_LAYER.lowerSheet);
   upperHyperboloidSheet.layers.set(HYPERBOLIC_LAYER.upperSheet);
 
-  scene.add(upperHyperboloidSheet); // The upper sheet is NEVER removed from the scene
+  // The upper sheet is NEVER removed from the scene or the raycaster, so add them here
+  scene.add(upperHyperboloidSheet);
   rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheet);
 
   // create the boundary cone
@@ -703,11 +689,10 @@ function updateCameraDetails(ev: DispatcherEvent) {
   }
 }
 
-// update the z clipping planes
-// Set the clipping planes (which only depend on the camera (dolly)distance
+// update the z clipping values
+// Set the z clipping values (which only depend on the camera dolly distance)
 // and the max field of view so that the maximally visible part of the
 // hyperboloid is shown
-// Adjust the shading of the sheets and the polar grid line thickness accordingly
 function updateView() {
   // Default value, when both sheets are shown look at the origin.
   var zCoordLookAt = 0;

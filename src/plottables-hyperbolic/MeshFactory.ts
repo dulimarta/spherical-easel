@@ -19,7 +19,12 @@ import {
   color,
   stack,
   smoothstep,
-  PI
+  PI,
+  attribute,
+  uv,
+  mix,
+  modelWorldMatrix,
+  step
 } from "three/tsl";
 // import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { Line2 } from "three/addons/lines/Line2.js";
@@ -228,7 +233,7 @@ export function createPointsAtInfinity({
 export function createPolarGridCircle({
   intrinsicRadius, // The intrinsic hyperbolic radius
   zClip,
-  thickness = 2, //pixels
+  thickness = 3, //pixels
   upper = true
 }: {
   intrinsicRadius: number;
@@ -260,20 +265,46 @@ export function createPolarGridCircle({
   const lineMaterial = new THREE.Line2NodeMaterial({
     color: "grey",
     linewidth: thickness, // Width in pixels
-    transparent: true
+    transparent: true,
+    blending: THREE.NormalBlending,
+    alphaTest: 0.1,
+    depthTest: true,
+    depthWrite: true
+    // polygonOffset: true,
+    // polygonOffsetFactor: -1.0, // Nudge the line toward the camera
+    // polygonOffsetUnits: -4.0 // Higher value = more aggressive nudge
   });
 
-  // THIS CLIPPING LOGIC DOESN'T WORK. :-(
-  const colorNode = materialReference("color", "color");
+  // Clipping Logic -- line2NodeMaterial is really just a center line that is
+  // thickened with quadrilaterals. It is the union of a series of instances,
+  // each of which is a quadrilateral (= two triangles with a common edge
+  // (diagonal)), with a center line down the middle. The vertices of the quad
+  // are determined by moving perpendicular to the center line half the
+  // thickness of the line material (in pixels). uv coordinates are the
+  // coordinates of a location in the quad. I know that uv().y goes from -1 to
+  // 1. I'm not sure about the uv().x range. Each vertex of the quad has the
+  // (same) instanceStart and instanceEnd data associated to it so doesn't
+  // matter which vertex you get this information from. In this case all the z
+  // coordinates of the instanceStart and instanceEnd along circular line are
+  // the same so it doesn't matter which you choose
+
+  const instanceStart = attribute("instanceStart", "vec3");
+  const varyingInstanceStartLocal = varying(instanceStart);
+  const worldInstanceStartZ = modelWorldMatrix.mul(
+    vec4(varyingInstanceStartLocal, 1.0)
+  ).z;
   const clippingLogic = Fn(() => {
-    if (upper) {
-      positionLocal.z.greaterThan(zClip).discard(); // if upper sheet greater than zClip is discarded
-    } else {
-      positionLocal.z.lessThan(zClip).discard(); // if lower sheet less than zClip is discarded
-    }
-    return colorNode;
+    // discard any instances that start/end after/before zClip
+    const firstPassShouldClip = upper
+      ? worldInstanceStartZ.greaterThan(zClip) // Clip if above zClip
+      : worldInstanceStartZ.lessThan(zClip); // Clip if below zClip
+    firstPassShouldClip.discard();
+
+    return float(1.0);
   });
-  lineMaterial.colorNode = clippingLogic();
+
+  // Apply to your material
+  lineMaterial.opacityNode = clippingLogic();
 
   // @ts-expect-error: Line2 constructor type definition is outdated for WebGPU materials
   const mesh = new Line2(geometry, lineMaterial);
@@ -285,7 +316,7 @@ export function createPolarGridCircle({
 export function createPolarGridRadialLine({
   radianAngle,
   zClip,
-  thickness = 2, //pixels
+  thickness = 3, //pixels
   upper = true
 }: {
   radianAngle: number;
@@ -321,26 +352,52 @@ export function createPolarGridRadialLine({
     linewidth: thickness, // Width in pixels
     transparent: true,
     color: "grey",
-    blending: THREE.NormalBlending //If this is not set the radial lines near (0,0,1) looks whitish grey
+    blending: THREE.NormalBlending, //If this is not set the radial lines near (0,0,1) looks whitish grey
+    alphaTest: 0.1,
+    depthTest: true,
+    depthWrite: true
+    // polygonOffset: true,
+    // polygonOffsetFactor: -1.0, // Nudge the line toward the camera
+    // polygonOffsetUnits: -4.0 // Higher value = more aggressive nudge
   });
 
-  // THIS CLIPPING LOGIC DOESN'T WORK THE NODE MESH IS VERY DIFFERENT THAN LINE NODE MATERIAL
-  const colorNode = materialReference("color", "color");
+  // Clipping Logic
+  // First get the instance data and use the varying to make the vertex data
+  // available to the fragment shader (which includes the color and opacity nodes)
+  const instanceStart = attribute("instanceStart", "vec3");
+  const instanceEnd = attribute("instanceEnd", "vec3");
+  const varyingInstanceStartLocal = varying(instanceStart);
+  const varyingInstanceEndLocal = varying(instanceEnd);
 
   const clippingLogic = Fn(() => {
-    let returnNode = color("grey");
-    if (upper) {
-      If(positionLocal.z.greaterThan(zClip), () => {
-        returnNode = color("red"); // This never executes
-      });
-      //positionLocal.z.greaterThan(zClip).discard(); // if upper sheet greater than zClip is discarded
-    } else {
-      //return color("blue");
-      positionLocal.z.lessThan(zClip).discard(); // if lower sheet less than zClip is discarded
-    }
-    return returnNode;
+    //compute the intermediate location in local coords then transform to world
+    // The uv().y is the direction corresponding to the z direction of
+    // the rendering of the quad (i.e. two triangles with a common edge)
+    const intermediatePositionLocal = mix(
+      varyingInstanceStartLocal,
+      varyingInstanceEndLocal,
+      uv().y.add(1.0).div(2.0) // uv().y  goes from -1 to 1 and NOT 0 to 1 as expected!
+    );
+    const intermediatePositionWorldZ = modelWorldMatrix.mul(
+      vec4(intermediatePositionLocal, 1.0)
+    ).z;
+    const clipPixel = upper
+      ? intermediatePositionWorldZ.greaterThan(zClip)
+      : intermediatePositionWorldZ.lessThan(zClip);
+    clipPixel.discard();
+
+    return smoothstep(
+      zClip.mul(SETTINGS.fadePercentage),
+      zClip,
+      intermediatePositionWorldZ
+    )
+      .oneMinus()
+      .mul(float(1.0).sub(float(SETTINGS.endOpacityFade * 0)))
+      .add(float(SETTINGS.endOpacityFade * 0.0)); // Th
   });
-  lineMaterial.fragmentNode = clippingLogic();
+
+  // Apply to your material
+  lineMaterial.opacityNode = clippingLogic();
 
   // @ts-expect-error: Line2 constructor type definition is outdated for WebGPU materials
   const lineMesh = new Line2(geometry, lineMaterial);
@@ -350,7 +407,7 @@ export function createPolarGridRadialLine({
     mesh: lineMesh,
     zClipUpdateFunction: (newVal: number) => {
       console.log("Updating zClip to", newVal);
-      zClip.value = newVal;
+      // zClip.value = newVal;
     }
   };
 }
