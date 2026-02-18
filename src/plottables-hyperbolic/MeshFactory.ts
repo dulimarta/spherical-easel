@@ -57,47 +57,6 @@ export function create2DLine(width: number = 0.03, color: string = "white") {
     new THREE.MeshStandardNodeMaterial({ color })
   );
 }
-// The problem with this that the raycaster will rarely hit the line mesh because the line is rendered infinitesimally thin in 3D space.
-// export function createPointsAtInfinity({
-//   zHeight,
-//   thickness = 10
-// }: {
-//   zHeight: number;
-//   thickness?: number;
-// }): Mesh {
-//   const circlePoints: number[] = [];
-//   const error = 0.004; // maximum allowable error (as a world space distance) in the linear segments approximating the circle
-//   // Calculate number of points needed to achieve the desired maximum error in linear approximation of circle
-//   const numPoints = Math.ceil(Math.PI / Math.acos(1 - error / zHeight));
-//   // Build the path
-//   for (let angle = 0; angle < 2 * Math.PI; angle += (2 * Math.PI) / numPoints) {
-//     circlePoints.push(
-//       zHeight * Math.cos(angle),
-//       zHeight * Math.sin(angle),
-//       zHeight
-//     );
-//   }
-//   // Close the circle
-//   circlePoints.push(circlePoints[0], circlePoints[1], circlePoints[2]);
-
-//   const pointsAtInfinityGeometry = new LineGeometry();
-//   pointsAtInfinityGeometry.setPositions(circlePoints);
-
-//   const pointsAtInfinityMaterial = new LineMaterial({
-//     color: "blue",
-//     linewidth: thickness, // Width in pixels
-//     resolution: new Vector2(window.innerWidth, window.innerHeight),
-//     transparent: false
-//   });
-
-//   const mesh = new Mesh(
-//     pointsAtInfinityGeometry,
-//     //customShaderMaterial
-//     pointsAtInfinityMaterial
-//   );
-
-//   return mesh;
-// }
 
 /**
  * Creates the cone on which the points at infinity lie, the  portion of the cone representing the points at infinity are between the given clipping planes.

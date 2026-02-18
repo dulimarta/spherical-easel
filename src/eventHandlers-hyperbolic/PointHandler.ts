@@ -28,7 +28,6 @@ export class PointHandler extends PoseTracker {
     intersectionList: Intersection[]
   ): void {
     // Process the intersection list and set the flags
-    console.log("here");
     super.mouseMoved(event, scrPos, intersectionList);
     if (intersectionList[0]) {
       this.scene.add(this.tempPoint);
