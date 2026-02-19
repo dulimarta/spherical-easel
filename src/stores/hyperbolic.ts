@@ -19,6 +19,8 @@ import SETTINGS, { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import { Text } from "troika-three-text";
 import { ActionMode } from "@/types";
 import { HELabel } from "@/models-hyperbolic/HELabel";
+import { uniform } from "three/tsl";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const surfaceIntersections: Ref<Intersection[]> = ref([]); // intersections with hyperbolic surfaces computed in hyperbolic frame
   const objectIntersections: Ref<Intersection[]> = ref([]); // intersections with hyperbolic surfaces computed in hyperbolic frame
@@ -39,6 +41,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const rayCastDirection = new Vector3();
   const cameraOrigin = new Vector3();
   const { font } = useThreeFont();
+  const unitLength = ref(uniform(1.0, "float")); // the initial unit
   const implementedHETools: Ref<Array<ActionMode>> = ref([
     "point",
     "line",
@@ -161,7 +164,12 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
       t.quaternion.copy(quat);
     });
   }
-
+  function setUnitLength(n: number) {
+    EventBus.fire("magnification-updated", {
+      factor: n
+    });
+    unitLength.value.value = n;
+  }
   return {
     font,
     surfaceIntersections,
@@ -170,13 +178,15 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     cameraQuaternion,
     cameraInverseMatrix,
     implementedHETools,
+    // unitLength,
     addPoint,
     addLine,
     getObjectById,
     removePoint,
     removeLine,
     setScene,
-    adjustTextPose
+    adjustTextPose,
+    setUnitLength
   };
 });
 

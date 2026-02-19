@@ -94,19 +94,39 @@ export function createPointsAtInfinity({
 
   pointAtInfinityMaterial.positionNode = posFunc();
 
-  // Add opacity to the edges of the points at infinity
+  // Add opacity to the edges of the points at infinity strip
+  const opacityAtEdges = 0.7;
+  const percentOfEdgeReduceInOpacity = 0.005;
   if (upper) {
     pointAtInfinityMaterial.opacityNode = smoothstep(
       lowerZValue,
-      lowerZValue.mul(1.01),
+      lowerZValue.mul(1 + percentOfEdgeReduceInOpacity),
       positionLocal.z
-    ).sub(smoothstep(upperZValue.mul(0.99), upperZValue, positionLocal.z));
+    )
+      .mul(1 - opacityAtEdges)
+      .sub(
+        smoothstep(
+          upperZValue.mul(1 - percentOfEdgeReduceInOpacity),
+          upperZValue,
+          positionLocal.z
+        ).mul(1 - opacityAtEdges)
+      )
+      .add(opacityAtEdges);
   } else {
     pointAtInfinityMaterial.opacityNode = smoothstep(
       upperZValue,
-      upperZValue.mul(1.01),
+      upperZValue.mul(1 + percentOfEdgeReduceInOpacity),
       positionLocal.z
-    ).sub(smoothstep(lowerZValue.mul(0.99), lowerZValue, positionLocal.z));
+    )
+      .mul(1 - opacityAtEdges)
+      .sub(
+        smoothstep(
+          lowerZValue.mul(1 - percentOfEdgeReduceInOpacity),
+          lowerZValue,
+          positionLocal.z
+        ).mul(1 - opacityAtEdges)
+      )
+      .add(opacityAtEdges);
   }
 
   // path is the center line of the initial(untransformed) tube.

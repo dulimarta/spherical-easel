@@ -1,5 +1,7 @@
 import { HEStoreType } from "@/stores/hyperbolic";
 import { Group, Mesh, MeshBasicMaterial, Scene } from "three";
+import { uniform } from "three/tsl";
+import * as THREE from "three/webgpu";
 
 let NODE_COUNT = 0;
 export abstract class HENodule {
@@ -7,6 +9,14 @@ export abstract class HENodule {
   static LINE_COUNT = 0;
   static SEGMENT_COUNT = 0;
   static hyperStore: HEStoreType;
+
+  //Unit is the unit length in the scene at any given dolly distance and any given zoom level
+  // all other lengths and size are relative to this unit. I.e. if a point has a size of 1.2, then in the
+  // scene it is rendered at unit.value * size.value in world coordinates.
+  // one goal of the unit is to adjust the size of objects so they appear the same (or similar) size at
+  // all(some?) dolly distances and zoom levels.
+  protected unit: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>> =
+    uniform(1.0);
 
   protected _parents: HENodule[] = [];
   protected _kids: HENodule[] = [];

@@ -25,13 +25,14 @@
       </span>
       <br />
       <span class="ml-1">
+        FOV: {{ cameraFOV.toFixed(1) }}
         Dolly Distance:
         {{ cameraDistance.toFixed(1) }}
         Polar Angle:
         {{ ((cameraPolarAngle * 180) / Math.PI).toFixed(1) }}&deg; zUpperClip:
-        {{ zUpperClipValue.toFixed(2) }}
+        {{ zUpperClip.value.toFixed(2) }}
         zLowerClip:
-        {{ zLowerClipValue.toFixed(2) }}
+        {{ zLowerClip.value.toFixed(2) }}
       </span>
     </span>
   </span>
@@ -200,10 +201,6 @@ const { elementX, elementY, isOutside } = useMouseInElement(webGPUCanvas, {});
 const { shift: shiftKey, control: controlKey } = useMagicKeys({
   passive: false
 });
-// const { pressed } = useMousePressed({
-//   drag: true,
-//   target: webGPUCanvas
-// });
 const scene = new Scene();
 const clock = new Clock(); // used by camera control animation
 const rayCaster = new Raycaster();
@@ -211,6 +208,7 @@ const mouseCoordNormalized: Ref<Vector2> = ref(new Vector2()); // used by RayCas
 let camera: PerspectiveCamera;
 const cameraDistance = ref(0);
 let oldCameraDistance = 0;
+let cameraFOV = ref(SETTINGS.maxFieldOfView);
 const cameraPolarAngle = ref(0);
 const tmpMatrix4 = new Matrix4();
 const positionInCameraCF = ref(new Vector3());
@@ -258,12 +256,9 @@ txtObject.color = "yellow"; //0x000000;
 
 const rayIntersectionPosition = reactive(new Vector3());
 
-// The z coordinate of all points on the hyperboloid(s) are between zUpperClip and zLowerClip
-
+// The z coordinate of all points on the hyperboloid(s) are between zUpperClip and zLowerClip and their negations
 const zUpperClip = uniform(1.0, "float");
 const zLowerClip = uniform(-1.0, "float");
-let zUpperClipValue = ref(zUpperClip.value); // this is a ref so it can be displayed on the screen
-let zLowerClipValue = ref(zLowerClip.value);
 
 // The z coordinate of all point of the upperPointsAtInfinity are between zUpperPAIClipPlus and zUpperPAIClipMinus,
 const zUpperPAIClipPlus = uniform(2.0, "float");
@@ -284,7 +279,6 @@ let upperHyperboloidSheet: THREE.Mesh | undefined = undefined;
 let lowerHyperboloidSheet: THREE.Mesh | undefined = undefined;
 
 clock.autoStart = true;
-// let customShaderMaterial: THREE.ShaderMaterial;
 
 watch(visibleLayers, (layers: Array<VisibleHELayersType>) => {
   showLowerSheet.value = layers.includes("lowerSheet");
@@ -374,7 +368,7 @@ watch(idle, idleValue => {
 });
 
 // When the lower sheet is shown (or not) update the zClipping planes and the camera lookAt
-watch(showLowerSheet, show => {
+watch(showLowerSheet, () => {
   updateView();
   // console.log("Show lower sheet", show);
   actionMode.value = "rotate";
@@ -449,16 +443,15 @@ onMounted(async () => {
   // Set the parameters of the camera controller
   cameraController.minDistance = SETTINGS.dollyDistanceMin;
   cameraController.maxDistance = SETTINGS.dollyDistanceMax;
-  cameraController.maxZoom = SETTINGS.maxFieldOfView;
-  cameraController.minZoom = SETTINGS.minFieldOfView;
-  // cameraController.minPolarAngle = 0.1; // radians
-  // cameraController.maxPolarAngle = Math.PI - 0.1; // radians
+  // cameraController.maxZoom = ; // this is "digital zoom" and not field of view
+  // cameraController.minZoom = ;
+  cameraController.minPolarAngle = 0.1; // radians
+  cameraController.maxPolarAngle = Math.PI - 0.1; // radians
   cameraController.dollySpeed = 0.2;
   cameraController.polarRotateSpeed = 0.5;
   cameraController.azimuthRotateSpeed = 0.2;
   cameraController.smoothTime = 0.22;
   cameraController.draggingSmoothTime = 0.12;
-
   cameraDistance.value = cameraController.distance;
   oldCameraDistance = cameraController.distance;
   cameraPolarAngle.value = cameraController.polarAngle;
@@ -490,6 +483,43 @@ onMounted(async () => {
 
   useEventListener(cameraController, "control", updateCameraDetails);
   useEventListener(cameraController, "update", updateCameraDetails);
+  cameraController.mouseButtons.wheel = CameraControls.ACTION.NONE;
+  useEventListener(
+    webGPUCanvas.value,
+    "wheel",
+    event => {
+      if (!cameraController) return;
+
+      // Prevent page scrolling
+      event.preventDefault();
+
+      if (event.shiftKey) {
+        //cameraController.zoom(event.deltaY * ZOOM_SENSITIVITY);
+        const newFov =
+          (cameraController.camera as PerspectiveCamera).fov +
+          event.deltaY * 0.2;
+        if (
+          newFov <= SETTINGS.maxFieldOfView &&
+          newFov >= SETTINGS.minFieldOfView
+        ) {
+          (cameraController.camera as PerspectiveCamera).fov = newFov;
+          cameraFOV.value = newFov;
+          cameraController.camera.updateProjectionMatrix();
+          renderer.renderAsync(scene, camera);
+          updateView();
+          // updateCameraDetails(event);
+        }
+        console.log({
+          currentZoom: cameraController.camera.zoom,
+          currentFOV: (cameraController.camera as PerspectiveCamera).fov,
+          currentDistance: cameraController.distance
+        });
+      } else {
+        cameraController.dolly(event.deltaY, true);
+      }
+    },
+    { passive: false }
+  );
 });
 
 onUpdated(() => {
@@ -502,10 +532,10 @@ onUpdated(() => {
 
 function initialize() {
   camera = new PerspectiveCamera(
-    45,
+    SETTINGS.maxFieldOfView,
     props.availableWidth / props.availableHeight,
     0.1,
-    2 * SETTINGS.dollyDistanceMax
+    2 * SETTINGS.dollyDistanceMax // because if you view both sheets of the hyperboloid with polar angle of 0 and dolly distance is at a maximum, to see the entire lower sheet you need the far plane to be this.
   );
 
   // const helper = new THREE.CameraHelper(camera);
@@ -658,17 +688,23 @@ function doRender() {
 }
 
 function updateCameraDetails(ev: DispatcherEvent) {
-  // console.debug("CC::" + ev.type);
   const cc = ev.target as CameraControls;
+
+  // console.debug("CC::" + ev.type);
+
   cameraDistance.value = cc.distance;
   cameraPolarAngle.value = cc.polarAngle;
-
   if (
     Math.abs(oldCameraDistance - cc.distance) >
     SETTINGS.minDollyDistanceChangeForViewUpdate
   ) {
     oldCameraDistance = cc.distance;
     updateView();
+    // console.log({
+    //   currentZoom: cameraController.camera.zoom,
+    //   currentFOV: (cameraController.camera as PerspectiveCamera).fov,
+    //   currentDistance: cameraController.distance
+    // });
   }
 
   if (surfaceIntersections.value.length > 0) {
@@ -738,7 +774,7 @@ function updateView() {
     zCoordLookAt,
     true
   );
-  // update the clipping planes for the points at infinity cones to make the points at infinity strip
+  // update the clipping planes for the points at infinity cones to make the points at infinity strip an almost constant width
 
   // Set up the variables for the calculation
   const dSin =
@@ -748,51 +784,54 @@ function updateView() {
   const la = zCoordLookAt;
   const cp = zUpperClip.value;
 
-  // Let A be the camera position, (dSin,0,dCos + la)
-  // where dSin/dCos is the sine/cosine of the polar angle multiplied by the camera distance
+  // // choose the clipping planes (well just the z coordinates of them) so that at all dolly distances they
+  // // appear to be a constant width strip.
+  // //
+  // // Let A be the camera position, (dSin,0,dCos + la)
+  // // where dSin/dCos is the sine/cosine of the polar angle multiplied by the camera distance
+  // // la is the lookAt z value
 
-  // Let B be the left most point on the boundary cone at the height
-  // of the clipping plane: (0, -cp, cp )
-  // Assuming the camera is at A above the x axis.
+  // // Let B be the left most point on the boundary cone at the height
+  // // of the clipping plane: (0, -cp, cp )
+  // // Assuming the camera is at A above the x axis.
 
-  // Let C be the point at 45 degree (away from the z axis) in the y-z plane above and to the left of point B. C is the end point of either the gap or the gap + width line segment.
-  //   For example, C could be at (0, -cp - G/sqrt(2), cp + G/sqrt(2))
+  // // Let C be the point at 45 degree (away from the z axis) in the y-z plane above and to the left of point B. C is the end point of either the gap or the gap + width line segment.
+  // //   For example, C could be at (0, -cp - G/sqrt(2), cp + G/sqrt(2))
+  // // G is the gap
 
-  // The angle ABC is determined by the dot product
-  // BA.CB/(|BA||CB|) = cos(ABC)
-  // Notice that G (or Gap + Width) cancels on the left hand side
+  // // The angle ABC is determined by the dot product
+  // // BA.CB/(|BA||CB|) = cos(ABC)
+  // // Notice that G (or Gap + Width) cancels on the left hand side
 
-  // Then the length of the side BC is found by the law of sines
-  // |AB|/sin(ACB) = |CB|/sin(CAB), since we want ACB to be fixed (this is the angular length of the gap or gap + width) and ACB = 180 - ABC - CAB and so sin(ACB) = sin(ABC + CAB) Thus |CB| = |AB| sin(CAB)/sin(ABC + CAB)
+  // // Then the length of the side CB is found by the law of sines
+  // // |AB|/sin(ACB) = |CB|/sin(CAB), since we want CAB to be fixed (this is the angular length of the gap or gap + width) and ACB = 180 - ABC - CAB and so sin(ACB) = sin(ABC + CAB) Thus |CB| = |AB| sin(CAB)/sin(ABC + CAB)
 
-  const lenAB = Math.sqrt(
-    dSin * dSin + cp * cp + (dCos + la - cp) * (dCos + la - cp)
+  // const lenAB = Math.sqrt(
+  //   dSin * dSin + cp * cp + (dCos + la - cp) * (dCos + la - cp)
+  // );
+
+  // const angleABC = Math.acos(((1 / Math.sqrt(2)) * (dCos + la)) / lenAB);
+
+  // Starting at the top of the clipping plane value at the left most edge of the
+  const start = new Vector3(0, -zUpperClip.value, zUpperClip.value);
+  const dir = new Vector3(0, -(1 / Math.sqrt(2)), 1 / Math.sqrt(2));
+  const len1 = constantAngleToLength(
+    start,
+    dir,
+    SETTINGS.pointsAtInfinityAngularGap
   );
-
-  const angleABC = Math.acos(((1 / Math.sqrt(2)) * (dCos + la)) / lenAB);
-
-  zUpperPAIClipMinus.value =
-    zUpperClip.value +
-    ((1 / Math.sqrt(2)) *
-      (lenAB * Math.sin(SETTINGS.pointsAtInfinityAngularGap))) /
-      Math.sin(SETTINGS.pointsAtInfinityAngularGap + angleABC);
-
-  zUpperPAIClipPlus.value =
-    zUpperClip.value +
-    ((1 / Math.sqrt(2)) *
-      (lenAB *
-        Math.sin(
-          SETTINGS.pointsAtInfinityAngularGap +
-            SETTINGS.pointsAtInfinityAngularWidth
-        ))) /
-      Math.sin(
-        SETTINGS.pointsAtInfinityAngularGap +
-          SETTINGS.pointsAtInfinityAngularWidth +
-          angleABC
-      );
+  const len2 = constantAngleToLength(
+    start,
+    dir,
+    SETTINGS.pointsAtInfinityAngularGap + SETTINGS.pointsAtInfinityAngularWidth
+  );
+  zUpperPAIClipMinus.value = start.z + len1 * dir.z;
+  zUpperPAIClipPlus.value = start.z + len2 * dir.z;
 
   zLowerPAIClipMinus.value = -zUpperPAIClipPlus.value;
   zLowerPAIClipPlus.value = -zUpperPAIClipMinus.value;
+
+  // update the unit
 }
 
 function doMouseDown(ev: MouseEvent) {
@@ -837,11 +876,16 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   intersectionList.value = rayCaster
     .intersectObjects(scene.children, true)
     .filter((iSect, idx) => {
-      // console.log(
-      //   `Raycast intersect #${idx} ${iSect.object.name}`,
-      //   iSect.point.toFixed(2)
-      //   // iSect.object.name.match(regex)
-      // );
+      console.log(
+        `Raycast intersect #${idx} ${iSect.object.name}`,
+        iSect.point.toFixed(2),
+        iSect.point.z >= zLowerClip.value && iSect.point.z <= zUpperClip.value,
+        (iSect.point.z <= zUpperPAIClipPlus.value &&
+          iSect.point.z >= zUpperPAIClipMinus.value) ||
+          (iSect.point.z <= zLowerPAIClipPlus.value &&
+            iSect.point.z >= zLowerPAIClipMinus.value)
+        // iSect.object.name.match(regex)
+      );
       if (iSect.object.name.length === 0) {
         return false; // the intersection is not with a named object, ignore it
       } else {
@@ -916,5 +960,49 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   });
 
   renderer.render(scene, camera);
+}
+
+function constantAngleToLength(
+  start: Vector3,
+  direction: Vector3,
+  angularWidthAtMaxFOV: number
+): number {
+  // start (B) is the start of the line segment that we want to have apparent
+  // constant length at all dolly distances and all zoom levels.
+  //
+  // direction is the direction of the line segment
+  //
+  // angularWidthAtMaxFOV is angular width
+  // at maximum field of view, which is scaled to the current zoom so the
+  // fraction of the total remains the same. That is, the angleWidth at the
+  // current zoom (FOV) is
+
+  const angularWidth =
+    (camera.fov / SETTINGS.maxFieldOfView) * angularWidthAtMaxFOV;
+
+  // Let A be the camera position
+  // Let B be the start point of the line segment (Note: B is the same as start but easier to write)
+  // Let C be B +|CB|*direction/direction.length(), the end point of the line segment
+  // Thus |CB| is the length to return, the length the line segment should have to have
+  // apparent constant length
+
+  // The length of the side CB is found by the law of sines in triangle ABC
+  //
+  //                         |AB|/sin(ACB) = |CB|/sin(CAB)
+  //
+  // since ACB = 180 - ABC - CAB we know sin(ACB) = sin(ABC + CAB).  As we want CAB to be fixed (this
+  // is the angular length of the line segment at a particular zoom level, angularWidth), we
+  // rewrite this in terms of CAB, ABC, and |AB|
+  //
+  //  |CB| = |AB| sin(CAB)/sin(ABC + CAB)
+  //
+  const currentCameraPosition = new Vector3();
+  cameraController.getPosition(currentCameraPosition);
+  const AB = currentCameraPosition.sub(start);
+  const angleABC = AB.angleTo(direction);
+
+  return (
+    (AB.length() * Math.sin(angularWidth)) / Math.sin(angularWidth + angleABC)
+  );
 }
 </script>

@@ -3,8 +3,11 @@ import { HENodule } from "./HENodule";
 // import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { Text } from "troika-three-text";
 import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
+import * as THREE from "three/webgpu";
+
 export class HEPoint extends HENodule {
   private pointMesh: Mesh;
+  private size: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
   constructor(pos: Vector3, normal: Vector3) {
     super();
     const material = new MeshStandardMaterial({ color: "white" });
