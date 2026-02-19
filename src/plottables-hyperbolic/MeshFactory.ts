@@ -137,6 +137,7 @@ export function createPointsAtInfinity({
 
   // --- Override the raycast for the mesh otherwise the ray caster detects only the untransformed mesh---
   pointAtInfinityMesh.raycast = function (raycaster, intersects) {
+    console.log("POIStart", intersects.length);
     // Check the intersection of the ray with the transformed points at infinity
     const ox = raycaster.ray.origin.x;
     const oy = raycaster.ray.origin.y;
@@ -175,7 +176,13 @@ export function createPointsAtInfinity({
         .copy(raycaster.ray.direction)
         .multiplyScalar(t)
         .add(raycaster.ray.origin);
-
+      console.log(
+        "POIraycast, disc>0",
+        t,
+        _intersectionPoint.toFixed(2),
+        lowerZValue.value,
+        upperZValue.value
+      );
       // Check that the ray intersects the cone in the correct strip
       if (
         _intersectionPoint.z < lowerZValue.value ||
@@ -187,14 +194,15 @@ export function createPointsAtInfinity({
 
       intersects.push({
         distance: distance,
-        point: _intersectionPoint,
+        point: _intersectionPoint.clone(),
         normal: _intersectionPoint
           .clone()
-          .multiply(new Vector3(1, 1, -1))
+          .multiply(new Vector3(-1, -1, 1)) //inward pointing normal
           .normalize(),
         object: this
       });
     });
+    console.log("POIEnd", intersects.length);
   };
 
   return pointAtInfinityMesh;
@@ -434,6 +442,75 @@ export function createHyperboloidSheet(
   );
 
   const hyperboloidMesh = new Mesh(hyperboloidGeometry, hyperboloidMaterial);
+
+  hyperboloidMesh.raycast = function (raycaster, intersects) {
+    console.log("HStart", intersects.length);
+    // Check the intersection of the ray with the transformed points at infinity
+    const ox = raycaster.ray.origin.x;
+    const oy = raycaster.ray.origin.y;
+    const oz = raycaster.ray.origin.z;
+    const dx = raycaster.ray.direction.x;
+    const dy = raycaster.ray.direction.y;
+    const dz = raycaster.ray.direction.z;
+
+    // Expand substitutions for intersection of Ray P(t) with hyperboloid Surface
+    // (oz + t*dz)^2 - (ox + t*dx)^2 - (oy + t*dy)^2  -1 = 0
+
+    // A term (t^2)
+    const A = dz * dz - dx * dx - dy * dy;
+
+    // B term (t)
+    const B = 2 * (oz * dz - ox * dx - oy * dy);
+
+    // C term (constant)
+    const C = oz * oz - ox * ox - oy * oy - 1;
+
+    // Solve the Quadratic
+    const discriminant = B * B - 4 * A * C;
+
+    if (discriminant < 0) return; // No intersection
+
+    const sqrtDisc = Math.sqrt(discriminant);
+    const t1 = (-B - sqrtDisc) / (2 * A);
+    const t2 = (-B + sqrtDisc) / (2 * A);
+
+    // Check both solutions (entry and exit points)
+    [t1, t2].forEach(t => {
+      if (t < raycaster.near || t > raycaster.far) return;
+
+      // Calculate intersection point in local space
+      _intersectionPoint
+        .copy(raycaster.ray.direction)
+        .multiplyScalar(t)
+        .add(raycaster.ray.origin);
+      console.log(
+        "Hraycast, disc>0",
+        t,
+        _intersectionPoint.toFixed(2),
+        zClip.value
+      );
+      // Check that the ray intersects the hyperboloid where it is drawn
+      if (
+        zClip.value > 0
+          ? _intersectionPoint.z > zClip.value
+          : _intersectionPoint.z < zClip.value
+      )
+        return;
+
+      const distance = raycaster.ray.origin.distanceTo(_intersectionPoint);
+
+      intersects.push({
+        distance: distance,
+        point: _intersectionPoint.clone(),
+        normal: _intersectionPoint
+          .clone()
+          .multiply(new Vector3(-1, -1, 1)) // always the inward pointing normal
+          .normalize(),
+        object: this
+      });
+    });
+    console.log("HEnd", intersects.length);
+  };
 
   return hyperboloidMesh;
 }

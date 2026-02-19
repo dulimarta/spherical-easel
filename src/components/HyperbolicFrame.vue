@@ -878,12 +878,13 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
     .filter((iSect, idx) => {
       console.log(
         `Raycast intersect #${idx} ${iSect.object.name}`,
-        iSect.point.toFixed(2),
-        iSect.point.z >= zLowerClip.value && iSect.point.z <= zUpperClip.value,
-        (iSect.point.z <= zUpperPAIClipPlus.value &&
-          iSect.point.z >= zUpperPAIClipMinus.value) ||
-          (iSect.point.z <= zLowerPAIClipPlus.value &&
-            iSect.point.z >= zLowerPAIClipMinus.value)
+        iSect.point.toFixed(2)
+        // ,
+        // iSect.point.z >= zLowerClip.value && iSect.point.z <= zUpperClip.value,
+        // (iSect.point.z <= zUpperPAIClipPlus.value &&
+        //   iSect.point.z >= zUpperPAIClipMinus.value) ||
+        //   (iSect.point.z <= zLowerPAIClipPlus.value &&
+        //     iSect.point.z >= zLowerPAIClipMinus.value)
         // iSect.object.name.match(regex)
       );
       if (iSect.object.name.length === 0) {
