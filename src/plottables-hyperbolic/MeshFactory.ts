@@ -30,7 +30,7 @@ import {
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import { LineGeometry } from "three/examples/jsm/Addons.js";
 
-const _intersectionPoint = new THREE.Vector3();
+const rayCasterIntersectionPoint = new THREE.Vector3();
 
 export function createPoint(color: string = "white"): {
   mesh: Mesh;
@@ -137,7 +137,6 @@ export function createPointsAtInfinity({
 
   // --- Override the raycast for the mesh otherwise the ray caster detects only the untransformed mesh---
   pointAtInfinityMesh.raycast = function (raycaster, intersects) {
-    console.log("POIStart", intersects.length);
     // Check the intersection of the ray with the transformed points at infinity
     const ox = raycaster.ray.origin.x;
     const oy = raycaster.ray.origin.y;
@@ -172,37 +171,40 @@ export function createPointsAtInfinity({
       if (t < raycaster.near || t > raycaster.far) return;
 
       // Calculate intersection point in local space
-      _intersectionPoint
+      rayCasterIntersectionPoint
         .copy(raycaster.ray.direction)
         .multiplyScalar(t)
         .add(raycaster.ray.origin);
-      console.log(
-        "POIraycast, disc>0",
-        t,
-        _intersectionPoint.toFixed(2),
-        lowerZValue.value,
-        upperZValue.value
-      );
+      // console.log(
+      //   "POIraycast, disc>0",
+      //   t,
+      //   rayCasterIntersectionPoint.toFixed(2),
+      //   lowerZValue.value,
+      //   upperZValue.value
+      // );
       // Check that the ray intersects the cone in the correct strip
-      if (
-        _intersectionPoint.z < lowerZValue.value ||
-        _intersectionPoint.z > upperZValue.value
-      )
-        return;
 
-      const distance = raycaster.ray.origin.distanceTo(_intersectionPoint);
+      if (
+        rayCasterIntersectionPoint.z < lowerZValue.value ||
+        rayCasterIntersectionPoint.z > upperZValue.value
+      ) {
+        return;
+      }
+
+      const distance = raycaster.ray.origin.distanceTo(
+        rayCasterIntersectionPoint
+      );
 
       intersects.push({
         distance: distance,
-        point: _intersectionPoint.clone(),
-        normal: _intersectionPoint
+        point: rayCasterIntersectionPoint.clone(),
+        normal: rayCasterIntersectionPoint
           .clone()
           .multiply(new Vector3(-1, -1, 1)) //inward pointing normal
           .normalize(),
         object: this
       });
     });
-    console.log("POIEnd", intersects.length);
   };
 
   return pointAtInfinityMesh;
@@ -444,7 +446,6 @@ export function createHyperboloidSheet(
   const hyperboloidMesh = new Mesh(hyperboloidGeometry, hyperboloidMaterial);
 
   hyperboloidMesh.raycast = function (raycaster, intersects) {
-    console.log("HStart", intersects.length);
     // Check the intersection of the ray with the transformed points at infinity
     const ox = raycaster.ray.origin.x;
     const oy = raycaster.ray.origin.y;
@@ -479,37 +480,48 @@ export function createHyperboloidSheet(
       if (t < raycaster.near || t > raycaster.far) return;
 
       // Calculate intersection point in local space
-      _intersectionPoint
+      rayCasterIntersectionPoint
         .copy(raycaster.ray.direction)
         .multiplyScalar(t)
         .add(raycaster.ray.origin);
-      console.log(
-        "Hraycast, disc>0",
-        t,
-        _intersectionPoint.toFixed(2),
-        zClip.value
-      );
+      // console.log(
+      //   "Hraycast, disc>0",
+      //   t,
+      //   _intersectionPoint.toFixed(2),
+      //   zClip.value
+      // );
       // Check that the ray intersects the hyperboloid where it is drawn
-      if (
-        zClip.value > 0
-          ? _intersectionPoint.z > zClip.value
-          : _intersectionPoint.z < zClip.value
-      )
-        return;
+      const upper = zClip.value > 0; // only the upper sheet has a positive zClip value
+      if (upper) {
+        if (
+          rayCasterIntersectionPoint.z > zClip.value ||
+          rayCasterIntersectionPoint.z < 0
+        ) {
+          return;
+        }
+      } else {
+        if (
+          rayCasterIntersectionPoint.z < zClip.value ||
+          rayCasterIntersectionPoint.z > 0
+        ) {
+          return;
+        }
+      }
 
-      const distance = raycaster.ray.origin.distanceTo(_intersectionPoint);
+      const distance = raycaster.ray.origin.distanceTo(
+        rayCasterIntersectionPoint
+      );
 
       intersects.push({
         distance: distance,
-        point: _intersectionPoint.clone(),
-        normal: _intersectionPoint
+        point: rayCasterIntersectionPoint.clone(),
+        normal: rayCasterIntersectionPoint
           .clone()
           .multiply(new Vector3(-1, -1, 1)) // always the inward pointing normal
           .normalize(),
         object: this
       });
     });
-    console.log("HEnd", intersects.length);
   };
 
   return hyperboloidMesh;
