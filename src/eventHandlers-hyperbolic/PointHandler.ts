@@ -2,7 +2,10 @@ import { Intersection, Mesh, Scene, Uniform, Vector2, Vector3 } from "three";
 import { PoseTracker } from "./PoseTracker";
 import * as THREE from "three/webgpu";
 import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
-import { createPoint } from "@/plottables-hyperbolic/MeshFactory";
+import {
+  createPoint,
+  createPointAtInfinity
+} from "@/plottables-hyperbolic/MeshFactory";
 const Z_AXIS = new Vector3(0, 0, 1);
 
 export class PointHandler extends PoseTracker {
@@ -11,6 +14,13 @@ export class PointHandler extends PoseTracker {
     THREE.UniformNode<Vector3>
   >;
   protected tempRadius: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
+  protected tempPointAtInfinity: Mesh;
+  protected tempPositionPointAtInfinity: THREE.TSL.ShaderNodeObject<
+    THREE.UniformNode<Vector3>
+  >;
+  protected tempRadiusPointAtInfinity: THREE.TSL.ShaderNodeObject<
+    THREE.UniformNode<number>
+  >;
   private tempPointInScene = false;
 
   constructor(scene: Scene) {
@@ -20,6 +30,10 @@ export class PointHandler extends PoseTracker {
     this.tempPoint = pointObject.mesh;
     this.tempPosition = pointObject.position;
     this.tempRadius = pointObject.radius;
+    const pointAtInfinityObject = createPointAtInfinity();
+    this.tempPointAtInfinity = pointObject.mesh;
+    this.tempPositionPointAtInfinity = pointObject.position;
+    this.tempRadiusPointAtInfinity = pointObject.radius;
   }
 
   mouseMoved(

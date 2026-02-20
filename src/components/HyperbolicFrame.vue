@@ -155,11 +155,19 @@ import SETTINGS, { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import {
   createPolarGridCircle,
   createPolarGridRadialLine,
-  createPointsAtInfinity,
-  createHyperboloidSheet
+  createPointsAtInfinityStrip,
+  createHyperboloidSheet,
+  zUpperClip,
+  zLowerClip,
+  zUpperPAIClipPlus,
+  zUpperPAIClipMinus,
+  zLowerPAIClipPlus,
+  zLowerPAIClipMinus,
+  unitLength
 } from "@/plottables-hyperbolic/MeshFactory";
 import { VisibleHELayersType } from "@/types";
 import { label, uniform } from "three/tsl";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
@@ -256,17 +264,17 @@ txtObject.color = "yellow"; //0x000000;
 
 const rayIntersectionPosition = reactive(new Vector3());
 
-// The z coordinate of all points on the hyperboloid(s) are between zUpperClip and zLowerClip and their negations
-const zUpperClip = uniform(1.0, "float");
-const zLowerClip = uniform(-1.0, "float");
+// // The z coordinate of all points on the hyperboloid(s) are between zUpperClip and zLowerClip and their negations
+// const zUpperClip = uniform(1.0, "float");
+// const zLowerClip = uniform(-1.0, "float");
 
-// The z coordinate of all point of the upperPointsAtInfinity are between zUpperPAIClipPlus and zUpperPAIClipMinus,
-const zUpperPAIClipPlus = uniform(2.0, "float");
-const zUpperPAIClipMinus = uniform(1.5, "float");
+// // The z coordinate of all point of the upperPointsAtInfinity are between zUpperPAIClipPlus and zUpperPAIClipMinus,
+// const zUpperPAIClipPlus = uniform(2.0, "float");
+// const zUpperPAIClipMinus = uniform(1.5, "float");
 
-// The z coordinate of all point of the lowerPointsAtInfinity are between zLowerPAIClipPlus and zLowerPAIClipMinus,
-const zLowerPAIClipPlus = uniform(-1.5, "float");
-const zLowerPAIClipMinus = uniform(2.0, "float");
+// // The z coordinate of all point of the lowerPointsAtInfinity are between zLowerPAIClipPlus and zLowerPAIClipMinus,
+// const zLowerPAIClipPlus = uniform(-1.5, "float");
+// const zLowerPAIClipMinus = uniform(2.0, "float");
 
 // Arrays to store the polar grid lines
 let upperPolarGridArray: Array<THREE.Mesh> = [];
@@ -431,7 +439,7 @@ onMounted(async () => {
   console.log(`Mounted size ${props.availableWidth}x${props.availableHeight}`);
   camera.aspect = props.availableWidth / props.availableHeight;
 
-  camera.position.set(8, 7, 6);
+  camera.position.set(6, 0, 8);
   camera.up.set(0, 0, 1);
   camera.lookAt(0, 0, 1);
   camera.updateProjectionMatrix();
@@ -488,13 +496,12 @@ onMounted(async () => {
     webGPUCanvas.value,
     "wheel",
     event => {
-      if (!cameraController) return;
+      if (!cameraController || actionMode.value !== "rotate") return;
 
       // Prevent page scrolling
       event.preventDefault();
 
       if (event.shiftKey) {
-        //cameraController.zoom(event.deltaY * ZOOM_SENSITIVITY);
         const newFov =
           (cameraController.camera as PerspectiveCamera).fov +
           event.deltaY * 0.2;
@@ -507,16 +514,16 @@ onMounted(async () => {
           cameraController.camera.updateProjectionMatrix();
           renderer.renderAsync(scene, camera);
           updateView();
-          // updateCameraDetails(event);
         }
-        console.log({
-          currentZoom: cameraController.camera.zoom,
-          currentFOV: (cameraController.camera as PerspectiveCamera).fov,
-          currentDistance: cameraController.distance
-        });
       } else {
         cameraController.dolly(event.deltaY, true);
       }
+      console.log({
+        currentZoom: cameraController.camera.zoom,
+        currentFOV: (cameraController.camera as PerspectiveCamera).fov,
+        currentDistance: cameraController.distance,
+        currentPosition: cameraController.camera.position.toFixed(2)
+      });
     },
     { passive: false }
   );
@@ -561,8 +568,8 @@ function initialize() {
   // scene.add(arrowZ);
 
   // create the hyperboloid sheets
-  upperHyperboloidSheet = createHyperboloidSheet(zUpperClip, true);
-  lowerHyperboloidSheet = createHyperboloidSheet(zLowerClip, false);
+  upperHyperboloidSheet = createHyperboloidSheet({ upper: true });
+  lowerHyperboloidSheet = createHyperboloidSheet({ upper: false });
 
   lowerHyperboloidSheet.name = "Lower Sheet";
   upperHyperboloidSheet.name = "Upper Sheet";
@@ -593,17 +600,13 @@ function initialize() {
 
   // Create the cones from which the points at infinity
   // will be displayed by clipping between two planes
-  upperPointsAtInfinity = createPointsAtInfinity({
-    upperZValue: zUpperPAIClipPlus,
-    lowerZValue: zUpperPAIClipMinus,
+  upperPointsAtInfinity = createPointsAtInfinityStrip({
     upper: true
   });
   upperPointsAtInfinity.name = `Upper Points At Infinity`;
   upperPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
 
-  lowerPointsAtInfinity = createPointsAtInfinity({
-    upperZValue: zLowerPAIClipPlus,
-    lowerZValue: zLowerPAIClipMinus,
+  lowerPointsAtInfinity = createPointsAtInfinityStrip({
     upper: false
   });
   lowerPointsAtInfinity.name = `Lower Points At Infinity`;
@@ -617,13 +620,10 @@ function initialize() {
       theta < 2 * Math.PI;
       theta += (2 * Math.PI) / numRadialLines
     ) {
-      const radialLineMeshObject = createPolarGridRadialLine({
+      const radialLineMesh = createPolarGridRadialLine({
         radianAngle: theta,
-        zClip: upperLower === 0 ? zUpperClip : zLowerClip,
         upper: upperLower === 0
       });
-      const radialLineMesh = radialLineMeshObject.mesh;
-      radialLineMeshObject.zClipUpdateFunction(1.0);
 
       radialLineMesh.layers.set(
         upperLower === 0
@@ -636,26 +636,23 @@ function initialize() {
         lowerPolarGridArray.push(radialLineMesh);
       }
     }
-  }
 
-  // create the circular polar grid lines
-  for (let upperLower = 0; upperLower < 2; upperLower++) {
+    // create the circular polar grid lines
     for (let r = 0.5; Math.cosh(r) < SETTINGS.maxZClip; r += 0.5) {
-      const radialLineMesh = createPolarGridCircle({
+      const circularGridMesh = createPolarGridCircle({
         intrinsicRadius: r,
-        zClip: upperLower === 0 ? zUpperClip : zLowerClip,
         upper: upperLower === 0
       });
 
-      radialLineMesh.layers.set(
+      circularGridMesh.layers.set(
         upperLower === 0
           ? HYPERBOLIC_LAYER.upperSheetGrid
           : HYPERBOLIC_LAYER.lowerSheetGrid
       );
       if (upperLower === 0) {
-        upperPolarGridArray.push(radialLineMesh);
+        upperPolarGridArray.push(circularGridMesh);
       } else {
-        lowerPolarGridArray.push(radialLineMesh);
+        lowerPolarGridArray.push(circularGridMesh);
       }
     }
   }
@@ -774,47 +771,28 @@ function updateView() {
     zCoordLookAt,
     true
   );
-  // update the clipping planes for the points at infinity cones to make the points at infinity strip an almost constant width
+  // update the clipping planes for the points at infinity cones to make the points at infinity strip an almost constant width.
+  // There are two incompatible issues with a perspective camera while trying to accomplish this:
+  // One is that in a perspective camera, objects far/near are rendered smaller/larger and
+  // Two is the desire for constant width.
+  // The grid lines are actually always drawn in the plane parallel to the screen and are always a certain number of pixels wide no matter the dolly distance and zoom/fov level and the near/far placement of the grid lines. I do not think this is what we want for the geometric objects in the scene. We want to standardize the size of objects so that at *one* place on the hyperboloid they always appear to have the same size for any dolly or zoom levels. For the strip of the points at infinity, the place for constant width is the intersection of the plane containing the z axis that intersects the screen plane in a horizontal line. The intersection is two line segments. Each of these are a line segment that should have constant width for any dolly/zoom level. Notice that this still means that the part of the points at infinity strip rendered near/far will be rendered larger/smaller than this constant width/size line segment.
 
-  // Set up the variables for the calculation
-  const dSin =
-    cameraController.distance * Math.sin(cameraController.polarAngle);
-  const dCos =
-    cameraController.distance * Math.cos(cameraController.polarAngle);
-  const la = zCoordLookAt;
-  const cp = zUpperClip.value;
-
-  // // choose the clipping planes (well just the z coordinates of them) so that at all dolly distances they
-  // // appear to be a constant width strip.
-  // //
-  // // Let A be the camera position, (dSin,0,dCos + la)
-  // // where dSin/dCos is the sine/cosine of the polar angle multiplied by the camera distance
-  // // la is the lookAt z value
-
-  // // Let B be the left most point on the boundary cone at the height
-  // // of the clipping plane: (0, -cp, cp )
-  // // Assuming the camera is at A above the x axis.
-
-  // // Let C be the point at 45 degree (away from the z axis) in the y-z plane above and to the left of point B. C is the end point of either the gap or the gap + width line segment.
-  // //   For example, C could be at (0, -cp - G/sqrt(2), cp + G/sqrt(2))
-  // // G is the gap
-
-  // // The angle ABC is determined by the dot product
-  // // BA.CB/(|BA||CB|) = cos(ABC)
-  // // Notice that G (or Gap + Width) cancels on the left hand side
-
-  // // Then the length of the side CB is found by the law of sines
-  // // |AB|/sin(ACB) = |CB|/sin(CAB), since we want CAB to be fixed (this is the angular length of the gap or gap + width) and ACB = 180 - ABC - CAB and so sin(ACB) = sin(ABC + CAB) Thus |CB| = |AB| sin(CAB)/sin(ABC + CAB)
-
-  // const lenAB = Math.sqrt(
-  //   dSin * dSin + cp * cp + (dCos + la - cp) * (dCos + la - cp)
-  // );
-
-  // const angleABC = Math.acos(((1 / Math.sqrt(2)) * (dCos + la)) / lenAB);
-
-  // Starting at the top of the clipping plane value at the left most edge of the
-  const start = new Vector3(0, -zUpperClip.value, zUpperClip.value);
-  const dir = new Vector3(0, -(1 / Math.sqrt(2)), 1 / Math.sqrt(2));
+  // Starting at the top of the clipping plane value at the left most edge of the view and move to the cone x^2 + y^2 = z^2 for the start
+  const angleOffX = Math.atan2(
+    currentCameraPosition.y,
+    currentCameraPosition.x
+  ); //project the camera position to the x/y plane and compute the angle
+  const start = new Vector3(
+    Math.cos(angleOffX + Math.PI / 2) * zUpperClip.value,
+    Math.sin(angleOffX + Math.PI / 2) * zUpperClip.value,
+    1 * zUpperClip.value
+  );
+  // then move off in a 45 degree angle in that plane from the start (or just origin)
+  const dir = new Vector3(
+    Math.cos(angleOffX + Math.PI / 2),
+    Math.sin(angleOffX + Math.PI / 2),
+    1
+  );
   const len1 = constantAngleToLength(
     start,
     dir,
@@ -832,6 +810,31 @@ function updateView() {
   zLowerPAIClipPlus.value = -zUpperPAIClipMinus.value;
 
   // update the unit
+  // A line segment starting at (0,0,1) and in the plane parallel to the screen subtending this angle in any zoom/dolly level is considered a unit length. All geometric objects are measured relative to this unit.
+  // The screen plane has normal vector N = CameraPosition - LookAt and the plane parallel to this
+  // through (0,0,01) has equation N.(x,y,z-1) = 0.
+  // To compute the direction (dir) needed to compute the unit length, we only
+  // need a vector in any plane parallel to the screen so any non-zero vector perpendicular to N.
+  // Notice that lookAt = new Vector3(0,0,zCoordLookAt)
+  const tempDir = new Vector3();
+  if (
+    currentCameraPosition.x * currentCameraPosition.x +
+      currentCameraPosition.y * currentCameraPosition.y >
+    0.0001
+  ) {
+    tempDir.x = -currentCameraPosition.y;
+    tempDir.y = currentCameraPosition.x;
+    tempDir.z = 0;
+  } else {
+    tempDir.x = -currentCameraPosition.z + zCoordLookAt;
+    tempDir.y = 0;
+    tempDir.z = currentCameraPosition.x;
+  }
+  unitLength.value = constantAngleToLength(
+    new Vector3(0, 0, 1),
+    tempDir,
+    SETTINGS.angularUnit
+  );
 }
 
 function doMouseDown(ev: MouseEvent) {
@@ -876,50 +879,16 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   intersectionList.value = rayCaster
     .intersectObjects(scene.children, true)
     .filter((iSect, idx) => {
-      console.log(
-        `Raycast intersect #${idx} ${iSect.object.name}`,
-        iSect.point.toFixed(2)
-        // ,
-        // iSect.point.z >= zLowerClip.value && iSect.point.z <= zUpperClip.value,
-        // (iSect.point.z <= zUpperPAIClipPlus.value &&
-        //   iSect.point.z >= zUpperPAIClipMinus.value) ||
-        //   (iSect.point.z <= zLowerPAIClipPlus.value &&
-        //     iSect.point.z >= zLowerPAIClipMinus.value)
-        // iSect.object.name.match(regex)
-      );
+      // console.log(
+      //   `Raycast intersect #${idx} ${iSect.object.name}`,
+      //   iSect.point.toFixed(2)
+      // );
       if (iSect.object.name.length === 0) {
         return false; // the intersection is not with a named object, ignore it
       } else {
-        if (iSect.object.name.endsWith("Sheet")) {
-          // only intersections with the visible parts of the sheet should be returned
-          if (showLowerSheet.value) {
-            return (
-              iSect.point.z >= zLowerClip.value &&
-              iSect.point.z <= zUpperClip.value
-            );
-          } else {
-            return iSect.point.z <= zUpperClip.value;
-          }
-        } else if (iSect.object.name.endsWith("Infinity")) {
-          // only intersections with the visible points at infinity should be returned
-          if (showLowerSheet.value) {
-            return (
-              (iSect.point.z <= zUpperPAIClipPlus.value &&
-                iSect.point.z >= zUpperPAIClipMinus.value) ||
-              (iSect.point.z <= zLowerPAIClipPlus.value &&
-                iSect.point.z >= zLowerPAIClipMinus.value)
-            );
-          } else {
-            return (
-              iSect.point.z <= zUpperPAIClipPlus.value &&
-              iSect.point.z >= zUpperPAIClipMinus.value
-            );
-          }
-        } else {
-          // Here we have an intersection with an object
-          //  we must make sure it exists, is visible and is user created but since selection is done graphically, if is is not visible or doesn't exist or is not user created, it won't be intersected - unless we add some flexibility for selecting objects when you are near them
-          return true; // intersection with other named objects are always returned
-        }
+        // Here we have an intersection with an object
+        //  we must make sure it exists, is visible and is user created but since selection is done graphically, if is is not visible or doesn't exist or is not user created, it won't be intersected - unless we add some flexibility for selecting objects when you are near them
+        return true; // intersection with other named objects are always returned
       }
     });
 
@@ -963,6 +932,7 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   renderer.render(scene, camera);
 }
 
+//Compute the length in world coordinate of a line segment starting at start in the direction dir with a constant angular width angularWidthAtMaxFOV
 function constantAngleToLength(
   start: Vector3,
   direction: Vector3,

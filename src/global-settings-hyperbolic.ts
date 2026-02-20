@@ -10,12 +10,13 @@ export const SETTINGS = {
   minFOVChangeForViewUpdate: 0.2, // The minimum change in field of view required to trigger a view update
   pointsAtInfinityAngularWidth: 0.01, // The angular width of the strip at the top of the hyperboloid mesh to which points at infinity are constrained, when the field of view is at a maximum
   pointsAtInfinityAngularGap: 0.02, // The angular gap between the points at infinity strip and the edge of the hyperboloid mesh, when the field of view is at a maximum
+  angularUnit: 0.05, // A line segment starting at (0,0,1) and in the plane parallel to the screen subtending this angle in any zoom/dolly level is considered a unit length
 
-  fadePercentage: 0.985, // The percentage of the height of the hyperboloid at which fading (opacity lowers) begins
+  fadePercentage: 0.985, // The percentage of the height of the hyperboloid at which fading (opacity lowering) begins
   startOpacityFade: 0.95, // The opacity at the start of the fade of hyperboloid and below
-  endOpacityFade: 0.65, // The opacity at the end of the fade hyperboloid
+  endOpacityFade: 0.65, // The opacity at the end (i.e. top bottom edge) of the fade hyperboloid
 
-  maxZClip: 150 //set the maximum value of zUpperClip so that the entire hyperboloid and grid lines are shown at max dolly distance
+  maxZClip: 150 //set the maximum value of zUpperClip so that the entire hyperboloid and grid lines are shown at max dolly distance and maxFieldOfView
 };
 
 export enum HYPERBOLIC_LAYER {

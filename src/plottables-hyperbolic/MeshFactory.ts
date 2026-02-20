@@ -32,23 +32,85 @@ import { LineGeometry } from "three/examples/jsm/Addons.js";
 
 const rayCasterIntersectionPoint = new THREE.Vector3();
 
-export function createPoint(color: string = "white"): {
+// The z coordinate of all points on the hyperboloid(s) are between zUpperClip and zLowerClip and their negations
+export const zUpperClip = uniform(1.0, "float");
+export const zLowerClip = uniform(-1.0, "float");
+
+// The z coordinate of all point of the upperPointsAtInfinity are between zUpperPAIClipPlus and zUpperPAIClipMinus,
+export const zUpperPAIClipPlus = uniform(2.0, "float");
+export const zUpperPAIClipMinus = uniform(1.5, "float");
+
+// The z coordinate of all point of the lowerPointsAtInfinity are between zLowerPAIClipPlus and zLowerPAIClipMinus,
+export const zLowerPAIClipPlus = uniform(-1.5, "float");
+export const zLowerPAIClipMinus = uniform(2.0, "float");
+
+export const unitLength: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>> =
+  uniform(1.0, "float");
+
+export function createPoint(
+  radius: number = 0.1,
+  color: string = "white",
+  name: string = "tempPoint"
+): {
   mesh: Mesh;
   position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<Vector3>>;
   radius: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
 } {
   const position = uniform(new Vector3(0, 0, 0), "vec3");
-  const radius = uniform(1.0, "float");
+  const radiusUniform = uniform(radius, "float");
   const sphereMaterial = new THREE.MeshStandardNodeMaterial({
     color: color,
     roughness: 0.3
   });
-  sphereMaterial.positionNode = positionLocal.add(position).mul(radius);
+  sphereMaterial.positionNode = positionLocal
+    .mul(unitLength)
+    .mul(radius)
+    .add(position);
+
+  const returnMesh = new Mesh(new SphereGeometry(), sphereMaterial);
+
+  returnMesh.name = name;
+
+  // returnMesh.raycast = function (raycaster, intersects) {
+  //   intersects.push({
+  //       distance: distance,
+  //       point: rayCasterIntersectionPoint.clone(),
+  //       normal: rayCasterIntersectionPoint
+  //         .clone()
+  //         .multiply(new Vector3(-1, -1, 1)) //inward pointing normal
+  //         .normalize(),
+  //       object: this
+  // }
+
+  return {
+    mesh: returnMesh,
+    position: position,
+    radius: radiusUniform
+  };
+}
+export function createPointAtInfinity(
+  radius: number = 0.1,
+  color: string = "blue"
+): {
+  mesh: Mesh;
+  position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<Vector3>>;
+  radius: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
+} {
+  const position = uniform(new Vector3(0, 0, 0), "vec3");
+  const radiusUniform = uniform(radius, "float");
+  const sphereMaterial = new THREE.MeshStandardNodeMaterial({
+    color: color,
+    roughness: 0.3
+  });
+  sphereMaterial.positionNode = positionLocal
+    .mul(unitLength)
+    .mul(radius)
+    .add(position);
 
   return {
     mesh: new Mesh(new SphereGeometry(), sphereMaterial),
     position: position,
-    radius: radius
+    radius: radiusUniform
   };
 }
 export function create2DLine(width: number = 0.03, color: string = "white") {
@@ -57,20 +119,15 @@ export function create2DLine(width: number = 0.03, color: string = "white") {
     new THREE.MeshStandardNodeMaterial({ color })
   );
 }
-
 /**
  * Creates the cone on which the points at infinity lie, the  portion of the cone representing the points at infinity are between the given clipping planes.
  * @param param0
  * @returns
  */
-export function createPointsAtInfinity({
-  upperZValue,
-  lowerZValue,
-  upper = true
+export function createPointsAtInfinityStrip({
+  upper
 }: {
-  upperZValue: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
-  lowerZValue: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
-  upper?: boolean;
+  upper: boolean;
 }): Mesh {
   const pointAtInfinityMaterial = new THREE.MeshPhysicalNodeMaterial({
     color: "blue",
@@ -81,6 +138,8 @@ export function createPointsAtInfinity({
   const posFunc = Fn(() => {
     // Scale and translate the original tube segment {(x,y,z) | x^2 + y^2 = 1, 0<=z<=1 } to
     //  {(x,y,z) | x^2 + y^2 = z^2, lowerZValue <= z <= upperZValue}
+    const upperZValue = upper ? zUpperPAIClipPlus : zLowerPAIClipPlus;
+    const lowerZValue = upper ? zUpperPAIClipMinus : zLowerPAIClipMinus;
     const transformedZ = positionLocal.z
       .mul(upperZValue.sub(lowerZValue))
       .add(lowerZValue);
@@ -97,32 +156,33 @@ export function createPointsAtInfinity({
   // Add opacity to the edges of the points at infinity strip
   const opacityAtEdges = 0.7;
   const percentOfEdgeReduceInOpacity = 0.005;
+
   if (upper) {
     pointAtInfinityMaterial.opacityNode = smoothstep(
-      lowerZValue,
-      lowerZValue.mul(1 + percentOfEdgeReduceInOpacity),
+      zUpperPAIClipMinus,
+      zUpperPAIClipMinus.mul(1 + percentOfEdgeReduceInOpacity),
       positionLocal.z
     )
       .mul(1 - opacityAtEdges)
       .sub(
         smoothstep(
-          upperZValue.mul(1 - percentOfEdgeReduceInOpacity),
-          upperZValue,
+          zUpperPAIClipPlus.mul(1 - percentOfEdgeReduceInOpacity),
+          zUpperPAIClipPlus,
           positionLocal.z
         ).mul(1 - opacityAtEdges)
       )
       .add(opacityAtEdges);
   } else {
     pointAtInfinityMaterial.opacityNode = smoothstep(
-      upperZValue,
-      upperZValue.mul(1 + percentOfEdgeReduceInOpacity),
+      zLowerPAIClipPlus,
+      zLowerPAIClipPlus.mul(1 + percentOfEdgeReduceInOpacity),
       positionLocal.z
     )
       .mul(1 - opacityAtEdges)
       .sub(
         smoothstep(
-          lowerZValue.mul(1 - percentOfEdgeReduceInOpacity),
-          lowerZValue,
+          zLowerPAIClipMinus.mul(1 - percentOfEdgeReduceInOpacity),
+          zLowerPAIClipMinus,
           positionLocal.z
         ).mul(1 - opacityAtEdges)
       )
@@ -137,74 +197,18 @@ export function createPointsAtInfinity({
 
   // --- Override the raycast for the mesh otherwise the ray caster detects only the untransformed mesh---
   pointAtInfinityMesh.raycast = function (raycaster, intersects) {
-    // Check the intersection of the ray with the transformed points at infinity
-    const ox = raycaster.ray.origin.x;
-    const oy = raycaster.ray.origin.y;
-    const oz = raycaster.ray.origin.z;
-    const dx = raycaster.ray.direction.x;
-    const dy = raycaster.ray.direction.y;
-    const dz = raycaster.ray.direction.z;
-
-    // Expand substitutions for intersection of Ray P(t) with Cone Surface
-    // (ox + t*dx)^2 + (oy + t*dy)^2 = (oz + t*dz)^2
-
-    // A term (t^2)
-    const A = dx * dx + dy * dy - dz * dz;
-
-    // B term (t)
-    const B = 2 * (ox * dx + oy * dy - oz * dz);
-
-    // C term (constant)
-    const C = ox * ox + oy * oy - oz * oz;
-
-    // Solve the Quadratic
-    const discriminant = B * B - 4 * A * C;
-
-    if (discriminant < 0) return; // No intersection
-
-    const sqrtDisc = Math.sqrt(discriminant);
-    const t1 = (-B - sqrtDisc) / (2 * A);
-    const t2 = (-B + sqrtDisc) / (2 * A);
-
-    // Check both solutions (entry and exit points)
-    [t1, t2].forEach(t => {
-      if (t < raycaster.near || t > raycaster.far) return;
-
-      // Calculate intersection point in local space
-      rayCasterIntersectionPoint
-        .copy(raycaster.ray.direction)
-        .multiplyScalar(t)
-        .add(raycaster.ray.origin);
-      // console.log(
-      //   "POIraycast, disc>0",
-      //   t,
-      //   rayCasterIntersectionPoint.toFixed(2),
-      //   lowerZValue.value,
-      //   upperZValue.value
-      // );
-      // Check that the ray intersects the cone in the correct strip
-
-      if (
-        rayCasterIntersectionPoint.z < lowerZValue.value ||
-        rayCasterIntersectionPoint.z > upperZValue.value
-      ) {
-        return;
-      }
-
-      const distance = raycaster.ray.origin.distanceTo(
-        rayCasterIntersectionPoint
-      );
-
+    const partialIntersects = intersectWithPointAtInfinityStrip(
+      raycaster,
+      upper
+    );
+    partialIntersects.forEach(obj =>
       intersects.push({
-        distance: distance,
-        point: rayCasterIntersectionPoint.clone(),
-        normal: rayCasterIntersectionPoint
-          .clone()
-          .multiply(new Vector3(-1, -1, 1)) //inward pointing normal
-          .normalize(),
+        distance: obj.distance,
+        point: obj.point,
+        normal: obj.normal,
         object: this
-      });
-    });
+      })
+    );
   };
 
   return pointAtInfinityMesh;
@@ -212,14 +216,12 @@ export function createPointsAtInfinity({
 
 export function createPolarGridCircle({
   intrinsicRadius, // The intrinsic hyperbolic radius
-  zClip,
-  thickness = 3, //pixels
-  upper = true
+  upper,
+  thickness = 3 //pixels
 }: {
   intrinsicRadius: number;
-  zClip: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
+  upper: boolean;
   thickness?: number;
-  upper?: boolean;
 }): Mesh {
   const circlePoints: number[] = [];
   // Calculate number of points needed to achieve the desired maximum error in linear approximation of circle
@@ -275,10 +277,10 @@ export function createPolarGridCircle({
   ).z;
   const clippingLogic = Fn(() => {
     // discard any instances that start/end after/before zClip
-    const firstPassShouldClip = upper
-      ? worldInstanceStartZ.greaterThan(zClip) // Clip if above zClip
-      : worldInstanceStartZ.lessThan(zClip); // Clip if below zClip
-    firstPassShouldClip.discard();
+    const shouldClip = upper
+      ? worldInstanceStartZ.greaterThan(zUpperClip)
+      : worldInstanceStartZ.lessThan(zLowerClip);
+    shouldClip.discard();
 
     return float(1.0);
   });
@@ -295,18 +297,13 @@ export function createPolarGridCircle({
 
 export function createPolarGridRadialLine({
   radianAngle,
-  zClip,
-  thickness = 3, //pixels
-  upper = true
+  upper,
+  thickness = 3 //pixels
 }: {
   radianAngle: number;
-  zClip: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
+  upper: boolean;
   thickness?: number;
-  upper?: boolean;
-}): {
-  mesh: Mesh;
-  zClipUpdateFunction: (newVal: number) => void;
-} {
+}): Mesh {
   const points: number[] = [];
 
   let nextTValue = 0.01;
@@ -362,22 +359,26 @@ export function createPolarGridRadialLine({
       vec4(intermediatePositionLocal, 1.0)
     ).z;
     const clipPixel = upper
-      ? intermediatePositionWorldZ.greaterThan(zClip)
-      : intermediatePositionWorldZ.lessThan(zClip);
+      ? intermediatePositionWorldZ.greaterThan(zUpperClip)
+      : intermediatePositionWorldZ.lessThan(zLowerClip);
     clipPixel.discard();
 
-    return smoothstep(
-      zClip.mul(SETTINGS.fadePercentage * 1.0),
-      zClip,
-      intermediatePositionWorldZ
-    )
-      .oneMinus()
-      .mul(
-        float(SETTINGS.startOpacityFade).sub(
-          float(SETTINGS.endOpacityFade * 1.0)
+    const returnSmooth = upper
+      ? smoothstep(
+          zUpperClip.mul(SETTINGS.fadePercentage),
+          zUpperClip,
+          intermediatePositionWorldZ
         )
-      )
-      .add(float(SETTINGS.endOpacityFade * 1.0)); // Th
+      : smoothstep(
+          zLowerClip.mul(SETTINGS.fadePercentage),
+          zLowerClip,
+          intermediatePositionWorldZ
+        );
+
+    return returnSmooth
+      .oneMinus()
+      .mul(float(SETTINGS.startOpacityFade).sub(float(SETTINGS.endOpacityFade)))
+      .add(float(SETTINGS.endOpacityFade));
   });
 
   // Apply to your material
@@ -387,19 +388,14 @@ export function createPolarGridRadialLine({
   const lineMesh = new Line2(geometry, lineMaterial);
   // lineMesh.computeLineDistances();
 
-  return {
-    mesh: lineMesh,
-    zClipUpdateFunction: (newVal: number) => {
-      console.log("Updating zClip to", newVal);
-      // zClip.value = newVal;
-    }
-  };
+  return lineMesh;
 }
 
-export function createHyperboloidSheet(
-  zClip: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>,
-  upper: boolean
-): THREE.Mesh {
+export function createHyperboloidSheet({
+  upper
+}: {
+  upper: boolean;
+}): THREE.Mesh {
   const hyperboloidMaterial = new THREE.MeshPhysicalNodeMaterial({
     color: "chocolate",
     side: DoubleSide,
@@ -417,9 +413,9 @@ export function createHyperboloidSheet(
 
   const clippingLogic = Fn(() => {
     if (upper) {
-      positionLocal.z.greaterThan(zClip).discard(); // if upper sheet greater then zClip is discarded
+      positionLocal.z.greaterThan(upper ? zUpperClip : zLowerClip).discard();
     } else {
-      positionLocal.z.lessThan(zClip).discard(); // if lower sheet less then zClip is discarded
+      positionLocal.z.lessThan(upper ? zUpperClip : zLowerClip).discard();
     }
 
     return baseColor.mul(1.2);
@@ -429,8 +425,8 @@ export function createHyperboloidSheet(
 
   // Smooth the opacity of the top edge of the hyperboloid
   hyperboloidMaterial.opacityNode = smoothstep(
-    zClip.mul(SETTINGS.fadePercentage),
-    zClip,
+    (upper ? zUpperClip : zLowerClip).mul(SETTINGS.fadePercentage),
+    upper ? zUpperClip : zLowerClip,
     localPositionZ
   )
     .oneMinus()
@@ -446,82 +442,15 @@ export function createHyperboloidSheet(
   const hyperboloidMesh = new Mesh(hyperboloidGeometry, hyperboloidMaterial);
 
   hyperboloidMesh.raycast = function (raycaster, intersects) {
-    // Check the intersection of the ray with the transformed points at infinity
-    const ox = raycaster.ray.origin.x;
-    const oy = raycaster.ray.origin.y;
-    const oz = raycaster.ray.origin.z;
-    const dx = raycaster.ray.direction.x;
-    const dy = raycaster.ray.direction.y;
-    const dz = raycaster.ray.direction.z;
-
-    // Expand substitutions for intersection of Ray P(t) with hyperboloid Surface
-    // (oz + t*dz)^2 - (ox + t*dx)^2 - (oy + t*dy)^2  -1 = 0
-
-    // A term (t^2)
-    const A = dz * dz - dx * dx - dy * dy;
-
-    // B term (t)
-    const B = 2 * (oz * dz - ox * dx - oy * dy);
-
-    // C term (constant)
-    const C = oz * oz - ox * ox - oy * oy - 1;
-
-    // Solve the Quadratic
-    const discriminant = B * B - 4 * A * C;
-
-    if (discriminant < 0) return; // No intersection
-
-    const sqrtDisc = Math.sqrt(discriminant);
-    const t1 = (-B - sqrtDisc) / (2 * A);
-    const t2 = (-B + sqrtDisc) / (2 * A);
-
-    // Check both solutions (entry and exit points)
-    [t1, t2].forEach(t => {
-      if (t < raycaster.near || t > raycaster.far) return;
-
-      // Calculate intersection point in local space
-      rayCasterIntersectionPoint
-        .copy(raycaster.ray.direction)
-        .multiplyScalar(t)
-        .add(raycaster.ray.origin);
-      // console.log(
-      //   "Hraycast, disc>0",
-      //   t,
-      //   _intersectionPoint.toFixed(2),
-      //   zClip.value
-      // );
-      // Check that the ray intersects the hyperboloid where it is drawn
-      const upper = zClip.value > 0; // only the upper sheet has a positive zClip value
-      if (upper) {
-        if (
-          rayCasterIntersectionPoint.z > zClip.value ||
-          rayCasterIntersectionPoint.z < 0
-        ) {
-          return;
-        }
-      } else {
-        if (
-          rayCasterIntersectionPoint.z < zClip.value ||
-          rayCasterIntersectionPoint.z > 0
-        ) {
-          return;
-        }
-      }
-
-      const distance = raycaster.ray.origin.distanceTo(
-        rayCasterIntersectionPoint
-      );
-
+    const partialIntersects = intersectWithHyperboloid(raycaster, upper);
+    partialIntersects.forEach(obj =>
       intersects.push({
-        distance: distance,
-        point: rayCasterIntersectionPoint.clone(),
-        normal: rayCasterIntersectionPoint
-          .clone()
-          .multiply(new Vector3(-1, -1, 1)) // always the inward pointing normal
-          .normalize(),
+        distance: obj.distance,
+        point: obj.point,
+        normal: obj.normal,
         object: this
-      });
-    });
+      })
+    );
   };
 
   return hyperboloidMesh;
@@ -615,4 +544,173 @@ function lowerHyperboloid(u: number, v: number, pt: Vector3) {
   const y = Math.sinh(u) * Math.sin(theta);
   const z = -Math.cosh(u);
   pt.set(x, y, z);
+}
+
+type partialIntersectionType = {
+  distance: number;
+  point: Vector3;
+  normal: Vector3;
+};
+
+function intersectWithHyperboloid(
+  raycaster: THREE.Raycaster,
+  upper: boolean
+): partialIntersectionType[] {
+  const intersects: partialIntersectionType[] = [];
+  // Check the intersection of the ray with the hyperboloid
+  const ox = raycaster.ray.origin.x;
+  const oy = raycaster.ray.origin.y;
+  const oz = raycaster.ray.origin.z;
+  const dx = raycaster.ray.direction.x;
+  const dy = raycaster.ray.direction.y;
+  const dz = raycaster.ray.direction.z;
+
+  // Expand substitutions for intersection of Ray P(t) with hyperboloid
+  // (oz + t*dz)^2 - (ox + t*dx)^2 - (oy + t*dy)^2  -1 = 0
+
+  // A term (t^2)
+  const A = dz * dz - dx * dx - dy * dy;
+
+  // B term (t)
+  const B = 2 * (oz * dz - ox * dx - oy * dy);
+
+  // C term (constant)
+  const C = oz * oz - ox * ox - oy * oy - 1;
+
+  // Solve the Quadratic
+  const discriminant = B * B - 4 * A * C;
+
+  if (discriminant < 0) return []; // No real intersection
+
+  const sqrtDisc = Math.sqrt(discriminant);
+  const t1 = (-B - sqrtDisc) / (2 * A);
+  const t2 = (-B + sqrtDisc) / (2 * A);
+
+  // Check both solutions (entry and exit points)
+  [t1, t2].forEach(t => {
+    if (t < raycaster.near || t > raycaster.far) return;
+
+    // Calculate intersection point in world space
+    rayCasterIntersectionPoint
+      .copy(raycaster.ray.direction)
+      .multiplyScalar(t)
+      .add(raycaster.ray.origin);
+
+    // Check that the ray intersects the hyperboloid where it is drawn
+    if (upper) {
+      if (
+        rayCasterIntersectionPoint.z > zUpperClip.value ||
+        rayCasterIntersectionPoint.z < 0
+      ) {
+        return;
+      }
+    } else {
+      if (
+        rayCasterIntersectionPoint.z < zLowerClip.value ||
+        rayCasterIntersectionPoint.z > 0
+      ) {
+        return;
+      }
+    }
+
+    const distance = raycaster.ray.origin.distanceTo(
+      rayCasterIntersectionPoint
+    );
+
+    intersects.push({
+      distance: distance,
+      point: rayCasterIntersectionPoint.clone(),
+      normal: rayCasterIntersectionPoint
+        .clone()
+        .multiply(new Vector3(-1, -1, 1)) // always the inward pointing normal
+        .normalize()
+    });
+  });
+  return intersects;
+}
+
+function intersectWithPointAtInfinityStrip(
+  raycaster: THREE.Raycaster,
+  upper: boolean
+): partialIntersectionType[] {
+  const intersects: partialIntersectionType[] = [];
+  // Check the intersection of the ray with the transformed points at infinity
+  const ox = raycaster.ray.origin.x;
+  const oy = raycaster.ray.origin.y;
+  const oz = raycaster.ray.origin.z;
+  const dx = raycaster.ray.direction.x;
+  const dy = raycaster.ray.direction.y;
+  const dz = raycaster.ray.direction.z;
+
+  // Expand substitutions for intersection of Ray P(t) with Cone Surface
+  // (ox + t*dx)^2 + (oy + t*dy)^2 = (oz + t*dz)^2
+
+  // A term (t^2)
+  const A = dx * dx + dy * dy - dz * dz;
+
+  // B term (t)
+  const B = 2 * (ox * dx + oy * dy - oz * dz);
+
+  // C term (constant)
+  const C = ox * ox + oy * oy - oz * oz;
+
+  // Solve the Quadratic
+  const discriminant = B * B - 4 * A * C;
+
+  if (discriminant < 0) return []; // No intersection
+
+  const sqrtDisc = Math.sqrt(discriminant);
+  const t1 = (-B - sqrtDisc) / (2 * A);
+  const t2 = (-B + sqrtDisc) / (2 * A);
+
+  // Check both solutions (entry and exit points)
+  [t1, t2].forEach(t => {
+    if (t < raycaster.near || t > raycaster.far) return;
+
+    // Calculate intersection point in world space
+    rayCasterIntersectionPoint
+      .copy(raycaster.ray.direction)
+      .multiplyScalar(t)
+      .add(raycaster.ray.origin);
+    // console.log(
+    //   "POIraycast, disc>0",
+    //   t,
+    //   rayCasterIntersectionPoint.toFixed(2),
+    //   lowerZValue.value,
+    //   upperZValue.value
+    // );
+    // Check that the ray intersects the cone in the correct strip
+    const upperZValue = upper ? zUpperPAIClipPlus : zLowerPAIClipPlus;
+    const lowerZValue = upper ? zUpperPAIClipMinus : zLowerPAIClipMinus;
+    if (
+      rayCasterIntersectionPoint.z < lowerZValue.value ||
+      rayCasterIntersectionPoint.z > upperZValue.value
+    ) {
+      return;
+    }
+
+    const distance = raycaster.ray.origin.distanceTo(
+      rayCasterIntersectionPoint
+    );
+
+    intersects.push({
+      distance: distance,
+      point: rayCasterIntersectionPoint.clone(),
+      normal: rayCasterIntersectionPoint
+        .clone()
+        .multiply(new Vector3(-1, -1, 1)) //inward pointing normal
+        .normalize()
+    });
+  });
+  return intersects;
+}
+
+// The hyperbolic distance between two points on the same sheet of the hyperboloid, null if on different sheets
+function h2Distance(point1: Vector3, point2: Vector3): number | null {
+  if (point1.z * point2.z < 0) {
+    return null; // the points are on different sheets so there is no distance between them
+  }
+  return Math.acosh(
+    -point1.x * point2.x - point1.y * point2.y + point1.z * point2.z
+  );
 }

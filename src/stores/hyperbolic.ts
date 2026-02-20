@@ -164,12 +164,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
       t.quaternion.copy(quat);
     });
   }
-  function setUnitLength(n: number) {
-    EventBus.fire("magnification-updated", {
-      factor: n
-    });
-    unitLength.value.value = n;
-  }
+
   return {
     font,
     surfaceIntersections,
@@ -185,8 +180,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     removePoint,
     removeLine,
     setScene,
-    adjustTextPose,
-    setUnitLength
+    adjustTextPose
   };
 });
 
