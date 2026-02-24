@@ -518,12 +518,12 @@ onMounted(async () => {
       } else {
         cameraController.dolly(event.deltaY, true);
       }
-      console.log({
-        currentZoom: cameraController.camera.zoom,
-        currentFOV: (cameraController.camera as PerspectiveCamera).fov,
-        currentDistance: cameraController.distance,
-        currentPosition: cameraController.camera.position.toFixed(2)
-      });
+      // console.log({
+      //   currentZoom: cameraController.camera.zoom,
+      //   currentFOV: (cameraController.camera as PerspectiveCamera).fov,
+      //   currentDistance: cameraController.distance,
+      //   currentPosition: cameraController.camera.position.toFixed(2)
+      // });
     },
     { passive: false }
   );
@@ -548,24 +548,24 @@ function initialize() {
   // const helper = new THREE.CameraHelper(camera);
   // scene.add(helper);
 
-  // const xyGrid = new THREE.PolarGridHelper();
-  // // xyGrid.translateZ(1);
-  // xyGrid.rotateX(Math.PI / 2);
-  // scene.add(xyGrid);
+  const xyGrid = new THREE.GridHelper();
+  // xyGrid.translateZ(1);
+  xyGrid.rotateX(Math.PI / 2);
+  scene.add(xyGrid);
 
-  // // Insert the grid BEFORE the arrow helper
-  // const arrowX = new THREE.ArrowHelper(new Vector3(1, 0, 0));
-  // arrowX.setColor(0xff0000);
-  // arrowX.setLength(2, 0.2, 0.2);
-  // const arrowY = new THREE.ArrowHelper(new Vector3(0, 1, 0));
-  // arrowY.setColor(0x00ff00);
-  // arrowY.setLength(2, 0.2, 0.2);
-  // const arrowZ = new THREE.ArrowHelper(new Vector3(0, 0, 1));
-  // arrowZ.setColor(0x0000ff);
-  // arrowZ.setLength(2, 0.2, 0.2);
-  // scene.add(arrowX);
-  // scene.add(arrowY);
-  // scene.add(arrowZ);
+  // Insert the grid BEFORE the arrow helper
+  const arrowX = new THREE.ArrowHelper(new Vector3(1, 0, 0));
+  arrowX.setColor(0xff0000);
+  arrowX.setLength(2, 0.2, 0.2);
+  const arrowY = new THREE.ArrowHelper(new Vector3(0, 1, 0));
+  arrowY.setColor(0x00ff00);
+  arrowY.setLength(2, 0.2, 0.2);
+  const arrowZ = new THREE.ArrowHelper(new Vector3(0, 0, 1));
+  arrowZ.setColor(0x0000ff);
+  arrowZ.setLength(2, 0.2, 0.2);
+  scene.add(arrowX);
+  scene.add(arrowY);
+  scene.add(arrowZ);
 
   // create the hyperboloid sheets
   upperHyperboloidSheet = createHyperboloidSheet({ upper: true });

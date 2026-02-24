@@ -4,36 +4,27 @@ import * as THREE from "three/webgpu";
 import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import {
   createPoint,
-  createPointAtInfinity
+  createPointAtInfinity,
+  CustomNodeMaterial
 } from "@/plottables-hyperbolic/MeshFactory";
 const Z_AXIS = new Vector3(0, 0, 1);
 
 export class PointHandler extends PoseTracker {
   protected tempPoint: Mesh;
-  protected tempPosition: THREE.TSL.ShaderNodeObject<
-    THREE.UniformNode<Vector3>
-  >;
-  protected tempRadius: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
+  protected tempPointMaterial: CustomNodeMaterial;
   protected tempPointAtInfinity: Mesh;
-  protected tempPositionPointAtInfinity: THREE.TSL.ShaderNodeObject<
-    THREE.UniformNode<Vector3>
-  >;
-  protected tempRadiusPointAtInfinity: THREE.TSL.ShaderNodeObject<
-    THREE.UniformNode<number>
-  >;
+  protected tempPointAtInfinityMaterial: CustomNodeMaterial;
   private tempPointInScene = false;
+  private tempPointAtInfinityInScene = false;
 
   constructor(scene: Scene) {
     super(scene);
     this.scene = scene;
-    const pointObject = createPoint();
-    this.tempPoint = pointObject.mesh;
-    this.tempPosition = pointObject.position;
-    this.tempRadius = pointObject.radius;
-    const pointAtInfinityObject = createPointAtInfinity();
-    this.tempPointAtInfinity = pointObject.mesh;
-    this.tempPositionPointAtInfinity = pointObject.position;
-    this.tempRadiusPointAtInfinity = pointObject.radius;
+    this.tempPoint = createPoint();
+    this.tempPointMaterial = this.tempPoint.material as CustomNodeMaterial;
+    this.tempPointAtInfinity = createPointAtInfinity();
+    this.tempPointAtInfinityMaterial = this.tempPointAtInfinity
+      .material as CustomNodeMaterial;
   }
 
   mouseMoved(
@@ -43,11 +34,26 @@ export class PointHandler extends PoseTracker {
   ): void {
     // Process the intersection list and set the flags
     super.mouseMoved(event, scrPos, intersectionList);
-    if (intersectionList[0]) {
-      this.scene.add(this.tempPoint);
-      this.tempPosition.value = intersectionList[0].point;
-    } else {
+    if (!intersectionList[0]) {
       this.scene.remove(this.tempPoint);
+      this.scene.remove(this.tempPointAtInfinity);
+      return;
+    }
+    if (intersectionList[0].object.name.match(/(Sheet)$/)) {
+      this.tempPointMaterial.position = intersectionList[0].point;
+      this.scene.add(this.tempPoint);
+    } else if (intersectionList[0].object.name.match(/(Infinity)$/)) {
+      const location = intersectionList[0].point;
+      this.tempPointAtInfinityMaterial.angle = Math.atan2(
+        location.y,
+        location.x
+      );
+      // if (location.z > 0) {
+      //   this.tempPointAtInfinityMaterial.upper = true;
+      // } else {
+      //   this.tempPointAtInfinityMaterial.upper = false;
+      // }
+      this.scene.add(this.tempPointAtInfinity);
     }
   }
 

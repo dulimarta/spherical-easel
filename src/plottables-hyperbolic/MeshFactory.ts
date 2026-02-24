@@ -13,7 +13,13 @@ import {
   attribute,
   uv,
   mix,
-  modelWorldMatrix
+  modelWorldMatrix,
+  rotate,
+  sin,
+  cos,
+  mat3,
+  sqrt,
+  select
 } from "three/tsl";
 // import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { Line2 } from "three/addons/lines/Line2.js";
@@ -25,10 +31,14 @@ import {
   SphereGeometry,
   CylinderGeometry,
   Vector2,
-  LineCurve3
+  LineCurve3,
+  ConeGeometry
 } from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import { LineGeometry } from "three/examples/jsm/Addons.js";
+import MathNode from "three/src/nodes/math/MathNode.js";
+import { ro } from "vuetify/locale";
+import { mx_bilerp_0 } from "three/src/nodes/materialx/lib/mx_noise.js";
 
 const rayCasterIntersectionPoint = new THREE.Vector3();
 
@@ -47,21 +57,71 @@ export const zLowerPAIClipMinus = uniform(2.0, "float");
 export const unitLength: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>> =
   uniform(1.0, "float");
 
+interface CustomMaterialUserData {
+  angle: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
+  radius: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
+  height: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
+  // upper: THREE.TSL.ShaderNodeObject<THREE.UniformNode<boolean>>;
+  position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>;
+}
+
+export class CustomNodeMaterial extends THREE.MeshStandardNodeMaterial {
+  declare userData: CustomMaterialUserData;
+  constructor(parameters: THREE.MeshStandardNodeMaterialParameters) {
+    super(parameters);
+    this.userData = {
+      angle: uniform(0.0, "float"),
+      radius: uniform(1.0, "float"),
+      height: uniform(1.0, "float"),
+      // upper: uniform(true),
+      position: uniform(new Vector3(0, 0, 0), "vec3")
+    };
+  }
+  get angle(): number {
+    return this.userData.angle.value;
+  }
+  set angle(value: number) {
+    this.userData.angle.value = value;
+  }
+  get radius(): number {
+    return this.userData.radius.value;
+  }
+  set radius(value: number) {
+    this.userData.radius.value = value;
+  }
+  get height(): number {
+    return this.userData.height.value;
+  }
+  set height(value: number) {
+    this.userData.height.value = value;
+  }
+  // get upper(): boolean {
+  //   return this.userData.upper.value;
+  // }
+  // set upper(value: boolean) {
+  //   this.userData.upper.value = value;
+  // }
+  get position(): THREE.Vector3 {
+    return this.userData.position.value;
+  }
+  set position(value: THREE.Vector3) {
+    this.userData.position.value = value;
+  }
+}
+
 export function createPoint(
-  radius: number = 0.1,
+  radiusNumber: number = 0.1,
   color: string = "white",
   name: string = "tempPoint"
-): {
-  mesh: Mesh;
-  position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<Vector3>>;
-  radius: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
-} {
-  const position = uniform(new Vector3(0, 0, 0), "vec3");
-  const radiusUniform = uniform(radius, "float");
-  const sphereMaterial = new THREE.MeshStandardNodeMaterial({
+): Mesh {
+  const sphereMaterial = new CustomNodeMaterial({
     color: color,
     roughness: 0.3
   });
+  const position = sphereMaterial.userData.position;
+  const radius = sphereMaterial.userData.radius;
+  radius.value = radiusNumber;
+
   sphereMaterial.positionNode = positionLocal
     .mul(unitLength)
     .mul(radius)
@@ -82,36 +142,74 @@ export function createPoint(
   //       object: this
   // }
 
-  return {
-    mesh: returnMesh,
-    position: position,
-    radius: radiusUniform
-  };
+  return returnMesh;
 }
+
 export function createPointAtInfinity(
-  radius: number = 0.1,
-  color: string = "blue"
-): {
-  mesh: Mesh;
-  position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<Vector3>>;
-  radius: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
-} {
-  const position = uniform(new Vector3(0, 0, 0), "vec3");
-  const radiusUniform = uniform(radius, "float");
-  const sphereMaterial = new THREE.MeshStandardNodeMaterial({
+  upper: boolean = true,
+  angle: number = 0,
+  radius: number = 0.1, // in multiples of the unit length
+  height: number = 1, //  in multiples of the unit length
+  color: string = "red",
+  name: string = "tempPointAtInfinity"
+): Mesh {
+  const coneMaterial = new CustomNodeMaterial({
     color: color,
     roughness: 0.3
   });
-  sphereMaterial.positionNode = positionLocal
-    .mul(unitLength)
-    .mul(radius)
-    .add(position);
+  const angleUniform = coneMaterial.userData.angle;
+  const radiusUniform = coneMaterial.userData.radius;
+  const heightUniform = coneMaterial.userData.height;
+  // const upperUniform = coneMaterial.userData.upper;
+  angleUniform.value = angle;
+  radiusUniform.value = radius;
+  heightUniform.value = height;
+  // upperUniform.value = upper;
 
-  return {
-    mesh: new Mesh(new SphereGeometry(), sphereMaterial),
-    position: position,
-    radius: radiusUniform
-  };
+  coneMaterial.positionNode = Fn(() => {
+    const scaleAndTranslate = positionLocal
+      .mul(unitLength)
+      .mul(vec3(radiusUniform, heightUniform, radiusUniform))
+      .add(
+        vec3(
+          0,
+          zUpperPAIClipMinus.mul(Math.SQRT2),
+          // select(
+          // upperUniform,
+          0
+          // zLowerPAIClipMinus.mul(-Math.sqrt(2))
+          // )
+        )
+      );
+
+    const c = cos(angleUniform.sub(Math.PI / 2));
+    const s = sin(angleUniform.sub(Math.PI / 2));
+    const oneOverSqrt2 = sqrt(1.0 / 2.0);
+    // ca -sa 0       1  0     0.
+    // sa ca 0        0  c45   -s45
+    // 0  0  1        0  s45    c45
+
+    // const rotationMatrix = mat3(
+    //   vec3(1, 0, 0),
+    //   vec3(0, oneOverSqrt2, oneOverSqrt2),
+    //   vec3(0, float(-1.0).mul(oneOverSqrt2), oneOverSqrt2)
+    // );
+    const rotationMatrix = mat3(
+      vec3(c, s, 0),
+      vec3(s.mul(oneOverSqrt2.mul(-1.0)), c.mul(oneOverSqrt2), oneOverSqrt2),
+      vec3(
+        s.mul(oneOverSqrt2),
+        c.mul(float(-1.0)).mul(oneOverSqrt2),
+        oneOverSqrt2
+      )
+    );
+
+    return rotationMatrix.mul(scaleAndTranslate);
+  })();
+
+  const returnMesh = new Mesh(new ConeGeometry(), coneMaterial);
+  returnMesh.name = name;
+  return returnMesh;
 }
 export function create2DLine(width: number = 0.03, color: string = "white") {
   return new Mesh(
@@ -456,61 +554,61 @@ export function createHyperboloidSheet({
   return hyperboloidMesh;
 }
 
-export function createBoundaryCone({
-  clippingPlane,
-  maxZClippingHeight,
-  upper = true
-}: {
-  clippingPlane: Plane;
-  maxZClippingHeight: number;
-  upper?: boolean;
-}): Mesh {
-  const coneMaterial = new THREE.MeshPhysicalNodeMaterial({
-    color: 0x88ccff, // base color
-    roughness: 0.0, // very smooth surface
-    transmission: 0.5, // glasslike transparency
-    thickness: 0.05, // thin glass layer (in world units)
-    ior: 1.45, // index of refraction of glass
-    transparent: true, // must enable for opacity/transmission
-    opacity: 1.0, // keep at 1, transparency handled via transmission
-    metalness: 0.0,
-    // reflectivity: 0.15, // helps glass reflections
-    // clearcoat: 1.0, // improves highlight realism
-    // clearcoatRoughness: 0.05,
-    // specularIntensity: 0.2,
-    //soap bubble" thin-film interferences
-    // iridescence: 1.0,
-    // iridescenceIOR: 1.3,
-    // iridescenceThicknessRange: [50, 150], // in nanometers
-    clippingPlanes: [clippingPlane]
-  });
+// export function createBoundaryCone({
+//   clippingPlane,
+//   maxZClippingHeight,
+//   upper = true
+// }: {
+//   clippingPlane: Plane;
+//   maxZClippingHeight: number;
+//   upper?: boolean;
+// }): Mesh {
+//   const coneMaterial = new THREE.MeshPhysicalNodeMaterial({
+//     color: 0x88ccff, // base color
+//     roughness: 0.0, // very smooth surface
+//     transmission: 0.5, // glasslike transparency
+//     thickness: 0.05, // thin glass layer (in world units)
+//     ior: 1.45, // index of refraction of glass
+//     transparent: true, // must enable for opacity/transmission
+//     opacity: 1.0, // keep at 1, transparency handled via transmission
+//     metalness: 0.0,
+//     // reflectivity: 0.15, // helps glass reflections
+//     // clearcoat: 1.0, // improves highlight realism
+//     // clearcoatRoughness: 0.05,
+//     // specularIntensity: 0.2,
+//     //soap bubble" thin-film interferences
+//     // iridescence: 1.0,
+//     // iridescenceIOR: 1.3,
+//     // iridescenceThicknessRange: [50, 150], // in nanometers
+//     clippingPlanes: [clippingPlane]
+//   });
 
-  const coneGeometry = new ParametricGeometry(
-    (u, v, out) => {
-      let r = u * maxZClippingHeight * (upper ? 1 : -1); // 0 to +/-maxZClippingHeight
-      if (r == 0) {
-        r = 0.0001 * (upper ? 1 : -1); // avoid singularity at the tip
-      }
-      const theta = v * 2 * Math.PI;
-      // This is how points on the hyperboloid are calculated
-      // u = u * (Math.acosh(maxZClippingHeight) + 1);
-      // const x = Math.sinh(u) * Math.cos(theta);
-      // const y = Math.sinh(u) * Math.sin(theta);
-      // const z = Math.cosh(u);
+//   const coneGeometry = new ParametricGeometry(
+//     (u, v, out) => {
+//       let r = u * maxZClippingHeight * (upper ? 1 : -1); // 0 to +/-maxZClippingHeight
+//       if (r == 0) {
+//         r = 0.0001 * (upper ? 1 : -1); // avoid singularity at the tip
+//       }
+//       const theta = v * 2 * Math.PI;
+//       // This is how points on the hyperboloid are calculated
+//       // u = u * (Math.acosh(maxZClippingHeight) + 1);
+//       // const x = Math.sinh(u) * Math.cos(theta);
+//       // const y = Math.sinh(u) * Math.sin(theta);
+//       // const z = Math.cosh(u);
 
-      const x = r * Math.cos(theta);
-      const y = r * Math.sin(theta);
-      const z = r + 0.001; // small offset to avoid z-fighting with hyperboloid
-      out.set(x, y, z);
-    },
-    120,
-    300
-  );
-  coneMaterial.depthWrite = false; // try to avoid z-fighting with hyperboloid
-  const coneMesh = new Mesh(coneGeometry, coneMaterial);
+//       const x = r * Math.cos(theta);
+//       const y = r * Math.sin(theta);
+//       const z = r + 0.001; // small offset to avoid z-fighting with hyperboloid
+//       out.set(x, y, z);
+//     },
+//     120,
+//     300
+//   );
+//   coneMaterial.depthWrite = false; // try to avoid z-fighting with hyperboloid
+//   const coneMesh = new Mesh(coneGeometry, coneMaterial);
 
-  return coneMesh;
-}
+//   return coneMesh;
+// }
 
 // Parametric function for the upper sheet of the hyperboloid where 0 <= u <= 1 and 0 <= v <= 1, the point is returned in pt
 function upperHyperboloid(u: number, v: number, pt: Vector3) {
@@ -714,3 +812,33 @@ function h2Distance(point1: Vector3, point2: Vector3): number | null {
     -point1.x * point2.x - point1.y * point2.y + point1.z * point2.z
   );
 }
+
+//The TSL formulation of a 3 x 3 rotation matrix about an axis (UNIT!) by an angle
+const calculateRotationMatrix = Fn(
+  ({
+    vectorAxis,
+    angle
+  }: {
+    vectorAxis: THREE.TSL.ShaderNodeObject<THREE.Node>;
+    angle: THREE.TSL.ShaderNodeObject<MathNode>;
+  }) => {
+    const axis = vec3(vectorAxis.normalize());
+    const s = sin(angle);
+    const c = cos(angle);
+    const t = c.oneMinus();
+
+    return mat3(
+      t.mul(axis.x).mul(axis.x).add(c),
+      t.mul(axis.y).mul(axis.x).add(axis.z.mul(s)),
+      t.mul(axis.z).mul(axis.x).sub(axis.y.mul(s)),
+
+      t.mul(axis.x).mul(axis.y).sub(axis.z.mul(s)),
+      t.mul(axis.y).mul(axis.y).add(c),
+      t.mul(axis.z).mul(axis.y).add(axis.x.mul(s)),
+
+      t.mul(axis.x).mul(axis.z).add(axis.y.mul(s)),
+      t.mul(axis.y).mul(axis.z).sub(axis.x.mul(s)),
+      t.mul(axis.z).mul(axis.z).add(c)
+    );
+  }
+);
