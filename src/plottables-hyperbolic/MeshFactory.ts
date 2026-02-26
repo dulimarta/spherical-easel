@@ -180,15 +180,15 @@ export function createPointAtInfinity(
     // sa  ca 0    *   0  c+/-45   -s+/-45
     // 0   0  1        0  s+/-45    c+/-45
 
-    const rotationMatrixAboutZAxis = calculateRotationMatrix([
-      vec3(0, 0, 1),
+    const rotationMatrixAboutZAxis = zAxisRotationMatrix([
       float(Math.PI / 2).sub(angleUniform)
     ]);
 
-    const rotationMatrixAboutXAxis = calculateRotationMatrix([
-      vec3(1, 0, 0),
+    const rotationMatrixAboutXAxis = xAxisRotationMatrix([
       float(Math.PI / 4).mul(minusPlusOne)
     ]);
+    // return scaleAndTranslate;
+    // return rotationMatrixAboutXAxis.mul(scaleAndTranslate);
 
     return rotationMatrixAboutZAxis
       .mul(rotationMatrixAboutXAxis)
@@ -802,7 +802,7 @@ function h2Distance(point1: Vector3, point2: Vector3): number | null {
 }
 
 //The TSL formulation of a 3 x 3 rotation matrix about an axis (UNIT!) by an angle
-const calculateRotationMatrix = Fn(
+const arbitraryAxisRotationMatrix = Fn(
   ([vectorAxis, angle]: [
     THREE.TSL.ShaderNodeObject<THREE.Node>,
     THREE.TSL.ShaderNodeObject<THREE.Node>
@@ -823,6 +823,66 @@ const calculateRotationMatrix = Fn(
       t.mul(axis.z).mul(axis.x).sub(axis.y.mul(s)),
       t.mul(axis.z).mul(axis.y).add(axis.x.mul(s)),
       t.mul(axis.z).mul(axis.z).add(c)
+    );
+  }
+) as unknown as (
+  args: THREE.TSL.ShaderNodeObject<THREE.Node>[]
+) => THREE.TSL.ShaderNodeObject<THREE.Node>;
+
+const xAxisRotationMatrix = Fn(
+  ([angle]: [THREE.TSL.ShaderNodeObject<THREE.Node>]) => {
+    const s = sin(angle);
+    const c = cos(angle);
+    return mat3(
+      float(1.0),
+      float(0.0),
+      float(0.0),
+      float(0.0),
+      c,
+      s.negate(),
+      float(0.0),
+      s,
+      c
+    );
+  }
+) as unknown as (
+  args: THREE.TSL.ShaderNodeObject<THREE.Node>[]
+) => THREE.TSL.ShaderNodeObject<THREE.Node>;
+
+const zAxisRotationMatrix = Fn(
+  ([angle]: [THREE.TSL.ShaderNodeObject<THREE.Node>]) => {
+    const s = sin(angle);
+    const c = cos(angle);
+    return mat3(
+      c,
+      s.negate(),
+      float(0.0),
+      s,
+      c,
+      float(0.0),
+      float(0.0),
+      float(0.0),
+      float(1.0)
+    );
+  }
+) as unknown as (
+  args: THREE.TSL.ShaderNodeObject<THREE.Node>[]
+) => THREE.TSL.ShaderNodeObject<THREE.Node>;
+
+const yAxisRotationMatrix = Fn(
+  ([angle]: [THREE.TSL.ShaderNodeObject<THREE.Node>]) => {
+    const s = sin(angle);
+    const c = cos(angle);
+    return mat3(
+      c,
+      float(0.0),
+      s,
+      float(0.0),
+      float(1.0),
+      float(0.0),
+      s.negate(),
+      float(0.0),
+      c
     );
   }
 ) as unknown as (
