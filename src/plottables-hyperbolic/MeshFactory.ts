@@ -142,6 +142,65 @@ export function createPoint(
   return returnMesh;
 }
 
+export function createPointAtInfinityTube(
+  upper: number = 1, // we must use 1/0 for true/false because TSL doesn't recognize boolean wrapped uniforms
+  angle: number = 0,
+  radius: number = 0.05, // in multiples of the unit length
+  myColor: string = "red",
+  name: string = "tempPointAtInfinityTube"
+): Mesh {
+  const coneMaterial = new CustomNodeMaterial({
+    color: myColor,
+    opacity: 1.0,
+    side: DoubleSide
+  });
+  const angleUniform = coneMaterial.userData.angle;
+  const radiusUniform = coneMaterial.userData.radius;
+  const upperUniform = coneMaterial.userData.upper;
+  angleUniform.value = angle;
+  radiusUniform.value = radius;
+  upperUniform.value = upper;
+
+  coneMaterial.positionNode = Fn(() => {
+    // return positionLocal;
+    const scaleAndTranslate = positionLocal.mul(
+      vec3(
+        radiusUniform.mul(unitLength),
+        zUpperPAIClipMinus.mul(Math.SQRT2),
+        radiusUniform.mul(unitLength)
+      )
+    );
+    // .mul(vec3(0, float(Math.SQRT2), 0));
+    // .mul(vec3(0, zUpperPAIClipMinus.mul(Math.SQRT2), 0));
+    // return scaleAndTranslate;
+    const minusPlusOne = select(upperUniform.equal(1), float(-1.0), float(1.0));
+    // ca -sa 0        1   0     0
+    // sa  ca 0    *   0  c+/-45   -s+/-45
+    // 0   0  1        0  s+/-45    c+/-45
+
+    const rotationMatrixAboutZAxis = zAxisRotationMatrix([
+      float(Math.PI / 2).sub(angleUniform)
+    ]);
+
+    const rotationMatrixAboutXAxis = xAxisRotationMatrix([
+      float(Math.PI / 4).mul(minusPlusOne)
+    ]);
+    // return scaleAndTranslate;
+    // return rotationMatrixAboutXAxis.mul(scaleAndTranslate);
+
+    return rotationMatrixAboutZAxis
+      .mul(rotationMatrixAboutXAxis)
+      .mul(scaleAndTranslate);
+  })();
+  // path is the center line of the initial(untransformed) tube.
+  const path = new LineCurve3(new Vector3(0, 0, 0), new Vector3(0, 1, 0));
+  const geometry = new THREE.TubeGeometry(path, 64, 1, 128, false);
+
+  const returnMesh = new Mesh(geometry, coneMaterial);
+  returnMesh.name = name;
+  return returnMesh;
+}
+
 export function createPointAtInfinity(
   upper: number = 1, // we must use 1/0 for true/false because TSL doesn't recognize boolean wrapped uniforms
   angle: number = 0,
@@ -199,6 +258,7 @@ export function createPointAtInfinity(
   returnMesh.name = name;
   return returnMesh;
 }
+
 export function create2DLine(width: number = 0.03, color: string = "white") {
   return new Mesh(
     new CylinderGeometry(width, width, 1),

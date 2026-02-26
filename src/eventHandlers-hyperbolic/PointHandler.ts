@@ -5,6 +5,7 @@ import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import {
   createPoint,
   createPointAtInfinity,
+  createPointAtInfinityTube,
   CustomNodeMaterial
 } from "@/plottables-hyperbolic/MeshFactory";
 const Z_AXIS = new Vector3(0, 0, 1);
@@ -14,6 +15,8 @@ export class PointHandler extends PoseTracker {
   protected tempPointMaterial: CustomNodeMaterial;
   protected tempPointAtInfinity: Mesh;
   protected tempPointAtInfinityMaterial: CustomNodeMaterial;
+  protected tempTube: Mesh;
+  protected tempTubeMaterial: CustomNodeMaterial;
   private tempPointInScene = false;
   private tempPointAtInfinityInScene = false;
 
@@ -25,6 +28,8 @@ export class PointHandler extends PoseTracker {
     this.tempPointAtInfinity = createPointAtInfinity();
     this.tempPointAtInfinityMaterial = this.tempPointAtInfinity
       .material as CustomNodeMaterial;
+    this.tempTube = createPointAtInfinityTube();
+    this.tempTubeMaterial = this.tempTube.material as CustomNodeMaterial;
   }
 
   mouseMoved(
@@ -37,6 +42,7 @@ export class PointHandler extends PoseTracker {
     if (!intersectionList[0]) {
       this.scene.remove(this.tempPoint);
       this.scene.remove(this.tempPointAtInfinity);
+      this.scene.remove(this.tempTube);
       return;
     }
     if (intersectionList[0].object.name.match(/(Sheet)$/)) {
@@ -44,11 +50,13 @@ export class PointHandler extends PoseTracker {
       this.scene.add(this.tempPoint);
     } else if (intersectionList[0].object.name.match(/(Infinity)$/)) {
       const location = intersectionList[0].point;
-      this.tempPointAtInfinityMaterial.upper = location.z > 0 ? 1 : 0;
-      this.tempPointAtInfinityMaterial.angle = Math.atan2(
-        location.y,
-        location.x
-      );
+      const upper = location.z > 0 ? 1 : 0;
+      const angle = Math.atan2(location.y, location.x);
+      this.tempPointAtInfinityMaterial.upper = upper;
+      this.tempPointAtInfinityMaterial.angle = angle;
+      this.tempTubeMaterial.upper = upper;
+      this.tempTubeMaterial.angle = angle;
+      this.scene.add(this.tempTube);
       this.scene.add(this.tempPointAtInfinity);
     }
   }
