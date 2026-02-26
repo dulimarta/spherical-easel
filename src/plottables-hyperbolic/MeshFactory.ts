@@ -8,18 +8,19 @@ import {
   Fn,
   positionLocal,
   varying,
-  color,
   smoothstep,
   attribute,
   uv,
   mix,
+  color,
   modelWorldMatrix,
   rotate,
   sin,
   cos,
   mat3,
   sqrt,
-  select
+  select,
+  bool
 } from "three/tsl";
 // import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { Line2 } from "three/addons/lines/Line2.js";
@@ -27,18 +28,14 @@ import {
   Vector3,
   Mesh,
   DoubleSide,
-  Plane,
   SphereGeometry,
   CylinderGeometry,
-  Vector2,
   LineCurve3,
   ConeGeometry
 } from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import { LineGeometry } from "three/examples/jsm/Addons.js";
 import MathNode from "three/src/nodes/math/MathNode.js";
-import { ro } from "vuetify/locale";
-import { mx_bilerp_0 } from "three/src/nodes/materialx/lib/mx_noise.js";
 
 const rayCasterIntersectionPoint = new THREE.Vector3();
 
@@ -61,7 +58,7 @@ interface CustomMaterialUserData {
   angle: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
   radius: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
   height: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
-  // upper: THREE.TSL.ShaderNodeObject<THREE.UniformNode<boolean>>;
+  upper: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // we must use 1/0 for true/false because TSL doesn't recognize boolean wrapped uniforms
   position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>;
 }
 
@@ -73,7 +70,7 @@ export class CustomNodeMaterial extends THREE.MeshStandardNodeMaterial {
       angle: uniform(0.0, "float"),
       radius: uniform(1.0, "float"),
       height: uniform(1.0, "float"),
-      // upper: uniform(true),
+      upper: uniform(1, "uint"),
       position: uniform(new Vector3(0, 0, 0), "vec3")
     };
   }
@@ -95,12 +92,12 @@ export class CustomNodeMaterial extends THREE.MeshStandardNodeMaterial {
   set height(value: number) {
     this.userData.height.value = value;
   }
-  // get upper(): boolean {
-  //   return this.userData.upper.value;
+  // get upper(): number {
+  //   return this.userData.upper.value === 1;
   // }
-  // set upper(value: boolean) {
-  //   this.userData.upper.value = value;
-  // }
+  set upper(value: number) {
+    this.userData.upper.value = value ? 1 : 0;
+  }
   get position(): THREE.Vector3 {
     return this.userData.position.value;
   }
@@ -146,65 +143,56 @@ export function createPoint(
 }
 
 export function createPointAtInfinity(
-  upper: boolean = true,
+  upper: number = 1, // we must use 1/0 for true/false because TSL doesn't recognize boolean wrapped uniforms
   angle: number = 0,
-  radius: number = 0.1, // in multiples of the unit length
-  height: number = 1, //  in multiples of the unit length
-  color: string = "red",
+  radius: number = 0.18, // in multiples of the unit length
+  height: number = 0.33, //  in multiples of the unit length
+  myColor: string = "red",
   name: string = "tempPointAtInfinity"
 ): Mesh {
   const coneMaterial = new CustomNodeMaterial({
-    color: color,
-    roughness: 0.3
+    color: myColor,
+    opacity: 1.0
   });
   const angleUniform = coneMaterial.userData.angle;
   const radiusUniform = coneMaterial.userData.radius;
   const heightUniform = coneMaterial.userData.height;
-  // const upperUniform = coneMaterial.userData.upper;
+  const upperUniform = coneMaterial.userData.upper;
   angleUniform.value = angle;
   radiusUniform.value = radius;
   heightUniform.value = height;
-  // upperUniform.value = upper;
+  upperUniform.value = upper;
 
   coneMaterial.positionNode = Fn(() => {
     const scaleAndTranslate = positionLocal
-      .mul(unitLength)
-      .mul(vec3(radiusUniform, heightUniform, radiusUniform))
-      .add(
+      .add(vec3(0, 0.5, 0))
+      .mul(
         vec3(
-          0,
-          zUpperPAIClipMinus.mul(Math.SQRT2),
-          // select(
-          // upperUniform,
-          0
-          // zLowerPAIClipMinus.mul(-Math.sqrt(2))
-          // )
+          radiusUniform.mul(unitLength),
+          heightUniform.mul(unitLength),
+          radiusUniform.mul(unitLength)
         )
-      );
-
-    const c = cos(angleUniform.sub(Math.PI / 2));
-    const s = sin(angleUniform.sub(Math.PI / 2));
-    const oneOverSqrt2 = sqrt(1.0 / 2.0);
-    // ca -sa 0       1  0     0.
-    // sa ca 0        0  c45   -s45
-    // 0  0  1        0  s45    c45
-
-    // const rotationMatrix = mat3(
-    //   vec3(1, 0, 0),
-    //   vec3(0, oneOverSqrt2, oneOverSqrt2),
-    //   vec3(0, float(-1.0).mul(oneOverSqrt2), oneOverSqrt2)
-    // );
-    const rotationMatrix = mat3(
-      vec3(c, s, 0),
-      vec3(s.mul(oneOverSqrt2.mul(-1.0)), c.mul(oneOverSqrt2), oneOverSqrt2),
-      vec3(
-        s.mul(oneOverSqrt2),
-        c.mul(float(-1.0)).mul(oneOverSqrt2),
-        oneOverSqrt2
       )
-    );
+      .add(vec3(0, zUpperPAIClipMinus.mul(Math.SQRT2), 0));
 
-    return rotationMatrix.mul(scaleAndTranslate);
+    const minusPlusOne = select(upperUniform.equal(1), float(-1.0), float(1.0));
+    // ca -sa 0        1   0     0
+    // sa  ca 0    *   0  c+/-45   -s+/-45
+    // 0   0  1        0  s+/-45    c+/-45
+
+    const rotationMatrixAboutZAxis = calculateRotationMatrix([
+      vec3(0, 0, 1),
+      float(Math.PI / 2).sub(angleUniform)
+    ]);
+
+    const rotationMatrixAboutXAxis = calculateRotationMatrix([
+      vec3(1, 0, 0),
+      float(Math.PI / 4).mul(minusPlusOne)
+    ]);
+
+    return rotationMatrixAboutZAxis
+      .mul(rotationMatrixAboutXAxis)
+      .mul(scaleAndTranslate);
   })();
 
   const returnMesh = new Mesh(new ConeGeometry(), coneMaterial);
@@ -815,30 +803,28 @@ function h2Distance(point1: Vector3, point2: Vector3): number | null {
 
 //The TSL formulation of a 3 x 3 rotation matrix about an axis (UNIT!) by an angle
 const calculateRotationMatrix = Fn(
-  ({
-    vectorAxis,
-    angle
-  }: {
-    vectorAxis: THREE.TSL.ShaderNodeObject<THREE.Node>;
-    angle: THREE.TSL.ShaderNodeObject<MathNode>;
-  }) => {
-    const axis = vec3(vectorAxis.normalize());
+  ([vectorAxis, angle]: [
+    THREE.TSL.ShaderNodeObject<THREE.Node>,
+    THREE.TSL.ShaderNodeObject<THREE.Node>
+  ]) => {
+    const axis = vectorAxis.normalize();
     const s = sin(angle);
     const c = cos(angle);
     const t = c.oneMinus();
-
     return mat3(
       t.mul(axis.x).mul(axis.x).add(c),
-      t.mul(axis.y).mul(axis.x).add(axis.z.mul(s)),
-      t.mul(axis.z).mul(axis.x).sub(axis.y.mul(s)),
-
       t.mul(axis.x).mul(axis.y).sub(axis.z.mul(s)),
-      t.mul(axis.y).mul(axis.y).add(c),
-      t.mul(axis.z).mul(axis.y).add(axis.x.mul(s)),
-
       t.mul(axis.x).mul(axis.z).add(axis.y.mul(s)),
+
+      t.mul(axis.y).mul(axis.x).add(axis.z.mul(s)),
+      t.mul(axis.y).mul(axis.y).add(c),
       t.mul(axis.y).mul(axis.z).sub(axis.x.mul(s)),
+
+      t.mul(axis.z).mul(axis.x).sub(axis.y.mul(s)),
+      t.mul(axis.z).mul(axis.y).add(axis.x.mul(s)),
       t.mul(axis.z).mul(axis.z).add(c)
     );
   }
-);
+) as unknown as (
+  args: THREE.TSL.ShaderNodeObject<THREE.Node>[]
+) => THREE.TSL.ShaderNodeObject<THREE.Node>;

@@ -603,6 +603,7 @@ function initialize() {
   upperPointsAtInfinity = createPointsAtInfinityStrip({
     upper: true
   });
+
   upperPointsAtInfinity.name = `Upper Points At Infinity`;
   upperPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
 
@@ -812,7 +813,7 @@ function updateView() {
   // update the unit
   // A line segment starting at (0,0,1) and in the plane parallel to the screen subtending this angle in any zoom/dolly level is considered a unit length. All geometric objects are measured relative to this unit.
   // The screen plane has normal vector N = CameraPosition - LookAt and the plane parallel to this
-  // through (0,0,01) has equation N.(x,y,z-1) = 0.
+  // through (0,0,1) has equation N.(x,y,z-1) = 0.
   // To compute the direction (dir) needed to compute the unit length, we only
   // need a vector in any plane parallel to the screen so any non-zero vector perpendicular to N.
   // Notice that lookAt = new Vector3(0,0,zCoordLookAt)

@@ -44,15 +44,11 @@ export class PointHandler extends PoseTracker {
       this.scene.add(this.tempPoint);
     } else if (intersectionList[0].object.name.match(/(Infinity)$/)) {
       const location = intersectionList[0].point;
+      this.tempPointAtInfinityMaterial.upper = location.z > 0 ? 1 : 0;
       this.tempPointAtInfinityMaterial.angle = Math.atan2(
         location.y,
         location.x
       );
-      // if (location.z > 0) {
-      //   this.tempPointAtInfinityMaterial.upper = true;
-      // } else {
-      //   this.tempPointAtInfinityMaterial.upper = false;
-      // }
       this.scene.add(this.tempPointAtInfinity);
     }
   }
