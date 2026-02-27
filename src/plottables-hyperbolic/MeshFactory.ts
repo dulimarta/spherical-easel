@@ -20,7 +20,13 @@ import {
   mat3,
   sqrt,
   select,
-  bool
+  bool,
+  modelViewMatrix,
+  oscSine,
+  oscSquare,
+  oscSawtooth,
+  If,
+  time
 } from "three/tsl";
 // import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { Line2 } from "three/addons/lines/Line2.js";
@@ -36,6 +42,7 @@ import {
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import { LineGeometry } from "three/examples/jsm/Addons.js";
 import MathNode from "three/src/nodes/math/MathNode.js";
+import { start } from "happy-dom/lib/PropertySymbol.js";
 
 const rayCasterIntersectionPoint = new THREE.Vector3();
 
@@ -192,6 +199,59 @@ export function createPointAtInfinityTube(
       .mul(rotationMatrixAboutXAxis)
       .mul(scaleAndTranslate);
   })();
+
+  const absOfLocalPositionZ = varying(positionLocal.z).abs();
+  // const baseColor = color(coneMaterial.color);
+  const percentPad = 0.1; // percent of the total length of the tube that is not dashed at the ends.
+  const numberOfIntervals = 3; // same as the number of dashes traveling up the shank.
+  const rateOfOscillation = 1.5; // controls the speed of the dash movement along the shank.
+  const percentOfEachIntervalThatIsDash = 0.5;
+  const totalLengthOfShank = zUpperPAIClipMinus;
+  const lengthOfPad = totalLengthOfShank.mul(percentPad);
+  const lengthOfEachInterval = totalLengthOfShank
+    .sub(lengthOfPad.mul(2))
+    .div(numberOfIntervals);
+  const lengthOfDash = lengthOfEachInterval.mul(
+    percentOfEachIntervalThatIsDash
+  );
+  const totalLengthOfGaps = lengthOfEachInterval.sub(lengthOfDash); //This lengths is split into before and after the dash, with offset being the length before the dash that is determined by a sawtooth function.
+
+  const clippingLogic = Fn(() => {
+    const result = color(coneMaterial.color).mul(1.2);
+    If(
+      absOfLocalPositionZ
+        .greaterThan(lengthOfPad)
+        .and(absOfLocalPositionZ.lessThan(totalLengthOfShank.sub(lengthOfPad))),
+      () => {
+        const lengthOfPositionInInterval = absOfLocalPositionZ
+          .sub(lengthOfPad.mul(2))
+          .mod(lengthOfEachInterval);
+        const startOfDash = oscSawtooth(time.mul(rateOfOscillation)).mul(
+          lengthOfEachInterval
+        );
+        If(startOfDash.lessThan(totalLengthOfGaps), () => {
+          lengthOfPositionInInterval
+            .lessThan(startOfDash)
+            .or(
+              lengthOfPositionInInterval.greaterThan(
+                startOfDash.add(lengthOfDash)
+              )
+            )
+            .discard();
+        }).Else(() => {
+          lengthOfPositionInInterval
+            .greaterThan(startOfDash.sub(totalLengthOfGaps))
+            .and(lengthOfPositionInInterval.lessThan(startOfDash))
+            .discard();
+        });
+      }
+    );
+
+    return result;
+  });
+
+  coneMaterial.colorNode = clippingLogic();
+
   // path is the center line of the initial(untransformed) tube.
   const path = new LineCurve3(new Vector3(0, 0, 0), new Vector3(0, 1, 0));
   const geometry = new THREE.TubeGeometry(path, 64, 1, 128, false);
@@ -397,10 +457,10 @@ export function createPolarGridCircle({
     blending: THREE.NormalBlending,
     alphaTest: 0.1,
     depthTest: true,
-    depthWrite: true
-    // polygonOffset: true, // attempt to limit z fighting when polar angle is 0 or pi
-    // polygonOffsetFactor: -1.0, // Nudge the line toward the camera
-    // polygonOffsetUnits: -4.0 // Higher value = more aggressive nudge
+    depthWrite: false,
+    polygonOffset: true, // attempt to limit z fighting when polar angle is 0 or pi
+    polygonOffsetFactor: -1.0, // Nudge the line toward the camera
+    polygonOffsetUnits: -4.0 // Higher value = more aggressive nudge
   });
 
   // Clipping Logic -- line2NodeMaterial is really just a center line that is
@@ -433,6 +493,12 @@ export function createPolarGridCircle({
 
   // Apply to your material
   lineMaterial.opacityNode = clippingLogic();
+
+  lineMaterial.positionNode = Fn(() => {
+    const posView = modelViewMatrix.mul(vec4(positionLocal, 1.0));
+    const nudged = vec4(posView.xyz.add(vec3(0, 0, 0.001)), posView.w);
+    return nudged.xyz;
+  })();
 
   // @ts-expect-error: Line2 constructor type definition is outdated for WebGPU materials
   const mesh = new Line2(geometry, lineMaterial);
@@ -537,6 +603,75 @@ export function createPolarGridRadialLine({
   return lineMesh;
 }
 
+export function createBoundaryCone({ upper }: { upper: boolean }): THREE.Mesh {
+  const coneMaterial = new THREE.MeshPhysicalNodeMaterial({
+    side: DoubleSide,
+    color: 0x88ccff, // base color
+    roughness: 0.0, // very smooth surface
+    transmission: 0.5, // glasslike transparency
+    thickness: 0.05, // thin glass layer (in world units)
+    ior: 1.45, // index of refraction of glass
+    transparent: true, // must enable for opacity/transmission
+    opacity: 1.0, // keep at 1, transparency handled via transmission
+    metalness: 0.0
+    // reflectivity: 0.15, // helps glass reflections
+    // clearcoat: 1.0, // improves highlight realism
+    // clearcoatRoughness: 0.05,
+    // specularIntensity: 0.2,
+    //soap bubble" thin-film interferences
+    // iridescence: 1.0,
+    // iridescenceIOR: 1.3,
+    // iridescenceThicknessRange: [50, 150], // in nanometers
+  });
+  const baseColor = color(coneMaterial.color);
+
+  const localPositionZ = varying(positionLocal.z);
+
+  const clippingLogic = Fn(() => {
+    if (upper) {
+      positionLocal.z.greaterThan(zUpperPAIClipMinus).discard();
+    } else {
+      positionLocal.z.lessThan(zLowerPAIClipPlus).discard();
+    }
+
+    return baseColor.mul(1.2);
+  });
+
+  coneMaterial.colorNode = clippingLogic();
+
+  // Smooth the opacity of the top edge of the hyperboloid
+  coneMaterial.opacityNode = smoothstep(
+    (upper ? zUpperPAIClipMinus : zLowerPAIClipPlus).mul(
+      SETTINGS.fadePercentage
+    ),
+    upper ? zUpperPAIClipMinus : zLowerPAIClipPlus,
+    localPositionZ
+  )
+    .oneMinus()
+    .mul(float(SETTINGS.startOpacityFade).sub(float(SETTINGS.endOpacityFade)))
+    .add(float(SETTINGS.endOpacityFade));
+
+  const coneGeometry = new ParametricGeometry(
+    (u, v, out) => {
+      let r = u * SETTINGS.maxZClip * (upper ? 1 : -1); // 0 to +/-maxZClippingHeight
+      if (r == 0) {
+        r = 0.0001 * (upper ? 1 : -1); // avoid singularity at the tip
+      }
+      const theta = v * 2 * Math.PI;
+      const x = r * Math.cos(theta);
+      const y = r * Math.sin(theta);
+      const z = r + 0.1 * (upper ? -1 : 1); // small offset to avoid z-fighting with hyperboloid
+      out.set(x, y, z);
+    },
+    120,
+    300
+  );
+  coneMaterial.depthWrite = false; // try to avoid z-fighting with hyperboloid
+  const coneMesh = new Mesh(coneGeometry, coneMaterial);
+
+  return coneMesh;
+}
+
 export function createHyperboloidSheet({
   upper
 }: {
@@ -547,7 +682,7 @@ export function createHyperboloidSheet({
     side: DoubleSide,
     metalness: 0.1,
     roughness: 0.2,
-    opacity: 0.8,
+    opacity: 0.2,
     transparent: true,
     clearcoat: 1.0,
     clearcoatRoughness: 0.1
@@ -576,7 +711,8 @@ export function createHyperboloidSheet({
     localPositionZ
   )
     .oneMinus()
-    .mul(float(SETTINGS.startOpacityFade).sub(float(SETTINGS.endOpacityFade)))
+    // .mul(float(SETTINGS.startOpacityFade).sub(float(SETTINGS.endOpacityFade)))
+    .mul(float(1.0).sub(float(SETTINGS.endOpacityFade)))
     .add(float(SETTINGS.endOpacityFade));
 
   const hyperboloidGeometry = new ParametricGeometry(
@@ -601,62 +737,6 @@ export function createHyperboloidSheet({
 
   return hyperboloidMesh;
 }
-
-// export function createBoundaryCone({
-//   clippingPlane,
-//   maxZClippingHeight,
-//   upper = true
-// }: {
-//   clippingPlane: Plane;
-//   maxZClippingHeight: number;
-//   upper?: boolean;
-// }): Mesh {
-//   const coneMaterial = new THREE.MeshPhysicalNodeMaterial({
-//     color: 0x88ccff, // base color
-//     roughness: 0.0, // very smooth surface
-//     transmission: 0.5, // glasslike transparency
-//     thickness: 0.05, // thin glass layer (in world units)
-//     ior: 1.45, // index of refraction of glass
-//     transparent: true, // must enable for opacity/transmission
-//     opacity: 1.0, // keep at 1, transparency handled via transmission
-//     metalness: 0.0,
-//     // reflectivity: 0.15, // helps glass reflections
-//     // clearcoat: 1.0, // improves highlight realism
-//     // clearcoatRoughness: 0.05,
-//     // specularIntensity: 0.2,
-//     //soap bubble" thin-film interferences
-//     // iridescence: 1.0,
-//     // iridescenceIOR: 1.3,
-//     // iridescenceThicknessRange: [50, 150], // in nanometers
-//     clippingPlanes: [clippingPlane]
-//   });
-
-//   const coneGeometry = new ParametricGeometry(
-//     (u, v, out) => {
-//       let r = u * maxZClippingHeight * (upper ? 1 : -1); // 0 to +/-maxZClippingHeight
-//       if (r == 0) {
-//         r = 0.0001 * (upper ? 1 : -1); // avoid singularity at the tip
-//       }
-//       const theta = v * 2 * Math.PI;
-//       // This is how points on the hyperboloid are calculated
-//       // u = u * (Math.acosh(maxZClippingHeight) + 1);
-//       // const x = Math.sinh(u) * Math.cos(theta);
-//       // const y = Math.sinh(u) * Math.sin(theta);
-//       // const z = Math.cosh(u);
-
-//       const x = r * Math.cos(theta);
-//       const y = r * Math.sin(theta);
-//       const z = r + 0.001; // small offset to avoid z-fighting with hyperboloid
-//       out.set(x, y, z);
-//     },
-//     120,
-//     300
-//   );
-//   coneMaterial.depthWrite = false; // try to avoid z-fighting with hyperboloid
-//   const coneMesh = new Mesh(coneGeometry, coneMaterial);
-
-//   return coneMesh;
-// }
 
 // Parametric function for the upper sheet of the hyperboloid where 0 <= u <= 1 and 0 <= v <= 1, the point is returned in pt
 function upperHyperboloid(u: number, v: number, pt: Vector3) {
@@ -788,7 +868,7 @@ function intersectWithPointAtInfinityStrip(
   const dy = raycaster.ray.direction.y;
   const dz = raycaster.ray.direction.z;
 
-  // Expand substitutions for intersection of Ray P(t) with Cone Surface
+  // Expand substitutions for intersection of Ray P(t) with Cone
   // (ox + t*dx)^2 + (oy + t*dy)^2 = (oz + t*dz)^2
 
   // A term (t^2)

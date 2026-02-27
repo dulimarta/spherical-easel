@@ -3,6 +3,7 @@ import { PoseTracker } from "./PoseTracker";
 import * as THREE from "three/webgpu";
 import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import {
+  createBoundaryCone,
   createPoint,
   createPointAtInfinity,
   createPointAtInfinityTube,
@@ -17,6 +18,8 @@ export class PointHandler extends PoseTracker {
   protected tempPointAtInfinityMaterial: CustomNodeMaterial;
   protected tempTube: Mesh;
   protected tempTubeMaterial: CustomNodeMaterial;
+  protected tempUpperCone: Mesh;
+  protected tempLowerCone: Mesh;
   private tempPointInScene = false;
   private tempPointAtInfinityInScene = false;
 
@@ -30,6 +33,8 @@ export class PointHandler extends PoseTracker {
       .material as CustomNodeMaterial;
     this.tempTube = createPointAtInfinityTube();
     this.tempTubeMaterial = this.tempTube.material as CustomNodeMaterial;
+    this.tempLowerCone = createBoundaryCone({ upper: false });
+    this.tempUpperCone = createBoundaryCone({ upper: true });
   }
 
   mouseMoved(
@@ -43,6 +48,8 @@ export class PointHandler extends PoseTracker {
       this.scene.remove(this.tempPoint);
       this.scene.remove(this.tempPointAtInfinity);
       this.scene.remove(this.tempTube);
+      this.scene.remove(this.tempUpperCone);
+      this.scene.remove(this.tempLowerCone);
       return;
     }
     if (intersectionList[0].object.name.match(/(Sheet)$/)) {
@@ -58,6 +65,7 @@ export class PointHandler extends PoseTracker {
       this.tempTubeMaterial.angle = angle;
       this.scene.add(this.tempTube);
       this.scene.add(this.tempPointAtInfinity);
+      this.scene.add(upper ? this.tempUpperCone : this.tempLowerCone);
     }
   }
 

@@ -465,7 +465,8 @@ onMounted(async () => {
   cameraPolarAngle.value = cameraController.polarAngle;
   renderer = new THREE.WebGPURenderer({
     canvas: webGPUCanvas.value!,
-    antialias: true
+    antialias: true,
+    logarithmicDepthBuffer: true
   });
   await renderer.init();
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -680,9 +681,10 @@ function doRender() {
     if (hasUpdated) {
       hasUpdatedCameraControls.value = true;
       cameraQuaternion.value.copy(camera.quaternion);
-      renderer.renderAsync(scene, camera);
+      // renderer.renderAsync(scene, camera);
     }
   }
+  renderer.renderAsync(scene, camera);
 }
 
 function updateCameraDetails(ev: DispatcherEvent) {
