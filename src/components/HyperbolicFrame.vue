@@ -115,6 +115,7 @@ import {
   Vector3,
   Vector2
 } from "three";
+import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import * as THREE from "three/webgpu";
 import CameraControls from "camera-controls";
 import { DispatcherEvent } from "camera-controls/dist/EventDispatcher";
@@ -246,6 +247,10 @@ scene.add(directionalLight1);
 scene.add(directionalLight2);
 scene.add(directionalLight3);
 scene.add(directionalLight4);
+
+scene.background = new THREE.Color(0xf5f5f5);
+//scene.background = new THREE.Color(0x6082b6);
+//scene.environment = await new THREE.RGBELoader().loadAsync("env.hdr");
 
 let currentTools: Array<HyperbolicToolStrategy> = []; //new PointHandler();
 let pointTool: PointHandler = new PointHandler(scene);
@@ -465,8 +470,8 @@ onMounted(async () => {
   cameraPolarAngle.value = cameraController.polarAngle;
   renderer = new THREE.WebGPURenderer({
     canvas: webGPUCanvas.value!,
-    antialias: true,
-    logarithmicDepthBuffer: true
+    antialias: true
+    // logarithmicDepthBuffer: true // Attempt to use this to stop z-fighting when the boundary cone is displayed
   });
   await renderer.init();
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -497,11 +502,12 @@ onMounted(async () => {
     webGPUCanvas.value,
     "wheel",
     event => {
-      if (!cameraController || actionMode.value !== "rotate") return;
+      if (!cameraController) return;
 
       // Prevent page scrolling
       event.preventDefault();
 
+      // shift key plus mouse wheel will change the field of view, otherwise it will dolly in and out
       if (event.shiftKey) {
         const newFov =
           (cameraController.camera as PerspectiveCamera).fov +
@@ -518,6 +524,29 @@ onMounted(async () => {
         }
       } else {
         cameraController.dolly(event.deltaY, true);
+        cameraDistance.value = cameraController.distance;
+        console.log(
+          "Camera distance after wheel event",
+          cameraController.distance
+        );
+        // if (
+        //   Math.abs(oldCameraDistance - cameraController.distance) >
+        //   SETTINGS.minDollyDistanceChangeForViewUpdate
+        // ) {
+        oldCameraDistance = cameraController.distance;
+        updateView();
+        const deltaTime = clock.getDelta();
+        cameraController.update(deltaTime);
+        hasUpdatedCameraControls.value = true;
+        cameraQuaternion.value.copy(camera.quaternion);
+        renderer.renderAsync(scene, camera);
+
+        // console.log({
+        //   currentZoom: cameraController.camera.zoom,
+        //   currentFOV: (cameraController.camera as PerspectiveCamera).fov,
+        //   currentDistance: cameraController.distance
+        // });
+        // }
       }
       // console.log({
       //   currentZoom: cameraController.camera.zoom,
@@ -549,10 +578,10 @@ function initialize() {
   // const helper = new THREE.CameraHelper(camera);
   // scene.add(helper);
 
-  const xyGrid = new THREE.GridHelper();
-  // xyGrid.translateZ(1);
-  xyGrid.rotateX(Math.PI / 2);
-  scene.add(xyGrid);
+  // const xyGrid = new THREE.GridHelper();
+  // // xyGrid.translateZ(1);
+  // xyGrid.rotateX(Math.PI / 2);
+  // scene.add(xyGrid);
 
   // Insert the grid BEFORE the arrow helper
   const arrowX = new THREE.ArrowHelper(new Vector3(1, 0, 0));
@@ -684,13 +713,13 @@ function doRender() {
       // renderer.renderAsync(scene, camera);
     }
   }
-  renderer.renderAsync(scene, camera);
+  renderer.renderAsync(scene, camera); // Put this here so that changes in the GPU/TSL materials will be reflected in the rendering immediately.
 }
 
 function updateCameraDetails(ev: DispatcherEvent) {
   const cc = ev.target as CameraControls;
 
-  // console.debug("CC::" + ev.type);
+  // console.log("CC::" + ev.type + " " + cc.distance.toFixed(2));
 
   cameraDistance.value = cc.distance;
   cameraPolarAngle.value = cc.polarAngle;
@@ -698,6 +727,7 @@ function updateCameraDetails(ev: DispatcherEvent) {
     Math.abs(oldCameraDistance - cc.distance) >
     SETTINGS.minDollyDistanceChangeForViewUpdate
   ) {
+    // console.log("here");
     oldCameraDistance = cc.distance;
     updateView();
     // console.log({

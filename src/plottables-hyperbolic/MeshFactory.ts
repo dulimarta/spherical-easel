@@ -115,7 +115,7 @@ export class CustomNodeMaterial extends THREE.MeshStandardNodeMaterial {
 
 export function createPoint(
   radiusNumber: number = 0.1,
-  color: string = "white",
+  color: string = "0xF5F5F5",
   name: string = "tempPoint"
 ): Mesh {
   const sphereMaterial = new CustomNodeMaterial({
@@ -153,7 +153,7 @@ export function createPointAtInfinityTube(
   upper: number = 1, // we must use 1/0 for true/false because TSL doesn't recognize boolean wrapped uniforms
   angle: number = 0,
   radius: number = 0.05, // in multiples of the unit length
-  myColor: string = "red",
+  myColor: string = "0xBEBFC5",
   name: string = "tempPointAtInfinityTube"
 ): Mesh {
   const coneMaterial = new CustomNodeMaterial({
@@ -266,7 +266,7 @@ export function createPointAtInfinity(
   angle: number = 0,
   radius: number = 0.18, // in multiples of the unit length
   height: number = 0.33, //  in multiples of the unit length
-  myColor: string = "red",
+  myColor: string = "0xBEBFC5",
   name: string = "tempPointAtInfinity"
 ): Mesh {
   const coneMaterial = new CustomNodeMaterial({
@@ -336,7 +336,7 @@ export function createPointsAtInfinityStrip({
   upper: boolean;
 }): Mesh {
   const pointAtInfinityMaterial = new THREE.MeshPhysicalNodeMaterial({
-    color: "blue",
+    color: 0x8c92ac,
     side: DoubleSide,
     transparent: true
   });
@@ -451,16 +451,16 @@ export function createPolarGridCircle({
   geometry.setPositions(circlePoints);
 
   const lineMaterial = new THREE.Line2NodeMaterial({
-    color: "grey",
     linewidth: thickness, // Width in pixels
     transparent: true,
-    blending: THREE.NormalBlending,
+    color: "grey",
+    blending: THREE.NormalBlending, //If this is not set the radial lines near (0,0,1) looks whitish grey
     alphaTest: 0.1,
     depthTest: true,
-    depthWrite: false,
-    polygonOffset: true, // attempt to limit z fighting when polar angle is 0 or pi
-    polygonOffsetFactor: -1.0, // Nudge the line toward the camera
-    polygonOffsetUnits: -4.0 // Higher value = more aggressive nudge
+    depthWrite: true
+    // polygonOffset: true, // attempt to limit z fighting when polar angle is 0 or pi
+    // polygonOffsetFactor: -1.0, // Nudge the line toward the camera
+    // polygonOffsetUnits: -4.0 // Higher value = more aggressive nudge
   });
 
   // Clipping Logic -- line2NodeMaterial is really just a center line that is
@@ -494,11 +494,12 @@ export function createPolarGridCircle({
   // Apply to your material
   lineMaterial.opacityNode = clippingLogic();
 
-  lineMaterial.positionNode = Fn(() => {
-    const posView = modelViewMatrix.mul(vec4(positionLocal, 1.0));
-    const nudged = vec4(posView.xyz.add(vec3(0, 0, 0.001)), posView.w);
-    return nudged.xyz;
-  })();
+  // Attempt to fix z-fighting when the boundary cone is displayed and the dolly distance is large
+  // lineMaterial.positionNode = Fn(() => {
+  //   const posView = modelViewMatrix.mul(vec4(positionLocal, 1.0));
+  //   const nudged = vec4(posView.xyz.add(vec3(0, 0, 0.001)), posView.w);
+  //   return nudged.xyz;
+  // })();
 
   // @ts-expect-error: Line2 constructor type definition is outdated for WebGPU materials
   const mesh = new Line2(geometry, lineMaterial);
@@ -608,11 +609,11 @@ export function createBoundaryCone({ upper }: { upper: boolean }): THREE.Mesh {
     side: DoubleSide,
     color: 0x88ccff, // base color
     roughness: 0.0, // very smooth surface
-    transmission: 0.5, // glasslike transparency
-    thickness: 0.05, // thin glass layer (in world units)
-    ior: 1.45, // index of refraction of glass
+    //transmission: 0.5, // glasslike transparency
+    //thickness: 0.05, // thin glass layer (in world units)
+    //ior: 1.45, // index of refraction of glass
     transparent: true, // must enable for opacity/transmission
-    opacity: 1.0, // keep at 1, transparency handled via transmission
+    opacity: 0.0, // keep at 1, transparency handled via transmission
     metalness: 0.0
     // reflectivity: 0.15, // helps glass reflections
     // clearcoat: 1.0, // improves highlight realism
@@ -660,13 +661,13 @@ export function createBoundaryCone({ upper }: { upper: boolean }): THREE.Mesh {
       const theta = v * 2 * Math.PI;
       const x = r * Math.cos(theta);
       const y = r * Math.sin(theta);
-      const z = r + 0.1 * (upper ? -1 : 1); // small offset to avoid z-fighting with hyperboloid
+      const z = r; // + (0.1 / SETTINGS.maxZClip) * r * (upper ? -1 : 1); // small offset to avoid z-fighting with hyperboloid
       out.set(x, y, z);
     },
     120,
     300
   );
-  coneMaterial.depthWrite = false; // try to avoid z-fighting with hyperboloid
+
   const coneMesh = new Mesh(coneGeometry, coneMaterial);
 
   return coneMesh;
@@ -678,7 +679,7 @@ export function createHyperboloidSheet({
   upper: boolean;
 }): THREE.Mesh {
   const hyperboloidMaterial = new THREE.MeshPhysicalNodeMaterial({
-    color: "chocolate",
+    color: 0x6082b6,
     side: DoubleSide,
     metalness: 0.1,
     roughness: 0.2,

@@ -36,6 +36,11 @@ export class PointHandler extends PoseTracker {
     this.tempLowerCone = createBoundaryCone({ upper: false });
     this.tempUpperCone = createBoundaryCone({ upper: true });
   }
+  mousePressed(
+    event: MouseEvent,
+    scrPos: Vector2,
+    intersectionList: Intersection[]
+  ): void {}
 
   mouseMoved(
     event: MouseEvent,
@@ -45,11 +50,7 @@ export class PointHandler extends PoseTracker {
     // Process the intersection list and set the flags
     super.mouseMoved(event, scrPos, intersectionList);
     if (!intersectionList[0]) {
-      this.scene.remove(this.tempPoint);
-      this.scene.remove(this.tempPointAtInfinity);
-      this.scene.remove(this.tempTube);
-      this.scene.remove(this.tempUpperCone);
-      this.scene.remove(this.tempLowerCone);
+      this.removeAllTempObjects();
       return;
     }
     if (intersectionList[0].object.name.match(/(Sheet)$/)) {
@@ -69,12 +70,6 @@ export class PointHandler extends PoseTracker {
     }
   }
 
-  mousePressed(
-    event: MouseEvent,
-    scrPos: Vector2,
-    intersectionList: Intersection[]
-  ): void {}
-
   mouseReleased(
     event: MouseEvent,
     scrPos: Vector2,
@@ -83,10 +78,22 @@ export class PointHandler extends PoseTracker {
     // throw new Error("Method not implemented.");
   }
 
+  mouseLeave(event: MouseEvent): void {
+    this.removeAllTempObjects();
+  }
+
   activate(): void {
     // throw new Error("Method not implemented.");
   }
   deactivate(): void {
     super.deactivate();
+  }
+
+  removeAllTempObjects() {
+    this.scene.remove(this.tempPoint);
+    this.scene.remove(this.tempPointAtInfinity);
+    this.scene.remove(this.tempTube);
+    this.scene.remove(this.tempUpperCone);
+    this.scene.remove(this.tempLowerCone);
   }
 }

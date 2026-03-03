@@ -7,7 +7,7 @@ import * as THREE from "three/webgpu";
 
 export class HEPoint extends HENodule {
   private pointMesh: Mesh;
-  private size: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
+
   constructor(pos: Vector3, normal: Vector3) {
     super();
     const material = new MeshStandardMaterial({ color: "white" });
