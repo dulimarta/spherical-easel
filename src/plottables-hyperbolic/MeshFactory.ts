@@ -14,16 +14,11 @@ import {
   mix,
   color,
   modelWorldMatrix,
-  rotate,
   sin,
   cos,
   mat3,
-  sqrt,
   select,
-  bool,
-  modelViewMatrix,
   oscSine,
-  oscSquare,
   oscSawtooth,
   If,
   time
@@ -41,8 +36,7 @@ import {
 } from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import { LineGeometry } from "three/examples/jsm/Addons.js";
-import MathNode from "three/src/nodes/math/MathNode.js";
-import { start } from "happy-dom/lib/PropertySymbol.js";
+import { CustomPointMaterial } from "./MaterialFactory";
 
 const rayCasterIntersectionPoint = new THREE.Vector3();
 
@@ -61,75 +55,50 @@ export const zLowerPAIClipMinus = uniform(2.0, "float");
 export const unitLength: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>> =
   uniform(1.0, "float");
 
-interface CustomMaterialUserData {
-  angle: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
-  radius: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
-  height: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
-  upper: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // we must use 1/0 for true/false because TSL doesn't recognize boolean wrapped uniforms
-  position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>;
-}
-
-export class CustomNodeMaterial extends THREE.MeshStandardNodeMaterial {
-  declare userData: CustomMaterialUserData;
-  constructor(parameters: THREE.MeshStandardNodeMaterialParameters) {
-    super(parameters);
-    this.userData = {
-      angle: uniform(0.0, "float"),
-      radius: uniform(1.0, "float"),
-      height: uniform(1.0, "float"),
-      upper: uniform(1, "uint"),
-      position: uniform(new Vector3(0, 0, 0), "vec3")
-    };
-  }
-  get angle(): number {
-    return this.userData.angle.value;
-  }
-  set angle(value: number) {
-    this.userData.angle.value = value;
-  }
-  get radius(): number {
-    return this.userData.radius.value;
-  }
-  set radius(value: number) {
-    this.userData.radius.value = value;
-  }
-  get height(): number {
-    return this.userData.height.value;
-  }
-  set height(value: number) {
-    this.userData.height.value = value;
-  }
-  // get upper(): number {
-  //   return this.userData.upper.value === 1;
-  // }
-  set upper(value: number) {
-    this.userData.upper.value = value ? 1 : 0;
-  }
-  get position(): THREE.Vector3 {
-    return this.userData.position.value;
-  }
-  set position(value: THREE.Vector3) {
-    this.userData.position.value = value;
-  }
-}
-
 export function createPoint(
   radiusNumber: number = 0.1,
-  color: string = "0xF5F5F5",
+  myColor: string = "white", //"0xBEBFC5",
   name: string = "tempPoint"
 ): Mesh {
-  const sphereMaterial = new CustomNodeMaterial({
-    color: color,
+  const sphereMaterial = new CustomPointMaterial({
+    color: myColor,
     roughness: 0.3
   });
   const position = sphereMaterial.userData.position;
   const radius = sphereMaterial.userData.radius;
+  const glowing = sphereMaterial.userData.glowing;
+  const upper = sphereMaterial.userData.upper;
   radius.value = radiusNumber;
 
-  sphereMaterial.positionNode = positionLocal
-    .mul(unitLength)
-    .mul(radius)
-    .add(position);
+  const positionFunction = Fn(() => {
+    let returnNode = positionLocal.mul(unitLength).mul(radius).add(position);
+    // Glowing points size pulses
+    If(glowing.greaterThan(0.5), () => {
+      const radiusPulse = oscSine(time.mul(3)).mul(0.5).add(1).mul(radius);
+      returnNode = positionLocal.mul(unitLength).mul(radiusPulse).add(position);
+    });
+    return returnNode;
+  });
+
+  sphereMaterial.positionNode = positionFunction();
+
+  const colorFunction = Fn(() => {
+    // Clip points to the visible part of the hyperboloid
+    const myUpper = upper.value > 0.5;
+    if (myUpper) {
+      positionLocal.z.greaterThan(myUpper ? zUpperClip : zLowerClip).discard();
+    } else {
+      positionLocal.z.lessThan(myUpper ? zUpperClip : zLowerClip).discard();
+    }
+    // Glowing points color pulses
+    let returnColor = color(sphereMaterial.color).mul(1.0);
+    If(glowing.greaterThan(0.5), () => {
+      returnColor = returnColor.mul(oscSine(time.mul(3)).mul(0.5).add(1));
+    });
+
+    return returnColor;
+  });
+  sphereMaterial.colorNode = colorFunction();
 
   const returnMesh = new Mesh(new SphereGeometry(), sphereMaterial);
 
@@ -156,7 +125,7 @@ export function createPointAtInfinityTube(
   myColor: string = "0xBEBFC5",
   name: string = "tempPointAtInfinityTube"
 ): Mesh {
-  const coneMaterial = new CustomNodeMaterial({
+  const coneMaterial = new CustomPointMaterial({
     color: myColor,
     opacity: 1.0,
     side: DoubleSide
@@ -217,7 +186,7 @@ export function createPointAtInfinityTube(
   const totalLengthOfGaps = lengthOfEachInterval.sub(lengthOfDash); //This lengths is split into before and after the dash, with offset being the length before the dash that is determined by a sawtooth function.
 
   const clippingLogic = Fn(() => {
-    const result = color(coneMaterial.color).mul(1.2);
+    const result = color(coneMaterial.color);
     If(
       absOfLocalPositionZ
         .greaterThan(lengthOfPad)
@@ -269,7 +238,7 @@ export function createPointAtInfinity(
   myColor: string = "0xBEBFC5",
   name: string = "tempPointAtInfinity"
 ): Mesh {
-  const coneMaterial = new CustomNodeMaterial({
+  const coneMaterial = new CustomPointMaterial({
     color: myColor,
     opacity: 1.0
   });
@@ -607,7 +576,7 @@ export function createPolarGridRadialLine({
 export function createBoundaryCone({ upper }: { upper: boolean }): THREE.Mesh {
   const coneMaterial = new THREE.MeshPhysicalNodeMaterial({
     side: DoubleSide,
-    color: 0x88ccff, // base color
+    color: 0x7bafd4, //0x88ccff, // base color
     roughness: 0.0, // very smooth surface
     //transmission: 0.5, // glasslike transparency
     //thickness: 0.05, // thin glass layer (in world units)
@@ -635,7 +604,7 @@ export function createBoundaryCone({ upper }: { upper: boolean }): THREE.Mesh {
       positionLocal.z.lessThan(zLowerPAIClipPlus).discard();
     }
 
-    return baseColor.mul(1.2);
+    return baseColor;
   });
 
   coneMaterial.colorNode = clippingLogic();
@@ -679,7 +648,7 @@ export function createHyperboloidSheet({
   upper: boolean;
 }): THREE.Mesh {
   const hyperboloidMaterial = new THREE.MeshPhysicalNodeMaterial({
-    color: 0x6082b6,
+    color: 0xc46210,
     side: DoubleSide,
     metalness: 0.1,
     roughness: 0.2,
@@ -700,7 +669,7 @@ export function createHyperboloidSheet({
       positionLocal.z.lessThan(upper ? zUpperClip : zLowerClip).discard();
     }
 
-    return baseColor.mul(1.2);
+    return baseColor;
   });
 
   hyperboloidMaterial.colorNode = clippingLogic();

@@ -7,17 +7,17 @@ import {
   createPoint,
   createPointAtInfinity,
   createPointAtInfinityTube,
-  CustomNodeMaterial
+  CustomPointMaterial
 } from "@/plottables-hyperbolic/MeshFactory";
 const Z_AXIS = new Vector3(0, 0, 1);
 
 export class PointHandler extends PoseTracker {
   protected tempPoint: Mesh;
-  protected tempPointMaterial: CustomNodeMaterial;
+  protected tempPointMaterial: CustomPointMaterial;
   protected tempPointAtInfinity: Mesh;
-  protected tempPointAtInfinityMaterial: CustomNodeMaterial;
+  protected tempPointAtInfinityMaterial: CustomPointMaterial;
   protected tempTube: Mesh;
-  protected tempTubeMaterial: CustomNodeMaterial;
+  protected tempTubeMaterial: CustomPointMaterial;
   protected tempUpperCone: Mesh;
   protected tempLowerCone: Mesh;
   private tempPointInScene = false;
@@ -27,12 +27,12 @@ export class PointHandler extends PoseTracker {
     super(scene);
     this.scene = scene;
     this.tempPoint = createPoint();
-    this.tempPointMaterial = this.tempPoint.material as CustomNodeMaterial;
+    this.tempPointMaterial = this.tempPoint.material as CustomPointMaterial;
     this.tempPointAtInfinity = createPointAtInfinity();
     this.tempPointAtInfinityMaterial = this.tempPointAtInfinity
-      .material as CustomNodeMaterial;
+      .material as CustomPointMaterial;
     this.tempTube = createPointAtInfinityTube();
-    this.tempTubeMaterial = this.tempTube.material as CustomNodeMaterial;
+    this.tempTubeMaterial = this.tempTube.material as CustomPointMaterial;
     this.tempLowerCone = createBoundaryCone({ upper: false });
     this.tempUpperCone = createBoundaryCone({ upper: true });
   }
