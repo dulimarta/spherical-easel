@@ -1,4 +1,3 @@
-import { CustomPointMaterial } from "@/plottables-hyperbolic/MeshFactory";
 import { HEStoreType } from "@/stores/hyperbolic";
 import { Group, Mesh, MeshBasicMaterial, Scene } from "three";
 import { uniform } from "three/tsl";
@@ -19,7 +18,7 @@ export abstract class HENodule {
 
   protected _showing = true;
 
-  /* If the object is selected, it is either being used by an event tool or is in the setSelectedSENodules in mutations. Its glow property is not turned off by the highlighter.ts routines*/
+  /* If the object is selected, it is either being used by an event tool or is in the setSelectedSENodules in mutations. Its glow property is not turned off by the PoseTracker.ts routines*/
   protected _selected = false;
 
   /* This boolean is set to indicate that the object is out of date and needs to be updated. */
@@ -29,14 +28,8 @@ export abstract class HENodule {
   public id: number;
   public name = "";
 
-  // every non-abstract  subclass of HENodule has a Mesh and an associated material. 
-  private _mesh: Mesh;
-  private _material: CustomPointMaterial;
-
-  constructor(mesh: Mesh) {
+  constructor() {
     this.id = NODE_COUNT++;
-    this._mesh = mesh;
-    this._material = this._mesh.material as CustomPointMaterial;
   }
 
   private addParent(n: HENodule) {

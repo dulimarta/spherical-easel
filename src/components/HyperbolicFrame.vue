@@ -177,7 +177,9 @@ const {
   surfaceIntersections,
   objectIntersections,
   closestIntersectionIsSurface,
-  cameraQuaternion
+  cameraQuaternion,
+  hyperboloidIsClosestIntersection,
+  pointAtInfinityStripIsClosestIntersection
 } = storeToRefs(hyperStore);
 const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
@@ -406,22 +408,22 @@ watch(
       case "line":
         if (lineTool === null) lineTool = new LineHandler(scene);
         // Extend the line to the end of the hyperboloid
-        lineTool.infiniteLineMode = true;
-        currentTools.push(lineTool);
+        //lineTool.infiniteLineMode = true;
+        //currentTools.push(lineTool);
         break;
       case "segment":
         if (lineTool === null) lineTool = new LineHandler(scene);
 
-        lineTool.infiniteLineMode = false;
-        currentTools.push(lineTool);
+        //lineTool.infiniteLineMode = false;
+        //currentTools.push(lineTool);
         break;
       case "text":
-        if (textTool === null) textTool = new TextHandler(scene);
-        currentTools.push(textTool);
+        //if (textTool === null) textTool = new TextHandler(scene);
+        //currentTools.push(textTool);
         break;
       case "circle":
-        if (circleTool === null) circleTool = new CircleHandler(scene);
-        currentTools.push(circleTool);
+        //if (circleTool === null) circleTool = new CircleHandler(scene);
+        //currentTools.push(circleTool);
         break;
       case "rotate":
         enableCameraControl.value = true;
@@ -875,7 +877,7 @@ function doMouseDown(ev: MouseEvent) {
 
   // if (intersectionList.value.length > 0) {
   currentTools.forEach(t => {
-    t.mousePressed(ev, mouseCoordNormalized.value, intersectionList.value);
+    t.mousePressed(ev);
   });
   // const { x, y, z } = labelLayerIntersections.value[0].point;
 
@@ -889,7 +891,7 @@ function doMouseDown(ev: MouseEvent) {
 
 function doMouseUp(ev: MouseEvent) {
   currentTools.forEach(t => {
-    t.mouseReleased(ev, mouseCoordNormalized.value, intersectionList.value);
+    t.mouseReleased(ev);
   });
 }
 
@@ -900,7 +902,8 @@ function doMouseLeave(ev: MouseEvent) {
   });
 }
 
-// Use the rayCaster to find the intersection point(s) of the mouse with the objects in the scene then
+// Use the rayCaster to find the intersection point(s) of the
+// mouse with the objects in the scene then
 // call the mouseMoved function of the current tool
 function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   mouseCoordNormalized.value.x =
@@ -920,10 +923,26 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
         return false; // the intersection is not with a named object, ignore it
       } else {
         // Here we have an intersection with an object
-        //  we must make sure it exists, is visible and is user created but since selection is done graphically, if is is not visible or doesn't exist or is not user created, it won't be intersected - unless we add some flexibility for selecting objects when you are near them
+        //  we must make sure it exists, is visible and is user created, but this is done by the handler that uses this intersection list
         return true; // intersection with other named objects are always returned
       }
     });
+
+  const regex = /(Sheet|Infinity)$/; // For filtering cursor intersection point(s)
+  [surfaceIntersections.value, objectIntersections.value] =
+    intersectionList.value.partition(x => {
+      return x.object.name.match(regex) !== null;
+    });
+
+  // Set the closest intersection flags
+  let closestIntersection: THREE.Intersection | null =
+    intersectionList.value[0];
+  if (closestIntersection) {
+    hyperboloidIsClosestIntersection.value =
+      closestIntersection.object.name.match(/(Sheet)$/) !== null;
+    pointAtInfinityStripIsClosestIntersection.value =
+      closestIntersection.object.name.match(/(Infinity)$/) !== null;
+  }
 
   if (intersectionList.value.length !== 0) {
     closestIntersectionIsSurface.value =
@@ -932,12 +951,7 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
     closestIntersectionIsSurface.value = false;
   }
 
-  const regex = /(Sheet|Infinity)$/; // For filtering cursor intersection point(s)
-  [surfaceIntersections.value, objectIntersections.value] =
-    intersectionList.value.partition(x => {
-      return x.object.name.match(regex) !== null;
-    });
-
+  // Compute the first intersection information for display
   let firstIntersection: THREE.Intersection | null = intersectionList.value[0];
   // If the mouse is over a surface, update the text displayed at the top of the screen
   if (firstIntersection) {
@@ -959,7 +973,7 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   }
 
   currentTools.forEach(t => {
-    t.mouseMoved(ev, mouseCoordNormalized.value, intersectionList.value);
+    t.mouseMoved(ev);
   });
 
   renderer.render(scene, camera);

@@ -4,7 +4,6 @@ import { uniform } from "three/tsl";
 
 interface CustomMaterialUserData {
   glowing: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; //wrapping a boolean in a uniform doesn't currently work, so use number 1 = true and 0 = false
-  heNodule: HENodule | null;
 }
 
 interface CustomPointMaterialUserData extends CustomMaterialUserData {
@@ -55,12 +54,6 @@ export class CustomMaterial extends THREE.MeshStandardNodeMaterial {
         configurable: true
       });
     }
-  }
-  get heNodule(): HENodule | null {
-    return this.userData.heNodule;
-  }
-  set heNodule(value: HENodule | null) {
-    this.userData.heNodule = value;
   }
 }
 

@@ -26,10 +26,12 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const objectIntersections: Ref<Intersection[]> = ref([]); // intersections with hyperbolic surfaces computed in hyperbolic frame
   const closestIntersectionIsSurface: Ref<boolean> = ref(false);
 
+  const hyperboloidIsClosestIntersection: Ref<boolean> = ref(false);
+  const pointAtInfinityStripIsClosestIntersection: Ref<boolean> = ref(false);
   const objectMap: Map<string, HENodule> = new Map();
   const pointsMap: Map<string, HEPoint> = new Map();
   const linesMap: Map<string, HELine> = new Map();
-  const labelsMap: Map<string, HELabel> = new Map();
+  //const labelsMap: Map<string, HELabel> = new Map();
   //const circlesMap: Map<string, HECircle> = new Map();
   //const segmentsMap: Map<string, HESegment> = new Map();
   //const conicsMap: Map<string, HEConic> = new Map();
@@ -41,7 +43,6 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const rayCastDirection = new Vector3();
   const cameraOrigin = new Vector3();
   const { font } = useThreeFont();
-  const unitLength = ref(uniform(1.0, "float")); // the initial unit
   const implementedHETools: Ref<Array<ActionMode>> = ref([
     "point",
     "line",
@@ -173,7 +174,8 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     cameraQuaternion,
     cameraInverseMatrix,
     implementedHETools,
-    // unitLength,
+    hyperboloidIsClosestIntersection,
+    pointAtInfinityStripIsClosestIntersection,
     addPoint,
     addLine,
     getObjectById,

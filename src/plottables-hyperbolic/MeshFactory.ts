@@ -79,12 +79,12 @@ export function createPoint(
     });
     return returnNode;
   });
-
+  const myUpper = upper.value > 0.5;
   sphereMaterial.positionNode = positionFunction();
 
   const colorFunction = Fn(() => {
     // Clip points to the visible part of the hyperboloid
-    const myUpper = upper.value > 0.5;
+
     if (myUpper) {
       positionLocal.z.greaterThan(myUpper ? zUpperClip : zLowerClip).discard();
     } else {
@@ -104,16 +104,23 @@ export function createPoint(
 
   returnMesh.name = name;
 
-  // returnMesh.raycast = function (raycaster, intersects) {
-  //   intersects.push({
-  //       distance: distance,
-  //       point: rayCasterIntersectionPoint.clone(),
-  //       normal: rayCasterIntersectionPoint
-  //         .clone()
-  //         .multiply(new Vector3(-1, -1, 1)) //inward pointing normal
-  //         .normalize(),
-  //       object: this
-  // }
+  returnMesh.raycast = function (raycaster, intersects) {
+    const tempIntersections = intersectWithHyperboloid(raycaster, myUpper);
+    tempIntersections.forEach(intersection => {
+      // If we are within the apparent radius of the point, it is hit by the raycaster
+      if (
+        position.value.distanceTo(intersection.point) <
+        radius.value * unitLength.value
+      ) {
+        intersects.push({
+          distance: intersection.distance,
+          point: intersection.point.clone(),
+          normal: intersection.normal,
+          object: this
+        });
+      }
+    });
+  };
 
   return returnMesh;
 }
@@ -227,6 +234,7 @@ export function createPointAtInfinityTube(
 
   const returnMesh = new Mesh(geometry, coneMaterial);
   returnMesh.name = name;
+  returnMesh.raycast = () => {}; // this object is never intersected
   return returnMesh;
 }
 
@@ -285,6 +293,26 @@ export function createPointAtInfinity(
 
   const returnMesh = new Mesh(new ConeGeometry(), coneMaterial);
   returnMesh.name = name;
+
+  returnMesh.raycast = function (raycaster, intersects) {
+    const tempIntersections = intersectWithPointAtInfinityStrip(
+      raycaster,
+      upper > 0.5
+    );
+    tempIntersections.forEach(intersection => {
+      const hitAngle = Math.atan2(intersection.point.y, intersection.point.x);
+      // If we are within the apparent radius of the base, it is hit by the raycaster
+      if (Math.abs(hitAngle - angle) < radiusUniform.value * unitLength.value) {
+        intersects.push({
+          distance: intersection.distance,
+          point: intersection.point.clone(),
+          normal: intersection.normal,
+          object: this
+        });
+      }
+    });
+  };
+
   return returnMesh;
 }
 
@@ -474,6 +502,7 @@ export function createPolarGridCircle({
   const mesh = new Line2(geometry, lineMaterial);
 
   mesh.name = `PolarGridCircle_r=${intrinsicRadius.toFixed(2)}`;
+  mesh.raycast = () => {}; // this object is never intersected
   return mesh;
 }
 
@@ -569,6 +598,7 @@ export function createPolarGridRadialLine({
   // @ts-expect-error: Line2 constructor type definition is outdated for WebGPU materials
   const lineMesh = new Line2(geometry, lineMaterial);
   // lineMesh.computeLineDistances();
+  lineMesh.raycast = () => {}; // this object is never intersected
 
   return lineMesh;
 }
@@ -638,7 +668,7 @@ export function createBoundaryCone({ upper }: { upper: boolean }): THREE.Mesh {
   );
 
   const coneMesh = new Mesh(coneGeometry, coneMaterial);
-
+  coneMesh.raycast = () => {}; // this object is never intersected
   return coneMesh;
 }
 
