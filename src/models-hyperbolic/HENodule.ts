@@ -1,3 +1,4 @@
+import { CustomMaterial } from "@/plottables-hyperbolic/MaterialFactory";
 import { HEStoreType } from "@/stores/hyperbolic";
 import { Group, Mesh, MeshBasicMaterial, Scene } from "three";
 import { uniform } from "three/tsl";
@@ -18,7 +19,7 @@ export abstract class HENodule {
 
   protected _showing = true;
 
-  /* If the object is selected, it is either being used by an event tool or is in the setSelectedSENodules in mutations. Its glow property is not turned off by the PoseTracker.ts routines*/
+  /* If the object is selected, it is being used by an event tool or in the style editor. Its glow property is not turned off by the PoseTracker.ts routines*/
   protected _selected = false;
 
   /* This boolean is set to indicate that the object is out of date and needs to be updated. */
@@ -27,7 +28,7 @@ export abstract class HENodule {
   protected _kids: HENodule[] = [];
   public id: number;
   public name = "";
-
+  public group = new Group();
   constructor() {
     this.id = NODE_COUNT++;
   }
@@ -78,16 +79,18 @@ export abstract class HENodule {
   }
 
   public addToScene(s: Scene): void {
+    // console.log("added", this.name, "to scene");
     s.add(this.group);
   }
   public removeFromScene(s: Scene) {
     this.group.children
       .map(c => c as Mesh)
       .forEach(c => {
-        (c.material as MeshBasicMaterial).dispose();
+        (c.material as CustomMaterial).dispose();
         c.geometry.dispose();
       });
     s.remove(this.group);
+    // console.log("removed", this.name, "from scene");
   }
 
   public isOutOfDate(): boolean {
@@ -119,8 +122,16 @@ export abstract class HENodule {
 
   public abstract update(): void;
   public abstract shallowUpdate(): void;
-  public abstract glowingDisplay(): void;
-  public abstract normalDisplay(): void;
+  // public abstract glowingDisplay(): void;
+  // public abstract normalDisplay(): void;
+  public glowingDisplay(): void {
+    console.log("HENodule set glowDisplay", this.name);
+    this.material.glowing = true;
+  }
+  public normalDisplay(): void {
+    console.log("HENodule set normalDisplay", this.name);
+    this.material.glowing = false;
+  }
 
   set exists(b: boolean) {
     this._exists = b;
@@ -139,14 +150,9 @@ export abstract class HENodule {
   }
 
   set showing(b: boolean) {
-    this._showing = b;
-    // Set the showing variable
-    // if (this.ref) {
-    //   // console.log("set showing in SENodule to ", b, " in ", this.name)
-    //   this.ref.showing = b; // internally this invokes setVisible()
-    //   // Set the display for the corresponding plottable object
-    //   // this.ref?.setVisible(b);
-    // }
+    console.log("set showing in HENodule", this.name);
+    this._showing = b; // set the variable
+    this.material.visible = b; // set the actual display
   }
 
   get showing(): boolean {
@@ -155,14 +161,14 @@ export abstract class HENodule {
 
   set glowing(b: boolean) {
     //glowing has no effect on hidden objects
-    //console.log("SENodule set glow of ", this.name, " to ", b);
+    // console.log("HENodule set glow of ", this.name, " to ", b);
     //console.log("SENodul::object:", this.name, " ref id ", this.ref?.id);
-    if (/*this._selected || */ !this.showing) return;
+    if (this._selected || !this.showing) return;
     if (b) {
       // Set the display for the corresponding plottable object
-      // this.ref?.glowingDisplay();
+      this.glowingDisplay();
     } else {
-      // this.ref?.normalDisplay();
+      this.normalDisplay();
     }
   }
 
@@ -182,8 +188,10 @@ export abstract class HENodule {
       // this.ref?.normalDisplay();
     }
   }
-
   get selected(): boolean {
     return this._selected;
   }
+  //Every HENodule object will have a mesh and a (custom) material
+  protected abstract get material(): CustomMaterial;
+  protected abstract get mesh(): Mesh;
 }

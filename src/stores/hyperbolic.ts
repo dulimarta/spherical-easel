@@ -73,7 +73,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     rayCaster = new Raycaster();
   }
   function getObjectById(id: string) {
-    // console.debug(`Searching for ${id} in`, objectMap);
+    // console.log(`Searching for ${id} in`, objectMap);
     return objectMap.get(id) ?? null;
   }
   function addPoint(point: HEPoint) {

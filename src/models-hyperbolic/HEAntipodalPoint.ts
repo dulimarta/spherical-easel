@@ -2,7 +2,7 @@ import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { HEPoint } from "./HEPoint";
 import { Mesh } from "three";
-import { CustomPointMaterial } from "@/plottables-hyperbolic/MeshFactory";
+import { CustomPointMaterial } from "@/plottables-hyperbolic/MaterialFactory";
 const { t } = i18n.global;
 export class HEAntipodalPoint extends HEPoint {
   /**
@@ -20,22 +20,32 @@ export class HEAntipodalPoint extends HEPoint {
    * @param point the TwoJS point associated with this intersection
    * @param antipodalPointParent The parent
    */
-  constructor(
-    antipodalPointParent: HEPoint,
-    isUserCreated: boolean,
-    mesh: Mesh
-  ) {
-    super(mesh); // Non free point and the plottable is created
+  constructor({
+    antipodalPointParent,
+    isUserCreated,
+    atInfinity,
+    upper // this is the upper/lower of the new point being created
+  }: {
+    antipodalPointParent: HEPoint;
+    isUserCreated: boolean;
+    atInfinity: boolean;
+    upper: boolean;
+  }) {
+    super({ atInfinity: atInfinity, createNonFreePoint: true, upper: upper });
     this._antipodalPointParent = antipodalPointParent;
-    if (isUserCreated) {
-      this._isUserCreated = true;
-      // Display userCreated antipodes
-      this.showing = true;
-    } else {
-      this._isUserCreated = false;
-      // Hide automatically created antipodes
-      this.showing = false;
-    }
+    this._isUserCreated = isUserCreated;
+    this.showing = isUserCreated; // Hide automatically created antipodes
+    this.shallowUpdate(); // set the location and the visibility
+    // console.log(
+    //   "parent",
+    //   this._antipodalPointParent.material.angle,
+    //   this._antipodalPointParent.material.position.toFixed(2)
+    // );
+    // console.log(
+    //   "antipode",
+    //   this._material.angle,
+    //   this._material.position.toFixed(2)
+    // );
   }
 
   // public get noduleDescription(): string {
@@ -73,10 +83,15 @@ export class HEAntipodalPoint extends HEPoint {
 
     if (this._exists) {
       // Update the current location with the opposite of the antipodal parent vector location
-      this.pointMaterial.position =
-        this._antipodalPointParent.pointMaterial.position
+      if (this.atInfinity) {
+        this._material.angle = (
+          this._antipodalPointParent.material.angle + Math.PI
+        ).modTwoPi();
+      } else {
+        this._material.position = this._antipodalPointParent.material.position
           .clone()
           .multiplyScalar(-1);
+      }
     }
 
     // console.debug(
@@ -84,9 +99,9 @@ export class HEAntipodalPoint extends HEPoint {
     // );
     // Update visibility
     if (this.showing && this._isUserCreated && this._exists) {
-      //  this.ref.setVisible(true);
+      this._material.visible = true;
     } else {
-      // this.ref.setVisible(false);
+      this._material.visible = false;
     }
   }
   public update(
@@ -115,8 +130,9 @@ export class HEAntipodalPoint extends HEPoint {
 
   // For !isUserCreated points glowing is the same as showing or not showing the point,
   set glowing(b: boolean) {
+    console.log("HENodule set glow of ", this.name, " to ", b);
     if (!this._isUserCreated) {
-      this.pointMesh.visible = b;
+      this.showing = b;
     } else {
       super.glowing = b;
     }

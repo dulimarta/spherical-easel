@@ -37,8 +37,10 @@ import {
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import { LineGeometry } from "three/examples/jsm/Addons.js";
 import { CustomPointMaterial } from "./MaterialFactory";
+import Color from "color";
 
 const rayCasterIntersectionPoint = new THREE.Vector3();
+const pulseRate = 0.3; // selected objects pulse and this set the rate oscSine(pulseRate*time)
 
 // The z coordinate of all points on the hyperboloid(s) are between zUpperClip and zLowerClip and their negations
 export const zUpperClip = uniform(1.0, "float");
@@ -55,11 +57,19 @@ export const zLowerPAIClipMinus = uniform(2.0, "float");
 export const unitLength: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>> =
   uniform(1.0, "float");
 
-export function createPoint(
-  radiusNumber: number = 0.1,
-  myColor: string = "white", //"0xBEBFC5",
-  name: string = "tempPoint"
-): Mesh {
+export function createPoint({
+  radiusNumber = 0.15,
+  myColor = 0xff8080, //ffb3b3, //ff8080, //"white", //"0xBEBFC5",
+  name,
+  upper,
+  temporary = false //used in handlers,flag so that temporary objects are never hit with ray casting
+}: {
+  radiusNumber?: number;
+  myColor?: number; //"0xBEBFC5",
+  name: string;
+  upper: boolean;
+  temporary?: boolean;
+}): Mesh {
   const sphereMaterial = new CustomPointMaterial({
     color: myColor,
     roughness: 0.3
@@ -67,34 +77,48 @@ export function createPoint(
   const position = sphereMaterial.userData.position;
   const radius = sphereMaterial.userData.radius;
   const glowing = sphereMaterial.userData.glowing;
-  const upper = sphereMaterial.userData.upper;
+  const upperUniform = sphereMaterial.userData.upper;
   radius.value = radiusNumber;
+  upperUniform.value = upper ? 1 : 0;
 
   const positionFunction = Fn(() => {
-    let returnNode = positionLocal.mul(unitLength).mul(radius).add(position);
     // Glowing points size pulses
-    If(glowing.greaterThan(0.5), () => {
-      const radiusPulse = oscSine(time.mul(3)).mul(0.5).add(1).mul(radius);
-      returnNode = positionLocal.mul(unitLength).mul(radiusPulse).add(position);
-    });
+    const returnNode = select(
+      glowing.greaterThan(0.5),
+      positionLocal
+        .mul(unitLength)
+        .mul(oscSine(time.mul(pulseRate)).mul(0.5).add(1))
+        .mul(radius)
+        .add(position),
+      positionLocal.mul(unitLength).mul(radius).add(position)
+    );
+
     return returnNode;
   });
-  const myUpper = upper.value > 0.5;
+
   sphereMaterial.positionNode = positionFunction();
 
   const colorFunction = Fn(() => {
     // Clip points to the visible part of the hyperboloid
-
-    if (myUpper) {
-      positionLocal.z.greaterThan(myUpper ? zUpperClip : zLowerClip).discard();
+    if (upperUniform.value > 0.5) {
+      positionLocal.z
+        .add(unitLength.mul(radius))
+        .greaterThan(zUpperClip)
+        .discard();
     } else {
-      positionLocal.z.lessThan(myUpper ? zUpperClip : zLowerClip).discard();
+      positionLocal.z
+        .sub(unitLength.mul(radius))
+        .lessThan(zLowerClip)
+        .discard();
     }
-    // Glowing points color pulses
-    let returnColor = color(sphereMaterial.color).mul(1.0);
-    If(glowing.greaterThan(0.5), () => {
-      returnColor = returnColor.mul(oscSine(time.mul(3)).mul(0.5).add(1));
-    });
+    // // Glowing points color pulses
+    const returnColor = select(
+      glowing.greaterThan(0.5),
+      color(sphereMaterial.color).mul(
+        oscSine(time.mul(pulseRate)).mul(0.5).add(1)
+      ),
+      color(sphereMaterial.color).mul(1.0)
+    );
 
     return returnColor;
   });
@@ -105,13 +129,134 @@ export function createPoint(
   returnMesh.name = name;
 
   returnMesh.raycast = function (raycaster, intersects) {
+    const myUpper = position.value.z > 0;
+    if (temporary) return; //temporary objects are never hit
     const tempIntersections = intersectWithHyperboloid(raycaster, myUpper);
     tempIntersections.forEach(intersection => {
-      // If we are within the apparent radius of the point, it is hit by the raycaster
+      // If we are within the apparent radius (plus 150%) of the point, it is hit by the raycaster
       if (
         position.value.distanceTo(intersection.point) <
-        radius.value * unitLength.value
+        radius.value * unitLength.value * 2.5
       ) {
+        intersects.push({
+          distance: intersection.distance,
+          point: intersection.point.clone(),
+          normal: intersection.normal,
+          object: this
+        });
+      }
+    });
+  };
+
+  return returnMesh;
+}
+
+export function createPointAtInfinity({
+  angle = 0,
+  radius = 0.18, // in multiples of the unit length
+  height = 0.33, //  in multiples of the unit length
+  myColor = 0xff8080, //"white", //"0xBEBFC5",
+  name,
+  upper,
+  temporary = false //used in handlers,flag so that temporary objects are never hit with ray casting
+}: {
+  angle?: number;
+  radius?: number;
+  height?: number;
+  myColor?: number;
+  name: string;
+  upper: boolean;
+  temporary?: boolean;
+}): Mesh {
+  const coneMaterial = new CustomPointMaterial({
+    color: myColor,
+    opacity: 1.0
+  });
+  const angleUniform = coneMaterial.userData.angle;
+  const radiusUniform = coneMaterial.userData.radius;
+  const heightUniform = coneMaterial.userData.height;
+  const upperUniform = coneMaterial.userData.upper;
+  const glowing = coneMaterial.userData.glowing;
+  angleUniform.value = angle;
+  radiusUniform.value = radius;
+  heightUniform.value = height;
+  upperUniform.value = upper ? 1 : 0; // we use 1/0 because uniform wrapping boolean doesn't work
+
+  coneMaterial.positionNode = Fn(() => {
+    const scaleAndTranslate = positionLocal
+      .add(vec3(0, 0.5, 0))
+      .mul(
+        vec3(
+          select(
+            glowing.greaterThan(0.5), // selected nodes pulse in size
+            radiusUniform
+              .mul(unitLength)
+              .mul(oscSine(time.mul(pulseRate)).mul(0.8).add(1)),
+            radiusUniform.mul(unitLength)
+          ),
+          heightUniform.mul(unitLength),
+          select(
+            glowing.greaterThan(0.5),
+            radiusUniform
+              .mul(unitLength)
+              .mul(oscSine(time.mul(pulseRate)).mul(0.8).add(1)),
+            radiusUniform.mul(unitLength)
+          )
+        )
+      )
+      .add(vec3(0, zUpperPAIClipMinus.mul(Math.SQRT2), 0));
+
+    const minusPlusOne = select(upperUniform.equal(1), float(-1.0), float(1.0));
+    // ca -sa 0        1   0     0
+    // sa  ca 0    *   0  c+/-45   -s+/-45
+    // 0   0  1        0  s+/-45    c+/-45
+
+    const rotationMatrixAboutZAxis = zAxisRotationMatrix([
+      float(Math.PI / 2).sub(angleUniform)
+    ]);
+
+    const rotationMatrixAboutXAxis = xAxisRotationMatrix([
+      float(Math.PI / 4).mul(minusPlusOne)
+    ]);
+
+    return rotationMatrixAboutZAxis
+      .mul(rotationMatrixAboutXAxis)
+      .mul(scaleAndTranslate);
+  })();
+
+  const colorFunction = Fn(() => {
+    // Glowing points color pulses
+    const returnColor = select(
+      glowing.greaterThan(0.5),
+      color(coneMaterial.color).mul(
+        oscSine(time.mul(pulseRate)).mul(0.5).add(1)
+      ),
+      color(coneMaterial.color).mul(1.0)
+    );
+
+    return returnColor;
+  });
+  coneMaterial.colorNode = colorFunction();
+
+  const returnMesh = new Mesh(new ConeGeometry(), coneMaterial);
+  returnMesh.name = name;
+
+  returnMesh.raycast = function (raycaster, intersects) {
+    if (temporary) return; // temporary objects are never hit
+    const myUpper = upperUniform.value > 0.5 ? true : false;
+    const tempIntersections = intersectWithPointAtInfinityStrip(
+      raycaster,
+      myUpper
+    );
+    tempIntersections.forEach(intersection => {
+      const hitAngle = Math.atan2(intersection.point.y, intersection.point.x);
+      // If the angle is within the apparent radius of the base (plus 10%), it is hit by the raycaster
+      console.log("PAI check", hitAngle - angleUniform.value);
+      if (
+        Math.abs(hitAngle - angleUniform.value) <
+        radiusUniform.value * unitLength.value * 1.1
+      ) {
+        console.log("here PAI");
         intersects.push({
           distance: intersection.distance,
           point: intersection.point.clone(),
@@ -129,7 +274,7 @@ export function createPointAtInfinityTube(
   upper: number = 1, // we must use 1/0 for true/false because TSL doesn't recognize boolean wrapped uniforms
   angle: number = 0,
   radius: number = 0.05, // in multiples of the unit length
-  myColor: string = "0xBEBFC5",
+  myColor: number = 0xffbbbb, // 0xffbbbb, // 0xff9999, //"white",
   name: string = "tempPointAtInfinityTube"
 ): Mesh {
   const coneMaterial = new CustomPointMaterial({
@@ -180,7 +325,7 @@ export function createPointAtInfinityTube(
   // const baseColor = color(coneMaterial.color);
   const percentPad = 0.1; // percent of the total length of the tube that is not dashed at the ends.
   const numberOfIntervals = 3; // same as the number of dashes traveling up the shank.
-  const rateOfOscillation = 1.5; // controls the speed of the dash movement along the shank.
+  const rateOfOscillation = 0.4; // controls the speed of the dash movement along the shank.
   const percentOfEachIntervalThatIsDash = 0.5;
   const totalLengthOfShank = zUpperPAIClipMinus;
   const lengthOfPad = totalLengthOfShank.mul(percentPad);
@@ -235,84 +380,6 @@ export function createPointAtInfinityTube(
   const returnMesh = new Mesh(geometry, coneMaterial);
   returnMesh.name = name;
   returnMesh.raycast = () => {}; // this object is never intersected
-  return returnMesh;
-}
-
-export function createPointAtInfinity(
-  upper: number = 1, // we must use 1/0 for true/false because TSL doesn't recognize boolean wrapped uniforms
-  angle: number = 0,
-  radius: number = 0.18, // in multiples of the unit length
-  height: number = 0.33, //  in multiples of the unit length
-  myColor: string = "0xBEBFC5",
-  name: string = "tempPointAtInfinity"
-): Mesh {
-  const coneMaterial = new CustomPointMaterial({
-    color: myColor,
-    opacity: 1.0
-  });
-  const angleUniform = coneMaterial.userData.angle;
-  const radiusUniform = coneMaterial.userData.radius;
-  const heightUniform = coneMaterial.userData.height;
-  const upperUniform = coneMaterial.userData.upper;
-  angleUniform.value = angle;
-  radiusUniform.value = radius;
-  heightUniform.value = height;
-  upperUniform.value = upper;
-
-  coneMaterial.positionNode = Fn(() => {
-    const scaleAndTranslate = positionLocal
-      .add(vec3(0, 0.5, 0))
-      .mul(
-        vec3(
-          radiusUniform.mul(unitLength),
-          heightUniform.mul(unitLength),
-          radiusUniform.mul(unitLength)
-        )
-      )
-      .add(vec3(0, zUpperPAIClipMinus.mul(Math.SQRT2), 0));
-
-    const minusPlusOne = select(upperUniform.equal(1), float(-1.0), float(1.0));
-    // ca -sa 0        1   0     0
-    // sa  ca 0    *   0  c+/-45   -s+/-45
-    // 0   0  1        0  s+/-45    c+/-45
-
-    const rotationMatrixAboutZAxis = zAxisRotationMatrix([
-      float(Math.PI / 2).sub(angleUniform)
-    ]);
-
-    const rotationMatrixAboutXAxis = xAxisRotationMatrix([
-      float(Math.PI / 4).mul(minusPlusOne)
-    ]);
-    // return scaleAndTranslate;
-    // return rotationMatrixAboutXAxis.mul(scaleAndTranslate);
-
-    return rotationMatrixAboutZAxis
-      .mul(rotationMatrixAboutXAxis)
-      .mul(scaleAndTranslate);
-  })();
-
-  const returnMesh = new Mesh(new ConeGeometry(), coneMaterial);
-  returnMesh.name = name;
-
-  returnMesh.raycast = function (raycaster, intersects) {
-    const tempIntersections = intersectWithPointAtInfinityStrip(
-      raycaster,
-      upper > 0.5
-    );
-    tempIntersections.forEach(intersection => {
-      const hitAngle = Math.atan2(intersection.point.y, intersection.point.x);
-      // If we are within the apparent radius of the base, it is hit by the raycaster
-      if (Math.abs(hitAngle - angle) < radiusUniform.value * unitLength.value) {
-        intersects.push({
-          distance: intersection.distance,
-          point: intersection.point.clone(),
-          normal: intersection.normal,
-          object: this
-        });
-      }
-    });
-  };
-
   return returnMesh;
 }
 
@@ -501,7 +568,8 @@ export function createPolarGridCircle({
   // @ts-expect-error: Line2 constructor type definition is outdated for WebGPU materials
   const mesh = new Line2(geometry, lineMaterial);
 
-  mesh.name = `PolarGridCircle_r=${intrinsicRadius.toFixed(2)}`;
+  // mesh.name =
+  //   (upper ? `U` : `L`) + `PolarGridCircle_r=${intrinsicRadius.toFixed(2)}`;
   mesh.raycast = () => {}; // this object is never intersected
   return mesh;
 }
@@ -678,7 +746,7 @@ export function createHyperboloidSheet({
   upper: boolean;
 }): THREE.Mesh {
   const hyperboloidMaterial = new THREE.MeshPhysicalNodeMaterial({
-    color: 0xc46210,
+    color: 0x004080, // 0x2d2d2d, //0xc46210,
     side: DoubleSide,
     metalness: 0.1,
     roughness: 0.2,
@@ -818,7 +886,7 @@ function intersectWithHyperboloid(
 
     // Calculate intersection point in world space
     rayCasterIntersectionPoint
-      .copy(raycaster.ray.direction)
+      .copy(raycaster.ray.direction) // unit vector so distance to intersection is t
       .multiplyScalar(t)
       .add(raycaster.ray.origin);
 
@@ -838,13 +906,8 @@ function intersectWithHyperboloid(
         return;
       }
     }
-
-    const distance = raycaster.ray.origin.distanceTo(
-      rayCasterIntersectionPoint
-    );
-
     intersects.push({
-      distance: distance,
+      distance: t,
       point: rayCasterIntersectionPoint.clone(),
       normal: rayCasterIntersectionPoint
         .clone()
@@ -895,16 +958,10 @@ function intersectWithPointAtInfinityStrip(
 
     // Calculate intersection point in world space
     rayCasterIntersectionPoint
-      .copy(raycaster.ray.direction)
+      .copy(raycaster.ray.direction) // unit vector so distance to intersection is t
       .multiplyScalar(t)
       .add(raycaster.ray.origin);
-    // console.log(
-    //   "POIraycast, disc>0",
-    //   t,
-    //   rayCasterIntersectionPoint.toFixed(2),
-    //   lowerZValue.value,
-    //   upperZValue.value
-    // );
+
     // Check that the ray intersects the cone in the correct strip
     const upperZValue = upper ? zUpperPAIClipPlus : zLowerPAIClipPlus;
     const lowerZValue = upper ? zUpperPAIClipMinus : zLowerPAIClipMinus;
@@ -915,12 +972,8 @@ function intersectWithPointAtInfinityStrip(
       return;
     }
 
-    const distance = raycaster.ray.origin.distanceTo(
-      rayCasterIntersectionPoint
-    );
-
     intersects.push({
-      distance: distance,
+      distance: t,
       point: rayCasterIntersectionPoint.clone(),
       normal: rayCasterIntersectionPoint
         .clone()

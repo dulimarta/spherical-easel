@@ -14,19 +14,27 @@ import { create2DLine, createPoint } from "@/plottables-hyperbolic/MeshFactory";
 import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import { HyperbolicToolStrategy } from "./ToolStrategy";
 import { HEPoint } from "@/models-hyperbolic/HEPoint";
+import { CommandGroup } from "@/commands-spherical/CommandGroup";
+import { HEAntipodalPoint } from "@/models-hyperbolic/HEAntipodalPoint";
+import { CustomPointMaterial } from "@/plottables-hyperbolic/MaterialFactory";
+import { AddAntipodalPointCommand } from "@/commands-hyperbolic/AddAntipodalPointCommand";
+import { parseJsonText } from "typescript";
+import { HEIntersectionPoint } from "@/models-hyperbolic/HEIntersectionPoint";
 
 // const ORIGIN = new Vector3(0, 0, 0);
 const Y_AXIS = new Vector3(0, 1, 0);
 const Z_MINUS1 = new Vector3(0, 0, -1);
 const TMP_MAT4 = new Matrix4();
+
 export class PoseTracker implements HyperbolicToolStrategy {
   static hyperStore: HEStoreType;
+  protected scene: Scene;
 
+  //flags
+  protected somethingIsHit = false;
   protected hyperboloidFirstHit = false;
   protected pointAtInfinityStripFirstHit = false;
 
-  protected scene: Scene;
-  //protected hitSurfaces: Mesh[] = []; // these are the actual mesh surfaces intersected by the mouse ray (sorted by distance from the camera, closest first)
   /**
    * Arrays of nodules near the mouse event location
    */
@@ -51,7 +59,6 @@ export class PoseTracker implements HyperbolicToolStrategy {
     this.normalArrow.setLength(1, 0.2, 0.2);
   }
 
-  // add normal arrow to scene if mouse over a location on the hyperboloid
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mouseMoved(event: MouseEvent): void {
     // Set the display to normal for all previously nearby non-selected objects
@@ -59,35 +66,24 @@ export class PoseTracker implements HyperbolicToolStrategy {
       if (!n.selected) n.glowing = false;
     });
 
-    // clear previous highlights and flags
+    // clear previous hit arrays
     this.clearAllHitArrays();
 
-    if (PoseTracker.hyperStore.objectIntersections.length === 0) {
-      return;
-    }
-    //
-    this.hitHENodules = PoseTracker.hyperStore.objectIntersections
-      .map(intersect => {
-        return PoseTracker.hyperStore.getObjectById(intersect.object.name); // returns null for surfaces
-      })
-      .filter((obj): obj is HENodule => obj !== null)
-      .filter((n: HENodule) => {
-        // if (n instanceof HEIntersectionPoint || n instanceof HEAntipodalPoint) {
-        //   if (!n.isUserCreated) {
-        //     return n.exists; //You always hit automatically created intersection points if it exists
-        //   } else {
-        //     return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
-        //   }
-        // } else {
-        return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
-        // }
-      });
+    // update the flags
+    this.somethingIsHit =
+      PoseTracker.hyperStore.objectIntersections.length > 0 ||
+      PoseTracker.hyperStore.surfaceIntersections.length > 0;
 
-    this.hitHEPoints = this.hitHENodules
-      .filter(obj => obj.name.startsWith("P"))
-      .map(obj => obj as HEPoint);
+    this.hyperboloidFirstHit =
+      PoseTracker.hyperStore.hyperboloidIsClosestIntersection;
+    this.pointAtInfinityStripFirstHit =
+      PoseTracker.hyperStore.pointAtInfinityStripIsClosestIntersection;
 
-    if (PoseTracker.hyperStore.closestIntersectionIsSurface) {
+    // control the normal arrow
+    if (
+      PoseTracker.hyperStore.closestIntersectionIsSurface &&
+      PoseTracker.hyperStore.surfaceIntersections.length > 0
+    ) {
       this.scene.add(this.normalArrow);
       // this.normalArrow.visible = true;
       this.normalArrow.position.copy(
@@ -100,6 +96,37 @@ export class PoseTracker implements HyperbolicToolStrategy {
       // this.normalArrow.visible = false;
       this.scene.remove(this.normalArrow);
     }
+
+    // update the hit arrays as necessary
+    if (PoseTracker.hyperStore.objectIntersections.length === 0) {
+      return;
+    }
+    console.log(
+      "# intersections",
+      PoseTracker.hyperStore.objectIntersections.length
+    );
+    this.hitHENodules = PoseTracker.hyperStore.objectIntersections
+      .map(intersect => {
+        return PoseTracker.hyperStore.getObjectById(intersect.object.name); // returns null for surfaces
+      })
+      .filter((obj): obj is HENodule => obj !== null)
+      .filter((n: HENodule) => {
+        if (n instanceof HEIntersectionPoint || n instanceof HEAntipodalPoint) {
+          if (!n.isUserCreated) {
+            return n.exists; //You always hit automatically created intersection points if it exists
+          } else {
+            return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+          }
+        } else {
+          return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+        }
+      });
+    console.log("# hit HENodules", this.hitHENodules.length);
+
+    this.hitHEPoints = this.hitHENodules
+      .filter(obj => obj.name.startsWith("P"))
+      .map(obj => obj as HEPoint);
+    console.log("# hit HEPoints", this.hitHENodules.length);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -115,7 +142,6 @@ export class PoseTracker implements HyperbolicToolStrategy {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mouseLeave(event: MouseEvent): void {
     this.clearAllHitArrays();
-    // this.normalArrow.visible = false;
     this.scene.remove(this.normalArrow);
   }
 
@@ -125,16 +151,47 @@ export class PoseTracker implements HyperbolicToolStrategy {
 
   deactivate(): void {
     this.clearAllHitArrays();
-    // this.normalArrow.visible = false;
     this.scene.remove(this.normalArrow);
   }
 
   clearAllHitArrays(): void {
-    // clear previous highlights and flags
     this.hitHENodules.splice(0);
-    // this.hitSurfaces.splice(0);
     this.hitHEPoints.splice(0);
-    // this.normalArrow.visible = false;
-    this.scene.remove(this.normalArrow);
+  }
+
+  static addCreateAntipodeCommand(
+    parentPoint: HEPoint,
+    commandGroup: CommandGroup
+  ): HEAntipodalPoint {
+    // Create the antipode of the new parent point
+    const antipodalVtx = new HEAntipodalPoint({
+      antipodalPointParent: parentPoint,
+      isUserCreated: false,
+      atInfinity: parentPoint.atInfinity,
+      upper: !parentPoint.upper // The upper/lower of the new point being created
+    });
+
+    // Create a plottable label
+    // Create an SELabel and link it to the plottable object
+
+    // antipodalVtx.locationVector = parentPoint.locationVector;
+    // antipodalVtx.locationVector.multiplyScalar(-1);
+    // // Set the initial label location
+    // const newSEAntipodalLabel = antipodalVtx.attachLabelWithOffset(
+    //   new Vector3(
+    //     2 * SETTINGS.point.initialLabelOffset,
+    //     SETTINGS.point.initialLabelOffset,
+    //     0
+    //   )
+    // );
+    commandGroup.addCommand(
+      new AddAntipodalPointCommand(
+        antipodalVtx,
+        parentPoint /*,
+        newSEAntipodalLabel*/
+      )
+    );
+
+    return antipodalVtx;
   }
 }

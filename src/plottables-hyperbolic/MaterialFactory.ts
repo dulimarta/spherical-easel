@@ -26,8 +26,7 @@ export class CustomMaterial extends THREE.MeshStandardNodeMaterial {
     };
 
     this.userData = {
-      ...baseUniforms,
-      heNodule: null
+      ...baseUniforms
     };
 
     this._bindUniforms(Object.keys(baseUniforms));
@@ -61,7 +60,7 @@ export class CustomPointMaterial extends CustomMaterial {
   declare angle: number;
   declare radius: number;
   declare height: number;
-  declare upper: boolean;
+  declare upper: number;
   declare position: THREE.Vector3;
 
   declare userData: CustomPointMaterialUserData;

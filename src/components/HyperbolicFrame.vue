@@ -915,13 +915,13 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   intersectionList.value = rayCaster
     .intersectObjects(scene.children, true)
     .filter((iSect, idx) => {
-      // console.log(
-      //   `Raycast intersect #${idx} ${iSect.object.name}`,
-      //   iSect.point.toFixed(2)
-      // );
       if (iSect.object.name.length === 0) {
         return false; // the intersection is not with a named object, ignore it
       } else {
+        // console.log(
+        //   `Raycast intersect #${idx} ${iSect.object.name}`,
+        //   iSect.point.toFixed(2)
+        // );
         // Here we have an intersection with an object
         //  we must make sure it exists, is visible and is user created, but this is done by the handler that uses this intersection list
         return true; // intersection with other named objects are always returned
@@ -942,13 +942,9 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
       closestIntersection.object.name.match(/(Sheet)$/) !== null;
     pointAtInfinityStripIsClosestIntersection.value =
       closestIntersection.object.name.match(/(Infinity)$/) !== null;
-  }
-
-  if (intersectionList.value.length !== 0) {
     closestIntersectionIsSurface.value =
-      intersectionList.value[0].object.name.match(/(Sheet|Infinity)$/) !== null;
-  } else {
-    closestIntersectionIsSurface.value = false;
+      hyperboloidIsClosestIntersection.value ||
+      pointAtInfinityStripIsClosestIntersection.value;
   }
 
   // Compute the first intersection information for display

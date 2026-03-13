@@ -565,12 +565,26 @@ export type SEOneOrTwoDimensional =
   | SEParametric
   | SEPolygon;
 
+export type HEOneOrTwoDimensional = null;
+// HELine;
+// | HESegment
+// | HECircle
+// | HEEllipse
+// | HEParametric
+// | HEPolygon;
+
 export type SEOneDimensional =
   | SELine
   | SESegment
   | SECircle
   | SEEllipse
   | SEParametric;
+export type HEOneDimensional = null;
+// | HELine
+// | HESegment
+// | HECircle
+// | HEEllipse
+// | HEParametric;
 
 export type SEMeasurable =
   | SESegment

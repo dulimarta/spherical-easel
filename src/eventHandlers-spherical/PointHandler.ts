@@ -57,7 +57,9 @@ export default class PointHandler extends Highlighter {
         // set the display to visible order
 
         new SetPointUserCreatedValueCommand(
-          this.filteredIntersectionPointsList[0] as SEIntersectionPoint,
+          this.filteredIntersectionPointsList[0] as
+            | SEIntersectionPoint
+            | SEAntipodalPoint,
           true
         ).execute();
         return;
@@ -290,7 +292,7 @@ export default class PointHandler extends Highlighter {
     this.filteredIntersectionPointsList = this.hitSEPoints.filter(pt => {
       if (pt instanceof SEIntersectionPoint) {
         if (pt.isUserCreated) {
-          return false;
+          return pt.showing;
         } else {
           if (pt.principleParent1.showing && pt.principleParent2.showing) {
             return true;
@@ -305,7 +307,7 @@ export default class PointHandler extends Highlighter {
           return true;
         }
       }
-      return false; // do not suggest to the user they can create another point at an existing point
+      return true; // do not suggest to the user they can create another point at an existing point
     });
   }
   activate(): void {
