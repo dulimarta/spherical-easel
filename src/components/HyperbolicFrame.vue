@@ -357,6 +357,8 @@ function updateVisibleLayers(): void {
     camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetPoints);
     camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetLines);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetPoints);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetLines);
     if (lowerHyperboloidSheet) {
       scene.add(lowerHyperboloidSheet);
     }
@@ -365,6 +367,8 @@ function updateVisibleLayers(): void {
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetPoints);
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetLines);
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheet);
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetPoints);
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetLines);
     if (lowerHyperboloidSheet) {
       scene.remove(lowerHyperboloidSheet);
     }
@@ -608,34 +612,18 @@ function initialize() {
   lowerHyperboloidSheet.layers.set(HYPERBOLIC_LAYER.lowerSheet);
   upperHyperboloidSheet.layers.set(HYPERBOLIC_LAYER.upperSheet);
 
-  // The upper sheet is NEVER removed from the scene or the raycaster, so add them here
+  // The upper sheet/upper sheet points are NEVER removed from the scene or the raycaster, so add them here
   scene.add(upperHyperboloidSheet);
   rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheet);
-
-  // create the boundary cone
-  // const upperCone = createBoundaryCone({
-  //   upper: true,
-  //   clippingPlane: zUpperClip,
-  //   maxZClippingHeight: maxZClippingHeight
-  // });
-  // const lowerCone = createBoundaryCone({
-  //   upper: false,
-  //   clippingPlane: zLowerClip = 1.0t
-  // });
-
-  // scene.add(upperCone);
-  // scene.add(lowerCone);
-  // upperCone.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
-  // lowerCone.layers.set(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-  // upperCone.name = "Upper Cone";
-  // lowerCone.name = "Lower Cone";
+  rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetPoints);
+  camera.layers.enable(HYPERBOLIC_LAYER.upperSheet);
+  camera.layers.enable(HYPERBOLIC_LAYER.upperSheetPoints);
 
   // Create the cones from which the points at infinity
   // will be displayed by clipping between two planes
   upperPointsAtInfinity = createPointsAtInfinityStrip({
     upper: true
   });
-
   upperPointsAtInfinity.name = `Upper Points At Infinity`;
   upperPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
 
