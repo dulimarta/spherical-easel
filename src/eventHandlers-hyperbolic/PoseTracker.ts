@@ -101,10 +101,10 @@ export class PoseTracker implements HyperbolicToolStrategy {
     if (PoseTracker.hyperStore.objectIntersections.length === 0) {
       return;
     }
-    console.log(
-      "# intersections",
-      PoseTracker.hyperStore.objectIntersections.length
-    );
+    // console.log(
+    //   "# intersections",
+    //   PoseTracker.hyperStore.objectIntersections.length
+    // );
     this.hitHENodules = PoseTracker.hyperStore.objectIntersections
       .map(intersect => {
         return PoseTracker.hyperStore.getObjectById(intersect.object.name); // returns null for surfaces
@@ -121,12 +121,12 @@ export class PoseTracker implements HyperbolicToolStrategy {
           return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
         }
       });
-    console.log("# hit HENodules", this.hitHENodules.length);
+    // console.log("# hit HENodules", this.hitHENodules.length);
 
     this.hitHEPoints = this.hitHENodules
       .filter(obj => obj.name.startsWith("P"))
       .map(obj => obj as HEPoint);
-    console.log("# hit HEPoints", this.hitHENodules.length);
+    // console.log("# hit HEPoints", this.hitHENodules.length);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

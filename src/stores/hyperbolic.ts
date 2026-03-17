@@ -31,7 +31,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const objectMap: Map<string, HENodule> = new Map();
   const pointsMap: Map<string, HEPoint> = new Map();
   const linesMap: Map<string, HELine> = new Map();
-  //const labelsMap: Map<string, HELabel> = new Map();
+  const labelsMap: Map<string, HELabel> = new Map();
   //const circlesMap: Map<string, HECircle> = new Map();
   //const segmentsMap: Map<string, HESegment> = new Map();
   //const conicsMap: Map<string, HEConic> = new Map();
@@ -86,6 +86,16 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     objectMap.delete(point.name);
     pointsMap.delete(point.name);
   }
+  function addLabel(label: HELabel) {
+    label.addToScene(threeJSScene);
+    objectMap.set(label.name, markRaw(label));
+    labelsMap.set(label.name, markRaw(label));
+  }
+  function removeLabel(label: HELabel) {
+    label.removeFromScene(threeJSScene);
+    objectMap.delete(label.name);
+    labelsMap.delete(label.name);
+  }
   function addLine(line: HELine) {
     line.addToScene(threeJSScene);
     objectMap.set(line.name, markRaw(line));
@@ -108,29 +118,46 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
 
     // Look for non-occluded objects
-    const [visibleObjects, occludedobjects] = objectMap
+    const [visibleObjects, occludedObjects] = objectMap
       .values()
+      .filter(obj => obj.showing) // if the object is not showing it excluded
       .flatMap(obj => obj.group.children)
       .toArray()
       .partition(obj => {
+        console.log("raycast from", obj.name);
         rayCastDirection.subVectors(cameraOrigin, obj.position);
         rayCaster.set(obj.position, rayCastDirection);
         const occlusions = rayCaster
           .intersectObjects(threeJSScene.children, true)
           .filter(occ => occ.distance > 1e-5);
-        // if (occlusions.length > 0) {
-        //   const msg = occlusions
-        //     // .filter(occ => occ.distance >= 1e-6)
-        //     .map(occ => occ.object.name + " @" + occ.distance.toFixed(2))
-        //     .join();
+        if (occlusions.length > 0) {
+          const msg = occlusions
+            // .filter(occ => occ.distance >= 1e-6)
+            .map(occ => occ.object.name + " @" + occ.distance.toFixed(2))
+            .join();
 
-        //   // console.debug(`${obj.name} is occluded by ${msg}`);
-        // }
+          console.log(`${obj.name} is occluded by ${msg}`);
+        }
+        const notOcclusions = rayCaster
+          .intersectObjects(threeJSScene.children, true)
+          .filter(occ => occ.distance <= 1e-5);
+        if (notOcclusions.length > 0) {
+          const msg = notOcclusions
+            // .filter(occ => occ.distance >= 1e-6)
+            .map(occ => occ.object.name + " @" + occ.distance.toFixed(2))
+            .join();
+
+          console.log(`${obj.name} is NOT occluded by ${msg}`);
+        }
         return occlusions.length === 0;
       });
     console.log(
       "Visible objects",
       visibleObjects.map(obj => obj.name).join(", ")
+    );
+    console.log(
+      "NOT Visible objects",
+      occludedObjects.map(obj => obj.name).join(", ")
     );
 
     const allLabels = objectMap
@@ -178,8 +205,10 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     pointAtInfinityStripIsClosestIntersection,
     addPoint,
     addLine,
+    addLabel,
     getObjectById,
     removePoint,
+    removeLabel,
     removeLine,
     setScene,
     adjustTextPose

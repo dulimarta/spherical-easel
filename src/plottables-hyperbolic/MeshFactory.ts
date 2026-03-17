@@ -36,8 +36,8 @@ import {
 } from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import { LineGeometry } from "three/examples/jsm/Addons.js";
-import { CustomPointMaterial } from "./MaterialFactory";
-import Color from "color";
+import { CustomPointMaterial, CustomTextMaterial } from "./MaterialFactory";
+import { Text } from "three-text/three";
 
 const rayCasterIntersectionPoint = new THREE.Vector3();
 const pulseRate = 0.3; // selected objects pulse and this set the rate oscSine(pulseRate*time)
@@ -56,6 +56,25 @@ export const zLowerPAIClipMinus = uniform(2.0, "float");
 
 export const unitLength: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>> =
   uniform(1.0, "float");
+
+// export async function createLabel(
+//   posOrAngle: THREE.Vector3 | number,
+//   text: string,
+//   fontPath: string,
+//   atInfinity: boolean,
+//   upper: boolean
+// ) {
+//   const result = await Text.create({
+//     text,
+//     font: fontPath,
+//     size: 0.03,
+//     depth: 0 // flat text — uses DoubleSide material, saves ~50% triangles
+//   });
+//   const textMaterial = new CustomTextMaterial();
+//   const returnMesh = new Mesh(result.geometry, textMaterial);
+
+//   return returnMesh;
+// }
 
 export function createPoint({
   radiusNumber = 0.15,

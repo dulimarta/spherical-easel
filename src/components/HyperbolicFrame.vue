@@ -306,18 +306,24 @@ function updateVisibleLayers(): void {
   if (showPointsAtInfinity.value) {
     camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+    camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfLabels);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfLabels);
     if (upperPointsAtInfinity) {
       scene.add(upperPointsAtInfinity);
     }
     if (showLowerSheet.value) {
       camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
       rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+      camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
+      rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
       if (lowerPointsAtInfinity) {
         scene.add(lowerPointsAtInfinity);
       }
     } else {
       camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
       rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+      camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
+      rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
       if (lowerPointsAtInfinity) {
         scene.remove(lowerPointsAtInfinity);
       }
@@ -355,9 +361,11 @@ function updateVisibleLayers(): void {
   if (showLowerSheet.value) {
     camera.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
     camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetPoints);
+    camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetLabels);
     camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetLines);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetPoints);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetLabels);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetLines);
     if (lowerHyperboloidSheet) {
       scene.add(lowerHyperboloidSheet);
@@ -365,9 +373,11 @@ function updateVisibleLayers(): void {
   } else {
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheet);
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetPoints);
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetLabels);
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetLines);
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheet);
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetPoints);
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetLabels);
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetLines);
     if (lowerHyperboloidSheet) {
       scene.remove(lowerHyperboloidSheet);
@@ -531,10 +541,6 @@ onMounted(async () => {
       } else {
         cameraController.dolly(event.deltaY, true);
         cameraDistance.value = cameraController.distance;
-        console.log(
-          "Camera distance after wheel event",
-          cameraController.distance
-        );
         // if (
         //   Math.abs(oldCameraDistance - cameraController.distance) >
         //   SETTINGS.minDollyDistanceChangeForViewUpdate
@@ -616,8 +622,12 @@ function initialize() {
   scene.add(upperHyperboloidSheet);
   rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheet);
   rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetPoints);
+  rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetLabels);
+  rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetLines);
   camera.layers.enable(HYPERBOLIC_LAYER.upperSheet);
   camera.layers.enable(HYPERBOLIC_LAYER.upperSheetPoints);
+  camera.layers.enable(HYPERBOLIC_LAYER.upperSheetLabels);
+  camera.layers.enable(HYPERBOLIC_LAYER.upperSheetLines);
 
   // Create the cones from which the points at infinity
   // will be displayed by clipping between two planes

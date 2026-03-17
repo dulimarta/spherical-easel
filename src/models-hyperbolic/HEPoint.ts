@@ -73,6 +73,7 @@ export class HEPoint extends HENodule {
     this._mesh.visible = this.showing;
   }
 
+  // location is used to position points NOT at infinity
   get location(): Vector3 {
     return this._material.position;
   }
@@ -80,7 +81,7 @@ export class HEPoint extends HENodule {
     this._material.position = pos;
   }
   get upper(): boolean {
-    return this._material.upper;
+    return this._material.upper > 0.5;
   }
   get atInfinity(): boolean {
     return this._atInfinity;
@@ -91,6 +92,7 @@ export class HEPoint extends HENodule {
   set radius(num: number) {
     this._material.radius = num;
   }
+  // angle is used to position points at infinity
   get angle(): number {
     return this._material.angle;
   }

@@ -25,11 +25,15 @@ export enum HYPERBOLIC_LAYER {
   upperSheetGrid,
   upperSheetPoints,
   upperSheetInfPoints,
+  upperSheetLabels,
+  upperSheetInfLabels,
   upperSheetLines,
   lowerSheet,
   lowerSheetGrid,
   lowerSheetPoints,
   lowerSheetInfPoints,
+  lowerSheetLabels,
+  lowerSheetInfLabels,
   lowerSheetLines,
   labels
 }

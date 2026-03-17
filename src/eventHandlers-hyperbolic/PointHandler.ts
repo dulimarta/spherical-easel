@@ -16,6 +16,7 @@ import { HEOneOrTwoDimensional } from "@/types";
 import { HEAntipodalPoint } from "@/models-hyperbolic/HEAntipodalPoint";
 import { HEIntersectionPoint } from "@/models-hyperbolic/HEIntersectionPoint";
 import { AddPointCommand } from "@/commands-hyperbolic/AddPointCommand";
+import { HELabel } from "@/models-hyperbolic/HELabel";
 const Z_AXIS = new Vector3(0, 0, 1);
 
 export class PointHandler extends PoseTracker {
@@ -95,7 +96,7 @@ export class PointHandler extends PoseTracker {
         const pointCommandGroup = new CommandGroup();
         // create a new Point
         let vtx: /*HEPointOnOneOrTwoDimensional |*/ HEPoint | null = null;
-        // let newSELabel: SELabel | null = null;
+        let newHELabel: HELabel | null = null;
 
         // if (this.hitSESegments.length > 0) {
         //   // The new point will be a point on a segment
@@ -198,20 +199,33 @@ export class PointHandler extends PoseTracker {
         if (this.hyperboloidFirstHit) {
           vtx = new HEPoint({ atInfinity: false, upper: hitLocation.z > 0 });
           vtx.location = hitLocation;
-          // newSELabel = new SELabel("point", vtx);
+          newHELabel = new HELabel(
+            "point",
+            vtx,
+            hitLocation,
+            "TEST",
+            false,
+            hitLocation.z > 0
+          );
         } else if (this.pointAtInfinityStripFirstHit) {
           vtx = new HEPoint({ atInfinity: true, upper: hitLocation.z > 0 });
           vtx.angle = (
             this.tempPointAtInfinityMesh.material as CustomPointMaterial
           ).angle;
-          // vtx.locationVector = this.currentSphereVector;
-          // newSELabel = new SELabel("point", vtx);
+          newHELabel = new HELabel(
+            "point",
+            vtx,
+            (
+              this.tempPointAtInfinityMesh.material as CustomPointMaterial
+            ).angle,
+            "TEST",
+            false,
+            hitLocation.z > 0
+          );
         }
 
-        if (vtx) {
-          pointCommandGroup.addCommand(
-            new AddPointCommand(vtx /*, newSELabel*/)
-          );
+        if (vtx && newHELabel) {
+          pointCommandGroup.addCommand(new AddPointCommand(vtx, newHELabel));
           /////////////
           // Create the antipode of the new point, vtx
           PointHandler.addCreateAntipodeCommand(
@@ -246,18 +260,14 @@ export class PointHandler extends PoseTracker {
     super.mouseMoved(event);
 
     this.updateFilteredPointsList();
-    console.log(
-      "filter point list",
-      this.filteredIntersectionPointsList.length
-    );
 
     if (this.filteredIntersectionPointsList.length > 0) {
-      console.log(
-        "point handler filter",
-        this.filteredIntersectionPointsList[0].name,
-        this.filteredIntersectionPointsList[0].material.angle,
-        this.filteredIntersectionPointsList[0].material.position.toFixed(2)
-      );
+      // console.log(
+      //   "point handler filter",
+      //   this.filteredIntersectionPointsList[0].name,
+      //   this.filteredIntersectionPointsList[0].material.angle,
+      //   this.filteredIntersectionPointsList[0].material.position.toFixed(2)
+      // );
       this.filteredIntersectionPointsList[0].glowing = true;
       this.snapToObject = null;
     }

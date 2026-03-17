@@ -8,6 +8,7 @@ let NODE_COUNT = 0;
 export abstract class HENodule {
   static POINT_COUNT = 0;
   static LINE_COUNT = 0;
+  static LABEL_COUNT = 0;
   static SEGMENT_COUNT = 0;
   static hyperStore: HEStoreType;
   /* If the object doesn't exist then exists= false (For example the intersection of two circles
@@ -125,12 +126,12 @@ export abstract class HENodule {
   // public abstract glowingDisplay(): void;
   // public abstract normalDisplay(): void;
   public glowingDisplay(): void {
-    console.log("HENodule set glowDisplay", this.name);
-    this.material.glowing = true;
+    // console.log("HENodule set glowDisplay", this.name);
+    (this.material as CustomMaterial).glowing = true;
   }
   public normalDisplay(): void {
-    console.log("HENodule set normalDisplay", this.name);
-    this.material.glowing = false;
+    // console.log("HENodule set normalDisplay", this.name);
+    (this.material as CustomMaterial).glowing = false;
   }
 
   set exists(b: boolean) {
@@ -150,7 +151,7 @@ export abstract class HENodule {
   }
 
   set showing(b: boolean) {
-    console.log("set showing in HENodule", this.name);
+    // console.log("set showing in HENodule", this.name);
     this._showing = b; // set the variable
     this.material.visible = b; // set the actual display
   }
@@ -181,17 +182,15 @@ export abstract class HENodule {
     this._selected = b;
     if (b) {
       // Set the display for the corresponding plottable object
-      // this.ref?.glowingDisplay();
-      // TODO: do we need to set glowing?
-      // this.glowing = true;
+      this.glowingDisplay();
     } else {
-      // this.ref?.normalDisplay();
+      this.normalDisplay();
     }
   }
   get selected(): boolean {
     return this._selected;
   }
   //Every HENodule object will have a mesh and a (custom) material
-  protected abstract get material(): CustomMaterial;
+  protected abstract get material(): THREE.MeshStandardNodeMaterial;
   protected abstract get mesh(): Mesh;
 }

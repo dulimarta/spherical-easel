@@ -1,4 +1,5 @@
 import { Command } from "@/commands-spherical/Command";
+import { HELabel } from "@/models-hyperbolic/HELabel";
 // import { Vector3 } from "three";
 // import { SavedNames, toSVGType } from "@/types";
 // import { HENodule } from "@/models-spherical/HENodule";
@@ -7,16 +8,16 @@ import { HEPoint } from "@/models-hyperbolic/HEPoint";
 
 export class AddPointCommand extends Command {
   private hePoint: HEPoint;
-  // private seLabel: SELabel;
+  private heLabel: HELabel;
   // private useVisiblePointCountToRename: boolean;
   constructor(
-    sePoint: HEPoint
-    // seLabel: SELabel,
+    hePoint: HEPoint,
+    heLabel: HELabel
     // useVisiblePointCountToRename?: boolean
   ) {
     super();
-    this.hePoint = sePoint;
-    // this.seLabel = seLabel;
+    this.hePoint = hePoint;
+    this.heLabel = heLabel;
     // if (useVisiblePointCountToRename !== undefined) {
     //   this.useVisiblePointCountToRename = useVisiblePointCountToRename;
     // } else {
@@ -25,8 +26,8 @@ export class AddPointCommand extends Command {
   }
 
   do(): void {
-    // Command.store.addLabel(this.seLabel);
-    // this.hePoint.registerChild(this.seLabel);
+    Command.hstore.addLabel(this.heLabel);
+    this.hePoint.registerChild(this.heLabel);
     Command.hstore.addPoint(this.hePoint);
     // Set the label to display the name of the point in visible count order
     // this.hePoint.pointVisibleBefore = true;
@@ -48,8 +49,8 @@ export class AddPointCommand extends Command {
     //   this.hePoint.label.ref.shortUserName = `P${this.hePoint.visiblePointCount}`;
     // }
     // this.hePoint.pointVisibleBefore = false;
-    // Command.store.removeLabel(this.seLabel.id);
-    // this.hePoint.unregisterChild(this.seLabel);
+    Command.hstore.removeLabel(this.heLabel);
+    this.hePoint.unregisterChild(this.heLabel);
     Command.store.removePoint(this.lastState);
   }
 

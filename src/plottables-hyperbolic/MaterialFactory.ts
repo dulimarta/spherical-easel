@@ -14,6 +14,12 @@ interface CustomPointMaterialUserData extends CustomMaterialUserData {
   position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>;
 }
 
+interface CustomTextMaterialUserData extends CustomMaterialUserData {
+  angle: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // used if the point is at infinity
+  upper: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; //wrapping a boolean in a uniform doesn't currently work, so use number 1 = true and 0 = false
+  position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>; // used if the point is not at infinity
+}
+
 export class CustomMaterial extends THREE.MeshStandardNodeMaterial {
   declare glowing: boolean;
   declare userData: CustomMaterialUserData;
@@ -73,6 +79,29 @@ export class CustomPointMaterial extends CustomMaterial {
       angle: uniform(0.0, "float"),
       radius: uniform(1.0, "float"),
       height: uniform(1.0, "float"),
+      upper: uniform(1, "uint"),
+      position: uniform(new THREE.Vector3(0, 0, 0), "vec3")
+    };
+
+    Object.assign(this.userData, pointUniforms);
+
+    this._bindUniforms(Object.keys(pointUniforms));
+  }
+}
+
+export class CustomTextMaterial extends CustomMaterial {
+  declare angle: number;
+  declare upper: number;
+  declare position: THREE.Vector3;
+
+  declare userData: CustomPointMaterialUserData;
+
+  constructor(parameters?: THREE.MeshStandardNodeMaterialParameters) {
+    super(parameters);
+
+    // Define the new uniforms unique to this child class
+    const pointUniforms = {
+      angle: uniform(0.0, "float"),
       upper: uniform(1, "uint"),
       position: uniform(new THREE.Vector3(0, 0, 0), "vec3")
     };

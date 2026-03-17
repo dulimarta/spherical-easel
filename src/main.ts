@@ -18,6 +18,12 @@ import { createGtag } from "vue-gtag";
 import { SENodule } from "@/models-spherical/SENodule";
 import { PoseTracker } from "./eventHandlers-hyperbolic/PoseTracker";
 import { HENodule } from "./models-hyperbolic/HENodule";
+import { Text } from "three-text/three";
+import { woff2Decode } from "woff-lib/woff2/decode";
+
+Text.setHarfBuzzPath("/hb/hb.wasm");
+Text.enableWoff2(woff2Decode);
+
 const firebaseApp = initializeApp(firebaseConfig);
 const pinia = createPinia();
 
