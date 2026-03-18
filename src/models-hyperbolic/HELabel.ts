@@ -133,18 +133,18 @@ export class HELabel extends HENodule {
   }
 
   public update(): void {
-    throw new Error("Method not implemented.");
+    //throw new Error("Method not implemented.");
   }
   public shallowUpdate(): void {
-    throw new Error("Method not implemented.");
+    //throw new Error("Method not implemented.");
   }
   //over ride the HENodule glowing display because text is not a CustomMaterial
   public glowingDisplay(): void {
-    throw new Error("Method not implemented.");
+    //throw new Error("Method not implemented.");
   }
   //over ride the HENodule glowing display because text is not a CustomMaterial
   public normalDisplay(): void {
-    throw new Error("Method not implemented.");
+    //throw new Error("Method not implemented.");
   }
 
   /**

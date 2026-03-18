@@ -38,6 +38,8 @@ import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeom
 import { LineGeometry } from "three/examples/jsm/Addons.js";
 import { CustomPointMaterial, CustomTextMaterial } from "./MaterialFactory";
 import { Text } from "three-text/three";
+import CameraControls from "camera-controls";
+import { HENodule } from "@/models-hyperbolic/HENodule";
 
 const rayCasterIntersectionPoint = new THREE.Vector3();
 const pulseRate = 0.3; // selected objects pulse and this set the rate oscSine(pulseRate*time)
@@ -152,7 +154,7 @@ export function createPoint({
     if (temporary) return; //temporary objects are never hit
     const tempIntersections = intersectWithHyperboloid(raycaster, myUpper);
     tempIntersections.forEach(intersection => {
-      // If we are within the apparent radius (plus 150%) of the point, it is hit by the raycaster
+      // If the raycaster origin is the camera position, then if we are within the apparent radius (plus 150%) of the point, it is hit by the raycaster
       if (
         position.value.distanceTo(intersection.point) <
         radius.value * unitLength.value * 2.5

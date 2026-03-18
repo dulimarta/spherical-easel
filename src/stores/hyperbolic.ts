@@ -117,70 +117,70 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheet);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
 
-    // Look for non-occluded objects
-    const [visibleObjects, occludedObjects] = objectMap
+    // Look for occluded labels
+    const [visibleObjects, occludedLabels] = labelsMap
       .values()
       .filter(obj => obj.showing) // if the object is not showing it excluded
       .flatMap(obj => obj.group.children)
       .toArray()
       .partition(obj => {
-        console.log("raycast from", obj.name);
+        // console.log("raycast from", obj.name);
         rayCastDirection.subVectors(cameraOrigin, obj.position);
         rayCaster.set(obj.position, rayCastDirection);
         const occlusions = rayCaster
           .intersectObjects(threeJSScene.children, true)
           .filter(occ => occ.distance > 1e-5);
-        if (occlusions.length > 0) {
-          const msg = occlusions
-            // .filter(occ => occ.distance >= 1e-6)
-            .map(occ => occ.object.name + " @" + occ.distance.toFixed(2))
-            .join();
+        // if (occlusions.length > 0) {
+        //   const msg = occlusions
+        //     // .filter(occ => occ.distance >= 1e-6)
+        //     .map(occ => occ.object.name + " @" + occ.distance.toFixed(2))
+        //     .join();
 
-          console.log(`${obj.name} is occluded by ${msg}`);
-        }
-        const notOcclusions = rayCaster
-          .intersectObjects(threeJSScene.children, true)
-          .filter(occ => occ.distance <= 1e-5);
-        if (notOcclusions.length > 0) {
-          const msg = notOcclusions
-            // .filter(occ => occ.distance >= 1e-6)
-            .map(occ => occ.object.name + " @" + occ.distance.toFixed(2))
-            .join();
+        //   console.log(`${obj.name} is occluded by ${msg}`);
+        // }
+        // const notOcclusions = rayCaster
+        //   .intersectObjects(threeJSScene.children, true)
+        //   .filter(occ => occ.distance <= 1e-5);
+        // if (notOcclusions.length > 0) {
+        //   const msg = notOcclusions
+        //     // .filter(occ => occ.distance >= 1e-6)
+        //     .map(occ => occ.object.name + " @" + occ.distance.toFixed(2))
+        //     .join();
 
-          console.log(`${obj.name} is NOT occluded by ${msg}`);
-        }
+        //   console.log(`${obj.name} is NOT occluded by ${msg}`);
+        // }
         return occlusions.length === 0;
       });
     console.log(
-      "Visible objects",
+      "Visible Labels",
       visibleObjects.map(obj => obj.name).join(", ")
     );
     console.log(
-      "NOT Visible objects",
-      occludedObjects.map(obj => obj.name).join(", ")
+      "NOT Visible Labels",
+      occludedLabels.map(obj => obj.name).join(", ")
     );
 
-    const allLabels = objectMap
+    const allLabels = labelsMap
       .values()
       // This flatMap assumes that the text is attached to its parent
-      .flatMap(obj => obj.group.children[0].children)
+      .flatMap(obj => obj.group.children)
       .toArray();
 
-    const [occludedLabels, _otherLabels] = allLabels.partition(obj => {
-      const pos = visibleObjects.findIndex(x => x.name === obj.parent?.name);
-      if (pos < 0) return false;
-      // Perform ray cast from the label to the camera
-      labelPosition
-        .copy(visibleObjects[pos].position)
-        .addScaledVector(obj.position, 1);
-      rayCastDirection.subVectors(cameraOrigin, labelPosition);
-      rayCaster.set(labelPosition, rayCastDirection);
-      const labelOcclusions = rayCaster
-        .intersectObjects(threeJSScene.children, true)
-        .filter(occ => occ.distance > 1e-5);
-      // This label is occluded by other objects
-      return labelOcclusions.length > 0;
-    });
+    // const [occludedLabels, _otherLabels] = allLabels.partition(obj => {
+    //   const pos = visibleObjects.findIndex(x => x.name === obj.parent?.name);
+    //   if (pos < 0) return false;
+    //   // Perform ray cast from the label to the camera
+    //   labelPosition
+    //     .copy(visibleObjects[pos].position)
+    //     .addScaledVector(obj.position, 1);
+    //   rayCastDirection.subVectors(cameraOrigin, labelPosition);
+    //   rayCaster.set(labelPosition, rayCastDirection);
+    //   const labelOcclusions = rayCaster
+    //     .intersectObjects(threeJSScene.children, true)
+    //     .filter(occ => occ.distance > 1e-5);
+    //   // This label is occluded by other objects
+    //   return labelOcclusions.length > 0;
+    // });
 
     occludedLabels.forEach(textObj => {
       // Move the label to the other side of the hyperboloid
