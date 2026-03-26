@@ -13,7 +13,7 @@ interface CustomPointMaterialUserData extends CustomMaterialUserData {
   position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>;
 }
 
-interface CustomTextMaterialUserData extends CustomMaterialUserData {
+interface CustomLabelMaterialUserData extends CustomMaterialUserData {
   angle: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // used if the point is at infinity
   upper: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; //wrapping a boolean in a uniform doesn't currently work, so use number 1 = true and 0 = false
   position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>; // used if the point is not at infinity
@@ -95,7 +95,7 @@ export class CustomPointMaterial extends CustomMaterial {
   }
 }
 
-export class CustomTextMaterial extends CustomMaterial {
+export class CustomLabelMaterial extends CustomMaterial {
   declare angle: number;
   declare upper: number;
   declare position: THREE.Vector3;
@@ -105,12 +105,12 @@ export class CustomTextMaterial extends CustomMaterial {
   declare unitCameraDirection: THREE.Vector3;
   declare labelDisplayInside: number;
 
-  declare userData: CustomTextMaterialUserData;
+  declare userData: CustomLabelMaterialUserData;
 
   constructor(parameters?: THREE.MeshStandardNodeMaterialParameters) {
     super(parameters);
 
-    const textUniforms = {
+    const labelUniforms = {
       angle: uniform(0.0, "float"),
       upper: uniform(1, "uint"),
       position: uniform(new THREE.Vector3(0, 0, 0), "vec3"),
@@ -121,8 +121,8 @@ export class CustomTextMaterial extends CustomMaterial {
       labelDisplayInside: uniform(1, "uint")
     };
 
-    Object.assign(this.userData, textUniforms);
+    Object.assign(this.userData, labelUniforms);
 
-    this._bindUniforms(Object.keys(textUniforms));
+    this._bindUniforms(Object.keys(labelUniforms));
   }
 }

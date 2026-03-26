@@ -21,7 +21,7 @@ import { ActionMode } from "@/types";
 import { HELabel } from "@/models-hyperbolic/HELabel";
 import { cameraPosition, uniform } from "three/tsl";
 import EventBus from "@/eventHandlers-spherical/EventBus";
-import { CustomTextMaterial } from "@/plottables-hyperbolic/MaterialFactory";
+import { CustomLabelMaterial } from "@/plottables-hyperbolic/MaterialFactory";
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const surfaceIntersections: Ref<Intersection[]> = ref([]); // intersections with hyperbolic surfaces computed in hyperbolic frame
   const objectIntersections: Ref<Intersection[]> = ref([]); // intersections with hyperbolic surfaces computed in hyperbolic frame

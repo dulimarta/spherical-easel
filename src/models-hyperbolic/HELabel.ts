@@ -2,7 +2,7 @@ import { Text, ThreeTextGeometryInfo } from "three-text/three";
 import * as THREE from "three/webgpu";
 import {
   CustomMaterial,
-  CustomTextMaterial
+  CustomLabelMaterial
 } from "@/plottables-hyperbolic/MaterialFactory";
 import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import { HENodule } from "@/models-hyperbolic/HENodule";
@@ -25,7 +25,7 @@ export class HELabel extends HENodule {
   public parent: HENodule;
   protected _atInfinity: boolean;
   protected _mesh!: THREE.Mesh;
-  protected _material!: CustomTextMaterial;
+  protected _material!: CustomLabelMaterial;
   private _currentText: string;
   private _labelParentType: string;
 
@@ -67,7 +67,7 @@ export class HELabel extends HENodule {
       upper: upper,
       name: this.name
     });
-    this._material = this._mesh.material as CustomTextMaterial;
+    this._material = this._mesh.material as CustomLabelMaterial;
     // this._material.polygonOffset = true;
     // this._material.polygonOffsetFactor = -10; // negative = toward camera
     // this._material.polygonOffsetUnits = -10;

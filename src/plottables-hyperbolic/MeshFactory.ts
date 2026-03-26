@@ -36,7 +36,8 @@ import {
   Loop,
   int,
   Var,
-  normalize
+  normalize,
+  sqrt
 } from "three/tsl";
 // import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { Line2 } from "three/addons/lines/Line2.js";
@@ -51,7 +52,7 @@ import {
 } from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import { LineGeometry } from "three/examples/jsm/Addons.js";
-import { CustomPointMaterial, CustomTextMaterial } from "./MaterialFactory";
+import { CustomPointMaterial, CustomLabelMaterial } from "./MaterialFactory";
 import { Text } from "three-text/three";
 import CameraControls from "camera-controls";
 import { HENodule } from "@/models-hyperbolic/HENodule";
@@ -102,7 +103,7 @@ export async function createLabel({
     depth: 0 // flat text — uses DoubleSide material, saves ~50% triangles
   });
 
-  const textMaterial = new CustomTextMaterial({ color: myColor });
+  const textMaterial = new CustomLabelMaterial({ color: myColor });
 
   const positionUniform = textMaterial.userData.position;
   const angleUniform = textMaterial.userData.angle;
@@ -189,6 +190,7 @@ export async function createLabel({
     );
 
     let cornerImages: THREE.TSL.ShaderNodeObject<THREE.Node>;
+    let deltaZVals: THREE.TSL.ShaderNodeObject<THREE.Node>;
     if (atInfinity) {
       const zCoordinate = select(
         upperUniform.greaterThan(0.5),
@@ -202,6 +204,12 @@ export async function createLabel({
           .mul(cornerVectors),
         vec4(cos(angleUniform), sin(angleUniform), 1.0, 0.0).mul(zCoordinate)
       );
+      deltaZVals = vec4(
+        deltaZToCone(cornerImages.element(0), upperUniform),
+        deltaZToCone(cornerImages.element(1), upperUniform),
+        deltaZToCone(cornerImages.element(2), upperUniform),
+        deltaZToCone(cornerImages.element(3), upperUniform)
+      );
     } else {
       cornerImages = addVec4ToMat4Columns(
         rotationMatrix
@@ -210,55 +218,34 @@ export async function createLabel({
           .mul(cornerVectors),
         vec4(positionUniform, 0)
       );
+      deltaZVals = vec4(
+        deltaZToHyperboloid(cornerImages.element(0), upperUniform),
+        deltaZToHyperboloid(cornerImages.element(1), upperUniform),
+        deltaZToHyperboloid(cornerImages.element(2), upperUniform),
+        deltaZToHyperboloid(cornerImages.element(3), upperUniform)
+      );
     }
-    const tValsAndVector = mat4(
-      tAndVectorToReach(cornerImages.element(0), positionUniform),
-      tAndVectorToReach(cornerImages.element(1), positionUniform),
-      tAndVectorToReach(cornerImages.element(2), positionUniform),
-      tAndVectorToReach(cornerImages.element(3), positionUniform)
-    );
+
     // now find the minimum and maximum t value and corresponding vector
-    const tMin = min(
-      tValsAndVector.element(0).w,
-      min(
-        tValsAndVector.element(1).w,
-        min(tValsAndVector.element(2).w, tValsAndVector.element(3).w)
-      )
+    const minDeltaZ = min(
+      min(deltaZVals.x, deltaZVals.y),
+      min(deltaZVals.z, deltaZVals.w)
     );
-    const tMax = max(
-      tValsAndVector.element(0).w,
-      max(
-        tValsAndVector.element(1).w,
-        max(tValsAndVector.element(2).w, tValsAndVector.element(3).w)
-      )
-    );
-    const tMinAndVec = Var(tValsAndVector.element(0));
-    const tMaxAndVec = Var(tValsAndVector.element(0));
-    Loop(
-      { start: int(1), end: int(4), type: "int", condition: "<" },
-      ({ i }) => {
-        tMinAndVec.assign(
-          select(
-            tMinAndVec.w.greaterThan(tValsAndVector.element(i).w),
-            tValsAndVector.element(i),
-            tMinAndVec
-          )
-        );
-        tMaxAndVec.assign(
-          select(
-            tMaxAndVec.w.lessThan(tValsAndVector.element(i).w),
-            tValsAndVector.element(i),
-            tMaxAndVec
-          )
-        );
-      }
+    const maxDeltaZ = max(
+      max(deltaZVals.x, deltaZVals.y),
+      max(deltaZVals.z, deltaZVals.w)
     );
 
+    const zShiftDirection = vec3(
+      0,
+      0,
+      select(upperUniform.greaterThan(0.5), 1, -1)
+    );
     // now we choose to display on the inside or outside of the hyperboloid according to labelDisplayInsideUniform.value
     const labelPositionAdjustment = select(
       labelDisplayInsideUniform.greaterThan(0.5),
-      tMinAndVec.xyz.mul(negate(min(float(-1).mul(unitLength), tMinAndVec.w))), // display inside - notice that if the min was between 0 and tMinAndVec.w, then when the label is far from the point, the distance from the tangent plane to the surface is large enough that labels can be displayed on both sides of the surface
-      tMaxAndVec.xyz.mul(negate(max(float(0.0), tMaxAndVec.w))) // display outside
+      zShiftDirection.mul(negate(min(float(0.0), minDeltaZ))), // display inside
+      zShiftDirection.mul(negate(max(float(0.0), maxDeltaZ))) // display outside
     );
 
     let returnNode: THREE.TSL.ShaderNodeObject<THREE.Node>;
@@ -1344,7 +1331,6 @@ const addVec4ToMat4Columns = Fn(
 //
 // if a=0 and b=0, this factors as (-1 + c - t) (-1 + t)^2 (1 + c + t) so t = 1 , t = -1 - c , t = -1 + c, so r=0 and theta doesn't matter.
 //
-//
 // APPROXIMATE
 // As the exact is too complex to easily implement, we approximate the hyperboloid with the tangent plane at the point to which the label is attached. If (x,y,z) is the point to which the label is attached, then the (inward) normal vector is (-x,-y,z) so the signed distance from the point (a,b,c) is
 //
@@ -1354,7 +1340,7 @@ const addVec4ToMat4Columns = Fn(
 //
 // Approximating the hyperboloid with a taylor quadratic surface is not appropriate because this quadratic changes sides of the hyperboloid near the point of tangency
 
-const tAndVectorToReach = Fn(
+const tAndVectorToReachTangentPlane = Fn(
   ([anyPoint, pointOnH2AndPlane]: [
     THREE.TSL.ShaderNodeObject<THREE.Node>,
     THREE.TSL.ShaderNodeObject<THREE.Node>
@@ -1381,6 +1367,57 @@ const tAndVectorToReach = Fn(
     | THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>
 ) => THREE.TSL.ShaderNodeObject<THREE.Node>;
 
+const deltaZToHyperboloid = Fn(
+  ([anyPoint, upper]: [
+    THREE.TSL.ShaderNodeObject<THREE.Node>,
+    THREE.TSL.ShaderNodeObject<THREE.Node>,
+    boolean
+  ]) => {
+    const zCoordinateOfProjection = sqrt(
+      anyPoint.x.mul(anyPoint.x).add(anyPoint.y.mul(anyPoint.y)).add(1) //.add(atInfinity ? 0 : 1)
+    );
+
+    const signedZDistanceToSurface = select(
+      upper.greaterThan(0.5),
+      anyPoint.z.sub(zCoordinateOfProjection),
+      negate(anyPoint.z).sub(zCoordinateOfProjection)
+    );
+    return signedZDistanceToSurface;
+  }
+) as unknown as (
+  anyPoint:
+    | THREE.TSL.ShaderNodeObject<THREE.Node>
+    | THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>,
+  upper:
+    | THREE.TSL.ShaderNodeObject<THREE.Node>
+    | THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>
+) => THREE.TSL.ShaderNodeObject<THREE.Node>;
+
+const deltaZToCone = Fn(
+  ([anyPoint, upper]: [
+    THREE.TSL.ShaderNodeObject<THREE.Node>,
+    THREE.TSL.ShaderNodeObject<THREE.Node>,
+    boolean
+  ]) => {
+    const zCoordinateOfProjection = sqrt(
+      anyPoint.x.mul(anyPoint.x).add(anyPoint.y.mul(anyPoint.y))
+    );
+
+    const signedZDistanceToSurface = select(
+      upper.greaterThan(0.5),
+      anyPoint.z.sub(zCoordinateOfProjection),
+      negate(anyPoint.z).sub(zCoordinateOfProjection)
+    );
+    return signedZDistanceToSurface;
+  }
+) as unknown as (
+  anyPoint:
+    | THREE.TSL.ShaderNodeObject<THREE.Node>
+    | THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>,
+  upper:
+    | THREE.TSL.ShaderNodeObject<THREE.Node>
+    | THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>
+) => THREE.TSL.ShaderNodeObject<THREE.Node>;
 //The TSL formulation of a 3 x 3 rotation matrix about an axis (UNIT!) by an angle
 const arbitraryAxisRotationMatrix = Fn(
   ([vectorAxis, angle]: [
