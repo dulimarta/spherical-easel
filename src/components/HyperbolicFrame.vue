@@ -618,7 +618,7 @@ function initialize() {
   lowerHyperboloidSheet.layers.set(HYPERBOLIC_LAYER.lowerSheet);
   upperHyperboloidSheet.layers.set(HYPERBOLIC_LAYER.upperSheet);
 
-  // The upper sheet/upper sheet points are NEVER removed from the scene or the raycaster, so add them here
+  // The upper sheet/upper sheet objects are NEVER removed from the scene or the raycaster, so add them here
   scene.add(upperHyperboloidSheet);
   rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheet);
   rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetPoints);

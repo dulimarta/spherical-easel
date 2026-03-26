@@ -1,7 +1,7 @@
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { HEPoint } from "./HEPoint";
-import { Mesh } from "three";
+import { Mesh, Vector3 } from "three";
 import { CustomPointMaterial } from "@/plottables-hyperbolic/MaterialFactory";
 const { t } = i18n.global;
 export class HEAntipodalPoint extends HEPoint {
@@ -31,7 +31,14 @@ export class HEAntipodalPoint extends HEPoint {
     atInfinity: boolean;
     upper: boolean;
   }) {
-    super({ atInfinity: atInfinity, createNonFreePoint: true, upper: upper });
+    super({
+      posOrAngle: atInfinity
+        ? (antipodalPointParent.angle + Math.PI).modTwoPi()
+        : new Vector3().copy(antipodalPointParent.location).multiplyScalar(-1),
+      atInfinity: atInfinity,
+      createNonFreePoint: true,
+      upper: upper
+    });
     this._antipodalPointParent = antipodalPointParent;
     this._isUserCreated = isUserCreated;
     this.showing = isUserCreated; // Hide automatically created antipodes

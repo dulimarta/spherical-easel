@@ -20,10 +20,12 @@ export class HEPoint extends HENodule {
   protected _material!: CustomPointMaterial;
 
   constructor({
+    posOrAngle,
     atInfinity,
     upper,
     createNonFreePoint = false
   }: {
+    posOrAngle: THREE.Vector3 | number;
     atInfinity: boolean;
     upper: boolean;
     createNonFreePoint?: boolean;
@@ -34,12 +36,14 @@ export class HEPoint extends HENodule {
     if (atInfinity) {
       this._mesh = createPointAtInfinity({
         name: `P${HENodule.POINT_COUNT}`,
-        upper: upper
+        upper: upper,
+        angle: typeof posOrAngle == "number" ? posOrAngle : 0
       });
     } else {
       this._mesh = createPoint({
         name: `P${HENodule.POINT_COUNT}`,
-        upper: upper
+        upper: upper,
+        position: typeof posOrAngle == "number" ? new Vector3() : posOrAngle
       });
     }
     // Add the mesh to a layer so if the lower sheet is turned off, the points in that layer are not displayed

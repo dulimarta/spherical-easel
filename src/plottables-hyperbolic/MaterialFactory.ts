@@ -1,4 +1,3 @@
-import { HENodule } from "@/models-hyperbolic/HENodule";
 import * as THREE from "three/webgpu";
 import { uniform } from "three/tsl";
 
@@ -18,6 +17,13 @@ interface CustomTextMaterialUserData extends CustomMaterialUserData {
   angle: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // used if the point is at infinity
   upper: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; //wrapping a boolean in a uniform doesn't currently work, so use number 1 = true and 0 = false
   position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>; // used if the point is not at infinity
+  offsetX: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // the offset for the text in multiples of unit from the center of the text object
+  offsetY: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // the offset for the text in multiples of unit from the center of the text object
+  scale: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; //in multiples of the unit
+  unitCameraDirection: THREE.TSL.ShaderNodeObject<
+    THREE.UniformNode<THREE.Vector3>
+  >; // used instead of quaternion because setting the quaternion doesn't work for WebGPU node material
+  labelDisplayInside: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // label the label on the inside ( value 1 = true) or outside( value = 0 false)
 }
 
 export class CustomMaterial extends THREE.MeshStandardNodeMaterial {
@@ -93,21 +99,30 @@ export class CustomTextMaterial extends CustomMaterial {
   declare angle: number;
   declare upper: number;
   declare position: THREE.Vector3;
+  declare offsetX: number;
+  declare offsetY: number;
+  declare scale: number;
+  declare unitCameraDirection: THREE.Vector3;
+  declare labelDisplayInside: number;
 
-  declare userData: CustomPointMaterialUserData;
+  declare userData: CustomTextMaterialUserData;
 
   constructor(parameters?: THREE.MeshStandardNodeMaterialParameters) {
     super(parameters);
 
-    // Define the new uniforms unique to this child class
-    const pointUniforms = {
+    const textUniforms = {
       angle: uniform(0.0, "float"),
       upper: uniform(1, "uint"),
-      position: uniform(new THREE.Vector3(0, 0, 0), "vec3")
+      position: uniform(new THREE.Vector3(0, 0, 0), "vec3"),
+      offsetX: uniform(0.0, "float"),
+      offsetY: uniform(0.0, "float"),
+      scale: uniform(0.0, "float"),
+      unitCameraDirection: uniform(new THREE.Vector3(1, 1, 1), "vec3"),
+      labelDisplayInside: uniform(1, "uint")
     };
 
-    Object.assign(this.userData, pointUniforms);
+    Object.assign(this.userData, textUniforms);
 
-    this._bindUniforms(Object.keys(pointUniforms));
+    this._bindUniforms(Object.keys(textUniforms));
   }
 }

@@ -197,29 +197,39 @@ export class PointHandler extends PoseTracker {
         const hitLocation =
           PoseTracker.hyperStore.surfaceIntersections[0].point;
         if (this.hyperboloidFirstHit) {
-          vtx = new HEPoint({ atInfinity: false, upper: hitLocation.z > 0 });
-          vtx.location = hitLocation;
+          vtx = new HEPoint({
+            atInfinity: false,
+            upper: hitLocation.z > 0,
+            posOrAngle: hitLocation
+          });
+          // vtx.location = hitLocation;
           newHELabel = new HELabel(
             "point",
             vtx,
             hitLocation,
-            "TEST",
+            vtx.name,
             false,
             hitLocation.z > 0
           );
         } else if (this.pointAtInfinityStripFirstHit) {
-          vtx = new HEPoint({ atInfinity: true, upper: hitLocation.z > 0 });
-          vtx.angle = (
-            this.tempPointAtInfinityMesh.material as CustomPointMaterial
-          ).angle;
+          vtx = new HEPoint({
+            atInfinity: true,
+            upper: hitLocation.z > 0,
+            posOrAngle: (
+              this.tempPointAtInfinityMesh.material as CustomPointMaterial
+            ).angle
+          });
+          // vtx.angle = (
+          //   this.tempPointAtInfinityMesh.material as CustomPointMaterial
+          // ).angle;
           newHELabel = new HELabel(
             "point",
             vtx,
             (
               this.tempPointAtInfinityMesh.material as CustomPointMaterial
             ).angle,
-            "TEST",
-            false,
+            vtx.name,
+            true,
             hitLocation.z > 0
           );
         }

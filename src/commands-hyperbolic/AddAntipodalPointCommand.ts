@@ -7,20 +7,21 @@ import { SavedNames } from "@/types";
 import { StyleCategory } from "@/types/Styles";
 import { HEAntipodalPoint } from "@/models-hyperbolic/HEAntipodalPoint";
 import { toSVGType } from "@/types";
+import { HELabel } from "@/models-hyperbolic/HELabel";
 
 export class AddAntipodalPointCommand extends Command {
   private heAntipodalPoint: HEAntipodalPoint;
   private parentHEPoint: HEPoint;
-  // private seLabel: SELabel;
+  private heLabel: HELabel;
   constructor(
     hePoint: HEAntipodalPoint,
-    parentHEPoint: HEPoint
-    // seLabel: SELabel
+    parentHEPoint: HEPoint,
+    heLabel: HELabel
   ) {
     super();
     this.heAntipodalPoint = hePoint;
     this.parentHEPoint = parentHEPoint;
-    // this.seLabel = seLabel;
+    this.heLabel = heLabel;
   }
 
   do(): void {
@@ -28,9 +29,9 @@ export class AddAntipodalPointCommand extends Command {
     //   `AddAntipodalPoint: DO added the point ${this.seAntipodalPoint.name} as the antipode to parent ${this.parentSEPoint.name} it is userCreated: ${this.seAntipodalPoint.isUserCreated}`
     // );
     this.parentHEPoint.registerChild(this.heAntipodalPoint);
-    // this.heAntipodalPoint.registerChild(this.seLabel);
+    this.heAntipodalPoint.registerChild(this.heLabel);
     Command.hstore.addPoint(this.heAntipodalPoint);
-    // Command.store.addLabel(this.seLabel);
+    Command.hstore.addLabel(this.heLabel);
   }
 
   saveState(): void {
@@ -41,9 +42,9 @@ export class AddAntipodalPointCommand extends Command {
     // console.debug(
     //   `AddAntipodalPoint: RESTORE removed the point ${this.seAntipodalPoint.name} as the antipode to parent ${this.parentSEPoint.name} it is userCreated: ${this.seAntipodalPoint.isUserCreated}`
     // );
-    // Command.store.removeLabel(this.seLabel.id);
+    Command.hstore.removeLabel(this.heLabel);
     Command.hstore.removePoint(this.lastState);
-    // this.heAntipodalPoint.unregisterChild(this.seLabel);
+    this.heAntipodalPoint.unregisterChild(this.heLabel);
     this.parentHEPoint.unregisterChild(this.heAntipodalPoint);
   }
 

@@ -20,6 +20,7 @@ import { CustomPointMaterial } from "@/plottables-hyperbolic/MaterialFactory";
 import { AddAntipodalPointCommand } from "@/commands-hyperbolic/AddAntipodalPointCommand";
 import { parseJsonText } from "typescript";
 import { HEIntersectionPoint } from "@/models-hyperbolic/HEIntersectionPoint";
+import { HELabel } from "@/models-hyperbolic/HELabel";
 
 // const ORIGIN = new Vector3(0, 0, 0);
 const Y_AXIS = new Vector3(0, 1, 0);
@@ -172,23 +173,39 @@ export class PoseTracker implements HyperbolicToolStrategy {
     });
 
     // Create a plottable label
-    // Create an SELabel and link it to the plottable object
+    // Create an HELabel and link it to the plottable object
 
-    // antipodalVtx.locationVector = parentPoint.locationVector;
-    // antipodalVtx.locationVector.multiplyScalar(-1);
-    // // Set the initial label location
-    // const newSEAntipodalLabel = antipodalVtx.attachLabelWithOffset(
+    // const location = new Vector3();
+    // antipodalVtx.location = location
+    //   .copy(parentPoint.location)
+    //   .multiplyScalar(-1);
+    // Set the initial label location
+    // const newHEAntipodalLabel = antipodalVtx.attachLabelWithOffset(
     //   new Vector3(
     //     2 * SETTINGS.point.initialLabelOffset,
     //     SETTINGS.point.initialLabelOffset,
     //     0
     //   )
     // );
+    const newHEAntipodalLabel = new HELabel(
+      "point",
+      parentPoint,
+      parentPoint.atInfinity
+        ? (
+            (parentPoint.material as CustomPointMaterial).angle + Math.PI
+          ).modTwoPi()
+        : new Vector3()
+            .copy((parentPoint.material as CustomPointMaterial).position)
+            .multiplyScalar(-1),
+      antipodalVtx.name,
+      parentPoint.atInfinity,
+      !parentPoint.upper
+    );
     commandGroup.addCommand(
       new AddAntipodalPointCommand(
         antipodalVtx,
-        parentPoint /*,
-        newSEAntipodalLabel*/
+        parentPoint,
+        newHEAntipodalLabel
       )
     );
 
