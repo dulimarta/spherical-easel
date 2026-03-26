@@ -47,13 +47,15 @@ export class PointHandler extends PoseTracker {
     this.tempPointMesh = createPoint({
       name: "pointHandlerTempPoint",
       temporary: true,
-      upper: true // this doesn't mater for temporary objects
+      upper: true, // this doesn't mater for temporary objects
+      position: new Vector3()
     });
     this.tempPointMaterial = this.tempPointMesh.material as CustomPointMaterial;
     this.tempPointAtInfinityMesh = createPointAtInfinity({
       name: "pointHandlerTempPointAtInfinity",
       temporary: true,
-      upper: true // this doesn't mater for temporary objects
+      upper: true, // this doesn't mater for temporary objects
+      angle: 0
     });
     this.tempPointAtInfinityMaterial = this.tempPointAtInfinityMesh
       .material as CustomPointMaterial;
@@ -243,7 +245,7 @@ export class PointHandler extends PoseTracker {
             pointCommandGroup
           );
           ///////////
-
+          vtx.label = newHELabel;
           // Set the initial label location
           // this.tmpVector
           //   .copy(vtx.locationVector)
@@ -359,6 +361,17 @@ export class PointHandler extends PoseTracker {
           // Remove the temporary point
           this.scene.remove(this.tempPointMesh);
           this.tempPointInScene = false;
+          this.snapToObject = null;
+        }
+        if (this.tempPointAtInfinityInScene) {
+          // Remove the temporary point at infinity
+          this.tempPointAtInfinityInScene = false;
+          this.tempPointAtInfinityUpperTubeInScene = false;
+          this.tempPointAtInfinityLowerTubeInScene = false;
+          this.scene.remove(this.tempTube);
+          this.scene.remove(this.tempPointAtInfinityMesh);
+          this.scene.remove(this.tempLowerCone);
+          this.scene.remove(this.tempUpperCone);
           this.snapToObject = null;
         }
       }

@@ -191,9 +191,7 @@ export class PoseTracker implements HyperbolicToolStrategy {
       "point",
       parentPoint,
       parentPoint.atInfinity
-        ? (
-            (parentPoint.material as CustomPointMaterial).angle + Math.PI
-          ).modTwoPi()
+        ? (parentPoint.material as CustomPointMaterial).angle
         : new Vector3()
             .copy((parentPoint.material as CustomPointMaterial).position)
             .multiplyScalar(-1),
@@ -201,6 +199,8 @@ export class PoseTracker implements HyperbolicToolStrategy {
       parentPoint.atInfinity,
       !parentPoint.upper
     );
+    newHEAntipodalLabel.showing = false; // automatically created labels are not shown
+    antipodalVtx.label = newHEAntipodalLabel;
     commandGroup.addCommand(
       new AddAntipodalPointCommand(
         antipodalVtx,

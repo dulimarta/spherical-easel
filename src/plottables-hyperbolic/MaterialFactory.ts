@@ -23,7 +23,8 @@ interface CustomLabelMaterialUserData extends CustomMaterialUserData {
   unitCameraDirection: THREE.TSL.ShaderNodeObject<
     THREE.UniformNode<THREE.Vector3>
   >; // used instead of quaternion because setting the quaternion doesn't work for WebGPU node material
-  labelDisplayInside: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // label the label on the inside ( value 1 = true) or outside( value = 0 false)
+  labelDisplayInside: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // Is the label on the inside ( value 1 = true) or outside( value = 0 false)
+  centerOfLabel: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>; // Center of the label so  occlusion can be checked
 }
 
 export class CustomMaterial extends THREE.MeshStandardNodeMaterial {
@@ -104,6 +105,7 @@ export class CustomLabelMaterial extends CustomMaterial {
   declare scale: number;
   declare unitCameraDirection: THREE.Vector3;
   declare labelDisplayInside: number;
+  declare centerOfLabel: THREE.Vector3;
 
   declare userData: CustomLabelMaterialUserData;
 
@@ -118,7 +120,8 @@ export class CustomLabelMaterial extends CustomMaterial {
       offsetY: uniform(0.0, "float"),
       scale: uniform(0.0, "float"),
       unitCameraDirection: uniform(new THREE.Vector3(1, 1, 1), "vec3"),
-      labelDisplayInside: uniform(1, "uint")
+      labelDisplayInside: uniform(1, "uint"),
+      centerOfLabel: uniform(new THREE.Vector3(1, 1, 1), "vec3")
     };
 
     Object.assign(this.userData, labelUniforms);

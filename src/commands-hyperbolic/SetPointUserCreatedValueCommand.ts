@@ -60,7 +60,7 @@ export class SetPointUserCreatedValueCommand extends Command {
     //   this.heIntersectionOrAntipodePoint.label &&
     //   SETTINGS.point.showLabelsOfNonFreePointsInitially
     // ) {
-    //   this.heIntersectionOrAntipodePoint.label.showing = this.userCreatedValue;
+    this.heIntersectionOrAntipodePoint.label!.showing = this.userCreatedValue;
     // }
     // if (this.userCreatedValue) {
     //   // Set the label to display the name of the point in visible count order
@@ -121,7 +121,7 @@ export class SetPointUserCreatedValueCommand extends Command {
     //   this.heIntersectionOrAntipodePoint.label &&
     //   SETTINGS.point.showLabelsOfNonFreePointsInitially
     // ) {
-    //   this.heIntersectionOrAntipodePoint.label.showing = !this.userCreatedValue;
+    this.heIntersectionOrAntipodePoint.label!.showing = !this.userCreatedValue;
     // }
     // hide the point
     this.heIntersectionOrAntipodePoint.showing = !this.userCreatedValue;

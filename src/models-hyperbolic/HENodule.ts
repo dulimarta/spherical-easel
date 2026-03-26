@@ -153,7 +153,9 @@ export abstract class HENodule {
   set showing(b: boolean) {
     // console.log("set showing in HENodule", this.name);
     this._showing = b; // set the variable
-    this.material.visible = b; // set the actual display
+    if (this.material) {
+      this.material.visible = b; // set the actual display
+    }
   }
 
   get showing(): boolean {

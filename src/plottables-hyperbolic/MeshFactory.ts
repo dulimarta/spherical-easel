@@ -37,7 +37,9 @@ import {
   int,
   Var,
   normalize,
-  sqrt
+  sqrt,
+  Return,
+  vec2
 } from "three/tsl";
 // import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { Line2 } from "three/addons/lines/Line2.js";
@@ -103,17 +105,18 @@ export async function createLabel({
     depth: 0 // flat text — uses DoubleSide material, saves ~50% triangles
   });
 
-  const textMaterial = new CustomLabelMaterial({ color: myColor });
+  const labelMaterial = new CustomLabelMaterial({ color: myColor });
 
-  const positionUniform = textMaterial.userData.position;
-  const angleUniform = textMaterial.userData.angle;
-  const scaleUniform = textMaterial.userData.scale;
-  const glowingUniform = textMaterial.userData.glowing;
-  const upperUniform = textMaterial.userData.upper;
-  const offsetXUniform = textMaterial.userData.offsetX;
-  const offsetYUniform = textMaterial.userData.offsetY;
-  const unitCameraDirectionUniform = textMaterial.userData.unitCameraDirection;
-  const labelDisplayInsideUniform = textMaterial.userData.labelDisplayInside;
+  const positionUniform = labelMaterial.userData.position;
+  const angleUniform = labelMaterial.userData.angle;
+  const scaleUniform = labelMaterial.userData.scale;
+  const glowingUniform = labelMaterial.userData.glowing;
+  const upperUniform = labelMaterial.userData.upper;
+  const offsetXUniform = labelMaterial.userData.offsetX;
+  const offsetYUniform = labelMaterial.userData.offsetY;
+  const unitCameraDirectionUniform = labelMaterial.userData.unitCameraDirection;
+  const labelDisplayInsideUniform = labelMaterial.userData.labelDisplayInside;
+  const centerOfLabelUniform = labelMaterial.userData.centerOfLabel;
 
   upperUniform.value = upper ? 1 : 0;
   scaleUniform.value = initialScale;
@@ -162,9 +165,9 @@ export async function createLabel({
     const zRotationMatrix = mat3ToMat4(
       zAxisRotationMatrix(
         atan(unitCameraDirectionUniform.y, unitCameraDirectionUniform.x)
-          .add(PI)
-          .mod(TWO_PI)
-          .add(PI.div(2))
+          .add(PI.mul(3).div(2))
+          // .mod(TWO_PI)
+          // .add(PI.div(2))
           .mod(TWO_PI)
           .mul(-1.0)
       )
@@ -191,6 +194,7 @@ export async function createLabel({
 
     let cornerImages: THREE.TSL.ShaderNodeObject<THREE.Node>;
     let deltaZVals: THREE.TSL.ShaderNodeObject<THREE.Node>;
+
     if (atInfinity) {
       const zCoordinate = select(
         upperUniform.greaterThan(0.5),
@@ -210,6 +214,13 @@ export async function createLabel({
         deltaZToCone(cornerImages.element(2), upperUniform),
         deltaZToCone(cornerImages.element(3), upperUniform)
       );
+      // centerOfLabelUniform = rotationMatrix
+      //   .mul(zRotationMatrix)
+      //   .mul(centerScaleOffsetMatrix)
+      //   .mul(vec4(0, 0, 0, 1))
+      //   .add(
+      //     vec4(cos(angleUniform), sin(angleUniform), 1.0, 0.0).mul(zCoordinate)
+      //   );
     } else {
       cornerImages = addVec4ToMat4Columns(
         rotationMatrix
@@ -224,6 +235,11 @@ export async function createLabel({
         deltaZToHyperboloid(cornerImages.element(2), upperUniform),
         deltaZToHyperboloid(cornerImages.element(3), upperUniform)
       );
+      // centerOfLabelUniform = rotationMatrix
+      //   .mul(zRotationMatrix)
+      //   .mul(centerScaleOffsetMatrix)
+      //   .mul(vec4(0, 0, 0, 1))
+      //   .add(vec4(positionUniform, 0));
     }
 
     // now find the minimum and maximum t value and corresponding vector
@@ -273,22 +289,22 @@ export async function createLabel({
 
     return returnNode.xyz.add(labelPositionAdjustment);
   });
-  textMaterial.positionNode = positionFunction();
+  labelMaterial.positionNode = positionFunction();
 
-  // const colorFunction = Fn(() => {
-  //   const returnColor = select(
-  //     glowingUniform.greaterThan(0.5),
-  //     color(textMaterial.color).mul(
-  //       oscSine(time.mul(pulseRate)).mul(pulseSizePercent).add(1)
-  //     ),
-  //     color(textMaterial.color).mul(1.0)
-  //   );
+  const colorFunction = Fn(() => {
+    const returnColor = select(
+      glowingUniform.greaterThan(0.5),
+      color(labelMaterial.color).mul(
+        oscSine(time.mul(pulseRate)).mul(pulseSizePercent).add(1)
+      ),
+      color(labelMaterial.color).mul(1.0)
+    );
 
-  //   return returnColor;
-  // });
-  // textMaterial.colorNode = colorFunction();
+    return returnColor;
+  });
+  labelMaterial.colorNode = colorFunction();
 
-  const returnMesh = new Mesh(textObject.geometry, textMaterial);
+  const returnMesh = new Mesh(textObject.geometry, labelMaterial);
   returnMesh.name = name;
 
   // override raycaster so that the translated label can be hit
@@ -1340,41 +1356,40 @@ const addVec4ToMat4Columns = Fn(
 //
 // Approximating the hyperboloid with a taylor quadratic surface is not appropriate because this quadratic changes sides of the hyperboloid near the point of tangency
 
-const tAndVectorToReachTangentPlane = Fn(
-  ([anyPoint, pointOnH2AndPlane]: [
-    THREE.TSL.ShaderNodeObject<THREE.Node>,
-    THREE.TSL.ShaderNodeObject<THREE.Node>
-  ]) => {
-    const normalToTangentPlane = normalize(
-      vec3(
-        negate(pointOnH2AndPlane.x),
-        negate(pointOnH2AndPlane.y),
-        pointOnH2AndPlane.z
-      )
-    );
-    const signedDistanceToPlane = dot(
-      anyPoint.sub(pointOnH2AndPlane),
-      normalToTangentPlane
-    );
-    return vec4(normalToTangentPlane, signedDistanceToPlane);
-  }
-) as unknown as (
-  anyPoint:
-    | THREE.TSL.ShaderNodeObject<THREE.Node>
-    | THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>,
-  pointOnH2AndPlane:
-    | THREE.TSL.ShaderNodeObject<THREE.Node>
-    | THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>
-) => THREE.TSL.ShaderNodeObject<THREE.Node>;
+// const tAndVectorToReachTangentPlane = Fn(
+//   ([anyPoint, pointOnH2AndPlane]: [
+//     THREE.TSL.ShaderNodeObject<THREE.Node>,
+//     THREE.TSL.ShaderNodeObject<THREE.Node>
+//   ]) => {
+//     const normalToTangentPlane = normalize(
+//       vec3(
+//         negate(pointOnH2AndPlane.x),
+//         negate(pointOnH2AndPlane.y),
+//         pointOnH2AndPlane.z
+//       )
+//     );
+//     const signedDistanceToPlane = dot(
+//       anyPoint.sub(pointOnH2AndPlane),
+//       normalToTangentPlane
+//     );
+//     return vec4(normalToTangentPlane, signedDistanceToPlane);
+//   }
+// ) as unknown as (
+//   anyPoint:
+//     | THREE.TSL.ShaderNodeObject<THREE.Node>
+//     | THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>,
+//   pointOnH2AndPlane:
+//     | THREE.TSL.ShaderNodeObject<THREE.Node>
+//     | THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>
+// ) => THREE.TSL.ShaderNodeObject<THREE.Node>;
 
 const deltaZToHyperboloid = Fn(
   ([anyPoint, upper]: [
     THREE.TSL.ShaderNodeObject<THREE.Node>,
-    THREE.TSL.ShaderNodeObject<THREE.Node>,
-    boolean
+    THREE.TSL.ShaderNodeObject<THREE.Node>
   ]) => {
     const zCoordinateOfProjection = sqrt(
-      anyPoint.x.mul(anyPoint.x).add(anyPoint.y.mul(anyPoint.y)).add(1) //.add(atInfinity ? 0 : 1)
+      anyPoint.x.mul(anyPoint.x).add(anyPoint.y.mul(anyPoint.y)).add(1)
     );
 
     const signedZDistanceToSurface = select(
@@ -1418,7 +1433,111 @@ const deltaZToCone = Fn(
     | THREE.TSL.ShaderNodeObject<THREE.Node>
     | THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>
 ) => THREE.TSL.ShaderNodeObject<THREE.Node>;
+
+// intersection with hyperboloid in TSL
+// const intersectWithHyperboloidTSL = Fn(
+//   ([origin, unitDirection, upper, isOccluded]: [
+//     THREE.TSL.ShaderNodeObject<THREE.Node>,
+//     THREE.TSL.ShaderNodeObject<THREE.Node>,
+//     THREE.TSL.ShaderNodeObject<THREE.Node>,
+//     THREE.TSL.ShaderNodeObject<THREE.Node>
+//   ]) => {
+//     // Check the intersection of the ray with the hyperboloid P(t) = origin + t * direction for t > 0
+//     const ox = origin.x;
+//     const oy = origin.y;
+//     const oz = origin.z;
+//     const dx = unitDirection.x;
+//     const dy = unitDirection.y;
+//     const dz = unitDirection.z;
+
+//     // Expand substitutions for intersection of Ray P(t) with hyperboloid
+//     // (oz + t*dz)^2 - (ox + t*dx)^2 - (oy + t*dy)^2  -1 = 0
+
+//     // A term (t^2)
+//     const A = dz.mul(dz).sub(dx.mul(dx)).sub(dy.mul(dy));
+
+//     // B term (t)
+//     const B = float(2).mul(oz.mul(dz).sub(ox.mul(dx)).sub(oy.mul(dy)));
+
+//     // C term (constant)
+//     const C = oz.mul(oz).sub(ox.mul(ox)).sub(oy.mul(oy)).sub(1);
+
+//     // Solve the Quadratic
+//     const discriminant = B.mul(B).sub(float(4).mul(A).mul(C));
+
+//     If(discriminant.greaterThan(0), () => {
+//       const sqrtDisc = sqrt(discriminant);
+//       const tVals =
+//       vec2(negate(B).sub(sqrtDisc).div(A.mul(2)), //(-B - sqrtDisc) / (2 * A);
+//             negate(B).add(sqrtDisc).div(A.mul(2))); //(-B + sqrtDisc) / (2 * A);
+//        Loop( { start: int( 0 ), end: int( 2 ), type: 'int', condition: '<' }, ( { i } ) => {
+//       // Calculate intersection point in world space
+//       const intersectionPoint =
+//         unitDirection // unit vector so distance to intersection is t
+//         .mul(tVals.element(i))
+//         .add(origin);
+//       If(tVals.element(i).greaterThan(0).and(),()=>{})
+// } );
+
+//     }).Else(() => {
+//       isOccluded.assign(0);
+//     }); // No real intersection
+//     return isOccluded
+//     //
+//     // Check both solutions (entry and exit points)
+//     // [t1, t2].forEach(t => {
+//     //   if (t < raycaster.near || t > raycaster.far) return;
+
+//      // Calculate intersection point in world space
+//       // rayCasterIntersectionPoint
+//       //   .copy(raycaster.ray.direction) // unit vector so distance to intersection is t
+//       //   .multiplyScalar(t)
+//       //   .add(raycaster.ray.origin);
+
+//       // Check that the ray intersects the hyperboloid where it is drawn
+//       if (upper) {
+//         if (
+//           rayCasterIntersectionPoint.z > zUpperClip.value ||
+//           rayCasterIntersectionPoint.z < 0
+//         ) {
+//           return;
+//         }
+//       } else {
+//         if (
+//           rayCasterIntersectionPoint.z < zLowerClip.value ||
+//           rayCasterIntersectionPoint.z > 0
+//         ) {
+//           return;
+//         }
+//       }
+//       intersects.push({
+//         distance: t,
+//         point: rayCasterIntersectionPoint.clone(),
+//         normal: rayCasterIntersectionPoint
+//           .clone()
+//           .multiply(new Vector3(-1, -1, 1)) // always the inward pointing normal
+//           .normalize()
+//       });
+//     });
+//     return intersects;
+//   }
+// ) as unknown as (
+//   origin:
+//     | THREE.TSL.ShaderNodeObject<THREE.Node>
+//     | THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>,
+//   direction:
+//     | THREE.TSL.ShaderNodeObject<THREE.Node>
+//     | THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>,
+//   upper:
+//     | THREE.TSL.ShaderNodeObject<THREE.Node>
+//     | THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>,
+//   isOccluded:
+//     | THREE.TSL.ShaderNodeObject<THREE.Node>
+//     | THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>
+// ) => THREE.TSL.ShaderNodeObject<THREE.Node>;
+
 //The TSL formulation of a 3 x 3 rotation matrix about an axis (UNIT!) by an angle
+
 const arbitraryAxisRotationMatrix = Fn(
   ([vectorAxis, angle]: [
     THREE.TSL.ShaderNodeObject<THREE.Node>,

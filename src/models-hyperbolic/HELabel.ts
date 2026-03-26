@@ -15,6 +15,7 @@ import {
   zUpperPAIClipMinus,
   zUpperPAIClipPlus
 } from "@/plottables-hyperbolic/MeshFactory";
+import { HEPoint } from "./HEPoint";
 
 //import { createLabel } from "@/plottables-hyperbolic/MeshFactory";
 
@@ -59,7 +60,7 @@ export class HELabel extends HENodule {
     upper: boolean;
   }): Promise<void> {
     // Build the mesh async
-    console.log("b here", this.name, posOrAngle.toFixed(2));
+    //console.log("b here", this.name, posOrAngle.toFixed(2));
     this._mesh = await createLabel({
       posOrAngle: posOrAngle,
       text: this._currentText,
@@ -86,12 +87,17 @@ export class HELabel extends HENodule {
           : HYPERBOLIC_LAYER.lowerSheetLabels
       );
     }
-    this.applyLabelOffset(-0.5, -0.5);
+    this.applyLabelOffset(
+      this.atInfinity ? -0.25 : -0.5,
+      this.atInfinity ? -0.25 : -0.5
+    );
     // Face the camera
     this.faceCamera();
 
-    console.log("Added mesh to group", this._mesh, this.name);
+    console.log("Added mesh to group", this.name);
     this.group.add(this._mesh);
+    // set the visibility
+    this.shallowUpdate();
   }
 
   public async changeText(newText: string): Promise<void> {
@@ -119,10 +125,32 @@ export class HELabel extends HENodule {
   }
 
   public update(): void {
-    //throw new Error("Method not implemented.");
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+    this.setOutOfDate(false);
+    this.shallowUpdate();
+    //this.updateKids(); //Labels have no kids so this is not necessary
   }
   public shallowUpdate(): void {
-    //throw new Error("Method not implemented.");
+    this._exists = this.parent.exists;
+
+    if (this._exists) {
+      // update the label location using its parent
+      if (this.atInfinity) {
+        // The only labels at infinity are those labeling points
+        this._material.angle = (this.parent as HEPoint).angle;
+      } else {
+        // this._material.position = this.parent.getClosestLabelVector(); // not implemented yet
+      }
+    }
+
+    // Update visibility
+    console.log("label showing", this._showing);
+    if (this._showing && this._exists) {
+      this._material.visible = true;
+    } else {
+      this._material.visible = false;
+    }
   }
 
   //change the scale to size (in multiplies of the unit)

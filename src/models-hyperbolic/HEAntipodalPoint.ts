@@ -108,6 +108,7 @@ export class HEAntipodalPoint extends HEPoint {
     if (this.showing && this._isUserCreated && this._exists) {
       this._material.visible = true;
     } else {
+      console.log("antipode point NOT visible");
       this._material.visible = false;
     }
   }

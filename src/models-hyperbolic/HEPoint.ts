@@ -12,12 +12,14 @@ import {
   createPoint,
   createPointAtInfinity
 } from "@/plottables-hyperbolic/MeshFactory";
+import { HELabel } from "./HELabel";
 
 export class HEPoint extends HENodule {
   protected _atInfinity = false;
   protected _nonFreePoint = false;
   protected _mesh!: Mesh;
   protected _material!: CustomPointMaterial;
+  public label?: HELabel;
 
   constructor({
     posOrAngle,
@@ -84,6 +86,13 @@ export class HEPoint extends HENodule {
   set location(pos: Vector3) {
     this._material.position = pos;
   }
+  public setLabel(lab: HELabel) {
+    this.label = lab;
+  }
+  public getLabel(): HELabel {
+    return this.label!;
+  }
+
   get upper(): boolean {
     return this._material.upper > 0.5;
   }
