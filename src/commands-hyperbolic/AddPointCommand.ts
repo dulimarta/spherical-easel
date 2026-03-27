@@ -49,9 +49,9 @@ export class AddPointCommand extends Command {
     //   this.hePoint.label.ref.shortUserName = `P${this.hePoint.visiblePointCount}`;
     // }
     // this.hePoint.pointVisibleBefore = false;
-    Command.hstore.removeLabel(this.heLabel);
+    Command.hstore.removePoint(this.hePoint);
     this.hePoint.unregisterChild(this.heLabel);
-    Command.store.removePoint(this.lastState);
+    Command.hstore.removeLabel(this.heLabel);
   }
 
   // getSVGObjectLabelPairs(): [SENodule, SELabel][] {

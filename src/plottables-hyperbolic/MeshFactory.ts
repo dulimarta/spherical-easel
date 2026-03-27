@@ -39,7 +39,9 @@ import {
   normalize,
   sqrt,
   Return,
-  vec2
+  vec2,
+  storage,
+  instancedArray
 } from "three/tsl";
 // import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { Line2 } from "three/addons/lines/Line2.js";
@@ -112,8 +114,7 @@ export async function createLabel({
   const scaleUniform = labelMaterial.userData.scale;
   const glowingUniform = labelMaterial.userData.glowing;
   const upperUniform = labelMaterial.userData.upper;
-  const offsetXUniform = labelMaterial.userData.offsetX;
-  const offsetYUniform = labelMaterial.userData.offsetY;
+  const offsetUniform = labelMaterial.userData.offset;
   const unitCameraDirectionUniform = labelMaterial.userData.unitCameraDirection;
   const labelDisplayInsideUniform = labelMaterial.userData.labelDisplayInside;
   const centerOfLabelUniform = labelMaterial.userData.centerOfLabel;
@@ -125,6 +126,14 @@ export async function createLabel({
   } else {
     positionUniform.value = posOrAngle;
   }
+
+  // const buffer = new THREE.StorageBufferAttribute(new Float32Array(3), 3);
+  // buffer.setUsage(THREE.DynamicDrawUsage);
+
+  // const storageNode = storage(buffer, "vec3", 1);
+  // storageNode.setAccess(THREE.NodeAccess.READ_WRITE);
+  // Create a writable storage buffer using instancedArray
+  const resultBuffer = instancedArray(1, "vec3");
 
   const bounds = textObject.planeBounds;
   const positionFunction = Fn(() => {
@@ -143,11 +152,11 @@ export async function createLabel({
     const centerAndOffsetVector = vec4(
       negate(float(bounds.min.x).add(bounds.max.x).div(2.0))
         .mul(myScale)
-        .add(offsetXUniform)
+        .add(offsetUniform.x)
         .mul(unitLength),
       negate(float(bounds.min.y).add(bounds.max.y).div(2.0))
         .mul(myScale)
-        .add(offsetYUniform)
+        .add(offsetUniform.y)
         .mul(unitLength),
       0,
       float(1.0)
@@ -166,8 +175,6 @@ export async function createLabel({
       zAxisRotationMatrix(
         atan(unitCameraDirectionUniform.y, unitCameraDirectionUniform.x)
           .add(PI.mul(3).div(2))
-          // .mod(TWO_PI)
-          // .add(PI.div(2))
           .mod(TWO_PI)
           .mul(-1.0)
       )
@@ -214,13 +221,17 @@ export async function createLabel({
         deltaZToCone(cornerImages.element(2), upperUniform),
         deltaZToCone(cornerImages.element(3), upperUniform)
       );
-      // centerOfLabelUniform = rotationMatrix
-      //   .mul(zRotationMatrix)
-      //   .mul(centerScaleOffsetMatrix)
-      //   .mul(vec4(0, 0, 0, 1))
-      //   .add(
-      //     vec4(cos(angleUniform), sin(angleUniform), 1.0, 0.0).mul(zCoordinate)
-      //   );
+      resultBuffer.element(int(0)).assign(
+        rotationMatrix
+          .mul(zRotationMatrix)
+          .mul(centerScaleOffsetMatrix)
+          .mul(vec4(0, 0, 0, 1))
+          .add(
+            vec4(cos(angleUniform), sin(angleUniform), 1.0, 0.0).mul(
+              zCoordinate
+            )
+          )
+      );
     } else {
       cornerImages = addVec4ToMat4Columns(
         rotationMatrix
@@ -235,11 +246,13 @@ export async function createLabel({
         deltaZToHyperboloid(cornerImages.element(2), upperUniform),
         deltaZToHyperboloid(cornerImages.element(3), upperUniform)
       );
-      // centerOfLabelUniform = rotationMatrix
-      //   .mul(zRotationMatrix)
-      //   .mul(centerScaleOffsetMatrix)
-      //   .mul(vec4(0, 0, 0, 1))
-      //   .add(vec4(positionUniform, 0));
+      resultBuffer.element(int(0)).assign(
+        rotationMatrix
+          .mul(zRotationMatrix)
+          .mul(centerScaleOffsetMatrix)
+          .mul(vec4(0, 0, 0, 1))
+          .add(vec4(positionUniform, 0))
+      );
     }
 
     // now find the minimum and maximum t value and corresponding vector
@@ -308,49 +321,56 @@ export async function createLabel({
   returnMesh.name = name;
 
   // override raycaster so that the translated label can be hit
-  // returnMesh.raycast = function (raycaster, intersects) {
-  //   if (atInfinity) {
-  //     const tempIntersections = intersectWithPointAtInfinityStrip(
-  //       raycaster,
-  //       upperUniform.value > 0.5
-  //     );
-  //     tempIntersections.forEach(intersection => {
-  //       // check to make sure that the angle of intersection is close to the angle of the label AND the upper/lower is correct
-  //       if (
-  //         Math.abs(
-  //           angleUniform.value -
-  //             Math.atan2(intersection.point.y, intersection.point.x)
-  //         ) < 0.1 &&
-  //         upperUniform.value > 0.5 == intersection.point.z > 0
-  //       ) {
-  //         intersects.push({
-  //           distance: intersection.distance,
-  //           point: intersection.point.clone(),
-  //           normal: intersection.normal,
-  //           object: this
-  //         });
-  //       }
-  //     });
-  //   } else {
-  //     const tempIntersections = intersectWithHyperboloid(
-  //       raycaster,
-  //       upperUniform.value > 0.5
-  //     );
-  //     tempIntersections.forEach(intersection => {
-  //       if (
-  //         positionUniform.value.distanceTo(intersection.point) <
-  //         unitLength.value * 2.5
-  //       ) {
-  //         intersects.push({
-  //           distance: intersection.distance,
-  //           point: intersection.point.clone(),
-  //           normal: intersection.normal,
-  //           object: this
-  //         });
-  //       }
-  //     });
-  //   }
-  // };
+  returnMesh.raycast = function (raycaster, intersects) {
+    if (atInfinity) {
+      const tempIntersections = intersectWithPointAtInfinityStrip(
+        raycaster,
+        upperUniform.value > 0.5
+      );
+      tempIntersections.forEach(intersection => {
+        // check to make sure that the angle of intersection is close to the angle of the label AND the upper/lower is correct
+        if (
+          Math.abs(
+            angleUniform.value -
+              Math.atan2(intersection.point.y, intersection.point.x)
+          ) < 0.1 &&
+          upperUniform.value > 0.5 == intersection.point.z > 0
+        ) {
+          console.log("label hit", this.name, angleUniform.value);
+          intersects.push({
+            distance: intersection.distance,
+            point: intersection.point.clone(),
+            normal: intersection.normal,
+            object: this
+          });
+        }
+      });
+    } else {
+      const tempIntersections = intersectWithHyperboloid(
+        raycaster,
+        upperUniform.value > 0.5
+      );
+      tempIntersections.forEach(intersection => {
+        if (
+          positionUniform.value.distanceTo(intersection.point) <
+          unitLength.value * 2.5
+        ) {
+          console.log(
+            "label hit",
+            this.name,
+            positionUniform.value.distanceTo(intersection.point),
+            unitLength.value * 0.5
+          );
+          intersects.push({
+            distance: intersection.distance,
+            point: intersection.point.clone(),
+            normal: intersection.normal,
+            object: this
+          });
+        }
+      });
+    }
+  };
   return returnMesh;
 }
 

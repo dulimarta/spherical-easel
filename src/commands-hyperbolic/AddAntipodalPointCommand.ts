@@ -43,7 +43,7 @@ export class AddAntipodalPointCommand extends Command {
     //   `AddAntipodalPoint: RESTORE removed the point ${this.seAntipodalPoint.name} as the antipode to parent ${this.parentSEPoint.name} it is userCreated: ${this.seAntipodalPoint.isUserCreated}`
     // );
     Command.hstore.removeLabel(this.heLabel);
-    Command.hstore.removePoint(this.lastState);
+    Command.hstore.removePoint(this.heAntipodalPoint);
     this.heAntipodalPoint.unregisterChild(this.heLabel);
     this.parentHEPoint.unregisterChild(this.heAntipodalPoint);
   }

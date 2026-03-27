@@ -17,8 +17,7 @@ interface CustomLabelMaterialUserData extends CustomMaterialUserData {
   angle: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // used if the point is at infinity
   upper: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; //wrapping a boolean in a uniform doesn't currently work, so use number 1 = true and 0 = false
   position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>; // used if the point is not at infinity
-  offsetX: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // the offset for the text in multiples of unit from the center of the text object
-  offsetY: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // the offset for the text in multiples of unit from the center of the text object
+  offset: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector2>>; // the offset for the text in multiples of unit from the center of the text object
   scale: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; //in multiples of the unit
   unitCameraDirection: THREE.TSL.ShaderNodeObject<
     THREE.UniformNode<THREE.Vector3>
@@ -100,8 +99,7 @@ export class CustomLabelMaterial extends CustomMaterial {
   declare angle: number;
   declare upper: number;
   declare position: THREE.Vector3;
-  declare offsetX: number;
-  declare offsetY: number;
+  declare offset: THREE.Vector2;
   declare scale: number;
   declare unitCameraDirection: THREE.Vector3;
   declare labelDisplayInside: number;
@@ -116,8 +114,7 @@ export class CustomLabelMaterial extends CustomMaterial {
       angle: uniform(0.0, "float"),
       upper: uniform(1, "uint"),
       position: uniform(new THREE.Vector3(0, 0, 0), "vec3"),
-      offsetX: uniform(0.0, "float"),
-      offsetY: uniform(0.0, "float"),
+      offset: uniform(new THREE.Vector2(0, 0), "vec2"),
       scale: uniform(0.0, "float"),
       unitCameraDirection: uniform(new THREE.Vector3(1, 1, 1), "vec3"),
       labelDisplayInside: uniform(1, "uint"),

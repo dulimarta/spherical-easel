@@ -45,7 +45,7 @@ export class HELabel extends HENodule {
     HENodule.LABEL_COUNT++;
     this.name = "La" + HENodule.LABEL_COUNT;
     this._atInfinity = atInfinity;
-    console.log("here", this.name);
+    // console.log("here", this.name);
     this._initMesh({
       posOrAngle: posOrAngle,
       upper: upper
@@ -145,7 +145,7 @@ export class HELabel extends HENodule {
     }
 
     // Update visibility
-    console.log("label showing", this._showing);
+    // console.log("label showing", this._showing, this.name);
     if (this._showing && this._exists) {
       this._material.visible = true;
     } else {
@@ -167,8 +167,8 @@ export class HELabel extends HENodule {
   }
 
   public applyLabelOffset(x: number, y: number): void {
-    this._material.offsetX = x;
-    this._material.offsetY = y;
+    this._material.offset.x = x;
+    this._material.offset.y = y;
   }
   /**
    * Set or get the location vector of the SEPoint on the unit ideal sphere

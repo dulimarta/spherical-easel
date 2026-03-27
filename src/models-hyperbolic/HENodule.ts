@@ -91,7 +91,7 @@ export abstract class HENodule {
         c.geometry.dispose();
       });
     s.remove(this.group);
-    // console.log("removed", this.name, "from scene");
+    console.log("removed", this.name, "from scene");
   }
 
   public isOutOfDate(): boolean {

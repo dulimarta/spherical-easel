@@ -41,6 +41,7 @@ export class PoseTracker implements HyperbolicToolStrategy {
    */
   protected hitHENodules: HENodule[] = [];
   protected hitHEPoints: HEPoint[] = [];
+  protected hitHELabels: HELabel[] = [];
   // protected hitHELines: HELine[] = [];
   // protected hitHESegments: HESegment[] = [];
   // protected hitHECircles: HECircle[] = [];
@@ -81,22 +82,22 @@ export class PoseTracker implements HyperbolicToolStrategy {
       PoseTracker.hyperStore.pointAtInfinityStripIsClosestIntersection;
 
     // control the normal arrow
-    if (
-      PoseTracker.hyperStore.closestIntersectionIsSurface &&
-      PoseTracker.hyperStore.surfaceIntersections.length > 0
-    ) {
-      this.scene.add(this.normalArrow);
-      // this.normalArrow.visible = true;
-      this.normalArrow.position.copy(
-        PoseTracker.hyperStore.surfaceIntersections[0].point
-      );
-      this.normalArrow.setDirection(
-        PoseTracker.hyperStore.surfaceIntersections[0].normal!
-      );
-    } else {
-      // this.normalArrow.visible = false;
-      this.scene.remove(this.normalArrow);
-    }
+    // if (
+    //   PoseTracker.hyperStore.closestIntersectionIsSurface &&
+    //   PoseTracker.hyperStore.surfaceIntersections.length > 0
+    // ) {
+    //   this.scene.add(this.normalArrow);
+    //   // this.normalArrow.visible = true;
+    //   this.normalArrow.position.copy(
+    //     PoseTracker.hyperStore.surfaceIntersections[0].point
+    //   );
+    //   this.normalArrow.setDirection(
+    //     PoseTracker.hyperStore.surfaceIntersections[0].normal!
+    //   );
+    // } else {
+    //   // this.normalArrow.visible = false;
+    //   this.scene.remove(this.normalArrow);
+    // }
 
     // update the hit arrays as necessary
     if (PoseTracker.hyperStore.objectIntersections.length === 0) {
@@ -127,7 +128,16 @@ export class PoseTracker implements HyperbolicToolStrategy {
     this.hitHEPoints = this.hitHENodules
       .filter(obj => obj.name.startsWith("P"))
       .map(obj => obj as HEPoint);
-    // console.log("# hit HEPoints", this.hitHENodules.length);
+    console.log("# hit HEPoints", this.hitHEPoints.length);
+
+    this.hitHELabels = this.hitHENodules
+      .filter(obj => obj.name.startsWith("La"))
+      .map(obj => obj as HELabel);
+    console.log(
+      "# hit HELabels",
+      this.hitHELabels.length,
+      this.hitHELabels[0] ? this.hitHELabels[0].name : ""
+    );
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -158,6 +168,7 @@ export class PoseTracker implements HyperbolicToolStrategy {
   clearAllHitArrays(): void {
     this.hitHENodules.splice(0);
     this.hitHEPoints.splice(0);
+    this.hitHELabels.splice(0);
   }
 
   static addCreateAntipodeCommand(
