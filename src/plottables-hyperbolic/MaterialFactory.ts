@@ -1,5 +1,6 @@
 import * as THREE from "three/webgpu";
 import { uniform } from "three/tsl";
+import { T } from "vitest/dist/chunks/reporters.d.BFLkQcL6.js";
 
 interface CustomMaterialUserData {
   glowing: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; //wrapping a boolean in a uniform doesn't currently work, so use number 1 = true and 0 = false
@@ -14,16 +15,12 @@ interface CustomPointMaterialUserData extends CustomMaterialUserData {
 }
 
 interface CustomLabelMaterialUserData extends CustomMaterialUserData {
-  angle: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // used if the point is at infinity
-  upper: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; //wrapping a boolean in a uniform doesn't currently work, so use number 1 = true and 0 = false
-  position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>; // used if the point is not at infinity
-  offset: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector2>>; // the offset for the text in multiples of unit from the center of the text object
+  xyOffSetVector: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector2>>; // the offset for the text in multiples of unit
   scale: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; //in multiples of the unit
-  unitCameraDirection: THREE.TSL.ShaderNodeObject<
-    THREE.UniformNode<THREE.Vector3>
-  >; // used instead of quaternion because setting the quaternion doesn't work for WebGPU node material
-  labelDisplayInside: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // Is the label on the inside ( value 1 = true) or outside( value = 0 false)
-  centerOfLabel: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>; // Center of the label so  occlusion can be checked
+  zOffsetVector: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>; // the z offset for the text so that the text is not displayed on both sides of the hyperboloid or cone, this is automatically set at the same time the transformationMatrix is set
+  transformationMatrix: THREE.TSL.ShaderNodeObject<
+    THREE.UniformNode<THREE.Matrix4>
+  >; // This is the matrix that transforms the text from the default (z=0 in the first quadrant) to its final position facing the camera, it must be scaled first
 }
 
 export class CustomMaterial extends THREE.MeshStandardNodeMaterial {
@@ -96,14 +93,10 @@ export class CustomPointMaterial extends CustomMaterial {
 }
 
 export class CustomLabelMaterial extends CustomMaterial {
-  declare angle: number;
-  declare upper: number;
-  declare position: THREE.Vector3;
-  declare offset: THREE.Vector2;
+  declare xyOffSetVector: THREE.Vector2;
   declare scale: number;
-  declare unitCameraDirection: THREE.Vector3;
-  declare labelDisplayInside: number;
-  declare centerOfLabel: THREE.Vector3;
+  declare zOffsetVector: THREE.Vector3;
+  declare transformationMatrix: THREE.Matrix4;
 
   declare userData: CustomLabelMaterialUserData;
 
@@ -111,14 +104,10 @@ export class CustomLabelMaterial extends CustomMaterial {
     super(parameters);
 
     const labelUniforms = {
-      angle: uniform(0.0, "float"),
-      upper: uniform(1, "uint"),
-      position: uniform(new THREE.Vector3(0, 0, 0), "vec3"),
-      offset: uniform(new THREE.Vector2(0, 0), "vec2"),
-      scale: uniform(0.0, "float"),
-      unitCameraDirection: uniform(new THREE.Vector3(1, 1, 1), "vec3"),
-      labelDisplayInside: uniform(1, "uint"),
-      centerOfLabel: uniform(new THREE.Vector3(1, 1, 1), "vec3")
+      xyOffSetVector: uniform(new THREE.Vector2(0, 0), "vec2"),
+      scale: uniform(1.0, "float"),
+      zOffsetVector: uniform(new THREE.Vector3(0, 0, 0), "vec3"),
+      transformationMatrix: uniform(new THREE.Matrix4(), "mat4")
     };
 
     Object.assign(this.userData, labelUniforms);

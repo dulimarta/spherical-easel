@@ -221,9 +221,7 @@ export class PointHandler extends PoseTracker {
               this.tempPointAtInfinityMesh.material as CustomPointMaterial
             ).angle
           });
-          // vtx.angle = (
-          //   this.tempPointAtInfinityMesh.material as CustomPointMaterial
-          // ).angle;
+
           newHELabel = new HELabel(
             "point",
             vtx,
@@ -234,6 +232,8 @@ export class PointHandler extends PoseTracker {
             true,
             hitLocation.z > 0
           );
+          // set the parent of the label
+          vtx.label = newHELabel;
         }
 
         if (vtx && newHELabel) {
@@ -245,7 +245,7 @@ export class PointHandler extends PoseTracker {
             pointCommandGroup
           );
           ///////////
-          vtx.label = newHELabel;
+
           // Set the initial label location
           // this.tmpVector
           //   .copy(vtx.locationVector)

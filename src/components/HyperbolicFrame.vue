@@ -178,6 +178,7 @@ const {
   objectIntersections,
   closestIntersectionIsSurface,
   cameraQuaternion,
+  cameraOrigin,
   hyperboloidIsClosestIntersection,
   pointAtInfinityStripIsClosestIntersection
 } = storeToRefs(hyperStore);
@@ -710,6 +711,7 @@ function doRender() {
     if (hasUpdated) {
       hasUpdatedCameraControls.value = true;
       cameraQuaternion.value.copy(camera.quaternion);
+      camera.getWorldPosition(cameraOrigin.value);
       // renderer.renderAsync(scene, camera);
     }
   }

@@ -89,7 +89,7 @@ export class HEAntipodalPoint extends HEPoint {
     this._exists = this._antipodalPointParent.exists;
 
     if (this._exists) {
-      // Update the current location with the opposite of the antipodal parent vector location
+      // Update the current location with the opposite of the antipodal parent vector/angle location
       if (this.atInfinity) {
         this._material.angle = (
           this._antipodalPointParent.material.angle + Math.PI
@@ -108,7 +108,7 @@ export class HEAntipodalPoint extends HEPoint {
     if (this.showing && this._isUserCreated && this._exists) {
       this._material.visible = true;
     } else {
-      console.log("antipode point NOT visible");
+      // console.log("antipode point NOT visible", this.name, this.angle);
       this._material.visible = false;
     }
   }
@@ -138,7 +138,7 @@ export class HEAntipodalPoint extends HEPoint {
 
   // For !isUserCreated points glowing is the same as showing or not showing the point,
   set glowing(b: boolean) {
-    console.log("HENodule set glow of ", this.name, " to ", b);
+    // console.log("HENodule set glow of ", this.name, " to ", b);
     if (!this._isUserCreated) {
       this.showing = b;
     } else {

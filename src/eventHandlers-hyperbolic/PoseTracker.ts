@@ -128,16 +128,16 @@ export class PoseTracker implements HyperbolicToolStrategy {
     this.hitHEPoints = this.hitHENodules
       .filter(obj => obj.name.startsWith("P"))
       .map(obj => obj as HEPoint);
-    console.log("# hit HEPoints", this.hitHEPoints.length);
+    // console.log("# hit HEPoints", this.hitHEPoints.length);
 
     this.hitHELabels = this.hitHENodules
       .filter(obj => obj.name.startsWith("La"))
       .map(obj => obj as HELabel);
-    console.log(
-      "# hit HELabels",
-      this.hitHELabels.length,
-      this.hitHELabels[0] ? this.hitHELabels[0].name : ""
-    );
+    // console.log(
+    //   "# hit HELabels",
+    //   this.hitHELabels.length,
+    //   this.hitHELabels[0] ? this.hitHELabels[0].name : ""
+    // );
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -200,9 +200,11 @@ export class PoseTracker implements HyperbolicToolStrategy {
     // );
     const newHEAntipodalLabel = new HELabel(
       "point",
-      parentPoint,
+      antipodalVtx,
       parentPoint.atInfinity
-        ? (parentPoint.material as CustomPointMaterial).angle
+        ? (
+            (parentPoint.material as CustomPointMaterial).angle + Math.PI
+          ).modTwoPi()
         : new Vector3()
             .copy((parentPoint.material as CustomPointMaterial).position)
             .multiplyScalar(-1),

@@ -16,12 +16,10 @@ import { ref, Ref } from "vue";
 import { useThreeFont } from "@/composables/useThreeFont";
 import { HELine } from "@/models-hyperbolic/HELine";
 import SETTINGS, { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
-import { Text } from "troika-three-text";
 import { ActionMode } from "@/types";
 import { HELabel } from "@/models-hyperbolic/HELabel";
-import { cameraPosition, uniform } from "three/tsl";
 import EventBus from "@/eventHandlers-spherical/EventBus";
-import { CustomLabelMaterial } from "@/plottables-hyperbolic/MaterialFactory";
+
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const surfaceIntersections: Ref<Intersection[]> = ref([]); // intersections with hyperbolic surfaces computed in hyperbolic frame
   const objectIntersections: Ref<Intersection[]> = ref([]); // intersections with hyperbolic surfaces computed in hyperbolic frame
@@ -40,9 +38,10 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const cameraQuaternion: Ref<Quaternion> = ref(new Quaternion());
   // const cameraCF = new Matrix4();
   const cameraInverseMatrix = ref(new Matrix4());
+  const cameraMatrix = ref(new Matrix4());
   const cameraScale = new Vector3();
   const rayCastDirection = new Vector3();
-  const cameraOrigin = new Vector3();
+  const cameraOrigin = ref(new Vector3());
   const { font } = useThreeFont();
   const implementedHETools: Ref<Array<ActionMode>> = ref([
     "point",
@@ -63,13 +62,13 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     threeJSScene = s;
     threeJSCamera = c;
 
-    cameraInverseMatrix.value.copy(threeJSCamera.matrixWorld).invert();
+    cameraMatrix.value.copy(threeJSCamera.matrixWorld);
     // const v = new Vector3();
     const q = new Quaternion();
     const scale = new Vector3();
     // c.matrixWorld.decompose(v, q, scale);
     // console.debug("Camera details", v, q, s);
-    cameraInverseMatrix.value.decompose(cameraOrigin, q, scale);
+    cameraMatrix.value.decompose(cameraOrigin.value, q, scale);
     // console.debug("Camera inverse details", cameraOrigin, q, s);
     rayCaster = new Raycaster();
   }
@@ -215,6 +214,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     objectIntersections,
     closestIntersectionIsSurface,
     cameraQuaternion,
+    cameraOrigin,
     cameraInverseMatrix,
     implementedHETools,
     hyperboloidIsClosestIntersection,
