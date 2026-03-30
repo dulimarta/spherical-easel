@@ -66,6 +66,12 @@ export class HEPoint extends HENodule {
     this._atInfinity = atInfinity;
     this._nonFreePoint = createNonFreePoint;
     this.group.add(this._mesh);
+    // console.log(
+    //   "Constructor Point Info:",
+    //   this.name,
+    //   this.angle,
+    //   this.location
+    // );
   }
 
   public update(): void {
