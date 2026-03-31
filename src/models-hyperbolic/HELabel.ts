@@ -23,8 +23,6 @@ import {
 
 //import { createLabel } from "@/plottables-hyperbolic/MeshFactory";
 
-// // One-time setup — call this at app startup before any HELabel is created
-// Text.setHarfBuzzPath("/hb/hb.wasm");
 type PlaneBounds = {
   min: { x: number; y: number; z: number };
   max: { x: number; y: number; z: number };
@@ -167,8 +165,9 @@ export class HELabel extends HENodule {
         // The only labels at infinity are those labeling points
         this._angle = (this.parent as HEPoint).angle;
       } else {
-        // this._material.position = this.parent.getClosestLabelVector(); // not implemented yet
+        // this._position = this.parent.getClosestLabelVector(); // not implemented yet
       }
+      this.faceCamera();
     }
 
     // Update visibility

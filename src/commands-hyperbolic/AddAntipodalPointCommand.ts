@@ -25,9 +25,9 @@ export class AddAntipodalPointCommand extends Command {
   }
 
   do(): void {
-    // console.debug(
-    //   `AddAntipodalPoint: DO added the point ${this.seAntipodalPoint.name} as the antipode to parent ${this.parentSEPoint.name} it is userCreated: ${this.seAntipodalPoint.isUserCreated}`
-    // );
+    console.log(
+      `AddAntipodalPoint: DO added the point ${this.heAntipodalPoint.name} as the antipode to parent ${this.parentHEPoint.name} it is userCreated: ${this.heAntipodalPoint.isUserCreated} Upper${this.heAntipodalPoint.upper}`
+    );
     this.parentHEPoint.registerChild(this.heAntipodalPoint);
     this.heAntipodalPoint.registerChild(this.heLabel);
     Command.hstore.addPoint(this.heAntipodalPoint);

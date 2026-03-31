@@ -20,10 +20,10 @@ import { HELabel } from "@/models-hyperbolic/HELabel";
 const Z_AXIS = new Vector3(0, 0, 1);
 
 export class PointHandler extends PoseTracker {
-  protected tempPointMesh: Mesh;
-  protected tempPointMaterial: CustomPointMaterial;
-  protected tempPointAtInfinityMesh: Mesh;
-  protected tempPointAtInfinityMaterial: CustomPointMaterial;
+  protected tempPoint: HEPoint;
+  // protected tempPointMaterial: CustomPointMaterial;
+  protected tempPointAtInfinity: HEPoint;
+  // protected tempPointAtInfinityMaterial: CustomPointMaterial;
   protected tempTube: Mesh;
   protected tempTubeMaterial: CustomPointMaterial;
   protected tempUpperCone: Mesh;
@@ -44,22 +44,13 @@ export class PointHandler extends PoseTracker {
   constructor(scene: Scene) {
     super(scene);
     this.scene = scene;
-    this.tempPointMesh = createPoint({
-      name: "pointHandlerTempPoint",
-      temporary: true,
-      upper: true, // this doesn't mater for temporary objects
-      position: new Vector3()
-    });
-    this.tempPointMaterial = this.tempPointMesh.material as CustomPointMaterial;
-    this.tempPointAtInfinityMesh = createPointAtInfinity({
-      name: "pointHandlerTempPointAtInfinity",
-      temporary: true,
-      upper: true, // this doesn't mater for temporary objects
-      angle: 0
-    });
-    this.tempPointAtInfinityMaterial = this.tempPointAtInfinityMesh
-      .material as CustomPointMaterial;
-    this.tempTube = createPointAtInfinityTube();
+    this.tempPoint = new HEPoint(new Vector3(), false, true, false, true);
+
+    // this.tempPointMaterial = this.tempPoint.material as CustomPointMaterial;
+    this.tempPointAtInfinity = new HEPoint(0.0, true, true, false, true);
+    // this.tempPointAtInfinityMaterial = this.tempPointAtInfinity
+    //   .material as CustomPointMaterial;
+    this.tempTube = createPointAtInfinityTube(true);
     this.tempTubeMaterial = this.tempTube.material as CustomPointMaterial;
     this.tempLowerCone = createBoundaryCone({ upper: false });
     this.tempUpperCone = createBoundaryCone({ upper: true });
@@ -199,11 +190,7 @@ export class PointHandler extends PoseTracker {
         const hitLocation =
           PoseTracker.hyperStore.surfaceIntersections[0].point;
         if (this.hyperboloidFirstHit) {
-          vtx = new HEPoint({
-            atInfinity: false,
-            upper: hitLocation.z > 0,
-            posOrAngle: hitLocation
-          });
+          vtx = new HEPoint(hitLocation, false, hitLocation.z > 0);
           // vtx.location = hitLocation;
           newHELabel = new HELabel(
             "point",
@@ -214,20 +201,16 @@ export class PointHandler extends PoseTracker {
             hitLocation.z > 0
           );
         } else if (this.pointAtInfinityStripFirstHit) {
-          vtx = new HEPoint({
-            atInfinity: true,
-            upper: hitLocation.z > 0,
-            posOrAngle: (
-              this.tempPointAtInfinityMesh.material as CustomPointMaterial
-            ).angle
-          });
+          vtx = new HEPoint(
+            Math.atan2(hitLocation.y, hitLocation.x),
+            true,
+            hitLocation.z > 0
+          );
 
           newHELabel = new HELabel(
             "point",
             vtx,
-            (
-              this.tempPointAtInfinityMesh.material as CustomPointMaterial
-            ).angle,
+            Math.atan2(hitLocation.y, hitLocation.x),
             vtx.name,
             true,
             hitLocation.z > 0
@@ -296,14 +279,14 @@ export class PointHandler extends PoseTracker {
         if (PoseTracker.hyperStore.hyperboloidIsClosestIntersection) {
           if (!this.tempPointInScene) {
             this.tempPointInScene = true;
-            this.scene.add(this.tempPointMesh);
+            this.scene.add(this.tempPoint.mesh);
           }
-          this.tempPointMaterial.position =
+          this.tempPoint.position =
             PoseTracker.hyperStore.surfaceIntersections[0].point;
         } else {
           if (this.tempPointInScene) {
             this.tempPointInScene = false;
-            this.scene.remove(this.tempPointMesh);
+            this.scene.remove(this.tempPoint.mesh);
           }
         }
 
@@ -311,13 +294,13 @@ export class PointHandler extends PoseTracker {
           if (!this.tempPointAtInfinityInScene) {
             this.tempPointAtInfinityInScene = true;
             this.scene.add(this.tempTube);
-            this.scene.add(this.tempPointAtInfinityMesh);
+            this.scene.add(this.tempPointAtInfinity.mesh);
           }
           const location = PoseTracker.hyperStore.surfaceIntersections[0].point;
           const angle = Math.atan2(location.y, location.x);
           const upper = location.z > 0;
-          this.tempPointAtInfinityMaterial.upper = upper ? 1 : 0;
-          this.tempPointAtInfinityMaterial.angle = angle;
+          this.tempPointAtInfinity.upper = upper;
+          this.tempPointAtInfinity.angle = angle;
           this.tempTubeMaterial.upper = upper ? 1 : 0;
           this.tempTubeMaterial.angle = angle;
 
@@ -340,7 +323,7 @@ export class PointHandler extends PoseTracker {
             this.tempPointAtInfinityUpperTubeInScene = false;
             this.tempPointAtInfinityLowerTubeInScene = false;
             this.scene.remove(this.tempTube);
-            this.scene.remove(this.tempPointAtInfinityMesh);
+            this.scene.remove(this.tempPointAtInfinity.mesh);
             this.scene.remove(this.tempLowerCone);
             this.scene.remove(this.tempUpperCone);
           }
@@ -349,7 +332,7 @@ export class PointHandler extends PoseTracker {
         // snap to an object
         if (!this.tempPointInScene) {
           this.tempPointInScene = true;
-          this.scene.add(this.tempPointMesh);
+          this.scene.add(this.tempPoint.mesh);
         }
         // this.tempPointMaterial.position = this.snapToObject.closestVector(
         //   PoseTracker.hyperStore.surfaceIntersections[0].point
@@ -359,7 +342,7 @@ export class PointHandler extends PoseTracker {
       if (this.filteredIntersectionPointsList.length > 0) {
         if (this.tempPointInScene) {
           // Remove the temporary point
-          this.scene.remove(this.tempPointMesh);
+          this.scene.remove(this.tempPoint.mesh);
           this.tempPointInScene = false;
           this.snapToObject = null;
         }
@@ -369,7 +352,7 @@ export class PointHandler extends PoseTracker {
           this.tempPointAtInfinityUpperTubeInScene = false;
           this.tempPointAtInfinityLowerTubeInScene = false;
           this.scene.remove(this.tempTube);
-          this.scene.remove(this.tempPointAtInfinityMesh);
+          this.scene.remove(this.tempPointAtInfinity.mesh);
           this.scene.remove(this.tempLowerCone);
           this.scene.remove(this.tempUpperCone);
           this.snapToObject = null;
@@ -399,8 +382,8 @@ export class PointHandler extends PoseTracker {
   }
 
   removeAllTempObjects() {
-    this.scene.remove(this.tempPointMesh);
-    this.scene.remove(this.tempPointAtInfinityMesh);
+    this.scene.remove(this.tempPoint.mesh);
+    this.scene.remove(this.tempPointAtInfinity.mesh);
     this.scene.remove(this.tempTube);
     this.scene.remove(this.tempUpperCone);
     this.scene.remove(this.tempLowerCone);

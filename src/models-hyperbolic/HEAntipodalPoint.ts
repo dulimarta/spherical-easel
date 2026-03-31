@@ -31,25 +31,25 @@ export class HEAntipodalPoint extends HEPoint {
     atInfinity: boolean;
     upper: boolean;
   }) {
-    super({
-      posOrAngle: atInfinity
+    super(
+      atInfinity
         ? (antipodalPointParent.angle + Math.PI).modTwoPi()
-        : new Vector3().copy(antipodalPointParent.location).multiplyScalar(-1),
-      atInfinity: atInfinity,
-      createNonFreePoint: true,
-      upper: upper
-    });
+        : new Vector3().copy(antipodalPointParent.position).multiplyScalar(-1),
+      atInfinity,
+      upper,
+      true
+    );
     this._antipodalPointParent = antipodalPointParent;
     this._isUserCreated = isUserCreated;
     this.showing = isUserCreated; // Hide automatically created antipodes
     this.shallowUpdate(); // set the location and the visibility
     // console.log(
-    //   "parent",
+    //   "create antipode parent",
     //   this._antipodalPointParent.material.angle,
     //   this._antipodalPointParent.material.position.toFixed(2)
     // );
     // console.log(
-    //   "antipode",
+    //   "antipode info:",
     //   this._material.angle,
     //   this._material.position.toFixed(2)
     // );
@@ -99,6 +99,7 @@ export class HEAntipodalPoint extends HEPoint {
           .clone()
           .multiplyScalar(-1);
       }
+      this.updateTransformationMatrix();
     }
 
     // console.debug(

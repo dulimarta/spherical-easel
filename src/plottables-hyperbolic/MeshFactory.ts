@@ -209,57 +209,53 @@ export function createPoint({
   myColor = 0xff8080, //ffb3b3, //ff8080, //"white", //"0xBEBFC5",
   name,
   upper,
-  position,
   temporary = false //used in handlers,flag so that temporary objects are never hit with ray casting
 }: {
   radius?: number;
   myColor?: number; //"0xBEBFC5",
   name: string;
   upper: boolean;
-  position: Vector3;
   temporary?: boolean;
 }): Mesh {
   const sphereMaterial = new CustomPointMaterial({
     color: myColor,
     roughness: 0.3
   });
-  const positionUniform = sphereMaterial.userData.position;
+  const transformationMatrixUniform =
+    sphereMaterial.userData.transformationMatrix;
   const radiusUniform = sphereMaterial.userData.radius;
   const glowingUniform = sphereMaterial.userData.glowing;
-  const upperUniform = sphereMaterial.userData.upper;
   radiusUniform.value = radius;
-  upperUniform.value = upper ? 1 : 0;
-  positionUniform.value = position;
 
   const positionFunction = Fn(() => {
     // Glowing points size pulses
     const returnNode = select(
       glowingUniform.greaterThan(0.5),
-      positionLocal
-        .mul(unitLength)
-        .mul(oscSine(time.mul(pulseRate)).mul(pulseSizePercent).add(1))
-        .mul(radiusUniform)
-        .add(positionUniform),
-      positionLocal.mul(unitLength).mul(radiusUniform).add(positionUniform)
+      transformationMatrixUniform.mul(
+        vec4(
+          positionLocal
+            .mul(unitLength)
+            .mul(oscSine(time.mul(pulseRate)).mul(pulseSizePercent).add(1))
+            .mul(radiusUniform),
+          1
+        )
+      ),
+      transformationMatrixUniform.mul(
+        vec4(positionLocal.mul(unitLength).mul(radiusUniform), 1)
+      )
     );
 
-    return returnNode;
+    return returnNode.xyz;
   });
 
   sphereMaterial.positionNode = positionFunction();
 
   const colorFunction = Fn(() => {
     // Clip points to the visible part of the hyperboloid
-    if (upperUniform.value > 0.5) {
-      positionLocal.z
-        .add(unitLength.mul(radiusUniform))
-        .greaterThan(zUpperClip)
-        .discard();
+    if (upper) {
+      positionLocal.z.greaterThan(zUpperClip).discard();
     } else {
-      positionLocal.z
-        .sub(unitLength.mul(radiusUniform))
-        .lessThan(zLowerClip)
-        .discard();
+      positionLocal.z.lessThan(zLowerClip).discard();
     }
     // // Glowing points color pulses
     const returnColor = select(
@@ -279,19 +275,21 @@ export function createPoint({
   returnMesh.name = name;
 
   returnMesh.raycast = function (raycaster, intersects) {
-    const myUpper = positionUniform.value.z > 0;
     if (temporary) return; //temporary objects are never hit
+    const matrix = transformationMatrixUniform.value.elements;
+    const position = new Vector3(matrix[12], matrix[13], matrix[14]); // the position is stored in the last column of the transformation matrix
     const tempIntersections = intersectWithHyperboloid(
       raycaster.ray.origin,
       raycaster.ray.direction,
       raycaster.near,
       raycaster.far,
-      myUpper
+      position.z > 0
     );
+
     tempIntersections.forEach(intersection => {
       // If the raycaster origin is the camera position, then if we are within the apparent radius (plus 150%) of the point, it is hit by the raycaster
       if (
-        positionUniform.value.distanceTo(intersection.point) <
+        position.distanceTo(intersection.point) <
         radiusUniform.value * unitLength.value * 2.5
       ) {
         intersects.push({
@@ -310,7 +308,7 @@ export function createPoint({
 export function createPointAtInfinity({
   angle,
   radius = 0.18, // in multiples of the unit length
-  height = 0.33, //  in multiples of the unit length
+  height = 0.33, // in multiples of the unit length
   myColor = 0xff8080, //"white", //"0xBEBFC5",
   name,
   upper,
@@ -328,60 +326,84 @@ export function createPointAtInfinity({
     color: myColor,
     opacity: 1.0
   });
-  const angleUniform = coneMaterial.userData.angle;
+  const transformationMatrixUniform =
+    coneMaterial.userData.transformationMatrix;
   const radiusUniform = coneMaterial.userData.radius;
   const heightUniform = coneMaterial.userData.height;
-  const upperUniform = coneMaterial.userData.upper;
+  const angleUniform = coneMaterial.userData.angle;
   const glowingUniform = coneMaterial.userData.glowing;
-  angleUniform.value = angle;
+  const upperUniform = coneMaterial.userData.upper;
   radiusUniform.value = radius;
   heightUniform.value = height;
-  upperUniform.value = upper ? 1 : 0; // we use 1/0 because uniform wrapping boolean doesn't work
+  angleUniform.value = angle;
+  upperUniform.value = upper ? 1 : 0;
 
   coneMaterial.positionNode = Fn(() => {
-    const scaleAndTranslate = positionLocal
-      .add(vec3(0, 0.5, 0))
-      .mul(
-        vec3(
-          select(
-            glowingUniform.greaterThan(0.5), // selected nodes pulse in size
-            radiusUniform
-              .mul(unitLength)
-              .mul(oscSine(time.mul(pulseRate)).mul(pulseSizePercent).add(1)),
-            radiusUniform.mul(unitLength)
-          ),
-          heightUniform.mul(unitLength),
-          select(
-            glowingUniform.greaterThan(0.5),
-            radiusUniform
-              .mul(unitLength)
-              .mul(oscSine(time.mul(pulseRate)).mul(pulseSizePercent).add(1)),
-            radiusUniform.mul(unitLength)
-          )
-        )
-      )
-      .add(vec3(0, zUpperPAIClipMinus.mul(Math.SQRT2), 0));
-
-    const minusPlusOne = select(
-      upperUniform.greaterThan(0.5),
-      float(-1.0),
-      float(1.0)
+    const myRadius = select(
+      glowingUniform.greaterThan(0.5), // selected nodes pulse in size
+      radiusUniform
+        .mul(unitLength)
+        .mul(oscSine(time.mul(pulseRate)).mul(pulseSizePercent).add(1)),
+      radiusUniform.mul(unitLength)
     );
-    // ca -sa 0        1   0     0
-    // sa  ca 0    *   0  c+/-45   -s+/-45
-    // 0   0  1        0  s+/-45    c+/-45
-
-    const rotationMatrixAboutZAxis = zAxisRotationMatrix(
-      float(Math.PI / 2).sub(angleUniform)
+    const myHeight = heightUniform.mul(unitLength);
+    const scaleAndTranslateMatrix = mat4(
+      vec4(myRadius, 0, 0, 0), // column 0
+      vec4(0, myHeight, 0, 0), // column 1
+      vec4(0, 0, myRadius, 0), // column 2
+      vec4(
+        float(0.0),
+        myHeight.mul(0.5).add(zUpperPAIClipMinus.mul(Math.SQRT2)),
+        float(0.0),
+        1
+      ) // column 3
     );
+    // .add(vec3(0, 0.5, 0))
+    // .mul(
+    //   vec3(
+    //     select(
+    //       glowingUniform.greaterThan(0.5), // selected nodes pulse in size
+    //       radiusUniform
+    //         .mul(unitLength)
+    //         .mul(oscSine(time.mul(pulseRate)).mul(pulseSizePercent).add(1)),
+    //       radiusUniform.mul(unitLength)
+    //     ),
+    //     heightUniform.mul(unitLength),
+    //     select(
+    //       glowingUniform.greaterThan(0.5),
+    //       radiusUniform
+    //         .mul(unitLength)
+    //         .mul(oscSine(time.mul(pulseRate)).mul(pulseSizePercent).add(1)),
+    //       radiusUniform.mul(unitLength)
+    //     )
+    //   )
+    // )
+    // .add(vec3(0, zUpperPAIClipMinus.mul(Math.SQRT2), 0));
 
-    const rotationMatrixAboutXAxis = xAxisRotationMatrix(
-      float(Math.PI / 4).mul(minusPlusOne)
-    );
+    // const minusPlusOne = select(
+    //   upperUniform.greaterThan(0.5),
+    //   float(-1.0),
+    //   float(1.0)
+    // );
+    // // ca -sa 0        1   0     0
+    // // sa  ca 0    *   0  c+/-45   -s+/-45
+    // // 0   0  1        0  s+/-45    c+/-45
 
-    return rotationMatrixAboutZAxis
-      .mul(rotationMatrixAboutXAxis)
-      .mul(scaleAndTranslate);
+    // const rotationMatrixAboutZAxis = zAxisRotationMatrix(
+    //   float(Math.PI / 2).sub(angleUniform)
+    // );
+
+    // const rotationMatrixAboutXAxis = xAxisRotationMatrix(
+    //   float(Math.PI / 4).mul(minusPlusOne)
+    // );
+
+    return transformationMatrixUniform
+      .mul(scaleAndTranslateMatrix)
+      .mul(vec4(positionLocal, 1)).xyz;
+
+    // rotationMatrixAboutZAxis
+    //   .mul(rotationMatrixAboutXAxis)
+    //   .mul(scaleAndTranslate);
   })();
 
   const colorFunction = Fn(() => {
@@ -403,7 +425,9 @@ export function createPointAtInfinity({
 
   returnMesh.raycast = function (raycaster, intersects) {
     if (temporary) return; // temporary objects are never hit
+
     const myUpper = upperUniform.value > 0.5 ? true : false;
+    // console.log("PAI raycast  check", this.name, myUpper);
     const tempIntersections = intersectWithPointAtInfinityStrip(
       raycaster.ray.origin,
       raycaster.ray.direction,
@@ -414,9 +438,9 @@ export function createPointAtInfinity({
     tempIntersections.forEach(intersection => {
       const hitAngle = Math.atan2(intersection.point.y, intersection.point.x);
       // If the angle is within the apparent radius of the base (plus 10%), it is hit by the raycaster
-      // console.log("PAI check", hitAngle - angleUniform.value);
+      // console.log("PAI check", (hitAngle - angleUniform.value).modTwoPi());
       if (
-        Math.abs(hitAngle - angleUniform.value) <
+        Math.abs((hitAngle - angleUniform.value).modTwoPi()) <
         radiusUniform.value * unitLength.value * 1.1
       ) {
         intersects.push({
@@ -433,7 +457,7 @@ export function createPointAtInfinity({
 }
 
 export function createPointAtInfinityTube(
-  upper: number = 1, // we must use 1/0 for true/false because TSL doesn't recognize boolean wrapped uniforms
+  upper: boolean, // use 1 (true) for upper and 0 (false) for lower since wrapping booleans in uniforms doesn't currently work
   angle: number = 0,
   radius: number = 0.05, // in multiples of the unit length
   myColor: number = 0xffbbbb, // 0xffbbbb, // 0xff9999, //"white",
@@ -449,7 +473,7 @@ export function createPointAtInfinityTube(
   const upperUniform = coneMaterial.userData.upper;
   angleUniform.value = angle;
   radiusUniform.value = radius;
-  upperUniform.value = upper;
+  upperUniform.value = upper ? 1 : 0;
 
   coneMaterial.positionNode = Fn(() => {
     // return positionLocal;
