@@ -266,7 +266,7 @@ export class SEParametric
     this.ref?.updateDisplay();
 
     // this.partitionedTValues.forEach((p, pos) => {
-    //   console.debug(`Partition ${pos} has ${p.length} sample points`, p);
+    //   console.debug(`Partition ${pos} has ${p.length} sample points`);
     // });
   }
 
@@ -323,7 +323,7 @@ export class SEParametric
     const [tMin, tMax] = this.tMinMaxExpressionValues();
     const RANGE = tMax - tMin;
     let vecValue: Vector3;
-    const fnValues: Array<TSample> = [];
+    const fnSamples: Array<TSample> = [];
     // To initialize, place equally spaced (in time) sample points on the curve
     for (let i = 0; i < N; i++) {
       const tValue = tMin + (i * RANGE) / (N - 1);
@@ -335,7 +335,7 @@ export class SEParametric
       );
       // vecValue.applyMatrix4(rotationMat4);
       // console.debug(`Seed At t=${tValue.toFixed(4)}`, vecValue.toFixed(4));
-      fnValues.push({
+      fnSamples.push({
         t: tValue,
         left: i > 0 ? i - 1 : this._isClosed ? N - 1 : 0, // left neighbor of the first point is itself (unless it is a closed curve)
         right: i < N - 1 ? i + 1 : this._isClosed ? 0 : N - 1, // right neighbor of the last point is itself
@@ -343,7 +343,7 @@ export class SEParametric
       });
     }
     // Calculate the local curvatures of the inner sample points
-    const AREA_THRESHOLD = 0.001;
+    const AREA_THRESHOLD = 0.1;
     // Provide our own array so we can manually peek into the elements
     // This action is required when curvature of a point already in the heap must be recalculated
     const tCurveArr: Array<TCurve> = [];
@@ -352,12 +352,12 @@ export class SEParametric
       tCurveArr
     );
 
-    let prev: TSample = fnValues[0];
-    let curr: TSample = fnValues[1];
+    let prev: TSample = fnSamples[0];
+    let curr: TSample = fnSamples[1];
     // Computer curvature of all the interior points
     // exclude curvature of fnValues[0] and fnValues[N-1]
     for (let k = 2; k < N; k++) {
-      const next = fnValues[k];
+      const next = fnSamples[k];
       // Use the area of the triangle made of three consecutive points
       // as the approximation to the local curvature
       const curvature = computeArea(prev, curr, next);
@@ -383,10 +383,10 @@ export class SEParametric
       //   }`
       // );
       const indexM = nextSample!.index;
-      const indexL = fnValues[indexM].left; // index of L
-      const tLeft = fnValues[indexL].t;
-      const indexR = fnValues[indexM].right; // index of R
-      const tRight = fnValues[indexR].t;
+      const indexL = fnSamples[indexM].left; // index of L
+      const tLeft = fnSamples[indexL].t;
+      const indexR = fnSamples[indexM].right; // index of R
+      const tRight = fnSamples[indexR].t;
       // Recalculate the point on the left third
       const t1 = (2 * tLeft + tRight) / 3; // T-value for M1
       this.varMap.set("t", t1);
@@ -417,17 +417,17 @@ export class SEParametric
         this.coordinateSyntaxTrees.z,
         this.varMap
       );
-      const indexM2 = fnValues.length; // Must be the length BEFORE push
+      const indexM2 = fnSamples.length; // Must be the length BEFORE push
       // Reuse the space previously occupied by M for M1
       const indexM1 = indexM;
-      fnValues[indexM1].t = t1;
+      fnSamples[indexM1].t = t1;
       // left neighbor of M1 remains the same (L), but its right neighbor is now M2
-      fnValues[indexM1].right = indexM2;
-      fnValues[indexM1].value.set(xLeft, yLeft, zLeft);
+      fnSamples[indexM1].right = indexM2;
+      fnSamples[indexM1].value.set(xLeft, yLeft, zLeft);
       // fnValues[indexM1].value.applyMatrix4(rotationMat4);
 
       // The new sample point M2 is between or M1 and old right R
-      fnValues.push({
+      fnSamples.push({
         t: t2,
         left: indexM1,
         right: indexR,
@@ -435,15 +435,15 @@ export class SEParametric
       });
 
       // Left neighbor of R changes to M2
-      fnValues[indexR].left = indexM2;
+      fnSamples[indexR].left = indexM2;
 
       // Recalculate curvature at L using LL, L, M1
       let heapFixRequired = false;
-      const leftOfIndexL = fnValues[indexL].left;
+      const leftOfIndexL = fnSamples[indexL].left;
       const areaL = computeArea(
-        fnValues[leftOfIndexL],
-        fnValues[indexL],
-        fnValues[indexM1]
+        fnSamples[leftOfIndexL],
+        fnSamples[indexL],
+        fnSamples[indexM1]
       );
       // Update the curvature of L in the heap
       const posOfL = tCurveArr.findIndex((z: TCurve) => z.index == indexL);
@@ -453,11 +453,11 @@ export class SEParametric
         heapFixRequired = true;
       }
       // Recalculate curvature at R using M2, R, RR
-      const rightOfIndexR = fnValues[indexR].right;
+      const rightOfIndexR = fnSamples[indexR].right;
       const areaR = computeArea(
-        fnValues[indexM2],
-        fnValues[indexR],
-        fnValues[rightOfIndexR]
+        fnSamples[indexM2],
+        fnSamples[indexR],
+        fnSamples[rightOfIndexR]
       );
       // Update the curvature of R in the heap
       const posOfR = tCurveArr.findIndex((z: TCurve) => z.index == indexR);
@@ -472,9 +472,9 @@ export class SEParametric
 
       // Calculate new curvature at M1 using L, M1, M2
       const areaM1 = computeArea(
-        fnValues[indexL],
-        fnValues[indexM1],
-        fnValues[indexM2]
+        fnSamples[indexL],
+        fnSamples[indexM1],
+        fnSamples[indexM2]
       );
 
       if (areaM1 > AREA_THRESHOLD)
@@ -482,20 +482,20 @@ export class SEParametric
 
       // Calculate new curvature at M2 using M1, M2, R
       const areaM2 = computeArea(
-        fnValues[indexM1],
-        fnValues[indexM2],
-        fnValues[indexR]
+        fnSamples[indexM1],
+        fnSamples[indexM2],
+        fnSamples[indexR]
       );
 
       if (areaM2 > AREA_THRESHOLD)
         curvatureHeap.push({ index: indexM2, curvature: areaM2 });
     }
     // Now sort the sample points by their T-value
-    fnValues.sort((a: TSample, b: TSample) => a.t - b.t);
+    fnSamples.sort((a: TSample, b: TSample) => a.t - b.t);
     this._tValues.splice(0);
     this._fnValues.splice(0);
-    this._tValues.push(...fnValues.map(x => x.t));
-    this._fnValues.push(...fnValues.map(x => x.value));
+    this._tValues.push(...fnSamples.map(x => x.t));
+    this._fnValues.push(...fnSamples.map(x => x.value));
     // Determine the largest get  between two successive sample points
     this.largestGap = this._fnValues.reduce(
       (prevGap: number, currPoint: Vector3, pos: number, arr: Vector3[]) => {
@@ -508,7 +508,6 @@ export class SEParametric
 
     // Create partitioned T-values based on cusp breakpoints
     const numDiscontinuity = this._c1DiscontinuityParameterValues.length;
-    // console.debug("Creating a new parametric", this.name);
 
     // Create partitioned T-values from the T-values of the sample points
     if (numDiscontinuity === 0) {
@@ -589,6 +588,9 @@ export class SEParametric
     this.ref.stylize(DisplayStyle.ApplyCurrentVariables);
     this.ref.adjustSize();
     this.varMap.delete("t");
+    console.debug(
+      `Threshold ${AREA_THRESHOLD.toFixed(3)} NumPoints: ${fnSamples.length}`
+    );
   }
 
   private evaluateFunctionAndCache(
