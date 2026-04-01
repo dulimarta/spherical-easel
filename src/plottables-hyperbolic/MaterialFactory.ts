@@ -27,6 +27,7 @@ interface CustomLabelMaterialUserData extends CustomMaterialUserData {
   transformationMatrix: THREE.TSL.ShaderNodeObject<
     THREE.UniformNode<THREE.Matrix4>
   >; // This is the matrix that transforms the text from the default (z=0 in the first quadrant) to its final position facing the camera, it must be scaled first
+  cornerImages: THREE.Vector3[]; // The columns of this matrix are the images of the corners from the default (z=0 in the first quadrant) in their final position facing the camera
 }
 
 export class CustomMaterial extends THREE.MeshStandardNodeMaterial {
@@ -105,21 +106,23 @@ export class CustomLabelMaterial extends CustomMaterial {
   declare scale: number;
   declare zOffsetVector: THREE.Vector3;
   declare transformationMatrix: THREE.Matrix4;
+  declare cornerImages: THREE.Vector3[];
 
   declare userData: CustomLabelMaterialUserData;
 
   constructor(parameters?: THREE.MeshStandardNodeMaterialParameters) {
     super(parameters);
 
-    const labelUniforms = {
+    const labelVariables = {
       xyOffSetVector: uniform(new THREE.Vector2(0, 0), "vec2"),
       scale: uniform(1.0, "float"),
       zOffsetVector: uniform(new THREE.Vector3(0, 0, 0), "vec3"),
-      transformationMatrix: uniform(new THREE.Matrix4(), "mat4")
+      transformationMatrix: uniform(new THREE.Matrix4(), "mat4"),
+      cornerImages: [] as THREE.Vector3[]
     };
 
-    Object.assign(this.userData, labelUniforms);
+    Object.assign(this.userData, labelVariables);
 
-    this._bindUniforms(Object.keys(labelUniforms));
+    this._bindUniforms(Object.keys(labelVariables));
   }
 }

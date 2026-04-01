@@ -36,8 +36,13 @@ export class HEPoint extends HENodule {
     temporary: boolean = false
   ) {
     super();
-    HENodule.POINT_COUNT++;
-    this.name = `P${HENodule.POINT_COUNT}`;
+    if (!temporary) {
+      HENodule.POINT_COUNT++;
+      this.name = `P${HENodule.POINT_COUNT}`;
+    } else {
+      HEPoint.TEMP_POINT_COUNT++;
+      this.name = `tempP${HEPoint.TEMP_POINT_COUNT}`;
+    }
     if (atInfinity) {
       this._mesh = createPointAtInfinity({
         name: this.name,

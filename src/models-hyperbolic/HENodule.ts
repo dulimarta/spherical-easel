@@ -7,7 +7,9 @@ import * as THREE from "three/webgpu";
 let NODE_COUNT = 0;
 export abstract class HENodule {
   static POINT_COUNT = 0;
+  static TEMP_POINT_COUNT = 0;
   static LINE_COUNT = 0;
+  static TEMP_LINE_COUNT = 0;
   static LABEL_COUNT = 0;
   static SEGMENT_COUNT = 0;
   static hyperStore: HEStoreType;

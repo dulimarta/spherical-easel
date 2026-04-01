@@ -148,57 +148,50 @@ export async function createLabel({
   const returnMesh = new Mesh(textGeometry, labelMaterial);
   returnMesh.name = name;
 
-  // override raycaster so that the translated label can be hit
+  // override raycaster so that the transformed label can be hit
   returnMesh.raycast = function (raycaster, intersects) {
-    if (atInfinity) {
-      const tempIntersections = intersectWithPointAtInfinityStrip(
-        raycaster.ray.origin,
-        raycaster.ray.direction,
-        raycaster.near,
-        raycaster.far,
-        upper
+    const corners = this.material.userData.cornerImages as Vector3[];
+    // console.log("raycast from", this.name, corners);
+    if (corners && corners.length === 4) {
+      const normal = new Vector3().crossVectors(
+        corners[1].clone().sub(corners[0]),
+        corners[2].clone().sub(corners[0])
       );
-      tempIntersections.forEach(intersection => {
-        // check to make sure that the angle of intersection is close to the angle of the label AND the upper/lower is correct
+      // find the intersection of the ray P(t)= origin + t*direction with the plane defined by the corners (P(t)-corners[0]).normal = 0
+      // t = (corners[0] - origin).normal / direction.normal
+      const t =
+        corners[0].clone().sub(raycaster.ray.origin).dot(normal) /
+        raycaster.ray.direction.dot(normal);
+      if (t >= raycaster.near && t <= raycaster.far) {
+        const intersectionPoint = raycaster.ray.origin
+          .clone()
+          .add(raycaster.ray.direction.clone().multiplyScalar(t));
+        const rightSide = corners[1].clone().sub(corners[0]);
+        const upSide = corners[2].clone().sub(corners[0]);
+        const localCoordsOfIntersection = intersectionPoint
+          .clone()
+          .sub(corners[0]);
+        const rightCoord =
+          localCoordsOfIntersection.dot(rightSide) / rightSide.dot(rightSide);
+        const upCoord =
+          localCoordsOfIntersection.dot(upSide) / upSide.dot(upSide);
+        // s and t are the local coordinates of the intersection point in the basis defined by the right and up sides of the label, if they are between 0 and 1, then the ray hits the label.
+        // check if the intersection point is within the corners
         if (
-          Math.abs(
-            angle - Math.atan2(intersection.point.y, intersection.point.x)
-          ) < 0.1 &&
-          upper === intersection.point.z > 0
+          rightCoord >= 0 &&
+          rightCoord <= 1 &&
+          upCoord >= 0 &&
+          upCoord <= 1
         ) {
-          // console.log("label hit", this.name, angle);
+          // console.log("label hit", this.name);
           intersects.push({
-            distance: intersection.distance,
-            point: intersection.point.clone(),
-            normal: intersection.normal,
+            distance: t,
+            point: intersectionPoint.clone(),
+            normal: normal,
             object: this
           });
         }
-      });
-    } else {
-      const tempIntersections = intersectWithHyperboloid(
-        raycaster.ray.origin,
-        raycaster.ray.direction,
-        raycaster.near,
-        raycaster.far,
-        upper
-      );
-      tempIntersections.forEach(intersection => {
-        if (position.distanceTo(intersection.point) < unitLength.value * 2.5) {
-          // console.log(
-          //   "label hit",
-          //   this.name,
-          //   position.distanceTo(intersection.point),
-          //   unitLength.value * 0.5
-          // );
-          intersects.push({
-            distance: intersection.distance,
-            point: intersection.point.clone(),
-            normal: intersection.normal,
-            object: this
-          });
-        }
-      });
+      }
     }
   };
   return returnMesh;

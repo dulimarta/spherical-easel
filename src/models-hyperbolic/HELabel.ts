@@ -265,13 +265,13 @@ export class HELabel extends HENodule {
 
     // Get the columns of the imageOfCorners
     const te = imageOfCorners.elements; // te stands for "the elements"
-    const col0 = new THREE.Vector4(te[0], te[1], te[2], te[3]);
-    const col1 = new THREE.Vector4(te[4], te[5], te[6], te[7]);
-    const col2 = new THREE.Vector4(te[8], te[9], te[10], te[11]);
-    const col3 = new THREE.Vector4(te[12], te[13], te[14], te[15]);
+    const upperLeft = new THREE.Vector4(te[0], te[1], te[2], te[3]);
+    const lowerLeft = new THREE.Vector4(te[4], te[5], te[6], te[7]);
+    const upperRight = new THREE.Vector4(te[8], te[9], te[10], te[11]);
+    const lowerRight = new THREE.Vector4(te[12], te[13], te[14], te[15]);
 
     const deltaZValues: number[] = [];
-    [col0, col1, col2, col3].forEach(column => {
+    [upperLeft, lowerLeft, upperRight, lowerRight].forEach(column => {
       const zCoordinateOfProjection = Math.sqrt(
         column.x * column.x + column.y * column.y + (this._atInfinity ? 0 : 1)
       );
@@ -338,12 +338,32 @@ export class HELabel extends HENodule {
         displayOutsideZShiftVector.y,
         displayOutsideZShiftVector.z
       );
+      //Clear the corner images
+      this._material.userData.cornerImages = [];
+      // Add the final corner images
+      [upperLeft, lowerLeft, upperRight, lowerRight].forEach(column => {
+        this._material.userData.cornerImages.push(
+          new THREE.Vector3(column.x, column.y, column.z).add(
+            displayOutsideZShiftVector
+          )
+        );
+      });
     } else {
       this._material.userData.zOffsetVector.value = new THREE.Vector3(
         displayInsideZShiftVector.x,
         displayInsideZShiftVector.y,
         displayInsideZShiftVector.z
       );
+      //Clear the corner images
+      this._material.userData.cornerImages = [];
+      // Add the final corner images
+      [upperLeft, lowerLeft, upperRight, lowerRight].forEach(column => {
+        this._material.userData.cornerImages.push(
+          new THREE.Vector3(column.x, column.y, column.z).add(
+            displayInsideZShiftVector
+          )
+        );
+      });
     }
   }
 

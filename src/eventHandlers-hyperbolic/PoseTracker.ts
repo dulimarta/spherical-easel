@@ -103,10 +103,10 @@ export class PoseTracker implements HyperbolicToolStrategy {
     if (PoseTracker.hyperStore.objectIntersections.length === 0) {
       return;
     }
-    console.log(
-      "# intersections",
-      PoseTracker.hyperStore.objectIntersections.length
-    );
+    // console.log(
+    //   "# intersections",
+    //   PoseTracker.hyperStore.objectIntersections.length
+    // );
     this.hitHENodules = PoseTracker.hyperStore.objectIntersections
       .map(intersect => {
         return PoseTracker.hyperStore.getObjectById(intersect.object.name); // returns null for surfaces
