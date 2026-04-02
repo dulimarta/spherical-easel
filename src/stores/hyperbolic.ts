@@ -19,6 +19,8 @@ import SETTINGS, { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import { ActionMode } from "@/types";
 import { HELabel } from "@/models-hyperbolic/HELabel";
 import EventBus from "@/eventHandlers-spherical/EventBus";
+import { zLowerClip, zUpperClip } from "@/plottables-hyperbolic/MeshFactory";
+import { lab } from "color";
 
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const surfaceIntersections: Ref<Intersection[]> = ref([]); // intersections with hyperbolic surfaces computed in hyperbolic frame
@@ -56,7 +58,6 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   let threeJSScene: Scene;
   let threeJSCamera: Camera;
   let rayCaster: Raycaster;
-  const labelPosition = new Vector3();
 
   function setScene(s: Scene, c: Camera) {
     threeJSScene = s;
@@ -110,7 +111,24 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     // const cameraDirection = new Vector3();
     // threeJSCamera.getWorldDirection(cameraDirection);
     // console.log("hstore dir", cameraDirection.toFixed(2));
-    labelsMap.forEach(label => label.faceCamera());
+    labelsMap.forEach(label => {
+      //add or remove labels that are not at infinity and are outside of the clipping planes of the hyperboloid (plus a little buffer) from the scene
+      // This is necessary so that labels that are outside of the clipping planes don't show as the user dollies and zooms.
+      if (label.anchorPoint.w !== 0) {
+        if (
+          label.anchorPoint.z > zUpperClip.value ||
+          label.anchorPoint.z < zLowerClip.value
+        ) {
+          label.removeFromScene(threeJSScene);
+        } else {
+          label.addToScene(threeJSScene);
+          label.faceCamera();
+        }
+      } else {
+        // make the labels at infinity update
+        label.faceCamera();
+      }
+    });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     // threeJSCamera.matrixWorld.decompose(

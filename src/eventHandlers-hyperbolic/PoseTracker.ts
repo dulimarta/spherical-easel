@@ -1,6 +1,6 @@
 import {
   Scene,
-  Vector2,
+  Vector4,
   Vector3,
   Mesh,
   ArrowHelper,
@@ -21,6 +21,7 @@ import { AddAntipodalPointCommand } from "@/commands-hyperbolic/AddAntipodalPoin
 import { parseJsonText } from "typescript";
 import { HEIntersectionPoint } from "@/models-hyperbolic/HEIntersectionPoint";
 import { HELabel } from "@/models-hyperbolic/HELabel";
+import { a } from "vitest/dist/chunks/suite.d.FvehnV49.js";
 
 // const ORIGIN = new Vector3(0, 0, 0);
 const Y_AXIS = new Vector3(0, 1, 0);
@@ -179,7 +180,6 @@ export class PoseTracker implements HyperbolicToolStrategy {
     const antipodalVtx = new HEAntipodalPoint({
       antipodalPointParent: parentPoint,
       isUserCreated: false,
-      atInfinity: parentPoint.atInfinity,
       upper: !parentPoint.upper // The upper/lower of the new point being created
     });
 
@@ -201,11 +201,8 @@ export class PoseTracker implements HyperbolicToolStrategy {
     const newHEAntipodalLabel = new HELabel(
       "point",
       antipodalVtx,
-      parentPoint.atInfinity
-        ? (parentPoint.angle + Math.PI).modTwoPi()
-        : new Vector3().copy(parentPoint.position).multiplyScalar(-1),
+      antipodalVtx.position,
       antipodalVtx.name,
-      parentPoint.atInfinity,
       !parentPoint.upper
     );
     newHEAntipodalLabel.showing = false; // automatically created labels are not shown
@@ -219,5 +216,9 @@ export class PoseTracker implements HyperbolicToolStrategy {
     );
 
     return antipodalVtx;
+  }
+
+  static vec3ToVec4(vec3: Vector3, w: number): Vector4 {
+    return new Vector4(vec3.x, vec3.y, vec3.z, w);
   }
 }

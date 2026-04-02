@@ -44,10 +44,20 @@ export class PointHandler extends PoseTracker {
   constructor(scene: Scene) {
     super(scene);
     this.scene = scene;
-    this.tempPoint = new HEPoint(new Vector3(), false, true, false, true);
+    this.tempPoint = new HEPoint(
+      new THREE.Vector4(0, 0, 1, 1),
+      false,
+      false,
+      true
+    );
 
     // this.tempPointMaterial = this.tempPoint.material as CustomPointMaterial;
-    this.tempPointAtInfinity = new HEPoint(0.0, true, true, false, true);
+    this.tempPointAtInfinity = new HEPoint(
+      new THREE.Vector4(1, 0, 0, 0),
+      false,
+      false,
+      true
+    );
     // this.tempPointAtInfinityMaterial = this.tempPointAtInfinity
     //   .material as CustomPointMaterial;
     this.tempTube = createPointAtInfinityTube(true);
@@ -189,35 +199,18 @@ export class PointHandler extends PoseTracker {
         // this over either the point at infinity strip or the hyperboloid
         const hitLocation =
           PoseTracker.hyperStore.surfaceIntersections[0].point;
-        if (this.hyperboloidFirstHit) {
-          vtx = new HEPoint(hitLocation, false, hitLocation.z > 0);
-          // vtx.location = hitLocation;
-          newHELabel = new HELabel(
-            "point",
-            vtx,
-            hitLocation,
-            vtx.name,
-            false,
-            hitLocation.z > 0
-          );
-        } else if (this.pointAtInfinityStripFirstHit) {
-          vtx = new HEPoint(
-            Math.atan2(hitLocation.y, hitLocation.x),
-            true,
-            hitLocation.z > 0
-          );
-
-          newHELabel = new HELabel(
-            "point",
-            vtx,
-            Math.atan2(hitLocation.y, hitLocation.x),
-            vtx.name,
-            true,
-            hitLocation.z > 0
-          );
-          // set the parent of the label
-          vtx.label = newHELabel;
-        }
+        const vec4Location = PoseTracker.vec3ToVec4(
+          hitLocation,
+          this.hyperboloidFirstHit ? 1 : 0
+        );
+        vtx = new HEPoint(vec4Location, hitLocation.z > 0);
+        newHELabel = new HELabel(
+          "point",
+          vtx,
+          vec4Location,
+          vtx.name,
+          hitLocation.z > 0
+        );
 
         if (vtx && newHELabel) {
           pointCommandGroup.addCommand(new AddPointCommand(vtx, newHELabel));
@@ -257,12 +250,11 @@ export class PointHandler extends PoseTracker {
     this.updateFilteredPointsList();
 
     if (this.filteredIntersectionPointsList.length > 0) {
-      // console.log(
-      //   "point handler filter",
-      //   this.filteredIntersectionPointsList[0].name,
-      //   this.filteredIntersectionPointsList[0].material.angle,
-      //   this.filteredIntersectionPointsList[0].material.position.toFixed(2)
-      // );
+      console.log(
+        "point handler filter set glowing",
+        this.filteredIntersectionPointsList[0].name,
+        this.filteredIntersectionPointsList[0].position.toFixed(2)
+      );
       this.filteredIntersectionPointsList[0].glowing = true;
       this.snapToObject = null;
     }
@@ -281,8 +273,10 @@ export class PointHandler extends PoseTracker {
             this.tempPointInScene = true;
             this.scene.add(this.tempPoint.mesh);
           }
-          this.tempPoint.position =
-            PoseTracker.hyperStore.surfaceIntersections[0].point;
+          this.tempPoint.position = PoseTracker.vec3ToVec4(
+            PoseTracker.hyperStore.surfaceIntersections[0].point,
+            1
+          );
         } else {
           if (this.tempPointInScene) {
             this.tempPointInScene = false;
@@ -297,12 +291,14 @@ export class PointHandler extends PoseTracker {
             this.scene.add(this.tempPointAtInfinity.mesh);
           }
           const location = PoseTracker.hyperStore.surfaceIntersections[0].point;
-          const angle = Math.atan2(location.y, location.x);
           const upper = location.z > 0;
+          this.tempPointAtInfinity.position = PoseTracker.vec3ToVec4(
+            location,
+            0
+          );
           this.tempPointAtInfinity.upper = upper;
-          this.tempPointAtInfinity.angle = angle;
           this.tempTubeMaterial.upper = upper ? 1 : 0;
-          this.tempTubeMaterial.angle = angle;
+          this.tempTubeMaterial.tubeAngle = Math.atan2(location.y, location.x);
 
           if (!this.tempPointAtInfinityLowerTubeInScene && !upper) {
             this.scene.add(this.tempLowerCone);

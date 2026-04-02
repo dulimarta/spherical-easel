@@ -1,7 +1,7 @@
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { HEPoint } from "./HEPoint";
-import { Mesh, Vector3 } from "three";
+import { Mesh, Vector3, Vector4 } from "three";
 import { CustomPointMaterial } from "@/plottables-hyperbolic/MaterialFactory";
 const { t } = i18n.global;
 export class HEAntipodalPoint extends HEPoint {
@@ -23,21 +23,22 @@ export class HEAntipodalPoint extends HEPoint {
   constructor({
     antipodalPointParent,
     isUserCreated,
-    atInfinity,
     upper // this is the upper/lower of the new point being created
   }: {
     antipodalPointParent: HEPoint;
     isUserCreated: boolean;
-    atInfinity: boolean;
     upper: boolean;
   }) {
     super(
-      atInfinity
-        ? (antipodalPointParent.angle + Math.PI).modTwoPi()
-        : new Vector3().copy(antipodalPointParent.position).multiplyScalar(-1),
-      atInfinity,
+      new Vector4(
+        -antipodalPointParent.position.x,
+        -antipodalPointParent.position.y,
+        -antipodalPointParent.position.z,
+        antipodalPointParent.position.w // notice how NICE antipodes are in homogeneous coordinates!
+      ),
       upper,
-      true
+      true,
+      false
     );
     this._antipodalPointParent = antipodalPointParent;
     this._isUserCreated = isUserCreated;
@@ -89,16 +90,12 @@ export class HEAntipodalPoint extends HEPoint {
     this._exists = this._antipodalPointParent.exists;
 
     if (this._exists) {
-      // Update the current location with the opposite of the antipodal parent vector/angle location
-      if (this.atInfinity) {
-        this._material.angle = (
-          this._antipodalPointParent.material.angle + Math.PI
-        ).modTwoPi();
-      } else {
-        this._material.position = this._antipodalPointParent.material.position
-          .clone()
-          .multiplyScalar(-1);
-      }
+      this._position = new Vector4(
+        -this._antipodalPointParent.position.x,
+        -this._antipodalPointParent.position.y,
+        -this._antipodalPointParent.position.z,
+        this._antipodalPointParent.position.w // notice how NICE antipodes are in homogeneous coordinates!
+      );
       this.updateTransformationMatrix();
     }
 
@@ -139,7 +136,13 @@ export class HEAntipodalPoint extends HEPoint {
 
   // For !isUserCreated points glowing is the same as showing or not showing the point,
   set glowing(b: boolean) {
-    // console.log("HENodule set glow of ", this.name, " to ", b);
+    // console.log(
+    //   "he antipode set glow of ",
+    //   this.name,
+    //   " to ",
+    //   b,
+    //   this.position.toFixed(2)
+    // );
     if (!this._isUserCreated) {
       this.showing = b;
     } else {

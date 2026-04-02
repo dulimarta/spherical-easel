@@ -30,14 +30,12 @@ type PlaneBounds = {
 
 export class HELabel extends HENodule {
   public parent: HENodule;
-  protected _atInfinity: boolean;
   protected _mesh!: THREE.Mesh;
   protected _material!: CustomLabelMaterial;
   protected _fontPath = "/fonts/Roboto.ttf";
   protected _currentText: string;
   protected _labelParentType: string;
-  protected _angle: number = 0;
-  protected _position: THREE.Vector3 = new THREE.Vector3(0, 0, 0);
+  protected _anchorPoint: THREE.Vector4 = new THREE.Vector4(0, 0, 0, 0);
   protected _upper: boolean;
   protected _scale: number = 0.2; // initial scale in multiples of unit length
   protected _offset: THREE.Vector2 = new THREE.Vector2(0, 0);
@@ -50,9 +48,8 @@ export class HELabel extends HENodule {
   constructor(
     labelType: LabelParentTypes,
     parent: HENodule,
-    posOrAngle: THREE.Vector3 | number,
+    anchor: THREE.Vector4,
     text: string,
-    atInfinity: boolean,
     upper: boolean
   ) {
     super();
@@ -60,12 +57,7 @@ export class HELabel extends HENodule {
     this._currentText = text;
     this._labelParentType = labelType;
     this._upper = upper;
-    this._atInfinity = atInfinity;
-    if (atInfinity) {
-      this._angle = posOrAngle as number;
-    } else {
-      this._position = posOrAngle as THREE.Vector3;
-    }
+    this._anchorPoint = anchor;
 
     HENodule.LABEL_COUNT++;
     this.name = "La" + HENodule.LABEL_COUNT;
@@ -94,34 +86,26 @@ export class HELabel extends HENodule {
 
     this._mesh = await createLabel({
       textGeometry: textGeometry.geometry,
-      position: this._position,
-      angle: this._angle,
-      atInfinity: this._atInfinity,
-      upper: this._upper,
       name: this.name
     });
     this._material = this._mesh.material as CustomLabelMaterial;
-    // this._material.polygonOffset = true;
-    // this._material.polygonOffsetFactor = -10; // negative = toward camera
-    // this._material.polygonOffsetUnits = -10;
 
-    // Layers
     if (this._upper) {
       this._mesh.layers.set(
-        this._atInfinity
+        this._anchorPoint.w === 0
           ? HYPERBOLIC_LAYER.upperSheetInfLabels
           : HYPERBOLIC_LAYER.upperSheetLabels
       );
     } else {
       this._mesh.layers.set(
-        this._atInfinity
+        this._anchorPoint.w === 0
           ? HYPERBOLIC_LAYER.lowerSheetInfLabels
           : HYPERBOLIC_LAYER.lowerSheetLabels
       );
     }
     this.applyLabelOffset(
-      this.atInfinity ? 0.1 : 0.2,
-      this.atInfinity ? 0.1 : 0.2
+      this._anchorPoint.w === 0 ? 0.1 : 0.2,
+      this._anchorPoint.w === 0 ? 0.1 : 0.2
     );
     this.adjustScale(0.6);
     // Face the camera and update the material transformation matrix
@@ -161,11 +145,10 @@ export class HELabel extends HENodule {
 
     if (this._exists) {
       // update the label location using its parent
-      if (this.atInfinity) {
-        // The only labels at infinity are those labeling points
-        this._angle = (this.parent as HEPoint).angle;
+      if (this.parent instanceof HEPoint) {
+        this._anchorPoint = this.parent.position;
       } else {
-        // this._position = this.parent.getClosestLabelVector(); // not implemented yet
+        //this._anchorPoint = this.parent.getClosestLabelVector(); // not implemented yet
       }
       this.faceCamera();
     }
@@ -212,19 +195,22 @@ export class HELabel extends HENodule {
     const rotationMatrix = new THREE.Matrix4().makeRotationAxis(axis, angle2);
 
     let finalTranslationMatrix: THREE.Matrix4;
-    if (this._atInfinity) {
+    if (this._anchorPoint.w === 0) {
+      const anchorAngle = Math.atan2(this._anchorPoint.y, this._anchorPoint.x);
       const zCoordinate = this._upper
         ? (zUpperPAIClipMinus.value + zUpperPAIClipPlus.value) / 2.0
         : (zLowerPAIClipMinus.value + zLowerPAIClipPlus.value) / 2.0;
       finalTranslationMatrix = new THREE.Matrix4().makeTranslation(
-        Math.cos(this._angle) * Math.abs(zCoordinate),
-        Math.sin(this._angle) * Math.abs(zCoordinate),
+        Math.cos(anchorAngle) * Math.abs(zCoordinate),
+        Math.sin(anchorAngle) * Math.abs(zCoordinate),
         zCoordinate
       );
       // console.log("face camera angle: ", this.name, this._angle);
     } else {
       finalTranslationMatrix = new THREE.Matrix4().makeTranslation(
-        this._position
+        this._anchorPoint.x,
+        this._anchorPoint.y,
+        this._anchorPoint.z
       );
     }
 
@@ -273,7 +259,9 @@ export class HELabel extends HENodule {
     const deltaZValues: number[] = [];
     [upperLeft, lowerLeft, upperRight, lowerRight].forEach(column => {
       const zCoordinateOfProjection = Math.sqrt(
-        column.x * column.x + column.y * column.y + (this._atInfinity ? 0 : 1)
+        column.x * column.x +
+          column.y * column.y +
+          (this._anchorPoint.w === 0 ? 0 : 1)
       );
       const signedZDistanceToSurface =
         (this._upper ? 1 : -1) * column.z - zCoordinateOfProjection;
@@ -311,7 +299,7 @@ export class HELabel extends HENodule {
       .normalize();
 
     let occluded: boolean;
-    if (this._atInfinity) {
+    if (this._anchorPoint.w === 0) {
       const intersectionsWithCone = intersectWithPointAtInfinityStrip(
         new THREE.Vector3(centerOfText.x, centerOfText.y, centerOfText.z),
         labelToCameraOriginUnitVector,
@@ -340,7 +328,7 @@ export class HELabel extends HENodule {
       );
       //Clear the corner images
       this._material.userData.cornerImages = [];
-      // Add the final corner images
+      // Create the final corner images, so that raycasting to the label intersects correctly
       [upperLeft, lowerLeft, upperRight, lowerRight].forEach(column => {
         this._material.userData.cornerImages.push(
           new THREE.Vector3(column.x, column.y, column.z).add(
@@ -356,7 +344,7 @@ export class HELabel extends HENodule {
       );
       //Clear the corner images
       this._material.userData.cornerImages = [];
-      // Add the final corner images
+      // Create the final corner images, so that raycasting to the label intersects correctly
       [upperLeft, lowerLeft, upperRight, lowerRight].forEach(column => {
         this._material.userData.cornerImages.push(
           new THREE.Vector3(column.x, column.y, column.z).add(
@@ -375,7 +363,7 @@ export class HELabel extends HENodule {
   /**
    * Set or get the location vector of the SEPoint on the unit ideal sphere
    */
-  public setLocation(posOrAngle: THREE.Vector3 | number) {
+  set anchorPoint(position: THREE.Vector4) {
     // Record the location on the unit ideal sphere of this SELabel
     // If the parent is not out of date, use the closest vector, if not set the location directly
     // and the program will update the parent later so that the set location is on the parent (even though it is
@@ -393,25 +381,17 @@ export class HELabel extends HENodule {
     // this._locationVector.copy(pos);
     // }
     // Set the position of the associated displayed plottable Label
-    if (typeof posOrAngle === "number") {
-      this._angle = posOrAngle;
-    } else {
-      this._position = posOrAngle;
-    }
+    this._anchorPoint.copy(position);
     this.faceCamera();
   }
-  get location(): THREE.Vector3 | null {
-    return this._position;
+  get anchorPoint(): THREE.Vector4 {
+    return this._anchorPoint;
   }
-  get angle(): number | null {
-    return this._angle;
-  }
+
   get upper(): boolean {
     return this._upper;
   }
-  get atInfinity(): boolean {
-    return this._atInfinity;
-  }
+
   get mesh(): THREE.Mesh {
     return this._mesh;
   }
@@ -419,83 +399,3 @@ export class HELabel extends HENodule {
     return this._material;
   }
 }
-
-// import { Mesh, Vector3 } from "three";
-// import { HENodule } from "./HENodule";
-// import { Text } from "troika-three-text";
-// import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
-// import { LabelParentTypes } from "@/types";
-// import { MeshStandardNodeMaterial } from "three/webgpu";
-
-// export class HELabel extends HENodule {
-//   public parent: HENodule;
-//   protected _locationVector: Vector3 | null = null;
-//   protected _angle: number | null = null; // if the label is at infinity, this is the angle.
-//   protected _mesh!: Text;
-//   protected _material!: MeshStandardNodeMaterial;
-//   private _heLabelParentType: LabelParentTypes;
-
-//   constructor(
-//     labelType: LabelParentTypes,
-//     parent: HENodule,
-//     positionOrAngle: Vector3 | number,
-//     text: string,
-//     atInfinity: boolean,
-//     upper: boolean
-//   ) {
-//     super();
-//     this._heLabelParentType = labelType;
-//     this.parent = parent;
-//     this._mesh = new Text();
-//     HENodule.LABEL_COUNT++;
-//     this.name = "La" + HENodule.LABEL_COUNT;
-//     this._mesh.text = text;
-//     this._mesh.anchorX = "center";
-//     this._mesh.anchorY = "bottom";
-//     // this._mesh.position.set(0, 0, 0);
-//     this._mesh.fontSize = 0.03;
-//     this._mesh.color = "black"; //0x000000;
-//     // Copy the camera quaternion so the text is always facing the camera
-//     this._mesh.quaternion.copy(HENodule.hyperStore.cameraQuaternion);
-//     if (positionOrAngle instanceof Vector3) {
-//       console.log(`Creating text at ${positionOrAngle.toFixed(2)}`);
-//       this._mesh.position.copy(positionOrAngle);
-//     } else {
-//       console.log(`Creating text at angle ${positionOrAngle.toFixed(2)}`);
-
-//       this._mesh.position.copy(positionOrAngle);
-//     }
-
-//     // Copy the camera quaternion so the text is always facing the camera
-//     // this._mesh.quaternion.copy(HENodule.hyperStore.cameraQuaternion);
-//     // Disable depthTest so the text is not occluded by other objects?
-//     // But the sideeffect is that text objects will never get occluded
-//     // this._mesh.material.depthTest = false;
-
-//     this._material = new CustomTextMaterial();
-//     this._mesh.sync(() => {
-//       this._mesh.material = this._material; // overwrite the native material of the
-//     });
-//     this.group.add(this._mesh);
-
-//     // // Disable depthTest so the text is not occluded by other objects?
-//     // // But the sideeffect is that text objects will never get occluded
-//     // // txtObject.material.depthTest = false;
-
-//     // Add the mesh to a layer so if the lower sheet is turned off, the points in that layer are not displayed
-//     if (upper) {
-//       if (atInfinity) {
-//         this._mesh.layers.set(HYPERBOLIC_LAYER.upperSheetInfLabels);
-//       } else {
-//         this._mesh.layers.set(HYPERBOLIC_LAYER.upperSheetLabels);
-//       }
-//     } else {
-//       if (atInfinity) {
-//         this._mesh.layers.set(HYPERBOLIC_LAYER.lowerSheetInfLabels);
-//       } else {
-//         this._mesh.layers.set(HYPERBOLIC_LAYER.lowerSheetLabels);
-//       }
-//     }
-//   }
-
-// }

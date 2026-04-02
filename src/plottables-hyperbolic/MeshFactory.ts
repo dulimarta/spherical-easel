@@ -83,18 +83,10 @@ export const unitLength: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>> =
 export async function createLabel({
   textGeometry,
   name,
-  atInfinity,
-  upper,
-  angle,
-  position,
   myColor = 0xffffff //0x808080,
 }: {
   textGeometry: THREE.BufferGeometry<THREE.NormalBufferAttributes>;
   name: string;
-  atInfinity: boolean;
-  upper: boolean;
-  angle: number;
-  position: THREE.Vector3;
   myColor?: number;
 }) {
   const labelMaterial = new CustomLabelMaterial({ color: myColor });
@@ -271,6 +263,7 @@ export function createPoint({
     if (temporary) return; //temporary objects are never hit
     const matrix = transformationMatrixUniform.value.elements;
     const position = new Vector3(matrix[12], matrix[13], matrix[14]); // the position is stored in the last column of the transformation matrix
+    // console.log("intersect point", this.name, position.toFixed(2));
     const tempIntersections = intersectWithHyperboloid(
       raycaster.ray.origin,
       raycaster.ray.direction,
@@ -285,6 +278,7 @@ export function createPoint({
         position.distanceTo(intersection.point) <
         radiusUniform.value * unitLength.value * 2.5
       ) {
+        // console.log("point hit", this.name);
         intersects.push({
           distance: intersection.distance,
           point: intersection.point.clone(),
@@ -299,7 +293,7 @@ export function createPoint({
 }
 
 export function createPointAtInfinity({
-  angle,
+  // angle,
   radius = 0.18, // in multiples of the unit length
   height = 0.33, // in multiples of the unit length
   myColor = 0xff8080, //"white", //"0xBEBFC5",
@@ -307,7 +301,7 @@ export function createPointAtInfinity({
   upper,
   temporary = false //used in handlers,flag so that temporary objects are never hit with ray casting
 }: {
-  angle: number;
+  // angle: number;
   radius?: number;
   height?: number;
   myColor?: number;
@@ -323,12 +317,12 @@ export function createPointAtInfinity({
     coneMaterial.userData.transformationMatrix;
   const radiusUniform = coneMaterial.userData.radius;
   const heightUniform = coneMaterial.userData.height;
-  const angleUniform = coneMaterial.userData.angle;
+  //const angleUniform = coneMaterial.userData.angle;
   const glowingUniform = coneMaterial.userData.glowing;
   const upperUniform = coneMaterial.userData.upper;
   radiusUniform.value = radius;
   heightUniform.value = height;
-  angleUniform.value = angle;
+  //angleUniform.value = angle;
   upperUniform.value = upper ? 1 : 0;
 
   coneMaterial.positionNode = Fn(() => {
@@ -351,52 +345,10 @@ export function createPointAtInfinity({
         1
       ) // column 3
     );
-    // .add(vec3(0, 0.5, 0))
-    // .mul(
-    //   vec3(
-    //     select(
-    //       glowingUniform.greaterThan(0.5), // selected nodes pulse in size
-    //       radiusUniform
-    //         .mul(unitLength)
-    //         .mul(oscSine(time.mul(pulseRate)).mul(pulseSizePercent).add(1)),
-    //       radiusUniform.mul(unitLength)
-    //     ),
-    //     heightUniform.mul(unitLength),
-    //     select(
-    //       glowingUniform.greaterThan(0.5),
-    //       radiusUniform
-    //         .mul(unitLength)
-    //         .mul(oscSine(time.mul(pulseRate)).mul(pulseSizePercent).add(1)),
-    //       radiusUniform.mul(unitLength)
-    //     )
-    //   )
-    // )
-    // .add(vec3(0, zUpperPAIClipMinus.mul(Math.SQRT2), 0));
-
-    // const minusPlusOne = select(
-    //   upperUniform.greaterThan(0.5),
-    //   float(-1.0),
-    //   float(1.0)
-    // );
-    // // ca -sa 0        1   0     0
-    // // sa  ca 0    *   0  c+/-45   -s+/-45
-    // // 0   0  1        0  s+/-45    c+/-45
-
-    // const rotationMatrixAboutZAxis = zAxisRotationMatrix(
-    //   float(Math.PI / 2).sub(angleUniform)
-    // );
-
-    // const rotationMatrixAboutXAxis = xAxisRotationMatrix(
-    //   float(Math.PI / 4).mul(minusPlusOne)
-    // );
 
     return transformationMatrixUniform
       .mul(scaleAndTranslateMatrix)
       .mul(vec4(positionLocal, 1)).xyz;
-
-    // rotationMatrixAboutZAxis
-    //   .mul(rotationMatrixAboutXAxis)
-    //   .mul(scaleAndTranslate);
   })();
 
   const colorFunction = Fn(() => {
@@ -418,9 +370,10 @@ export function createPointAtInfinity({
 
   returnMesh.raycast = function (raycaster, intersects) {
     if (temporary) return; // temporary objects are never hit
-
+    const matrix = transformationMatrixUniform.value.elements;
+    const angle = (Math.PI / 2 - Math.atan2(-matrix[1], matrix[0])).modTwoPi(); // the first column starts with cos(angle-pi/2), -sin(angle-pi/2), ...
     const myUpper = upperUniform.value > 0.5 ? true : false;
-    // console.log("PAI raycast  check", this.name, myUpper);
+    // console.log("PAI raycast  check", this.name, myUpper, angle);
     const tempIntersections = intersectWithPointAtInfinityStrip(
       raycaster.ray.origin,
       raycaster.ray.direction,
@@ -431,11 +384,12 @@ export function createPointAtInfinity({
     tempIntersections.forEach(intersection => {
       const hitAngle = Math.atan2(intersection.point.y, intersection.point.x);
       // If the angle is within the apparent radius of the base (plus 10%), it is hit by the raycaster
-      // console.log("PAI check", (hitAngle - angleUniform.value).modTwoPi());
+      // console.log("PAI hit angle", this.name, hitAngle);
       if (
-        Math.abs((hitAngle - angleUniform.value).modTwoPi()) <
-        radiusUniform.value * unitLength.value * 1.1
+        Math.abs(hitAngle - angle).modTwoPi() <
+        radiusUniform.value * unitLength.value * 1.5
       ) {
+        // console.log("hit point at infinity", this.name);
         intersects.push({
           distance: intersection.distance,
           point: intersection.point.clone(),
@@ -461,10 +415,10 @@ export function createPointAtInfinityTube(
     opacity: 1.0,
     side: DoubleSide
   });
-  const angleUniform = coneMaterial.userData.angle;
+  const tubeAngleUniform = coneMaterial.userData.tubeAngle;
   const radiusUniform = coneMaterial.userData.radius;
   const upperUniform = coneMaterial.userData.upper;
-  angleUniform.value = angle;
+  tubeAngleUniform.value = angle;
   radiusUniform.value = radius;
   upperUniform.value = upper ? 1 : 0;
 
@@ -486,7 +440,7 @@ export function createPointAtInfinityTube(
     // 0   0  1        0  s+/-45    c+/-45
 
     const rotationMatrixAboutZAxis = zAxisRotationMatrix(
-      float(Math.PI / 2).sub(angleUniform)
+      float(Math.PI / 2).sub(tubeAngleUniform)
     );
 
     const rotationMatrixAboutXAxis = xAxisRotationMatrix(

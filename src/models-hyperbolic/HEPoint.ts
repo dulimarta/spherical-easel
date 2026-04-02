@@ -1,7 +1,5 @@
 import { MeshStandardMaterial, SphereGeometry, Vector3, Mesh } from "three";
 import { HENodule } from "./HENodule";
-// import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
-import { Text } from "troika-three-text";
 import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import * as THREE from "three/webgpu";
 import {
@@ -13,15 +11,15 @@ import {
   createPointAtInfinity
 } from "@/plottables-hyperbolic/MeshFactory";
 import { HELabel } from "./HELabel";
+import { cos } from "three/tsl";
+import { L } from "vitest/dist/chunks/environment.d.cL3nLXbE.js";
+import { Labelable } from "@/types";
 
 export class HEPoint extends HENodule {
-  protected _atInfinity = false;
   protected _upper;
-
-  protected _angle = 0; // angle is used to position points at infinity
-  protected _position = new Vector3(); // position is used to position points NOT at infinity
+  protected _position = new THREE.Vector4(); // homogeneous coordinates -- w coordinate is 0 for points at infinity and 1 for points not at infinity
   protected _height = 0.33; // height is used to control the length of the cone that represents points at infinity
-  protected _radius = this._atInfinity ? 0.18 : 0.15; // radius is used to control the radius of the points not at infinity or the radius of the base of the cone that represents points at infinity
+  protected _radius = this._position.w === 0 ? 0.18 : 0.15; // radius is used to control the radius of the points not at infinity or the radius of the base of the cone that represents points at infinity
   protected _nonFreePoint = false;
   protected _transformationMatrix = new THREE.Matrix4();
   protected _mesh!: Mesh;
@@ -29,8 +27,7 @@ export class HEPoint extends HENodule {
   public label?: HELabel;
 
   constructor(
-    posOrAngle: THREE.Vector3 | number,
-    atInfinity: boolean,
+    position: THREE.Vector4,
     upper: boolean,
     createNonFreePoint: boolean = false,
     temporary: boolean = false
@@ -40,49 +37,47 @@ export class HEPoint extends HENodule {
       HENodule.POINT_COUNT++;
       this.name = `P${HENodule.POINT_COUNT}`;
     } else {
-      HEPoint.TEMP_POINT_COUNT++;
-      this.name = `tempP${HEPoint.TEMP_POINT_COUNT}`;
+      HENodule.TEMP_POINT_COUNT++;
+      this.name = `tempP${HENodule.TEMP_POINT_COUNT}`;
     }
-    if (atInfinity) {
+    // console.log("create point", this.name, Math.atan2(position.y, position.x));
+    if (position.w === 0) {
       this._mesh = createPointAtInfinity({
         name: this.name,
         radius: this._radius,
         height: this._height,
         upper: upper,
-        angle: typeof posOrAngle == "number" ? posOrAngle : 0,
         temporary: temporary
       });
     } else {
       this._mesh = createPoint({
-        radius: this._radius,
         name: this.name,
+        radius: this._radius,
         upper: upper,
         temporary: temporary
       });
     }
-    if (typeof posOrAngle === "number") {
-      this._angle = posOrAngle;
-    } else {
-      this._position.copy(posOrAngle);
-    }
     this._material = this._mesh.material as CustomPointMaterial;
+    this._position.copy(position);
     this._upper = upper;
-    this._atInfinity = atInfinity;
     this._nonFreePoint = createNonFreePoint;
     this.updateTransformationMatrix(); // set the transformation matrix
 
     // Add the mesh to a layer so if the lower sheet is turned off, the points in that layer are not displayed
-    if (upper) {
-      if (atInfinity) {
-        this._mesh.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
+    if (!temporary) {
+      // only non-temporary points are added to layers, because temporary points move between upper and lower dynamically
+      if (this._upper) {
+        this._mesh.layers.set(
+          this._position.w === 0
+            ? HYPERBOLIC_LAYER.upperSheetInfPoints
+            : HYPERBOLIC_LAYER.upperSheetPoints
+        );
       } else {
-        this._mesh.layers.set(HYPERBOLIC_LAYER.upperSheetPoints);
-      }
-    } else {
-      if (atInfinity) {
-        this._mesh.layers.set(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-      } else {
-        this._mesh.layers.set(HYPERBOLIC_LAYER.lowerSheetPoints);
+        this._mesh.layers.set(
+          this._position.w === 0
+            ? HYPERBOLIC_LAYER.lowerSheetInfPoints
+            : HYPERBOLIC_LAYER.lowerSheetPoints
+        );
       }
     }
     this.group.add(this._mesh);
@@ -109,9 +104,10 @@ export class HEPoint extends HENodule {
   }
 
   updateTransformationMatrix(): void {
-    if (this._atInfinity) {
+    if (this._position.w === 0) {
+      const angle = Math.atan2(this._position.y, this._position.x);
       this._transformationMatrix = new THREE.Matrix4()
-        .makeRotationAxis(new Vector3(0, 0, 1), this._angle - Math.PI / 2)
+        .makeRotationAxis(new Vector3(0, 0, 1), angle - Math.PI / 2) // -Pi/2 because the cone is along the y axis and atan2 measures angle from the x axis
         .multiply(
           new THREE.Matrix4().makeRotationAxis(
             new Vector3(1, 0, 0),
@@ -133,28 +129,18 @@ export class HEPoint extends HENodule {
   set upper(isUpper: boolean) {
     this._upper = isUpper;
   }
-  get atInfinity(): boolean {
-    return this._atInfinity;
-  }
   get radius(): number {
     return this._material.radius;
   }
   set radius(num: number) {
     this._material.radius = num;
   }
-  // angle is used to position points at infinity
-  get angle(): number {
-    return this._angle;
-  }
-  set angle(angle: number) {
-    this._angle = angle;
-    this.shallowUpdate();
-  }
+
   // location is used to position points NOT at infinity
-  get position(): Vector3 {
+  get position(): THREE.Vector4 {
     return this._position;
   }
-  set position(pos: Vector3) {
+  set position(pos: THREE.Vector4) {
     this._position = pos;
     this.shallowUpdate();
   }

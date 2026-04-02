@@ -44,6 +44,7 @@ export abstract class HENodule {
     const idx = this._parents.findIndex(node => node.id === n.id);
     if (idx >= 0) this._parents.splice(idx, 1);
   }
+
   private addKid(n: HENodule) {
     this._kids.push(n);
   }
@@ -52,14 +53,17 @@ export abstract class HENodule {
     const idx = this._kids.findIndex(node => node.id === n.id);
     if (idx >= 0) this._parents.splice(idx, 1);
   }
+
   public registerChild(n: HENodule) {
     this.addKid(n);
     n.addParent(this);
   }
+
   public unregisterChild(n: HENodule) {
     this.removeKid(n);
     n.removeParent(this);
   }
+
   public removeThisNode() {
     this._parents.forEach(item => {
       item.unregisterChild(this);
@@ -85,6 +89,7 @@ export abstract class HENodule {
     // console.log("added", this.name, "to scene");
     s.add(this.group);
   }
+
   public removeFromScene(s: Scene) {
     this.group.children
       .map(c => c as Mesh)
@@ -99,6 +104,7 @@ export abstract class HENodule {
   public isOutOfDate(): boolean {
     return this._outOfDate;
   }
+
   public canUpdateNow(): boolean {
     return !this._parents.some(item => item.isOutOfDate());
   }
@@ -124,6 +130,7 @@ export abstract class HENodule {
   }
 
   public abstract update(): void;
+
   public abstract shallowUpdate(): void;
   // public abstract glowingDisplay(): void;
   // public abstract normalDisplay(): void;
@@ -153,7 +160,7 @@ export abstract class HENodule {
   }
 
   set showing(b: boolean) {
-    // console.log("set showing in HENodule", this.name);
+    // console.log("set showing in HENodule", this.name, " to ", b);
     this._showing = b; // set the variable
     if (this.material) {
       this.material.visible = b; // set the actual display

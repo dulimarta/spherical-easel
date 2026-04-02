@@ -12,9 +12,9 @@ interface CustomPointMaterialUserData extends CustomMaterialUserData {
   >;
   height: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
   radius: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
-  angle: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // angle is not easily extractable from the transformation matrix when the point is at infinity
+  tubeAngle: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // the angle for the tube that represents points at infinity, in radians
   upper: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; //wrapping a boolean in a uniform doesn't currently work, so use number 1 = true and 0 = false
-  position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>;
+  // position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>;
   transformationMatrix: THREE.TSL.ShaderNodeObject<
     THREE.UniformNode<THREE.Matrix4>
   >;
@@ -75,9 +75,9 @@ export class CustomMaterial extends THREE.MeshStandardNodeMaterial {
 export class CustomPointMaterial extends CustomMaterial {
   declare radius: number;
   declare height: number;
-  declare angle: number;
+  declare tubeAngle: number;
   declare upper: number;
-  declare position: THREE.Vector3;
+  // declare position: THREE.Vector3;
   declare transformationMatrix: THREE.Matrix4;
 
   declare userData: CustomPointMaterialUserData;
@@ -89,9 +89,9 @@ export class CustomPointMaterial extends CustomMaterial {
     const pointUniforms = {
       radius: uniform(1.0, "float"),
       height: uniform(1.0, "float"),
-      angle: uniform(0.0, "float"),
+      tubeAngle: uniform(0.0, "float"),
       upper: uniform(0, "uint"),
-      position: uniform(new THREE.Vector3(), "vec3"),
+      // position: uniform(new THREE.Vector3(), "vec3"),
       transformationMatrix: uniform(new THREE.Matrix4(), "mat4")
     };
 

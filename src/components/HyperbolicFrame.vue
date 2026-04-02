@@ -255,7 +255,7 @@ scene.background = new THREE.Color(0xf5f5f5);
 //scene.background = new THREE.Color(0x6082b6);
 //scene.environment = await new THREE.RGBELoader().loadAsync("env.hdr");
 
-let currentTools: Array<HyperbolicToolStrategy> = []; //new PointHandler();
+let currentTools: Array<HyperbolicToolStrategy> = [];
 let pointTool: PointHandler = new PointHandler(scene);
 let lineTool: LineHandler | null = null;
 let circleTool: CircleHandler | null = null;
@@ -288,8 +288,8 @@ const rayIntersectionPosition = reactive(new Vector3());
 let upperPolarGridArray: Array<THREE.Mesh> = [];
 let lowerPolarGridArray: Array<THREE.Mesh> = [];
 
-let upperPointsAtInfinity: THREE.Mesh | undefined = undefined;
-let lowerPointsAtInfinity: THREE.Mesh | undefined = undefined;
+let upperPointsAtInfinityStrip: THREE.Mesh | undefined = undefined;
+let lowerPointsAtInfinityStrip: THREE.Mesh | undefined = undefined;
 
 let upperHyperboloidSheet: THREE.Mesh | undefined = undefined;
 let lowerHyperboloidSheet: THREE.Mesh | undefined = undefined;
@@ -307,38 +307,52 @@ function updateVisibleLayers(): void {
   if (showPointsAtInfinity.value) {
     camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+
     camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfLabels);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfLabels);
-    if (upperPointsAtInfinity) {
-      scene.add(upperPointsAtInfinity);
+
+    if (upperPointsAtInfinityStrip) {
+      scene.add(upperPointsAtInfinityStrip);
     }
     if (showLowerSheet.value) {
       camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
       rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+
       camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
       rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
-      if (lowerPointsAtInfinity) {
-        scene.add(lowerPointsAtInfinity);
+
+      if (lowerPointsAtInfinityStrip) {
+        scene.add(lowerPointsAtInfinityStrip);
       }
     } else {
       camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
       rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+
       camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
       rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
-      if (lowerPointsAtInfinity) {
-        scene.remove(lowerPointsAtInfinity);
+
+      if (lowerPointsAtInfinityStrip) {
+        scene.remove(lowerPointsAtInfinityStrip);
       }
     }
   } else {
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-    camera.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
+
+    camera.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
     rayCaster.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
-    if (upperPointsAtInfinity) {
-      scene.remove(upperPointsAtInfinity);
+
+    camera.layers.disable(HYPERBOLIC_LAYER.upperSheetInfLabels);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfLabels);
+
+    if (upperPointsAtInfinityStrip) {
+      scene.remove(upperPointsAtInfinityStrip);
     }
-    if (lowerPointsAtInfinity) {
-      scene.remove(lowerPointsAtInfinity);
+    if (lowerPointsAtInfinityStrip) {
+      scene.remove(lowerPointsAtInfinityStrip);
     }
   }
 
@@ -361,25 +375,33 @@ function updateVisibleLayers(): void {
 
   if (showLowerSheet.value) {
     camera.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
-    camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetPoints);
-    camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetLabels);
-    camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetLines);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
+
+    camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetPoints);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetPoints);
+
+    camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetLabels);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetLabels);
+
+    camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetLines);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetLines);
+
     if (lowerHyperboloidSheet) {
       scene.add(lowerHyperboloidSheet);
     }
   } else {
     camera.layers.disable(HYPERBOLIC_LAYER.lowerSheet);
-    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetPoints);
-    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetLabels);
-    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetLines);
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheet);
+
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetPoints);
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetPoints);
+
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetLabels);
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetLabels);
+
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetLines);
     rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetLines);
+
     if (lowerHyperboloidSheet) {
       scene.remove(lowerHyperboloidSheet);
     }
@@ -632,17 +654,17 @@ function initialize() {
 
   // Create the cones from which the points at infinity
   // will be displayed by clipping between two planes
-  upperPointsAtInfinity = createPointsAtInfinityStrip({
+  upperPointsAtInfinityStrip = createPointsAtInfinityStrip({
     upper: true
   });
-  upperPointsAtInfinity.name = `Upper Points At Infinity`;
-  upperPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
+  upperPointsAtInfinityStrip.name = `Upper Points At Infinity`;
+  upperPointsAtInfinityStrip.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
 
-  lowerPointsAtInfinity = createPointsAtInfinityStrip({
+  lowerPointsAtInfinityStrip = createPointsAtInfinityStrip({
     upper: false
   });
-  lowerPointsAtInfinity.name = `Lower Points At Infinity`;
-  lowerPointsAtInfinity.layers.set(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+  lowerPointsAtInfinityStrip.name = `Lower Points At Infinity`;
+  lowerPointsAtInfinityStrip.layers.set(HYPERBOLIC_LAYER.lowerSheetInfPoints);
 
   // create the radial polar grid lines
   for (let upperLower = 0; upperLower < 2; upperLower++) {
