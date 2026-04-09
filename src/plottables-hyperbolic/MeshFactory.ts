@@ -22,26 +22,14 @@ import {
   oscSawtooth,
   If,
   time,
-  cross,
-  dot,
-  acos,
-  atan,
-  PI,
-  abs,
-  array,
   min,
   max,
   negate,
   mat4,
-  Loop,
-  int,
-  Var,
-  normalize,
   sqrt,
-  Return,
-  vec2,
-  storage,
-  instancedArray
+  floor,
+  mod,
+  and
 } from "three/tsl";
 // import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { Line2 } from "three/addons/lines/Line2.js";
@@ -56,7 +44,11 @@ import {
 } from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import { LineGeometry } from "three/examples/jsm/Addons.js";
-import { CustomPointMaterial, CustomLabelMaterial } from "./MaterialFactory";
+import {
+  CustomPointMaterial,
+  CustomLabelMaterial,
+  CustomLineMaterial
+} from "./MaterialFactory";
 import {
   intersectWithHyperboloid,
   intersectWithPointAtInfinityStrip
@@ -79,6 +71,173 @@ export const zLowerPAIClipMinus = uniform(-2.0, "float");
 
 export const unitLength: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>> =
   uniform(1.0, "float");
+
+export function createLine({
+  radius: radius = 0.15,
+  myColor = 0xff8080, //ffb3b3, //ff8080, //"white", //"0xBEBFC5",
+  name,
+  upper,
+  temporary = false //used in handlers,flag so that temporary objects are never hit with ray casting
+}: {
+  radius?: number;
+  myColor?: number; //"0xBEBFC5",
+  name: string;
+  upper: boolean;
+  temporary?: boolean;
+}): Mesh {
+  const cylinderMaterial = new CustomLineMaterial({
+    color: myColor
+  });
+  const transformationMatrixUniform =
+    cylinderMaterial.userData.transformationMatrix;
+  const radiusUniform = cylinderMaterial.userData.radius;
+  const glowingUniform = cylinderMaterial.userData.glowing;
+  radiusUniform.value = radius;
+  const modeUniform = cylinderMaterial.userData.mode;
+  const startYUniform = cylinderMaterial.userData.startY;
+  const endYUniform = cylinderMaterial.userData.endY;
+
+  const positionFunction = Fn(() => {
+    // A glowing line's size pulses
+    const myRadius = select(
+      glowingUniform.greaterThan(0.5),
+      radiusUniform
+        .mul(unitLength)
+        .mul(oscSine(time.mul(pulseRate)).mul(pulseSizePercent).add(1)),
+      radiusUniform.mul(unitLength)
+    );
+    // transform to standard position along the alpha = Pi/2 hyperbolic line through (0,0,1)
+    const scaleAndMoveToStandardPositionMatrix = mat4(
+      vec4(myRadius, float(0), float(0), float(0)), // column 0,
+      vec4(float(0), float(1), float(0), float(0)), // column 1,
+      vec4(float(0), float(0), myRadius, float(0)), // column 2
+      vec4(
+        float(0),
+        float(0),
+        sqrt(positionLocal.y.mul(positionLocal.y).add(1)),
+        float(1.0)
+      ) // column 3
+    );
+
+    return transformationMatrixUniform.mul(
+      scaleAndMoveToStandardPositionMatrix.mul(vec4(positionLocal, 1.0))
+    ).xyz;
+  });
+
+  cylinderMaterial.positionNode = positionFunction();
+
+  const colorFunction = Fn(() => {
+    // Clip points to the visible part of the hyperboloid
+    if (upper) {
+      positionLocal.z.greaterThan(zUpperClip).discard();
+    } else {
+      positionLocal.z.lessThan(zLowerClip).discard();
+    }
+    // clip the line depending on the startY and endY and the mode
+    // first decode the mode
+    const bit0 = mod(floor(modeUniform), 2.0);
+    const bit1 = mod(floor(modeUniform.div(2.0)), 2.0);
+    const bit2 = mod(floor(modeUniform.div(4.0)), 2.0);
+    const drawAfterEnd = bit0.greaterThan(0.5);
+    const drawBetweenStartAndEnd = bit1.greaterThan(0.5);
+    const drawBeforeStart = bit2.greaterThan(0.5);
+
+    // discard the local positions appropriately
+    const largerY = max(startYUniform, endYUniform);
+    const smallerY = min(startYUniform, endYUniform);
+    // we always go from start to end so we are tracing the standard position
+    // from one end to the other and that may or may not be in increasing y values
+    // If startY < endY then we are tracing from smallest to largest
+    // If startY > endY then we are tracing from largest to smallest and the ends draws need to be flipped drawAfterEnd = drawBeforeStart and drawBeforeStart = drawAfterEnd
+
+    const newDrawBeforeStart = select(
+      endYUniform.lessThan(startYUniform),
+      drawAfterEnd,
+      drawBeforeStart
+    );
+    const newDrawAfterEnd = select(
+      endYUniform.lessThan(startYUniform),
+      drawBeforeStart,
+      drawAfterEnd
+    );
+
+    and(
+      positionLocal.y.lessThan(smallerY),
+      newDrawBeforeStart.negate()
+    ).discard();
+
+    and(
+      and(
+        positionLocal.y.lessThan(largerY),
+        positionLocal.y.greaterThan(smallerY)
+      ),
+      drawBetweenStartAndEnd.negate()
+    ).discard();
+
+    and(
+      positionLocal.y.greaterThan(largerY),
+      newDrawAfterEnd.negate()
+    ).discard();
+
+    // // Glowing points color pulses
+    const returnColor = select(
+      glowingUniform.greaterThan(0.5),
+      color(cylinderMaterial.color).mul(
+        oscSine(time.mul(pulseRate)).mul(pulseSizePercent).add(1)
+      ),
+      color(cylinderMaterial.color).mul(1.0)
+    );
+
+    return returnColor;
+  });
+  cylinderMaterial.colorNode = colorFunction();
+  // The maximum y value on the hyperboloid is when z = ArcCosh(maxZClip)+1.001, so that means that y = Sinh(ArcCosh(maxZClip)+1.001) is the maximum.  Double this to get the length of the cylinder before transformation.
+  const returnMesh = new Mesh(
+    new CylinderGeometry(
+      1,
+      1,
+      2 * Math.sinh(Math.acosh(SETTINGS.maxZClip) + 1.001),
+      20, // Radial segments
+      64, // Segments along the length of the cylinder
+      true
+    ),
+    cylinderMaterial
+  );
+
+  returnMesh.name = name;
+
+  returnMesh.raycast = function (raycaster, intersects) {
+    if (temporary) return; //temporary objects are never hit
+    const matrix = transformationMatrixUniform.value.elements;
+    const position = new Vector3(matrix[12], matrix[13], matrix[14]); // the position is stored in the last column of the transformation matrix
+    // console.log("intersect point", this.name, position.toFixed(2));
+    const tempIntersections = intersectWithHyperboloid(
+      raycaster.ray.origin,
+      raycaster.ray.direction,
+      raycaster.near,
+      raycaster.far,
+      position.z > 0
+    );
+
+    tempIntersections.forEach(intersection => {
+      // If the raycaster origin is the camera position, then if we are within the apparent radius (plus 150%) of the point, it is hit by the raycaster
+      if (
+        position.distanceTo(intersection.point) <
+        radiusUniform.value * unitLength.value * 2.5
+      ) {
+        // console.log("point hit", this.name);
+        intersects.push({
+          distance: intersection.distance,
+          point: intersection.point.clone(),
+          normal: intersection.normal,
+          object: this
+        });
+      }
+    });
+  };
+
+  return returnMesh;
+}
 
 export async function createLabel({
   textGeometry,

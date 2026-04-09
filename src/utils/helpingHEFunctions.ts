@@ -6,7 +6,7 @@ import {
   zUpperPAIClipMinus,
   zUpperPAIClipPlus
 } from "@/plottables-hyperbolic/MeshFactory";
-import { Vector3 } from "three";
+import { Vector3, Vector4 } from "three";
 
 export type partialIntersectionType = {
   distance: number;
@@ -159,9 +159,14 @@ export function intersectWithPointAtInfinityStrip(
 }
 
 // The hyperbolic distance between two points on the same sheet of the hyperboloid, null if on different sheets
-export function h2Distance(point1: Vector3, point2: Vector3): number | null {
+export function h2Distance(
+  point1: Vector3 | Vector4,
+  point2: Vector3 | Vector4
+): number {
   if (point1.z * point2.z < 0) {
-    return null; // the points are on different sheets so there is no distance between them
+    throw new Error(
+      "Points are on different sheets so there is no distance between them"
+    );
   }
   return Math.acosh(
     -point1.x * point2.x - point1.y * point2.y + point1.z * point2.z

@@ -1,11 +1,8 @@
-import { Intersection, Mesh, Scene, Uniform, Vector2, Vector3 } from "three";
+import { Mesh, Scene, Vector3 } from "three";
 import { PoseTracker } from "./PoseTracker";
 import * as THREE from "three/webgpu";
-import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import {
   createBoundaryCone,
-  createPoint,
-  createPointAtInfinity,
   createPointAtInfinityTube
 } from "@/plottables-hyperbolic/MeshFactory";
 import { CustomPointMaterial } from "@/plottables-hyperbolic/MaterialFactory";
@@ -21,9 +18,7 @@ const Z_AXIS = new Vector3(0, 0, 1);
 
 export class PointHandler extends PoseTracker {
   protected tempPoint: HEPoint;
-  // protected tempPointMaterial: CustomPointMaterial;
   protected tempPointAtInfinity: HEPoint;
-  // protected tempPointAtInfinityMaterial: CustomPointMaterial;
   protected tempTube: Mesh;
   protected tempTubeMaterial: CustomPointMaterial;
   protected tempUpperCone: Mesh;

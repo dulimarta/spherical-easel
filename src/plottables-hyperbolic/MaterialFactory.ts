@@ -1,15 +1,11 @@
 import * as THREE from "three/webgpu";
-import { bool, uniform } from "three/tsl";
-import { T } from "vitest/dist/chunks/reporters.d.BFLkQcL6.js";
+import { uniform } from "three/tsl";
 
 interface CustomMaterialUserData {
   glowing: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; //wrapping a boolean in a uniform doesn't currently work, so use number 1 = true and 0 = false. See https://github.com/mrdoob/three.js/issues/31479
 }
 
 interface CustomPointMaterialUserData extends CustomMaterialUserData {
-  scaleTransformationMatrix: THREE.TSL.ShaderNodeObject<
-    THREE.UniformNode<THREE.Matrix4>
-  >;
   height: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
   radius: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
   tubeAngle: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // the angle for the tube that represents points at infinity, in radians
@@ -27,7 +23,18 @@ interface CustomLabelMaterialUserData extends CustomMaterialUserData {
   transformationMatrix: THREE.TSL.ShaderNodeObject<
     THREE.UniformNode<THREE.Matrix4>
   >; // This is the matrix that transforms the text from the default (z=0 in the first quadrant) to its final position facing the camera, it must be scaled first
-  cornerImages: THREE.Vector3[]; // The columns of this matrix are the images of the corners from the default (z=0 in the first quadrant) in their final position facing the camera
+  cornerImages: THREE.Vector3[]; // The columns in this array are the images of the corners from the default (z=0 in the first quadrant) in their final position facing the camera
+}
+
+interface CustomLineMaterialUserData extends CustomMaterialUserData {
+  radius: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // radius of the tube for th e line
+  upper: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; //wrapping a boolean in a uniform doesn't currently work, so use number 1 = true and 0 = false
+  mode: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // A number between 0 and 7, inclusive. The binary expansion of this number is three bits, the first tell whether the portion of the line before the start point is drawn, the second bit tells whether the portion of the line between the start and end points is drawn, and the third bit tells whether the portion of the line after the end point is drawn. So 7 = 111 in binary means draw all portions of the line and 6 = 110 in binary means draw only the portion of the line before the start point and between the start and end points, but not after the end point, etc.
+  startY: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // This is the y coordinate of transformationMatrix^(-1)(start point). It is used to help determine which parts of the line to draw
+  endY: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // This is the y coordinate of transformationMatrix^(-1)(start point). It is used to help determine which parts of the line to draw
+  transformationMatrix: THREE.TSL.ShaderNodeObject<
+    THREE.UniformNode<THREE.Matrix4>
+  >;
 }
 
 export class CustomMaterial extends THREE.MeshStandardNodeMaterial {
@@ -124,5 +131,34 @@ export class CustomLabelMaterial extends CustomMaterial {
     Object.assign(this.userData, labelVariables);
 
     this._bindUniforms(Object.keys(labelVariables));
+  }
+}
+
+export class CustomLineMaterial extends CustomMaterial {
+  declare radius: number;
+  declare upper: number;
+  declare startY: number;
+  declare endY: number;
+  declare mode: number;
+  declare transformationMatrix: THREE.Matrix4;
+
+  declare userData: CustomLineMaterialUserData;
+
+  constructor(parameters?: THREE.MeshStandardNodeMaterialParameters) {
+    super(parameters);
+
+    // Define the new uniforms unique to this child class
+    const lineUniforms = {
+      radius: uniform(1.0, "float"),
+      upper: uniform(0, "uint"),
+      startY: uniform(1.0, "float"),
+      endY: uniform(1.0, "float"),
+      mode: uniform(0, "uint"),
+      transformationMatrix: uniform(new THREE.Matrix4(), "mat4")
+    };
+
+    Object.assign(this.userData, lineUniforms);
+
+    this._bindUniforms(Object.keys(lineUniforms));
   }
 }
