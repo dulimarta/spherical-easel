@@ -20,15 +20,7 @@ export class HEAntipodalPoint extends HEPoint {
    * @param point the TwoJS point associated with this intersection
    * @param antipodalPointParent The parent
    */
-  constructor({
-    antipodalPointParent,
-    isUserCreated,
-    upper // this is the upper/lower of the new point being created
-  }: {
-    antipodalPointParent: HEPoint;
-    isUserCreated: boolean;
-    upper: boolean;
-  }) {
+  constructor(antipodalPointParent, isUserCreated) {
     super(
       new Vector4(
         -antipodalPointParent.position.x,
@@ -36,7 +28,6 @@ export class HEAntipodalPoint extends HEPoint {
         -antipodalPointParent.position.z,
         antipodalPointParent.position.w // notice how NICE antipodes are in homogeneous coordinates!
       ),
-      upper,
       true,
       false
     );

@@ -1,12 +1,6 @@
 import { Command } from "@/commands-spherical/Command";
 import { HEPoint } from "@/models-hyperbolic/HEPoint";
-import { SELabel } from "@/models-spherical/SELabel";
-import { HENodule } from "@/models-hyperbolic/HENodule";
-import { Vector3 } from "three";
-import { SavedNames } from "@/types";
-import { StyleCategory } from "@/types/Styles";
 import { HEAntipodalPoint } from "@/models-hyperbolic/HEAntipodalPoint";
-import { toSVGType } from "@/types";
 import { HELabel } from "@/models-hyperbolic/HELabel";
 
 export class AddAntipodalPointCommand extends Command {

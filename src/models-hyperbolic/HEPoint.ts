@@ -8,7 +8,7 @@ import {
 } from "@/plottables-hyperbolic/MaterialFactory";
 import {
   createPoint,
-  createPointAtInfinity
+  createIdealPoint
 } from "@/plottables-hyperbolic/MeshFactory";
 import { HELabel } from "./HELabel";
 import { cos } from "three/tsl";
@@ -17,9 +17,9 @@ import { Labelable } from "@/types";
 
 export class HEPoint extends HENodule {
   protected _upper;
-  protected _position = new THREE.Vector4(); // homogeneous coordinates -- w coordinate is 0 for points at infinity and 1 for points not at infinity
-  protected _height = 0.33; // height is used to control the length of the cone that represents points at infinity
-  protected _radius = this._position.w === 0 ? 0.18 : 0.15; // radius is used to control the radius of the points not at infinity or the radius of the base of the cone that represents points at infinity
+  protected _position = new THREE.Vector4(); // homogeneous coordinates -- w coordinate is 0 for ideal points and 1 for non-ideal points
+  protected _height = 0.33; // height is used to control the length of the cone that represents ideal points
+  protected _radius = 0.15; // radius is used to control the radius of the non-ideal points  or the radius of the base of the cone that represents ideal points
   protected _nonFreePoint = false;
   protected _transformationMatrix = new THREE.Matrix4();
   protected _mesh!: Mesh;
@@ -28,7 +28,6 @@ export class HEPoint extends HENodule {
 
   constructor(
     position: THREE.Vector4,
-    upper: boolean,
     createNonFreePoint: boolean = false,
     temporary: boolean = false
   ) {
@@ -42,24 +41,24 @@ export class HEPoint extends HENodule {
     }
     // console.log("create point", this.name, Math.atan2(position.y, position.x));
     if (position.w === 0) {
-      this._mesh = createPointAtInfinity({
-        name: this.name,
-        radius: this._radius,
-        height: this._height,
-        upper: upper,
-        temporary: temporary
-      });
+      this._mesh = createIdealPoint(
+        this.name,
+        position.z > 0,
+        temporary,
+        this._radius,
+        this._height
+      );
     } else {
-      this._mesh = createPoint({
-        name: this.name,
-        radius: this._radius,
-        upper: upper,
-        temporary: temporary
-      });
+      this._mesh = createPoint(
+        this.name,
+        position.z > 0,
+        temporary,
+        this._radius
+      );
     }
     this._material = this._mesh.material as CustomPointMaterial;
     this._position.copy(position);
-    this._upper = upper;
+    this._upper = position.z > 0;
     this._nonFreePoint = createNonFreePoint;
     this.updateTransformationMatrix(); // set the transformation matrix
 
@@ -106,7 +105,7 @@ export class HEPoint extends HENodule {
   updateTransformationMatrix(): void {
     if (this._position.w === 0) {
       const angle = Math.atan2(this._position.y, this._position.x);
-      this._transformationMatrix = new THREE.Matrix4()
+      this._transformationMatrix = this._transformationMatrix
         .makeRotationAxis(new Vector3(0, 0, 1), angle - Math.PI / 2) // -Pi/2 because the cone is along the y axis and atan2 measures angle from the x axis
         .multiply(
           new THREE.Matrix4().makeRotationAxis(
@@ -115,7 +114,7 @@ export class HEPoint extends HENodule {
           )
         );
     } else {
-      this._transformationMatrix = new THREE.Matrix4().makeTranslation(
+      this._transformationMatrix = this._transformationMatrix.makeTranslation(
         this._position.x,
         this._position.y,
         this._position.z
@@ -136,7 +135,6 @@ export class HEPoint extends HENodule {
     this._material.radius = num;
   }
 
-  // location is used to position points NOT at infinity
   get position(): THREE.Vector4 {
     return this._position;
   }

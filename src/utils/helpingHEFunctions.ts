@@ -1,10 +1,10 @@
 import {
   zLowerClip,
-  zLowerPAIClipMinus,
-  zLowerPAIClipPlus,
+  zLowerIdealPointsClipMinus,
+  zLowerIdealPointsClipPlus,
   zUpperClip,
-  zUpperPAIClipMinus,
-  zUpperPAIClipPlus
+  zUpperIdealPointsClipMinus,
+  zUpperIdealPointsClipPlus
 } from "@/plottables-hyperbolic/MeshFactory";
 import { Vector3, Vector4 } from "three";
 
@@ -89,7 +89,7 @@ export function intersectWithHyperboloid(
   return intersects;
 }
 
-export function intersectWithPointAtInfinityStrip(
+export function intersectWithIdealPointsStrip(
   origin: Vector3,
   direction: Vector3,
   near: number,
@@ -97,7 +97,7 @@ export function intersectWithPointAtInfinityStrip(
   upper: boolean
 ): partialIntersectionType[] {
   const intersects: partialIntersectionType[] = [];
-  // Check the intersection of the ray with the transformed points at infinity
+  // Check the intersection of the ray with the transformed ideal strip
   const ox = origin.x;
   const oy = origin.y;
   const oz = origin.z;
@@ -137,8 +137,12 @@ export function intersectWithPointAtInfinityStrip(
       .add(origin);
 
     // Check that the ray intersects the cone in the correct strip
-    const upperZValue = upper ? zUpperPAIClipPlus : zLowerPAIClipPlus;
-    const lowerZValue = upper ? zUpperPAIClipMinus : zLowerPAIClipMinus;
+    const upperZValue = upper
+      ? zUpperIdealPointsClipPlus
+      : zLowerIdealPointsClipPlus;
+    const lowerZValue = upper
+      ? zUpperIdealPointsClipMinus
+      : zLowerIdealPointsClipMinus;
     if (
       rayCasterIntersectionPoint.z < lowerZValue.value ||
       rayCasterIntersectionPoint.z > upperZValue.value

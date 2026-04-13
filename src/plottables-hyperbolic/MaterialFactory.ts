@@ -8,7 +8,7 @@ interface CustomMaterialUserData {
 interface CustomPointMaterialUserData extends CustomMaterialUserData {
   height: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
   radius: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>;
-  tubeAngle: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // the angle for the tube that represents points at infinity, in radians
+  tubeAngle: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // the angle for the tube that points to ideal points, in radians
   upper: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; //wrapping a boolean in a uniform doesn't currently work, so use number 1 = true and 0 = false
   // position: THREE.TSL.ShaderNodeObject<THREE.UniformNode<THREE.Vector3>>;
   transformationMatrix: THREE.TSL.ShaderNodeObject<
@@ -29,12 +29,13 @@ interface CustomLabelMaterialUserData extends CustomMaterialUserData {
 interface CustomLineMaterialUserData extends CustomMaterialUserData {
   radius: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // radius of the tube for th e line
   upper: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; //wrapping a boolean in a uniform doesn't currently work, so use number 1 = true and 0 = false
-  mode: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // A number between 0 and 7, inclusive. The binary expansion of this number is three bits, the first tell whether the portion of the line before the start point is drawn, the second bit tells whether the portion of the line between the start and end points is drawn, and the third bit tells whether the portion of the line after the end point is drawn. So 7 = 111 in binary means draw all portions of the line and 6 = 110 in binary means draw only the portion of the line before the start point and between the start and end points, but not after the end point, etc.
+  mode: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // Mode is a number between 0 and 7, inclusive. The binary expansion of this number is three bits, the most significant tells whether the portion of the line before the start point is drawn, the second most significant bit tells whether the portion of the line between the start and end points is drawn, and the least significant bit tells whether the portion of the line after the end point is drawn. So 7 = 111 in binary means draw all portions of the line and 6 = 110 in binary means draw only the portion of the line before the start point and between the start and end points, but not after the end point, etc.
   startY: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // This is the y coordinate of transformationMatrix^(-1)(start point). It is used to help determine which parts of the line to draw
   endY: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>>; // This is the y coordinate of transformationMatrix^(-1)(start point). It is used to help determine which parts of the line to draw
   transformationMatrix: THREE.TSL.ShaderNodeObject<
     THREE.UniformNode<THREE.Matrix4>
   >;
+  normalVector: THREE.Vector3;
 }
 
 export class CustomMaterial extends THREE.MeshStandardNodeMaterial {
@@ -141,6 +142,7 @@ export class CustomLineMaterial extends CustomMaterial {
   declare endY: number;
   declare mode: number;
   declare transformationMatrix: THREE.Matrix4;
+  declare normalVector: THREE.Vector3;
 
   declare userData: CustomLineMaterialUserData;
 
@@ -148,17 +150,18 @@ export class CustomLineMaterial extends CustomMaterial {
     super(parameters);
 
     // Define the new uniforms unique to this child class
-    const lineUniforms = {
+    const lineVariables = {
       radius: uniform(1.0, "float"),
       upper: uniform(0, "uint"),
       startY: uniform(1.0, "float"),
       endY: uniform(1.0, "float"),
       mode: uniform(0, "uint"),
-      transformationMatrix: uniform(new THREE.Matrix4(), "mat4")
+      transformationMatrix: uniform(new THREE.Matrix4(), "mat4"),
+      normalVector: new THREE.Vector3()
     };
 
-    Object.assign(this.userData, lineUniforms);
+    Object.assign(this.userData, lineVariables);
 
-    this._bindUniforms(Object.keys(lineUniforms));
+    this._bindUniforms(Object.keys(lineVariables));
   }
 }

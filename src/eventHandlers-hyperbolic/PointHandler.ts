@@ -3,7 +3,7 @@ import { PoseTracker } from "./PoseTracker";
 import * as THREE from "three/webgpu";
 import {
   createBoundaryCone,
-  createPointAtInfinityTube
+  createIdealPointTube
 } from "@/plottables-hyperbolic/MeshFactory";
 import { CustomPointMaterial } from "@/plottables-hyperbolic/MaterialFactory";
 import { HEPoint } from "@/models-hyperbolic/HEPoint";
@@ -14,52 +14,43 @@ import { HEAntipodalPoint } from "@/models-hyperbolic/HEAntipodalPoint";
 import { HEIntersectionPoint } from "@/models-hyperbolic/HEIntersectionPoint";
 import { AddPointCommand } from "@/commands-hyperbolic/AddPointCommand";
 import { HELabel } from "@/models-hyperbolic/HELabel";
-const Z_AXIS = new Vector3(0, 0, 1);
 
 export class PointHandler extends PoseTracker {
-  protected tempPoint: HEPoint;
-  protected tempPointAtInfinity: HEPoint;
-  protected tempTube: Mesh;
-  protected tempTubeMaterial: CustomPointMaterial;
-  protected tempUpperCone: Mesh;
-  protected tempLowerCone: Mesh;
-  private tempPointInScene = false;
-  private tempPointAtInfinityInScene = false;
-  private tempPointAtInfinityUpperTubeInScene = false;
-  private tempPointAtInfinityLowerTubeInScene = false;
+  private _tempPoint: HEPoint;
+  private _tempIdealPoint: HEPoint;
+  private _tempTube: Mesh;
+  private _tempTubeMaterial: CustomPointMaterial;
+  private _tempUpperCone: Mesh;
+  private _tempLowerCone: Mesh;
+  private _tempPointInScene = false;
+  private _tempIdealPointInScene = false; // includes the temporary tube
+  private _tempUpperConeInScene = false;
+  private _tempLowerConeInScene = false;
 
-  // Filter the hitSEPoints appropriately for this handler
-  protected filteredIntersectionPointsList: HEPoint[] = [];
+  // Filter the hitHEPoints appropriately for this handler
+  private _filteredIntersectionPointsList: HEPoint[] = [];
   /**
    * As the user moves the pointer around snap the temporary marker to this object temporarily
    */
-  protected snapToObject = null; //fix when HEOneOrTwoDimensional is implemented
-  //: HEOneOrTwoDimensional | null = null;
+  private _snapToObject: HEOneOrTwoDimensional | null = null;
 
   constructor(scene: Scene) {
     super(scene);
     this.scene = scene;
-    this.tempPoint = new HEPoint(
-      new THREE.Vector4(0, 0, 1, 1),
-      false,
-      false,
-      true
-    );
+    this._tempPoint = new HEPoint(new THREE.Vector4(0, 0, 1, 1), false, true);
 
-    // this.tempPointMaterial = this.tempPoint.material as CustomPointMaterial;
-    this.tempPointAtInfinity = new HEPoint(
+    this._tempIdealPoint = new HEPoint(
       new THREE.Vector4(1, 0, 0, 0),
       false,
-      false,
       true
     );
-    // this.tempPointAtInfinityMaterial = this.tempPointAtInfinity
-    //   .material as CustomPointMaterial;
-    this.tempTube = createPointAtInfinityTube(true);
-    this.tempTubeMaterial = this.tempTube.material as CustomPointMaterial;
-    this.tempLowerCone = createBoundaryCone({ upper: false });
-    this.tempUpperCone = createBoundaryCone({ upper: true });
+    // this.tempPointIdealMaterial = this.tempPointIdeal.material as CustomPointMaterial;
+    this._tempTube = createIdealPointTube(true);
+    this._tempTubeMaterial = this._tempTube.material as CustomPointMaterial;
+    this._tempLowerCone = createBoundaryCone(false);
+    this._tempUpperCone = createBoundaryCone(true);
   }
+
   mousePressed(event: MouseEvent): void {
     // console.debug("PointHandler::mousePressed()")
     // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
@@ -68,16 +59,16 @@ export class PointHandler extends PoseTracker {
     // we call super.mouseMove
     // super.mouseMoved(event);
 
-    if (this.somethingIsHit) {
+    if (this.surfaceIsIntersected) {
       // If this is near any other points do not create a new point, unless the hitSEPoint is an un user-created intersection or antipodal point
       this.updateFilteredPointsList();
 
-      if (this.filteredIntersectionPointsList.length > 0) {
+      if (this._filteredIntersectionPointsList.length > 0) {
         //Make it user created and turn on the display
         // set the display to visible order
 
         new SetPointUserCreatedValueCommand(
-          this.filteredIntersectionPointsList[0] as
+          this._filteredIntersectionPointsList[0] as
             | HEIntersectionPoint
             | HEAntipodalPoint,
           true
@@ -191,21 +182,13 @@ export class PointHandler extends PoseTracker {
         // else {
         // mouse press on empty location so create a free point
         // Create the model object for the new point and link them
-        // this over either the point at infinity strip or the hyperboloid
-        const hitLocation =
-          PoseTracker.hyperStore.surfaceIntersections[0].point;
-        const vec4Location = PoseTracker.vec3ToVec4(
-          hitLocation,
-          this.hyperboloidFirstHit ? 1 : 0
+        // this over either the ideal point's strip or the hyperboloid
+        const hitLocation = PoseTracker.vec3ToVec4(
+          PoseTracker.hyperStore.surfaceIntersections[0].point,
+          this.hyperboloidIsFirstSurfaceHit ? 1 : 0
         );
-        vtx = new HEPoint(vec4Location, hitLocation.z > 0);
-        newHELabel = new HELabel(
-          "point",
-          vtx,
-          vec4Location,
-          vtx.name,
-          hitLocation.z > 0
-        );
+        vtx = new HEPoint(hitLocation);
+        newHELabel = new HELabel("point", vtx, hitLocation, vtx.name);
 
         if (vtx && newHELabel) {
           pointCommandGroup.addCommand(new AddPointCommand(vtx, newHELabel));
@@ -244,113 +227,110 @@ export class PointHandler extends PoseTracker {
 
     this.updateFilteredPointsList();
 
-    if (this.filteredIntersectionPointsList.length > 0) {
+    if (this._filteredIntersectionPointsList.length > 0) {
       console.log(
         "point handler filter set glowing",
-        this.filteredIntersectionPointsList[0].name,
-        this.filteredIntersectionPointsList[0].position.toFixed(2)
+        this._filteredIntersectionPointsList[0].name,
+        this._filteredIntersectionPointsList[0].position.toFixed(2)
       );
-      this.filteredIntersectionPointsList[0].glowing = true;
-      this.snapToObject = null;
+      this._filteredIntersectionPointsList[0].glowing = true;
+      this._snapToObject = null;
     }
     // else if (this.hitHESegments.length > 0) {
     //   this.hitHESegments[0].glowing = true;
     //   this.snapToTemporaryOneDimensional = this.hitHESegments[0];
     // }
     else {
-      this.snapToObject = null;
+      this._snapToObject = null;
     }
 
-    if (this.somethingIsHit) {
-      if (this.snapToObject === null) {
-        if (PoseTracker.hyperStore.hyperboloidIsClosestIntersection) {
-          if (!this.tempPointInScene) {
-            this.tempPointInScene = true;
-            this.scene.add(this.tempPoint.mesh);
+    if (this.surfaceIsIntersected) {
+      if (this._snapToObject === null) {
+        if (this.hyperboloidFirstHitOverall) {
+          if (!this._tempPointInScene) {
+            this._tempPointInScene = true;
+            this.scene.add(this._tempPoint.mesh);
           }
-          this.tempPoint.position = PoseTracker.vec3ToVec4(
+          this._tempPoint.position = PoseTracker.vec3ToVec4(
             PoseTracker.hyperStore.surfaceIntersections[0].point,
             1
           );
         } else {
-          if (this.tempPointInScene) {
-            this.tempPointInScene = false;
-            this.scene.remove(this.tempPoint.mesh);
+          if (this._tempPointInScene) {
+            this._tempPointInScene = false;
+            this.scene.remove(this._tempPoint.mesh);
           }
         }
 
-        if (PoseTracker.hyperStore.pointAtInfinityStripIsClosestIntersection) {
-          if (!this.tempPointAtInfinityInScene) {
-            this.tempPointAtInfinityInScene = true;
-            this.scene.add(this.tempTube);
-            this.scene.add(this.tempPointAtInfinity.mesh);
+        if (this.idealPointsStripFirstHitOverall) {
+          if (!this._tempIdealPointInScene) {
+            this._tempIdealPointInScene = true;
+            this.scene.add(this._tempTube);
+            this.scene.add(this._tempIdealPoint.mesh);
           }
           const location = PoseTracker.hyperStore.surfaceIntersections[0].point;
           const upper = location.z > 0;
-          this.tempPointAtInfinity.position = PoseTracker.vec3ToVec4(
-            location,
-            0
-          );
-          this.tempPointAtInfinity.upper = upper;
-          this.tempTubeMaterial.upper = upper ? 1 : 0;
-          this.tempTubeMaterial.tubeAngle = Math.atan2(location.y, location.x);
+          this._tempIdealPoint.position = PoseTracker.vec3ToVec4(location, 0);
+          this._tempIdealPoint.upper = upper;
+          this._tempTubeMaterial.upper = upper ? 1 : 0;
+          this._tempTubeMaterial.tubeAngle = Math.atan2(location.y, location.x);
 
-          if (!this.tempPointAtInfinityLowerTubeInScene && !upper) {
-            this.scene.add(this.tempLowerCone);
-            this.tempPointAtInfinityLowerTubeInScene = true;
-            this.tempPointAtInfinityUpperTubeInScene = false;
-            this.scene.remove(this.tempUpperCone);
+          if (!this._tempLowerConeInScene && !upper) {
+            this.scene.add(this._tempLowerCone);
+            this._tempLowerConeInScene = true;
+            this._tempUpperConeInScene = false;
+            this.scene.remove(this._tempUpperCone);
           }
 
-          if (!this.tempPointAtInfinityUpperTubeInScene && upper) {
-            this.scene.add(this.tempUpperCone);
-            this.tempPointAtInfinityUpperTubeInScene = true;
-            this.tempPointAtInfinityLowerTubeInScene = false;
-            this.scene.remove(this.tempLowerCone);
+          if (!this._tempUpperConeInScene && upper) {
+            this.scene.add(this._tempUpperCone);
+            this._tempUpperConeInScene = true;
+            this._tempLowerConeInScene = false;
+            this.scene.remove(this._tempLowerCone);
           }
         } else {
-          if (this.tempPointAtInfinityInScene) {
-            this.tempPointAtInfinityInScene = false;
-            this.tempPointAtInfinityUpperTubeInScene = false;
-            this.tempPointAtInfinityLowerTubeInScene = false;
-            this.scene.remove(this.tempTube);
-            this.scene.remove(this.tempPointAtInfinity.mesh);
-            this.scene.remove(this.tempLowerCone);
-            this.scene.remove(this.tempUpperCone);
+          if (this._tempIdealPointInScene) {
+            this._tempIdealPointInScene = false;
+            this._tempUpperConeInScene = false;
+            this._tempLowerConeInScene = false;
+            this.scene.remove(this._tempTube);
+            this.scene.remove(this._tempIdealPoint.mesh);
+            this.scene.remove(this._tempLowerCone);
+            this.scene.remove(this._tempUpperCone);
           }
         }
       } else {
         // snap to an object
-        if (!this.tempPointInScene) {
-          this.tempPointInScene = true;
-          this.scene.add(this.tempPoint.mesh);
+        if (!this._tempPointInScene) {
+          this._tempPointInScene = true;
+          this.scene.add(this._tempPoint.mesh);
         }
         // this.tempPointMaterial.position = this.snapToObject.closestVector(
         //   PoseTracker.hyperStore.surfaceIntersections[0].point
         // );
       }
       // If there is a nearby (possibly user created or not) point turn off the temporary marker
-      if (this.filteredIntersectionPointsList.length > 0) {
-        if (this.tempPointInScene) {
+      if (this._filteredIntersectionPointsList.length > 0) {
+        if (this._tempPointInScene) {
           // Remove the temporary point
-          this.scene.remove(this.tempPoint.mesh);
-          this.tempPointInScene = false;
-          this.snapToObject = null;
+          this.scene.remove(this._tempPoint.mesh);
+          this._tempPointInScene = false;
+          this._snapToObject = null;
         }
-        if (this.tempPointAtInfinityInScene) {
-          // Remove the temporary point at infinity
-          this.tempPointAtInfinityInScene = false;
-          this.tempPointAtInfinityUpperTubeInScene = false;
-          this.tempPointAtInfinityLowerTubeInScene = false;
-          this.scene.remove(this.tempTube);
-          this.scene.remove(this.tempPointAtInfinity.mesh);
-          this.scene.remove(this.tempLowerCone);
-          this.scene.remove(this.tempUpperCone);
-          this.snapToObject = null;
+        if (this._tempIdealPointInScene) {
+          // Remove the temporary ideal point
+          this._tempIdealPointInScene = false;
+          this._tempUpperConeInScene = false;
+          this._tempLowerConeInScene = false;
+          this.scene.remove(this._tempTube);
+          this.scene.remove(this._tempIdealPoint.mesh);
+          this.scene.remove(this._tempLowerCone);
+          this.scene.remove(this._tempUpperCone);
+          this._snapToObject = null;
         }
       }
     } else {
-      // the event is not over the hyperboloid and is not over the point at infinity strip remove all temp objects
+      // the event is not over the hyperboloid and is not over the ideal point's strip remove all temp objects
       this.removeAllTempObjects();
     }
   }
@@ -373,34 +353,31 @@ export class PointHandler extends PoseTracker {
   }
 
   removeAllTempObjects() {
-    this.scene.remove(this.tempPoint.mesh);
-    this.scene.remove(this.tempPointAtInfinity.mesh);
-    this.scene.remove(this.tempTube);
-    this.scene.remove(this.tempUpperCone);
-    this.scene.remove(this.tempLowerCone);
-    this.tempPointAtInfinityInScene = false;
-    this.tempPointAtInfinityLowerTubeInScene = false;
-    this.tempPointAtInfinityUpperTubeInScene = false;
-    this.tempPointInScene = false;
-    this.snapToObject = null;
-    this.somethingIsHit = false;
+    this.scene.remove(this._tempPoint.mesh);
+    this.scene.remove(this._tempIdealPoint.mesh);
+    this.scene.remove(this._tempTube);
+    this.scene.remove(this._tempUpperCone);
+    this.scene.remove(this._tempLowerCone);
+    this._tempIdealPointInScene = false;
+    this._tempLowerConeInScene = false;
+    this._tempUpperConeInScene = false;
+    this._tempPointInScene = false;
+    this._snapToObject = null;
   }
 
   updateFilteredPointsList(): void {
-    this.filteredIntersectionPointsList = this.hitHEPoints.filter(pt => {
-      // if (pt instanceof HEIntersectionPoint) {
-      //   if (pt.isUserCreated) {
-      //     return pt.showing;
-      //   } else {
-      //     if (pt.principleParent1.showing && pt.principleParent2.showing) {
-      //       return true;
-      //     } else {
-      //       return false;
-      //     }
-      //   }
-      // } else
-      // {
-      if (pt instanceof HEAntipodalPoint) {
+    this._filteredIntersectionPointsList = this.hitHEPoints.filter(pt => {
+      if (pt instanceof HEIntersectionPoint) {
+        if (pt.isUserCreated) {
+          return pt.showing;
+        } else {
+          if (pt.principleParent1.showing && pt.principleParent2.showing) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (pt instanceof HEAntipodalPoint) {
         if (pt.isUserCreated) {
           return pt.showing;
         } else {

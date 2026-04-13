@@ -46,11 +46,10 @@ export class HELine extends HENodule {
   protected _transformationMatrix = new Matrix4();
   protected _mesh!: Mesh;
   protected _material!: CustomLineMaterial;
-  protected _mode: number; // A number between 0 and 7, inclusive. The binary expansion of this number is three bits, the first tell whether the portion of the line before the start point is drawn, the second bit tells whether the portion of the line between the start and end points is drawn, and the third bit tells whether the portion of the line after the end point is drawn. So 7 = 111 in binary means draw all portions of the line and 6 = 110 in binary means draw only the portion of the line before the start point and between the start and end points, but not after the end point, etc.
+  protected _mode: number; // Mode is a number between 0 and 7, inclusive. The binary expansion of this number is three bits, the most significant tells whether the portion of the line before the start point is drawn, the second most significant bit tells whether the portion of the line between the start and end points is drawn, and the least significant bit tells whether the portion of the line after the end point is drawn. So 7 = 111 in binary means draw all portions of the line and 6 = 110 in binary means draw only the portion of the line before the start point and between the start and end points, but not after the end point, etc.
 
   constructor(
     startPoint: HEPoint,
-    // normalVector: Vector3,
     endPoint: HEPoint,
     mode: number = 7,
     createNonFreeLine: boolean = false,
@@ -85,14 +84,10 @@ export class HELine extends HENodule {
     this._upper = startPoint.upper;
     this._mode = mode;
 
-    this._mesh = createLine({
-      name: this.name,
-      radius: this._radius,
-      upper: this._upper,
-      temporary: temporary
-    });
+    this._mesh = createLine(this.name, this._upper, temporary, this._radius);
 
     this._material = this._mesh.material as CustomLineMaterial;
+    this._material.normalVector = this._normalVector;
 
     this.updateTransformationMatrix(); // set the transformation matrix
 
@@ -251,7 +246,6 @@ export class HELine extends HENodule {
 
     if (this._exists) {
       // Given an set of this.startPoint, this.endPoint and (old) this.normalVector, and compute the next normal vector
-      // Compute a temporary normal from the two points
       this._normalVector
         .crossVectors(
           new Vector3(
@@ -266,6 +260,7 @@ export class HELine extends HENodule {
           )
         )
         .normalize();
+      this._material.normalVector = this._normalVector; // update the normal vector so that intersections are done correctly
       this.updateTransformationMatrix();
       // // Check to see if the tempNormal is zero (i.e the start and end vectors are parallel -- ether
       // // nearly antipodal or in the same direction)
@@ -327,6 +322,7 @@ export class HELine extends HENodule {
   }
 
   updateTransformationMatrix(): void {
+    this._material.upper = this.upper ? 1 : 0;
     // The magic happens here! See the Mathematica notebook "Hyperbolic Line Transformation"for details about how the matrices were created
     // First find the polar angles of the start and end points
     let thetaS = Math.atan2(
@@ -340,33 +336,20 @@ export class HELine extends HENodule {
 
     if (this._startPoint.position.w === 0 && this._endPoint.position.w === 0) {
       // both start and end points are ideal
-      const thetaHalfSum = (thetaE + thetaS) / 2;
-      const thetaHalfDiff = (thetaE - thetaS) / 2;
-      this._transformationMatrix = new Matrix4(
-        Math.cos(thetaHalfSum) / Math.sin(-thetaHalfDiff),
-        -Math.sin(thetaHalfSum),
-        (Math.cos(thetaHalfDiff) * Math.cos(thetaHalfSum)) /
-          Math.sin(-thetaHalfDiff),
-        0, //row 0
-        Math.sin(thetaHalfSum) / Math.sin(-thetaHalfDiff),
-        Math.cos(thetaHalfSum),
-        (Math.cos(thetaHalfDiff) / Math.sin(-thetaHalfDiff)) *
-          Math.sin(thetaHalfSum),
-        0, // row 1
-        1 / Math.tan(-thetaHalfDiff),
-        0,
-        1 / Math.sin(-thetaHalfDiff),
-        0, // row 2
-        0,
-        0,
-        0,
-        1 //row 3
-      );
-      this._material.mode = 0 * 4 + 1 * 2 + 0 * 1; // 010 in binary so the portion between start and end is draw
-      this._material.startY =
-        -2 * Math.sinh(Math.acosh(SETTINGS.maxZClip) + 1.001);
-      this._material.endY =
-        2 * Math.sinh(Math.acosh(SETTINGS.maxZClip) + 1.001);
+      //MupperII = ro[(Theta s+Theta e)/2-Pi/2].tr[ ArcTanh[Cos[Theta s-Theta e)/2]]].ro[Pi/2]
+      //MlowerII = ro[(Theta s+Theta e)/2-Pi/2].tr[-ArcTanh[Cos[Theta s-Theta e)/2]]].ro[Pi/2]
+      this._transformationMatrix
+        .makeRotationZ((thetaS + thetaE) / 2 - Math.PI / 2)
+        .multiply(
+          HENodule.hyperbolicTranslation(
+            (this._startPoint.position.z < 0 ? -1 : 1) *
+              Math.atanh(Math.cos((thetaS - thetaE) / 2))
+          )
+        )
+        .multiply(HENodule.hyperbolicRotation(Math.PI / 2));
+      this._material.mode = 0 * 4 + 1 * 2 + 0 * 1; // 010 in binary so only the portion between start and end is draw
+      this._material.startY = -Math.sinh(Math.acosh(SETTINGS.maxZClip) + 1.001);
+      this._material.endY = Math.sinh(Math.acosh(SETTINGS.maxZClip) + 1.001);
     } else {
       let radiusS =
         this._startPoint.position.w !== 0
@@ -376,7 +359,7 @@ export class HELine extends HENodule {
         this._endPoint.position.w !== 0
           ? Math.acosh(this._endPoint.position.z) // same as h2Distance(new Vector3(0, 0, 1), this._endPoint.position)
           : 0; // this value doesn't matter when the end is ideal
-      let endAtInfinity = this._endPoint.position.w === 0;
+      let endPointIsIdeal = this._endPoint.position.w === 0;
       this._material.mode = this._mode;
       if (
         this._startPoint.position.w === 0 &&
@@ -389,83 +372,50 @@ export class HELine extends HENodule {
         const radiusTemp = radiusE;
         radiusE = radiusS;
         radiusS = radiusTemp;
-        endAtInfinity = true;
-        function reverse3Bits(n: number): number {
-          const bit0 = (n & 1) << 2; // Extract bit 0 and move it to bit 2 position
-          const bit1 = n & 2; // Extract bit 1 (middle) and keep it there
-          const bit2 = (n & 4) >> 2; // Extract bit 2 and move it to bit 0 position
+        endPointIsIdeal = true;
 
-          return bit0 | bit1 | bit2; // Combine them
-        }
-        this._material.mode = reverse3Bits(this._mode);
+        //reverse the mode bits to draw correctly
+        const bit0 = (this._mode & 1) << 2; // Extract bit 0 and move it to bit 2 position
+        const bit1 = this._mode & 2; // Extract bit 1 (middle) and keep it there
+        const bit2 = (this._mode & 4) >> 2; // Extract bit 2 and move it to bit 0 position
+
+        this._material.mode = bit0 | bit1 | bit2; // Combine them
       }
-      const commonTerm = Math.sqrt(
-        Math.sin(thetaE - thetaS) * Math.sin(thetaE - thetaS) +
-          (Math.cos(thetaE - thetaS) * Math.cosh(radiusS) -
-            Math.sinh(radiusS) / (endAtInfinity ? 1 : Math.tanh(radiusE))) *
-            (Math.cos(thetaE - thetaS) * Math.cosh(radiusS) -
-              Math.sinh(radiusS) / (endAtInfinity ? 1 : Math.tanh(radiusE)))
-      );
-      this._transformationMatrix = new Matrix4(
-        (Math.cosh(radiusS) * Math.sin(thetaE) -
-          (Math.sin(thetaS) * Math.sinh(radiusS)) /
-            (endAtInfinity ? 1 : Math.tanh(radiusE))) /
-          commonTerm,
+      // R= ArcCosh[Cosh[re] Cosh[rs] (1-Cos[theta e -theta s] Tanh[re] Tanh[rs])]
+      // R is the length of the segment connecting End and Start
+      // T= ArcTan[
+      //    x=-Sin[theta e-theta s],
+      //    y=Cosh[rs] (Cos[theta e -theta s]-Coth[re] Tanh[rs])
+      //   ]
+      // T is this the angle opposite re in the OSE triangle? Maybe the exterior angle there?
 
-        (-Math.sin(thetaE - thetaS) * Math.sin(thetaS) +
-          Math.cos(thetaS) *
-            Math.cosh(radiusS) *
-            (Math.cos(thetaE - thetaS) * Math.cosh(radiusS) -
-              Math.sinh(radiusS) / (endAtInfinity ? 1 : Math.tanh(radiusE)))) /
-          commonTerm,
-
-        Math.cos(thetaS) * Math.sinh(radiusS),
-
-        0, //row 1
-
-        (-Math.cos(thetaE) * Math.cosh(radiusS) +
-          (Math.cos(thetaS) * Math.sinh(radiusS)) /
-            (endAtInfinity ? 1 : Math.tanh(radiusE))) /
-          commonTerm,
-
-        (Math.cos(thetaS) * Math.sin(thetaE - thetaS) +
-          Math.cosh(radiusS) *
-            Math.sin(thetaS) *
-            (Math.cos(thetaE - thetaS) * Math.cosh(radiusS) -
-              Math.sinh(radiusS) / (endAtInfinity ? 1 : Math.tanh(radiusE)))) /
-          commonTerm,
-
-        Math.sin(thetaS) * Math.sinh(radiusS),
-
-        0, //row 2
-
-        (Math.sin(thetaE - thetaS) * Math.sinh(radiusS)) / commonTerm,
-
-        (Math.cosh(radiusS) *
-          Math.sinh(radiusS) *
+      const T = Math.atan2(
+        Math.cosh(radiusS) *
           (Math.cos(thetaE - thetaS) -
-            Math.tanh(radiusS) / (endAtInfinity ? 1 : Math.tanh(radiusE)))) /
-          commonTerm,
-
-        Math.cosh(radiusS),
-
-        0, //row 3
-
-        0,
-        0,
-        0,
-        1 //row 4
+            Math.tanh(radiusS) / (endPointIsIdeal ? 1 : Math.tanh(radiusE))),
+        -Math.sin(thetaE - thetaS)
       );
+      // MupperI = ro[theta s-Pi/2].tr[rs].ro[(T/.{Coth[re]->1, if end ideal})-Pi/2]
+      // MlowerI = ro[theta s-Pi/2].tr[-rs].ro[(T/.{Coth[re]->1,if end ideal})-Pi/2]
+
+      this._transformationMatrix
+        .makeRotationZ(thetaS - Math.PI / 2)
+        .multiply(
+          HENodule.hyperbolicTranslation(
+            (this._startPoint.position.z < 0 ? -1 : 1) * radiusS
+          )
+        )
+        .multiply(HENodule.hyperbolicRotation(T - Math.PI / 2));
 
       this._material.startY = new Vector4()
         .copy(
-          endAtInfinity ? this._endPoint.position : this._startPoint.position
+          endPointIsIdeal ? this._endPoint.position : this._startPoint.position
         )
         .applyMatrix4(this._transformationMatrix.invert()).y;
 
       this._material.endY = new Vector4()
         .copy(
-          endAtInfinity ? this._startPoint.position : this._endPoint.position
+          endPointIsIdeal ? this._startPoint.position : this._endPoint.position
         )
         .applyMatrix4(this._transformationMatrix.invert()).y;
     }
@@ -588,9 +538,6 @@ export class HELine extends HENodule {
   get upper(): boolean {
     return this._upper;
   }
-  set upper(isUpper: boolean) {
-    this._upper = isUpper;
-  }
   get radius(): number {
     return this._material.radius;
   }
@@ -607,6 +554,17 @@ export class HELine extends HENodule {
 
   get startPoint(): HEPoint {
     return this._startPoint;
+  }
+  public setNewStartAndEndPoints(newStart: HEPoint, newEnd: HEPoint): void {
+    if (newStart.upper !== newEnd.upper) {
+      throw new Error(
+        "The start and end points of a line must be on the same sheet!"
+      );
+    }
+    this._startPoint = newStart;
+    this._endPoint = newEnd;
+    this._upper = newStart.upper;
+    this.updateTransformationMatrix();
   }
 
   get endPoint(): HEPoint {

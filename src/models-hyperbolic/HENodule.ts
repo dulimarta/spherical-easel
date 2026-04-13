@@ -204,4 +204,45 @@ export abstract class HENodule {
   //Every HENodule object will have a mesh and a (custom) material
   protected abstract get material(): THREE.MeshStandardNodeMaterial;
   protected abstract get mesh(): Mesh;
+
+  static hyperbolicTranslation(u: number): THREE.Matrix4 {
+    return new THREE.Matrix4(
+      1,
+      0,
+      0,
+      0, // row1
+      0,
+      Math.cosh(u),
+      Math.sinh(u),
+      0, // row2
+      0,
+      Math.sinh(u),
+      Math.cosh(u),
+      0, // row3
+      0,
+      0,
+      0,
+      1 // row 4
+    );
+  }
+  static hyperbolicRotation(theta: number): THREE.Matrix4 {
+    return new THREE.Matrix4(
+      Math.cos(theta),
+      -Math.sin(theta),
+      0,
+      0, // row1
+      Math.sin(theta),
+      Math.cos(theta),
+      0,
+      0, // row2
+      0,
+      0,
+      1,
+      0, // row3
+      0,
+      0,
+      0,
+      1 // row 4
+    );
+  }
 }

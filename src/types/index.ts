@@ -20,6 +20,7 @@ import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
 import { SEExpression } from "@/models-spherical/SEExpression";
 import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { LAYER } from "@/global-settings-spherical";
+import { HELine } from "@/models-hyperbolic/HELine";
 // import "@types/google.maps"
 
 export interface Selectable {
@@ -565,8 +566,7 @@ export type SEOneOrTwoDimensional =
   | SEParametric
   | SEPolygon;
 
-export type HEOneOrTwoDimensional = null;
-// HELine;
+export type HEOneOrTwoDimensional = HELine;
 // | HESegment
 // | HECircle
 // | HEEllipse
@@ -719,4 +719,4 @@ export type VisibleHELayersType =
   | "lowerSheetLines"
   | "labels"
   | "polarGrid"
-  | "pointsAtInfinity";
+  | "idealPointsStrip";

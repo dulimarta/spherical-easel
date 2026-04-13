@@ -10,15 +10,15 @@ import { LabelParentTypes } from "@/types";
 import {
   createLabel,
   unitLength,
-  zLowerPAIClipMinus,
-  zLowerPAIClipPlus,
-  zUpperPAIClipMinus,
-  zUpperPAIClipPlus
+  zLowerIdealPointsClipMinus,
+  zLowerIdealPointsClipPlus,
+  zUpperIdealPointsClipMinus,
+  zUpperIdealPointsClipPlus
 } from "@/plottables-hyperbolic/MeshFactory";
 import { HEPoint } from "./HEPoint";
 import {
   intersectWithHyperboloid,
-  intersectWithPointAtInfinityStrip
+  intersectWithIdealPointsStrip
 } from "@/utils/helpingHEFunctions";
 
 //import { createLabel } from "@/plottables-hyperbolic/MeshFactory";
@@ -48,16 +48,15 @@ export class HELabel extends HENodule {
   constructor(
     labelType: LabelParentTypes,
     parent: HENodule,
-    anchor: THREE.Vector4,
-    text: string,
-    upper: boolean
+    initialAnchor: THREE.Vector4,
+    text: string
   ) {
     super();
     this.parent = parent;
     this._currentText = text;
     this._labelParentType = labelType;
-    this._upper = upper;
-    this._anchorPoint = anchor;
+    this._upper = initialAnchor.z > 0;
+    this._anchorPoint = initialAnchor;
 
     HENodule.LABEL_COUNT++;
     this.name = "La" + HENodule.LABEL_COUNT;
@@ -65,7 +64,7 @@ export class HELabel extends HENodule {
     //   "Label Constructor: ",
     //   this.name,
     //   this._upper ? "upper|" : "lower|",
-    //   this._atInfinity ? "At infinity|" : "NOT at infinity|",
+    //   this._ideal ? "ideal" : "NOT at ideal|",
     //   this._angle,
     //   this._position.toFixed(2)
     // );
@@ -84,10 +83,7 @@ export class HELabel extends HENodule {
     });
     this._bounds = textGeometry.planeBounds;
 
-    this._mesh = await createLabel({
-      textGeometry: textGeometry.geometry,
-      name: this.name
-    });
+    this._mesh = await createLabel(textGeometry.geometry, this.name);
     this._material = this._mesh.material as CustomLabelMaterial;
 
     if (this._upper) {
@@ -159,7 +155,7 @@ export class HELabel extends HENodule {
     //   this.name,
     //   this._showing ? "label SHOWING |" : "label NOT SHOWING|",
     //   this._upper ? "upper|" : "lower|",
-    //   this._atInfinity ? "At infinity|" : "NOT at infinity|",
+    //   this._ideal ? "ideal|" : "NOT ideal|",
     //   this._angle,
     //   this._position.toFixed(2)
     // );
@@ -198,8 +194,10 @@ export class HELabel extends HENodule {
     if (this._anchorPoint.w === 0) {
       const anchorAngle = Math.atan2(this._anchorPoint.y, this._anchorPoint.x);
       const zCoordinate = this._upper
-        ? (zUpperPAIClipMinus.value + zUpperPAIClipPlus.value) / 2.0
-        : (zLowerPAIClipMinus.value + zLowerPAIClipPlus.value) / 2.0;
+        ? (zUpperIdealPointsClipMinus.value + zUpperIdealPointsClipPlus.value) /
+          2.0
+        : (zLowerIdealPointsClipMinus.value + zLowerIdealPointsClipPlus.value) /
+          2.0;
       finalTranslationMatrix = new THREE.Matrix4().makeTranslation(
         Math.cos(anchorAngle) * Math.abs(zCoordinate),
         Math.sin(anchorAngle) * Math.abs(zCoordinate),
@@ -300,7 +298,7 @@ export class HELabel extends HENodule {
 
     let occluded: boolean;
     if (this._anchorPoint.w === 0) {
-      const intersectionsWithCone = intersectWithPointAtInfinityStrip(
+      const intersectionsWithCone = intersectWithIdealPointsStrip(
         new THREE.Vector3(centerOfText.x, centerOfText.y, centerOfText.z),
         labelToCameraOriginUnitVector,
         0,

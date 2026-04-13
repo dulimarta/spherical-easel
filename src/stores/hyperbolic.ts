@@ -28,7 +28,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const closestIntersectionIsSurface: Ref<boolean> = ref(false);
 
   const hyperboloidIsClosestIntersection: Ref<boolean> = ref(false);
-  const pointAtInfinityStripIsClosestIntersection: Ref<boolean> = ref(false);
+  const idealPointsStripIsClosestIntersection: Ref<boolean> = ref(false);
   const objectMap: Map<string, HENodule> = new Map();
   const pointsMap: Map<string, HEPoint> = new Map();
   const linesMap: Map<string, HELine> = new Map();
@@ -112,7 +112,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     // threeJSCamera.getWorldDirection(cameraDirection);
     // console.log("hstore dir", cameraDirection.toFixed(2));
     labelsMap.forEach(label => {
-      //add or remove labels that are not at infinity and are outside of the clipping planes of the hyperboloid (plus a little buffer) from the scene
+      //add or remove labels that are not attached to ideal points and are outside of the clipping planes of the hyperboloid (plus a little buffer) from the scene
       // This is necessary so that labels that are outside of the clipping planes don't show as the user dollies and zooms.
       if (label.anchorPoint.w !== 0) {
         if (
@@ -125,7 +125,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
           label.faceCamera();
         }
       } else {
-        // make the labels at infinity update
+        // make the labels attached to ideal points update
         label.faceCamera();
       }
     });
@@ -143,7 +143,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     // // Look for occluded labels
     // const [visibleLabelMeshes, occludedLabelMeshes] = labelsMap
     //   .values()
-    //   .filter(obj => obj.showing && obj.atInfinity) // if the object is not showing it excluded
+    //   .filter(obj => obj.showing && obj.ideal) // if the object is not showing it excluded
     //   .flatMap(obj => obj.group.children)
     //   .toArray()
     //   .partition(obj => {
@@ -236,7 +236,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     cameraInverseMatrix,
     implementedHETools,
     hyperboloidIsClosestIntersection,
-    pointAtInfinityStripIsClosestIntersection,
+    idealPointsStripIsClosestIntersection,
     addPoint,
     addLine,
     addLabel,

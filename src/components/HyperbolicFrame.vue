@@ -76,7 +76,7 @@
                 mdi-circle-half
               </v-icon>
             </v-btn>
-            <v-btn icon color="blue" value="pointsAtInfinity">
+            <v-btn icon color="blue" value="idealPointsStrip">
               <v-icon>mdi-circle-expand</v-icon>
             </v-btn>
             <v-btn icon color="green" value="polarGrid">
@@ -156,14 +156,14 @@ import SETTINGS, { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import {
   createPolarGridCircle,
   createPolarGridRadialLine,
-  createPointsAtInfinityStrip,
+  createIdealPointsStrip,
   createHyperboloidSheet,
   zUpperClip,
   zLowerClip,
-  zUpperPAIClipPlus,
-  zUpperPAIClipMinus,
-  zLowerPAIClipPlus,
-  zLowerPAIClipMinus,
+  zUpperIdealPointsClipPlus,
+  zUpperIdealPointsClipMinus,
+  zLowerIdealPointsClipPlus,
+  zLowerIdealPointsClipMinus,
   unitLength
 } from "@/plottables-hyperbolic/MeshFactory";
 import { VisibleHELayersType } from "@/types";
@@ -180,14 +180,14 @@ const {
   cameraQuaternion,
   cameraOrigin,
   hyperboloidIsClosestIntersection,
-  pointAtInfinityStripIsClosestIntersection
+  idealPointsStripIsClosestIntersection
 } = storeToRefs(hyperStore);
 const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
 const hasUpdatedCameraControls = ref(false);
 const visibleLayers: Ref<VisibleHELayersType[]> = ref([]);
 const showLowerSheet = ref(false);
-const showPointsAtInfinity = ref(false);
+const showIdealPointsStrip = ref(false);
 const showPolarGrid = ref(true);
 type ImportantSurface = "Upper" | "Lower" | null;
 const intersectionList: Ref<
@@ -272,24 +272,12 @@ txtObject.color = "yellow"; //0x000000;
 
 const rayIntersectionPosition = reactive(new Vector3());
 
-// // The z coordinate of all points on the hyperboloid(s) are between zUpperClip and zLowerClip and their negations
-// const zUpperClip = uniform(1.0, "float");
-// const zLowerClip = uniform(-1.0, "float");
-
-// // The z coordinate of all point of the upperPointsAtInfinity are between zUpperPAIClipPlus and zUpperPAIClipMinus,
-// const zUpperPAIClipPlus = uniform(2.0, "float");
-// const zUpperPAIClipMinus = uniform(1.5, "float");
-
-// // The z coordinate of all point of the lowerPointsAtInfinity are between zLowerPAIClipPlus and zLowerPAIClipMinus,
-// const zLowerPAIClipPlus = uniform(-1.5, "float");
-// const zLowerPAIClipMinus = uniform(2.0, "float");
-
 // Arrays to store the polar grid lines
 let upperPolarGridArray: Array<THREE.Mesh> = [];
 let lowerPolarGridArray: Array<THREE.Mesh> = [];
 
-let upperPointsAtInfinityStrip: THREE.Mesh | undefined = undefined;
-let lowerPointsAtInfinityStrip: THREE.Mesh | undefined = undefined;
+let upperIdealPointsStrip: THREE.Mesh | undefined = undefined;
+let lowerIdealPointsStrip: THREE.Mesh | undefined = undefined;
 
 let upperHyperboloidSheet: THREE.Mesh | undefined = undefined;
 let lowerHyperboloidSheet: THREE.Mesh | undefined = undefined;
@@ -298,21 +286,21 @@ clock.autoStart = true;
 
 watch(visibleLayers, (layers: Array<VisibleHELayersType>) => {
   showLowerSheet.value = layers.includes("lowerSheet");
-  showPointsAtInfinity.value = layers.includes("pointsAtInfinity");
+  showIdealPointsStrip.value = layers.includes("idealPointsStrip");
   showPolarGrid.value = layers.includes("polarGrid");
   updateVisibleLayers();
 });
 
 function updateVisibleLayers(): void {
-  if (showPointsAtInfinity.value) {
+  if (showIdealPointsStrip.value) {
     camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
 
     camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfLabels);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfLabels);
 
-    if (upperPointsAtInfinityStrip) {
-      scene.add(upperPointsAtInfinityStrip);
+    if (upperIdealPointsStrip) {
+      scene.add(upperIdealPointsStrip);
     }
     if (showLowerSheet.value) {
       camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
@@ -321,8 +309,8 @@ function updateVisibleLayers(): void {
       camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
       rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
 
-      if (lowerPointsAtInfinityStrip) {
-        scene.add(lowerPointsAtInfinityStrip);
+      if (lowerIdealPointsStrip) {
+        scene.add(lowerIdealPointsStrip);
       }
     } else {
       camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
@@ -331,8 +319,8 @@ function updateVisibleLayers(): void {
       camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
       rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
 
-      if (lowerPointsAtInfinityStrip) {
-        scene.remove(lowerPointsAtInfinityStrip);
+      if (lowerIdealPointsStrip) {
+        scene.remove(lowerIdealPointsStrip);
       }
     }
   } else {
@@ -348,11 +336,11 @@ function updateVisibleLayers(): void {
     camera.layers.disable(HYPERBOLIC_LAYER.upperSheetInfLabels);
     rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfLabels);
 
-    if (upperPointsAtInfinityStrip) {
-      scene.remove(upperPointsAtInfinityStrip);
+    if (upperIdealPointsStrip) {
+      scene.remove(upperIdealPointsStrip);
     }
-    if (lowerPointsAtInfinityStrip) {
-      scene.remove(lowerPointsAtInfinityStrip);
+    if (lowerIdealPointsStrip) {
+      scene.remove(lowerIdealPointsStrip);
     }
   }
 
@@ -443,13 +431,15 @@ watch(
         currentTools.push(pointTool);
         break;
       case "line":
-        if (lineTool === null) lineTool = new LineHandler(scene);
+        if (lineTool === null)
+          lineTool = new LineHandler(scene, 1 * 4 + 1 * 2 + 1);
         // Extend the line to the end of the hyperboloid
         //lineTool.infiniteLineMode = true;
         //currentTools.push(lineTool);
         break;
       case "segment":
-        if (lineTool === null) lineTool = new LineHandler(scene);
+        if (lineTool === null)
+          lineTool = new LineHandler(scene, 0 * 4 + 1 * 2 + 0);
 
         //lineTool.infiniteLineMode = false;
         //currentTools.push(lineTool);
@@ -518,9 +508,9 @@ onMounted(async () => {
   // Enable local clipping (i.e. clipping on individual materials)
   renderer.localClippingEnabled = true;
 
-  // Initial update of the view of sheets, grid and points at infinity
+  // Initial update of the view of sheets, grid and ideal points
   updateVisibleLayers(); // Use the visibleLayers to update the display
-  updateView(); // update the look at, zClipping values for Points at infinity and hyperboloids
+  updateView(); // update the look at, zClipping values for ideal points' strip and hyperboloids
 
   renderer.setSize(props.availableWidth, props.availableHeight);
   renderer.setClearColor(0xcccccc, 1);
@@ -633,8 +623,8 @@ function initialize() {
   scene.add(arrowZ);
 
   // create the hyperboloid sheets
-  upperHyperboloidSheet = createHyperboloidSheet({ upper: true });
-  lowerHyperboloidSheet = createHyperboloidSheet({ upper: false });
+  upperHyperboloidSheet = createHyperboloidSheet(true);
+  lowerHyperboloidSheet = createHyperboloidSheet(false);
 
   lowerHyperboloidSheet.name = "Lower Sheet";
   upperHyperboloidSheet.name = "Upper Sheet";
@@ -652,19 +642,15 @@ function initialize() {
   camera.layers.enable(HYPERBOLIC_LAYER.upperSheetLabels);
   camera.layers.enable(HYPERBOLIC_LAYER.upperSheetLines);
 
-  // Create the cones from which the points at infinity
+  // Create the strips on which the ideal points
   // will be displayed by clipping between two planes
-  upperPointsAtInfinityStrip = createPointsAtInfinityStrip({
-    upper: true
-  });
-  upperPointsAtInfinityStrip.name = `Upper Points At Infinity`;
-  upperPointsAtInfinityStrip.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
+  upperIdealPointsStrip = createIdealPointsStrip(true);
+  upperIdealPointsStrip.name = `Upper Ideal Points Strip`;
+  upperIdealPointsStrip.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
 
-  lowerPointsAtInfinityStrip = createPointsAtInfinityStrip({
-    upper: false
-  });
-  lowerPointsAtInfinityStrip.name = `Lower Points At Infinity`;
-  lowerPointsAtInfinityStrip.layers.set(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+  lowerIdealPointsStrip = createIdealPointsStrip(false);
+  lowerIdealPointsStrip.name = `Lower Ideal Points Strip`;
+  lowerIdealPointsStrip.layers.set(HYPERBOLIC_LAYER.lowerSheetInfPoints);
 
   // create the radial polar grid lines
   for (let upperLower = 0; upperLower < 2; upperLower++) {
@@ -674,10 +660,7 @@ function initialize() {
       theta < 2 * Math.PI;
       theta += (2 * Math.PI) / numRadialLines
     ) {
-      const radialLineMesh = createPolarGridRadialLine({
-        radianAngle: theta,
-        upper: upperLower === 0
-      });
+      const radialLineMesh = createPolarGridRadialLine(theta, upperLower === 0);
 
       radialLineMesh.layers.set(
         upperLower === 0
@@ -693,10 +676,7 @@ function initialize() {
 
     // create the circular polar grid lines
     for (let r = 0.5; Math.cosh(r) < SETTINGS.maxZClip; r += 0.5) {
-      const circularGridMesh = createPolarGridCircle({
-        intrinsicRadius: r,
-        upper: upperLower === 0
-      });
+      const circularGridMesh = createPolarGridCircle(r, upperLower === 0);
 
       circularGridMesh.layers.set(
         upperLower === 0
@@ -711,12 +691,12 @@ function initialize() {
     }
   }
 
-  // push (polar grid)|(points at infinity)|(lower sheet) to visible layers, because it is visible at initialization otherwise the vue button handles the visibleLayers array
+  // push (polar grid)|(ideal points)|(lower sheet) to visible layers, because it is visible at initialization otherwise the vue button handles the visibleLayers array
   if (showPolarGrid.value) {
     visibleLayers.value.push("polarGrid");
   }
-  if (showPointsAtInfinity.value) {
-    visibleLayers.value.push("pointsAtInfinity");
+  if (showIdealPointsStrip.value) {
+    visibleLayers.value.push("idealPointsStrip");
   }
   if (showLowerSheet.value) {
     visibleLayers.value.push("lowerSheet");
@@ -828,11 +808,11 @@ function updateView() {
     zCoordLookAt,
     true
   );
-  // update the clipping planes for the points at infinity cones to make the points at infinity strip an almost constant width.
+  // update the clipping planes for the ideal points' cones to make the ideal points' strip an almost constant width.
   // There are two incompatible issues with a perspective camera while trying to accomplish this:
   // One is that in a perspective camera, objects far/near are rendered smaller/larger and
   // Two is the desire for constant width.
-  // The grid lines are actually always drawn in the plane parallel to the screen and are always a certain number of pixels wide no matter the dolly distance and zoom/fov level and the near/far placement of the grid lines. I do not think this is what we want for the geometric objects in the scene. We want to standardize the size of objects so that at *one* place on the hyperboloid they always appear to have the same size for any dolly or zoom levels. For the strip of the points at infinity, the place for constant width is the intersection of the plane containing the z axis that intersects the screen plane in a horizontal line. The intersection is two line segments. Each of these are a line segment that should have constant width for any dolly/zoom level. Notice that this still means that the part of the points at infinity strip rendered near/far will be rendered larger/smaller than this constant width/size line segment.
+  // The grid lines are actually always drawn in the plane parallel to the screen and are always a certain number of pixels wide no matter the dolly distance and zoom/fov level and the near/far placement of the grid lines. I do not think this is what we want for the geometric objects in the scene. We want to standardize the size of objects so that at *one* place on the hyperboloid they always appear to have the same size for any dolly or zoom levels. For the strip of the ideal points, the place for constant width is the intersection of the plane containing the z axis that intersects the screen plane in a horizontal line. The intersection is two line segments. Each of these are a line segment that should have constant width for any dolly/zoom level. Notice that this still means that the part of the ideal points' strip rendered near/far will be rendered larger/smaller than this constant width/size line segment.
 
   // Starting at the top of the clipping plane value at the left most edge of the view and move to the cone x^2 + y^2 = z^2 for the start
   const angleOffX = Math.atan2(
@@ -853,18 +833,18 @@ function updateView() {
   const len1 = constantAngleToLength(
     start,
     dir,
-    SETTINGS.pointsAtInfinityAngularGap
+    SETTINGS.idealPointsStripAngularGap
   );
   const len2 = constantAngleToLength(
     start,
     dir,
-    SETTINGS.pointsAtInfinityAngularGap + SETTINGS.pointsAtInfinityAngularWidth
+    SETTINGS.idealPointsStripAngularGap + SETTINGS.idealPointsStripAngularWidth
   );
-  zUpperPAIClipMinus.value = start.z + len1 * dir.z;
-  zUpperPAIClipPlus.value = start.z + len2 * dir.z;
+  zUpperIdealPointsClipMinus.value = start.z + len1 * dir.z;
+  zUpperIdealPointsClipPlus.value = start.z + len2 * dir.z;
 
-  zLowerPAIClipMinus.value = -zUpperPAIClipPlus.value;
-  zLowerPAIClipPlus.value = -zUpperPAIClipMinus.value;
+  zLowerIdealPointsClipMinus.value = -zUpperIdealPointsClipPlus.value;
+  zLowerIdealPointsClipPlus.value = -zUpperIdealPointsClipMinus.value;
 
   // update the unit
   // A line segment starting at (0,0,1) and in the plane parallel to the screen subtending this angle in any zoom/dolly level is considered a unit length. All geometric objects are measured relative to this unit.
@@ -950,7 +930,7 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
       }
     });
 
-  const regex = /(Sheet|Infinity)$/; // For filtering cursor intersection point(s)
+  const regex = /(Sheet|Strip)$/; // For filtering cursor intersection point(s)
   [surfaceIntersections.value, objectIntersections.value] =
     intersectionList.value.partition(x => {
       return x.object.name.match(regex) !== null;
@@ -962,11 +942,11 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   if (closestIntersection) {
     hyperboloidIsClosestIntersection.value =
       closestIntersection.object.name.match(/(Sheet)$/) !== null;
-    pointAtInfinityStripIsClosestIntersection.value =
-      closestIntersection.object.name.match(/(Infinity)$/) !== null;
+    idealPointsStripIsClosestIntersection.value =
+      closestIntersection.object.name.match(/(Ideal)$/) !== null;
     closestIntersectionIsSurface.value =
       hyperboloidIsClosestIntersection.value ||
-      pointAtInfinityStripIsClosestIntersection.value;
+      idealPointsStripIsClosestIntersection.value;
   }
 
   // Compute the first intersection information for display

@@ -1,9 +1,5 @@
 import { Command } from "@/commands-spherical/Command";
 import { HELabel } from "@/models-hyperbolic/HELabel";
-// import { Vector3 } from "three";
-// import { SavedNames, toSVGType } from "@/types";
-// import { HENodule } from "@/models-spherical/HENodule";
-// import { StyleCategory } from "@/types/Styles";
 import { HEPoint } from "@/models-hyperbolic/HEPoint";
 
 export class AddPointCommand extends Command {

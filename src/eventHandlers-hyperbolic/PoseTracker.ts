@@ -10,7 +10,6 @@ import {
 } from "three";
 import { HEStoreType } from "@/stores/hyperbolic";
 import { HENodule } from "@/models-hyperbolic/HENodule";
-import { create2DLine, createPoint } from "@/plottables-hyperbolic/MeshFactory";
 import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import { HyperbolicToolStrategy } from "./ToolStrategy";
 import { HEPoint } from "@/models-hyperbolic/HEPoint";
@@ -22,11 +21,7 @@ import { parseJsonText } from "typescript";
 import { HEIntersectionPoint } from "@/models-hyperbolic/HEIntersectionPoint";
 import { HELabel } from "@/models-hyperbolic/HELabel";
 import { a } from "vitest/dist/chunks/suite.d.FvehnV49.js";
-
-// const ORIGIN = new Vector3(0, 0, 0);
-const Y_AXIS = new Vector3(0, 1, 0);
-const Z_MINUS1 = new Vector3(0, 0, -1);
-const TMP_MAT4 = new Matrix4();
+import { HELine } from "@/models-hyperbolic/HELine";
 
 export class PoseTracker implements HyperbolicToolStrategy {
   static hyperStore: HEStoreType;
@@ -34,8 +29,10 @@ export class PoseTracker implements HyperbolicToolStrategy {
 
   //flags
   protected somethingIsHit = false;
-  protected hyperboloidFirstHit = false;
-  protected pointAtInfinityStripFirstHit = false;
+  protected hyperboloidIsFirstSurfaceHit = false;
+  protected hyperboloidFirstHitOverall = false;
+  protected idealPointsStripFirstHitOverall = false;
+  protected surfaceIsIntersected = false;
 
   /**
    * Arrays of nodules near the mouse event location
@@ -43,7 +40,7 @@ export class PoseTracker implements HyperbolicToolStrategy {
   protected hitHENodules: HENodule[] = [];
   protected hitHEPoints: HEPoint[] = [];
   protected hitHELabels: HELabel[] = [];
-  // protected hitHELines: HELine[] = [];
+  protected hitHELines: HELine[] = [];
   // protected hitHESegments: HESegment[] = [];
   // protected hitHECircles: HECircle[] = [];
   // protected hitHEEllipses: HEEllipse[] = [];
@@ -76,11 +73,17 @@ export class PoseTracker implements HyperbolicToolStrategy {
     this.somethingIsHit =
       PoseTracker.hyperStore.objectIntersections.length > 0 ||
       PoseTracker.hyperStore.surfaceIntersections.length > 0;
+    this.surfaceIsIntersected =
+      PoseTracker.hyperStore.surfaceIntersections.length > 0;
+    this.hyperboloidIsFirstSurfaceHit =
+      PoseTracker.hyperStore.surfaceIntersections[0].object.name.match(
+        /(Sheet)$/
+      ) !== null;
 
-    this.hyperboloidFirstHit =
+    this.hyperboloidFirstHitOverall =
       PoseTracker.hyperStore.hyperboloidIsClosestIntersection;
-    this.pointAtInfinityStripFirstHit =
-      PoseTracker.hyperStore.pointAtInfinityStripIsClosestIntersection;
+    this.idealPointsStripFirstHitOverall =
+      PoseTracker.hyperStore.idealPointsStripIsClosestIntersection;
 
     // control the normal arrow
     // if (
@@ -139,6 +142,9 @@ export class PoseTracker implements HyperbolicToolStrategy {
     //   this.hitHELabels.length,
     //   this.hitHELabels[0] ? this.hitHELabels[0].name : ""
     // );
+    this.hitHELines = this.hitHENodules
+      .filter(obj => obj.name.startsWith("Li"))
+      .map(obj => obj as HELine);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -170,6 +176,7 @@ export class PoseTracker implements HyperbolicToolStrategy {
     this.hitHENodules.splice(0);
     this.hitHEPoints.splice(0);
     this.hitHELabels.splice(0);
+    this.hitHELines.splice(0);
   }
 
   static addCreateAntipodeCommand(
@@ -177,11 +184,7 @@ export class PoseTracker implements HyperbolicToolStrategy {
     commandGroup: CommandGroup
   ): HEAntipodalPoint {
     // Create the antipode of the new parent point
-    const antipodalVtx = new HEAntipodalPoint({
-      antipodalPointParent: parentPoint,
-      isUserCreated: false,
-      upper: !parentPoint.upper // The upper/lower of the new point being created
-    });
+    const antipodalVtx = new HEAntipodalPoint(parentPoint, false);
 
     // Create a plottable label
     // Create an HELabel and link it to the plottable object
@@ -202,8 +205,7 @@ export class PoseTracker implements HyperbolicToolStrategy {
       "point",
       antipodalVtx,
       antipodalVtx.position,
-      antipodalVtx.name,
-      !parentPoint.upper
+      antipodalVtx.name
     );
     newHEAntipodalLabel.showing = false; // automatically created labels are not shown
     antipodalVtx.label = newHEAntipodalLabel; // link the label to the point
