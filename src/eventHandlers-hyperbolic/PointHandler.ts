@@ -189,6 +189,7 @@ export class PointHandler extends PoseTracker {
         );
         vtx = new HEPoint(hitLocation);
         newHELabel = new HELabel("point", vtx, hitLocation, vtx.name);
+        vtx.setLabel(newHELabel);
 
         if (vtx && newHELabel) {
           pointCommandGroup.addCommand(new AddPointCommand(vtx, newHELabel));
@@ -228,11 +229,11 @@ export class PointHandler extends PoseTracker {
     this.updateFilteredPointsList();
 
     if (this._filteredIntersectionPointsList.length > 0) {
-      console.log(
-        "point handler filter set glowing",
-        this._filteredIntersectionPointsList[0].name,
-        this._filteredIntersectionPointsList[0].position.toFixed(2)
-      );
+      // console.log(
+      //   "point handler filter set glowing",
+      //   this._filteredIntersectionPointsList[0].name,
+      //   this._filteredIntersectionPointsList[0].position.toFixed(2)
+      // );
       this._filteredIntersectionPointsList[0].glowing = true;
       this._snapToObject = null;
     }
@@ -246,7 +247,7 @@ export class PointHandler extends PoseTracker {
 
     if (this.surfaceIsIntersected) {
       if (this._snapToObject === null) {
-        if (this.hyperboloidFirstHitOverall) {
+        if (this.hyperboloidIsFirstSurfaceHit) {
           if (!this._tempPointInScene) {
             this._tempPointInScene = true;
             this.scene.add(this._tempPoint.mesh);
@@ -262,7 +263,7 @@ export class PointHandler extends PoseTracker {
           }
         }
 
-        if (this.idealPointsStripFirstHitOverall) {
+        if (!this.hyperboloidIsFirstSurfaceHit) {
           if (!this._tempIdealPointInScene) {
             this._tempIdealPointInScene = true;
             this.scene.add(this._tempTube);
@@ -271,7 +272,6 @@ export class PointHandler extends PoseTracker {
           const location = PoseTracker.hyperStore.surfaceIntersections[0].point;
           const upper = location.z > 0;
           this._tempIdealPoint.position = PoseTracker.vec3ToVec4(location, 0);
-          this._tempIdealPoint.upper = upper;
           this._tempTubeMaterial.upper = upper ? 1 : 0;
           this._tempTubeMaterial.tubeAngle = Math.atan2(location.y, location.x);
 

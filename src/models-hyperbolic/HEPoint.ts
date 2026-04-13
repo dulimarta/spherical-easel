@@ -13,9 +13,9 @@ import {
 import { HELabel } from "./HELabel";
 import { cos } from "three/tsl";
 import { L } from "vitest/dist/chunks/environment.d.cL3nLXbE.js";
-import { Labelable } from "@/types";
+import { HyperbolicLabelable, Labelable } from "@/types";
 
-export class HEPoint extends HENodule {
+export class HEPoint extends HENodule implements HyperbolicLabelable {
   protected _upper;
   protected _position = new THREE.Vector4(); // homogeneous coordinates -- w coordinate is 0 for ideal points and 1 for non-ideal points
   protected _height = 0.33; // height is used to control the length of the cone that represents ideal points
@@ -125,9 +125,7 @@ export class HEPoint extends HENodule {
   get upper(): boolean {
     return this._upper;
   }
-  set upper(isUpper: boolean) {
-    this._upper = isUpper;
-  }
+
   get radius(): number {
     return this._material.radius;
   }
@@ -140,6 +138,7 @@ export class HEPoint extends HENodule {
   }
   set position(pos: THREE.Vector4) {
     this._position = pos;
+    this._upper = pos.z > 0;
     this.shallowUpdate();
   }
   get mesh(): Mesh {

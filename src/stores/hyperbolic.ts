@@ -237,6 +237,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     implementedHETools,
     hyperboloidIsClosestIntersection,
     idealPointsStripIsClosestIntersection,
+    linesMap,
     addPoint,
     addLine,
     addLabel,

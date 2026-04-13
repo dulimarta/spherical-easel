@@ -6,7 +6,7 @@ import { SECircle } from "@/models-spherical/SECircle";
 import { SESegment } from "@/models-spherical/SESegment";
 import { SENodule } from "@/models-spherical/SENodule";
 import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
-import { Vector2, Vector3 } from "three";
+import { Vector2, Vector3, Vector4 } from "three";
 import { SEEllipse } from "@/models-spherical/SEEllipse";
 import { SEParametric } from "@/models-spherical/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
@@ -21,6 +21,7 @@ import { SEExpression } from "@/models-spherical/SEExpression";
 import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { LAYER } from "@/global-settings-spherical";
 import { HELine } from "@/models-hyperbolic/HELine";
+import { HELabel } from "@/models-hyperbolic/HELabel";
 // import "@types/google.maps"
 
 export interface Selectable {
@@ -419,6 +420,19 @@ export interface Labelable {
     zoomMagnificationFactor: number
   ): Vector3;
   label?: SELabel;
+}
+
+export interface HyperbolicLabelable {
+  /**
+   * Returns the closest label location vector on the parent object to the idealUnitSphereVector
+   * @param idealUnitSphereVector A vector location on the sphere
+   */
+  // closestLabelLocationVector(
+  //   idealUnitSphereVector: Vector3,
+  //   zoomMagnificationFactor: number
+  // ): Vector4;
+  setLabel(label: HELabel): void;
+  label?: HELabel;
 }
 /**
  * A variable types for polygon

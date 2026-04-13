@@ -6,7 +6,8 @@ import { HENodule } from "./HENodule";
 import SETTINGS from "@/global-settings-hyperbolic";
 import {
   OneDimensional,
-  Labelable
+  Labelable,
+  HyperbolicLabelable
   // NormalAndPerpendicularPoint,
   // ObjectState
 } from "@/types";
@@ -33,14 +34,14 @@ import { h2Distance } from "@/utils/helpingHEFunctions";
 //   ...Object.getOwnPropertyNames(DEFAULT_LINE_BACK_STYLE)
 // ]);
 // const { t } = i18n.global;
-export class HELine extends HENodule {
+export class HELine extends HENodule implements HyperbolicLabelable {
   //implements Visitable, OneDimensional, Labelable
 
   public label?: HELabel;
   protected _startPoint: HEPoint;
   protected _endPoint: HEPoint;
-  protected _normalVector = new Vector3();
-  protected _upper;
+  protected _normalVector = new Vector3(); // most useful for determining if two lines are the same
+  protected _upper; // must match for lines to be the same
   protected _radius = 0.15; // radius of the initial tube
   protected _nonFreePoint = false;
   protected _transformationMatrix = new Matrix4();
@@ -548,9 +549,14 @@ export class HELine extends HENodule {
     return this._normalVector;
   }
 
-  // set normalVector(normalVec: Vector3) {
-  //   this._normalVector.copy(normalVec);
-  // }
+  get mode(): number {
+    return this._mode;
+  }
+
+  set mode(newMode: number) {
+    this._mode = newMode;
+    this.updateTransformationMatrix();
+  }
 
   get startPoint(): HEPoint {
     return this._startPoint;

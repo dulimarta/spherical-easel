@@ -75,10 +75,11 @@ export class PoseTracker implements HyperbolicToolStrategy {
       PoseTracker.hyperStore.surfaceIntersections.length > 0;
     this.surfaceIsIntersected =
       PoseTracker.hyperStore.surfaceIntersections.length > 0;
-    this.hyperboloidIsFirstSurfaceHit =
-      PoseTracker.hyperStore.surfaceIntersections[0].object.name.match(
-        /(Sheet)$/
-      ) !== null;
+    this.hyperboloidIsFirstSurfaceHit = this.surfaceIsIntersected
+      ? PoseTracker.hyperStore.surfaceIntersections[0].object.name.match(
+          /(Sheet)$/
+        ) !== null
+      : false;
 
     this.hyperboloidFirstHitOverall =
       PoseTracker.hyperStore.hyperboloidIsClosestIntersection;
@@ -208,7 +209,7 @@ export class PoseTracker implements HyperbolicToolStrategy {
       antipodalVtx.name
     );
     newHEAntipodalLabel.showing = false; // automatically created labels are not shown
-    antipodalVtx.label = newHEAntipodalLabel; // link the label to the point
+    antipodalVtx.setLabel(newHEAntipodalLabel); // link the label to the point
     commandGroup.addCommand(
       new AddAntipodalPointCommand(
         antipodalVtx,

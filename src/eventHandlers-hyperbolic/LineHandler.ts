@@ -13,6 +13,11 @@ import { HEIntersectionPoint } from "@/models-hyperbolic/HEIntersectionPoint";
 import { HEAntipodalPoint } from "@/models-hyperbolic/HEAntipodalPoint";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { HELabel } from "@/models-hyperbolic/HELabel";
+import EventBus from "@/eventHandlers-spherical/EventBus";
+import { AddPointCommand } from "@/commands-hyperbolic/AddPointCommand";
+import { SetPointUserCreatedValueCommand } from "@/commands-hyperbolic/SetPointUserCreatedValueCommand";
+import { positionPrevious } from "three/tsl";
+import { AddLineCommand } from "@/commands-hyperbolic/AddLineCommand";
 
 export class LineHandler extends PoseTracker {
   /**
@@ -126,7 +131,7 @@ export class LineHandler extends PoseTracker {
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
     // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
     super.mouseMoved(event);
-    if (this.somethingIsHit && !this.startLocationSelected) {
+    if (this.surfaceIsIntersected && !this.startLocationSelected) {
       this.startLocationSelected = true;
       this.updateFilteredPointsList();
       // Decide if the starting location is near an already existing HEPoint or near a oneDimensional HENodule
@@ -212,14 +217,14 @@ export class LineHandler extends PoseTracker {
       } else {
         // The mouse press is not near an existing point or one dimensional object.
         //  Eventually, we will create a new HEPoint
-        if (this.hyperboloidFirstHitOverall) {
+        if (this.hyperboloidIsFirstSurfaceHit) {
           this._tempStartPoint.position = PoseTracker.vec3ToVec4(
             PoseTracker.hyperStore.surfaceIntersections[0].point,
             1
           );
           this.startVector.copy(this._tempStartPoint.position);
-        }
-        if (this.idealPointsStripFirstHitOverall) {
+        } else {
+          // since surface was hit is true and hyperboloid is first hit is false, it must the case that the ideal strip was hit
           this._tempStartIdealPoint.position = PoseTracker.vec3ToVec4(
             PoseTracker.hyperStore.surfaceIntersections[0].point,
             0
@@ -245,14 +250,14 @@ export class LineHandler extends PoseTracker {
       this.filteredIntersectionPointsList[0].glowing = true;
       if (!this.startLocationSelected) {
         this.snapStartPointToExistingOneDimensional = null;
-        this.snapEndPointToExistingOneDimensional = null;
+        // this.snapEndPointToExistingOneDimensional = null;
         this.snapStartPointToExistingPoint =
           this.filteredIntersectionPointsList[0];
-        this.snapEndPointToExistingPoint = null;
+        // this.snapEndPointToExistingPoint = null;
       } else {
-        this.snapStartPointToExistingOneDimensional = null;
+        // this.snapStartPointToExistingOneDimensional = null;
         this.snapEndPointToExistingOneDimensional = null;
-        this.snapStartPointToExistingPoint = null;
+        // this.snapStartPointToExistingPoint = null;
         this.snapEndPointToExistingPoint =
           this.filteredIntersectionPointsList[0];
       }
@@ -373,7 +378,6 @@ export class LineHandler extends PoseTracker {
             location,
             0
           );
-          this._tempStartIdealPoint.upper = upper;
           this._tempTubeMaterial.upper = upper ? 1 : 0;
           this._tempTubeMaterial.tubeAngle = Math.atan2(location.y, location.x);
 
@@ -437,17 +441,7 @@ export class LineHandler extends PoseTracker {
             }
           } else {
             // the snap point is glowing so remove all other start temp objects
-            this.scene.remove(this._tempStartPoint.mesh);
-            this._tempStartPointInScene = false;
-
-            this.scene.remove(this._tempTube);
-            this.scene.remove(this._tempStartIdealPoint.mesh);
-            this._tempStartIdealPointInScene = false;
-
-            this.scene.remove(this._tempLowerCone);
-            this._tempLowerConeInScene = false;
-            this.scene.remove(this._tempUpperCone);
-            this._tempUpperConeInScene = false;
+            this.removeAllStartTempObjects();
           }
         }
         // Set the location of the temporary startPoint by snapping to appropriate object (if any)
@@ -480,22 +474,19 @@ export class LineHandler extends PoseTracker {
           this._tempStartIdealPointInScene = true;
           this.scene.add(this._tempStartIdealPoint.mesh);
         }
-        // If the temporary endPoint has *not* been added to the scene do so now, but only if the end point upper/ideal status matches the selected start point/location
+        // If the temporary endPoint has *not* been added to the scene do so now, but only if the end point upper status matches the selected start point/location
         const possibleLocation = PoseTracker.vec3ToVec4(
           PoseTracker.hyperStore.surfaceIntersections[0].point,
           this.hyperboloidIsFirstSurfaceHit ? 1 : 0
         );
 
-        if (this.startUpperAndIdealMatch(possibleLocation, blah)) {
-          if (this.hyperboloidFirstHitOverall && possibleLocation.w != 0) {
+        if (possibleLocation.z * this.startVector.z > 0) {
+          if (this.hyperboloidIsFirstSurfaceHit) {
             if (!this._tempEndPointInScene) {
               this._tempEndPointInScene = true;
               this.scene.add(this._tempEndPoint.mesh);
             }
-            this._tempEndPoint.position = PoseTracker.vec3ToVec4(
-              PoseTracker.hyperStore.surfaceIntersections[0].point,
-              1
-            );
+            this._tempEndPoint.position = possibleLocation;
           } else {
             if (this._tempEndPointInScene) {
               this._tempEndPointInScene = false;
@@ -503,18 +494,14 @@ export class LineHandler extends PoseTracker {
             }
           }
 
-          if (this.idealPointsStripFirstHitOverall) {
+          if (!this.hyperboloidIsFirstSurfaceHit) {
             if (!this._tempEndIdealPointInScene) {
               this._tempEndIdealPointInScene = true;
               this.scene.add(this._tempTube);
               this.scene.add(this._tempEndIdealPoint.mesh);
             }
-
-            this._tempEndIdealPoint.position = PoseTracker.vec3ToVec4(
-              possibleLocation,
-              0
-            );
-            this._tempEndIdealPoint.upper = upper;
+            const upper = possibleLocation.z > 0;
+            this._tempEndIdealPoint.position = possibleLocation;
             this._tempTubeMaterial.upper = upper ? 1 : 0;
             this._tempTubeMaterial.tubeAngle = Math.atan2(
               possibleLocation.y,
@@ -547,13 +534,9 @@ export class LineHandler extends PoseTracker {
           }
           // Remove the temporary endPoint if there is a nearby point (which is glowing)
           if (this.snapEndPointToExistingPoint !== null) {
-            this.scene.remove(this._tempEndPoint.mesh);
-            this._tempEndPointInScene = false;
-            this.scene.remove(this._tempEndIdealPoint.mesh);
-            this._tempEndIdealPointInScene = false;
+            this.removeAllEndTempObjects();
           }
           // Set the location of the temporary endMarker by snapping to appropriate object (if any)
-
           if (this.snapEndPointToExistingOneDimensional !== null) {
             // this._tempEndPoint.positionVectorAndDisplay =this.snapEndPointToExistingOneDimensional.closestVector(
             //       this.currentSphereVector
@@ -606,6 +589,9 @@ export class LineHandler extends PoseTracker {
             this._tempStartPoint,
             this._tempEndPoint
           );
+        } else {
+          // the user is not over the same upper or lower sheet as the start and the endpoint markers should be removed.
+          this.removeAllEndTempObjects();
         }
       }
     } /*if (this._tempStartPointInScene)*/ else {
@@ -620,12 +606,40 @@ export class LineHandler extends PoseTracker {
   }
   mouseReleased(event: MouseEvent): void {
     // console.debug(`LineHandler::mouseReleased (${event.clientX},${event.clientY})`)
-    if (this.somethingIsHit) {
-      // Make sure the user didn't trigger the mouse leave event and is actually making a line
+    if (this.surfaceIsIntersected) {
       if (this.startLocationSelected) {
+        const possibleLocation = PoseTracker.vec3ToVec4(
+          PoseTracker.hyperStore.surfaceIntersections[0].point,
+          this.hyperboloidIsFirstSurfaceHit ? 1 : 0
+        );
+
+        const bothIdeal = possibleLocation.w == 0 && this.startVector.w == 0;
+        const idealAngularMinimumMet = bothIdeal
+          ? Math.abs(
+              Math.atan2(possibleLocation.y, possibleLocation.x) -
+                Math.atan2(this.startVector.y, this.startVector.x)
+            ) > 0.1
+          : false;
+
+        const bothNotIdeal = possibleLocation.w == 1 && this.startVector.w == 1;
+        const angularMinimumMet = bothNotIdeal
+          ? new Vector3(
+              possibleLocation.x,
+              possibleLocation.y,
+              possibleLocation.z
+            ).angleTo(
+              new Vector3(
+                this.startVector.x,
+                this.startVector.y,
+                this.startVector.z
+              )
+            ) > 0.1
+          : false;
+
         if (
-          this.startVector.angleTo(this.currentSphereVector) >
-          SETTINGS.line.minimumLength
+          (bothIdeal && idealAngularMinimumMet) ||
+          (bothNotIdeal && angularMinimumMet) ||
+          (!bothIdeal && !bothNotIdeal) // One is ideal and the other is not.
         ) {
           if (!this.makeLine()) {
             EventBus.fire("show-alert", {
@@ -638,13 +652,7 @@ export class LineHandler extends PoseTracker {
           this.mouseLeave(event);
         }
       } else {
-        this.temporaryLine.removeFromLayers();
-        this._tempStartPoint.removeFromLayers();
-        this._tempEndPoint.removeFromLayers();
-        this._tempLineInScene = false;
-        this._tempStartPointInScene = false;
-        this._tempEndPointInScene = false;
-
+        this.removeAllTempObjects();
         this.snapStartPointToExistingOneDimensional = null;
         this.snapEndPointToExistingOneDimensional = null;
         this.snapStartPointToExistingPoint = null;
@@ -658,27 +666,34 @@ export class LineHandler extends PoseTracker {
     this.prepareForNextLine();
   }
 
-  startUpperAndIdealMatch(possibleLocation): boolean {
-    // check this.startHEPoint, this.startVector, this._tempStartPoint, this._tempStartIdealPoint
-
-    return true;
-  }
-
   removeAllTempObjects(): void {
     this.scene.remove(this._tempLine.mesh);
     this._tempLineInScene = false;
+    this.removeAllStartTempObjects();
+    this.removeAllEndTempObjects();
+  }
+
+  removeAllStartTempObjects(): void {
     this.scene.remove(this._tempStartPoint.mesh);
     this._tempStartPointInScene = false;
     this.scene.remove(this._tempStartIdealPoint.mesh);
     this.scene.remove(this._tempTube);
     this._tempStartIdealPointInScene = false;
+    this.scene.remove(this._tempLowerCone);
+    this.scene.remove(this._tempUpperCone);
+    this._tempUpperConeInScene = false;
+    this._tempLowerConeInScene = false;
+  }
+
+  removeAllEndTempObjects(): void {
     this.scene.remove(this._tempEndPoint.mesh);
     this._tempEndPointInScene = false;
     this.scene.remove(this._tempEndIdealPoint.mesh);
+    this.scene.remove(this._tempTube);
     this._tempEndIdealPointInScene = false;
+    this.scene.remove(this._tempLowerCone);
     this.scene.remove(this._tempUpperCone);
     this._tempUpperConeInScene = false;
-    this.scene.remove(this._tempLowerCone);
     this._tempLowerConeInScene = false;
   }
 
@@ -731,351 +746,373 @@ export class LineHandler extends PoseTracker {
 
   // Create a new line from the mouse event information
   private makeLine(fromActivate = false): boolean {
-    // //Create a command group so this can be undone
-    // const lineGroup = new CommandGroup();
-    // const newlyCreatedSEPoints: HEPoint[] = [];
+    const lineCommandGroup = new CommandGroup();
+    const newlyCreatedHEPoints: HEPoint[] = [];
 
-    // if (this._startHEPoint === null) {
-    //   // We have to create a new SEPointOnOneDimensional or SEPoint and Point
+    const endLocation = PoseTracker.vec3ToVec4(
+      PoseTracker.hyperStore.surfaceIntersections[0].point,
+      this.hyperboloidIsFirstSurfaceHit ? 1 : 0
+    );
 
-    //   let vtx: HEPoint; // | HEPointOnOneOrTwoDimensional | null = null; // Not implemented yet
-    //   let newHELabel: HELabel | null = null;
-    //   if (this._startHEPointOneDimensionalParent) {
-    //     // // Starting mouse press landed near a oneDimensional
-    //     // // Create the model object for the new point and link them
-    //     // vtx = new SEPointOnOneOrTwoDimensional(
-    //     //   this._startHEPointOneDimensionalParent
-    //     // );
-    //     // newHELabel = new HELabel(
-    //     //   "point",
-    //     //   vtx,
-    //     //   vtx.position,
-    //     //   vtx.name,
-    //     //   vtx.upper
-    //     // );
-    //     // // Create and execute the command to create a new point for undo/redo
-    //     // lineGroup.addCommand(
-    //     //   new AddPointOnOneDimensionalCommand(
-    //     //     vtx as HEPointOnOneOrTwoDimensional,
-    //     //     this._startHEPointOneDimensionalParent,
-    //     //     newHELabel
-    //     //   )
-    //     // );
-    //   } else {
-    //     // Starting mouse press landed on an open space
-    //     vtx = new HEPoint(this.startVector));
-    //     newHELabel = new HELabel("point", vtx);
-    //     // Create and execute the command to create a new point for undo/redo
-    //     lineGroup.addCommand(new AddPointCommand(vtx, newHELabel));
-    //   }
-    //   vtx.locationVector = this.startVector;
-    //   /////////////
-    //   // Create the antipode of the new point, vtx
-    //   const antipode = LineHandler.addCreateAntipodeCommand(vtx, lineGroup);
-    //   newlyCreatedSEPoints.push(vtx, antipode);
-    //   ///////////
+    if (this._startHEPoint === null) {
+      // We have to create a new HEPointOnOneDimensional or HEPoint
+      let vtx: HEPoint | null = null; // | HEPointOnOneOrTwoDimensional | null = null; // Not implemented yet
+      let newHELabel: HELabel | null = null;
+      if (this._startHEPointOneDimensionalParent) {
+        // // Starting mouse press landed near a oneDimensional
+        // // Create the model object for the new point and link them
+        // vtx = new SEPointOnOneOrTwoDimensional(
+        //   this._startHEPointOneDimensionalParent
+        // );
+        // newHELabel = new HELabel(
+        //   "point",
+        //   vtx,
+        //   vtx.position,
+        //   vtx.name,
+        //   vtx.upper
+        // );
+        // // Create and execute the command to create a new point for undo/redo
+        // lineGroup.addCommand(
+        //   new AddPointOnOneDimensionalCommand(
+        //     vtx as HEPointOnOneOrTwoDimensional,
+        //     this._startHEPointOneDimensionalParent,
+        //     newHELabel
+        //   )
+        // );
+      } else {
+        // Starting mouse press landed on an open space
+        vtx = new HEPoint(this.startVector);
+        newHELabel = new HELabel("point", vtx, this.startVector, vtx.name);
+        vtx.setLabel(newHELabel);
+        lineCommandGroup.addCommand(new AddPointCommand(vtx, newHELabel));
+      }
+      /////////////
+      if (vtx) {
+        /////////////
+        // Create the antipode of the new point, vtx
+        LineHandler.addCreateAntipodeCommand(vtx as HEPoint, lineCommandGroup);
+        // Create the antipode of the new point, vtx
+        const antipode = LineHandler.addCreateAntipodeCommand(
+          vtx,
+          lineCommandGroup
+        );
+        newlyCreatedHEPoints.push(vtx, antipode);
+        ///////////
 
-    //   // Set the initial label location
-    //   this.tmpVector
-    //     .copy(vtx.locationVector)
-    //     .add(
-    //       new Vector3(
-    //         2 * SETTINGS.point.initialLabelOffset,
-    //         SETTINGS.point.initialLabelOffset,
-    //         0
-    //       )
-    //     )
-    //     .normalize();
-    //   newHELabel.locationVector = this.tmpVector;
-    //   this._startHEPoint = vtx;
-    // } else if (
-    //   (this._startHEPoint instanceof SEIntersectionPoint ||
-    //     this._startHEPoint instanceof SEAntipodalPoint) &&
-    //   !this._startHEPoint.isUserCreated
-    // ) {
-    //   // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
-    //   lineGroup.addCommand(
-    //     new SetPointUserCreatedValueCommand(this._startHEPoint, true)
-    //   );
-    // }
+        // Set the initial label location
+        // this.tmpVector
+        //   .copy(vtx.locationVector)
+        //   .add(
+        //     new Vector3(
+        //       2 * SETTINGS.point.initialLabelOffset,
+        //       SETTINGS.point.initialLabelOffset,
+        //       0
+        //     )
+        //   )
+        //   .normalize();
+        // newHELabel.locationVector = this.tmpVector;
+        this._startHEPoint = vtx;
+      }
+    } else if (
+      (this._startHEPoint instanceof HEIntersectionPoint ||
+        this._startHEPoint instanceof HEAntipodalPoint) &&
+      !this._startHEPoint.isUserCreated
+    ) {
+      // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
+      lineCommandGroup.addCommand(
+        new SetPointUserCreatedValueCommand(this._startHEPoint, true)
+      );
+    }
 
-    // // Check to see if the release location is near any points
-    // if (this.filteredIntersectionPointsList.length > 0 && !fromActivate) {
-    //   this._endHEPoint = this.filteredIntersectionPointsList[0];
-    //   if (
-    //     (this._endHEPoint instanceof SEIntersectionPoint ||
-    //       this._endHEPoint instanceof SEAntipodalPoint) &&
-    //     !this._endHEPoint.isUserCreated
-    //   ) {
-    //     // Mark the intersection point as created, the display style is changed and the glowing style is set up
-    //     lineGroup.addCommand(
-    //       new SetPointUserCreatedValueCommand(this._endHEPoint, true)
-    //     );
-    //   }
-    // } else if (!fromActivate) {
-    //   // We have to create a new Point for the end
-    //   let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
-    //   let newSELabel: SELabel | null = null;
-    //   if (this.hitSESegments.length > 0) {
-    //     // The end of the line will be a point on a segment
-    //     // Create the model object for the new point and link them
-    //     vtx = new SEPointOnOneOrTwoDimensional(this.hitSESegments[0]);
-    //     // Set the Location
-    //     vtx.locationVector = this.hitSESegments[0].closestVector(
-    //       this.currentSphereVector
-    //     );
-    //     newSELabel = new SELabel("point", vtx);
+    // Check to see if the release location is near any points
+    if (this.filteredIntersectionPointsList.length > 0 && !fromActivate) {
+      this._endHEPoint = this.filteredIntersectionPointsList[0];
+      if (
+        (this._endHEPoint instanceof HEIntersectionPoint ||
+          this._endHEPoint instanceof HEAntipodalPoint) &&
+        !this._endHEPoint.isUserCreated
+      ) {
+        // Mark the intersection point as created, the display style is changed and the glowing style is set up
+        lineCommandGroup.addCommand(
+          new SetPointUserCreatedValueCommand(this._endHEPoint, true)
+        );
+      }
+    } else if (!fromActivate) {
+      // We have to create a new Point for the end
+      let vtx: HEPoint | null = null; // | HEPointOnOneOrTwoDimensional | null = null;
+      let newHELabel: HELabel | null = null;
+      // if (this.hitSESegments.length > 0) {
+      //   // The end of the line will be a point on a segment
+      //   // Create the model object for the new point and link them
+      //   vtx = new SEPointOnOneOrTwoDimensional(this.hitSESegments[0]);
+      //   // Set the Location
+      //   vtx.locationVector = this.hitSESegments[0].closestVector(
+      //     this.currentSphereVector
+      //   );
+      //   newSELabel = new SELabel("point", vtx);
 
-    //     lineGroup.addCommand(
-    //       new AddPointOnOneDimensionalCommand(
-    //         vtx as SEPointOnOneOrTwoDimensional,
-    //         this.hitSESegments[0],
-    //         newSELabel
-    //       )
-    //     );
-    //   } else if (this.hitSELines.length > 0) {
-    //     // The end of the line will be a point on a line
-    //     // Create the model object for the new point and link them
-    //     vtx = new SEPointOnOneOrTwoDimensional(this.hitSELines[0]);
-    //     // Set the Location
-    //     vtx.locationVector = this.hitSELines[0].closestVector(
-    //       this.currentSphereVector
-    //     );
-    //     newSELabel = new SELabel("point", vtx);
+      //   lineCommandGroup.addCommand(
+      //     new AddPointOnOneDimensionalCommand(
+      //       vtx as SEPointOnOneOrTwoDimensional,
+      //       this.hitSESegments[0],
+      //       newSELabel
+      //     )
+      //   );
+      // } else if (this.hitSELines.length > 0) {
+      //   // The end of the line will be a point on a line
+      //   // Create the model object for the new point and link them
+      //   vtx = new SEPointOnOneOrTwoDimensional(this.hitSELines[0]);
+      //   // Set the Location
+      //   vtx.locationVector = this.hitSELines[0].closestVector(
+      //     this.currentSphereVector
+      //   );
+      //   newSELabel = new SELabel("point", vtx);
 
-    //     lineGroup.addCommand(
-    //       new AddPointOnOneDimensionalCommand(
-    //         vtx as SEPointOnOneOrTwoDimensional,
-    //         this.hitSELines[0],
-    //         newSELabel
-    //       )
-    //     );
-    //   } else if (this.hitSECircles.length > 0) {
-    //     // The end of the line will be a point on a circle
-    //     vtx = new SEPointOnOneOrTwoDimensional(this.hitSECircles[0]);
-    //     // Set the Location
-    //     vtx.locationVector = this.hitSECircles[0].closestVector(
-    //       this.currentSphereVector
-    //     );
-    //     newSELabel = new SELabel("point", vtx);
+      //   lineCommandGroup.addCommand(
+      //     new AddPointOnOneDimensionalCommand(
+      //       vtx as SEPointOnOneOrTwoDimensional,
+      //       this.hitSELines[0],
+      //       newSELabel
+      //     )
+      //   );
+      // } else if (this.hitSECircles.length > 0) {
+      //   // The end of the line will be a point on a circle
+      //   vtx = new SEPointOnOneOrTwoDimensional(this.hitSECircles[0]);
+      //   // Set the Location
+      //   vtx.locationVector = this.hitSECircles[0].closestVector(
+      //     this.currentSphereVector
+      //   );
+      //   newSELabel = new SELabel("point", vtx);
 
-    //     lineGroup.addCommand(
-    //       new AddPointOnOneDimensionalCommand(
-    //         vtx as SEPointOnOneOrTwoDimensional,
-    //         this.hitSECircles[0],
-    //         newSELabel
-    //       )
-    //     );
-    //   } else if (this.hitSEEllipses.length > 0) {
-    //     // The end of the line will be a point on a ellipse
-    //     vtx = new SEPointOnOneOrTwoDimensional(this.hitSEEllipses[0]);
-    //     // Set the Location
-    //     vtx.locationVector = this.hitSEEllipses[0].closestVector(
-    //       this.currentSphereVector
-    //     );
-    //     newSELabel = new SELabel("point", vtx);
+      //   lineCommandGroup.addCommand(
+      //     new AddPointOnOneDimensionalCommand(
+      //       vtx as SEPointOnOneOrTwoDimensional,
+      //       this.hitSECircles[0],
+      //       newSELabel
+      //     )
+      //   );
+      // } else if (this.hitSEEllipses.length > 0) {
+      //   // The end of the line will be a point on a ellipse
+      //   vtx = new SEPointOnOneOrTwoDimensional(this.hitSEEllipses[0]);
+      //   // Set the Location
+      //   vtx.locationVector = this.hitSEEllipses[0].closestVector(
+      //     this.currentSphereVector
+      //   );
+      //   newSELabel = new SELabel("point", vtx);
 
-    //     lineGroup.addCommand(
-    //       new AddPointOnOneDimensionalCommand(
-    //         vtx as SEPointOnOneOrTwoDimensional,
-    //         this.hitSEEllipses[0],
-    //         newSELabel
-    //       )
-    //     );
-    //   } else if (this.hitSEParametrics.length > 0) {
-    //     // The end of the line will be a point on a parametric
-    //     vtx = new SEPointOnOneOrTwoDimensional(this.hitSEParametrics[0]);
-    //     // Set the Location
-    //     vtx.locationVector = this.hitSEParametrics[0].closestVector(
-    //       this.currentSphereVector
-    //     );
-    //     newSELabel = new SELabel("point", vtx);
+      //   lineCommandGroup.addCommand(
+      //     new AddPointOnOneDimensionalCommand(
+      //       vtx as SEPointOnOneOrTwoDimensional,
+      //       this.hitSEEllipses[0],
+      //       newSELabel
+      //     )
+      //   );
+      // } else if (this.hitSEParametrics.length > 0) {
+      //   // The end of the line will be a point on a parametric
+      //   vtx = new SEPointOnOneOrTwoDimensional(this.hitSEParametrics[0]);
+      //   // Set the Location
+      //   vtx.locationVector = this.hitSEParametrics[0].closestVector(
+      //     this.currentSphereVector
+      //   );
+      //   newSELabel = new SELabel("point", vtx);
 
-    //     lineGroup.addCommand(
-    //       new AddPointOnOneDimensionalCommand(
-    //         vtx as SEPointOnOneOrTwoDimensional,
-    //         this.hitSEParametrics[0],
-    //         newSELabel
-    //       )
-    //     );
-    //   } else if (this.hitSEPolygons.length > 0) {
-    //     // The end of the line will be a point on a parametric
-    //     vtx = new SEPointOnOneOrTwoDimensional(this.hitSEPolygons[0]);
-    //     // Set the Location
-    //     vtx.locationVector = this.hitSEPolygons[0].closestVector(
-    //       this.currentSphereVector
-    //     );
-    //     newSELabel = new SELabel("point", vtx);
+      //   lineCommandGroup.addCommand(
+      //     new AddPointOnOneDimensionalCommand(
+      //       vtx as SEPointOnOneOrTwoDimensional,
+      //       this.hitSEParametrics[0],
+      //       newSELabel
+      //     )
+      //   );
+      // } else if (this.hitSEPolygons.length > 0) {
+      // The end of the line will be a point on a parametric
+      vtx = new SEPointOnOneOrTwoDimensional(this.hitSEPolygons[0]);
+      // Set the Location
+      vtx.locationVector = this.hitSEPolygons[0].closestVector(
+        this.currentSphereVector
+      );
+      newSELabel = new SELabel("point", vtx);
 
-    //     lineGroup.addCommand(
-    //       new AddPointOnOneDimensionalCommand(
-    //         vtx as SEPointOnOneOrTwoDimensional,
-    //         this.hitSEPolygons[0],
-    //         newSELabel
-    //       )
-    //     );
-    //   } else {
-    //     // The ending mouse release landed on an open space
-    //     vtx = new SEPoint();
-    //     // Set the Location
-    //     vtx.locationVector = this.currentSphereVector;
-    //     newSELabel = new SELabel("point", vtx);
+      lineCommandGroup.addCommand(
+        new AddPointOnOneDimensionalCommand(
+          vtx as SEPointOnOneOrTwoDimensional,
+          this.hitSEPolygons[0],
+          newSELabel
+        )
+      );
+      // } else {
+      // The ending mouse release landed on an open space
+      vtx = new HEPoint(endLocation);
+      newHELabel = new HELabel("point", vtx, endLocation, vtx.name);
 
-    //     lineGroup.addCommand(new AddPointCommand(vtx, newSELabel));
-    //   }
-    //   /////////////
-    //   // Create the antipode of the new point, vtx
-    //   const antipode = LineHandler.addCreateAntipodeCommand(vtx, lineGroup);
-    //   newlyCreatedSEPoints.push(antipode, vtx);
-    //   ///////////
-    //   this._endHEPoint = vtx;
-    //   // Set the initial label location
-    //   this.tmpVector
-    //     .copy(vtx.locationVector)
-    //     .add(
-    //       new Vector3(
-    //         2 * SETTINGS.point.initialLabelOffset,
-    //         SETTINGS.point.initialLabelOffset,
-    //         0
-    //       )
-    //     )
-    //     .normalize();
-    //   newSELabel.locationVector = this.tmpVector;
-    // }
+      lineCommandGroup.addCommand(new AddPointCommand(vtx, newHELabel));
+      // }
+      /////////////
+      // Create the antipode of the new point, vtx
+      const antipode = LineHandler.addCreateAntipodeCommand(
+        vtx,
+        lineCommandGroup
+      );
+      newlyCreatedHEPoints.push(antipode, vtx);
+      ///////////
+      this._endHEPoint = vtx;
+      // Set the initial label location
+      // this.tmpVector
+      //   .copy(vtx.locationVector)
+      //   .add(
+      //     new Vector3(
+      //       2 * SETTINGS.point.initialLabelOffset,
+      //       SETTINGS.point.initialLabelOffset,
+      //       0
+      //     )
+      //   )
+      //   .normalize();
+      // newSELabel.locationVector = this.tmpVector;
+    }
 
-    // if (this._endHEPoint) {
-    //   // Compute a temporary normal from the two points' vectors
-    //   this.tmpVector.crossVectors(
-    //     this._startHEPoint.locationVector,
-    //     this._endHEPoint.locationVector
-    //   );
-    //   // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
-    //   // nearly antipodal or in the same direction)
-    //   if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
-    //     // The start and end vectors align, compute the next normal vector from the old normal and the start vector
-    //     this.tmpVector.crossVectors(
-    //       this._startHEPoint.locationVector,
-    //       this.normalVector
-    //     );
-    //     this.tmpVector.crossVectors(
-    //       this.tmpVector,
-    //       this._startHEPoint.locationVector
-    //     );
-    //   }
-    //   this.normalVector.copy(this.tmpVector).normalize();
+    if (this._endHEPoint && this._startHEPoint) {
+      // // Compute a temporary normal from the two points' vectors
+      // this.tmpVector.crossVectors(
+      //   this._startHEPoint.locationVector,
+      //   this._endHEPoint.locationVector
+      // );
+      // // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
+      // // nearly antipodal or in the same direction)
+      // if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
+      //   // The start and end vectors align, compute the next normal vector from the old normal and the start vector
+      //   this.tmpVector.crossVectors(
+      //     this._startHEPoint.locationVector,
+      //     this.normalVector
+      //   );
+      //   this.tmpVector.crossVectors(
+      //     this.tmpVector,
+      //     this._startHEPoint.locationVector
+      //   );
+      // }
+      // this.normalVector.copy(this.tmpVector).normalize();
 
-    //   // if (this.normalVector === undefined) {
-    //   //   console.error(
-    //   //     "The normal vector in line handler was not set properly"
-    //   //   );
-    //   //   return false;
-    //   // } //There are some situations in which the mouse actions (hard to duplicate) lead to an undefined normal vector and I'm hoping this will prevent the program from entering an error state.
+      // if (this.normalVector === undefined) {
+      //   console.error(
+      //     "The normal vector in line handler was not set properly"
+      //   );
+      //   return false;
+      // } //There are some situations in which the mouse actions (hard to duplicate) lead to an undefined normal vector and I'm hoping this will prevent the program from entering an error state.
 
-    //   // Set the normal vector to the line in the plottable object this also updates the display
-    //   this.temporaryLine.normalVector = this.normalVector;
-    //   // this.temporaryLine.updateDisplay();
+      // Set the normal vector to the line in the plottable object this also updates the display
+      this._tempLine.setNewStartAndEndPoints(
+        this._startHEPoint,
+        this._endHEPoint
+      );
+      // this.temporaryLine.updateDisplay();
 
-    //   // check to make sure that this line doesn't already exist by checking that no existing line has normal or -1*normal equal to the new proposed normal
-    //   if (
-    //     LineHandler.store.seLines.some(line =>
-    //       this.tmpVector
-    //         .subVectors(line.normalVector, this.normalVector)
-    //         .isZero()
-    //     )
-    //   ) {
-    //     return false;
-    //   }
+      // check to make sure that this line doesn't already exist by checking that no existing line has normal or -1*normal equal to the new proposed normal
+      let lineIsNotNew = false;
+      LineHandler.hyperStore.linesMap.forEach(line => {
+        if (
+          (this.tmpVector
+            .subVectors(line.normalVector, this._tempLine.normalVector)
+            .isZero() ||
+            this.tmpVector
+              .copy(this._tempLine.normalVector)
+              .addScaledVector(line.normalVector, -1)
+              .isZero()) &&
+          line.upper == this._tempLine.upper &&
+          line.mode == this._tempLine.mode
+        ) {
+          lineIsNotNew = true;
+        }
+      });
 
-    //   this.tmpVector1.copy(this.normalVector).multiplyScalar(-1); // copy the normal vector and multiply by -1 (avoid changing the normal vector which caused problems for Angle marker)
-    //   if (
-    //     LineHandler.store.seLines.some(line =>
-    //       this.tmpVector.subVectors(line.normalVector, this.tmpVector1).isZero()
-    //     )
-    //   ) {
-    //     return false;
-    //   }
+      if (lineIsNotNew) {
+        return false;
+      }
 
-    //   // Create the new line after the normalVector is set
-    //   const newSELine = new SELine(
-    //     this._startHEPoint,
-    //     this.normalVector,
-    //     this._endHEPoint
-    //   );
-    //   // Create the plottable label
-    //   const newSELabel = new SELabel("line", newSELine);
-    //   this.tmpVector
-    //     .addVectors(
-    //       this._startHEPoint.locationVector,
-    //       this._endHEPoint.locationVector
-    //     )
-    //     .normalize()
-    //     .add(new Vector3(0, SETTINGS.line.initialLabelOffset, 0))
-    //     .normalize();
-    //   newSELabel.locationVector = this.tmpVector;
+      // Create the new line after the normalVector is set
+      const newHELine = new HELine(
+        this._startHEPoint,
+        this._endHEPoint,
+        this._mode
+      );
+      // Create the label
+      const newHELabel = new HELabel(
+        "line",
+        newHELine,
+        this._startHEPoint.position,
+        newHELine.name
+      );
+      newHELine.setLabel(newHELabel);
+      // this.tmpVector
+      //   .addVectors(
+      //     this._startHEPoint.locationVector,
+      //     this._endHEPoint.locationVector
+      //   )
+      //   .normalize()
+      //   .add(new Vector3(0, SETTINGS.line.initialLabelOffset, 0))
+      //   .normalize();
+      // newSELabel.locationVector = this.tmpVector;
 
-    //   lineGroup.addCommand(
-    //     new AddLineCommand(
-    //       newSELine,
-    //       this._startHEPoint,
-    //       this._endHEPoint,
-    //       newSELabel
-    //     )
-    //   );
+      lineCommandGroup.addCommand(
+        new AddLineCommand(
+          newHELine,
+          this._startHEPoint,
+          this._endHEPoint,
+          newHELabel
+        )
+      );
 
-    //   // Determine all new intersection points and add their creation to the command so it can be undone
+      // Determine all new intersection points and add their creation to the command so it can be undone
 
-    //   const intersectionPointsToUpdate: SEIntersectionPoint[] = [];
+      const intersectionPointsToUpdate: HEIntersectionPoint[] = [];
 
-    //   LineHandler.store
-    //     .createAllIntersectionsWith(newSELine, newlyCreatedSEPoints)
-    //     .forEach((item: SEIntersectionReturnType) => {
-    //       if (item.existingIntersectionPoint) {
-    //         intersectionPointsToUpdate.push(item.SEIntersectionPoint);
-    //         lineGroup.addCondition(() =>
-    //           item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
-    //         );
-    //         lineGroup.addCommand(
-    //           new AddIntersectionPointOtherParentsInfo(item)
-    //         );
-    //         lineGroup.addEndCondition();
-    //       } else {
-    //         // Create the plottable label
-    //         const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
-    //           new Vector3(
-    //             2 * SETTINGS.point.initialLabelOffset,
-    //             SETTINGS.point.initialLabelOffset,
-    //             0
-    //           )
-    //         );
+      // LineHandler.hyperStore
+      //   .createAllIntersectionsWith(newHELine, newlyCreatedHEPoints)
+      //   .forEach((item: HEIntersectionReturnType) => {
+      //     if (item.existingIntersectionPoint) {
+      //       intersectionPointsToUpdate.push(item.SEIntersectionPoint);
+      //       lineCommandGroup.addCondition(() =>
+      //         item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
+      //       );
+      //       lineCommandGroup.addCommand(
+      //         new AddIntersectionPointOtherParentsInfo(item)
+      //       );
+      //       lineCommandGroup.addEndCondition();
+      //     } else {
+      //       // Create the plottable label
+      //       const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
+      //         new Vector3(
+      //           2 * SETTINGS.point.initialLabelOffset,
+      //           SETTINGS.point.initialLabelOffset,
+      //           0
+      //         )
+      //       );
 
-    //         lineGroup.addCommand(
-    //           new AddIntersectionPointCommand(
-    //             item.SEIntersectionPoint,
-    //             item.parent1,
-    //             item.parent2,
-    //             newSELabel
-    //           )
-    //         );
-    //         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-    //         newSELabel.showing = false;
+      //       lineCommandGroup.addCommand(
+      //         new AddIntersectionPointCommand(
+      //           item.SEIntersectionPoint,
+      //           item.parent1,
+      //           item.parent2,
+      //           newSELabel
+      //         )
+      //       );
+      //       item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+      //       newSELabel.showing = false;
 
-    //         if (item.createAntipodalPoint) {
-    //           LineHandler.addCreateAntipodeCommand(
-    //             item.SEIntersectionPoint,
-    //             lineGroup
-    //           );
-    //         }
-    //       }
-    //     });
-    //   lineGroup.execute();
+      //       if (item.createAntipodalPoint) {
+      //         LineHandler.addCreateAntipodeCommand(
+      //           item.SEIntersectionPoint,
+      //           lineCommandGroup
+      //         );
+      //       }
+      //     }
+      //   });
+      lineCommandGroup.execute();
 
-    //   // The newly added line passes through all the
-    //   // intersection points on the intersectionPointsToUpdate list
-    //   // This line might be a new parent to some of them
-    //   // shallowUpdate will check this and change parents as needed
-    //   intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
-    //   intersectionPointsToUpdate.splice(0);
-    // }
+      // The newly added line passes through all the
+      // intersection points on the intersectionPointsToUpdate list
+      // This line might be a new parent to some of them
+      // shallowUpdate will check this and change parents as needed
+      // intersectionPointsToUpdate.forEach(pt => pt.shallowUpdate());
+      // intersectionPointsToUpdate.splice(0);
+    }
     return true;
   }
 
