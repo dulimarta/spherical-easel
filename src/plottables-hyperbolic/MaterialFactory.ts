@@ -35,6 +35,7 @@ interface CustomLineMaterialUserData extends CustomMaterialUserData {
   transformationMatrix: THREE.TSL.ShaderNodeObject<
     THREE.UniformNode<THREE.Matrix4>
   >;
+  inverseTransformationMatrix: THREE.Matrix4;
   normalVector: THREE.Vector3;
 }
 
@@ -121,17 +122,17 @@ export class CustomLabelMaterial extends CustomMaterial {
   constructor(parameters?: THREE.MeshStandardNodeMaterialParameters) {
     super(parameters);
 
-    const labelVariables = {
+    const labelUniformVariables = {
       xyOffSetVector: uniform(new THREE.Vector2(0, 0), "vec2"),
       scale: uniform(1.0, "float"),
       zOffsetVector: uniform(new THREE.Vector3(0, 0, 0), "vec3"),
-      transformationMatrix: uniform(new THREE.Matrix4(), "mat4"),
-      cornerImages: [] as THREE.Vector3[]
+      transformationMatrix: uniform(new THREE.Matrix4(), "mat4")
     };
 
-    Object.assign(this.userData, labelVariables);
+    const labelPlainVariables = { cornerImages: [] as THREE.Vector3[] };
 
-    this._bindUniforms(Object.keys(labelVariables));
+    Object.assign(this.userData, labelUniformVariables, labelPlainVariables);
+    this._bindUniforms(Object.keys(labelUniformVariables));
   }
 }
 
@@ -142,6 +143,7 @@ export class CustomLineMaterial extends CustomMaterial {
   declare endY: number;
   declare mode: number;
   declare transformationMatrix: THREE.Matrix4;
+  declare inverseTransformationMatrix: THREE.Matrix4;
   declare normalVector: THREE.Vector3;
 
   declare userData: CustomLineMaterialUserData;
@@ -149,19 +151,20 @@ export class CustomLineMaterial extends CustomMaterial {
   constructor(parameters?: THREE.MeshStandardNodeMaterialParameters) {
     super(parameters);
 
-    // Define the new uniforms unique to this child class
-    const lineVariables = {
+    const lineUniformVariables = {
       radius: uniform(1.0, "float"),
       upper: uniform(0, "uint"),
       startY: uniform(1.0, "float"),
       endY: uniform(1.0, "float"),
       mode: uniform(0, "uint"),
-      transformationMatrix: uniform(new THREE.Matrix4(), "mat4"),
-      normalVector: new THREE.Vector3()
+      transformationMatrix: uniform(new THREE.Matrix4(), "mat4")
+    };
+    const linePlainVariables = {
+      normalVector: new THREE.Vector3(),
+      inverseTransformationMatrix: new THREE.Matrix4()
     };
 
-    Object.assign(this.userData, lineVariables);
-
-    this._bindUniforms(Object.keys(lineVariables));
+    Object.assign(this.userData, lineUniformVariables, linePlainVariables);
+    this._bindUniforms(Object.keys(lineUniformVariables)); // only bind the uniforms
   }
 }

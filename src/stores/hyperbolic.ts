@@ -41,8 +41,8 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   // const cameraCF = new Matrix4();
   const cameraInverseMatrix = ref(new Matrix4());
   const cameraMatrix = ref(new Matrix4());
-  const cameraScale = new Vector3();
-  const rayCastDirection = new Vector3();
+  const cameraDollyDistance = ref(0);
+  const cameraFieldOfView = ref(0);
   const cameraOrigin = ref(new Vector3());
   const { font } = useThreeFont();
   const implementedHETools: Ref<Array<ActionMode>> = ref([
@@ -107,10 +107,12 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     objectMap.delete(line.name);
     linesMap.delete(line.name);
   }
-  function adjustTextPose(quat: Quaternion) {
-    // const cameraDirection = new Vector3();
-    // threeJSCamera.getWorldDirection(cameraDirection);
-    // console.log("hstore dir", cameraDirection.toFixed(2));
+  function updateDisplayForCameraUpdate() {
+    pointsMap.forEach(point => {
+      point.shallowUpdate();
+    });
+  }
+  function adjustTextPose() {
     labelsMap.forEach(label => {
       //add or remove labels that are not attached to ideal points and are outside of the clipping planes of the hyperboloid (plus a little buffer) from the scene
       // This is necessary so that labels that are outside of the clipping planes don't show as the user dollies and zooms.
@@ -129,101 +131,6 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
         label.faceCamera();
       }
     });
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // threeJSCamera.matrixWorld.decompose(
-    //   cameraOrigin,
-    //   cameraQuaternion.value,
-    //   cameraScale
-    // );
-    // rayCaster.layers.disableAll();
-    // rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheet);
-    // rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheet);
-
-    // // Look for occluded labels
-    // const [visibleLabelMeshes, occludedLabelMeshes] = labelsMap
-    //   .values()
-    //   .filter(obj => obj.showing && obj.ideal) // if the object is not showing it excluded
-    //   .flatMap(obj => obj.group.children)
-    //   .toArray()
-    //   .partition(obj => {
-    //     // console.log("raycast from", obj.name);
-    //     rayCastDirection.subVectors(cameraOrigin, obj.position);
-    //     rayCaster.set(obj.position, rayCastDirection);
-    //     const occlusions = rayCaster
-    //       .intersectObjects(threeJSScene.children, true)
-    //       .filter(occ => occ.distance > 1e-5);
-    // if (occlusions.length > 0) {
-    //   const msg = occlusions
-    //     // .filter(occ => occ.distance >= 1e-6)
-    //     .map(occ => occ.object.name + " @" + occ.distance.toFixed(2))
-    //     .join();
-
-    //   console.log(`${obj.name} is occluded by ${msg}`);
-    // }
-    // const notOcclusions = rayCaster
-    //   .intersectObjects(threeJSScene.children, true)
-    //   .filter(occ => occ.distance <= 1e-5);
-    // if (notOcclusions.length > 0) {
-    //   const msg = notOcclusions
-    //     // .filter(occ => occ.distance >= 1e-6)
-    //     .map(occ => occ.object.name + " @" + occ.distance.toFixed(2))
-    //     .join();
-
-    //   console.log(`${obj.name} is NOT occluded by ${msg}`);
-    // }
-    //   return occlusions.length === 0;
-    // });
-    // console.log(
-    //   "Visible Labels",
-    //   visibleLabelMeshes.map(obj => obj.name).join(", ")
-    // );
-    // console.log(
-    //   "NOT Visible Labels",
-    //   occludedLabelMeshes.map(obj => obj.name).join(", ")
-    // );
-
-    // const allLabelMeshes = labelsMap
-    //   .values()
-    //   // This flatMap assumes that the text is attached to its parent
-    //   .flatMap(obj => {
-    //     // obj.adjustSize(); // if the unit has changed update for size
-    //     return obj.group.children;
-    //   })
-    //   .toArray();
-
-    // const [occludedLabels, _otherLabels] = allLabels.partition(obj => {
-    //   const pos = visibleObjects.findIndex(x => x.name === obj.parent?.name);
-    //   if (pos < 0) return false;
-    //   // Perform ray cast from the label to the camera
-    //   labelPosition
-    //     .copy(visibleObjects[pos].position)
-    //     .addScaledVector(obj.position, 1);
-    //   rayCastDirection.subVectors(cameraOrigin, labelPosition);
-    //   rayCaster.set(labelPosition, rayCastDirection);
-    //   const labelOcclusions = rayCaster
-    //     .intersectObjects(threeJSScene.children, true)
-    //     .filter(occ => occ.distance > 1e-5);
-    //   // This label is occluded by other objects
-    //   return labelOcclusions.length > 0;
-    // });
-
-    // occludedLabelMeshes.forEach(textObj => {
-    //   // Move the label to the other side of the hyperboloid
-    //   // textObj.position.multiplyScalar(-1);
-    //   // Adjust the text anchor in the Y direction
-    //   // (textObj as Text).anchorY = textObj.position.z > 0 ? "bottom" : "top";
-    // });
-
-    // allLabelMeshes.forEach(mesh => {
-    //   // console.log(
-    //   //   "label location",
-    //   //   (mesh.material as CustomTextMaterial).angle,
-    //   //   (mesh.material as CustomTextMaterial).position
-    //   // );
-    //   (mesh.material as CustomTextMaterial).unitCameraDirection =
-    //     cameraDirection;
-    // });
   }
 
   return {
@@ -232,6 +139,8 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     objectIntersections,
     closestIntersectionIsSurface,
     cameraQuaternion,
+    cameraDollyDistance,
+    cameraFieldOfView,
     cameraOrigin,
     cameraInverseMatrix,
     implementedHETools,
@@ -246,7 +155,8 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     removeLabel,
     removeLine,
     setScene,
-    adjustTextPose
+    adjustTextPose,
+    updateDisplayForCameraUpdate
   };
 });
 

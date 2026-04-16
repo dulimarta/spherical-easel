@@ -2,7 +2,7 @@ import { max, min } from "three/tsl";
 import colors from "vuetify/util/colors";
 export const SETTINGS = {
   angularBorder: 4, // in degrees of the angular radius of the border around the viewport
-  dollyDistanceMax: 500,
+  dollyDistanceMax: 200,
   dollyDistanceMin: 10,
   minDollyDistanceChangeForViewUpdate: 0.05, // The minimum change in dolly distance (camera to origin) required to trigger a view update
   maxFieldOfView: 45, // The maximum field of view for the perspective camera in degrees. Also the initial field of view
@@ -16,7 +16,9 @@ export const SETTINGS = {
   startOpacityFade: 0.95, // The opacity at the start of the fade of hyperboloid and below
   endOpacityFade: 0.65, // The opacity at the end (i.e. top bottom edge) of the fade hyperboloid
 
-  maxZClip: 150 //set the maximum value of zUpperClip so that the entire hyperboloid and grid lines are shown at max dolly distance and maxFieldOfView
+  maxZClip: 150, //set the maximum value of zUpperClip so that the entire hyperboloid and grid lines are shown at max dolly distance and maxFieldOfView
+
+  percentReductionAtMaxDolly: 0.5 // the percent non-ideal points and labels are reduced by at max dolly
 };
 
 export enum HYPERBOLIC_LAYER {
@@ -24,16 +26,16 @@ export enum HYPERBOLIC_LAYER {
   upperSheet,
   upperSheetGrid,
   upperSheetPoints,
-  upperSheetInfPoints,
+  upperSheetIdealPoints,
   upperSheetLabels,
-  upperSheetInfLabels,
+  upperSheetIdealLabels,
   upperSheetLines,
   lowerSheet,
   lowerSheetGrid,
   lowerSheetPoints,
-  lowerSheetInfPoints,
+  lowerSheetIdealPoints,
   lowerSheetLabels,
-  lowerSheetInfLabels,
+  lowerSheetIdealLabels,
   lowerSheetLines,
   labels
 }

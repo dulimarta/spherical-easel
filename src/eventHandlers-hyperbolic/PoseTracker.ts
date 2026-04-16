@@ -79,7 +79,7 @@ export class PoseTracker implements HyperbolicToolStrategy {
       ? PoseTracker.hyperStore.surfaceIntersections[0].object.name.match(
           /(Sheet)$/
         ) !== null
-      : false;
+      : false; // THIS SHOULD ONLY BE USED WHERE WE KNOW this.surfaceIsIntersected IS TRUE
 
     this.hyperboloidFirstHitOverall =
       PoseTracker.hyperStore.hyperboloidIsClosestIntersection;

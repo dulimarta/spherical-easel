@@ -76,7 +76,7 @@ export function createLine(
   name: string,
   upper: boolean,
   temporary = false, //used in handlers,flag so that temporary objects are never hit with ray casting
-  radius = 0.15,
+  radius = 0.02,
   myColor = 0xff8080 //ffb3b3, //ff8080, //"white", //"0xBEBFC5",
 ): Mesh {
   const cylinderMaterial = new CustomLineMaterial({
@@ -91,7 +91,6 @@ export function createLine(
   const modeUniform = cylinderMaterial.userData.mode;
   const startYUniform = cylinderMaterial.userData.startY;
   const endYUniform = cylinderMaterial.userData.endY;
-  const normalVector = cylinderMaterial.userData.normalVector;
 
   const positionFunction = Fn(() => {
     // A glowing line's size pulses
@@ -103,23 +102,18 @@ export function createLine(
       radiusUniform.mul(unitLength)
     );
     // transform to standard position along the alpha = Pi/2 hyperbolic line through (0,0,1)
-    const scaleAndMoveToStandardPositionMatrix = mat4(
-      vec4(myRadius, float(0), float(0), float(0)), // column 0,
-      vec4(float(0), float(1), float(0), float(0)), // column 1,
-      vec4(float(0), float(0), myRadius, float(0)), // column 2
-      vec4(
-        float(0),
-        float(0),
-        sqrt(positionLocal.y.mul(positionLocal.y).add(1)).mul(
-          select(upperUniform.greaterThan(0.5), float(1.0), float(-1.0))
-        ),
-        float(1.0)
-      ) // column 3
+    const mY = myRadius.mul(positionLocal.y);
+    const scaleAndMoveToStandardPosition = vec4(
+      myRadius.mul(positionLocal.x),
+      mY,
+      sqrt(mY.mul(mY).add(1))
+        .mul(select(upperUniform.greaterThan(0.5), float(1), float(-1)))
+        .add(positionLocal.z.mul(myRadius)),
+      1
     );
-
-    return transformationMatrixUniform.mul(
-      scaleAndMoveToStandardPositionMatrix.mul(vec4(positionLocal, 1.0))
-    ).xyz;
+    // return scaleAndMoveToStandardPositionMatrix.mul(vec4(positionLocal, 1.0))
+    //   .xyz;
+    return transformationMatrixUniform.mul(scaleAndMoveToStandardPosition).xyz;
   });
 
   cylinderMaterial.positionNode = positionFunction();
@@ -159,23 +153,23 @@ export function createLine(
       drawAfterEnd
     );
 
-    and(
-      positionLocal.y.lessThan(smallerY),
-      newDrawBeforeStart.negate()
-    ).discard();
+    // and(
+    //   positionLocal.y.lessThan(smallerY),
+    //   newDrawBeforeStart.negate()
+    // ).discard();
 
-    and(
-      and(
-        positionLocal.y.lessThan(largerY),
-        positionLocal.y.greaterThan(smallerY)
-      ),
-      drawBetweenStartAndEnd.negate()
-    ).discard();
+    // and(
+    //   and(
+    //     positionLocal.y.lessThan(largerY),
+    //     positionLocal.y.greaterThan(smallerY)
+    //   ),
+    //   drawBetweenStartAndEnd.negate()
+    // ).discard();
 
-    and(
-      positionLocal.y.greaterThan(largerY),
-      newDrawAfterEnd.negate()
-    ).discard();
+    // and(
+    //   positionLocal.y.greaterThan(largerY),
+    //   newDrawAfterEnd.negate()
+    // ).discard();
 
     // // Glowing points color pulses
     const returnColor = select(
@@ -194,10 +188,10 @@ export function createLine(
     new CylinderGeometry(
       1,
       1,
-      2 * Math.sinh(Math.acosh(SETTINGS.maxZClip) + 1.001),
+      5 * Math.sinh(Math.acosh(SETTINGS.maxZClip) + 1.001),
       20, // Radial segments
-      64, // Segments along the length of the cylinder
-      true
+      200, // Segments along the length of the cylinder
+      false
     ),
     cylinderMaterial
   );
@@ -216,7 +210,9 @@ export function createLine(
       raycaster.far,
       upper
     );
-
+    const normalVector = this.material.userData.normalVector;
+    const inverseTransformationMatrix =
+      this.material.userData.inverseTransformationMatrix;
     tempIntersections.forEach(intersection => {
       // If the intersection point is near the plane that defines the line then we are
       // on the line connecting startPoint and endPoint
@@ -227,19 +223,25 @@ export function createLine(
       ) {
         // now we have to determine if the point is near the part of the line that is displayed, this depends on the mode.
 
-        const inverseTransformationMatrix = transformationMatrixUniform.value
-          .clone()
-          .invert();
-
         const intersectionY = intersection.point.applyMatrix4(
           inverseTransformationMatrix
         ).y; // This might not be exact enough.  If so, then we need to snap to the nearest point on the hyperboloid and on the plane.
 
+        console.log("raycast line", this.name, "Y ", intersectionY);
         // first decode the mode
         const drawAfterEnd = ((modeUniform.value >> 2) & 1) > 0.5;
         const drawBetweenStartAndEnd = ((modeUniform.value >> 1) & 1) > 0.5;
         const drawBeforeStart = (modeUniform.value & 1) > 0.5;
 
+        // console.log(
+        //   "mode bits",
+        //   drawAfterEnd,
+        //   drawBetweenStartAndEnd,
+        //   drawBeforeStart
+        // );
+
+        // console.log("start Y", startYUniform.value);
+        // console.log("end Y", endYUniform.value);
         // check the relationship between intersectionY and (start|end)Y appropriately
         const largerY = Math.max(startYUniform.value, endYUniform.value);
         const smallerY = Math.min(startYUniform.value, endYUniform.value);
@@ -390,7 +392,7 @@ export function createPoint(
   name: string,
   upper: boolean,
   temporary = false, //used in handlers,flag so that temporary objects are never hit with ray casting
-  radius = 0.15,
+  radius,
   myColor = 0xff8080 //ffb3b3, //ff8080, //"white", //"0xBEBFC5",
 ): Mesh {
   const sphereMaterial = new CustomPointMaterial({

@@ -34,6 +34,7 @@ import { h2Distance } from "@/utils/helpingHEFunctions";
 //   ...Object.getOwnPropertyNames(DEFAULT_LINE_BACK_STYLE)
 // ]);
 // const { t } = i18n.global;
+
 export class HELine extends HENodule implements HyperbolicLabelable {
   //implements Visitable, OneDimensional, Labelable
 
@@ -42,12 +43,15 @@ export class HELine extends HENodule implements HyperbolicLabelable {
   protected _endPoint: HEPoint;
   protected _normalVector = new Vector3(); // most useful for determining if two lines are the same
   protected _upper; // must match for lines to be the same
-  protected _radius = 0.15; // radius of the initial tube
+  protected _radius = 0.03; // radius of the initial tube
   protected _nonFreePoint = false;
   protected _transformationMatrix = new Matrix4();
+  protected _inverseTransformationMatrix = new Matrix4();
   protected _mesh!: Mesh;
   protected _material!: CustomLineMaterial;
   protected _mode: number; // Mode is a number between 0 and 7, inclusive. The binary expansion of this number is three bits, the most significant tells whether the portion of the line before the start point is drawn, the second most significant bit tells whether the portion of the line between the start and end points is drawn, and the least significant bit tells whether the portion of the line after the end point is drawn. So 7 = 111 in binary means draw all portions of the line and 6 = 110 in binary means draw only the portion of the line before the start point and between the start and end points, but not after the end point, etc.
+
+  tempVector = new Vector3();
 
   constructor(
     startPoint: HEPoint,
@@ -88,7 +92,7 @@ export class HELine extends HENodule implements HyperbolicLabelable {
     this._mesh = createLine(this.name, this._upper, temporary, this._radius);
 
     this._material = this._mesh.material as CustomLineMaterial;
-    this._material.normalVector = this._normalVector;
+    this._material.userData.normalVector.copy(this._normalVector);
 
     this.updateTransformationMatrix(); // set the transformation matrix
 
@@ -102,6 +106,7 @@ export class HELine extends HENodule implements HyperbolicLabelable {
       );
     }
     this.group.add(this._mesh);
+    // this.shallowUpdate();
   }
 
   // // customStyles(): Set<string> {
@@ -261,7 +266,7 @@ export class HELine extends HENodule implements HyperbolicLabelable {
           )
         )
         .normalize();
-      this._material.normalVector = this._normalVector; // update the normal vector so that intersections are done correctly
+      this._material.userData.normalVector.copy(this._normalVector); // update the normal vector so that intersections are done correctly
       this.updateTransformationMatrix();
       // // Check to see if the tempNormal is zero (i.e the start and end vectors are parallel -- ether
       // // nearly antipodal or in the same direction)
@@ -354,11 +359,11 @@ export class HELine extends HENodule implements HyperbolicLabelable {
     } else {
       let radiusS =
         this._startPoint.position.w !== 0
-          ? Math.acosh(this._startPoint.position.z) // same as h2Distance(new Vector3(0, 0, 1), this._startPoint.position)
+          ? Math.acosh(Math.abs(this._startPoint.position.z)) // same as h2Distance(new Vector3(0, 0, 1), this._startPoint.position)
           : 0; // this value doesn't matter when the start is ideal
       let radiusE =
         this._endPoint.position.w !== 0
-          ? Math.acosh(this._endPoint.position.z) // same as h2Distance(new Vector3(0, 0, 1), this._endPoint.position)
+          ? Math.acosh(Math.abs(this._endPoint.position.z)) // same as h2Distance(new Vector3(0, 0, 1), this._endPoint.position)
           : 0; // this value doesn't matter when the end is ideal
       let endPointIsIdeal = this._endPoint.position.w === 0;
       this._material.mode = this._mode;
@@ -399,6 +404,7 @@ export class HELine extends HENodule implements HyperbolicLabelable {
       // MupperI = ro[theta s-Pi/2].tr[rs].ro[(T/.{Coth[re]->1, if end ideal})-Pi/2]
       // MlowerI = ro[theta s-Pi/2].tr[-rs].ro[(T/.{Coth[re]->1,if end ideal})-Pi/2]
 
+      // console.log(" parts of the matrix", radiusE, radiusS, thetaE, thetaS, T);
       this._transformationMatrix
         .makeRotationZ(thetaS - Math.PI / 2)
         .multiply(
@@ -420,7 +426,11 @@ export class HELine extends HENodule implements HyperbolicLabelable {
         )
         .applyMatrix4(this._transformationMatrix.invert()).y;
     }
-
+    this._inverseTransformationMatrix.copy(this._transformationMatrix).invert();
+    console.log(
+      "transformation matrix",
+      this._transformationMatrix.elements[0]
+    );
     this._material.transformationMatrix = this._transformationMatrix;
   }
 
@@ -539,12 +549,14 @@ export class HELine extends HENodule implements HyperbolicLabelable {
   get upper(): boolean {
     return this._upper;
   }
+
   get radius(): number {
     return this._material.radius;
   }
   set radius(num: number) {
     this._material.radius = num;
   }
+
   get normalVector(): Vector3 {
     return this._normalVector;
   }
@@ -554,22 +566,48 @@ export class HELine extends HENodule implements HyperbolicLabelable {
   }
 
   set mode(newMode: number) {
-    this._mode = newMode;
-    this.updateTransformationMatrix();
+    // check to see if this line in the newMode exists, if so send a message to the use and don't change anything
+    let lineIsNotNew = true;
+    HENodule.hyperStore.linesMap.forEach(line => {
+      if (
+        line.name != this.name &&
+        (this.tempVector
+          .subVectors(line.normalVector, this.normalVector)
+          .isZero() ||
+          this.tempVector
+            .copy(this.normalVector)
+            .addScaledVector(line.normalVector, -1)
+            .isZero()) &&
+        line.upper == this._upper &&
+        line.mode == newMode
+      ) {
+        lineIsNotNew = true;
+      }
+    });
+
+    if (!lineIsNotNew) {
+      this._mode = newMode;
+      this.updateTransformationMatrix();
+    }
   }
 
   get startPoint(): HEPoint {
     return this._startPoint;
   }
-  public setNewStartAndEndPoints(newStart: HEPoint, newEnd: HEPoint): void {
-    if (newStart.upper !== newEnd.upper) {
+
+  // These both need to be set at the same time so that it is possible for temporary lines to be displayed on both upper and lower sheets.
+  public setNewStartAndEndVectors(
+    newStartVector: Vector4,
+    newEndVector: Vector4
+  ): void {
+    if (newStartVector.z * newEndVector.z < 0) {
       throw new Error(
         "The start and end points of a line must be on the same sheet!"
       );
     }
-    this._startPoint = newStart;
-    this._endPoint = newEnd;
-    this._upper = newStart.upper;
+    this._startPoint.position.copy(newStartVector);
+    this._endPoint.position.copy(newEndVector);
+    this._upper = newStartVector.z > 0 ? true : false;
     this.updateTransformationMatrix();
   }
 

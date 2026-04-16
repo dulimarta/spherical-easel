@@ -27,7 +27,7 @@
       <span class="ml-1">
         FOV: {{ cameraFOV.toFixed(1) }}
         Dolly Distance:
-        {{ cameraDistance.toFixed(1) }}
+        {{ cameraDollyDistance.toFixed(1) }}
         Polar Angle:
         {{ ((cameraPolarAngle * 180) / Math.PI).toFixed(1) }}&deg; zUpperClip:
         {{ zUpperClip.value.toFixed(2) }}
@@ -178,6 +178,8 @@ const {
   objectIntersections,
   closestIntersectionIsSurface,
   cameraQuaternion,
+  cameraDollyDistance,
+  cameraFieldOfView,
   cameraOrigin,
   hyperboloidIsClosestIntersection,
   idealPointsStripIsClosestIntersection
@@ -218,7 +220,6 @@ const clock = new Clock(); // used by camera control animation
 const rayCaster = new Raycaster();
 const mouseCoordNormalized: Ref<Vector2> = ref(new Vector2()); // used by RayCaster
 let camera: PerspectiveCamera;
-const cameraDistance = ref(0);
 let oldCameraDistance = 0;
 let cameraFOV = ref(SETTINGS.maxFieldOfView);
 const cameraPolarAngle = ref(0);
@@ -256,8 +257,10 @@ scene.background = new THREE.Color(0xf5f5f5);
 //scene.environment = await new THREE.RGBELoader().loadAsync("env.hdr");
 
 let currentTools: Array<HyperbolicToolStrategy> = [];
-let pointTool: PointHandler = new PointHandler(scene);
+let pointTool: PointHandler | null = null;
 let lineTool: LineHandler | null = null;
+let segmentTool: LineHandler | null = null;
+let rayTool: LineHandler | null = null;
 let circleTool: CircleHandler | null = null;
 let textTool: TextHandler | null = null;
 
@@ -293,48 +296,48 @@ watch(visibleLayers, (layers: Array<VisibleHELayersType>) => {
 
 function updateVisibleLayers(): void {
   if (showIdealPointsStrip.value) {
-    camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
-    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+    camera.layers.enable(HYPERBOLIC_LAYER.upperSheetIdealPoints);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetIdealPoints);
 
-    camera.layers.enable(HYPERBOLIC_LAYER.upperSheetInfLabels);
-    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfLabels);
+    camera.layers.enable(HYPERBOLIC_LAYER.upperSheetIdealLabels);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetIdealLabels);
 
     if (upperIdealPointsStrip) {
       scene.add(upperIdealPointsStrip);
     }
     if (showLowerSheet.value) {
-      camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-      rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+      camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetIdealPoints);
+      rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetIdealPoints);
 
-      camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
-      rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
+      camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetIdealLabels);
+      rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetIdealLabels);
 
       if (lowerIdealPointsStrip) {
         scene.add(lowerIdealPointsStrip);
       }
     } else {
-      camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-      rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+      camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetIdealPoints);
+      rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetIdealPoints);
 
-      camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
-      rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
+      camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetIdealLabels);
+      rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetIdealLabels);
 
       if (lowerIdealPointsStrip) {
         scene.remove(lowerIdealPointsStrip);
       }
     }
   } else {
-    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
-    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetIdealPoints);
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetIdealPoints);
 
-    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
-    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetInfLabels);
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetIdealLabels);
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetIdealLabels);
 
-    camera.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
-    rayCaster.layers.disable(HYPERBOLIC_LAYER.upperSheetInfPoints);
+    camera.layers.disable(HYPERBOLIC_LAYER.upperSheetIdealPoints);
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.upperSheetIdealPoints);
 
-    camera.layers.disable(HYPERBOLIC_LAYER.upperSheetInfLabels);
-    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetInfLabels);
+    camera.layers.disable(HYPERBOLIC_LAYER.upperSheetIdealLabels);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetIdealLabels);
 
     if (upperIdealPointsStrip) {
       scene.remove(upperIdealPointsStrip);
@@ -397,12 +400,13 @@ function updateVisibleLayers(): void {
   renderer.renderAsync(scene, camera);
 }
 
-// Watch for idle after zooming so that we can update the label display
+// Watch for idle after zooming/dollying so that we can update the label display
 watch(idle, idleValue => {
   // console.debug("Idle state", idleValue);
   // console.debug("Camera control", hasUpdatedCameraControls.value);
   if (idleValue && hasUpdatedCameraControls.value) {
-    hyperStore.adjustTextPose(camera.quaternion);
+    hyperStore.adjustTextPose();
+    hyperStore.updateDisplayForCameraUpdate();
     hasUpdatedCameraControls.value = false;
   }
 });
@@ -431,18 +435,22 @@ watch(
         currentTools.push(pointTool);
         break;
       case "line":
-        if (lineTool === null)
+        if (lineTool === null) {
           lineTool = new LineHandler(scene, 1 * 4 + 1 * 2 + 1);
-        // Extend the line to the end of the hyperboloid
-        //lineTool.infiniteLineMode = true;
-        //currentTools.push(lineTool);
+        } // line mode is 7
+        else {
+          lineTool.mode = 1 * 4 + 1 * 2 + 1;
+        }
+        currentTools.push(lineTool);
         break;
       case "segment":
-        if (lineTool === null)
-          lineTool = new LineHandler(scene, 0 * 4 + 1 * 2 + 0);
-
-        //lineTool.infiniteLineMode = false;
-        //currentTools.push(lineTool);
+        if (lineTool === null) {
+          lineTool = new LineHandler(scene, 0 * 4 + 1 * 2 + 0); // segment mode is 2
+        } // line mode is 7
+        else {
+          lineTool.mode = 0 * 4 + 1 * 2 + 0;
+        }
+        currentTools.push(lineTool);
         break;
       case "text":
         //if (textTool === null) textTool = new TextHandler(scene);
@@ -481,6 +489,8 @@ onMounted(async () => {
   hyperStore.setScene(scene, camera);
 
   cameraQuaternion.value.copy(camera.quaternion);
+
+  cameraFieldOfView.value = camera.fov;
   cameraController = new CameraControls(camera, webGPUCanvas.value!);
   // Set the parameters of the camera controller
   cameraController.minDistance = SETTINGS.dollyDistanceMin;
@@ -494,7 +504,7 @@ onMounted(async () => {
   cameraController.azimuthRotateSpeed = 0.2;
   cameraController.smoothTime = 0.22;
   cameraController.draggingSmoothTime = 0.12;
-  cameraDistance.value = cameraController.distance;
+  cameraDollyDistance.value = cameraController.distance;
   oldCameraDistance = cameraController.distance;
   cameraPolarAngle.value = cameraController.polarAngle;
   renderer = new THREE.WebGPURenderer({
@@ -553,17 +563,14 @@ onMounted(async () => {
         }
       } else {
         cameraController.dolly(event.deltaY, true);
-        cameraDistance.value = cameraController.distance;
-        // if (
-        //   Math.abs(oldCameraDistance - cameraController.distance) >
-        //   SETTINGS.minDollyDistanceChangeForViewUpdate
-        // ) {
+        cameraDollyDistance.value = cameraController.distance;
         oldCameraDistance = cameraController.distance;
         updateView();
         const deltaTime = clock.getDelta();
         cameraController.update(deltaTime);
         hasUpdatedCameraControls.value = true;
         cameraQuaternion.value.copy(camera.quaternion);
+        cameraFieldOfView.value = camera.fov;
         renderer.renderAsync(scene, camera);
 
         // console.log({
@@ -609,18 +616,18 @@ function initialize() {
   // scene.add(xyGrid);
 
   // Insert the grid BEFORE the arrow helper
-  const arrowX = new THREE.ArrowHelper(new Vector3(1, 0, 0));
-  arrowX.setColor(0xff0000);
-  arrowX.setLength(2, 0.2, 0.2);
-  const arrowY = new THREE.ArrowHelper(new Vector3(0, 1, 0));
-  arrowY.setColor(0x00ff00);
-  arrowY.setLength(2, 0.2, 0.2);
-  const arrowZ = new THREE.ArrowHelper(new Vector3(0, 0, 1));
-  arrowZ.setColor(0x0000ff);
-  arrowZ.setLength(2, 0.2, 0.2);
-  scene.add(arrowX);
-  scene.add(arrowY);
-  scene.add(arrowZ);
+  // const arrowX = new THREE.ArrowHelper(new Vector3(1, 0, 0));
+  // arrowX.setColor(0xff0000);
+  // arrowX.setLength(2, 0.2, 0.2);
+  // const arrowY = new THREE.ArrowHelper(new Vector3(0, 1, 0));
+  // arrowY.setColor(0x00ff00);
+  // arrowY.setLength(2, 0.2, 0.2);
+  // const arrowZ = new THREE.ArrowHelper(new Vector3(0, 0, 1));
+  // arrowZ.setColor(0x0000ff);
+  // arrowZ.setLength(2, 0.2, 0.2);
+  // scene.add(arrowX);
+  // scene.add(arrowY);
+  // scene.add(arrowZ);
 
   // create the hyperboloid sheets
   upperHyperboloidSheet = createHyperboloidSheet(true);
@@ -646,11 +653,11 @@ function initialize() {
   // will be displayed by clipping between two planes
   upperIdealPointsStrip = createIdealPointsStrip(true);
   upperIdealPointsStrip.name = `Upper Ideal Points Strip`;
-  upperIdealPointsStrip.layers.set(HYPERBOLIC_LAYER.upperSheetInfPoints);
+  upperIdealPointsStrip.layers.set(HYPERBOLIC_LAYER.upperSheetIdealPoints);
 
   lowerIdealPointsStrip = createIdealPointsStrip(false);
   lowerIdealPointsStrip.name = `Lower Ideal Points Strip`;
-  lowerIdealPointsStrip.layers.set(HYPERBOLIC_LAYER.lowerSheetInfPoints);
+  lowerIdealPointsStrip.layers.set(HYPERBOLIC_LAYER.lowerSheetIdealPoints);
 
   // create the radial polar grid lines
   for (let upperLower = 0; upperLower < 2; upperLower++) {
@@ -713,6 +720,8 @@ function doRender() {
     if (hasUpdated) {
       hasUpdatedCameraControls.value = true;
       cameraQuaternion.value.copy(camera.quaternion);
+      cameraDollyDistance.value = cameraController.distance;
+      cameraFieldOfView.value = camera.fov;
       camera.getWorldPosition(cameraOrigin.value);
       // renderer.renderAsync(scene, camera);
     }
@@ -725,13 +734,12 @@ function updateCameraDetails(ev: DispatcherEvent) {
 
   // console.log("CC::" + ev.type + " " + cc.distance.toFixed(2));
 
-  cameraDistance.value = cc.distance;
+  cameraDollyDistance.value = cc.distance;
   cameraPolarAngle.value = cc.polarAngle;
   if (
     Math.abs(oldCameraDistance - cc.distance) >
     SETTINGS.minDollyDistanceChangeForViewUpdate
   ) {
-    // console.log("here");
     oldCameraDistance = cc.distance;
     updateView();
     // console.log({

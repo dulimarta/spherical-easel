@@ -1,6 +1,6 @@
 import { MeshStandardMaterial, SphereGeometry, Vector3, Mesh } from "three";
 import { HENodule } from "./HENodule";
-import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
+import SETTINGS, { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import * as THREE from "three/webgpu";
 import {
   CustomMaterial,
@@ -19,7 +19,7 @@ export class HEPoint extends HENodule implements HyperbolicLabelable {
   protected _upper;
   protected _position = new THREE.Vector4(); // homogeneous coordinates -- w coordinate is 0 for ideal points and 1 for non-ideal points
   protected _height = 0.33; // height is used to control the length of the cone that represents ideal points
-  protected _radius = 0.15; // radius is used to control the radius of the non-ideal points  or the radius of the base of the cone that represents ideal points
+  protected _radius; // radius is used to control the radius of the non-ideal points  or the radius of the base of the cone that represents ideal points
   protected _nonFreePoint = false;
   protected _transformationMatrix = new THREE.Matrix4();
   protected _mesh!: Mesh;
@@ -32,6 +32,7 @@ export class HEPoint extends HENodule implements HyperbolicLabelable {
     temporary: boolean = false
   ) {
     super();
+
     if (!temporary) {
       HENodule.POINT_COUNT++;
       this.name = `P${HENodule.POINT_COUNT}`;
@@ -39,8 +40,9 @@ export class HEPoint extends HENodule implements HyperbolicLabelable {
       HENodule.TEMP_POINT_COUNT++;
       this.name = `tempP${HENodule.TEMP_POINT_COUNT}`;
     }
-    // console.log("create point", this.name, Math.atan2(position.y, position.x));
+
     if (position.w === 0) {
+      this._radius = 0.18; // radius of the base of the cone representing ideal points
       this._mesh = createIdealPoint(
         this.name,
         position.z > 0,
@@ -49,6 +51,7 @@ export class HEPoint extends HENodule implements HyperbolicLabelable {
         this._height
       );
     } else {
+      this._radius = 0.15; // radius of the non-ideal points
       this._mesh = createPoint(
         this.name,
         position.z > 0,
@@ -68,13 +71,13 @@ export class HEPoint extends HENodule implements HyperbolicLabelable {
       if (this._upper) {
         this._mesh.layers.set(
           this._position.w === 0
-            ? HYPERBOLIC_LAYER.upperSheetInfPoints
+            ? HYPERBOLIC_LAYER.upperSheetIdealPoints
             : HYPERBOLIC_LAYER.upperSheetPoints
         );
       } else {
         this._mesh.layers.set(
           this._position.w === 0
-            ? HYPERBOLIC_LAYER.lowerSheetInfPoints
+            ? HYPERBOLIC_LAYER.lowerSheetIdealPoints
             : HYPERBOLIC_LAYER.lowerSheetPoints
         );
       }
@@ -92,6 +95,14 @@ export class HEPoint extends HENodule implements HyperbolicLabelable {
 
   public shallowUpdate(): void {
     this._mesh.visible = this.showing;
+    //change the scale inversely with respect to fov(?), and dollyDistance for non-ideal points
+    this._material.radius =
+      this._radius *
+      (((1 - SETTINGS.percentReductionAtMaxDolly) /
+        (SETTINGS.dollyDistanceMin - SETTINGS.dollyDistanceMax)) *
+        (HENodule.hyperStore.cameraDollyDistance - SETTINGS.dollyDistanceMax) +
+        SETTINGS.percentReductionAtMaxDolly);
+    console.log("point radius", this._material.radius);
     this.updateTransformationMatrix();
   }
 
@@ -137,7 +148,7 @@ export class HEPoint extends HENodule implements HyperbolicLabelable {
     return this._position;
   }
   set position(pos: THREE.Vector4) {
-    this._position = pos;
+    this._position.copy(pos);
     this._upper = pos.z > 0;
     this.shallowUpdate();
   }

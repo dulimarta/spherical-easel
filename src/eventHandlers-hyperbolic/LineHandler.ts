@@ -80,15 +80,12 @@ export class LineHandler extends PoseTracker {
    */
   private startLocationSelected = false;
 
-  /**
-   * A temporary vector to help with normal vector computations
-   */
-  private tmpVector = new Vector3();
-  private tmpVector1 = new Vector3();
+  private tmpVector4 = new Vector4();
+  private tmpVector3 = new Vector3();
 
   constructor(scene: Scene, mode: number) {
     super(scene);
-    this.scene = scene;
+
     this._tempStartPoint = new HEPoint(
       new THREE.Vector4(0, 0, 1, 1),
       false,
@@ -114,7 +111,7 @@ export class LineHandler extends PoseTracker {
     this._tempLine = new HELine(
       this._tempStartPoint,
       this._tempEndPoint,
-      this._mode,
+      mode,
       false,
       true
     );
@@ -233,31 +230,30 @@ export class LineHandler extends PoseTracker {
         }
         this._startHEPoint = null;
       }
-      // this._tempEndPoint.positionVectorAndDisplay =
-      //   this.currentSphereVector;
     }
   }
   mouseMoved(event: MouseEvent): void {
     // console.debug(`LineHandler::mouseMoved (${event.clientX},${event.clientY})`)
     // Find all the nearby (hitHE... objects) and update location vectors
     super.mouseMoved(event);
-    // Only one object can be interacted with at a given time, so set the first point nearby to glowing
-    // The user can create points  on , ellipses, segments, and lines, so
-    // highlight those as well (but only one) if they are nearby also
-    // Also set the snap objects
+
     this.updateFilteredPointsList();
     if (this.filteredIntersectionPointsList.length > 0) {
+      // Only one object can be interacted with at a given time, so set the first point nearby to glowing
+      // The user can create points  on , ellipses, segments, and lines, etc so
+      // highlight those as well (but only one) if they are nearby also
+      // Also set the snap objects
       this.filteredIntersectionPointsList[0].glowing = true;
       if (!this.startLocationSelected) {
         this.snapStartPointToExistingOneDimensional = null;
-        // this.snapEndPointToExistingOneDimensional = null;
+        this.snapEndPointToExistingOneDimensional = null;
         this.snapStartPointToExistingPoint =
           this.filteredIntersectionPointsList[0];
-        // this.snapEndPointToExistingPoint = null;
+        this.snapEndPointToExistingPoint = null;
       } else {
-        // this.snapStartPointToExistingOneDimensional = null;
+        this.snapStartPointToExistingOneDimensional = null;
         this.snapEndPointToExistingOneDimensional = null;
-        // this.snapStartPointToExistingPoint = null;
+        this.snapStartPointToExistingPoint = null;
         this.snapEndPointToExistingPoint =
           this.filteredIntersectionPointsList[0];
       }
@@ -350,7 +346,7 @@ export class LineHandler extends PoseTracker {
     if (this.surfaceIsIntersected) {
       if (!this.startLocationSelected) {
         // If the temporary startPoint has *not* been added to the scene do so now
-        if (this.hyperboloidFirstHitOverall) {
+        if (this.hyperboloidIsFirstSurfaceHit) {
           if (!this._tempStartPointInScene) {
             this._tempStartPointInScene = true;
             this.scene.add(this._tempStartPoint.mesh);
@@ -366,7 +362,7 @@ export class LineHandler extends PoseTracker {
           }
         }
 
-        if (this.idealPointsStripFirstHitOverall) {
+        if (!this.hyperboloidIsFirstSurfaceHit) {
           if (!this._tempStartIdealPointInScene) {
             this._tempStartIdealPointInScene = true;
             this.scene.add(this._tempTube);
@@ -475,11 +471,12 @@ export class LineHandler extends PoseTracker {
           this.scene.add(this._tempStartIdealPoint.mesh);
         }
         // If the temporary endPoint has *not* been added to the scene do so now, but only if the end point upper status matches the selected start point/location
-        const possibleLocation = PoseTracker.vec3ToVec4(
+        let possibleLocation = PoseTracker.vec3ToVec4(
           PoseTracker.hyperStore.surfaceIntersections[0].point,
           this.hyperboloidIsFirstSurfaceHit ? 1 : 0
         );
 
+        // To make a line the start and end vector must be on the same sheet
         if (possibleLocation.z * this.startVector.z > 0) {
           if (this.hyperboloidIsFirstSurfaceHit) {
             if (!this._tempEndPointInScene) {
@@ -538,57 +535,23 @@ export class LineHandler extends PoseTracker {
           }
           // Set the location of the temporary endMarker by snapping to appropriate object (if any)
           if (this.snapEndPointToExistingOneDimensional !== null) {
-            // this._tempEndPoint.positionVectorAndDisplay =this.snapEndPointToExistingOneDimensional.closestVector(
-            //       this.currentSphereVector
+            // this._tempEndPoint.position =this.snapEndPointToExistingOneDimensional.closestVector(
+            //       possibleLocation
             // )
+            // possibleLocation.copy(this._tempEndPoint.position)
           } else {
-            // this._tempEndPoint.positionVectorAndDisplay =this.currentSphereVector
+            // this._tempEndPoint.position = possibleLocation
           }
-
-          // If the temporary line has *not* been added to the scene do so now (only once)
+          console.log("start vector", this.startVector.toFixed(2));
+          console.log("end?", possibleLocation.toFixed(2));
+          this._tempLine.setNewStartAndEndVectors(
+            this.startVector,
+            possibleLocation
+          );
           if (!this._tempLineInScene) {
             this._tempLineInScene = true;
             this.scene.add(this._tempLine.mesh);
           }
-          // Compute the normal vector from the this.startVector, the (old) normal vector and this._tempEndPoint vector
-          // Compute a temporary normal from the two points' vectors
-          // this.tmpVector.crossVectors(
-          //   this.startVector,
-          //   this.snapEndPointToExistingPoint === null
-          //     ? this.tmpVector
-          //         .copy(this._tempEndPoint.positionVector)
-          //         .normalize()
-          //     : // ? this._tempEndPoint.positionVector
-          //       this.snapEndPointToExistingPoint.locationVector
-          // );
-
-          // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
-          // nearly antipodal or in the same direction)
-          // if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
-          //   if (this.normalVector.length() === 0) {
-          //     // The normal vector is still at its initial value so can't be used to compute the next normal, so set the
-          //     // the normal vector to an arbitrarily chosen vector perpendicular to the start vector
-          //     this.tmpVector.set(1, 0, 0);
-          //     this.tmpVector.crossVectors(this.startVector, this.tmpVector);
-          //     if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
-          //       this.tmpVector.set(0, 1, 0);
-          //       // The cross of startVector and (1,0,0) and (0,1,0) can't *both* be zero
-          //       this.tmpVector.crossVectors(this.startVector, this.tmpVector);
-          //     }
-          //   } else {
-          //     // The start and end vectors align, compute  the next normal vector from the old normal and the start vector
-          //     this.tmpVector.crossVectors(this.startVector, this.normalVector);
-          //     this.tmpVector.crossVectors(this.tmpVector, this.startVector);
-          //   }
-          // }
-          // this.normalVector.copy(this.tmpVector).normalize();
-
-          // Set the normal vector to the line in the plottable object, update the display
-          // this.temporaryLine.normalVector = this.normalVector;
-          this._tempLine.setNewStartAndEndPoints(
-            this._tempStartPoint,
-            this._tempEndPoint
-          );
         } else {
           // the user is not over the same upper or lower sheet as the start and the endpoint markers should be removed.
           this.removeAllEndTempObjects();
@@ -622,7 +585,7 @@ export class LineHandler extends PoseTracker {
           : false;
 
         const bothNotIdeal = possibleLocation.w == 1 && this.startVector.w == 1;
-        const angularMinimumMet = bothNotIdeal
+        const distanceMinimumMet = bothNotIdeal
           ? new Vector3(
               possibleLocation.x,
               possibleLocation.y,
@@ -637,9 +600,10 @@ export class LineHandler extends PoseTracker {
           : false;
 
         if (
-          (bothIdeal && idealAngularMinimumMet) ||
-          (bothNotIdeal && angularMinimumMet) ||
-          (!bothIdeal && !bothNotIdeal) // One is ideal and the other is not.
+          possibleLocation.z * this.startVector.z > 0 && // To make a line the start and end vector must be on the same sheet
+          ((bothIdeal && idealAngularMinimumMet) ||
+            (bothNotIdeal && distanceMinimumMet) ||
+            (!bothIdeal && !bothNotIdeal)) // One is ideal and the other is not.
         ) {
           if (!this.makeLine()) {
             EventBus.fire("show-alert", {
@@ -748,7 +712,8 @@ export class LineHandler extends PoseTracker {
   private makeLine(fromActivate = false): boolean {
     const lineCommandGroup = new CommandGroup();
     const newlyCreatedHEPoints: HEPoint[] = [];
-
+    console.log("start", this._startHEPoint?.name);
+    console.log("end", this._endHEPoint?.name);
     const endLocation = PoseTracker.vec3ToVec4(
       PoseTracker.hyperStore.surfaceIntersections[0].point,
       this.hyperboloidIsFirstSurfaceHit ? 1 : 0
@@ -756,21 +721,22 @@ export class LineHandler extends PoseTracker {
 
     if (this._startHEPoint === null) {
       // We have to create a new HEPointOnOneDimensional or HEPoint
-      let vtx: HEPoint | null = null; // | HEPointOnOneOrTwoDimensional | null = null; // Not implemented yet
-      let newHELabel: HELabel | null = null;
+      let newStartPoint: HEPoint | null = null; // | HEPointOnOneOrTwoDimensional | null = null; // Not implemented yet
+      let newStartLabel: HELabel | null = null;
       if (this._startHEPointOneDimensionalParent) {
         // // Starting mouse press landed near a oneDimensional
         // // Create the model object for the new point and link them
-        // vtx = new SEPointOnOneOrTwoDimensional(
+        // newStartPoint = new SEPointOnOneOrTwoDimensional(
         //   this._startHEPointOneDimensionalParent
         // );
-        // newHELabel = new HELabel(
+        // newStartLabel = new HELabel(
         //   "point",
         //   vtx,
         //   vtx.position,
         //   vtx.name,
         //   vtx.upper
         // );
+        // newStartPoint.setLabel(newStartLabel)
         // // Create and execute the command to create a new point for undo/redo
         // lineGroup.addCommand(
         //   new AddPointOnOneDimensionalCommand(
@@ -781,22 +747,26 @@ export class LineHandler extends PoseTracker {
         // );
       } else {
         // Starting mouse press landed on an open space
-        vtx = new HEPoint(this.startVector);
-        newHELabel = new HELabel("point", vtx, this.startVector, vtx.name);
-        vtx.setLabel(newHELabel);
-        lineCommandGroup.addCommand(new AddPointCommand(vtx, newHELabel));
+        newStartPoint = new HEPoint(this.startVector);
+        newStartLabel = new HELabel(
+          "point",
+          newStartPoint,
+          this.startVector,
+          newStartPoint.name
+        );
+        newStartPoint.setLabel(newStartLabel);
+        lineCommandGroup.addCommand(
+          new AddPointCommand(newStartPoint, newStartLabel)
+        );
       }
       /////////////
-      if (vtx) {
-        /////////////
-        // Create the antipode of the new point, vtx
-        LineHandler.addCreateAntipodeCommand(vtx as HEPoint, lineCommandGroup);
+      if (newStartPoint) {
         // Create the antipode of the new point, vtx
         const antipode = LineHandler.addCreateAntipodeCommand(
-          vtx,
+          newStartPoint,
           lineCommandGroup
         );
-        newlyCreatedHEPoints.push(vtx, antipode);
+        newlyCreatedHEPoints.push(newStartPoint, antipode);
         ///////////
 
         // Set the initial label location
@@ -811,7 +781,7 @@ export class LineHandler extends PoseTracker {
         //   )
         //   .normalize();
         // newHELabel.locationVector = this.tmpVector;
-        this._startHEPoint = vtx;
+        this._startHEPoint = newStartPoint;
       }
     } else if (
       (this._startHEPoint instanceof HEIntersectionPoint ||
@@ -839,8 +809,8 @@ export class LineHandler extends PoseTracker {
       }
     } else if (!fromActivate) {
       // We have to create a new Point for the end
-      let vtx: HEPoint | null = null; // | HEPointOnOneOrTwoDimensional | null = null;
-      let newHELabel: HELabel | null = null;
+      let newEndPoint: HEPoint | null = null; // | HEPointOnOneOrTwoDimensional | null = null;
+      let newEndLabel: HELabel | null = null;
       // if (this.hitSESegments.length > 0) {
       //   // The end of the line will be a point on a segment
       //   // Create the model object for the new point and link them
@@ -925,36 +895,44 @@ export class LineHandler extends PoseTracker {
       //   );
       // } else if (this.hitSEPolygons.length > 0) {
       // The end of the line will be a point on a parametric
-      vtx = new SEPointOnOneOrTwoDimensional(this.hitSEPolygons[0]);
-      // Set the Location
-      vtx.locationVector = this.hitSEPolygons[0].closestVector(
-        this.currentSphereVector
-      );
-      newSELabel = new SELabel("point", vtx);
+      // vtx = new SEPointOnOneOrTwoDimensional(this.hitSEPolygons[0]);
+      // // Set the Location
+      // vtx.locationVector = this.hitSEPolygons[0].closestVector(
+      //   this.currentSphereVector
+      // );
+      // newSELabel = new SELabel("point", vtx);
 
-      lineCommandGroup.addCommand(
-        new AddPointOnOneDimensionalCommand(
-          vtx as SEPointOnOneOrTwoDimensional,
-          this.hitSEPolygons[0],
-          newSELabel
-        )
-      );
+      // lineCommandGroup.addCommand(
+      //   new AddPointOnOneDimensionalCommand(
+      //     vtx as SEPointOnOneOrTwoDimensional,
+      //     this.hitSEPolygons[0],
+      //     newSELabel
+      //   )
+      // );
       // } else {
       // The ending mouse release landed on an open space
-      vtx = new HEPoint(endLocation);
-      newHELabel = new HELabel("point", vtx, endLocation, vtx.name);
+      newEndPoint = new HEPoint(endLocation);
+      newEndLabel = new HELabel(
+        "point",
+        newEndPoint,
+        endLocation,
+        newEndPoint.name
+      );
+      newEndPoint.setLabel(newEndLabel);
+      lineCommandGroup.addCommand(
+        new AddPointCommand(newEndPoint, newEndLabel)
+      );
 
-      lineCommandGroup.addCommand(new AddPointCommand(vtx, newHELabel));
       // }
       /////////////
       // Create the antipode of the new point, vtx
       const antipode = LineHandler.addCreateAntipodeCommand(
-        vtx,
+        newEndPoint,
         lineCommandGroup
       );
-      newlyCreatedHEPoints.push(antipode, vtx);
+      newlyCreatedHEPoints.push(antipode, newEndPoint);
       ///////////
-      this._endHEPoint = vtx;
+      this._endHEPoint = newEndPoint;
       // Set the initial label location
       // this.tmpVector
       //   .copy(vtx.locationVector)
@@ -997,8 +975,8 @@ export class LineHandler extends PoseTracker {
       //   return false;
       // } //There are some situations in which the mouse actions (hard to duplicate) lead to an undefined normal vector and I'm hoping this will prevent the program from entering an error state.
 
-      // Set the normal vector to the line in the plottable object this also updates the display
-      this._tempLine.setNewStartAndEndPoints(
+      // Set the points for the line so that the display matches the line to be created
+      this._tempLine.setNewStartAndEndVectors(
         this._startHEPoint,
         this._endHEPoint
       );
@@ -1008,10 +986,10 @@ export class LineHandler extends PoseTracker {
       let lineIsNotNew = false;
       LineHandler.hyperStore.linesMap.forEach(line => {
         if (
-          (this.tmpVector
+          (this.tmpVector3
             .subVectors(line.normalVector, this._tempLine.normalVector)
             .isZero() ||
-            this.tmpVector
+            this.tmpVector3
               .copy(this._tempLine.normalVector)
               .addScaledVector(line.normalVector, -1)
               .isZero()) &&
@@ -1026,36 +1004,39 @@ export class LineHandler extends PoseTracker {
         return false;
       }
 
-      // Create the new line after the normalVector is set
-      const newHELine = new HELine(
+      const newLine = new HELine(
         this._startHEPoint,
         this._endHEPoint,
         this._mode
       );
-      // Create the label
-      const newHELabel = new HELabel(
-        "line",
-        newHELine,
-        this._startHEPoint.position,
-        newHELine.name
+
+      // compute the label location
+      this.tmpVector4
+        .addVectors(this._startHEPoint.position, this._endHEPoint.position)
+        .multiplyScalar(0.5);
+      const zCoord = Math.sqrt(
+        this.tmpVector4.x * this.tmpVector4.x +
+          this.tmpVector4.y * this.tmpVector4.y +
+          1
       );
-      newHELine.setLabel(newHELabel);
-      // this.tmpVector
-      //   .addVectors(
-      //     this._startHEPoint.locationVector,
-      //     this._endHEPoint.locationVector
-      //   )
-      //   .normalize()
-      //   .add(new Vector3(0, SETTINGS.line.initialLabelOffset, 0))
-      //   .normalize();
-      // newSELabel.locationVector = this.tmpVector;
+      this.tmpVector4.z = zCoord * (this._startHEPoint.upper ? 1 : -1);
+      this.tmpVector4.w = 1; // labels for lines are always not ideal
+
+      // Create the label
+      const newLineLabel = new HELabel(
+        "line",
+        newLine,
+        this.tmpVector4,
+        newLine.name
+      );
+      newLine.setLabel(newLineLabel);
 
       lineCommandGroup.addCommand(
         new AddLineCommand(
-          newHELine,
+          newLine,
           this._startHEPoint,
           this._endHEPoint,
-          newHELabel
+          newLineLabel
         )
       );
 
@@ -1162,5 +1143,12 @@ export class LineHandler extends PoseTracker {
   }
   deactivate(): void {
     super.deactivate();
+  }
+
+  set mode(newMode: number) {
+    if (newMode != this._mode) {
+      this._mode = newMode;
+      this._tempLine.mode = newMode;
+    }
   }
 }

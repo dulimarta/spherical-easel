@@ -4,7 +4,7 @@ import {
   CustomMaterial,
   CustomLabelMaterial
 } from "@/plottables-hyperbolic/MaterialFactory";
-import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
+import SETTINGS, { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import { HENodule } from "@/models-hyperbolic/HENodule";
 import { LabelParentTypes } from "@/types";
 import {
@@ -20,6 +20,7 @@ import {
   intersectWithHyperboloid,
   intersectWithIdealPointsStrip
 } from "@/utils/helpingHEFunctions";
+import { PoseTracker } from "@/eventHandlers-hyperbolic/PoseTracker";
 
 //import { createLabel } from "@/plottables-hyperbolic/MeshFactory";
 
@@ -56,19 +57,10 @@ export class HELabel extends HENodule {
     this._currentText = text;
     this._labelParentType = labelType;
     this._upper = initialAnchor.z > 0;
-    this._anchorPoint = initialAnchor;
+    this._anchorPoint.copy(initialAnchor);
 
     HENodule.LABEL_COUNT++;
     this.name = "La" + HENodule.LABEL_COUNT;
-    // console.log(
-    //   "Label Constructor: ",
-    //   this.name,
-    //   this._upper ? "upper|" : "lower|",
-    //   this._ideal ? "ideal" : "NOT at ideal|",
-    //   this._angle,
-    //   this._position.toFixed(2)
-    // );
-    // console.log(this.name, "Parent Location: ", (this.parent as HEPoint).angle);
     this._initMesh();
   }
 
@@ -89,13 +81,13 @@ export class HELabel extends HENodule {
     if (this._upper) {
       this._mesh.layers.set(
         this._anchorPoint.w === 0
-          ? HYPERBOLIC_LAYER.upperSheetInfLabels
+          ? HYPERBOLIC_LAYER.upperSheetIdealLabels
           : HYPERBOLIC_LAYER.upperSheetLabels
       );
     } else {
       this._mesh.layers.set(
         this._anchorPoint.w === 0
-          ? HYPERBOLIC_LAYER.lowerSheetInfLabels
+          ? HYPERBOLIC_LAYER.lowerSheetIdealLabels
           : HYPERBOLIC_LAYER.lowerSheetLabels
       );
     }
@@ -153,11 +145,11 @@ export class HELabel extends HENodule {
     // console.log(
     //   "ShallowUpdate:",
     //   this.name,
+    //   this.parent.name,
     //   this._showing ? "label SHOWING |" : "label NOT SHOWING|",
     //   this._upper ? "upper|" : "lower|",
-    //   this._ideal ? "ideal|" : "NOT ideal|",
-    //   this._angle,
-    //   this._position.toFixed(2)
+    //   this._anchorPoint.toFixed(2),
+    //   this._exists
     // );
     if (this._showing && this._exists) {
       this._material.visible = true;
@@ -169,8 +161,8 @@ export class HELabel extends HENodule {
   //change the scale to size (in multiplies of the unit)
   public adjustScale(size: number): void {
     this._scale = size;
-    this._material.userData.scale.value = this._scale;
-    // this.faceCamera();
+    this._material.scale = this._scale;
+    // this.faceCamera(); // need to pass zoom, fov, dolly perhaps store these in variables
   }
 
   public faceCamera(): void {
@@ -216,7 +208,16 @@ export class HELabel extends HENodule {
       finalTranslationMatrix,
       new THREE.Matrix4().multiplyMatrices(rotationMatrix, zRotationMatrix)
     );
-    this._material.scale = this._scale;
+    //change the scale inversely with respect to fov(?), and dollyDistance for non-ideal labels
+    if (this._anchorPoint.w !== 0) {
+      this._material.scale =
+        this._scale *
+        (((1 - SETTINGS.percentReductionAtMaxDolly) /
+          (SETTINGS.dollyDistanceMin - SETTINGS.dollyDistanceMax)) *
+          (HENodule.hyperStore.cameraDollyDistance -
+            SETTINGS.dollyDistanceMax) +
+          SETTINGS.percentReductionAtMaxDolly);
+    }
     this._material.transformationMatrix = transformationMatrix;
 
     // now check if the label is occluded and set the z offset accordingly so the label is not displayed on both sides of the hyperboloid or cone
@@ -317,40 +318,23 @@ export class HELabel extends HENodule {
       occluded = intersectionsWithHyperboloid.length > 0;
     }
 
-    if (occluded) {
-      //display inside is occluded, so try outside
-      this._material.userData.zOffsetVector.value = new THREE.Vector3(
-        displayOutsideZShiftVector.x,
-        displayOutsideZShiftVector.y,
-        displayOutsideZShiftVector.z
+    const shiftVector = occluded
+      ? displayOutsideZShiftVector
+      : displayInsideZShiftVector;
+
+    this._material.userData.zOffsetVector.value = new THREE.Vector3(
+      shiftVector.x,
+      shiftVector.y,
+      shiftVector.z
+    );
+
+    this._material.userData.cornerImages = [];
+    // Create the final corner images, so that raycasting to the label intersects correctly
+    [upperLeft, lowerLeft, upperRight, lowerRight].forEach(column => {
+      this._material.userData.cornerImages.push(
+        new THREE.Vector3(column.x, column.y, column.z).add(shiftVector)
       );
-      //Clear the corner images
-      this._material.userData.cornerImages = [];
-      // Create the final corner images, so that raycasting to the label intersects correctly
-      [upperLeft, lowerLeft, upperRight, lowerRight].forEach(column => {
-        this._material.userData.cornerImages.push(
-          new THREE.Vector3(column.x, column.y, column.z).add(
-            displayOutsideZShiftVector
-          )
-        );
-      });
-    } else {
-      this._material.userData.zOffsetVector.value = new THREE.Vector3(
-        displayInsideZShiftVector.x,
-        displayInsideZShiftVector.y,
-        displayInsideZShiftVector.z
-      );
-      //Clear the corner images
-      this._material.userData.cornerImages = [];
-      // Create the final corner images, so that raycasting to the label intersects correctly
-      [upperLeft, lowerLeft, upperRight, lowerRight].forEach(column => {
-        this._material.userData.cornerImages.push(
-          new THREE.Vector3(column.x, column.y, column.z).add(
-            displayInsideZShiftVector
-          )
-        );
-      });
-    }
+    });
   }
 
   public applyLabelOffset(x: number, y: number): void {
