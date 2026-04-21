@@ -258,15 +258,17 @@ export function createLine(
       raycaster.ray.direction,
       raycaster.near,
       raycaster.far,
-      upper
+      this.material.userData.upper.value > 0.5 ? true : false
     );
     const normalVector = this.material.userData.normalVector;
     const inverseTransformationMatrix =
       this.material.userData.inverseTransformationMatrix;
+
     tempIntersections.forEach(intersection => {
       // If the intersection point is near the plane that defines the line then we are
       // on the line connecting startPoint and endPoint
       // Math.abs(normalVector.dot(intersection.point)) is the distance to the plane of the line
+      // console.log("raycast from ", returnMesh.name);
       if (
         Math.abs(normalVector.dot(intersection.point)) <
         radiusUniform.value * unitLength.value * 2.5
@@ -303,9 +305,9 @@ export function createLine(
 
         // console.log(
         //   "mode bits",
-        //   drawAfterEnd,
+        //   drawBeforeStart,
         //   drawBetweenStartAndEnd,
-        //   drawBeforeStart
+        //   drawAfterEnd
         // );
 
         // console.log("start Y", startYUniform.value);
@@ -330,9 +332,9 @@ export function createLine(
 
         // console.log(
         //   "mode bits",
-        //   newDrawAfterEnd,
+        //   newDrawBeforeStart,
         //   drawBetweenStartAndEnd,
-        //   newDrawBeforeStart
+        //   newDrawAfterEnd
         // );
         const isAHit =
           (intersectionY > largerY && newDrawAfterEnd) ||
