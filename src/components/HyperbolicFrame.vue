@@ -435,7 +435,7 @@ watch(
         break;
       case "line":
         if (lineTool === null) {
-          lineTool = new LineHandler(scene, 1 * 4 + 1 * 2 + 1 * 1);
+          lineTool = new LineHandler(scene, 1 * 4 + 1 * 2 + 1 * 1); // line is mode 7
         } // line mode is 7
         else {
           lineTool.mode = 1 * 4 + 1 * 2 + 1 * 1;
@@ -444,10 +444,10 @@ watch(
         break;
       case "segment":
         if (lineTool === null) {
-          lineTool = new LineHandler(scene, 1 * 4 + 1 * 2 + 0 * 1); // segment mode is 2
+          lineTool = new LineHandler(scene, 0 * 4 + 1 * 2 + 0 * 1); // segment mode is 2
         } // line mode is 7
         else {
-          lineTool.mode = 1 * 4 + 1 * 2 + 0 * 1;
+          lineTool.mode = 0 * 4 + 1 * 2 + 0 * 1;
         }
         currentTools.push(lineTool);
         break;
