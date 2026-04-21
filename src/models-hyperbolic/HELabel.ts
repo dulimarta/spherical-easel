@@ -38,7 +38,7 @@ export class HELabel extends HENodule {
   protected _labelParentType: string;
   protected _anchorPoint: THREE.Vector4 = new THREE.Vector4(0, 0, 0, 0);
   protected _upper: boolean;
-  protected _scale: number = 0.2; // initial scale in multiples of unit length
+  protected _scale: number = 0.5; // in multiples of unit length
   protected _offset: THREE.Vector2 = new THREE.Vector2(0, 0);
   protected _labelDisplayedInside: boolean = true;
   protected _bounds: PlaneBounds = {
@@ -75,7 +75,11 @@ export class HELabel extends HENodule {
     });
     this._bounds = textGeometry.planeBounds;
 
-    this._mesh = await createLabel(textGeometry.geometry, this.name);
+    this._mesh = await createLabel(
+      textGeometry.geometry,
+      this.name,
+      this._anchorPoint.w === 0 ? 0x000000 : 0xffffff // make labels of ideal points black
+    );
     this._material = this._mesh.material as CustomLabelMaterial;
 
     if (this._upper) {
@@ -95,9 +99,7 @@ export class HELabel extends HENodule {
       this._anchorPoint.w === 0 ? 0.1 : 0.2,
       this._anchorPoint.w === 0 ? 0.1 : 0.2
     );
-    this.adjustScale(0.6);
-    // Face the camera and update the material transformation matrix
-    this.faceCamera();
+    this.adjustScale(this._anchorPoint.w === 0 ? 0.4 : 0.5);
 
     this.group.add(this._mesh);
     // set the visibility
@@ -162,7 +164,7 @@ export class HELabel extends HENodule {
   public adjustScale(size: number): void {
     this._scale = size;
     this._material.scale = this._scale;
-    // this.faceCamera(); // need to pass zoom, fov, dolly perhaps store these in variables
+    this.faceCamera();
   }
 
   public faceCamera(): void {

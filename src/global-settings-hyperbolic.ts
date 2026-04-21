@@ -2,7 +2,7 @@ import { max, min } from "three/tsl";
 import colors from "vuetify/util/colors";
 export const SETTINGS = {
   angularBorder: 4, // in degrees of the angular radius of the border around the viewport
-  dollyDistanceMax: 200,
+  dollyDistanceMax: 50,
   dollyDistanceMin: 10,
   minDollyDistanceChangeForViewUpdate: 0.05, // The minimum change in dolly distance (camera to origin) required to trigger a view update
   maxFieldOfView: 45, // The maximum field of view for the perspective camera in degrees. Also the initial field of view

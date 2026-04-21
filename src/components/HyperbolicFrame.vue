@@ -164,7 +164,8 @@ import {
   zUpperIdealPointsClipMinus,
   zLowerIdealPointsClipPlus,
   zLowerIdealPointsClipMinus,
-  unitLength
+  unitLength,
+  arcLengthScale
 } from "@/plottables-hyperbolic/MeshFactory";
 import { VisibleHELayersType } from "@/types";
 import { label, uniform } from "three/tsl";
@@ -259,8 +260,6 @@ scene.background = new THREE.Color(0xf5f5f5);
 let currentTools: Array<HyperbolicToolStrategy> = [];
 let pointTool: PointHandler | null = null;
 let lineTool: LineHandler | null = null;
-let segmentTool: LineHandler | null = null;
-let rayTool: LineHandler | null = null;
 let circleTool: CircleHandler | null = null;
 let textTool: TextHandler | null = null;
 
@@ -436,19 +435,19 @@ watch(
         break;
       case "line":
         if (lineTool === null) {
-          lineTool = new LineHandler(scene, 1 * 4 + 1 * 2 + 1);
+          lineTool = new LineHandler(scene, 1 * 4 + 1 * 2 + 1 * 1);
         } // line mode is 7
         else {
-          lineTool.mode = 1 * 4 + 1 * 2 + 1;
+          lineTool.mode = 1 * 4 + 1 * 2 + 1 * 1;
         }
         currentTools.push(lineTool);
         break;
       case "segment":
         if (lineTool === null) {
-          lineTool = new LineHandler(scene, 0 * 4 + 1 * 2 + 0); // segment mode is 2
+          lineTool = new LineHandler(scene, 1 * 4 + 1 * 2 + 0 * 1); // segment mode is 2
         } // line mode is 7
         else {
-          lineTool.mode = 0 * 4 + 1 * 2 + 0;
+          lineTool.mode = 1 * 4 + 1 * 2 + 0 * 1;
         }
         currentTools.push(lineTool);
         break;
@@ -788,7 +787,7 @@ function updateView() {
         Math.sqrt(-1 + tanFov2 * tanFov2 * (2 + 2 * d + d * d))) /
       (tanFov2 * tanFov2 - 1);
 
-    zLowerClip.value = 0;
+    zLowerClip.value = -1;
 
     //When the lower sheet is not shown, we want to look at a point
     // that is depends on the polar angle of the camera
@@ -860,7 +859,6 @@ function updateView() {
   // through (0,0,1) has equation N.(x,y,z-1) = 0.
   // To compute the direction (dir) needed to compute the unit length, we only
   // need a vector in any plane parallel to the screen so any non-zero vector perpendicular to N.
-  // Notice that lookAt = new Vector3(0,0,zCoordLookAt)
   const tempDir = new Vector3();
   if (
     currentCameraPosition.x * currentCameraPosition.x +
@@ -880,6 +878,8 @@ function updateView() {
     tempDir,
     SETTINGS.angularUnit
   );
+
+  arcLengthScale.value = unitLength.value / cameraController.distance; //as the dolly distance increases this scale gets smaller so that the spacing of the points of lines on the hyperboloid gets smaller
 }
 
 function doMouseDown(ev: MouseEvent) {

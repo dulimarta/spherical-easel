@@ -29,7 +29,13 @@ import {
   sqrt,
   floor,
   mod,
-  and
+  and,
+  Discard,
+  not,
+  or,
+  cross,
+  dot,
+  exp
 } from "three/tsl";
 // import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { Line2 } from "three/addons/lines/Line2.js";
@@ -50,6 +56,7 @@ import {
   CustomLineMaterial
 } from "./MaterialFactory";
 import {
+  h2Distance,
   intersectWithHyperboloid,
   intersectWithIdealPointsStrip as intersectWithIdealPointsStrip
 } from "@/utils/helpingHEFunctions";
@@ -72,11 +79,15 @@ export const zLowerIdealPointsClipMinus = uniform(-2.0, "float");
 export const unitLength: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>> =
   uniform(1.0, "float");
 
+export const arcLengthScale: THREE.TSL.ShaderNodeObject<
+  THREE.UniformNode<number>
+> = uniform(1.0, "float"); // controls the scale of line (and circles?) along the centerline, so the number of points used to display lines (and circles?) can update as the dolly distance (and FOV) changes
+
 export function createLine(
   name: string,
   upper: boolean,
   temporary = false, //used in handlers,flag so that temporary objects are never hit with ray casting
-  radius = 0.02,
+  radius,
   myColor = 0xff8080 //ffb3b3, //ff8080, //"white", //"0xBEBFC5",
 ): Mesh {
   const cylinderMaterial = new CustomLineMaterial({
@@ -92,6 +103,8 @@ export function createLine(
   const startYUniform = cylinderMaterial.userData.startY;
   const endYUniform = cylinderMaterial.userData.endY;
 
+  const standardPositionY = varying(float(0), "standardPositionY");
+
   const positionFunction = Fn(() => {
     // A glowing line's size pulses
     const myRadius = select(
@@ -101,19 +114,58 @@ export function createLine(
         .mul(oscSine(time.mul(pulseRate)).mul(pulseSizePercent).add(1)),
       radiusUniform.mul(unitLength)
     );
-    // transform to standard position along the alpha = Pi/2 hyperbolic line through (0,0,1)
-    const mY = myRadius.mul(positionLocal.y);
-    const scaleAndMoveToStandardPosition = vec4(
-      myRadius.mul(positionLocal.x),
-      mY,
-      sqrt(mY.mul(mY).add(1))
-        .mul(select(upperUniform.greaterThan(0.5), float(1), float(-1)))
-        .add(positionLocal.z.mul(myRadius)),
+
+    // Capture positionLocal into a local var first
+    const localPos = positionLocal.toVar();
+    const x = localPos.x;
+    const z = localPos.z;
+    const unScaledT = localPos.y.mul(arcLengthScale);
+    const t = exp(unScaledT).sub(exp(unScaledT.negate())).div(2); //sinh(unScaledT) so that the unScaledT (which is uniformly distributed on the length of the cylinder), is transformed so that there are more t values near zero and few for larger unScaledT in absolute value
+
+    standardPositionY.assign(t); //store this value so it can be used in the fragment shader and can decide to discard or keep the fragment with this y value.
+
+    const sqrtTerm = sqrt(t.mul(t).add(1));
+
+    const centerLineStandardPosition = vec4(
+      0,
+      t,
+      sqrtTerm.mul(select(upperUniform.greaterThan(0.5), float(1), float(-1))),
       1
     );
-    // return scaleAndMoveToStandardPositionMatrix.mul(vec4(positionLocal, 1.0))
-    //   .xyz;
-    return transformationMatrixUniform.mul(scaleAndMoveToStandardPosition).xyz;
+
+    const centerLineTangentVector = vec4(
+      0,
+      1,
+      t
+        .div(sqrtTerm)
+        .mul(select(upperUniform.greaterThan(0.5), float(1), float(-1))),
+      0
+    );
+
+    const centerLineFinalPosition = transformationMatrixUniform.mul(
+      centerLineStandardPosition
+    ).xyz;
+
+    const unitTangentVector = transformationMatrixUniform
+      .mul(centerLineTangentVector)
+      .xyz.normalize();
+
+    const surfaceNormal = vec3(
+      centerLineFinalPosition.x.negate(),
+      centerLineFinalPosition.y.negate(),
+      centerLineFinalPosition.z
+    ).normalize();
+
+    const NDotT = dot(surfaceNormal, unitTangentVector);
+    const unitNormalVector = surfaceNormal
+      .sub(unitTangentVector.mul(NDotT))
+      .normalize();
+
+    const biNormal = cross(unitNormalVector, unitTangentVector).normalize(); // the other order turns the cylinder inside out and then, unless you make it a two sided cylinder, it can't be seen.
+
+    return centerLineFinalPosition
+      .add(unitNormalVector.mul(x).mul(myRadius))
+      .add(biNormal.mul(z).mul(myRadius));
   });
 
   cylinderMaterial.positionNode = positionFunction();
@@ -127,9 +179,10 @@ export function createLine(
     );
     // clip the line depending on the startY and endY and the mode
     // first decode the mode
-    const bit0 = mod(floor(modeUniform), 2.0);
-    const bit1 = mod(floor(modeUniform.div(2.0)), 2.0);
-    const bit2 = mod(floor(modeUniform.div(4.0)), 2.0);
+    const mode = float(modeUniform);
+    const bit0 = mod(floor(mode), 2.0);
+    const bit1 = mod(floor(mode.div(2.0)), 2.0);
+    const bit2 = mod(floor(mode.div(4.0)), 2.0);
     const drawAfterEnd = bit0.greaterThan(0.5);
     const drawBetweenStartAndEnd = bit1.greaterThan(0.5);
     const drawBeforeStart = bit2.greaterThan(0.5);
@@ -140,38 +193,25 @@ export function createLine(
     // we always go from start to end when we are tracing the line
     // from one end to the other and that may or may not be in increasing y values (when transformed to standard position)
     // If startY < endY then we are tracing from smallest to largest
-    // If startY > endY then we are tracing from largest to smallest and the ends drawn need to be flipped: drawAfterEnd = drawBeforeStart and drawBeforeStart = drawAfterEnd
+    // If startY > endY then we are tracing from largest to smallest and the ends drawn need to be flipped: drawAfterEnd = drawBeforeStart and drawBeforeStart = drawAfterEnd UNLESS the endpoint is ideal
+    const isReversed = endYUniform.lessThan(startYUniform);
 
-    const newDrawBeforeStart = select(
-      endYUniform.lessThan(startYUniform),
-      drawAfterEnd,
-      drawBeforeStart
-    );
-    const newDrawAfterEnd = select(
-      endYUniform.lessThan(startYUniform),
-      drawBeforeStart,
-      drawAfterEnd
-    );
+    const activeBefore = select(isReversed, drawAfterEnd, drawBeforeStart);
+    const activeAfter = select(isReversed, drawBeforeStart, drawAfterEnd);
 
-    // and(
-    //   positionLocal.y.lessThan(smallerY),
-    //   newDrawBeforeStart.negate()
-    // ).discard();
+    const isBefore = standardPositionY.lessThan(smallerY);
+    const isAfter = standardPositionY.greaterThan(largerY);
+    const isBetween = standardPositionY
+      .greaterThan(smallerY)
+      .and(standardPositionY.lessThan(largerY));
 
-    // and(
-    //   and(
-    //     positionLocal.y.lessThan(largerY),
-    //     positionLocal.y.greaterThan(smallerY)
-    //   ),
-    //   drawBetweenStartAndEnd.negate()
-    // ).discard();
+    or(
+      and(isBefore, activeBefore.not()),
+      and(isBetween, drawBetweenStartAndEnd.not()),
+      and(isAfter, activeAfter.not())
+    ).discard();
 
-    // and(
-    //   positionLocal.y.greaterThan(largerY),
-    //   newDrawAfterEnd.negate()
-    // ).discard();
-
-    // // Glowing points color pulses
+    // Glowing line's color pulses
     const returnColor = select(
       glowingUniform.greaterThan(0.5),
       color(cylinderMaterial.color).mul(
@@ -180,18 +220,28 @@ export function createLine(
       color(cylinderMaterial.color).mul(1.0)
     );
 
+    // return select(
+    //   isBetween,
+    //   color(cylinderMaterial.color).mul(10.0),
+    //   color(cylinderMaterial.color).mul(0.0)
+    // );
     return returnColor;
   });
   cylinderMaterial.colorNode = colorFunction();
-  // The maximum y value on the hyperboloid is when z = ArcCosh(maxZClip)+1.001, so that means that y = Sinh(ArcCosh(maxZClip)+1.001) is the maximum.  Double this to get the length of the cylinder before transformation.
+
+  const maxZ = Math.acosh(SETTINGS.maxZClip + 1.001);
+  const maxY = Math.sqrt(maxZ * maxZ - 1);
+
   const returnMesh = new Mesh(
     new CylinderGeometry(
       1,
       1,
-      5 * Math.sinh(Math.acosh(SETTINGS.maxZClip) + 1.001),
-      20, // Radial segments
-      200, // Segments along the length of the cylinder
-      false
+      400 * Math.acosh(maxY * maxY + maxZ * maxZ), // h2Distance(new Vector3(0, -maxY, maxZ), new Vector3(0, maxY, maxZ)), Needs to be long enough to show a geodesic from Vector3(0, -maxY, maxZ) to Vector3(0, maxY, maxZ) when the fov of is at a minimum and the dolly distance is at a maximum.
+      50, // Radial segments
+      500, // Segments along the length of the cylinder
+      true, // open ended
+      0,
+      2 * Math.PI
     ),
     cylinderMaterial
   );
@@ -223,15 +273,33 @@ export function createLine(
       ) {
         // now we have to determine if the point is near the part of the line that is displayed, this depends on the mode.
 
-        const intersectionY = intersection.point.applyMatrix4(
-          inverseTransformationMatrix
-        ).y; // This might not be exact enough.  If so, then we need to snap to the nearest point on the hyperboloid and on the plane.
+        const intersectionY = new THREE.Vector4(
+          intersection.point.x,
+          intersection.point.y,
+          intersection.point.z,
+          1
+        ).applyMatrix4(inverseTransformationMatrix.value).y; // This might not be exact enough.  If so, then we need to snap to the nearest point on the hyperboloid and on the plane.
 
-        console.log("raycast line", this.name, "Y ", intersectionY);
+        // console.log(
+        //   "raycast line",
+        //   this.name,
+        //   "Y ",
+        //   intersectionY,
+        //   new THREE.Vector4(
+        //     intersection.point.x,
+        //     intersection.point.y,
+        //     intersection.point.z,
+        //     1
+        //   )
+        //     .applyMatrix4(inverseTransformationMatrix.value)
+        //     .toFixed(2),
+        //   intersection.point.toFixed(2),
+        //   inverseTransformationMatrix.value.elements
+        // );
         // first decode the mode
-        const drawAfterEnd = ((modeUniform.value >> 2) & 1) > 0.5;
+        const drawBeforeStart = ((modeUniform.value >> 2) & 1) > 0.5;
         const drawBetweenStartAndEnd = ((modeUniform.value >> 1) & 1) > 0.5;
-        const drawBeforeStart = (modeUniform.value & 1) > 0.5;
+        const drawAfterEnd = (modeUniform.value & 1) > 0.5;
 
         // console.log(
         //   "mode bits",
@@ -260,6 +328,12 @@ export function createLine(
             ? drawBeforeStart
             : drawAfterEnd;
 
+        // console.log(
+        //   "mode bits",
+        //   newDrawAfterEnd,
+        //   drawBetweenStartAndEnd,
+        //   newDrawBeforeStart
+        // );
         const isAHit =
           (intersectionY > largerY && newDrawAfterEnd) ||
           (largerY > intersectionY &&
@@ -268,7 +342,6 @@ export function createLine(
           (smallerY > intersectionY && newDrawBeforeStart);
 
         if (isAHit) {
-          console.log("line hit", this.name);
           intersects.push({
             distance: intersection.distance,
             point: intersection.point.clone(),
@@ -568,10 +641,12 @@ export function createIdealPoint(
     tempIntersections.forEach(intersection => {
       const hitAngle = Math.atan2(intersection.point.y, intersection.point.x);
       // If the angle is within the apparent radius of the base (plus 10%), it is hit by the raycaster
-      // console.log("Ideal points hit angle", this.name, hitAngle);
+      // console.log("Ideal points hit angle", this.name, hitAngle); unitLength.value *
+
       if (
-        Math.abs(hitAngle - angle).modTwoPi() <
-        radiusUniform.value * unitLength.value * 1.5
+        Math.abs(hitAngle - angle) < 0.03 ||
+        Math.abs(Math.abs(hitAngle - angle) - 2 * Math.PI) < // angle could be -3.1 and hitAngle could be 3.1
+          0.03
       ) {
         // console.log("hit ideal point", this.name);
         intersects.push({
@@ -1027,7 +1102,7 @@ export function createBoundaryCone(upper: boolean): THREE.Mesh {
 
   const coneGeometry = new ParametricGeometry(
     (u, v, out) => {
-      let r = u * SETTINGS.maxZClip * (upper ? 1 : -1); // 0 to +/-maxZClippingHeight
+      let r = u * SETTINGS.maxZClip * (upper ? 1 : -1); // 0 to +/-maxZClip
       if (r == 0) {
         r = 0.0001 * (upper ? 1 : -1); // avoid singularity at the tip
       }

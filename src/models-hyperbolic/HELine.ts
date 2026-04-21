@@ -41,9 +41,9 @@ export class HELine extends HENodule implements HyperbolicLabelable {
   public label?: HELabel;
   protected _startPoint: HEPoint;
   protected _endPoint: HEPoint;
-  protected _normalVector = new Vector3(); // most useful for determining if two lines are the same
+  protected _unitNormalVector = new Vector3(); // most useful for determining if two lines are the same
   protected _upper; // must match for lines to be the same
-  protected _radius = 0.03; // radius of the initial tube
+  protected _radius = 0.04; // radius of the initial tube
   protected _nonFreePoint = false;
   protected _transformationMatrix = new Matrix4();
   protected _inverseTransformationMatrix = new Matrix4();
@@ -56,7 +56,7 @@ export class HELine extends HENodule implements HyperbolicLabelable {
   constructor(
     startPoint: HEPoint,
     endPoint: HEPoint,
-    mode: number = 7,
+    mode: number,
     createNonFreeLine: boolean = false,
     temporary: boolean = false
   ) {
@@ -68,11 +68,15 @@ export class HELine extends HENodule implements HyperbolicLabelable {
       HENodule.TEMP_LINE_COUNT++;
       this.name = `tempLi${HENodule.TEMP_LINE_COUNT}`;
     }
-
+    this._mesh = createLine(this.name, this._upper, temporary, this._radius);
+    this._material = this._mesh.material as CustomLineMaterial;
+    this._upper = startPoint.upper;
+    this._mode = mode;
+    this._material.mode = mode;
     this._startPoint = startPoint;
     this._endPoint = endPoint;
     // for now, both start and end point are on the same sheet so the start/end cannot be antipodal, so the normal vector is well defined as the cross product of the position vectors of the start and end points
-    this._normalVector
+    this._unitNormalVector
       .crossVectors(
         new Vector3(
           this._startPoint.position.x,
@@ -86,15 +90,8 @@ export class HELine extends HENodule implements HyperbolicLabelable {
         )
       )
       .normalize();
-    this._upper = startPoint.upper;
-    this._mode = mode;
-
-    this._mesh = createLine(this.name, this._upper, temporary, this._radius);
-
-    this._material = this._mesh.material as CustomLineMaterial;
-    this._material.userData.normalVector.copy(this._normalVector);
-
-    this.updateTransformationMatrix(); // set the transformation matrix
+    this._material.userData.normalVector.copy(this._unitNormalVector);
+    this.updateTransformationMatrix();
 
     // Add the mesh to a layer so if the lower sheet is turned off, the lines in that layer are not displayed
     if (!temporary) {
@@ -252,7 +249,7 @@ export class HELine extends HENodule implements HyperbolicLabelable {
 
     if (this._exists) {
       // Given an set of this.startPoint, this.endPoint and (old) this.normalVector, and compute the next normal vector
-      this._normalVector
+      this._unitNormalVector
         .crossVectors(
           new Vector3(
             this._startPoint.position.x,
@@ -266,7 +263,7 @@ export class HELine extends HENodule implements HyperbolicLabelable {
           )
         )
         .normalize();
-      this._material.userData.normalVector.copy(this._normalVector); // update the normal vector so that intersections are done correctly
+      this._material.userData.normalVector.copy(this._unitNormalVector); // update the normal vector so that intersections are done correctly
       this.updateTransformationMatrix();
       // // Check to see if the tempNormal is zero (i.e the start and end vectors are parallel -- ether
       // // nearly antipodal or in the same direction)
@@ -353,40 +350,24 @@ export class HELine extends HENodule implements HyperbolicLabelable {
           )
         )
         .multiply(HENodule.hyperbolicRotation(Math.PI / 2));
-      this._material.mode = 0 * 4 + 1 * 2 + 0 * 1; // 010 in binary so only the portion between start and end is draw
-      this._material.startY = -Math.sinh(Math.acosh(SETTINGS.maxZClip) + 1.001);
-      this._material.endY = Math.sinh(Math.acosh(SETTINGS.maxZClip) + 1.001);
     } else {
-      let radiusS =
-        this._startPoint.position.w !== 0
-          ? Math.acosh(Math.abs(this._startPoint.position.z)) // same as h2Distance(new Vector3(0, 0, 1), this._startPoint.position)
-          : 0; // this value doesn't matter when the start is ideal
-      let radiusE =
-        this._endPoint.position.w !== 0
-          ? Math.acosh(Math.abs(this._endPoint.position.z)) // same as h2Distance(new Vector3(0, 0, 1), this._endPoint.position)
-          : 0; // this value doesn't matter when the end is ideal
-      let endPointIsIdeal = this._endPoint.position.w === 0;
-      this._material.mode = this._mode;
-      if (
-        this._startPoint.position.w === 0 &&
-        this._endPoint.position.w !== 0
-      ) {
-        // start is ideal and end is not ideal so switch the roles of start and end
-        const thetaTemp = thetaE;
-        thetaE = thetaS;
-        thetaS = thetaTemp;
-        const radiusTemp = radiusE;
-        radiusE = radiusS;
-        radiusS = radiusTemp;
-        endPointIsIdeal = true;
+      // Use whichever point is non-ideal as the "anchor" point
+      // If start is ideal, use end as anchor; if end is ideal, use start as anchor
+      // If neither is ideal, use start as anchor (original behavior)
+      const anchorIsEnd = this._startPoint.position.w === 0;
+      const anchorPoint = anchorIsEnd
+        ? this._endPoint.position
+        : this._startPoint.position;
+      const otherPoint = anchorIsEnd
+        ? this._startPoint.position
+        : this._endPoint.position;
 
-        //reverse the mode bits to draw correctly
-        const bit0 = (this._mode & 1) << 2; // Extract bit 0 and move it to bit 2 position
-        const bit1 = this._mode & 2; // Extract bit 1 (middle) and keep it there
-        const bit2 = (this._mode & 4) >> 2; // Extract bit 2 and move it to bit 0 position
+      const thetaAnchor = anchorIsEnd ? thetaE : thetaS;
+      const thetaOther = anchorIsEnd ? thetaS : thetaE;
+      const radiusAnchor = Math.acosh(Math.abs(anchorPoint.z));
+      const radiusOther = Math.acosh(Math.abs(otherPoint.z));
+      const otherIsIdeal = otherPoint.w === 0;
 
-        this._material.mode = bit0 | bit1 | bit2; // Combine them
-      }
       // R= ArcCosh[Cosh[re] Cosh[rs] (1-Cos[theta e -theta s] Tanh[re] Tanh[rs])]
       // R is the length of the segment connecting End and Start
       // T= ArcTan[
@@ -396,42 +377,72 @@ export class HELine extends HENodule implements HyperbolicLabelable {
       // T is this the angle opposite re in the OSE triangle? Maybe the exterior angle there?
 
       const T = Math.atan2(
-        Math.cosh(radiusS) *
-          (Math.cos(thetaE - thetaS) -
-            Math.tanh(radiusS) / (endPointIsIdeal ? 1 : Math.tanh(radiusE))),
-        -Math.sin(thetaE - thetaS)
+        Math.cosh(radiusAnchor) *
+          (Math.cos(thetaOther - thetaAnchor) -
+            Math.tanh(radiusAnchor) /
+              (otherIsIdeal ? 1 : Math.tanh(radiusOther))),
+        -Math.sin(thetaOther - thetaAnchor)
       );
-      // MupperI = ro[theta s-Pi/2].tr[rs].ro[(T/.{Coth[re]->1, if end ideal})-Pi/2]
+
+      // MupperI = ro[theta s-Pi/2].tr[rs].ro[(T/.{Coth[re]->1, if end ideal})-Pi/2] //start is non-ideal, the anchor point
       // MlowerI = ro[theta s-Pi/2].tr[-rs].ro[(T/.{Coth[re]->1,if end ideal})-Pi/2]
 
-      // console.log(" parts of the matrix", radiusE, radiusS, thetaE, thetaS, T);
       this._transformationMatrix
-        .makeRotationZ(thetaS - Math.PI / 2)
+        .makeRotationZ(thetaAnchor - Math.PI / 2)
         .multiply(
           HENodule.hyperbolicTranslation(
-            (this._startPoint.position.z < 0 ? -1 : 1) * radiusS
+            (anchorPoint.z < 0 ? -1 : 1) * radiusAnchor
           )
         )
         .multiply(HENodule.hyperbolicRotation(T - Math.PI / 2));
-
-      this._material.startY = new Vector4()
-        .copy(
-          endPointIsIdeal ? this._endPoint.position : this._startPoint.position
-        )
-        .applyMatrix4(this._transformationMatrix.invert()).y;
-
-      this._material.endY = new Vector4()
-        .copy(
-          endPointIsIdeal ? this._startPoint.position : this._endPoint.position
-        )
-        .applyMatrix4(this._transformationMatrix.invert()).y;
     }
+
+    const computeStandardY = (
+      point: Vector4,
+      inverseMatrix: Matrix4,
+      maxY: number
+    ): number => {
+      if (point.w !== 0) {
+        // Non-ideal point: apply inverse transformation directly
+        return new Vector4().copy(point).applyMatrix4(inverseMatrix).y;
+      } else {
+        // Ideal point: apply inverse to the direction (w=0) and
+        // use the sign of y to determine which end of the cylinder
+        const dir = new Vector4().copy(point).applyMatrix4(inverseMatrix);
+        return dir.y >= 0 ? maxY : -maxY;
+      }
+    };
     this._inverseTransformationMatrix.copy(this._transformationMatrix).invert();
-    console.log(
-      "transformation matrix",
-      this._transformationMatrix.elements[0]
+
+    // now set the startY|endY values
+    const maxY = Math.sinh(Math.acosh(SETTINGS.maxZClip) + 1.001);
+    this._material.startY = computeStandardY(
+      this._startPoint.position,
+      this._inverseTransformationMatrix,
+      maxY
     );
+
+    this._material.endY = computeStandardY(
+      this._endPoint.position,
+      this._inverseTransformationMatrix,
+      maxY
+    );
+
+    this._material.inverseTransformationMatrix =
+      this._inverseTransformationMatrix;
     this._material.transformationMatrix = this._transformationMatrix;
+    this._material.radius = this._radius;
+
+    // console.log(
+    //   "startY",
+    //   this._material.startY,
+    //   "endY",
+    //   this._material.endY,
+    //   "idealDir.y",
+    //   new Vector4()
+    //     .copy(this._startPoint.position)
+    //     .applyMatrix4(this._inverseTransformationMatrix).y
+    // );
   }
 
   /**
@@ -557,8 +568,8 @@ export class HELine extends HENodule implements HyperbolicLabelable {
     this._material.radius = num;
   }
 
-  get normalVector(): Vector3 {
-    return this._normalVector;
+  get unitNormalVector(): Vector3 {
+    return this._unitNormalVector;
   }
 
   get mode(): number {
@@ -566,17 +577,18 @@ export class HELine extends HENodule implements HyperbolicLabelable {
   }
 
   set mode(newMode: number) {
+    console.log("set mode in HELine");
     // check to see if this line in the newMode exists, if so send a message to the use and don't change anything
-    let lineIsNotNew = true;
+    let lineIsNotNew = false;
     HENodule.hyperStore.linesMap.forEach(line => {
       if (
         line.name != this.name &&
         (this.tempVector
-          .subVectors(line.normalVector, this.normalVector)
+          .subVectors(line.unitNormalVector, this.unitNormalVector)
           .isZero() ||
           this.tempVector
-            .copy(this.normalVector)
-            .addScaledVector(line.normalVector, -1)
+            .copy(this.unitNormalVector)
+            .addScaledVector(line.unitNormalVector, -1)
             .isZero()) &&
         line.upper == this._upper &&
         line.mode == newMode
@@ -587,6 +599,7 @@ export class HELine extends HENodule implements HyperbolicLabelable {
 
     if (!lineIsNotNew) {
       this._mode = newMode;
+      this._material.mode = newMode;
       this.updateTransformationMatrix();
     }
   }
@@ -631,6 +644,7 @@ export class HELine extends HENodule implements HyperbolicLabelable {
   get material(): CustomMaterial {
     return this._material;
   }
+
   // public isLineWithAntipodalPoints(): boolean {
   //   if (
   //     Math.abs(

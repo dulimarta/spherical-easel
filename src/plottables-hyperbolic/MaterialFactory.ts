@@ -35,12 +35,14 @@ interface CustomLineMaterialUserData extends CustomMaterialUserData {
   transformationMatrix: THREE.TSL.ShaderNodeObject<
     THREE.UniformNode<THREE.Matrix4>
   >;
-  inverseTransformationMatrix: THREE.Matrix4;
+  inverseTransformationMatrix: THREE.TSL.ShaderNodeObject<
+    THREE.UniformNode<THREE.Matrix4>
+  >; //useful for determining if a line/segment/ray is hit used in mesh.raycaster in createLine
   normalVector: THREE.Vector3;
 }
 
 export class CustomMaterial extends THREE.MeshStandardNodeMaterial {
-  declare glowing: boolean;
+  declare glowing: number;
   declare userData: CustomMaterialUserData;
 
   constructor(parameters?: THREE.MeshStandardNodeMaterialParameters) {
@@ -157,11 +159,11 @@ export class CustomLineMaterial extends CustomMaterial {
       startY: uniform(1.0, "float"),
       endY: uniform(1.0, "float"),
       mode: uniform(0, "uint"),
-      transformationMatrix: uniform(new THREE.Matrix4(), "mat4")
+      transformationMatrix: uniform(new THREE.Matrix4(), "mat4"),
+      inverseTransformationMatrix: uniform(new THREE.Matrix4())
     };
     const linePlainVariables = {
-      normalVector: new THREE.Vector3(),
-      inverseTransformationMatrix: new THREE.Matrix4()
+      normalVector: new THREE.Vector3()
     };
 
     Object.assign(this.userData, lineUniformVariables, linePlainVariables);

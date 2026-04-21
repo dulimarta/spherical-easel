@@ -42,7 +42,7 @@ export class HEPoint extends HENodule implements HyperbolicLabelable {
     }
 
     if (position.w === 0) {
-      this._radius = 0.18; // radius of the base of the cone representing ideal points
+      this._radius = 0.15; // radius of the base of the cone representing ideal points
       this._mesh = createIdealPoint(
         this.name,
         position.z > 0,
@@ -51,7 +51,7 @@ export class HEPoint extends HENodule implements HyperbolicLabelable {
         this._height
       );
     } else {
-      this._radius = 0.15; // radius of the non-ideal points
+      this._radius = 0.12; // radius of the non-ideal points
       this._mesh = createPoint(
         this.name,
         position.z > 0,
@@ -102,7 +102,6 @@ export class HEPoint extends HENodule implements HyperbolicLabelable {
         (SETTINGS.dollyDistanceMin - SETTINGS.dollyDistanceMax)) *
         (HENodule.hyperStore.cameraDollyDistance - SETTINGS.dollyDistanceMax) +
         SETTINGS.percentReductionAtMaxDolly);
-    console.log("point radius", this._material.radius);
     this.updateTransformationMatrix();
   }
 

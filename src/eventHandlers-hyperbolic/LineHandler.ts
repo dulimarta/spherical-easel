@@ -542,8 +542,6 @@ export class LineHandler extends PoseTracker {
           } else {
             // this._tempEndPoint.position = possibleLocation
           }
-          console.log("start vector", this.startVector.toFixed(2));
-          console.log("end?", possibleLocation.toFixed(2));
           this._tempLine.setNewStartAndEndVectors(
             this.startVector,
             possibleLocation
@@ -614,6 +612,12 @@ export class LineHandler extends PoseTracker {
           }
           // Get ready for the next line
           this.mouseLeave(event);
+        } else if (possibleLocation.z * this.startVector.z < 0) {
+          EventBus.fire("show-alert", {
+            key: `handlers.lineCreationBetweenDifferentSheets`,
+            keyOptions: {},
+            type: "error"
+          });
         }
       } else {
         this.removeAllTempObjects();
@@ -712,8 +716,7 @@ export class LineHandler extends PoseTracker {
   private makeLine(fromActivate = false): boolean {
     const lineCommandGroup = new CommandGroup();
     const newlyCreatedHEPoints: HEPoint[] = [];
-    console.log("start", this._startHEPoint?.name);
-    console.log("end", this._endHEPoint?.name);
+
     const endLocation = PoseTracker.vec3ToVec4(
       PoseTracker.hyperStore.surfaceIntersections[0].point,
       this.hyperboloidIsFirstSurfaceHit ? 1 : 0
@@ -977,21 +980,35 @@ export class LineHandler extends PoseTracker {
 
       // Set the points for the line so that the display matches the line to be created
       this._tempLine.setNewStartAndEndVectors(
-        this._startHEPoint,
-        this._endHEPoint
+        this._startHEPoint.position,
+        this._endHEPoint.position
       );
-      // this.temporaryLine.updateDisplay();
+      this._tempLine.unitNormalVector
+        .crossVectors(
+          new Vector3(
+            this._startHEPoint.position.x,
+            this._startHEPoint.position.y,
+            this._startHEPoint.position.z
+          ),
+          new Vector3(
+            this._endHEPoint.position.x,
+            this._endHEPoint.position.y,
+            this._endHEPoint.position.z
+          )
+        )
+        .normalize();
 
       // check to make sure that this line doesn't already exist by checking that no existing line has normal or -1*normal equal to the new proposed normal
       let lineIsNotNew = false;
+
       LineHandler.hyperStore.linesMap.forEach(line => {
         if (
           (this.tmpVector3
-            .subVectors(line.normalVector, this._tempLine.normalVector)
+            .subVectors(line.unitNormalVector, this._tempLine.unitNormalVector)
             .isZero() ||
             this.tmpVector3
-              .copy(this._tempLine.normalVector)
-              .addScaledVector(line.normalVector, -1)
+              .copy(this._tempLine.unitNormalVector)
+              .addScaledVector(line.unitNormalVector, -1)
               .isZero()) &&
           line.upper == this._tempLine.upper &&
           line.mode == this._tempLine.mode
@@ -1146,6 +1163,7 @@ export class LineHandler extends PoseTracker {
   }
 
   set mode(newMode: number) {
+    console.log("set mode in Line Handler");
     if (newMode != this._mode) {
       this._mode = newMode;
       this._tempLine.mode = newMode;
