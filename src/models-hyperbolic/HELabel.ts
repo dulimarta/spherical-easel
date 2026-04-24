@@ -4,22 +4,22 @@ import {
   CustomMaterial,
   CustomLabelMaterial
 } from "@/plottables-hyperbolic/MaterialFactory";
-import SETTINGS, { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
+import SETTINGS, {
+  HYPERBOLIC_LAYER,
+  SURFACE_TYPES
+} from "@/global-settings-hyperbolic";
 import { HENodule } from "@/models-hyperbolic/HENodule";
 import { LabelParentTypes } from "@/types";
 import {
   createLabel,
   unitLength,
-  zLowerIdealPointsClipMinus,
-  zLowerIdealPointsClipPlus,
-  zUpperIdealPointsClipMinus,
-  zUpperIdealPointsClipPlus
+  zLowerIdealStripClipMinus,
+  zLowerIdealStripClipPlus,
+  zUpperIdealStripClipMinus,
+  zUpperIdealStripClipPlus
 } from "@/plottables-hyperbolic/MeshFactory";
 import { HEPoint } from "./HEPoint";
-import {
-  intersectWithHyperboloid,
-  intersectWithIdealPointsStrip
-} from "@/utils/helpingHEFunctions";
+import { intersectWithSurface } from "@/utils/helpingHEFunctions";
 import { PoseTracker } from "@/eventHandlers-hyperbolic/PoseTracker";
 
 //import { createLabel } from "@/plottables-hyperbolic/MeshFactory";
@@ -37,7 +37,8 @@ export class HELabel extends HENodule {
   protected _currentText: string;
   protected _labelParentType: string;
   protected _anchorPoint: THREE.Vector4 = new THREE.Vector4(0, 0, 0, 0);
-  protected _upper: boolean;
+  protected _activeUpperValue: boolean;
+  protected _activeSurface: SURFACE_TYPES = SURFACE_TYPES.hyperboloid; // to track which surface the label is currently on
   protected _scale: number = 0.5; // in multiples of unit length
   protected _offset: THREE.Vector2 = new THREE.Vector2(0, 0);
   protected _labelDisplayedInside: boolean = true;
@@ -56,7 +57,7 @@ export class HELabel extends HENodule {
     this.parent = parent;
     this._currentText = text;
     this._labelParentType = labelType;
-    this._upper = initialAnchor.z > 0;
+    this._activeUpperValue = initialAnchor.z > 0;
     this._anchorPoint.copy(initialAnchor);
 
     HENodule.LABEL_COUNT++;
@@ -78,23 +79,12 @@ export class HELabel extends HENodule {
     this._mesh = await createLabel(
       textGeometry.geometry,
       this.name,
-      this._anchorPoint.w === 0 ? 0x000000 : 0xffffff // make labels of ideal points black
+      this._anchorPoint.w === 0 || this._anchorPoint.w < 0 ? 0x000000 : 0xffffff // make labels of ideal points black
     );
     this._material = this._mesh.material as CustomLabelMaterial;
 
-    if (this._upper) {
-      this._mesh.layers.set(
-        this._anchorPoint.w === 0
-          ? HYPERBOLIC_LAYER.upperSheetIdealLabels
-          : HYPERBOLIC_LAYER.upperSheetLabels
-      );
-    } else {
-      this._mesh.layers.set(
-        this._anchorPoint.w === 0
-          ? HYPERBOLIC_LAYER.lowerSheetIdealLabels
-          : HYPERBOLIC_LAYER.lowerSheetLabels
-      );
-    }
+    this.updateLayer();
+
     this.applyLabelOffset(
       this._anchorPoint.w === 0 ? 0.1 : 0.2,
       this._anchorPoint.w === 0 ? 0.1 : 0.2
@@ -123,6 +113,44 @@ export class HELabel extends HENodule {
     this._initMesh();
   }
 
+  updateLayer(): void {
+    switch (true) {
+      case this._anchorPoint.w > 0:
+        this._mesh.layers.set(
+          this._activeUpperValue
+            ? HYPERBOLIC_LAYER.upperSheetLabels
+            : HYPERBOLIC_LAYER.lowerSheetLabels
+        );
+        break;
+      case this._anchorPoint.w === 0:
+        this._mesh.layers.set(
+          this._activeUpperValue
+            ? HYPERBOLIC_LAYER.upperIdealLabels
+            : HYPERBOLIC_LAYER.lowerIdealLabels
+        );
+        break;
+      case this._anchorPoint.w < 0:
+        this._mesh.layers.set(
+          this._activeUpperValue
+            ? HYPERBOLIC_LAYER.upperUltraLabels
+            : HYPERBOLIC_LAYER.lowerUltraLabels
+        );
+        break;
+    }
+  }
+  updateSurface(): void {
+    switch (true) {
+      case this._anchorPoint.w > 0:
+        this._activeSurface = SURFACE_TYPES.hyperboloid;
+        break;
+      case this._anchorPoint.w == 0:
+        this._activeSurface = SURFACE_TYPES.idealStrip;
+        break;
+      case this._anchorPoint.w < 0:
+        this._activeSurface = SURFACE_TYPES.ultraStrip;
+        break;
+    }
+  }
   public update(): void {
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) return;
@@ -139,6 +167,25 @@ export class HELabel extends HENodule {
         this._anchorPoint = this.parent.position;
       } else {
         //this._anchorPoint = this.parent.getClosestLabelVector(); // not implemented yet
+      }
+      if (
+        (this._anchorPoint.w > 0 &&
+          this._activeSurface !== SURFACE_TYPES.hyperboloid) ||
+        (this._anchorPoint.w === 0 &&
+          this._activeSurface !== SURFACE_TYPES.idealStrip) ||
+        (this._anchorPoint.w < 0 &&
+          this._activeSurface !== SURFACE_TYPES.ultraStrip)
+      ) {
+        this.updateSurface();
+        this.updateLayer();
+      }
+
+      if (this._anchorPoint.z > 0 && !this._activeUpperValue) {
+        this._activeUpperValue = true;
+        this.updateLayer();
+      } else if (this._anchorPoint.z <= 0 && this._activeUpperValue) {
+        this._activeUpperValue = false;
+        this.updateLayer();
       }
       this.faceCamera();
     }
@@ -187,10 +234,10 @@ export class HELabel extends HENodule {
     let finalTranslationMatrix: THREE.Matrix4;
     if (this._anchorPoint.w === 0) {
       const anchorAngle = Math.atan2(this._anchorPoint.y, this._anchorPoint.x);
-      const zCoordinate = this._upper
-        ? (zUpperIdealPointsClipMinus.value + zUpperIdealPointsClipPlus.value) /
+      const zCoordinate = this._activeUpperValue
+        ? (zUpperIdealStripClipMinus.value + zUpperIdealStripClipPlus.value) /
           2.0
-        : (zLowerIdealPointsClipMinus.value + zLowerIdealPointsClipPlus.value) /
+        : (zLowerIdealStripClipMinus.value + zLowerIdealStripClipPlus.value) /
           2.0;
       finalTranslationMatrix = new THREE.Matrix4().makeTranslation(
         Math.cos(anchorAngle) * Math.abs(zCoordinate),
@@ -251,7 +298,7 @@ export class HELabel extends HENodule {
     );
 
     // Get the columns of the imageOfCorners
-    const te = imageOfCorners.elements; // te stands for "the elements"
+    const te = imageOfCorners.elements; // the elements
     const upperLeft = new THREE.Vector4(te[0], te[1], te[2], te[3]);
     const lowerLeft = new THREE.Vector4(te[4], te[5], te[6], te[7]);
     const upperRight = new THREE.Vector4(te[8], te[9], te[10], te[11]);
@@ -259,20 +306,27 @@ export class HELabel extends HENodule {
 
     const deltaZValues: number[] = [];
     [upperLeft, lowerLeft, upperRight, lowerRight].forEach(column => {
-      const zCoordinateOfProjection = Math.sqrt(
+      const distanceSquaredToSurface =
         column.x * column.x +
-          column.y * column.y +
-          (this._anchorPoint.w === 0 ? 0 : 1)
+        column.y * column.y +
+        (this._anchorPoint.w === 0 ? 0 : this._anchorPoint.w > 0 ? 1 : -1);
+      const zCoordinateOfProjection = Math.sqrt(
+        distanceSquaredToSurface > 0 ? distanceSquaredToSurface : 0
       );
       const signedZDistanceToSurface =
-        (this._upper ? 1 : -1) * column.z - zCoordinateOfProjection;
+        (this._activeUpperValue ? 1 : -1) * column.z - zCoordinateOfProjection;
 
       deltaZValues.push(signedZDistanceToSurface);
     });
 
     const minDeltaZ = Math.min(...deltaZValues);
     const maxDeltaZ = Math.max(...deltaZValues);
-    const zShiftDirection = new THREE.Vector4(0, 0, this._upper ? 1 : -1, 0);
+    const zShiftDirection = new THREE.Vector4(
+      0,
+      0,
+      this._activeUpperValue ? 1 : -1,
+      0
+    );
     const displayInsideZShiftVector = zShiftDirection
       .clone()
       .multiplyScalar(-1 * Math.min(0, minDeltaZ));
@@ -300,24 +354,45 @@ export class HELabel extends HENodule {
       .normalize();
 
     let occluded: boolean;
-    if (this._anchorPoint.w === 0) {
-      const intersectionsWithCone = intersectWithIdealPointsStrip(
-        new THREE.Vector3(centerOfText.x, centerOfText.y, centerOfText.z),
-        labelToCameraOriginUnitVector,
-        0,
-        Infinity,
-        this._upper
-      );
-      occluded = intersectionsWithCone.length > 0;
-    } else {
-      const intersectionsWithHyperboloid = intersectWithHyperboloid(
-        new THREE.Vector3(centerOfText.x, centerOfText.y, centerOfText.z),
-        labelToCameraOriginUnitVector,
-        0,
-        Infinity,
-        this._upper
-      );
-      occluded = intersectionsWithHyperboloid.length > 0;
+    switch (true) {
+      case this._anchorPoint.w === 0: {
+        const intersectionsWithIdealStrip = intersectWithSurface(
+          new THREE.Vector3(centerOfText.x, centerOfText.y, centerOfText.z),
+          labelToCameraOriginUnitVector,
+          0,
+          Infinity,
+          this._activeUpperValue,
+          SURFACE_TYPES.idealStrip
+        );
+        occluded = intersectionsWithIdealStrip.length > 0;
+        break;
+      }
+      case this._anchorPoint.w > 0: {
+        const intersectionsWithHyperboloid = intersectWithSurface(
+          new THREE.Vector3(centerOfText.x, centerOfText.y, centerOfText.z),
+          labelToCameraOriginUnitVector,
+          0,
+          Infinity,
+          this._activeUpperValue,
+          SURFACE_TYPES.hyperboloid
+        );
+        occluded = intersectionsWithHyperboloid.length > 0;
+        break;
+      }
+      case this._anchorPoint.w < 0: {
+        const intersectionsWithHyperboloid = intersectWithSurface(
+          new THREE.Vector3(centerOfText.x, centerOfText.y, centerOfText.z),
+          labelToCameraOriginUnitVector,
+          0,
+          Infinity,
+          this._activeUpperValue,
+          SURFACE_TYPES.ultraStrip
+        );
+        occluded = intersectionsWithHyperboloid.length > 0;
+        break;
+      }
+      default:
+        occluded = false; // default to not occluded if something goes wrong
     }
 
     const shiftVector = occluded
@@ -373,7 +448,7 @@ export class HELabel extends HENodule {
   }
 
   get upper(): boolean {
-    return this._upper;
+    return this._activeUpperValue;
   }
 
   get mesh(): THREE.Mesh {

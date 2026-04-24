@@ -20,7 +20,7 @@ export class HEAntipodalPoint extends HEPoint {
    * @param point the TwoJS point associated with this intersection
    * @param antipodalPointParent The parent
    */
-  constructor(antipodalPointParent, isUserCreated) {
+  constructor(antipodalPointParent: HEPoint, isUserCreated: boolean) {
     super(
       new Vector4(
         -antipodalPointParent.position.x,
@@ -28,23 +28,11 @@ export class HEAntipodalPoint extends HEPoint {
         -antipodalPointParent.position.z,
         antipodalPointParent.position.w // notice how NICE antipodes are in homogeneous coordinates!
       ),
-      true,
-      false
+      isUserCreated
     );
     this._antipodalPointParent = antipodalPointParent;
     this._isUserCreated = isUserCreated;
     this.showing = isUserCreated; // Hide automatically created antipodes
-    this.shallowUpdate(); // set the location and the visibility
-    // console.log(
-    //   "create antipode parent",
-    //   this._antipodalPointParent.material.angle,
-    //   this._antipodalPointParent.material.position.toFixed(2)
-    // );
-    // console.log(
-    //   "antipode info:",
-    //   this._material.angle,
-    //   this._material.position.toFixed(2)
-    // );
   }
 
   // public get noduleDescription(): string {
@@ -64,20 +52,8 @@ export class HEAntipodalPoint extends HEPoint {
   //   return this._antipodalPointParent;
   // }
 
-  /**
-   * If the antipodal point is changed to isUserCreated(true) then the user intentionally created this point
-   * That is, the point was not automatically created. The showing or not of a user created
-   * point is possible. A not user created point is not showing unless moused over.
-   */
-  set isUserCreated(flag: boolean) {
-    this._isUserCreated = flag;
-  }
-
-  get isUserCreated(): boolean {
-    return this._isUserCreated;
-  }
-
   public shallowUpdate(): void {
+    // console.log("antipode", this._antipodalPointParent.name);
     this._exists = this._antipodalPointParent.exists;
 
     if (this._exists) {
@@ -85,9 +61,9 @@ export class HEAntipodalPoint extends HEPoint {
         -this._antipodalPointParent.position.x,
         -this._antipodalPointParent.position.y,
         -this._antipodalPointParent.position.z,
-        this._antipodalPointParent.position.w // notice how NICE antipodes are in homogeneous coordinates!
+        this._antipodalPointParent.position.w
       );
-      this.updateTransformationMatrix();
+      super.shallowUpdate();
     }
 
     // console.debug(
@@ -95,10 +71,10 @@ export class HEAntipodalPoint extends HEPoint {
     // );
     // Update visibility
     if (this.showing && this._isUserCreated && this._exists) {
-      this._material.visible = true;
+      this.updateVisibility(true);
     } else {
       // console.log("antipode point NOT visible", this.name, this.angle);
-      this._material.visible = false;
+      this.updateVisibility(false);
     }
   }
   public update(
@@ -140,7 +116,18 @@ export class HEAntipodalPoint extends HEPoint {
       super.glowing = b;
     }
   }
+  /**
+   * If the antipodal point is changed to isUserCreated(true) then the user intentionally created this point
+   * That is, the point was not automatically created. The showing or not of a user created
+   * point is possible. A not user created point is not showing unless moused over.
+   */
+  set isUserCreated(flag: boolean) {
+    this._isUserCreated = flag;
+  }
 
+  get isUserCreated(): boolean {
+    return this._isUserCreated;
+  }
   public isNonFreePoint(): boolean {
     return true;
   }

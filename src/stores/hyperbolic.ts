@@ -1,6 +1,5 @@
 import { HENodule } from "@/models-hyperbolic/HENodule";
 import { HEPoint } from "@/models-hyperbolic/HEPoint";
-// import { ActionMode } from "@/types";
 import { defineStore } from "pinia";
 import {
   Intersection,
@@ -20,15 +19,15 @@ import { ActionMode } from "@/types";
 import { HELabel } from "@/models-hyperbolic/HELabel";
 import EventBus from "@/eventHandlers-spherical/EventBus";
 import { zLowerClip, zUpperClip } from "@/plottables-hyperbolic/MeshFactory";
-import { lab } from "color";
 
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
-  const surfaceIntersections: Ref<Intersection[]> = ref([]); // intersections with hyperbolic surfaces computed in hyperbolic frame
-  const objectIntersections: Ref<Intersection[]> = ref([]); // intersections with hyperbolic surfaces computed in hyperbolic frame
+  const objectIntersections: Ref<Intersection[]> = ref([]);
+  const surfaceIntersections: Ref<Intersection[]> = ref([]);
   const closestIntersectionIsSurface: Ref<boolean> = ref(false);
-
   const hyperboloidIsClosestIntersection: Ref<boolean> = ref(false);
-  const idealPointsStripIsClosestIntersection: Ref<boolean> = ref(false);
+  const idealStripIsClosestIntersection: Ref<boolean> = ref(false);
+  const ultraStripIsClosestIntersection: Ref<boolean> = ref(false);
+
   const objectMap: Map<string, HENodule> = new Map();
   const pointsMap: Map<string, HEPoint> = new Map();
   const linesMap: Map<string, HELine> = new Map();
@@ -36,6 +35,8 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   //const circlesMap: Map<string, HECircle> = new Map();
   //const segmentsMap: Map<string, HESegment> = new Map();
   //const conicsMap: Map<string, HEConic> = new Map();
+
+  const tempObjectsMap: Map<string, HENodule> = new Map();
 
   const cameraQuaternion: Ref<Quaternion> = ref(new Quaternion());
   // const cameraCF = new Matrix4();
@@ -77,40 +78,50 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     // console.log(`Searching for ${id} in`, objectMap);
     return objectMap.get(id) ?? null;
   }
+  function addTempObject(obj: HENodule) {
+    tempObjectsMap.set(obj.name, obj);
+  }
+  // function removeTempObject(obj: HENodule) {
+  //   tempObjectsMap.delete(obj.name);
+  // }
   function addPoint(point: HEPoint) {
-    point.addToScene(threeJSScene);
+    point.addGroupToScene(threeJSScene);
     objectMap.set(point.name, markRaw(point));
     pointsMap.set(point.name, markRaw(point));
   }
   function removePoint(point: HEPoint) {
-    point.removeFromScene(threeJSScene);
+    point.removeGroupFromScene(threeJSScene);
     objectMap.delete(point.name);
     pointsMap.delete(point.name);
   }
   function addLabel(label: HELabel) {
-    label.addToScene(threeJSScene);
+    label.addGroupToScene(threeJSScene);
     objectMap.set(label.name, markRaw(label));
     labelsMap.set(label.name, markRaw(label));
   }
   function removeLabel(label: HELabel) {
-    label.removeFromScene(threeJSScene);
+    label.removeGroupFromScene(threeJSScene);
     objectMap.delete(label.name);
     labelsMap.delete(label.name);
   }
   function addLine(line: HELine) {
-    line.addToScene(threeJSScene);
+    line.addGroupToScene(threeJSScene);
     objectMap.set(line.name, markRaw(line));
     linesMap.set(line.name, markRaw(line));
   }
   function removeLine(line: HELine) {
-    line.removeFromScene(threeJSScene);
+    line.removeGroupFromScene(threeJSScene);
     objectMap.delete(line.name);
     linesMap.delete(line.name);
   }
   function updateDisplayForCameraUpdate() {
+    console.log("Updating points display for camera update");
     pointsMap.forEach(point => {
       point.shallowUpdate();
     });
+    tempObjectsMap.forEach(obj => {
+      obj.shallowUpdate();
+    }); // the temporary objects need to updated when the display changes
   }
   function adjustTextPose() {
     labelsMap.forEach(label => {
@@ -121,9 +132,9 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
           label.anchorPoint.z > zUpperClip.value ||
           label.anchorPoint.z < zLowerClip.value
         ) {
-          label.removeFromScene(threeJSScene);
+          label.removeGroupFromScene(threeJSScene);
         } else {
-          label.addToScene(threeJSScene);
+          label.addGroupToScene(threeJSScene);
           label.faceCamera();
         }
       } else {
@@ -145,8 +156,10 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     cameraInverseMatrix,
     implementedHETools,
     hyperboloidIsClosestIntersection,
-    idealPointsStripIsClosestIntersection,
+    idealStripIsClosestIntersection,
+    ultraStripIsClosestIntersection,
     linesMap,
+    addTempObject,
     addPoint,
     addLine,
     addLabel,

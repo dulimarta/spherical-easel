@@ -8,13 +8,13 @@ export const SETTINGS = {
   maxFieldOfView: 45, // The maximum field of view for the perspective camera in degrees. Also the initial field of view
   minFieldOfView: 10, // The minimum field of view for the perspective camera in degrees.
   minFOVChangeForViewUpdate: 0.2, // The minimum change in field of view required to trigger a view update
-  idealPointsStripAngularWidth: 0.01, // The angular width of the strip at the top of the hyperboloid mesh to which ideal points are constrained, when the field of view is at a maximum
-  idealPointsStripAngularGap: 0.02, // The angular gap between the ideal points' strip and the edge of the hyperboloid mesh, when the field of view is at a maximum
+  idealStripAngularWidth: 0.01, // The angular width of the strip at the top of the hyperboloid mesh to which ideal points are constrained, when the field of view is at a maximum
+  idealStripAngularGap: 0.02, // The angular gap between the ideal points' strip and the edge of the hyperboloid mesh, when the field of view is at a maximum
   angularUnit: 0.04, // A line segment starting at (0,0,1) and in the plane parallel to the screen subtending this angle in any zoom/dolly level is considered a unit length
 
   fadePercentage: 0.985, // The percentage of the height of the hyperboloid at which fading (opacity lowering) begins
-  startOpacityFade: 0.95, // The opacity at the start of the fade of hyperboloid and below
-  endOpacityFade: 0.65, // The opacity at the end (i.e. top bottom edge) of the fade hyperboloid
+  startOpacityFade: 1.0, // The opacity at the start of the fade of hyperboloid and below
+  endOpacityFade: 0.75, // The opacity at the end (i.e. top bottom edge) of the fade hyperboloid
 
   maxZClip: 150, //set the maximum value of zUpperClip so that the entire hyperboloid and grid lines are shown at max dolly distance and maxFieldOfView
 
@@ -26,18 +26,25 @@ export enum HYPERBOLIC_LAYER {
   upperSheet,
   upperSheetGrid,
   upperSheetPoints,
-  upperSheetIdealPoints,
+  upperIdealPoints,
   upperSheetLabels,
-  upperSheetIdealLabels,
+  upperIdealLabels,
   upperSheetLines,
   lowerSheet,
   lowerSheetGrid,
   lowerSheetPoints,
-  lowerSheetIdealPoints,
+  lowerIdealPoints,
   lowerSheetLabels,
-  lowerSheetIdealLabels,
+  lowerIdealLabels,
   lowerSheetLines,
-  labels
+  upperUltraPoints,
+  lowerUltraPoints,
+  upperUltraLabels,
+  lowerUltraLabels
 }
-
+export enum SURFACE_TYPES {
+  hyperboloid,
+  idealStrip,
+  ultraStrip
+}
 export default SETTINGS;

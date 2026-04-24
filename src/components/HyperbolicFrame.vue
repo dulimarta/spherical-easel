@@ -76,11 +76,14 @@
                 mdi-circle-half
               </v-icon>
             </v-btn>
-            <v-btn icon color="blue" value="idealPointsStrip">
+            <v-btn icon color="blue" value="idealStrip">
               <v-icon>mdi-circle-expand</v-icon>
             </v-btn>
             <v-btn icon color="green" value="polarGrid">
               <v-icon>mdi-grid</v-icon>
+            </v-btn>
+            <v-btn icon color="blue" value="ultraStrip">
+              <v-icon>mdi-surround-sound</v-icon>
             </v-btn>
           </v-btn-toggle>
         </div>
@@ -156,14 +159,15 @@ import SETTINGS, { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import {
   createPolarGridCircle,
   createPolarGridRadialLine,
-  createIdealPointsStrip,
+  createIdealStrip,
+  createUltraStrip,
   createHyperboloidSheet,
   zUpperClip,
   zLowerClip,
-  zUpperIdealPointsClipPlus,
-  zUpperIdealPointsClipMinus,
-  zLowerIdealPointsClipPlus,
-  zLowerIdealPointsClipMinus,
+  zUpperIdealStripClipPlus,
+  zUpperIdealStripClipMinus,
+  zLowerIdealStripClipPlus,
+  zLowerIdealStripClipMinus,
   unitLength,
   arcLengthScale
 } from "@/plottables-hyperbolic/MeshFactory";
@@ -183,14 +187,16 @@ const {
   cameraFieldOfView,
   cameraOrigin,
   hyperboloidIsClosestIntersection,
-  idealPointsStripIsClosestIntersection
+  idealStripIsClosestIntersection,
+  ultraStripIsClosestIntersection
 } = storeToRefs(hyperStore);
 const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
 const hasUpdatedCameraControls = ref(false);
 const visibleLayers: Ref<VisibleHELayersType[]> = ref([]);
 const showLowerSheet = ref(false);
-const showIdealPointsStrip = ref(false);
+const showIdealStrip = ref(false);
+const showUltraStrip = ref(false);
 const showPolarGrid = ref(true);
 type ImportantSurface = "Upper" | "Lower" | null;
 const intersectionList: Ref<
@@ -264,7 +270,6 @@ let circleTool: CircleHandler | null = null;
 let textTool: TextHandler | null = null;
 
 const txtObject = new Text();
-// txtObject.name = `La${HENodule.POINT_COUNT}`;
 txtObject.text = `Hello`;
 txtObject.anchorX = "center";
 txtObject.anchorY = "bottom";
@@ -278,8 +283,11 @@ const rayIntersectionPosition = reactive(new Vector3());
 let upperPolarGridArray: Array<THREE.Mesh> = [];
 let lowerPolarGridArray: Array<THREE.Mesh> = [];
 
-let upperIdealPointsStrip: THREE.Mesh | undefined = undefined;
-let lowerIdealPointsStrip: THREE.Mesh | undefined = undefined;
+let upperIdealStrip: THREE.Mesh | undefined = undefined;
+let lowerIdealStrip: THREE.Mesh | undefined = undefined;
+
+let upperUltraStrip: THREE.Mesh | undefined = undefined;
+let lowerUltraStrip: THREE.Mesh | undefined = undefined;
 
 let upperHyperboloidSheet: THREE.Mesh | undefined = undefined;
 let lowerHyperboloidSheet: THREE.Mesh | undefined = undefined;
@@ -288,61 +296,114 @@ clock.autoStart = true;
 
 watch(visibleLayers, (layers: Array<VisibleHELayersType>) => {
   showLowerSheet.value = layers.includes("lowerSheet");
-  showIdealPointsStrip.value = layers.includes("idealPointsStrip");
+  showIdealStrip.value = layers.includes("idealStrip");
+  showUltraStrip.value = layers.includes("ultraStrip");
   showPolarGrid.value = layers.includes("polarGrid");
   updateVisibleLayers();
 });
 
 function updateVisibleLayers(): void {
-  if (showIdealPointsStrip.value) {
-    camera.layers.enable(HYPERBOLIC_LAYER.upperSheetIdealPoints);
-    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetIdealPoints);
+  if (showUltraStrip.value) {
+    camera.layers.enable(HYPERBOLIC_LAYER.upperUltraPoints);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperUltraPoints);
 
-    camera.layers.enable(HYPERBOLIC_LAYER.upperSheetIdealLabels);
-    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetIdealLabels);
+    camera.layers.enable(HYPERBOLIC_LAYER.upperUltraLabels);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperUltraLabels);
 
-    if (upperIdealPointsStrip) {
-      scene.add(upperIdealPointsStrip);
+    if (upperUltraStrip) {
+      scene.add(upperUltraStrip);
     }
     if (showLowerSheet.value) {
-      camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetIdealPoints);
-      rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetIdealPoints);
+      camera.layers.enable(HYPERBOLIC_LAYER.lowerUltraPoints);
+      rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerUltraPoints);
 
-      camera.layers.enable(HYPERBOLIC_LAYER.lowerSheetIdealLabels);
-      rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerSheetIdealLabels);
+      camera.layers.enable(HYPERBOLIC_LAYER.lowerUltraLabels);
+      rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerUltraLabels);
 
-      if (lowerIdealPointsStrip) {
-        scene.add(lowerIdealPointsStrip);
+      if (lowerUltraStrip) {
+        scene.add(lowerUltraStrip);
       }
     } else {
-      camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetIdealPoints);
-      rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetIdealPoints);
+      camera.layers.disable(HYPERBOLIC_LAYER.lowerUltraPoints);
+      rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerUltraPoints);
 
-      camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetIdealLabels);
-      rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetIdealLabels);
+      camera.layers.disable(HYPERBOLIC_LAYER.lowerUltraLabels);
+      rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerUltraLabels);
 
-      if (lowerIdealPointsStrip) {
-        scene.remove(lowerIdealPointsStrip);
+      if (lowerUltraStrip) {
+        scene.remove(lowerUltraStrip);
       }
     }
   } else {
-    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetIdealPoints);
-    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetIdealPoints);
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerUltraPoints);
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerUltraPoints);
 
-    camera.layers.disable(HYPERBOLIC_LAYER.lowerSheetIdealLabels);
-    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerSheetIdealLabels);
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerUltraLabels);
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerUltraLabels);
 
-    camera.layers.disable(HYPERBOLIC_LAYER.upperSheetIdealPoints);
-    rayCaster.layers.disable(HYPERBOLIC_LAYER.upperSheetIdealPoints);
+    camera.layers.disable(HYPERBOLIC_LAYER.upperUltraPoints);
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.upperUltraPoints);
 
-    camera.layers.disable(HYPERBOLIC_LAYER.upperSheetIdealLabels);
-    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperSheetIdealLabels);
+    camera.layers.disable(HYPERBOLIC_LAYER.upperUltraLabels);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperUltraLabels);
 
-    if (upperIdealPointsStrip) {
-      scene.remove(upperIdealPointsStrip);
+    if (upperUltraStrip) {
+      scene.remove(upperUltraStrip);
     }
-    if (lowerIdealPointsStrip) {
-      scene.remove(lowerIdealPointsStrip);
+    if (lowerUltraStrip) {
+      scene.remove(lowerUltraStrip);
+    }
+  }
+
+  if (showIdealStrip.value) {
+    camera.layers.enable(HYPERBOLIC_LAYER.upperIdealPoints);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperIdealPoints);
+
+    camera.layers.enable(HYPERBOLIC_LAYER.upperIdealLabels);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperIdealLabels);
+
+    if (upperIdealStrip) {
+      scene.add(upperIdealStrip);
+    }
+    if (showLowerSheet.value) {
+      camera.layers.enable(HYPERBOLIC_LAYER.lowerIdealPoints);
+      rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerIdealPoints);
+
+      camera.layers.enable(HYPERBOLIC_LAYER.lowerIdealLabels);
+      rayCaster.layers.enable(HYPERBOLIC_LAYER.lowerIdealLabels);
+
+      if (lowerIdealStrip) {
+        scene.add(lowerIdealStrip);
+      }
+    } else {
+      camera.layers.disable(HYPERBOLIC_LAYER.lowerIdealPoints);
+      rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerIdealPoints);
+
+      camera.layers.disable(HYPERBOLIC_LAYER.lowerIdealLabels);
+      rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerIdealLabels);
+
+      if (lowerIdealStrip) {
+        scene.remove(lowerIdealStrip);
+      }
+    }
+  } else {
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerIdealPoints);
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerIdealPoints);
+
+    camera.layers.disable(HYPERBOLIC_LAYER.lowerIdealLabels);
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.lowerIdealLabels);
+
+    camera.layers.disable(HYPERBOLIC_LAYER.upperIdealPoints);
+    rayCaster.layers.disable(HYPERBOLIC_LAYER.upperIdealPoints);
+
+    camera.layers.disable(HYPERBOLIC_LAYER.upperIdealLabels);
+    rayCaster.layers.enable(HYPERBOLIC_LAYER.upperIdealLabels);
+
+    if (upperIdealStrip) {
+      scene.remove(upperIdealStrip);
+    }
+    if (lowerIdealStrip) {
+      scene.remove(lowerIdealStrip);
     }
   }
 
@@ -414,7 +475,7 @@ watch(idle, idleValue => {
 watch(showLowerSheet, () => {
   updateView();
   // console.log("Show lower sheet", show);
-  actionMode.value = "rotate";
+  // actionMode.value = "rotate";
   renderer.renderAsync(scene, camera); // update the scene
 });
 
@@ -650,13 +711,21 @@ function initialize() {
 
   // Create the strips on which the ideal points
   // will be displayed by clipping between two planes
-  upperIdealPointsStrip = createIdealPointsStrip(true);
-  upperIdealPointsStrip.name = `Upper Ideal Points Strip`;
-  upperIdealPointsStrip.layers.set(HYPERBOLIC_LAYER.upperSheetIdealPoints);
+  upperIdealStrip = createIdealStrip(true);
+  upperIdealStrip.name = `Upper Ideal Strip`;
+  upperIdealStrip.layers.set(HYPERBOLIC_LAYER.upperIdealPoints);
 
-  lowerIdealPointsStrip = createIdealPointsStrip(false);
-  lowerIdealPointsStrip.name = `Lower Ideal Points Strip`;
-  lowerIdealPointsStrip.layers.set(HYPERBOLIC_LAYER.lowerSheetIdealPoints);
+  lowerIdealStrip = createIdealStrip(false);
+  lowerIdealStrip.name = `Lower Ideal Strip`;
+  lowerIdealStrip.layers.set(HYPERBOLIC_LAYER.lowerIdealPoints);
+
+  upperUltraStrip = createUltraStrip(true);
+  upperUltraStrip.name = `Upper Ultra Strip`;
+  upperUltraStrip.layers.set(HYPERBOLIC_LAYER.upperUltraPoints);
+
+  lowerUltraStrip = createUltraStrip(false);
+  lowerUltraStrip.name = `Lower Ultra Strip`;
+  lowerUltraStrip.layers.set(HYPERBOLIC_LAYER.lowerUltraPoints);
 
   // create the radial polar grid lines
   for (let upperLower = 0; upperLower < 2; upperLower++) {
@@ -701,8 +770,11 @@ function initialize() {
   if (showPolarGrid.value) {
     visibleLayers.value.push("polarGrid");
   }
-  if (showIdealPointsStrip.value) {
-    visibleLayers.value.push("idealPointsStrip");
+  if (showIdealStrip.value) {
+    visibleLayers.value.push("idealStrip");
+  }
+  if (showUltraStrip.value) {
+    visibleLayers.value.push("ultraStrip");
   }
   if (showLowerSheet.value) {
     visibleLayers.value.push("lowerSheet");
@@ -837,21 +909,17 @@ function updateView() {
     Math.sin(angleOffX + Math.PI / 2),
     1
   );
-  const len1 = constantAngleToLength(
-    start,
-    dir,
-    SETTINGS.idealPointsStripAngularGap
-  );
+  const len1 = constantAngleToLength(start, dir, SETTINGS.idealStripAngularGap);
   const len2 = constantAngleToLength(
     start,
     dir,
-    SETTINGS.idealPointsStripAngularGap + SETTINGS.idealPointsStripAngularWidth
+    SETTINGS.idealStripAngularGap + SETTINGS.idealStripAngularWidth
   );
-  zUpperIdealPointsClipMinus.value = start.z + len1 * dir.z;
-  zUpperIdealPointsClipPlus.value = start.z + len2 * dir.z;
+  zUpperIdealStripClipMinus.value = start.z + len1 * dir.z;
+  zUpperIdealStripClipPlus.value = start.z + len2 * dir.z;
 
-  zLowerIdealPointsClipMinus.value = -zUpperIdealPointsClipPlus.value;
-  zLowerIdealPointsClipPlus.value = -zUpperIdealPointsClipMinus.value;
+  zLowerIdealStripClipMinus.value = -zUpperIdealStripClipPlus.value;
+  zLowerIdealStripClipPlus.value = -zUpperIdealStripClipMinus.value;
 
   // update the unit
   // A line segment starting at (0,0,1) and in the plane parallel to the screen subtending this angle in any zoom/dolly level is considered a unit length. All geometric objects are measured relative to this unit.
@@ -883,20 +951,9 @@ function updateView() {
 }
 
 function doMouseDown(ev: MouseEvent) {
-  // console.debug("MouseDown");
-
-  // if (intersectionList.value.length > 0) {
   currentTools.forEach(t => {
     t.mousePressed(ev);
   });
-  // const { x, y, z } = labelLayerIntersections.value[0].point;
-
-  // txtObject.sync();
-  // camera.add(txtObject);
-  // } else
-  //   currentTools.forEach(t => {
-  //     t.mousePressed(ev, mouseCoordNormalized.value, null, null);
-  //   });
 }
 
 function doMouseUp(ev: MouseEvent) {
@@ -906,7 +963,6 @@ function doMouseUp(ev: MouseEvent) {
 }
 
 function doMouseLeave(ev: MouseEvent) {
-  // console.debug("MouseLeave");
   currentTools.forEach(t => {
     t.mouseLeave(ev);
   });
@@ -926,19 +982,18 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
     .intersectObjects(scene.children, true)
     .filter((iSect, idx) => {
       if (iSect.object.name.length === 0) {
-        return false; // the intersection is not with a named object, ignore it
+        return false; // if the intersection is not with a named object, ignore it
       } else {
         // console.log(
         //   `Raycast intersect #${idx} ${iSect.object.name}`,
         //   iSect.point.toFixed(2)
         // );
-        // Here we have an intersection with an object
-        //  we must make sure it exists, is visible and is user created, but this is done by the handler that uses this intersection list
+        // Here we have an intersection with an object or surface
+        // We must make sure it exists, is visible and is user created, but this is done by the handler that uses this intersection list
         return true; // intersection with other named objects are always returned
       }
     });
-
-  const regex = /(Sheet|Strip)$/; // For filtering cursor intersection point(s)
+  const regex = /Sheet|Ideal|Ultra/; // Sorting for surfaces and object intersections
   [surfaceIntersections.value, objectIntersections.value] =
     intersectionList.value.partition(x => {
       return x.object.name.match(regex) !== null;
@@ -949,15 +1004,18 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
     intersectionList.value[0];
   if (closestIntersection) {
     hyperboloidIsClosestIntersection.value =
-      closestIntersection.object.name.match(/(Sheet)$/) !== null;
-    idealPointsStripIsClosestIntersection.value =
-      closestIntersection.object.name.match(/(Ideal)$/) !== null;
+      closestIntersection.object.name.match(/Sheet/) !== null;
+    idealStripIsClosestIntersection.value =
+      closestIntersection.object.name.match(/Ideal/) !== null;
+    ultraStripIsClosestIntersection.value =
+      closestIntersection.object.name.match(/Ultra/) !== null;
     closestIntersectionIsSurface.value =
       hyperboloidIsClosestIntersection.value ||
-      idealPointsStripIsClosestIntersection.value;
+      idealStripIsClosestIntersection.value ||
+      ultraStripIsClosestIntersection.value;
   }
 
-  // Compute the first intersection information for display
+  // Compute the first intersection(s) information for display
   let firstIntersection: THREE.Intersection | null = intersectionList.value[0];
   // If the mouse is over a surface, update the text displayed at the top of the screen
   if (firstIntersection) {

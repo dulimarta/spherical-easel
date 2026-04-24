@@ -728,9 +728,7 @@ export type VisibleHELayersType =
   // | "upperSheet" // Not needed because upper sheet is always shown
   // | "upperSheetPoints"
   // | "upperSheetLines"
-  | "lowerSheet"
-  | "lowerSheetPoints"
-  | "lowerSheetLines"
-  | "labels"
-  | "polarGrid"
-  | "idealPointsStrip";
+  // | "lowerSheetPoints"
+  // | "lowerSheetLines"
+  // | "labels"
+  "lowerSheet" | "polarGrid" | "idealStrip" | "ultraStrip";

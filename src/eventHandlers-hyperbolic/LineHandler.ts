@@ -128,7 +128,7 @@ export class LineHandler extends PoseTracker {
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
     // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
     super.mouseMoved(event);
-    if (this.surfaceIsIntersected && !this.startLocationSelected) {
+    if (this.aSurfaceIsIntersected && !this.startLocationSelected) {
       this.startLocationSelected = true;
       this.updateFilteredPointsList();
       // Decide if the starting location is near an already existing HEPoint or near a oneDimensional HENodule
@@ -343,7 +343,7 @@ export class LineHandler extends PoseTracker {
       this.snapEndPointToExistingPoint = null;
     }
     // Make sure that the event is on the hyperboloid
-    if (this.surfaceIsIntersected) {
+    if (this.aSurfaceIsIntersected) {
       if (!this.startLocationSelected) {
         // If the temporary startPoint has *not* been added to the scene do so now
         if (this.hyperboloidIsFirstSurfaceHit) {
@@ -362,7 +362,7 @@ export class LineHandler extends PoseTracker {
           }
         }
 
-        if (!this.hyperboloidIsFirstSurfaceHit) {
+        if (this.idealStripIsFirstSurfaceHit) {
           if (!this._tempStartIdealPointInScene) {
             this._tempStartIdealPointInScene = true;
             this.scene.add(this._tempTube);
@@ -491,7 +491,7 @@ export class LineHandler extends PoseTracker {
             }
           }
 
-          if (!this.hyperboloidIsFirstSurfaceHit) {
+          if (this.idealStripIsFirstSurfaceHit) {
             if (!this._tempEndIdealPointInScene) {
               this._tempEndIdealPointInScene = true;
               this.scene.add(this._tempTube);
@@ -567,7 +567,7 @@ export class LineHandler extends PoseTracker {
   }
   mouseReleased(event: MouseEvent): void {
     // console.debug(`LineHandler::mouseReleased (${event.clientX},${event.clientY})`)
-    if (this.surfaceIsIntersected) {
+    if (this.aSurfaceIsIntersected) {
       if (this.startLocationSelected) {
         const possibleLocation = PoseTracker.vec3ToVec4(
           PoseTracker.hyperStore.surfaceIntersections[0].point,

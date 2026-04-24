@@ -1,4 +1,4 @@
-import SETTINGS from "@/global-settings-hyperbolic";
+import SETTINGS, { SURFACE_TYPES } from "@/global-settings-hyperbolic";
 import * as THREE from "three/webgpu";
 import {
   uniform,
@@ -35,7 +35,8 @@ import {
   or,
   cross,
   dot,
-  exp
+  exp,
+  vec2
 } from "three/tsl";
 // import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { Line2 } from "three/addons/lines/Line2.js";
@@ -46,7 +47,9 @@ import {
   SphereGeometry,
   CylinderGeometry,
   LineCurve3,
-  ConeGeometry
+  ConeGeometry,
+  Vector2,
+  LatheGeometry
 } from "three";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 import { LineGeometry } from "three/examples/jsm/Addons.js";
@@ -55,11 +58,8 @@ import {
   CustomLabelMaterial,
   CustomLineMaterial
 } from "./MaterialFactory";
-import {
-  h2Distance,
-  intersectWithHyperboloid,
-  intersectWithIdealPointsStrip as intersectWithIdealPointsStrip
-} from "@/utils/helpingHEFunctions";
+import { h2Distance, intersectWithSurface } from "@/utils/helpingHEFunctions";
+import { Surface } from "two.js/extras/jsm/zui";
 
 const pulseRate = 0.3; // selected objects pulse and this set the rate oscSine(pulseRate*time)
 const pulseSizePercent = 0.8; // selected objects grow between 1 and 1+pulseSizePercent times there size
@@ -68,13 +68,16 @@ const pulseSizePercent = 0.8; // selected objects grow between 1 and 1+pulseSize
 export const zUpperClip = uniform(1.0, "float");
 export const zLowerClip = uniform(-1.0, "float");
 
-// The z coordinate of all points of the upperIdealPointsStrip are between zUpperIdealPointsClipPlus and zUpperIdealPointsClipMinus,
-export const zUpperIdealPointsClipPlus = uniform(2.0, "float");
-export const zUpperIdealPointsClipMinus = uniform(1.5, "float");
+// The z coordinate of all points of the upperIdealStrip are between zUpperIdealClipPlus and zUpperIdealClipMinus,
+export const zUpperIdealStripClipPlus = uniform(2.0, "float");
+export const zUpperIdealStripClipMinus = uniform(1.5, "float");
 
-// The z coordinate of all points of the lowerIdealPointsStrip are between zLowerIdealPointsClipPlus and zLowerIdealPointsClipMinus,
-export const zLowerIdealPointsClipPlus = uniform(-1.5, "float");
-export const zLowerIdealPointsClipMinus = uniform(-2.0, "float");
+// The z coordinate of all points of the lowerIdealStrip are between zLowerIdealClipPlus and zLowerIdealClipMinus,
+export const zLowerIdealStripClipPlus = uniform(-1.5, "float");
+export const zLowerIdealStripClipMinus = uniform(-2.0, "float");
+
+export const zUpperUltraClip = uniform(-1.5, "float");
+export const zLowerUltraClip = uniform(-2.0, "float");
 
 export const unitLength: THREE.TSL.ShaderNodeObject<THREE.UniformNode<number>> =
   uniform(1.0, "float");
@@ -85,21 +88,28 @@ export const arcLengthScale: THREE.TSL.ShaderNodeObject<
 
 export function createLine(
   name: string,
+  mode: number,
   upper: boolean,
-  temporary = false, //used in handlers,flag so that temporary objects are never hit with ray casting
-  radius,
-  myColor = 0xff8080 //ffb3b3, //ff8080, //"white", //"0xBEBFC5",
+  temporary = false //used in handlers, flag so that temporary objects are never hit with ray casting
 ): Mesh {
   const cylinderMaterial = new CustomLineMaterial({
-    color: myColor
+    color: 0xff8080,
+    transparent: true
   });
+  const glowingUniform = cylinderMaterial.userData.glowing;
+
   const transformationMatrixUniform =
     cylinderMaterial.userData.transformationMatrix;
+
   const radiusUniform = cylinderMaterial.userData.radius;
-  const glowingUniform = cylinderMaterial.userData.glowing;
-  radiusUniform.value = radius;
+  radiusUniform.value = 0.04;
+
   const upperUniform = cylinderMaterial.userData.upper;
+  upperUniform.value = upper ? 1 : 0;
+
   const modeUniform = cylinderMaterial.userData.mode;
+  modeUniform.value = mode;
+
   const startYUniform = cylinderMaterial.userData.startY;
   const endYUniform = cylinderMaterial.userData.endY;
 
@@ -120,7 +130,7 @@ export function createLine(
     const x = localPos.x;
     const z = localPos.z;
     const unScaledT = localPos.y.mul(arcLengthScale);
-    const t = exp(unScaledT).sub(exp(unScaledT.negate())).div(2); //sinh(unScaledT) so that the unScaledT (which is uniformly distributed on the length of the cylinder), is transformed so that there are more t values near zero and few for larger unScaledT in absolute value
+    const t = exp(unScaledT).sub(exp(unScaledT.negate())).div(2); //This is sinh(unScaledT) so that the unScaledT (which is uniformly distributed on the length of the cylinder), is transformed so that there are more t values near zero and few for larger unScaledT in absolute value
 
     standardPositionY.assign(t); //store this value so it can be used in the fragment shader and can decide to discard or keep the fragment with this y value.
 
@@ -229,6 +239,17 @@ export function createLine(
   });
   cylinderMaterial.colorNode = colorFunction();
 
+  // Smooth the opacity of the edge of the line
+  const zClip = select(upperUniform.greaterThan(0.5), zUpperClip, zLowerClip);
+  cylinderMaterial.opacityNode = smoothstep(
+    zClip.mul(SETTINGS.fadePercentage),
+    zClip,
+    positionLocal.z
+  )
+    .oneMinus()
+    .mul(float(SETTINGS.startOpacityFade).sub(float(SETTINGS.endOpacityFade)))
+    .add(float(SETTINGS.endOpacityFade));
+
   const maxZ = Math.acosh(SETTINGS.maxZClip + 1.001);
   const maxY = Math.sqrt(maxZ * maxZ - 1);
 
@@ -253,12 +274,13 @@ export function createLine(
     // const matrix = transformationMatrixUniform.value.elements;
     // const position = new Vector3(matrix[12], matrix[13], matrix[14]); // the position is stored in the last column of the transformation matrix
     // // console.log("intersect point", this.name, position.toFixed(2));
-    const tempIntersections = intersectWithHyperboloid(
+    const tempIntersections = intersectWithSurface(
       raycaster.ray.origin,
       raycaster.ray.direction,
       raycaster.near,
       raycaster.far,
-      this.material.userData.upper.value > 0.5 ? true : false
+      this.material.userData.upper.value > 0.5 ? true : false,
+      SURFACE_TYPES.hyperboloid
     );
     const normalVector = this.material.userData.normalVector;
     const inverseTransformationMatrix =
@@ -465,20 +487,19 @@ export async function createLabel(
 
 export function createPoint(
   name: string,
-  upper: boolean,
-  temporary = false, //used in handlers,flag so that temporary objects are never hit with ray casting
-  radius,
-  myColor = 0xff8080 //ffb3b3, //ff8080, //"white", //"0xBEBFC5",
+  temporary = false //used in handlers,flag so that temporary objects are never hit with ray casting
 ): Mesh {
   const sphereMaterial = new CustomPointMaterial({
-    color: myColor,
+    color: 0xff8080, // default color
     roughness: 0.3
   });
+
   const transformationMatrixUniform =
     sphereMaterial.userData.transformationMatrix;
   const radiusUniform = sphereMaterial.userData.radius;
   const glowingUniform = sphereMaterial.userData.glowing;
-  radiusUniform.value = radius;
+  radiusUniform.value = 0.15; // default radius
+  const positionUniform = sphereMaterial.userData.position;
 
   const positionFunction = Fn(() => {
     // Glowing points size pulses
@@ -505,11 +526,11 @@ export function createPoint(
 
   const colorFunction = Fn(() => {
     // Clip points to the visible part of the hyperboloid
-    if (upper) {
-      positionLocal.z.greaterThan(zUpperClip).discard();
-    } else {
-      positionLocal.z.lessThan(zLowerClip).discard();
-    }
+    select(
+      positionUniform.z.greaterThan(0), //upper
+      positionLocal.z.greaterThan(zUpperClip.add(radiusUniform)).discard(),
+      positionLocal.z.lessThan(zLowerClip.sub(radiusUniform)).discard()
+    );
     // // Glowing points color pulses
     const returnColor = select(
       glowingUniform.greaterThan(0.5),
@@ -530,14 +551,16 @@ export function createPoint(
   returnMesh.raycast = function (raycaster, intersects) {
     if (temporary) return; //temporary objects are never hit
     const matrix = transformationMatrixUniform.value.elements;
-    const position = new Vector3(matrix[12], matrix[13], matrix[14]); // the position is stored in the last column of the transformation matrix
+    const [x, y, z] = positionUniform.value.toArray();
+    const position = new Vector3(x, y, z); // the position is stored in the last column of the transformation matrix
     // console.log("intersect point", this.name, position.toFixed(2));
-    const tempIntersections = intersectWithHyperboloid(
+    const tempIntersections = intersectWithSurface(
       raycaster.ray.origin,
       raycaster.ray.direction,
       raycaster.near,
       raycaster.far,
-      position.z > 0
+      position.z > 0,
+      SURFACE_TYPES.hyperboloid
     );
 
     tempIntersections.forEach(intersection => {
@@ -562,27 +585,21 @@ export function createPoint(
 
 export function createIdealPoint(
   name: string,
-  upper: boolean,
-  temporary = false, //used in handlers,flag so that temporary objects are never hit with ray casting
-  radius = 0.18, // in multiples of the unit length
-  height = 0.33, // in multiples of the unit length
-  myColor = 0xff8080 //"white", //"0xBEBFC5",
+  temporary = false //used in handlers,flag so that temporary objects are never hit with ray casting
 ): Mesh {
   const coneMaterial = new CustomPointMaterial({
-    color: myColor,
+    color: 0xff8080, // default color
     opacity: 1.0
   });
+
   const transformationMatrixUniform =
     coneMaterial.userData.transformationMatrix;
   const radiusUniform = coneMaterial.userData.radius;
   const heightUniform = coneMaterial.userData.height;
-  //const angleUniform = coneMaterial.userData.angle;
   const glowingUniform = coneMaterial.userData.glowing;
-  const upperUniform = coneMaterial.userData.upper;
-  radiusUniform.value = radius;
-  heightUniform.value = height;
-  //angleUniform.value = angle;
-  upperUniform.value = upper ? 1 : 0;
+  const positionUniform = coneMaterial.userData.position;
+  radiusUniform.value = 0.15; // default radius
+  heightUniform.value = 0.33; // default height
 
   coneMaterial.positionNode = Fn(() => {
     const myRadius = select(
@@ -599,12 +616,12 @@ export function createIdealPoint(
       vec4(0, 0, myRadius, 0), // column 2
       vec4(
         float(0.0),
-        myHeight.mul(0.5).add(zUpperIdealPointsClipMinus.mul(Math.SQRT2)),
+        myHeight.mul(0.5).add(zUpperIdealStripClipMinus.mul(Math.SQRT2)),
         float(0.0),
         1
       ) // column 3
     );
-
+    //return scaleAndTranslateMatrix.mul(vec4(positionLocal, 1)).xyz;
     return transformationMatrixUniform
       .mul(scaleAndTranslateMatrix)
       .mul(vec4(positionLocal, 1)).xyz;
@@ -629,16 +646,20 @@ export function createIdealPoint(
 
   returnMesh.raycast = function (raycaster, intersects) {
     if (temporary) return; // temporary objects are never hit
-    const matrix = transformationMatrixUniform.value.elements;
-    const angle = (Math.PI / 2 - Math.atan2(-matrix[1], matrix[0])).modTwoPi(); // the first column starts with cos(angle-pi/2), -sin(angle-pi/2), ...
-    const myUpper = upperUniform.value > 0.5 ? true : false;
-    // console.log("Ideal points raycast  check", this.name, myUpper, angle);
-    const tempIntersections = intersectWithIdealPointsStrip(
+
+    const angle = Math.atan2(
+      positionUniform.value.y,
+      positionUniform.value.x
+    ).modTwoPi();
+    const myUpper = positionUniform.value.z > 0 ? true : false;
+
+    const tempIntersections = intersectWithSurface(
       raycaster.ray.origin,
       raycaster.ray.direction,
       raycaster.near,
       raycaster.far,
-      myUpper
+      myUpper,
+      SURFACE_TYPES.idealStrip
     );
     tempIntersections.forEach(intersection => {
       const hitAngle = Math.atan2(intersection.point.y, intersection.point.x);
@@ -660,7 +681,9 @@ export function createIdealPoint(
       }
     });
   };
-
+  if (temporary) {
+    console.log("Temp Radius:", radiusUniform.value);
+  }
   return returnMesh;
 }
 
@@ -671,31 +694,32 @@ export function createIdealPointTube(
   myColor: number = 0xffbbbb, // 0xffbbbb, // 0xff9999, //"white",
   name: string = "tempIdealPointTube"
 ): Mesh {
-  const coneMaterial = new CustomPointMaterial({
+  const cylinderMaterial = new CustomPointMaterial({
     color: myColor,
     opacity: 1.0,
     side: DoubleSide
   });
-  const tubeAngleUniform = coneMaterial.userData.tubeAngle;
-  const radiusUniform = coneMaterial.userData.radius;
-  const upperUniform = coneMaterial.userData.upper;
+  const tubeAngleUniform = cylinderMaterial.userData.tubeAngle;
+  const radiusUniform = cylinderMaterial.userData.radius;
+  const positionUniform = cylinderMaterial.userData.position;
   tubeAngleUniform.value = angle;
   radiusUniform.value = radius;
-  upperUniform.value = upper ? 1 : 0;
+  positionUniform.value = new THREE.Vector4(0, 0, upper ? 1 : -1, 0); // x,y,w are not used for the tube
 
-  coneMaterial.positionNode = Fn(() => {
-    // return positionLocal;
+  cylinderMaterial.positionNode = Fn(() => {
     const scaleAndTranslate = positionLocal.mul(
       vec3(
         radiusUniform.mul(unitLength),
-        zUpperIdealPointsClipMinus.mul(Math.SQRT2),
+        zUpperIdealStripClipMinus.mul(Math.SQRT2),
         radiusUniform.mul(unitLength)
       )
     );
-    // .mul(vec3(0, float(Math.SQRT2), 0));
-    // .mul(vec3(0, zUpperIdealPointsClipMinus.mul(Math.SQRT2), 0));
-    // return scaleAndTranslate;
-    const minusPlusOne = select(upperUniform.equal(1), float(-1.0), float(1.0));
+
+    const minusPlusOne = select(
+      positionUniform.z.greaterThan(0), //upper or lower
+      float(-1.0),
+      float(1.0)
+    );
     // ca -sa 0        1   0     0
     // sa  ca 0    *   0  c+/-45   -s+/-45
     // 0   0  1        0  s+/-45    c+/-45
@@ -717,11 +741,11 @@ export function createIdealPointTube(
 
   const absOfLocalPositionZ = varying(positionLocal.z).abs();
   // const baseColor = color(coneMaterial.color);
-  const percentPad = 0.1; // percent of the total length of the tube that is not dashed at the ends.
-  const numberOfIntervals = 3; // same as the number of dashes traveling up the shank.
-  const rateOfOscillation = 0.4; // controls the speed of the dash movement along the shank.
+  const percentPad = 0.05; // percent of the total length of the tube that is not dashed at the ends.
+  const numberOfIntervals = 8; // same as the number of dashes traveling up the shank.
+  const rateOfOscillation = 0.6; // controls the speed of the dash movement along the shank.
   const percentOfEachIntervalThatIsDash = 0.5;
-  const totalLengthOfShank = zUpperIdealPointsClipMinus;
+  const totalLengthOfShank = zUpperIdealStripClipMinus;
   const lengthOfPad = totalLengthOfShank.mul(percentPad);
   const lengthOfEachInterval = totalLengthOfShank
     .sub(lengthOfPad.mul(2))
@@ -732,7 +756,7 @@ export function createIdealPointTube(
   const totalLengthOfGaps = lengthOfEachInterval.sub(lengthOfDash); //This lengths is split into before and after the dash, with offset being the length before the dash that is determined by a sawtooth function.
 
   const clippingLogic = Fn(() => {
-    const result = color(coneMaterial.color);
+    const result = color(cylinderMaterial.color);
     If(
       absOfLocalPositionZ
         .greaterThan(lengthOfPad)
@@ -765,25 +789,152 @@ export function createIdealPointTube(
     return result;
   });
 
-  coneMaterial.colorNode = clippingLogic();
+  cylinderMaterial.colorNode = clippingLogic();
 
   // path is the center line of the initial(untransformed) tube.
-  const path = new LineCurve3(new Vector3(0, 0, 0), new Vector3(0, 1, 0));
-  const geometry = new THREE.TubeGeometry(path, 64, 1, 128, false);
+  const centerLine = new LineCurve3(new Vector3(0, 0, 0), new Vector3(0, 1, 0));
+  const cylinder = new THREE.TubeGeometry(centerLine, 64, 1, 128, false);
 
-  const returnMesh = new Mesh(geometry, coneMaterial);
+  const returnMesh = new Mesh(cylinder, cylinderMaterial);
   returnMesh.name = name;
   returnMesh.raycast = () => {}; // this object is never intersected
   return returnMesh;
 }
 
+export function createUltraPoint(
+  name: string,
+  temporary = false //used in handlers,flag so that temporary objects are never hit with ray casting
+): Mesh {
+  const cylinderMaterial = new CustomPointMaterial({
+    color: 0x000000, // 0xff8080,
+    opacity: 1.0
+  });
+
+  const transformationMatrixUniform =
+    cylinderMaterial.userData.transformationMatrix;
+  const radiusUniform = cylinderMaterial.userData.radius;
+  const heightUniform = cylinderMaterial.userData.height;
+  const glowingUniform = cylinderMaterial.userData.glowing;
+  const positionUniform = cylinderMaterial.userData.position;
+  radiusUniform.value = 0.06; //default radius
+  heightUniform.value = 0.05; //default thickness
+
+  cylinderMaterial.positionNode = Fn(() => {
+    const myRadius = select(
+      glowingUniform.greaterThan(0.5), // selected nodes pulse in size
+      radiusUniform
+        .mul(unitLength)
+        .mul(oscSine(time.mul(pulseRate)).mul(pulseSizePercent).add(1)),
+      radiusUniform.mul(unitLength)
+    );
+    const myHeight = select(
+      glowingUniform.greaterThan(0.5), // selected nodes pulse in size
+      heightUniform
+        .mul(unitLength)
+        .mul(oscSine(time.mul(pulseRate)).mul(pulseSizePercent).add(1)),
+      heightUniform.mul(unitLength)
+    );
+
+    const radialVec = vec2(positionLocal.x, positionLocal.y);
+    const radialDir = radialVec.normalize();
+    const radialDist = radialVec.length();
+
+    // Scale the XY based on radial distance from axis, and Z based on height
+    const scaledX = radialDir.x.mul(radialDist).mul(myRadius);
+    const scaledY = radialDir.y.mul(radialDist).mul(myRadius);
+    const scaledZ = positionLocal.z.mul(myHeight);
+
+    // Apply the transformation matrix to the custom-scaled local position
+    return transformationMatrixUniform.mul(vec4(scaledX, scaledY, scaledZ, 1.0))
+      .xyz;
+  })();
+
+  const colorFunction = Fn(() => {
+    // Clip points to the visible part of the hyperboloid
+    If(positionUniform.z.greaterThan(0), () => {
+      If(
+        or(
+          positionLocal.z.greaterThan(zUpperClip.add(radiusUniform)),
+          positionLocal.z.lessThan(float(0).sub(radiusUniform))
+        ),
+        () => {
+          Discard();
+        }
+      );
+    }).Else(() => {
+      If(
+        or(
+          positionLocal.z.greaterThan(float(0).add(radiusUniform)),
+          positionLocal.z.lessThan(zLowerClip.sub(radiusUniform))
+        ),
+        () => {
+          Discard();
+        }
+      );
+    });
+    // Glowing points color pulses
+    const returnColor = select(
+      glowingUniform.greaterThan(0.5),
+      color(cylinderMaterial.color).mul(
+        oscSine(time.mul(pulseRate)).mul(pulseSizePercent).add(1)
+      ),
+      color(cylinderMaterial.color).mul(1.0)
+    );
+
+    return returnColor;
+  });
+  cylinderMaterial.colorNode = colorFunction();
+
+  const profile = [
+    new Vector2(1, -0.5),
+    new Vector2(2, -0.5),
+    new Vector2(2, 0.5),
+    new Vector2(1, 0.5),
+    new Vector2(1, -0.5)
+  ];
+  const squareTorusGeo = new LatheGeometry(profile, 64);
+  squareTorusGeo.rotateX(Math.PI / 2);
+  squareTorusGeo.computeVertexNormals();
+
+  // const returnMesh = new Mesh(new CylinderGeometry(), cylinderMaterial);
+  const returnMesh = new Mesh(squareTorusGeo, cylinderMaterial);
+  returnMesh.name = name;
+
+  returnMesh.raycast = function (raycaster, intersects) {
+    if (temporary) return; // temporary objects are never hit
+    const [x, y, z] = positionUniform.value.toArray();
+    const tempIntersections = intersectWithSurface(
+      raycaster.ray.origin,
+      raycaster.ray.direction,
+      raycaster.near,
+      raycaster.far,
+      z > 0,
+      SURFACE_TYPES.ultraStrip
+    );
+    tempIntersections.forEach(intersection => {
+      if (
+        intersection.point.distanceTo(new Vector3(x, y, z)) <
+        radiusUniform.value * unitLength.value * 2.5
+      ) {
+        intersects.push({
+          distance: intersection.distance,
+          point: intersection.point.clone(),
+          normal: intersection.normal,
+          object: this
+        });
+      }
+    });
+  };
+
+  return returnMesh;
+}
 /**
  * Creates the cone on which the ideal points lie, the  portion of the cone representing the ideal points are between the given clipping planes.
  * @param param0
  * @returns
  */
-export function createIdealPointsStrip(upper: boolean): Mesh {
-  const idealPointMaterial = new THREE.MeshPhysicalNodeMaterial({
+export function createIdealStrip(upper: boolean): Mesh {
+  const idealStripMaterial = new THREE.MeshPhysicalNodeMaterial({
     color: 0x8c92ac,
     side: DoubleSide,
     transparent: true
@@ -793,11 +944,11 @@ export function createIdealPointsStrip(upper: boolean): Mesh {
     // Scale and translate the original tube segment {(x,y,z) | x^2 + y^2 = 1, 0<=z<=1 } to
     //  {(x,y,z) | x^2 + y^2 = z^2, lowerZValue <= z <= upperZValue}
     const upperZValue = upper
-      ? zUpperIdealPointsClipPlus
-      : zLowerIdealPointsClipPlus;
+      ? zUpperIdealStripClipPlus
+      : zLowerIdealStripClipPlus;
     const lowerZValue = upper
-      ? zUpperIdealPointsClipMinus
-      : zLowerIdealPointsClipMinus;
+      ? zUpperIdealStripClipMinus
+      : zLowerIdealStripClipMinus;
     const transformedZ = positionLocal.z
       .mul(upperZValue.sub(lowerZValue))
       .add(lowerZValue);
@@ -809,38 +960,38 @@ export function createIdealPointsStrip(upper: boolean): Mesh {
     );
   });
 
-  idealPointMaterial.positionNode = posFunc();
+  idealStripMaterial.positionNode = posFunc();
 
   // Add opacity to the edges of the ideal point's strip
   const opacityAtEdges = 0.7;
   const percentOfEdgeReduceInOpacity = 0.005;
 
   if (upper) {
-    idealPointMaterial.opacityNode = smoothstep(
-      zUpperIdealPointsClipMinus,
-      zUpperIdealPointsClipMinus.mul(1 + percentOfEdgeReduceInOpacity),
+    idealStripMaterial.opacityNode = smoothstep(
+      zUpperIdealStripClipMinus,
+      zUpperIdealStripClipMinus.mul(1 + percentOfEdgeReduceInOpacity),
       positionLocal.z
     )
       .mul(1 - opacityAtEdges)
       .sub(
         smoothstep(
-          zUpperIdealPointsClipPlus.mul(1 - percentOfEdgeReduceInOpacity),
-          zUpperIdealPointsClipPlus,
+          zUpperIdealStripClipPlus.mul(1 - percentOfEdgeReduceInOpacity),
+          zUpperIdealStripClipPlus,
           positionLocal.z
         ).mul(1 - opacityAtEdges)
       )
       .add(opacityAtEdges);
   } else {
-    idealPointMaterial.opacityNode = smoothstep(
-      zLowerIdealPointsClipPlus,
-      zLowerIdealPointsClipPlus.mul(1 + percentOfEdgeReduceInOpacity),
+    idealStripMaterial.opacityNode = smoothstep(
+      zLowerIdealStripClipPlus,
+      zLowerIdealStripClipPlus.mul(1 + percentOfEdgeReduceInOpacity),
       positionLocal.z
     )
       .mul(1 - opacityAtEdges)
       .sub(
         smoothstep(
-          zLowerIdealPointsClipMinus.mul(1 - percentOfEdgeReduceInOpacity),
-          zLowerIdealPointsClipMinus,
+          zLowerIdealStripClipMinus.mul(1 - percentOfEdgeReduceInOpacity),
+          zLowerIdealStripClipMinus,
           positionLocal.z
         ).mul(1 - opacityAtEdges)
       )
@@ -851,16 +1002,17 @@ export function createIdealPointsStrip(upper: boolean): Mesh {
   const path = new LineCurve3(new Vector3(0, 0, 0), new Vector3(0, 0, 1));
   const geometry = new THREE.TubeGeometry(path, 64, 1, 128, false);
 
-  const idealPointMesh = new Mesh(geometry, idealPointMaterial);
+  const idealPointMesh = new Mesh(geometry, idealStripMaterial);
 
   // --- Override the raycast for the mesh otherwise the ray caster detects only the untransformed mesh---
   idealPointMesh.raycast = function (raycaster, intersects) {
-    const partialIntersects = intersectWithIdealPointsStrip(
+    const partialIntersects = intersectWithSurface(
       raycaster.ray.origin,
       raycaster.ray.direction,
       raycaster.near,
       raycaster.far,
-      upper
+      upper,
+      SURFACE_TYPES.idealStrip
     );
     partialIntersects.forEach(obj =>
       intersects.push({
@@ -873,6 +1025,161 @@ export function createIdealPointsStrip(upper: boolean): Mesh {
   };
 
   return idealPointMesh;
+}
+
+const hazyGlassSettings = {
+  side: THREE.DoubleSide,
+  color: 0xd0e8ff, //0x7bafd4, // Your blueish base
+  transparent: true, // Required for transmission to show through
+  opacity: 1.0, // Keep at 1.0; transmission handles the "see-through"
+
+  // --- THE GLASS CORE ---
+  transmission: 0.98, // Almost full light transmission
+  ior: 1.45, // Standard glass index of refraction
+  thickness: 1.0, // High value gives the "thick" blocky feel
+
+  // --- THE "HAZY" LOOK ---
+  roughness: 0.1, // Slight roughness blurs the "transmission" (the haze)
+  metalness: 0.0, // Glass is non-metallic
+
+  // --- REFLECTION & POLISH ---
+  clearcoat: 1.0, // Adds a secondary polished layer on top of the haze
+  clearcoatRoughness: 0.0, // The outer surface is smooth, while the bulk is hazy
+  //reflectivity: 0.5,
+
+  // --- COLOR DEPTH (Attenuation) ---
+  // This makes the glass bluer where it is thicker
+  attenuationColor: 0x7bafd4,
+  attenuationDistance: 0.5 // Lower numbers make the color denser/thicker
+};
+
+const waterGlassSettings = {
+  side: THREE.FrontSide, //THREE.DoubleSide, //
+  transparent: true,
+  opacity: 1.0,
+
+  // 1. CLEAR SURFACE
+  // color: 0xffffff, // Pure white base color allows maximum transparency
+  // transmission: 1.0, // 100% light pass-through
+  roughness: 0.0, // 0.0 = Perfectly clear (no haze)
+  ior: 1.33, // 1.33 is the IOR of Water (1.5 is Glass)
+
+  // 2. SUBTLE BLUE TINT (The "Volumetric" effect)
+  // attenuationColor: 0x99ccff, // A light, crisp blue
+  // INCREASE this to make it "more transparent".
+  // At 10.0, the blue is very faint. At 2.0, it's quite blue.
+  // attenuationDistance: 8.0,
+
+  // 3. REFLECTIONS (The "Shiny" look)
+  // thickness: 0.5, // virtual thickness for refraction
+  // clearcoat: 1.0, // adds that extra "polished" reflection layer
+  clearcoatRoughness: 0.0,
+  //specularIntensity: 1.0,
+  // reflectivity: 0.5,
+
+  metalness: 0.0,
+
+  // 1. KILL REFLECTIONS
+  reflectivity: 0.1, // Removes environment reflections
+  specularIntensity: 0.0, // Removes direct light highlights
+  clearcoat: 0.5, // Removes the "polished" top layer
+
+  // 2. ENSURE SEE-THROUGH
+  transmission: 1.0,
+  thickness: 0.01, // Very thin so it doesn't "trap" light and turn black
+
+  // 3. COLOR
+  color: 0xffffff,
+  attenuationColor: 0x99ccff,
+  attenuationDistance: 10.0
+};
+
+export function createUltraStrip(upper): THREE.Mesh {
+  const ultraStripMaterial = new THREE.MeshPhysicalNodeMaterial(
+    waterGlassSettings
+    //   {
+    //   side: DoubleSide,
+    //   color: 0x7bafd4, //0x88ccff, // base color
+    //   roughness: 0.0, // very smooth surface
+    //   //transmission: 0.5, // glasslike transparency
+    //   //thickness: 0.05, // thin glass layer (in world units)
+    //   //ior: 1.45, // index of refraction of glass
+    //   transparent: false, // must enable for opacity/transmission
+    //   opacity: 0.0, // keep at 1, transparency handled via transmission
+    //   metalness: 0.0
+    //   // reflectivity: 0.15, // helps glass reflections
+    //   // clearcoat: 1.0, // improves highlight realism
+    //   // clearcoatRoughness: 0.05,
+    //   // specularIntensity: 0.2,
+    //   //soap bubble" thin-film interferences
+    //   // iridescence: 1.0,
+    //   // iridescenceIOR: 1.3,
+    //   // iridescenceThicknessRange: [50, 150], // in nanometers
+    // }
+  );
+  // const baseColor = color(ultraStripMaterial.color); //Chocolate
+  const baseColor = color(0xffffff); // Use White
+  const localPositionZ = varying(positionLocal.z); // make this available in the fragment shader
+
+  const clippingLogic = Fn(() => {
+    if (upper) {
+      positionLocal.z.greaterThan(zUpperClip).discard();
+      positionLocal.z.lessThan(0).discard();
+    } else {
+      positionLocal.z.lessThan(zLowerClip).discard();
+      positionLocal.z.greaterThan(0).discard();
+    }
+    return baseColor;
+  });
+
+  ultraStripMaterial.colorNode = clippingLogic();
+
+  // Smooth the opacity of the  edge
+  // ultraStripMaterial.opacityNode = smoothstep(
+  //   zUpperClip.mul(SETTINGS.fadePercentage),
+  //   zLowerClip,
+  //   localPositionZ
+  // )
+  //   .oneMinus()
+  //   // .mul(float(SETTINGS.startOpacityFade).sub(float(SETTINGS.endOpacityFade)))
+  //   .mul(float(1.0).sub(float(SETTINGS.endOpacityFade)))
+  //   .add(float(SETTINGS.endOpacityFade));
+
+  const ultraStripGeometry = new ParametricGeometry(
+    (u, v, pt) => {
+      u = (upper ? 1 : -1) * u * (Math.acosh(SETTINGS.maxZClip) + 1) + 0.001; // add one because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene. Adding 0.001 to avoid clumping of points at the tip which causes rendering issues.
+      const theta = v * 2 * Math.PI;
+      const x = Math.cosh(u) * Math.cos(theta);
+      const y = Math.cosh(u) * Math.sin(theta);
+      const z = Math.sinh(u);
+      pt.set(x, y, z);
+    },
+    120,
+    300
+  );
+
+  const ultraStripMesh = new Mesh(ultraStripGeometry, ultraStripMaterial);
+
+  ultraStripMesh.raycast = function (raycaster, intersects) {
+    const partialIntersects = intersectWithSurface(
+      raycaster.ray.origin,
+      raycaster.ray.direction,
+      raycaster.near,
+      raycaster.far,
+      upper,
+      SURFACE_TYPES.ultraStrip
+    );
+    partialIntersects.forEach(obj =>
+      intersects.push({
+        distance: obj.distance,
+        point: obj.point,
+        normal: obj.normal,
+        object: this
+      })
+    );
+  };
+
+  return ultraStripMesh;
 }
 
 export function createPolarGridCircle(
@@ -1080,9 +1387,9 @@ export function createBoundaryCone(upper: boolean): THREE.Mesh {
 
   const clippingLogic = Fn(() => {
     if (upper) {
-      positionLocal.z.greaterThan(zUpperIdealPointsClipMinus).discard();
+      positionLocal.z.greaterThan(zUpperIdealStripClipMinus).discard();
     } else {
-      positionLocal.z.lessThan(zLowerIdealPointsClipPlus).discard();
+      positionLocal.z.lessThan(zLowerIdealStripClipPlus).discard();
     }
 
     return baseColor;
@@ -1090,12 +1397,12 @@ export function createBoundaryCone(upper: boolean): THREE.Mesh {
 
   coneMaterial.colorNode = clippingLogic();
 
-  // Smooth the opacity of the top edge of the hyperboloid
+  // Smooth the opacity of the top edge
   coneMaterial.opacityNode = smoothstep(
-    (upper ? zUpperIdealPointsClipMinus : zLowerIdealPointsClipPlus).mul(
+    (upper ? zUpperIdealStripClipMinus : zLowerIdealStripClipPlus).mul(
       SETTINGS.fadePercentage
     ),
-    upper ? zUpperIdealPointsClipMinus : zLowerIdealPointsClipPlus,
+    upper ? zUpperIdealStripClipMinus : zLowerIdealStripClipPlus,
     localPositionZ
   )
     .oneMinus()
@@ -1129,43 +1436,44 @@ export function createHyperboloidSheet(upper: boolean): THREE.Mesh {
     side: DoubleSide,
     metalness: 0.1,
     roughness: 0.2,
-    opacity: 0, //0.2,
-    transparent: false,
+    transparent: true,
     clearcoat: 1.0,
     clearcoatRoughness: 0.1
   });
-  const baseColor = color(hyperboloidMaterial.color); //Chocolate
+  const baseColor = color(hyperboloidMaterial.color);
 
-  //const zClip = uniform(zClipInitial);
   const localPositionZ = varying(positionLocal.z); // make this available in the fragment shader
 
   const clippingLogic = Fn(() => {
     if (upper) {
-      positionLocal.z.greaterThan(upper ? zUpperClip : zLowerClip).discard();
+      positionLocal.z.greaterThan(zUpperClip).discard();
     } else {
-      positionLocal.z.lessThan(upper ? zUpperClip : zLowerClip).discard();
+      positionLocal.z.lessThan(zLowerClip).discard();
     }
-
     return baseColor;
   });
 
   hyperboloidMaterial.colorNode = clippingLogic();
 
-  // Smooth the opacity of the top edge of the hyperboloid
-  // hyperboloidMaterial.opacityNode = smoothstep(
-  //   (upper ? zUpperClip : zLowerClip).mul(SETTINGS.fadePercentage),
-  //   upper ? zUpperClip : zLowerClip,
-  //   localPositionZ
-  // )
-  //   .oneMinus()
-  //   // .mul(float(SETTINGS.startOpacityFade).sub(float(SETTINGS.endOpacityFade)))
-  //   .mul(float(1.0).sub(float(SETTINGS.endOpacityFade)))
-  //   .add(float(SETTINGS.endOpacityFade));
-
-  hyperboloidMaterial.opacityNode = float(0.0);
+  // Smooth the opacity of the edge of the hyperboloid
+  hyperboloidMaterial.opacityNode = smoothstep(
+    (upper ? zUpperClip : zLowerClip).mul(SETTINGS.fadePercentage),
+    upper ? zUpperClip : zLowerClip,
+    localPositionZ
+  )
+    .oneMinus()
+    .mul(float(SETTINGS.startOpacityFade).sub(float(SETTINGS.endOpacityFade)))
+    .add(float(SETTINGS.endOpacityFade));
 
   const hyperboloidGeometry = new ParametricGeometry(
-    upper ? upperHyperboloid : lowerHyperboloid,
+    (u, v, pt) => {
+      u = u * (Math.acosh(SETTINGS.maxZClip) + 1) + 0.001; // add one because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene. Adding 0.001 to avoid clumping of points at the tip which causes rendering issues.
+      const theta = v * 2 * Math.PI;
+      const x = Math.sinh(u) * Math.cos(theta);
+      const y = Math.sinh(u) * Math.sin(theta);
+      const z = (upper ? 1 : -1) * Math.cosh(u);
+      pt.set(x, y, z);
+    },
     120,
     300
   );
@@ -1173,12 +1481,13 @@ export function createHyperboloidSheet(upper: boolean): THREE.Mesh {
   const hyperboloidMesh = new Mesh(hyperboloidGeometry, hyperboloidMaterial);
 
   hyperboloidMesh.raycast = function (raycaster, intersects) {
-    const partialIntersects = intersectWithHyperboloid(
+    const partialIntersects = intersectWithSurface(
       raycaster.ray.origin,
       raycaster.ray.direction,
       raycaster.near,
       raycaster.far,
-      upper
+      upper,
+      SURFACE_TYPES.hyperboloid
     );
     partialIntersects.forEach(obj =>
       intersects.push({
@@ -1191,40 +1500,6 @@ export function createHyperboloidSheet(upper: boolean): THREE.Mesh {
   };
 
   return hyperboloidMesh;
-}
-
-// Parametric function for the upper sheet of the hyperboloid where 0 <= u <= 1 and 0 <= v <= 1, the point is returned in pt
-function upperHyperboloid(u: number, v: number, pt: Vector3) {
-  // This is a one-to-one mapping from R^2 to a sheet of the hyperboloid.
-  // https://math.stackexchange.com/questions/697245/parametrization-of-the-hyperboloid-of-two-sheets
-  // Maybe this is useful if we run into multi-value issues
-  // The edges of this do not form a rectangle in 3D
-  // const scale = 3;
-  // const myU = 2 * scale * u - scale; // map to -scale <= u <= scale
-  // const myV = 2 * scale * v - scale; // map to -scale <= v <= scale
-  // const x = Math.sinh(myU) * Math.cosh(myV);
-  // const y = Math.sinh(myV);
-  // const z = Math.cosh(myU) * Math.cosh(myV);
-
-  // This is the standard polar coordinate parameterization
-  // https://en.wikipedia.org/wiki/Hyperboloid_of_two_sheets#Parametrization
-  // // where u is the radial coordinate and v is the angular coordinate
-  u = u * (Math.acosh(SETTINGS.maxZClip) + 1) + 0.001; // add one because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene. Adding 0.001 to avoid clumping of points at the tip which causes rendering issues.
-  const theta = v * 2 * Math.PI;
-  const x = Math.sinh(u) * Math.cos(theta);
-  const y = Math.sinh(u) * Math.sin(theta);
-  const z = Math.cosh(u);
-  pt.set(x, y, z);
-}
-
-// Parametric function for the lower sheet of the hyperboloid in polar coordinates 0 <= u <= 1 and 0 <= v <= 1
-function lowerHyperboloid(u: number, v: number, pt: Vector3) {
-  u = u * (Math.acosh(SETTINGS.maxZClip) + 1) + 0.001; // add one because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene. Adding 0.001 to avoid clumping of points at the tip which causes rendering issues.
-  const theta = v * 2 * Math.PI;
-  const x = Math.sinh(u) * Math.cos(theta);
-  const y = Math.sinh(u) * Math.sin(theta);
-  const z = -Math.cosh(u);
-  pt.set(x, y, z);
 }
 
 const xAxisRotationMatrix = Fn(

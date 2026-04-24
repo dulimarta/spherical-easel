@@ -85,12 +85,12 @@ export abstract class HENodule {
     });
   }
 
-  public addToScene(s: Scene): void {
+  public addGroupToScene(s: Scene): void {
     // console.log("added", this.name, "to scene");
     s.add(this.group);
   }
 
-  public removeFromScene(s: Scene) {
+  public removeGroupFromScene(s: Scene) {
     this.group.children
       .map(c => c as Mesh)
       .forEach(c => {
@@ -132,15 +132,14 @@ export abstract class HENodule {
   public abstract update(): void;
 
   public abstract shallowUpdate(): void;
-  // public abstract glowingDisplay(): void;
-  // public abstract normalDisplay(): void;
+
   public glowingDisplay(): void {
     // console.log("HENodule set glowDisplay", this.name);
-    (this.material as CustomMaterial).glowing = true;
+    (this.material as CustomMaterial).glowing = 1;
   }
   public normalDisplay(): void {
     // console.log("HENodule set normalDisplay", this.name);
-    (this.material as CustomMaterial).glowing = false;
+    (this.material as CustomMaterial).glowing = 0;
   }
 
   set exists(b: boolean) {
@@ -162,8 +161,9 @@ export abstract class HENodule {
   set showing(b: boolean) {
     // console.log("set showing in HENodule", this.name, " to ", b);
     this._showing = b; // set the variable
-    if (this.material) {
-      this.material.visible = b; // set the actual display
+    const mesh = this.mesh;
+    if (mesh) {
+      mesh.visible = b; // set the actual display
     }
   }
 
@@ -174,7 +174,6 @@ export abstract class HENodule {
   set glowing(b: boolean) {
     //glowing has no effect on hidden objects
     // console.log("HENodule set glow of ", this.name, " to ", b);
-    //console.log("SENodul::object:", this.name, " ref id ", this.ref?.id);
     if (this._selected || !this.showing) return;
     if (b) {
       // Set the display for the corresponding plottable object

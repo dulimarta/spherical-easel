@@ -31,8 +31,11 @@ export class PoseTracker implements HyperbolicToolStrategy {
   protected somethingIsHit = false;
   protected hyperboloidIsFirstSurfaceHit = false;
   protected hyperboloidFirstHitOverall = false;
-  protected idealPointsStripFirstHitOverall = false;
-  protected surfaceIsIntersected = false;
+  protected idealStripFirstHitOverall = false;
+  protected idealStripIsFirstSurfaceHit = false;
+  protected ultraStripFirstHitOverall = false;
+  protected ultraStripIsFirstSurfaceHit = false;
+  protected aSurfaceIsIntersected = false;
 
   /**
    * Arrays of nodules near the mouse event location
@@ -73,18 +76,30 @@ export class PoseTracker implements HyperbolicToolStrategy {
     this.somethingIsHit =
       PoseTracker.hyperStore.objectIntersections.length > 0 ||
       PoseTracker.hyperStore.surfaceIntersections.length > 0;
-    this.surfaceIsIntersected =
+    this.aSurfaceIsIntersected =
       PoseTracker.hyperStore.surfaceIntersections.length > 0;
-    this.hyperboloidIsFirstSurfaceHit = this.surfaceIsIntersected
+    this.hyperboloidIsFirstSurfaceHit = this.aSurfaceIsIntersected
       ? PoseTracker.hyperStore.surfaceIntersections[0].object.name.match(
-          /(Sheet)$/
+          /(Sheet)/
         ) !== null
-      : false; // THIS SHOULD ONLY BE USED WHERE WE KNOW this.surfaceIsIntersected IS TRUE
+      : false; // THIS SHOULD ONLY BE USED WHERE WE KNOW this.aSurfaceIsIntersected IS TRUE
+    this.idealStripIsFirstSurfaceHit = this.aSurfaceIsIntersected
+      ? PoseTracker.hyperStore.surfaceIntersections[0].object.name.match(
+          /(Ideal)/
+        ) !== null
+      : false; // THIS SHOULD ONLY BE USED WHERE WE KNOW this.aSurfaceIsIntersected IS TRUE
+    this.ultraStripIsFirstSurfaceHit = this.aSurfaceIsIntersected
+      ? PoseTracker.hyperStore.surfaceIntersections[0].object.name.match(
+          /(Ultra)/
+        ) !== null
+      : false; // THIS SHOULD ONLY BE USED WHERE WE KNOW this.aSurfaceIsIntersected IS TRUE
 
     this.hyperboloidFirstHitOverall =
       PoseTracker.hyperStore.hyperboloidIsClosestIntersection;
-    this.idealPointsStripFirstHitOverall =
-      PoseTracker.hyperStore.idealPointsStripIsClosestIntersection;
+    this.idealStripFirstHitOverall =
+      PoseTracker.hyperStore.idealStripIsClosestIntersection;
+    this.ultraStripFirstHitOverall =
+      PoseTracker.hyperStore.ultraStripIsClosestIntersection;
 
     // control the normal arrow
     // if (

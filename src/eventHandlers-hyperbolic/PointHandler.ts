@@ -17,13 +17,14 @@ import { HELabel } from "@/models-hyperbolic/HELabel";
 
 export class PointHandler extends PoseTracker {
   private _tempPoint: HEPoint;
-  private _tempIdealPoint: HEPoint;
+
   private _tempTube: Mesh;
   private _tempTubeMaterial: CustomPointMaterial;
   private _tempUpperCone: Mesh;
   private _tempLowerCone: Mesh;
-  private _tempPointInScene = false;
-  private _tempIdealPointInScene = false; // includes the temporary tube
+
+  private _tempPointInGroup = false;
+  private _tempTubeInScene = false;
   private _tempUpperConeInScene = false;
   private _tempLowerConeInScene = false;
 
@@ -38,17 +39,13 @@ export class PointHandler extends PoseTracker {
     super(scene);
     this.scene = scene;
     this._tempPoint = new HEPoint(new THREE.Vector4(0, 0, 1, 1), false, true);
-
-    this._tempIdealPoint = new HEPoint(
-      new THREE.Vector4(1, 0, 0, 0),
-      false,
-      true
-    );
-    // this.tempPointIdealMaterial = this.tempPointIdeal.material as CustomPointMaterial;
+    PoseTracker.hyperStore.addTempObject(this._tempPoint); // add the temporary point to the store so that it will be updated when the display changes
     this._tempTube = createIdealPointTube(true);
     this._tempTubeMaterial = this._tempTube.material as CustomPointMaterial;
     this._tempLowerCone = createBoundaryCone(false);
     this._tempUpperCone = createBoundaryCone(true);
+    this._tempPoint.addGroupToScene(this.scene); // Adds the group that contains(or not depending on the state of the handler) the three types of mesh to the scene
+    this._tempPoint.removeAllMeshesFromGroup();
   }
 
   mousePressed(event: MouseEvent): void {
@@ -59,12 +56,12 @@ export class PointHandler extends PoseTracker {
     // we call super.mouseMove
     // super.mouseMoved(event);
 
-    if (this.surfaceIsIntersected) {
-      // If this is near any other points do not create a new point, unless the hitSEPoint is an un user-created intersection or antipodal point
+    if (this.aSurfaceIsIntersected) {
+      // If this muse press is near any other points do not create a new point, unless the hitHEPoint is an un user-created intersection or antipodal point
       this.updateFilteredPointsList();
 
       if (this._filteredIntersectionPointsList.length > 0) {
-        //Make it user created and turn on the display
+        //Make the hit point user created and turn on the display
         // set the display to visible order
 
         new SetPointUserCreatedValueCommand(
@@ -183,9 +180,23 @@ export class PointHandler extends PoseTracker {
         // mouse press on empty location so create a free point
         // Create the model object for the new point and link them
         // this over either the ideal point's strip or the hyperboloid
+        let wCoordinate: number;
+        switch (true) {
+          case this.hyperboloidIsFirstSurfaceHit:
+            wCoordinate = 1;
+            break;
+          case this.idealStripIsFirstSurfaceHit:
+            wCoordinate = 0;
+            break;
+          case this.ultraStripIsFirstSurfaceHit:
+            wCoordinate = -1;
+            break;
+          default:
+            wCoordinate = 1; // default to the hyperboloid if something goes wrong
+        }
         const hitLocation = PoseTracker.vec3ToVec4(
           PoseTracker.hyperStore.surfaceIntersections[0].point,
-          this.hyperboloidIsFirstSurfaceHit ? 1 : 0
+          wCoordinate
         );
         vtx = new HEPoint(hitLocation);
         newHELabel = new HELabel("point", vtx, hitLocation, vtx.name);
@@ -215,7 +226,7 @@ export class PointHandler extends PoseTracker {
           // newSELabel.locationVector = this.tmpVector;
         }
         pointCommandGroup.execute();
-        super.mouseLeave(event); // If this line is not here the point handler puts a "dim" point on the sphere and when you trigger the mouseLeave() event the point "brightens".  This fixes that issue so there is no brightening.
+        //super.mouseLeave(event); // If this line is not here the point handler puts a "dim" point on the sphere and when you trigger the mouseLeave() event the point "brightens".  This fixes that issue so there is no brightening.
       }
     } else {
       // Remove the temporary objects
@@ -245,92 +256,28 @@ export class PointHandler extends PoseTracker {
       this._snapToObject = null;
     }
 
-    if (this.surfaceIsIntersected) {
+    if (this.aSurfaceIsIntersected) {
       if (this._snapToObject === null) {
-        if (this.hyperboloidIsFirstSurfaceHit) {
-          if (!this._tempPointInScene) {
-            this._tempPointInScene = true;
-            this.scene.add(this._tempPoint.mesh);
-          }
-          this._tempPoint.position = PoseTracker.vec3ToVec4(
-            PoseTracker.hyperStore.surfaceIntersections[0].point,
-            1
-          );
-        } else {
-          if (this._tempPointInScene) {
-            this._tempPointInScene = false;
-            this.scene.remove(this._tempPoint.mesh);
-          }
+        if (!this._tempPointInGroup) {
+          this._tempPointInGroup = true;
         }
-
-        if (!this.hyperboloidIsFirstSurfaceHit) {
-          if (!this._tempIdealPointInScene) {
-            this._tempIdealPointInScene = true;
-            this.scene.add(this._tempTube);
-            this.scene.add(this._tempIdealPoint.mesh);
-          }
-          const location = PoseTracker.hyperStore.surfaceIntersections[0].point;
-          const upper = location.z > 0;
-          this._tempIdealPoint.position = PoseTracker.vec3ToVec4(location, 0);
-          this._tempTubeMaterial.upper = upper ? 1 : 0;
-          this._tempTubeMaterial.tubeAngle = Math.atan2(location.y, location.x);
-
-          if (!this._tempLowerConeInScene && !upper) {
-            this.scene.add(this._tempLowerCone);
-            this._tempLowerConeInScene = true;
-            this._tempUpperConeInScene = false;
-            this.scene.remove(this._tempUpperCone);
-          }
-
-          if (!this._tempUpperConeInScene && upper) {
-            this.scene.add(this._tempUpperCone);
-            this._tempUpperConeInScene = true;
-            this._tempLowerConeInScene = false;
-            this.scene.remove(this._tempLowerCone);
-          }
-        } else {
-          if (this._tempIdealPointInScene) {
-            this._tempIdealPointInScene = false;
-            this._tempUpperConeInScene = false;
-            this._tempLowerConeInScene = false;
-            this.scene.remove(this._tempTube);
-            this.scene.remove(this._tempIdealPoint.mesh);
-            this.scene.remove(this._tempLowerCone);
-            this.scene.remove(this._tempUpperCone);
-          }
-        }
+        this.addTempObjectsToScene();
       } else {
         // snap to an object
-        if (!this._tempPointInScene) {
-          this._tempPointInScene = true;
-          this.scene.add(this._tempPoint.mesh);
+        if (!this._tempPointInGroup) {
+          this._tempPointInGroup = true;
         }
+        this.addTempObjectsToScene();
         // this.tempPointMaterial.position = this.snapToObject.closestVector(
         //   PoseTracker.hyperStore.surfaceIntersections[0].point
-        // );
+        // ); // not implemented yet
       }
-      // If there is a nearby (possibly user created or not) point turn off the temporary marker
+      // If there is a nearby (possibly user created or not) point turn off the temporary markers
       if (this._filteredIntersectionPointsList.length > 0) {
-        if (this._tempPointInScene) {
-          // Remove the temporary point
-          this.scene.remove(this._tempPoint.mesh);
-          this._tempPointInScene = false;
-          this._snapToObject = null;
-        }
-        if (this._tempIdealPointInScene) {
-          // Remove the temporary ideal point
-          this._tempIdealPointInScene = false;
-          this._tempUpperConeInScene = false;
-          this._tempLowerConeInScene = false;
-          this.scene.remove(this._tempTube);
-          this.scene.remove(this._tempIdealPoint.mesh);
-          this.scene.remove(this._tempLowerCone);
-          this.scene.remove(this._tempUpperCone);
-          this._snapToObject = null;
-        }
+        this.removeAllTempObjects();
       }
     } else {
-      // the event is not over the hyperboloid and is not over the ideal point's strip remove all temp objects
+      // the event is not over any surface so remove all temp objects
       this.removeAllTempObjects();
     }
   }
@@ -352,16 +299,90 @@ export class PointHandler extends PoseTracker {
     this.removeAllTempObjects();
   }
 
+  private addTubeAndConeToScene() {
+    if (!this._tempTubeInScene) {
+      this._tempTubeInScene = true;
+      this.scene.add(this._tempTube);
+    }
+    const location = PoseTracker.hyperStore.surfaceIntersections[0].point;
+    const upper = location.z > 0;
+    this._tempTubeMaterial.position = new THREE.Vector4(
+      0,
+      0,
+      upper ? 1 : -1,
+      0
+    ); // x,y,w are not used for the tube
+    this._tempTubeMaterial.tubeAngle = Math.atan2(location.y, location.x);
+    if (!this._tempLowerConeInScene && !upper) {
+      this.scene.add(this._tempLowerCone);
+      this._tempLowerConeInScene = true;
+      this._tempUpperConeInScene = false;
+      this.scene.remove(this._tempUpperCone);
+    }
+
+    if (!this._tempUpperConeInScene && upper) {
+      this.scene.add(this._tempUpperCone);
+      this._tempUpperConeInScene = true;
+      this._tempLowerConeInScene = false;
+      this.scene.remove(this._tempLowerCone);
+    }
+  }
+
+  private removeTubeAndConeFromScene() {
+    if (this._tempTubeInScene) {
+      this.scene.remove(this._tempTube);
+      this._tempTubeInScene = false;
+    }
+    if (this._tempLowerConeInScene) {
+      this.scene.remove(this._tempLowerCone);
+      this._tempLowerConeInScene = false;
+    }
+    if (this._tempUpperConeInScene) {
+      this.scene.remove(this._tempUpperCone);
+      this._tempUpperConeInScene = false;
+    }
+  }
+
+  private addTempObjectsToScene() {
+    let wCoordinate: number;
+    switch (true) {
+      case this.hyperboloidIsFirstSurfaceHit:
+        wCoordinate = 1;
+        //remove the tube and cone if they are in the scene
+        this.removeTubeAndConeFromScene();
+        break;
+      case this.idealStripIsFirstSurfaceHit:
+        wCoordinate = 0;
+        // add the tube and cone for the ideal points
+        this.addTubeAndConeToScene();
+        break;
+      case this.ultraStripIsFirstSurfaceHit:
+        wCoordinate = -1;
+        //remove the tube and cone if they are in the scene
+        this.removeTubeAndConeFromScene();
+        break;
+      default:
+        wCoordinate = 1; // default to the hyperboloid if something goes wrong
+    }
+    this._tempPoint.position = PoseTracker.vec3ToVec4(
+      PoseTracker.hyperStore.surfaceIntersections[0].point,
+      wCoordinate
+    );
+    this._tempPoint.updateGroup(); // this must be called after setting the position of the point because the position is used to determine which of the three meshes (hyperboloid, ideal strip, or ultra strip) should be added to the group and displayed as the temporary point.
+  }
+
   removeAllTempObjects() {
-    this.scene.remove(this._tempPoint.mesh);
-    this.scene.remove(this._tempIdealPoint.mesh);
+    this._tempPoint.removeAllMeshesFromGroup();
+    this._tempPointInGroup = false;
+
     this.scene.remove(this._tempTube);
-    this.scene.remove(this._tempUpperCone);
+    this._tempTubeInScene = false;
+
     this.scene.remove(this._tempLowerCone);
-    this._tempIdealPointInScene = false;
-    this._tempLowerConeInScene = false;
+    this.scene.remove(this._tempUpperCone);
     this._tempUpperConeInScene = false;
-    this._tempPointInScene = false;
+    this._tempLowerConeInScene = false;
+
     this._snapToObject = null;
   }
 
