@@ -1035,7 +1035,7 @@ export function createIdealStrip(upper: boolean): Mesh {
 }
 
 const waterGlassSettings = {
-  side: THREE.FrontSide,
+  side: THREE.DoubleSide,
   depthWrite: false,
   transparent: true,
   opacity: 1.0,
@@ -1045,12 +1045,13 @@ const waterGlassSettings = {
   metalness: 0.0,
   specularIntensity: 0.0,
   clearcoat: 0.5,
-  transmission: 1.0,
+  transmission: 0.9,
   thickness: 0.01,
   color: 0xffffff,
   attenuationColor: 0x99ccff,
   attenuationDistance: 10.0
 };
+
 export function createUltraStrip(upper): THREE.Mesh {
   const ultraStripMaterial = new THREE.MeshPhysicalNodeMaterial(
     waterGlassSettings
@@ -1074,22 +1075,11 @@ export function createUltraStrip(upper): THREE.Mesh {
 
   ultraStripMaterial.colorNode = clippingLogic();
 
-  // Smooth the opacity of the  edge
-  // ultraStripMaterial.opacityNode = smoothstep(
-  //   zUpperClip.mul(SETTINGS.fadePercentage),
-  //   zLowerClip,
-  //   localPositionZ
-  // )
-  //   .oneMinus()
-  //   // .mul(float(SETTINGS.startOpacityFade).sub(float(SETTINGS.endOpacityFade)))
-  //   .mul(float(1.0).sub(float(SETTINGS.endOpacityFade)))
-  //   .add(float(SETTINGS.endOpacityFade));
-
   const ultraStripGeometry = new ParametricGeometry(
     (u, v, pt) => {
       u = (upper ? 1 : -1) * u * (Math.acosh(SETTINGS.maxZClip) + 1);
 
-      const correctedV = upper ? v : 1.0 - v; // Fix normals for the lower sheet
+      const correctedV = upper ? 1.0 - v : v; // Fix normals for the lower sheet
       const theta = correctedV * 2 * Math.PI;
 
       const x = Math.cosh(u) * Math.cos(theta);
@@ -1125,7 +1115,7 @@ export function createUltraStrip(upper): THREE.Mesh {
   return ultraStripMesh;
 }
 const hazyGlassSettings = {
-  side: THREE.FrontSide,
+  side: THREE.DoubleSide,
   depthWrite: false,
   color: 0xffffff,
   transparent: true,
@@ -1144,7 +1134,6 @@ const hazyGlassSettings = {
 };
 export function createBoundaryCone(upper: boolean): THREE.Mesh {
   const coneMaterial = new THREE.MeshPhysicalNodeMaterial(hazyGlassSettings);
-  // const baseColor = color(coneMaterial.color);
   const baseColor = color(0xffffff);
   const localPositionZ = varying(positionLocal.z); // make this available in the fragment shader
 
@@ -1175,7 +1164,8 @@ export function createBoundaryCone(upper: boolean): THREE.Mesh {
 
   coneMaterial.opacityNode = (upper ? upperSmooth : lowerSmooth)
     .mul(float(SETTINGS.startOpacityFade).sub(float(SETTINGS.endOpacityFade)))
-    .add(float(SETTINGS.endOpacityFade));
+    .add(float(SETTINGS.endOpacityFade))
+    .mul(float(0.5));
 
   const coneGeometry = new ParametricGeometry(
     (u, v, out) => {
@@ -1202,7 +1192,6 @@ export function createBoundaryCone(upper: boolean): THREE.Mesh {
   coneMesh.renderOrder = 3;
   return coneMesh;
 }
-
 export function createHyperboloidSheet(upper: boolean): THREE.Mesh {
   const hyperboloidMaterial = new THREE.MeshPhysicalNodeMaterial({
     color: 0x004080, //0x2d2d2d, //, // 0x2d2d2d, //0xc46210,
@@ -1290,25 +1279,33 @@ export function createHyperboloidSheet(upper: boolean): THREE.Mesh {
 
   return hyperboloidMesh;
 }
+const GRID_Z_OFFSET = 0.01; // World-space push off hyperboloid surface
+const MAX_RADIAL_STEP = 0.04; // Cap on parameter step for radial lines
 
 export function createPolarGridCircle(
-  intrinsicRadius: number, // The intrinsic hyperbolic radius
+  intrinsicRadius: number,
   upper: boolean,
-  thickness = 3 //pixels
+  zPlus: boolean, // controls if the circle is just above the hyperboloid or just below
+  thickness = 1
 ): Mesh {
   const circlePoints: number[] = [];
-  // Calculate number of points needed to achieve the desired maximum error in linear approximation of circle
-  const error = 0.004; // maximum allowable error (as a world space distance) in the linear segments approximating the circle
+  const error = 0.004;
   const numPoints = Math.ceil(
     Math.PI / Math.acos(1 - error / Math.sinh(intrinsicRadius))
   );
 
-  // Build the path
+  // Push the circle points slightly off the hyperboloid surface in ±z so they
+  // are guaranteed to be in front of the surface in the depth buffer.
+  const zOffset = zPlus ? GRID_Z_OFFSET : -GRID_Z_OFFSET;
+  const z =
+    (upper ? Math.cosh(intrinsicRadius) : -Math.cosh(intrinsicRadius)) +
+    zOffset;
+
   for (let angle = 0; angle < 2 * Math.PI; angle += (2 * Math.PI) / numPoints) {
     circlePoints.push(
       Math.sinh(intrinsicRadius) * Math.cos(angle),
       Math.sinh(intrinsicRadius) * Math.sin(angle),
-      upper ? Math.cosh(intrinsicRadius) : -Math.cosh(intrinsicRadius)
+      z
     );
   }
   // Close the circle
@@ -1318,120 +1315,100 @@ export function createPolarGridCircle(
   geometry.setPositions(circlePoints);
 
   const lineMaterial = new THREE.Line2NodeMaterial({
-    linewidth: thickness, // Width in pixels
+    linewidth: thickness,
     transparent: true,
     color: "grey",
-    blending: THREE.NormalBlending, //If this is not set the radial lines near (0,0,1) looks whitish grey
+    blending: THREE.NormalBlending,
     alphaTest: 0.1,
     depthTest: true,
-    depthWrite: true
-    // polygonOffset: true, // attempt to limit z fighting when polar angle is 0 or pi
-    // polygonOffsetFactor: -1.0, // Nudge the line toward the camera
-    // polygonOffsetUnits: -4.0 // Higher value = more aggressive nudge
+    depthWrite: false // Do not write to depth buffer — only test against it.
+    // The hyperboloid (renderOrder 1) already wrote its depth.
+    // Grid lines (renderOrder 4) just need to pass that test.
   });
-
-  // Clipping Logic -- line2NodeMaterial is really just a center line that is
-  // thickened with quadrilaterals. It is the union of a series of instances,
-  // each of which is a quadrilateral (= two triangles with a common edge
-  // (diagonal)), with a center line down the middle. The vertices of the quad
-  // are determined by moving perpendicular to the center line half the
-  // thickness of the line material (in pixels). uv coordinates are the
-  // coordinates of a location in the quad. I know that uv().y goes from -1 to
-  // 1. I'm not sure about the uv().x range. Each vertex of the quad has the
-  // (same) instanceStart and instanceEnd data associated to it so doesn't
-  // matter which vertex you get this information from. In this case all the z
-  // coordinates of the instanceStart and instanceEnd along circular line are
-  // the same so it doesn't matter which you choose
 
   const instanceStart = attribute("instanceStart", "vec3");
   const varyingInstanceStartLocal = varying(instanceStart);
   const worldInstanceStartZ = modelWorldMatrix.mul(
     vec4(varyingInstanceStartLocal, 1.0)
   ).z;
+
   const clippingLogic = Fn(() => {
-    // discard any instances that start/end after/before zClip
     const shouldClip = upper
       ? worldInstanceStartZ.greaterThan(zUpperClip)
       : worldInstanceStartZ.lessThan(zLowerClip);
     shouldClip.discard();
-
     return float(1.0);
   });
 
-  // Apply to your material
   lineMaterial.opacityNode = clippingLogic();
-
-  // Attempt to fix z-fighting when the boundary cone is displayed and the dolly distance is large
-  // lineMaterial.positionNode = Fn(() => {
-  //   const posView = modelViewMatrix.mul(vec4(positionLocal, 1.0));
-  //   const nudged = vec4(posView.xyz.add(vec3(0, 0, 0.001)), posView.w);
-  //   return nudged.xyz;
-  // })();
 
   // @ts-expect-error: Line2 constructor type definition is outdated for WebGPU materials
   const mesh = new Line2(geometry, lineMaterial);
-
-  // mesh.name =
-  //   (upper ? `U` : `L`) + `PolarGridCircle_r=${intrinsicRadius.toFixed(2)}`;
-  mesh.raycast = () => {}; // this object is never intersected
+  // Render AFTER the hyperboloid (1), ultra strip (2), and cone (3).
+  // The depth buffer at this point contains the hyperboloid surface depths.
+  // With depthWrite: false, the grid cannot interfere with any subsequent passes.
+  mesh.renderOrder = 4;
+  mesh.raycast = () => {};
   return mesh;
 }
 
 export function createPolarGridRadialLine(
   radianAngle: number,
   upper: boolean,
-  thickness = 3 //pixels
+  zPlus: boolean, // controls if the circle is just above the hyperboloid or just below
+  thickness = 1
 ): Mesh {
   const points: number[] = [];
+
+  // Push off the surface in ±z, same as the circle lines.
+  const zOffset = zPlus ? GRID_Z_OFFSET : -GRID_Z_OFFSET;
 
   let nextTValue = 0.01;
   let myContinue = true;
   for (let i = 0; myContinue; i++) {
-    if (nextTValue > Math.acosh(SETTINGS.maxZClip + 1.0)) {
-      nextTValue = Math.acosh(SETTINGS.maxZClip + 1.0);
-      // add one to zMax because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene.
+    const tMax = Math.acosh(SETTINGS.maxZClip + 1.0);
+    if (nextTValue > tMax) {
+      nextTValue = tMax;
       myContinue = false;
     }
     points.push(
       Math.sinh(nextTValue) * Math.cos(radianAngle),
       Math.sinh(nextTValue) * Math.sin(radianAngle),
-      (upper ? 1 : -1) * Math.cosh(nextTValue)
+      (upper ? 1 : -1) * Math.cosh(nextTValue) + zOffset
     );
-    nextTValue += 0.01 * Math.exp(1.3 * nextTValue); //controls the spacing of the points along the hyperbolic radial line. The points on the radial do not need to be uniformly spaced in t - more points near zero are better for accuracy, because eventually the hyperboloid radial lines are almost linear.
+
+    // Cap the exponential step growth. Without this cap, segments near the
+    // edge of the hyperboloid can be long enough that a single segment spans
+    // a viewing angle where its screen-space projection degenerates. Shorter
+    // segments mean shorter degenerate gaps. The cap doesn't fully solve the
+    // billboard problem (a line pointing at the camera is always degenerate)
+    // but it keeps the visible gaps small.
+    nextTValue += Math.min(0.01 * Math.exp(1.3 * nextTValue), MAX_RADIAL_STEP);
   }
 
   const geometry = new LineGeometry();
   geometry.setPositions(points);
 
   const lineMaterial = new THREE.Line2NodeMaterial({
-    linewidth: thickness, // Width in pixels
+    linewidth: thickness,
     transparent: true,
     color: "grey",
-    blending: THREE.NormalBlending, //If this is not set the radial lines near (0,0,1) looks whitish grey
+    blending: THREE.NormalBlending,
     alphaTest: 0.1,
     depthTest: true,
-    depthWrite: true
-    // polygonOffset: true, // attempt to limit z fighting when polar angle is 0 or pi
-    // polygonOffsetFactor: -1.0, // Nudge the line toward the camera
-    // polygonOffsetUnits: -4.0 // Higher value = more aggressive nudge
+    depthWrite: false // Same reasoning as circle lines above
   });
 
-  // Clipping Logic
-  // First get the instance data and use the varying to make the vertex data
-  // available to the fragment shader (which includes the color and opacity nodes)
   const instanceStart = attribute("instanceStart", "vec3");
   const instanceEnd = attribute("instanceEnd", "vec3");
   const varyingInstanceStartLocal = varying(instanceStart);
   const varyingInstanceEndLocal = varying(instanceEnd);
 
   const clippingLogic = Fn(() => {
-    //compute the intermediate location in local coords then transform to world
-    // The uv().y is the direction corresponding to the z direction of
-    // the rendering of the quad (i.e. two triangles with a common edge)
     const intermediatePositionLocal = mix(
       varyingInstanceStartLocal,
       varyingInstanceEndLocal,
-      uv().y.add(1.0).div(2.0) // uv().y  goes from -1 to 1 and NOT 0 to 1 as expected!
+      uv().y.add(1.0).div(2.0)
     );
     const intermediatePositionWorldZ = modelWorldMatrix.mul(
       vec4(intermediatePositionLocal, 1.0)
@@ -1459,16 +1436,186 @@ export function createPolarGridRadialLine(
       .add(float(SETTINGS.endOpacityFade));
   });
 
-  // Apply to your material
   lineMaterial.opacityNode = clippingLogic();
 
   // @ts-expect-error: Line2 constructor type definition is outdated for WebGPU materials
   const lineMesh = new Line2(geometry, lineMaterial);
-  // lineMesh.computeLineDistances();
-  lineMesh.raycast = () => {}; // this object is never intersected
-
+  lineMesh.renderOrder = 4;
+  lineMesh.raycast = () => {};
   return lineMesh;
 }
+
+// export function createPolarGridCircle(
+//   intrinsicRadius: number, // The intrinsic hyperbolic radius
+//   upper: boolean,
+//   thickness = 3 //pixels
+// ): Mesh {
+//   const circlePoints: number[] = [];
+//   // Calculate number of points needed to achieve the desired maximum error in linear approximation of circle
+//   const error = 0.004; // maximum allowable error (as a world space distance) in the linear segments approximating the circle
+//   const numPoints = Math.ceil(
+//     Math.PI / Math.acos(1 - error / Math.sinh(intrinsicRadius))
+//   );
+
+//   // Build the path
+//   for (let angle = 0; angle < 2 * Math.PI; angle += (2 * Math.PI) / numPoints) {
+//     circlePoints.push(
+//       Math.sinh(intrinsicRadius) * Math.cos(angle),
+//       Math.sinh(intrinsicRadius) * Math.sin(angle),
+//       upper ? Math.cosh(intrinsicRadius) : -Math.cosh(intrinsicRadius)
+//     );
+//   }
+//   // Close the circle
+//   circlePoints.push(circlePoints[0], circlePoints[1], circlePoints[2]);
+
+//   const geometry = new LineGeometry();
+//   geometry.setPositions(circlePoints);
+
+//   const lineMaterial = new THREE.Line2NodeMaterial({
+//     linewidth: thickness, // Width in pixels
+//     transparent: true,
+//     color: "grey",
+//     blending: THREE.NormalBlending, //If this is not set the radial lines near (0,0,1) looks whitish grey
+//     alphaTest: 0.1,
+//     depthTest: true,
+//     depthWrite: true
+//     // polygonOffset: true, // attempt to limit z fighting when polar angle is 0 or pi
+//     // polygonOffsetFactor: -1.0, // Nudge the line toward the camera
+//     // polygonOffsetUnits: -4.0 // Higher value = more aggressive nudge
+//   });
+
+//   // Clipping Logic -- line2NodeMaterial is really just a center line that is
+//   // thickened with quadrilaterals. It is the union of a series of instances,
+//   // each of which is a quadrilateral (= two triangles with a common edge
+//   // (diagonal)), with a center line down the middle. The vertices of the quad
+//   // are determined by moving perpendicular to the center line half the
+//   // thickness of the line material (in pixels). uv coordinates are the
+//   // coordinates of a location in the quad. I know that uv().y goes from -1 to
+//   // 1. I'm not sure about the uv().x range. Each vertex of the quad has the
+//   // (same) instanceStart and instanceEnd data associated to it so doesn't
+//   // matter which vertex you get this information from. In this case all the z
+//   // coordinates of the instanceStart and instanceEnd along circular line are
+//   // the same so it doesn't matter which you choose
+
+//   const instanceStart = attribute("instanceStart", "vec3");
+//   const varyingInstanceStartLocal = varying(instanceStart);
+//   const worldInstanceStartZ = modelWorldMatrix.mul(
+//     vec4(varyingInstanceStartLocal, 1.0)
+//   ).z;
+//   const clippingLogic = Fn(() => {
+//     // discard any instances that start/end after/before zClip
+//     const shouldClip = upper
+//       ? worldInstanceStartZ.greaterThan(zUpperClip)
+//       : worldInstanceStartZ.lessThan(zLowerClip);
+//     shouldClip.discard();
+
+//     return float(1.0);
+//   });
+
+//   // Apply to your material
+//   lineMaterial.opacityNode = clippingLogic();
+
+//   // @ts-expect-error: Line2 constructor type definition is outdated for WebGPU materials
+//   const mesh = new Line2(geometry, lineMaterial);
+
+//   // mesh.name =
+//   //   (upper ? `U` : `L`) + `PolarGridCircle_r=${intrinsicRadius.toFixed(2)}`;
+//   mesh.raycast = () => {}; // this object is never intersected
+//   return mesh;
+// }
+
+// export function createPolarGridRadialLine(
+//   radianAngle: number,
+//   upper: boolean,
+//   thickness = 3 //pixels
+// ): Mesh {
+//   const points: number[] = [];
+
+//   let nextTValue = 0.01;
+//   let myContinue = true;
+//   for (let i = 0; myContinue; i++) {
+//     if (nextTValue > Math.acosh(SETTINGS.maxZClip + 1.0)) {
+//       nextTValue = Math.acosh(SETTINGS.maxZClip + 1.0);
+//       // add one to zMax because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene.
+//       myContinue = false;
+//     }
+//     points.push(
+//       Math.sinh(nextTValue) * Math.cos(radianAngle),
+//       Math.sinh(nextTValue) * Math.sin(radianAngle),
+//       (upper ? 1 : -1) * Math.cosh(nextTValue)
+//     );
+//     nextTValue += 0.01 * Math.exp(1.3 * nextTValue); //controls the spacing of the points along the hyperbolic radial line. The points on the radial do not need to be uniformly spaced in t - more points near zero are better for accuracy, because eventually the hyperboloid radial lines are almost linear.
+//   }
+
+//   const geometry = new LineGeometry();
+//   geometry.setPositions(points);
+
+//   const lineMaterial = new THREE.Line2NodeMaterial({
+//     linewidth: thickness, // Width in pixels
+//     transparent: true,
+//     color: "grey",
+//     blending: THREE.NormalBlending, //If this is not set the radial lines near (0,0,1) looks whitish grey
+//     alphaTest: 0.1,
+//     depthTest: true,
+//     depthWrite: true
+//     // polygonOffset: true, // attempt to limit z fighting when polar angle is 0 or pi
+//     // polygonOffsetFactor: -1.0, // Nudge the line toward the camera
+//     // polygonOffsetUnits: -4.0 // Higher value = more aggressive nudge
+//   });
+
+//   // Clipping Logic
+//   // First get the instance data and use the varying to make the vertex data
+//   // available to the fragment shader (which includes the color and opacity nodes)
+//   const instanceStart = attribute("instanceStart", "vec3");
+//   const instanceEnd = attribute("instanceEnd", "vec3");
+//   const varyingInstanceStartLocal = varying(instanceStart);
+//   const varyingInstanceEndLocal = varying(instanceEnd);
+
+//   const clippingLogic = Fn(() => {
+//     //compute the intermediate location in local coords then transform to world
+//     // The uv().y is the direction corresponding to the z direction of
+//     // the rendering of the quad (i.e. two triangles with a common edge)
+//     const intermediatePositionLocal = mix(
+//       varyingInstanceStartLocal,
+//       varyingInstanceEndLocal,
+//       uv().y.add(1.0).div(2.0) // uv().y  goes from -1 to 1 and NOT 0 to 1 as expected!
+//     );
+//     const intermediatePositionWorldZ = modelWorldMatrix.mul(
+//       vec4(intermediatePositionLocal, 1.0)
+//     ).z;
+//     const clipPixel = upper
+//       ? intermediatePositionWorldZ.greaterThan(zUpperClip)
+//       : intermediatePositionWorldZ.lessThan(zLowerClip);
+//     clipPixel.discard();
+
+//     const returnSmooth = upper
+//       ? smoothstep(
+//           zUpperClip.mul(SETTINGS.fadePercentage),
+//           zUpperClip,
+//           intermediatePositionWorldZ
+//         )
+//       : smoothstep(
+//           zLowerClip.mul(SETTINGS.fadePercentage),
+//           zLowerClip,
+//           intermediatePositionWorldZ
+//         );
+
+//     return returnSmooth
+//       .oneMinus()
+//       .mul(float(SETTINGS.startOpacityFade).sub(float(SETTINGS.endOpacityFade)))
+//       .add(float(SETTINGS.endOpacityFade));
+//   });
+
+//   // Apply to your material
+//   lineMaterial.opacityNode = clippingLogic();
+
+//   // @ts-expect-error: Line2 constructor type definition is outdated for WebGPU materials
+//   const lineMesh = new Line2(geometry, lineMaterial);
+//   // lineMesh.computeLineDistances();
+//   lineMesh.raycast = () => {}; // this object is never intersected
+
+//   return lineMesh;
+// }
 
 const xAxisRotationMatrix = Fn(
   ([angle]: [THREE.TSL.ShaderNodeObject<THREE.Node>]) => {

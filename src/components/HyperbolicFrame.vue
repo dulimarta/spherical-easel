@@ -735,33 +735,64 @@ function initialize() {
       theta < 2 * Math.PI;
       theta += (2 * Math.PI) / numRadialLines
     ) {
-      const radialLineMesh = createPolarGridRadialLine(theta, upperLower === 0);
-
-      radialLineMesh.layers.set(
+      const radialLineMeshPlus = createPolarGridRadialLine(
+        theta,
+        upperLower === 0,
+        true
+      );
+      const radialLineMeshMinus = createPolarGridRadialLine(
+        theta,
+        upperLower === 0,
+        false
+      );
+      radialLineMeshPlus.layers.set(
+        upperLower === 0
+          ? HYPERBOLIC_LAYER.upperSheetGrid
+          : HYPERBOLIC_LAYER.lowerSheetGrid
+      );
+      radialLineMeshMinus.layers.set(
         upperLower === 0
           ? HYPERBOLIC_LAYER.upperSheetGrid
           : HYPERBOLIC_LAYER.lowerSheetGrid
       );
       if (upperLower === 0) {
-        upperPolarGridArray.push(radialLineMesh);
+        upperPolarGridArray.push(radialLineMeshPlus);
+        upperPolarGridArray.push(radialLineMeshMinus);
       } else {
-        lowerPolarGridArray.push(radialLineMesh);
+        lowerPolarGridArray.push(radialLineMeshPlus);
+        lowerPolarGridArray.push(radialLineMeshMinus);
       }
     }
 
     // create the circular polar grid lines
     for (let r = 0.5; Math.cosh(r) < SETTINGS.maxZClip; r += 0.5) {
-      const circularGridMesh = createPolarGridCircle(r, upperLower === 0);
+      const circularGridMeshPlus = createPolarGridCircle(
+        r,
+        upperLower === 0,
+        true
+      );
+      const circularGridMeshMinus = createPolarGridCircle(
+        r,
+        upperLower === 0,
+        false
+      );
 
-      circularGridMesh.layers.set(
+      circularGridMeshPlus.layers.set(
+        upperLower === 0
+          ? HYPERBOLIC_LAYER.upperSheetGrid
+          : HYPERBOLIC_LAYER.lowerSheetGrid
+      );
+      circularGridMeshMinus.layers.set(
         upperLower === 0
           ? HYPERBOLIC_LAYER.upperSheetGrid
           : HYPERBOLIC_LAYER.lowerSheetGrid
       );
       if (upperLower === 0) {
-        upperPolarGridArray.push(circularGridMesh);
+        upperPolarGridArray.push(circularGridMeshPlus);
+        upperPolarGridArray.push(circularGridMeshMinus);
       } else {
-        lowerPolarGridArray.push(circularGridMesh);
+        lowerPolarGridArray.push(circularGridMeshPlus);
+        lowerPolarGridArray.push(circularGridMeshMinus);
       }
     }
   }
