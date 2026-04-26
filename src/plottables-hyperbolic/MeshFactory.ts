@@ -36,7 +36,13 @@ import {
   cross,
   dot,
   exp,
-  vec2
+  vec2,
+  normalize,
+  oneMinus,
+  positionView,
+  normalView,
+  faceDirection,
+  frontFacing
 } from "three/tsl";
 // import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { Line2 } from "three/addons/lines/Line2.js";
@@ -966,37 +972,38 @@ export function createIdealStrip(upper: boolean): Mesh {
   const opacityAtEdges = 0.7;
   const percentOfEdgeReduceInOpacity = 0.005;
 
-  if (upper) {
-    idealStripMaterial.opacityNode = smoothstep(
-      zUpperIdealStripClipMinus,
-      zUpperIdealStripClipMinus.mul(1 + percentOfEdgeReduceInOpacity),
-      positionLocal.z
-    )
-      .mul(1 - opacityAtEdges)
-      .sub(
-        smoothstep(
-          zUpperIdealStripClipPlus.mul(1 - percentOfEdgeReduceInOpacity),
-          zUpperIdealStripClipPlus,
-          positionLocal.z
-        ).mul(1 - opacityAtEdges)
-      )
-      .add(opacityAtEdges);
-  } else {
-    idealStripMaterial.opacityNode = smoothstep(
-      zLowerIdealStripClipPlus,
-      zLowerIdealStripClipPlus.mul(1 + percentOfEdgeReduceInOpacity),
-      positionLocal.z
-    )
-      .mul(1 - opacityAtEdges)
-      .sub(
-        smoothstep(
-          zLowerIdealStripClipMinus.mul(1 - percentOfEdgeReduceInOpacity),
-          zLowerIdealStripClipMinus,
-          positionLocal.z
-        ).mul(1 - opacityAtEdges)
-      )
-      .add(opacityAtEdges);
-  }
+  const upperSmooth = smoothstep(
+    zUpperIdealStripClipMinus,
+    zUpperIdealStripClipMinus.mul(1 + percentOfEdgeReduceInOpacity),
+    positionLocal.z
+  )
+    .mul(1 - opacityAtEdges)
+    .sub(
+      smoothstep(
+        zUpperIdealStripClipPlus.mul(1 - percentOfEdgeReduceInOpacity),
+        zUpperIdealStripClipPlus,
+        positionLocal.z
+      ).mul(1 - opacityAtEdges)
+    );
+
+  const lowerSmooth = smoothstep(
+    zLowerIdealStripClipMinus,
+    zLowerIdealStripClipMinus.mul(1 - percentOfEdgeReduceInOpacity),
+    positionLocal.z
+  )
+    .mul(1 - opacityAtEdges)
+    .sub(
+      smoothstep(
+        zLowerIdealStripClipPlus.mul(1 + percentOfEdgeReduceInOpacity),
+        zLowerIdealStripClipPlus,
+        positionLocal.z
+      ).mul(1 - opacityAtEdges)
+    );
+
+  // Apply the correct logic based on the 'upper' boolean and add the base opacity
+  idealStripMaterial.opacityNode = (upper ? upperSmooth : lowerSmooth).add(
+    opacityAtEdges
+  );
 
   // path is the center line of the initial(untransformed) tube.
   const path = new LineCurve3(new Vector3(0, 0, 0), new Vector3(0, 0, 1));
@@ -1027,107 +1034,40 @@ export function createIdealStrip(upper: boolean): Mesh {
   return idealPointMesh;
 }
 
-const hazyGlassSettings = {
-  side: THREE.DoubleSide,
-  color: 0xd0e8ff, //0x7bafd4, // Your blueish base
-  transparent: true, // Required for transmission to show through
-  opacity: 1.0, // Keep at 1.0; transmission handles the "see-through"
-
-  // --- THE GLASS CORE ---
-  transmission: 0.98, // Almost full light transmission
-  ior: 1.45, // Standard glass index of refraction
-  thickness: 1.0, // High value gives the "thick" blocky feel
-
-  // --- THE "HAZY" LOOK ---
-  roughness: 0.1, // Slight roughness blurs the "transmission" (the haze)
-  metalness: 0.0, // Glass is non-metallic
-
-  // --- REFLECTION & POLISH ---
-  clearcoat: 1.0, // Adds a secondary polished layer on top of the haze
-  clearcoatRoughness: 0.0, // The outer surface is smooth, while the bulk is hazy
-  //reflectivity: 0.5,
-
-  // --- COLOR DEPTH (Attenuation) ---
-  // This makes the glass bluer where it is thicker
-  attenuationColor: 0x7bafd4,
-  attenuationDistance: 0.5 // Lower numbers make the color denser/thicker
-};
-
 const waterGlassSettings = {
-  side: THREE.FrontSide, //THREE.DoubleSide, //
+  side: THREE.FrontSide,
+  depthWrite: false,
   transparent: true,
   opacity: 1.0,
-
-  // 1. CLEAR SURFACE
-  // color: 0xffffff, // Pure white base color allows maximum transparency
-  // transmission: 1.0, // 100% light pass-through
-  roughness: 0.0, // 0.0 = Perfectly clear (no haze)
-  ior: 1.33, // 1.33 is the IOR of Water (1.5 is Glass)
-
-  // 2. SUBTLE BLUE TINT (The "Volumetric" effect)
-  // attenuationColor: 0x99ccff, // A light, crisp blue
-  // INCREASE this to make it "more transparent".
-  // At 10.0, the blue is very faint. At 2.0, it's quite blue.
-  // attenuationDistance: 8.0,
-
-  // 3. REFLECTIONS (The "Shiny" look)
-  // thickness: 0.5, // virtual thickness for refraction
-  // clearcoat: 1.0, // adds that extra "polished" reflection layer
+  roughness: 0.0,
+  ior: 1.33,
   clearcoatRoughness: 0.0,
-  //specularIntensity: 1.0,
-  // reflectivity: 0.5,
-
   metalness: 0.0,
-
-  // 1. KILL REFLECTIONS
-  reflectivity: 0.1, // Removes environment reflections
-  specularIntensity: 0.0, // Removes direct light highlights
-  clearcoat: 0.5, // Removes the "polished" top layer
-
-  // 2. ENSURE SEE-THROUGH
+  specularIntensity: 0.0,
+  clearcoat: 0.5,
   transmission: 1.0,
-  thickness: 0.01, // Very thin so it doesn't "trap" light and turn black
-
-  // 3. COLOR
+  thickness: 0.01,
   color: 0xffffff,
   attenuationColor: 0x99ccff,
   attenuationDistance: 10.0
 };
-
 export function createUltraStrip(upper): THREE.Mesh {
   const ultraStripMaterial = new THREE.MeshPhysicalNodeMaterial(
     waterGlassSettings
-    //   {
-    //   side: DoubleSide,
-    //   color: 0x7bafd4, //0x88ccff, // base color
-    //   roughness: 0.0, // very smooth surface
-    //   //transmission: 0.5, // glasslike transparency
-    //   //thickness: 0.05, // thin glass layer (in world units)
-    //   //ior: 1.45, // index of refraction of glass
-    //   transparent: false, // must enable for opacity/transmission
-    //   opacity: 0.0, // keep at 1, transparency handled via transmission
-    //   metalness: 0.0
-    //   // reflectivity: 0.15, // helps glass reflections
-    //   // clearcoat: 1.0, // improves highlight realism
-    //   // clearcoatRoughness: 0.05,
-    //   // specularIntensity: 0.2,
-    //   //soap bubble" thin-film interferences
-    //   // iridescence: 1.0,
-    //   // iridescenceIOR: 1.3,
-    //   // iridescenceThicknessRange: [50, 150], // in nanometers
-    // }
   );
-  // const baseColor = color(ultraStripMaterial.color); //Chocolate
-  const baseColor = color(0xffffff); // Use White
+  ultraStripMaterial.transparent = true; // <-- ADD THIS (just to be safe)
+  ultraStripMaterial.depthWrite = false; // <-- ADD THIS
+  // const baseColor = color(ultraStripMaterial.color);
+  const baseColor = color(0xffffff);
   const localPositionZ = varying(positionLocal.z); // make this available in the fragment shader
 
   const clippingLogic = Fn(() => {
     if (upper) {
       positionLocal.z.greaterThan(zUpperClip).discard();
-      positionLocal.z.lessThan(0).discard();
+      // positionLocal.z.lessThan(0).discard();
     } else {
       positionLocal.z.lessThan(zLowerClip).discard();
-      positionLocal.z.greaterThan(0).discard();
+      // positionLocal.z.greaterThan(0).discard();
     }
     return baseColor;
   });
@@ -1147,8 +1087,11 @@ export function createUltraStrip(upper): THREE.Mesh {
 
   const ultraStripGeometry = new ParametricGeometry(
     (u, v, pt) => {
-      u = (upper ? 1 : -1) * u * (Math.acosh(SETTINGS.maxZClip) + 1) + 0.001; // add one because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene. Adding 0.001 to avoid clumping of points at the tip which causes rendering issues.
-      const theta = v * 2 * Math.PI;
+      u = (upper ? 1 : -1) * u * (Math.acosh(SETTINGS.maxZClip) + 1);
+
+      const correctedV = upper ? v : 1.0 - v; // Fix normals for the lower sheet
+      const theta = correctedV * 2 * Math.PI;
+
       const x = Math.cosh(u) * Math.cos(theta);
       const y = Math.cosh(u) * Math.sin(theta);
       const z = Math.sinh(u);
@@ -1159,7 +1102,7 @@ export function createUltraStrip(upper): THREE.Mesh {
   );
 
   const ultraStripMesh = new Mesh(ultraStripGeometry, ultraStripMaterial);
-
+  ultraStripMesh.renderOrder = 2;
   ultraStripMesh.raycast = function (raycaster, intersects) {
     const partialIntersects = intersectWithSurface(
       raycaster.ray.origin,
@@ -1180,6 +1123,172 @@ export function createUltraStrip(upper): THREE.Mesh {
   };
 
   return ultraStripMesh;
+}
+const hazyGlassSettings = {
+  side: THREE.FrontSide,
+  depthWrite: false,
+  color: 0xffffff,
+  transparent: true,
+  opacity: 1.0,
+  transmission: 0.85,
+  attenuationColor: 0x3a7bb4,
+  attenuationDistance: 0.5,
+  emissive: new THREE.Color(0x2a6ba4),
+  emissiveIntensity: 0.5,
+  ior: 1.0,
+  thickness: 1.0,
+  specularIntensity: 0.0,
+  clearcoat: 0.0,
+  roughness: 1.0,
+  metalness: 0.0
+};
+export function createBoundaryCone(upper: boolean): THREE.Mesh {
+  const coneMaterial = new THREE.MeshPhysicalNodeMaterial(hazyGlassSettings);
+  // const baseColor = color(coneMaterial.color);
+  const baseColor = color(0xffffff);
+  const localPositionZ = varying(positionLocal.z); // make this available in the fragment shader
+
+  const clippingLogic = Fn(() => {
+    if (upper) {
+      positionLocal.z.greaterThan(zUpperIdealStripClipMinus).discard();
+    } else {
+      positionLocal.z.lessThan(zLowerIdealStripClipPlus).discard();
+    }
+
+    return baseColor;
+  });
+
+  coneMaterial.colorNode = clippingLogic();
+
+  // Smooth the opacity of the top edge
+  const upperSmooth = smoothstep(
+    zUpperIdealStripClipMinus.mul(SETTINGS.fadePercentage),
+    zUpperIdealStripClipMinus,
+    localPositionZ
+  ).oneMinus();
+
+  const lowerSmooth = smoothstep(
+    zLowerIdealStripClipPlus,
+    zLowerIdealStripClipPlus.mul(SETTINGS.fadePercentage),
+    localPositionZ
+  );
+
+  coneMaterial.opacityNode = (upper ? upperSmooth : lowerSmooth)
+    .mul(float(SETTINGS.startOpacityFade).sub(float(SETTINGS.endOpacityFade)))
+    .add(float(SETTINGS.endOpacityFade));
+
+  const coneGeometry = new ParametricGeometry(
+    (u, v, out) => {
+      let r = u * SETTINGS.maxZClip; // Keep radius strictly positive
+      if (r == 0) {
+        r = 0.0001; // Avoid singularity at the tip
+      }
+
+      // Since we only negate Z below, the winding order flip perfectly fixes the normals
+      const correctedV = upper ? v : 1.0 - v;
+      const theta = correctedV * 2 * Math.PI;
+
+      const x = r * Math.cos(theta);
+      const y = r * Math.sin(theta);
+      const z = upper ? r : -r; // Negate Z for the lower sheet
+      out.set(x, y, z);
+    },
+    120,
+    300
+  );
+
+  const coneMesh = new Mesh(coneGeometry, coneMaterial);
+  coneMesh.raycast = () => {}; // this object is never intersected
+  coneMesh.renderOrder = 3;
+  return coneMesh;
+}
+
+export function createHyperboloidSheet(upper: boolean): THREE.Mesh {
+  const hyperboloidMaterial = new THREE.MeshPhysicalNodeMaterial({
+    color: 0x004080, //0x2d2d2d, //, // 0x2d2d2d, //0xc46210,
+    side: DoubleSide,
+    metalness: 0.1,
+    roughness: 0.2,
+    transparent: false, //true,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.1
+  });
+  // hyperboloidMaterial.transparent = true;
+  //hyperboloidMaterial.depthWrite = false;
+  //hyperboloidMaterial.depthTest = false;
+
+  const baseColor = color(hyperboloidMaterial.color);
+
+  const localPositionZ = varying(positionLocal.z); // make this available in the fragment shader
+
+  const clippingLogic = Fn(() => {
+    if (upper) {
+      positionLocal.z.greaterThan(zUpperClip).discard();
+    } else {
+      positionLocal.z.lessThan(zLowerClip).discard();
+    }
+    return baseColor;
+  });
+
+  hyperboloidMaterial.colorNode = clippingLogic();
+
+  // Smooth the opacity of the edge of the hyperboloid
+  const upperSmooth = smoothstep(
+    zUpperClip.mul(SETTINGS.fadePercentage),
+    zUpperClip,
+    localPositionZ
+  ).oneMinus();
+
+  // For the lower, edge0 must be the more negative number (zLowerClip)
+  // Because we aren't using oneMinus(), it naturally maps:
+  // inside (-9) -> 1 (Opaque)
+  // outside (-10) -> 0 (Transparent)
+  const lowerSmooth = smoothstep(
+    zLowerClip,
+    zLowerClip.mul(SETTINGS.fadePercentage),
+    localPositionZ
+  );
+
+  hyperboloidMaterial.opacityNode = (upper ? upperSmooth : lowerSmooth)
+    .mul(float(SETTINGS.startOpacityFade).sub(float(SETTINGS.endOpacityFade)))
+    .add(float(SETTINGS.endOpacityFade));
+
+  const hyperboloidGeometry = new ParametricGeometry(
+    (u, v, pt) => {
+      u = u * (Math.acosh(SETTINGS.maxZClip) + 1) + 0.001; // add one because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene. Adding 0.001 to avoid clumping of points at the tip which causes rendering issues.
+      const correctedV = upper ? v : 1.0 - v;
+      const theta = correctedV * 2 * Math.PI;
+      const x = Math.sinh(u) * Math.cos(theta);
+      const y = Math.sinh(u) * Math.sin(theta);
+      const z = (upper ? 1 : -1) * Math.cosh(u);
+      pt.set(x, y, z);
+    },
+    120,
+    300
+  );
+
+  const hyperboloidMesh = new Mesh(hyperboloidGeometry, hyperboloidMaterial);
+  hyperboloidMesh.renderOrder = 1;
+  hyperboloidMesh.raycast = function (raycaster, intersects) {
+    const partialIntersects = intersectWithSurface(
+      raycaster.ray.origin,
+      raycaster.ray.direction,
+      raycaster.near,
+      raycaster.far,
+      upper,
+      SURFACE_TYPES.hyperboloid
+    );
+    partialIntersects.forEach(obj =>
+      intersects.push({
+        distance: obj.distance,
+        point: obj.point,
+        normal: obj.normal,
+        object: this
+      })
+    );
+  };
+
+  return hyperboloidMesh;
 }
 
 export function createPolarGridCircle(
@@ -1359,147 +1468,6 @@ export function createPolarGridRadialLine(
   lineMesh.raycast = () => {}; // this object is never intersected
 
   return lineMesh;
-}
-
-export function createBoundaryCone(upper: boolean): THREE.Mesh {
-  const coneMaterial = new THREE.MeshPhysicalNodeMaterial({
-    side: DoubleSide,
-    color: 0x7bafd4, //0x88ccff, // base color
-    roughness: 0.0, // very smooth surface
-    //transmission: 0.5, // glasslike transparency
-    //thickness: 0.05, // thin glass layer (in world units)
-    //ior: 1.45, // index of refraction of glass
-    transparent: true, // must enable for opacity/transmission
-    opacity: 0.0, // keep at 1, transparency handled via transmission
-    metalness: 0.0
-    // reflectivity: 0.15, // helps glass reflections
-    // clearcoat: 1.0, // improves highlight realism
-    // clearcoatRoughness: 0.05,
-    // specularIntensity: 0.2,
-    //soap bubble" thin-film interferences
-    // iridescence: 1.0,
-    // iridescenceIOR: 1.3,
-    // iridescenceThicknessRange: [50, 150], // in nanometers
-  });
-  const baseColor = color(coneMaterial.color);
-
-  const localPositionZ = varying(positionLocal.z); // make this available in the fragment shader
-
-  const clippingLogic = Fn(() => {
-    if (upper) {
-      positionLocal.z.greaterThan(zUpperIdealStripClipMinus).discard();
-    } else {
-      positionLocal.z.lessThan(zLowerIdealStripClipPlus).discard();
-    }
-
-    return baseColor;
-  });
-
-  coneMaterial.colorNode = clippingLogic();
-
-  // Smooth the opacity of the top edge
-  coneMaterial.opacityNode = smoothstep(
-    (upper ? zUpperIdealStripClipMinus : zLowerIdealStripClipPlus).mul(
-      SETTINGS.fadePercentage
-    ),
-    upper ? zUpperIdealStripClipMinus : zLowerIdealStripClipPlus,
-    localPositionZ
-  )
-    .oneMinus()
-    .mul(float(SETTINGS.startOpacityFade).sub(float(SETTINGS.endOpacityFade)))
-    .add(float(SETTINGS.endOpacityFade));
-
-  const coneGeometry = new ParametricGeometry(
-    (u, v, out) => {
-      let r = u * SETTINGS.maxZClip * (upper ? 1 : -1); // 0 to +/-maxZClip
-      if (r == 0) {
-        r = 0.0001 * (upper ? 1 : -1); // avoid singularity at the tip
-      }
-      const theta = v * 2 * Math.PI;
-      const x = r * Math.cos(theta);
-      const y = r * Math.sin(theta);
-      const z = r; // + (0.1 / SETTINGS.maxZClip) * r * (upper ? -1 : 1); // small offset to avoid z-fighting with hyperboloid
-      out.set(x, y, z);
-    },
-    120,
-    300
-  );
-
-  const coneMesh = new Mesh(coneGeometry, coneMaterial);
-  coneMesh.raycast = () => {}; // this object is never intersected
-  return coneMesh;
-}
-
-export function createHyperboloidSheet(upper: boolean): THREE.Mesh {
-  const hyperboloidMaterial = new THREE.MeshPhysicalNodeMaterial({
-    color: 0x004080, //0x2d2d2d, //, // 0x2d2d2d, //0xc46210,
-    side: DoubleSide,
-    metalness: 0.1,
-    roughness: 0.2,
-    transparent: true,
-    clearcoat: 1.0,
-    clearcoatRoughness: 0.1
-  });
-  const baseColor = color(hyperboloidMaterial.color);
-
-  const localPositionZ = varying(positionLocal.z); // make this available in the fragment shader
-
-  const clippingLogic = Fn(() => {
-    if (upper) {
-      positionLocal.z.greaterThan(zUpperClip).discard();
-    } else {
-      positionLocal.z.lessThan(zLowerClip).discard();
-    }
-    return baseColor;
-  });
-
-  hyperboloidMaterial.colorNode = clippingLogic();
-
-  // Smooth the opacity of the edge of the hyperboloid
-  hyperboloidMaterial.opacityNode = smoothstep(
-    (upper ? zUpperClip : zLowerClip).mul(SETTINGS.fadePercentage),
-    upper ? zUpperClip : zLowerClip,
-    localPositionZ
-  )
-    .oneMinus()
-    .mul(float(SETTINGS.startOpacityFade).sub(float(SETTINGS.endOpacityFade)))
-    .add(float(SETTINGS.endOpacityFade));
-
-  const hyperboloidGeometry = new ParametricGeometry(
-    (u, v, pt) => {
-      u = u * (Math.acosh(SETTINGS.maxZClip) + 1) + 0.001; // add one because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene. Adding 0.001 to avoid clumping of points at the tip which causes rendering issues.
-      const theta = v * 2 * Math.PI;
-      const x = Math.sinh(u) * Math.cos(theta);
-      const y = Math.sinh(u) * Math.sin(theta);
-      const z = (upper ? 1 : -1) * Math.cosh(u);
-      pt.set(x, y, z);
-    },
-    120,
-    300
-  );
-
-  const hyperboloidMesh = new Mesh(hyperboloidGeometry, hyperboloidMaterial);
-
-  hyperboloidMesh.raycast = function (raycaster, intersects) {
-    const partialIntersects = intersectWithSurface(
-      raycaster.ray.origin,
-      raycaster.ray.direction,
-      raycaster.near,
-      raycaster.far,
-      upper,
-      SURFACE_TYPES.hyperboloid
-    );
-    partialIntersects.forEach(obj =>
-      intersects.push({
-        distance: obj.distance,
-        point: obj.point,
-        normal: obj.normal,
-        object: this
-      })
-    );
-  };
-
-  return hyperboloidMesh;
 }
 
 const xAxisRotationMatrix = Fn(

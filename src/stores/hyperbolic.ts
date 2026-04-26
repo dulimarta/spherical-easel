@@ -115,7 +115,6 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     linesMap.delete(line.name);
   }
   function updateDisplayForCameraUpdate() {
-    console.log("Updating points display for camera update");
     pointsMap.forEach(point => {
       point.shallowUpdate();
     });
@@ -125,9 +124,9 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   }
   function adjustTextPose() {
     labelsMap.forEach(label => {
-      //add or remove labels that are not attached to ideal points and are outside of the clipping planes of the hyperboloid (plus a little buffer) from the scene
+      //add or remove labels that are attached to non-ideal points and are outside of the clipping planes of the hyperboloid (plus a little buffer) from the scene
       // This is necessary so that labels that are outside of the clipping planes don't show as the user dollies and zooms.
-      if (label.anchorPoint.w !== 0) {
+      if (label.anchorPoint.w > 0) {
         if (
           label.anchorPoint.z > zUpperClip.value ||
           label.anchorPoint.z < zLowerClip.value

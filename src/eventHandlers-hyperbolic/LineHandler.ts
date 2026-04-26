@@ -42,9 +42,7 @@ export class LineHandler extends PoseTracker {
   /** The temporary objects for this tool */
   private _tempLine: HELine;
   private _tempStartPoint: HEPoint; //Can move between upper and lower
-  private _tempStartIdealPoint: HEPoint; //Can move between upper and lower
   private _tempEndPoint: HEPoint; //Can move between upper and lower
-  private _tempEndIdealPoint: HEPoint; //Can move between upper and lower
   private _tempTube: Mesh; //Can move between upper and lower and be directed to start or end
   private _tempTubeMaterial: CustomPointMaterial;
   private _tempUpperCone: Mesh;
@@ -53,9 +51,7 @@ export class LineHandler extends PoseTracker {
   /** Has the ??? temporary object been added to the scene?*/
   private _tempLineInScene = false;
   private _tempStartPointInScene = false;
-  private _tempStartIdealPointInScene = false; // includes tube
   private _tempEndPointInScene = false;
-  private _tempEndIdealPointInScene = false; // includes tube
   private _tempUpperConeInScene = false; //
   private _tempLowerConeInScene = false;
 
@@ -91,23 +87,15 @@ export class LineHandler extends PoseTracker {
       false,
       true
     );
+    PoseTracker.hyperStore.addTempObject(this._tempStartPoint);
 
-    this._tempStartIdealPoint = new HEPoint(
-      new THREE.Vector4(1, 0, 0, 0),
-      false,
-      true
-    );
     this._tempEndPoint = new HEPoint(
       new THREE.Vector4(0, 0, 1, 1),
       false,
       true
     );
+    PoseTracker.hyperStore.addTempObject(this._tempEndPoint);
 
-    this._tempEndIdealPoint = new HEPoint(
-      new THREE.Vector4(1, 0, 0, 0),
-      false,
-      true
-    );
     this._tempLine = new HELine(
       this._tempStartPoint,
       this._tempEndPoint,
@@ -115,6 +103,8 @@ export class LineHandler extends PoseTracker {
       false,
       true
     );
+    PoseTracker.hyperStore.addTempObject(this._tempLine);
+
     this._tempTube = createIdealPointTube(true);
     this._tempTubeMaterial = this._tempTube.material as CustomPointMaterial;
     this._tempLowerCone = createBoundaryCone(false);
@@ -137,11 +127,8 @@ export class LineHandler extends PoseTracker {
         const selected = this.filteredIntersectionPointsList[0];
         this.startVector.copy(selected.position);
         this._startHEPoint = this.filteredIntersectionPointsList[0];
-        if (selected.position.w == 0) {
-          this._tempStartIdealPoint.position = selected.position;
-        } else {
-          this._tempStartPoint.position = selected.position;
-        }
+        this._tempStartPoint.position = selected.position;
+
         // Glow the selected point and select it so the highlighter.ts doesn't unglow it with the mouseMoved method
         this._startHEPoint.glowing = true;
         this._startHEPoint.selected = true;
@@ -214,20 +201,25 @@ export class LineHandler extends PoseTracker {
       } else {
         // The mouse press is not near an existing point or one dimensional object.
         //  Eventually, we will create a new HEPoint
-        if (this.hyperboloidIsFirstSurfaceHit) {
-          this._tempStartPoint.position = PoseTracker.vec3ToVec4(
-            PoseTracker.hyperStore.surfaceIntersections[0].point,
-            1
-          );
-          this.startVector.copy(this._tempStartPoint.position);
-        } else {
-          // since surface was hit is true and hyperboloid is first hit is false, it must the case that the ideal strip was hit
-          this._tempStartIdealPoint.position = PoseTracker.vec3ToVec4(
-            PoseTracker.hyperStore.surfaceIntersections[0].point,
-            0
-          );
-          this.startVector.copy(this._tempStartIdealPoint.position);
+        let wCoordinate: number;
+        switch (true) {
+          case this.hyperboloidIsFirstSurfaceHit:
+            wCoordinate = 1;
+            break;
+          case this.idealStripIsFirstSurfaceHit:
+            wCoordinate = 0;
+            break;
+          case this.ultraStripIsFirstSurfaceHit:
+            wCoordinate = -1;
+            break;
+          default:
+            wCoordinate = 1; // default to the hyperboloid if something goes wrong
         }
+        this._tempStartPoint.position = PoseTracker.vec3ToVec4(
+          PoseTracker.hyperStore.surfaceIntersections[0].point,
+          wCoordinate
+        );
+        this.startVector.copy(this._tempStartPoint.position);
         this._startHEPoint = null;
       }
     }
@@ -374,7 +366,12 @@ export class LineHandler extends PoseTracker {
             location,
             0
           );
-          this._tempTubeMaterial.upper = upper ? 1 : 0;
+          this._tempTubeMaterial.position = new Vector4(
+            0,
+            0,
+            upper ? 1 : -1,
+            1
+          );
           this._tempTubeMaterial.tubeAngle = Math.atan2(location.y, location.x);
 
           if (!this._tempLowerConeInScene && !upper) {
