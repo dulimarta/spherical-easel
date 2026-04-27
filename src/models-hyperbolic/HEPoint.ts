@@ -62,7 +62,7 @@ export class HEPoint extends HENodule implements HyperbolicLabelable {
     this._activeUpperValue = this._position.z > 0;
     this.updateLayer();
     this.updateSurface();
-    this.updateGroup();
+    this.updateOrAddToGroup();
     this.updateTransformationMatrix();
   }
   updateLayer(): void {
@@ -105,14 +105,14 @@ export class HEPoint extends HENodule implements HyperbolicLabelable {
     }
   }
 
-  updateGroup(): void {
+  updateOrAddToGroup(): void {
     switch (true) {
       case this._position.w > 0:
         this.group.add(this._pointMesh);
         this.group.remove(this._idealMesh);
         this.group.remove(this._ultraMesh);
         break;
-      case this._position.w == 0:
+      case this._position.w === 0:
         this.group.remove(this._pointMesh);
         this.group.add(this._idealMesh);
         this.group.remove(this._ultraMesh);
@@ -170,7 +170,7 @@ export class HEPoint extends HENodule implements HyperbolicLabelable {
     ) {
       this.updateSurface();
       this.updateLayer();
-      this.updateGroup();
+      this.updateOrAddToGroup();
     }
 
     if (this._position.z > 0 && !this._activeUpperValue) {
@@ -181,7 +181,7 @@ export class HEPoint extends HENodule implements HyperbolicLabelable {
       this.updateLayer();
     }
     this.updateVisibility(this.showing);
-    // console.log("hepoint shallow update", this._pointRadius, this.name);
+
     //change the scale inversely with respect to fov(?), and dollyDistance for non-ideal points
     if (this._activeSurface === SURFACE_TYPES.hyperboloid) {
       this._pointMaterial.radius =

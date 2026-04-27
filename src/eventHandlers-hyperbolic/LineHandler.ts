@@ -25,7 +25,7 @@ export class LineHandler extends PoseTracker {
    */
   private _mode;
 
-  private normalVector = new Vector3();
+  protected _normalVector = new Vector3();
   /**
    * The starting and ending SEPoints of the line. The possible parent of the startSEPoint
    */
@@ -37,7 +37,7 @@ export class LineHandler extends PoseTracker {
   /**
    * The starting vector location of the line
    */
-  private startVector = new Vector4();
+  private _startVector = new Vector4();
 
   /** The temporary objects for this tool */
   private _tempLine: HELine;
@@ -48,10 +48,11 @@ export class LineHandler extends PoseTracker {
   private _tempUpperCone: Mesh;
   private _tempLowerCone: Mesh;
 
-  /** Has the ??? temporary object been added to the scene?*/
+  /** Has the ??? temporary object been added to the scene or group?*/
   private _tempLineInScene = false;
-  private _tempStartPointInScene = false;
-  private _tempEndPointInScene = false;
+  // private _tempStartPointInGroup = false;
+  // private _tempEndPointInGroup = false;
+  private _tempTubeInScene = false;
   private _tempUpperConeInScene = false; //
   private _tempLowerConeInScene = false;
 
@@ -61,12 +62,12 @@ export class LineHandler extends PoseTracker {
   /**
    * As the user moves the pointer around snap these objects to existing ones
    */
-  private snapStartPointToExistingOneDimensional: HEOneOrTwoDimensional | null =
+  private _snapStartPointToExistingOneDimensional: HEOneOrTwoDimensional | null =
     null;
-  private snapEndPointToExistingOneDimensional: HEOneOrTwoDimensional | null =
+  private _snapEndPointToExistingOneDimensional: HEOneOrTwoDimensional | null =
     null;
-  private snapStartPointToExistingPoint: HEPoint | null = null;
-  private snapEndPointToExistingPoint: HEPoint | null = null;
+  private _snapStartPointToExistingPoint: HEPoint | null = null;
+  private _snapEndPointToExistingPoint: HEPoint | null = null;
 
   /**
    * If the user starts to make a line and mouse press at a location on the hyperboloid, then moves
@@ -74,7 +75,7 @@ export class LineHandler extends PoseTracker {
    * variable is to help with that. Or if the user mouse press outside the canvas and mouse releases
    * on the canvas, nothing should happen.
    */
-  private startLocationSelected = false;
+  private _startLocationSelected = false;
 
   private tmpVector4 = new Vector4();
   private tmpVector3 = new Vector3();
@@ -88,6 +89,8 @@ export class LineHandler extends PoseTracker {
       true
     );
     PoseTracker.hyperStore.addTempObject(this._tempStartPoint);
+    this._tempStartPoint.addGroupToScene(this.scene); // Adds the group that contains(or not depending on the state of the handler) the three types of mesh to the scene
+    this._tempStartPoint.removeAllMeshesFromGroup();
 
     this._tempEndPoint = new HEPoint(
       new THREE.Vector4(0, 0, 1, 1),
@@ -95,6 +98,8 @@ export class LineHandler extends PoseTracker {
       true
     );
     PoseTracker.hyperStore.addTempObject(this._tempEndPoint);
+    this._tempEndPoint.addGroupToScene(this.scene); // Adds the group that contains(or not depending on the state of the handler) the three types of mesh to the scene
+    this._tempEndPoint.removeAllMeshesFromGroup();
 
     this._tempLine = new HELine(
       this._tempStartPoint,
@@ -118,14 +123,14 @@ export class LineHandler extends PoseTracker {
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
     // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
     super.mouseMoved(event);
-    if (this.aSurfaceIsIntersected && !this.startLocationSelected) {
-      this.startLocationSelected = true;
+    if (this.aSurfaceIsIntersected && !this._startLocationSelected) {
+      this._startLocationSelected = true;
       this.updateFilteredPointsList();
       // Decide if the starting location is near an already existing HEPoint or near a oneDimensional HENodule
       if (this.filteredIntersectionPointsList.length > 0) {
         // Use an existing HEPoint to start the line
         const selected = this.filteredIntersectionPointsList[0];
-        this.startVector.copy(selected.position);
+        this._startVector.copy(selected.position);
         this._startHEPoint = this.filteredIntersectionPointsList[0];
         this._tempStartPoint.position = selected.position;
 
@@ -201,25 +206,12 @@ export class LineHandler extends PoseTracker {
       } else {
         // The mouse press is not near an existing point or one dimensional object.
         //  Eventually, we will create a new HEPoint
-        let wCoordinate: number;
-        switch (true) {
-          case this.hyperboloidIsFirstSurfaceHit:
-            wCoordinate = 1;
-            break;
-          case this.idealStripIsFirstSurfaceHit:
-            wCoordinate = 0;
-            break;
-          case this.ultraStripIsFirstSurfaceHit:
-            wCoordinate = -1;
-            break;
-          default:
-            wCoordinate = 1; // default to the hyperboloid if something goes wrong
-        }
+        let wCoordinate = this.getWCoordinate();
         this._tempStartPoint.position = PoseTracker.vec3ToVec4(
           PoseTracker.hyperStore.surfaceIntersections[0].point,
           wCoordinate
         );
-        this.startVector.copy(this._tempStartPoint.position);
+        this._startVector.copy(this._tempStartPoint.position);
         this._startHEPoint = null;
       }
     }
@@ -228,25 +220,23 @@ export class LineHandler extends PoseTracker {
     // console.debug(`LineHandler::mouseMoved (${event.clientX},${event.clientY})`)
     // Find all the nearby (hitHE... objects) and update location vectors
     super.mouseMoved(event);
-
     this.updateFilteredPointsList();
+    // Set the snap objects, if any
+    this._snapStartPointToExistingOneDimensional = null;
+    this._snapEndPointToExistingOneDimensional = null;
+    this._snapStartPointToExistingPoint = null;
+    this._snapEndPointToExistingPoint = null;
     if (this.filteredIntersectionPointsList.length > 0) {
       // Only one object can be interacted with at a given time, so set the first point nearby to glowing
       // The user can create points  on , ellipses, segments, and lines, etc so
       // highlight those as well (but only one) if they are nearby also
       // Also set the snap objects
       this.filteredIntersectionPointsList[0].glowing = true;
-      if (!this.startLocationSelected) {
-        this.snapStartPointToExistingOneDimensional = null;
-        this.snapEndPointToExistingOneDimensional = null;
-        this.snapStartPointToExistingPoint =
+      if (this._startLocationSelected) {
+        this._snapEndPointToExistingPoint =
           this.filteredIntersectionPointsList[0];
-        this.snapEndPointToExistingPoint = null;
       } else {
-        this.snapStartPointToExistingOneDimensional = null;
-        this.snapEndPointToExistingOneDimensional = null;
-        this.snapStartPointToExistingPoint = null;
-        this.snapEndPointToExistingPoint =
+        this._snapStartPointToExistingPoint =
           this.filteredIntersectionPointsList[0];
       }
       // } else if (this.hitSESegments.length > 0) {
@@ -328,219 +318,55 @@ export class LineHandler extends PoseTracker {
       //     this.snapStartMarkerToTemporaryPoint = null;
       //     this.snapEndMarkerToTemporaryPoint = null;
       //   }
-    } else {
-      this.snapStartPointToExistingOneDimensional = null;
-      this.snapEndPointToExistingOneDimensional = null;
-      this.snapStartPointToExistingPoint = null;
-      this.snapEndPointToExistingPoint = null;
     }
-    // Make sure that the event is on the hyperboloid
+    // Make sure that the event is on a surface
     if (this.aSurfaceIsIntersected) {
-      if (!this.startLocationSelected) {
-        // If the temporary startPoint has *not* been added to the scene do so now
-        if (this.hyperboloidIsFirstSurfaceHit) {
-          if (!this._tempStartPointInScene) {
-            this._tempStartPointInScene = true;
-            this.scene.add(this._tempStartPoint.mesh);
-          }
-          this._tempStartPoint.position = PoseTracker.vec3ToVec4(
-            PoseTracker.hyperStore.surfaceIntersections[0].point,
-            1
-          );
-        } else {
-          if (this._tempStartPointInScene) {
-            this._tempStartPointInScene = false;
-            this.scene.remove(this._tempStartPoint.mesh);
-          }
-        }
-
-        if (this.idealStripIsFirstSurfaceHit) {
-          if (!this._tempStartIdealPointInScene) {
-            this._tempStartIdealPointInScene = true;
-            this.scene.add(this._tempTube);
-            this.scene.add(this._tempStartIdealPoint.mesh);
-          }
-          const location = PoseTracker.hyperStore.surfaceIntersections[0].point;
-          const upper = location.z > 0;
-          this._tempStartIdealPoint.position = PoseTracker.vec3ToVec4(
-            location,
-            0
-          );
-          this._tempTubeMaterial.position = new Vector4(
-            0,
-            0,
-            upper ? 1 : -1,
-            1
-          );
-          this._tempTubeMaterial.tubeAngle = Math.atan2(location.y, location.x);
-
-          if (!this._tempLowerConeInScene && !upper) {
-            this.scene.add(this._tempLowerCone);
-            this._tempLowerConeInScene = true;
-            this._tempUpperConeInScene = false;
-            this.scene.remove(this._tempUpperCone);
-          }
-
-          if (!this._tempUpperConeInScene && upper) {
-            this.scene.add(this._tempUpperCone);
-            this._tempUpperConeInScene = true;
-            this._tempLowerConeInScene = false;
-            this.scene.remove(this._tempLowerCone);
-          }
-        } else {
-          if (this._tempStartIdealPointInScene) {
-            this._tempStartIdealPointInScene = false;
-            this._tempUpperConeInScene = false;
-            this._tempLowerConeInScene = false;
-            this.scene.remove(this._tempTube);
-            this.scene.remove(this._tempStartIdealPoint.mesh);
-            this.scene.remove(this._tempLowerCone);
-            this.scene.remove(this._tempUpperCone);
-          }
-        }
+      const possibleLocation = this.updateTempObjects(
+        !this._startLocationSelected
+      ); // update the start or end objects
+      if (!this._startLocationSelected) {
         // Remove the temporary startPoint if there is a nearby point which can glow
-        if (this.snapStartPointToExistingPoint !== null) {
-          // if the user is over a non user created intersection point (which can't be selected so will not remain
-          // glowing when the user select that location and then moves the mouse away) we don't
+        if (this._snapStartPointToExistingPoint !== null) {
+          // if the user is over a non-user created intersection or antipodal point (which can't be set to glowing so will not remain
+          // glowing when the user select that location and then moves the mouse away)
           // remove the temporary start marker from the scene, instead we move it to the location of the intersection point
           if (
-            (this.snapStartPointToExistingPoint instanceof
+            (this._snapStartPointToExistingPoint instanceof
               HEIntersectionPoint ||
-              this.snapStartPointToExistingPoint instanceof HEAntipodalPoint) &&
-            !this.snapStartPointToExistingPoint.isUserCreated
+              this._snapStartPointToExistingPoint instanceof
+                HEAntipodalPoint) &&
+            !this._snapStartPointToExistingPoint.isUserCreated
           ) {
-            if (this.snapStartPointToExistingPoint.position.w == 0) {
-              if (this._tempStartPointInScene) {
-                this._tempStartPointInScene = false;
-                this.scene.remove(this._tempStartPoint.mesh);
-              }
-              if (!this._tempStartIdealPointInScene) {
-                this._tempStartIdealPointInScene = true;
-                this.scene.add(this._tempStartIdealPoint.mesh);
-              }
-              this._tempStartIdealPoint.position =
-                this.snapStartPointToExistingPoint.position;
-            } else {
-              if (this._tempStartIdealPointInScene) {
-                this._tempStartIdealPointInScene = false;
-                this.scene.remove(this._tempStartIdealPoint.mesh);
-              }
-              if (!this._tempStartPointInScene) {
-                this._tempStartPointInScene = true;
-                this.scene.add(this._tempStartPoint.mesh);
-              }
-              this._tempStartPoint.position =
-                this.snapStartPointToExistingPoint.position;
-            }
+            this._tempStartPoint.position =
+              this._snapStartPointToExistingPoint.position;
           } else {
             // the snap point is glowing so remove all other start temp objects
-            this.removeAllStartTempObjects();
+            this.removeAllTempStartObjects();
           }
-        }
-        // Set the location of the temporary startPoint by snapping to appropriate object (if any)
-        if (this.snapStartPointToExistingOneDimensional !== null) {
+        } else if (this._snapStartPointToExistingOneDimensional !== null) {
+          // Set the location of the temporary startPoint by snapping to appropriate object (if any)
+          // NOT IMPLEMENTED YET
           // this._tempStartPoint.position =
           //   this.snapStartPointToExistingOneDimensional.closestVector(
           //     PoseTracker.hyperStore.surfaceIntersections[0].point
           //   );
         }
-        // else if (this.snapStartPointToExistingPoint == null) {
-        //   this._tempStartPoint.position =
-        //     this.currentSphereVector;
-        //}
       } else {
-        // If the temporary startPoint has *not* been added to the scene do so now (it might have
-        // been removed due to leaving the hyperboloid in mouse move, but not triggering a mouse leave event)
-        if (
-          !this._tempStartPointInScene &&
-          this._startHEPoint === null &&
-          this.startVector.w != 0
-        ) {
-          this._tempStartPointInScene = true;
-          this.scene.add(this._tempStartPoint.mesh);
-        }
-        if (
-          !this._tempStartIdealPointInScene &&
-          this._startHEPoint === null &&
-          this.startVector.w == 0
-        ) {
-          this._tempStartIdealPointInScene = true;
-          this.scene.add(this._tempStartIdealPoint.mesh);
-        }
-        // If the temporary endPoint has *not* been added to the scene do so now, but only if the end point upper status matches the selected start point/location
-        let possibleLocation = PoseTracker.vec3ToVec4(
-          PoseTracker.hyperStore.surfaceIntersections[0].point,
-          this.hyperboloidIsFirstSurfaceHit ? 1 : 0
-        );
-
-        // To make a line the start and end vector must be on the same sheet
-        if (possibleLocation.z * this.startVector.z > 0) {
-          if (this.hyperboloidIsFirstSurfaceHit) {
-            if (!this._tempEndPointInScene) {
-              this._tempEndPointInScene = true;
-              this.scene.add(this._tempEndPoint.mesh);
-            }
-            this._tempEndPoint.position = possibleLocation;
-          } else {
-            if (this._tempEndPointInScene) {
-              this._tempEndPointInScene = false;
-              this.scene.remove(this._tempEndPoint.mesh);
-            }
-          }
-
-          if (this.idealStripIsFirstSurfaceHit) {
-            if (!this._tempEndIdealPointInScene) {
-              this._tempEndIdealPointInScene = true;
-              this.scene.add(this._tempTube);
-              this.scene.add(this._tempEndIdealPoint.mesh);
-            }
-            const upper = possibleLocation.z > 0;
-            this._tempEndIdealPoint.position = possibleLocation;
-            this._tempTubeMaterial.upper = upper ? 1 : 0;
-            this._tempTubeMaterial.tubeAngle = Math.atan2(
-              possibleLocation.y,
-              possibleLocation.x
-            );
-
-            if (!this._tempLowerConeInScene && !upper) {
-              this.scene.add(this._tempLowerCone);
-              this._tempLowerConeInScene = true;
-              this._tempUpperConeInScene = false;
-              this.scene.remove(this._tempUpperCone);
-            }
-
-            if (!this._tempUpperConeInScene && upper) {
-              this.scene.add(this._tempUpperCone);
-              this._tempUpperConeInScene = true;
-              this._tempLowerConeInScene = false;
-              this.scene.remove(this._tempLowerCone);
-            }
-          } else {
-            if (this._tempEndIdealPointInScene) {
-              this._tempEndIdealPointInScene = false;
-              this._tempUpperConeInScene = false;
-              this._tempLowerConeInScene = false;
-              this.scene.remove(this._tempTube);
-              this.scene.remove(this._tempStartIdealPoint.mesh);
-              this.scene.remove(this._tempLowerCone);
-              this.scene.remove(this._tempUpperCone);
-            }
-          }
+        // To make a line the start and end vector must have same upper and lower values
+        if (possibleLocation.z * this._startVector.z > 0) {
           // Remove the temporary endPoint if there is a nearby point (which is glowing)
-          if (this.snapEndPointToExistingPoint !== null) {
-            this.removeAllEndTempObjects();
+          if (this._snapEndPointToExistingPoint !== null) {
+            this.removeAllTempEndObjects();
           }
           // Set the location of the temporary endMarker by snapping to appropriate object (if any)
-          if (this.snapEndPointToExistingOneDimensional !== null) {
+          else if (this._snapEndPointToExistingOneDimensional !== null) {
+            //NOT IMPLEMENTED YET
             // this._tempEndPoint.position =this.snapEndPointToExistingOneDimensional.closestVector(
             //       possibleLocation
             // )
-            // possibleLocation.copy(this._tempEndPoint.position)
-          } else {
-            // this._tempEndPoint.position = possibleLocation
           }
           this._tempLine.setNewStartAndEndVectors(
-            this.startVector,
+            this._startVector,
             possibleLocation
           );
           if (!this._tempLineInScene) {
@@ -549,37 +375,33 @@ export class LineHandler extends PoseTracker {
           }
         } else {
           // the user is not over the same upper or lower sheet as the start and the endpoint markers should be removed.
-          this.removeAllEndTempObjects();
+          this.removeAllTempEndObjects();
         }
       }
-    } /*if (this._tempStartPointInScene)*/ else {
-      // Remove the temporary objects from the display.
+    } else {
       this.removeAllTempObjects();
-
-      this.snapStartPointToExistingOneDimensional = null;
-      this.snapEndPointToExistingOneDimensional = null;
-      this.snapStartPointToExistingPoint = null;
-      this.snapEndPointToExistingPoint = null;
     }
   }
+
   mouseReleased(event: MouseEvent): void {
     // console.debug(`LineHandler::mouseReleased (${event.clientX},${event.clientY})`)
     if (this.aSurfaceIsIntersected) {
-      if (this.startLocationSelected) {
+      if (this._startLocationSelected) {
         const possibleLocation = PoseTracker.vec3ToVec4(
           PoseTracker.hyperStore.surfaceIntersections[0].point,
           this.hyperboloidIsFirstSurfaceHit ? 1 : 0
         );
 
-        const bothIdeal = possibleLocation.w == 0 && this.startVector.w == 0;
+        const bothIdeal = possibleLocation.w == 0 && this._startVector.w == 0;
         const idealAngularMinimumMet = bothIdeal
           ? Math.abs(
               Math.atan2(possibleLocation.y, possibleLocation.x) -
-                Math.atan2(this.startVector.y, this.startVector.x)
+                Math.atan2(this._startVector.y, this._startVector.x)
             ) > 0.1
           : false;
 
-        const bothNotIdeal = possibleLocation.w == 1 && this.startVector.w == 1;
+        const bothNotIdeal =
+          possibleLocation.w == 1 && this._startVector.w == 1;
         const distanceMinimumMet = bothNotIdeal
           ? new Vector3(
               possibleLocation.x,
@@ -587,15 +409,15 @@ export class LineHandler extends PoseTracker {
               possibleLocation.z
             ).angleTo(
               new Vector3(
-                this.startVector.x,
-                this.startVector.y,
-                this.startVector.z
+                this._startVector.x,
+                this._startVector.y,
+                this._startVector.z
               )
             ) > 0.1
           : false;
 
         if (
-          possibleLocation.z * this.startVector.z > 0 && // To make a line the start and end vector must be on the same sheet
+          possibleLocation.z * this._startVector.z > 0 && // To make a line the start and end vector must be on the same sheet
           ((bothIdeal && idealAngularMinimumMet) ||
             (bothNotIdeal && distanceMinimumMet) ||
             (!bothIdeal && !bothNotIdeal)) // One is ideal and the other is not.
@@ -609,7 +431,7 @@ export class LineHandler extends PoseTracker {
           }
           // Get ready for the next line
           this.mouseLeave(event);
-        } else if (possibleLocation.z * this.startVector.z < 0) {
+        } else if (possibleLocation.z * this._startVector.z < 0) {
           EventBus.fire("show-alert", {
             key: `handlers.lineCreationBetweenDifferentSheets`,
             keyOptions: {},
@@ -618,10 +440,10 @@ export class LineHandler extends PoseTracker {
         }
       } else {
         this.removeAllTempObjects();
-        this.snapStartPointToExistingOneDimensional = null;
-        this.snapEndPointToExistingOneDimensional = null;
-        this.snapStartPointToExistingPoint = null;
-        this.snapEndPointToExistingPoint = null;
+        this._snapStartPointToExistingOneDimensional = null;
+        this._snapEndPointToExistingOneDimensional = null;
+        this._snapStartPointToExistingPoint = null;
+        this._snapEndPointToExistingPoint = null;
       }
     }
   }
@@ -631,44 +453,130 @@ export class LineHandler extends PoseTracker {
     this.prepareForNextLine();
   }
 
+  getWCoordinate(): number {
+    let wCoordinate: number;
+    switch (true) {
+      case this.hyperboloidIsFirstSurfaceHit:
+        wCoordinate = 1;
+        break;
+      case this.idealStripIsFirstSurfaceHit:
+        wCoordinate = 0;
+        break;
+      case this.ultraStripIsFirstSurfaceHit:
+        wCoordinate = -1;
+        break;
+      default:
+        wCoordinate = 1; // default to the hyperboloid if something goes wrong
+    }
+    return wCoordinate;
+  }
+
   removeAllTempObjects(): void {
-    this.scene.remove(this._tempLine.mesh);
-    this._tempLineInScene = false;
-    this.removeAllStartTempObjects();
-    this.removeAllEndTempObjects();
+    if (this._tempLineInScene) {
+      this.scene.remove(this._tempLine.mesh);
+      this._tempLineInScene = false;
+    }
+    this.removeAllTempStartObjects();
+    this.removeAllTempEndObjects();
   }
 
-  removeAllStartTempObjects(): void {
-    this.scene.remove(this._tempStartPoint.mesh);
-    this._tempStartPointInScene = false;
-    this.scene.remove(this._tempStartIdealPoint.mesh);
-    this.scene.remove(this._tempTube);
-    this._tempStartIdealPointInScene = false;
-    this.scene.remove(this._tempLowerCone);
-    this.scene.remove(this._tempUpperCone);
-    this._tempUpperConeInScene = false;
-    this._tempLowerConeInScene = false;
+  private addTubeAndConeToScene() {
+    if (!this._tempTubeInScene) {
+      this._tempTubeInScene = true;
+      this.scene.add(this._tempTube);
+    }
+    const location = PoseTracker.hyperStore.surfaceIntersections[0].point;
+    const upper = location.z > 0;
+    this._tempTubeMaterial.position = new THREE.Vector4(
+      0,
+      0,
+      upper ? 1 : -1,
+      0
+    ); // x,y,w are not used for the tube
+    this._tempTubeMaterial.tubeAngle = Math.atan2(location.y, location.x);
+    if (!this._tempLowerConeInScene && !upper) {
+      this.scene.add(this._tempLowerCone);
+      this._tempLowerConeInScene = true;
+      this._tempUpperConeInScene = false;
+      this.scene.remove(this._tempUpperCone);
+    }
+
+    if (!this._tempUpperConeInScene && upper) {
+      this.scene.add(this._tempUpperCone);
+      this._tempUpperConeInScene = true;
+      this._tempLowerConeInScene = false;
+      this.scene.remove(this._tempLowerCone);
+    }
   }
 
-  removeAllEndTempObjects(): void {
-    this.scene.remove(this._tempEndPoint.mesh);
-    this._tempEndPointInScene = false;
-    this.scene.remove(this._tempEndIdealPoint.mesh);
-    this.scene.remove(this._tempTube);
-    this._tempEndIdealPointInScene = false;
-    this.scene.remove(this._tempLowerCone);
-    this.scene.remove(this._tempUpperCone);
-    this._tempUpperConeInScene = false;
-    this._tempLowerConeInScene = false;
+  private removeTubeAndConeFromScene() {
+    if (this._tempTubeInScene) {
+      this.scene.remove(this._tempTube);
+      this._tempTubeInScene = false;
+    }
+    if (this._tempLowerConeInScene) {
+      this.scene.remove(this._tempLowerCone);
+      this._tempLowerConeInScene = false;
+    }
+    if (this._tempUpperConeInScene) {
+      this.scene.remove(this._tempUpperCone);
+      this._tempUpperConeInScene = false;
+    }
+  }
+
+  private updateTempObjects(start: boolean): Vector4 {
+    let wCoordinate: number;
+    let returnVector: Vector4;
+    switch (true) {
+      case this.hyperboloidIsFirstSurfaceHit:
+        wCoordinate = 1;
+        //remove the tube and cone if they are in the scene
+        this.removeTubeAndConeFromScene();
+        break;
+      case this.idealStripIsFirstSurfaceHit:
+        wCoordinate = 0;
+        // add the tube and cone for the ideal points
+        this.addTubeAndConeToScene();
+        break;
+      case this.ultraStripIsFirstSurfaceHit:
+        wCoordinate = -1;
+        //remove the tube and cone if they are in the scene
+        this.removeTubeAndConeFromScene();
+        break;
+      default:
+        wCoordinate = 1; // default to the hyperboloid if something goes wrong
+    }
+    returnVector = PoseTracker.vec3ToVec4(
+      PoseTracker.hyperStore.surfaceIntersections[0].point,
+      wCoordinate
+    );
+    if (start) {
+      this._tempStartPoint.position = returnVector;
+      this._tempStartPoint.updateOrAddToGroup(); // this must be called after setting the position of the point because the position is used to determine which of the three meshes (hyperboloid, ideal strip, or ultra strip) should be added to the group and displayed as the temporary point.
+    } else {
+      this._tempEndPoint.position = returnVector;
+      this._tempEndPoint.updateOrAddToGroup();
+    }
+    return returnVector;
+  }
+
+  removeAllTempStartObjects(): void {
+    this._tempStartPoint.removeAllMeshesFromGroup();
+    this.removeTubeAndConeFromScene();
+  }
+
+  removeAllTempEndObjects(): void {
+    this._tempEndPoint.removeAllMeshesFromGroup();
+    this.removeTubeAndConeFromScene();
   }
 
   prepareForNextLine(): void {
     this.removeAllTempObjects();
 
-    this.snapStartPointToExistingOneDimensional = null;
-    this.snapEndPointToExistingOneDimensional = null;
-    this.snapStartPointToExistingPoint = null;
-    this.snapEndPointToExistingPoint = null;
+    this._snapStartPointToExistingOneDimensional = null;
+    this._snapEndPointToExistingOneDimensional = null;
+    this._snapStartPointToExistingPoint = null;
+    this._snapEndPointToExistingPoint = null;
 
     // Clear old points and values to get ready for creating the next line.
     if (this._startHEPoint) {
@@ -678,9 +586,9 @@ export class LineHandler extends PoseTracker {
     this._startHEPoint = null;
     this._endHEPoint = null;
     this._startHEPointOneDimensionalParent = null;
-    this.normalVector.set(0, 0, 0);
-    this.startVector.set(0, 0, 0, 0);
-    this.startLocationSelected = false;
+    this._normalVector.set(0, 0, 0);
+    this._startVector.set(0, 0, 0, 0);
+    this._startLocationSelected = false;
 
     // call an unglow all command
     //LineHandler.hstore.unglowAllSENodules();
@@ -716,7 +624,7 @@ export class LineHandler extends PoseTracker {
 
     const endLocation = PoseTracker.vec3ToVec4(
       PoseTracker.hyperStore.surfaceIntersections[0].point,
-      this.hyperboloidIsFirstSurfaceHit ? 1 : 0
+      this.getWCoordinate()
     );
 
     if (this._startHEPoint === null) {
@@ -747,11 +655,11 @@ export class LineHandler extends PoseTracker {
         // );
       } else {
         // Starting mouse press landed on an open space
-        newStartPoint = new HEPoint(this.startVector);
+        newStartPoint = new HEPoint(this._startVector);
         newStartLabel = new HELabel(
           "point",
           newStartPoint,
-          this.startVector,
+          this._startVector,
           newStartPoint.name
         );
         newStartPoint.setLabel(newStartLabel);

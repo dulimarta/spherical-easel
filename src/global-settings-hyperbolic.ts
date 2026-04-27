@@ -14,7 +14,7 @@ export const SETTINGS = {
 
   fadePercentage: 0.985, // The percentage of the height of the hyperboloid at which fading (opacity lowering) begins
   startOpacityFade: 1.0, // The opacity at the start of the fade of hyperboloid and below
-  endOpacityFade: 0.75, // The opacity at the end (i.e. top bottom edge) of the fade hyperboloid
+  endOpacityFade: 0.5, // The opacity at the end (i.e. top bottom edge) of the fade hyperboloid
 
   maxZClip: 150, //set the maximum value of zUpperClip so that the entire hyperboloid and grid lines are shown at max dolly distance and maxFieldOfView
 

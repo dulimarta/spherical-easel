@@ -24,25 +24,17 @@ import {
   time,
   min,
   max,
-  negate,
   mat4,
   sqrt,
   floor,
   mod,
   and,
   Discard,
-  not,
   or,
   cross,
   dot,
   exp,
-  vec2,
-  normalize,
-  oneMinus,
-  positionView,
-  normalView,
-  faceDirection,
-  frontFacing
+  vec2
 } from "three/tsl";
 // import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { Line2 } from "three/addons/lines/Line2.js";
@@ -64,8 +56,7 @@ import {
   CustomLabelMaterial,
   CustomLineMaterial
 } from "./MaterialFactory";
-import { h2Distance, intersectWithSurface } from "@/utils/helpingHEFunctions";
-import { Surface } from "two.js/extras/jsm/zui";
+import { intersectWithSurface } from "@/utils/helpingHEFunctions";
 
 const pulseRate = 0.3; // selected objects pulse and this set the rate oscSine(pulseRate*time)
 const pulseSizePercent = 0.8; // selected objects grow between 1 and 1+pulseSizePercent times there size
@@ -687,9 +678,6 @@ export function createIdealPoint(
       }
     });
   };
-  if (temporary) {
-    console.log("Temp Radius:", radiusUniform.value);
-  }
   return returnMesh;
 }
 
@@ -934,84 +922,38 @@ export function createUltraPoint(
 
   return returnMesh;
 }
-/**
- * Creates the cone on which the ideal points lie, the  portion of the cone representing the ideal points are between the given clipping planes.
- * @param param0
- * @returns
- */
+
 export function createIdealStrip(upper: boolean): Mesh {
   const idealStripMaterial = new THREE.MeshPhysicalNodeMaterial({
     color: 0x8c92ac,
     side: DoubleSide,
-    transparent: true
+    transparent: true,
+    depthWrite: false
   });
 
-  const posFunc = Fn(() => {
-    // Scale and translate the original tube segment {(x,y,z) | x^2 + y^2 = 1, 0<=z<=1 } to
-    //  {(x,y,z) | x^2 + y^2 = z^2, lowerZValue <= z <= upperZValue}
-    const upperZValue = upper
-      ? zUpperIdealStripClipPlus
-      : zLowerIdealStripClipPlus;
-    const lowerZValue = upper
-      ? zUpperIdealStripClipMinus
-      : zLowerIdealStripClipMinus;
-    const transformedZ = positionLocal.z
-      .mul(upperZValue.sub(lowerZValue))
-      .add(lowerZValue);
+  const upperZValue = upper
+    ? zUpperIdealStripClipPlus
+    : zLowerIdealStripClipPlus;
+  const lowerZValue = upper
+    ? zUpperIdealStripClipMinus
+    : zLowerIdealStripClipMinus;
 
+  const transformedZ = positionLocal.z
+    .mul(upperZValue.sub(lowerZValue))
+    .add(lowerZValue);
+
+  idealStripMaterial.positionNode = Fn(() => {
     return vec3(
       positionLocal.x.mul(transformedZ),
       positionLocal.y.mul(transformedZ),
       transformedZ
     );
-  });
+  })();
 
-  idealStripMaterial.positionNode = posFunc();
-
-  // Add opacity to the edges of the ideal point's strip
-  const opacityAtEdges = 0.7;
-  const percentOfEdgeReduceInOpacity = 0.005;
-
-  const upperSmooth = smoothstep(
-    zUpperIdealStripClipMinus,
-    zUpperIdealStripClipMinus.mul(1 + percentOfEdgeReduceInOpacity),
-    positionLocal.z
-  )
-    .mul(1 - opacityAtEdges)
-    .sub(
-      smoothstep(
-        zUpperIdealStripClipPlus.mul(1 - percentOfEdgeReduceInOpacity),
-        zUpperIdealStripClipPlus,
-        positionLocal.z
-      ).mul(1 - opacityAtEdges)
-    );
-
-  const lowerSmooth = smoothstep(
-    zLowerIdealStripClipMinus,
-    zLowerIdealStripClipMinus.mul(1 - percentOfEdgeReduceInOpacity),
-    positionLocal.z
-  )
-    .mul(1 - opacityAtEdges)
-    .sub(
-      smoothstep(
-        zLowerIdealStripClipPlus.mul(1 + percentOfEdgeReduceInOpacity),
-        zLowerIdealStripClipPlus,
-        positionLocal.z
-      ).mul(1 - opacityAtEdges)
-    );
-
-  // Apply the correct logic based on the 'upper' boolean and add the base opacity
-  idealStripMaterial.opacityNode = (upper ? upperSmooth : lowerSmooth).add(
-    opacityAtEdges
-  );
-
-  // path is the center line of the initial(untransformed) tube.
   const path = new LineCurve3(new Vector3(0, 0, 0), new Vector3(0, 0, 1));
   const geometry = new THREE.TubeGeometry(path, 64, 1, 128, false);
-
   const idealPointMesh = new Mesh(geometry, idealStripMaterial);
 
-  // --- Override the raycast for the mesh otherwise the ray caster detects only the untransformed mesh---
   idealPointMesh.raycast = function (raycaster, intersects) {
     const partialIntersects = intersectWithSurface(
       raycaster.ray.origin,
@@ -1114,6 +1056,7 @@ export function createUltraStrip(upper): THREE.Mesh {
 
   return ultraStripMesh;
 }
+
 const hazyGlassSettings = {
   side: THREE.DoubleSide,
   depthWrite: false,
@@ -1198,7 +1141,7 @@ export function createHyperboloidSheet(upper: boolean): THREE.Mesh {
     side: DoubleSide,
     metalness: 0.1,
     roughness: 0.2,
-    transparent: false, //true,
+    transparent: true, //false, //true,
     clearcoat: 1.0,
     clearcoatRoughness: 0.1
   });
@@ -1207,8 +1150,6 @@ export function createHyperboloidSheet(upper: boolean): THREE.Mesh {
   //hyperboloidMaterial.depthTest = false;
 
   const baseColor = color(hyperboloidMaterial.color);
-
-  const localPositionZ = varying(positionLocal.z); // make this available in the fragment shader
 
   const clippingLogic = Fn(() => {
     if (upper) {
@@ -1225,17 +1166,13 @@ export function createHyperboloidSheet(upper: boolean): THREE.Mesh {
   const upperSmooth = smoothstep(
     zUpperClip.mul(SETTINGS.fadePercentage),
     zUpperClip,
-    localPositionZ
+    positionLocal.z
   ).oneMinus();
 
-  // For the lower, edge0 must be the more negative number (zLowerClip)
-  // Because we aren't using oneMinus(), it naturally maps:
-  // inside (-9) -> 1 (Opaque)
-  // outside (-10) -> 0 (Transparent)
   const lowerSmooth = smoothstep(
     zLowerClip,
     zLowerClip.mul(SETTINGS.fadePercentage),
-    localPositionZ
+    positionLocal.z
   );
 
   hyperboloidMaterial.opacityNode = (upper ? upperSmooth : lowerSmooth)
@@ -1279,8 +1216,7 @@ export function createHyperboloidSheet(upper: boolean): THREE.Mesh {
 
   return hyperboloidMesh;
 }
-const GRID_Z_OFFSET = 0.01; // World-space push off hyperboloid surface
-const MAX_RADIAL_STEP = 0.04; // Cap on parameter step for radial lines
+const GRID_Z_OFFSET = 0.01; // World-space push off hyperboloid surface to prevent z fighting with grid lines.
 
 export function createPolarGridCircle(
   intrinsicRadius: number,
@@ -1351,7 +1287,7 @@ export function createPolarGridCircle(
   mesh.raycast = () => {};
   return mesh;
 }
-
+const MAX_RADIAL_STEP = 0.04; // Cap on parameter step for radial lines
 export function createPolarGridRadialLine(
   radianAngle: number,
   upper: boolean,
@@ -1444,178 +1380,6 @@ export function createPolarGridRadialLine(
   lineMesh.raycast = () => {};
   return lineMesh;
 }
-
-// export function createPolarGridCircle(
-//   intrinsicRadius: number, // The intrinsic hyperbolic radius
-//   upper: boolean,
-//   thickness = 3 //pixels
-// ): Mesh {
-//   const circlePoints: number[] = [];
-//   // Calculate number of points needed to achieve the desired maximum error in linear approximation of circle
-//   const error = 0.004; // maximum allowable error (as a world space distance) in the linear segments approximating the circle
-//   const numPoints = Math.ceil(
-//     Math.PI / Math.acos(1 - error / Math.sinh(intrinsicRadius))
-//   );
-
-//   // Build the path
-//   for (let angle = 0; angle < 2 * Math.PI; angle += (2 * Math.PI) / numPoints) {
-//     circlePoints.push(
-//       Math.sinh(intrinsicRadius) * Math.cos(angle),
-//       Math.sinh(intrinsicRadius) * Math.sin(angle),
-//       upper ? Math.cosh(intrinsicRadius) : -Math.cosh(intrinsicRadius)
-//     );
-//   }
-//   // Close the circle
-//   circlePoints.push(circlePoints[0], circlePoints[1], circlePoints[2]);
-
-//   const geometry = new LineGeometry();
-//   geometry.setPositions(circlePoints);
-
-//   const lineMaterial = new THREE.Line2NodeMaterial({
-//     linewidth: thickness, // Width in pixels
-//     transparent: true,
-//     color: "grey",
-//     blending: THREE.NormalBlending, //If this is not set the radial lines near (0,0,1) looks whitish grey
-//     alphaTest: 0.1,
-//     depthTest: true,
-//     depthWrite: true
-//     // polygonOffset: true, // attempt to limit z fighting when polar angle is 0 or pi
-//     // polygonOffsetFactor: -1.0, // Nudge the line toward the camera
-//     // polygonOffsetUnits: -4.0 // Higher value = more aggressive nudge
-//   });
-
-//   // Clipping Logic -- line2NodeMaterial is really just a center line that is
-//   // thickened with quadrilaterals. It is the union of a series of instances,
-//   // each of which is a quadrilateral (= two triangles with a common edge
-//   // (diagonal)), with a center line down the middle. The vertices of the quad
-//   // are determined by moving perpendicular to the center line half the
-//   // thickness of the line material (in pixels). uv coordinates are the
-//   // coordinates of a location in the quad. I know that uv().y goes from -1 to
-//   // 1. I'm not sure about the uv().x range. Each vertex of the quad has the
-//   // (same) instanceStart and instanceEnd data associated to it so doesn't
-//   // matter which vertex you get this information from. In this case all the z
-//   // coordinates of the instanceStart and instanceEnd along circular line are
-//   // the same so it doesn't matter which you choose
-
-//   const instanceStart = attribute("instanceStart", "vec3");
-//   const varyingInstanceStartLocal = varying(instanceStart);
-//   const worldInstanceStartZ = modelWorldMatrix.mul(
-//     vec4(varyingInstanceStartLocal, 1.0)
-//   ).z;
-//   const clippingLogic = Fn(() => {
-//     // discard any instances that start/end after/before zClip
-//     const shouldClip = upper
-//       ? worldInstanceStartZ.greaterThan(zUpperClip)
-//       : worldInstanceStartZ.lessThan(zLowerClip);
-//     shouldClip.discard();
-
-//     return float(1.0);
-//   });
-
-//   // Apply to your material
-//   lineMaterial.opacityNode = clippingLogic();
-
-//   // @ts-expect-error: Line2 constructor type definition is outdated for WebGPU materials
-//   const mesh = new Line2(geometry, lineMaterial);
-
-//   // mesh.name =
-//   //   (upper ? `U` : `L`) + `PolarGridCircle_r=${intrinsicRadius.toFixed(2)}`;
-//   mesh.raycast = () => {}; // this object is never intersected
-//   return mesh;
-// }
-
-// export function createPolarGridRadialLine(
-//   radianAngle: number,
-//   upper: boolean,
-//   thickness = 3 //pixels
-// ): Mesh {
-//   const points: number[] = [];
-
-//   let nextTValue = 0.01;
-//   let myContinue = true;
-//   for (let i = 0; myContinue; i++) {
-//     if (nextTValue > Math.acosh(SETTINGS.maxZClip + 1.0)) {
-//       nextTValue = Math.acosh(SETTINGS.maxZClip + 1.0);
-//       // add one to zMax because the dolly max distance is sometimes exceeded when all the way zoomed out to allow for smooth zooming and motion. This way the clipping planes limit the display and very little extra (which is cut off by the clipping plane) is stored in the scene.
-//       myContinue = false;
-//     }
-//     points.push(
-//       Math.sinh(nextTValue) * Math.cos(radianAngle),
-//       Math.sinh(nextTValue) * Math.sin(radianAngle),
-//       (upper ? 1 : -1) * Math.cosh(nextTValue)
-//     );
-//     nextTValue += 0.01 * Math.exp(1.3 * nextTValue); //controls the spacing of the points along the hyperbolic radial line. The points on the radial do not need to be uniformly spaced in t - more points near zero are better for accuracy, because eventually the hyperboloid radial lines are almost linear.
-//   }
-
-//   const geometry = new LineGeometry();
-//   geometry.setPositions(points);
-
-//   const lineMaterial = new THREE.Line2NodeMaterial({
-//     linewidth: thickness, // Width in pixels
-//     transparent: true,
-//     color: "grey",
-//     blending: THREE.NormalBlending, //If this is not set the radial lines near (0,0,1) looks whitish grey
-//     alphaTest: 0.1,
-//     depthTest: true,
-//     depthWrite: true
-//     // polygonOffset: true, // attempt to limit z fighting when polar angle is 0 or pi
-//     // polygonOffsetFactor: -1.0, // Nudge the line toward the camera
-//     // polygonOffsetUnits: -4.0 // Higher value = more aggressive nudge
-//   });
-
-//   // Clipping Logic
-//   // First get the instance data and use the varying to make the vertex data
-//   // available to the fragment shader (which includes the color and opacity nodes)
-//   const instanceStart = attribute("instanceStart", "vec3");
-//   const instanceEnd = attribute("instanceEnd", "vec3");
-//   const varyingInstanceStartLocal = varying(instanceStart);
-//   const varyingInstanceEndLocal = varying(instanceEnd);
-
-//   const clippingLogic = Fn(() => {
-//     //compute the intermediate location in local coords then transform to world
-//     // The uv().y is the direction corresponding to the z direction of
-//     // the rendering of the quad (i.e. two triangles with a common edge)
-//     const intermediatePositionLocal = mix(
-//       varyingInstanceStartLocal,
-//       varyingInstanceEndLocal,
-//       uv().y.add(1.0).div(2.0) // uv().y  goes from -1 to 1 and NOT 0 to 1 as expected!
-//     );
-//     const intermediatePositionWorldZ = modelWorldMatrix.mul(
-//       vec4(intermediatePositionLocal, 1.0)
-//     ).z;
-//     const clipPixel = upper
-//       ? intermediatePositionWorldZ.greaterThan(zUpperClip)
-//       : intermediatePositionWorldZ.lessThan(zLowerClip);
-//     clipPixel.discard();
-
-//     const returnSmooth = upper
-//       ? smoothstep(
-//           zUpperClip.mul(SETTINGS.fadePercentage),
-//           zUpperClip,
-//           intermediatePositionWorldZ
-//         )
-//       : smoothstep(
-//           zLowerClip.mul(SETTINGS.fadePercentage),
-//           zLowerClip,
-//           intermediatePositionWorldZ
-//         );
-
-//     return returnSmooth
-//       .oneMinus()
-//       .mul(float(SETTINGS.startOpacityFade).sub(float(SETTINGS.endOpacityFade)))
-//       .add(float(SETTINGS.endOpacityFade));
-//   });
-
-//   // Apply to your material
-//   lineMaterial.opacityNode = clippingLogic();
-
-//   // @ts-expect-error: Line2 constructor type definition is outdated for WebGPU materials
-//   const lineMesh = new Line2(geometry, lineMaterial);
-//   // lineMesh.computeLineDistances();
-//   lineMesh.raycast = () => {}; // this object is never intersected
-
-//   return lineMesh;
-// }
 
 const xAxisRotationMatrix = Fn(
   ([angle]: [THREE.TSL.ShaderNodeObject<THREE.Node>]) => {

@@ -23,7 +23,6 @@ export class PointHandler extends PoseTracker {
   private _tempUpperCone: Mesh;
   private _tempLowerCone: Mesh;
 
-  private _tempPointInGroup = false;
   private _tempTubeInScene = false;
   private _tempUpperConeInScene = false;
   private _tempLowerConeInScene = false;
@@ -239,6 +238,7 @@ export class PointHandler extends PoseTracker {
 
     this.updateFilteredPointsList();
 
+    this._snapToObject = null; // default to snapping to no object
     if (this._filteredIntersectionPointsList.length > 0) {
       // console.log(
       //   "point handler filter set glowing",
@@ -246,28 +246,17 @@ export class PointHandler extends PoseTracker {
       //   this._filteredIntersectionPointsList[0].position.toFixed(2)
       // );
       this._filteredIntersectionPointsList[0].glowing = true;
-      this._snapToObject = null;
     }
     // else if (this.hitHESegments.length > 0) {
     //   this.hitHESegments[0].glowing = true;
     //   this.snapToTemporaryOneDimensional = this.hitHESegments[0];
     // }
-    else {
-      this._snapToObject = null;
-    }
 
     if (this.aSurfaceIsIntersected) {
       if (this._snapToObject === null) {
-        if (!this._tempPointInGroup) {
-          this._tempPointInGroup = true;
-        }
-        this.addTempObjectsToScene();
+        this.updateTempObjects();
       } else {
         // snap to an object
-        if (!this._tempPointInGroup) {
-          this._tempPointInGroup = true;
-        }
-        this.addTempObjectsToScene();
         // this.tempPointMaterial.position = this.snapToObject.closestVector(
         //   PoseTracker.hyperStore.surfaceIntersections[0].point
         // ); // not implemented yet
@@ -343,7 +332,7 @@ export class PointHandler extends PoseTracker {
     }
   }
 
-  private addTempObjectsToScene() {
+  private updateTempObjects() {
     let wCoordinate: number;
     switch (true) {
       case this.hyperboloidIsFirstSurfaceHit:
@@ -368,21 +357,23 @@ export class PointHandler extends PoseTracker {
       PoseTracker.hyperStore.surfaceIntersections[0].point,
       wCoordinate
     );
-    this._tempPoint.updateGroup(); // this must be called after setting the position of the point because the position is used to determine which of the three meshes (hyperboloid, ideal strip, or ultra strip) should be added to the group and displayed as the temporary point.
+    this._tempPoint.updateOrAddToGroup(); // this must be called after setting the position of the point because the position is used to determine which of the three meshes (hyperboloid, ideal strip, or ultra strip) should be added to the group and displayed as the temporary point.
   }
 
   removeAllTempObjects() {
     this._tempPoint.removeAllMeshesFromGroup();
-    this._tempPointInGroup = false;
-
-    this.scene.remove(this._tempTube);
-    this._tempTubeInScene = false;
-
-    this.scene.remove(this._tempLowerCone);
-    this.scene.remove(this._tempUpperCone);
+    if (this._tempTubeInScene) {
+      this.scene.remove(this._tempTube);
+      this._tempTubeInScene = false;
+    }
+    if (this._tempLowerConeInScene) {
+      this.scene.remove(this._tempLowerCone);
+    }
     this._tempUpperConeInScene = false;
-    this._tempLowerConeInScene = false;
-
+    if (this._tempUpperConeInScene) {
+      this.scene.remove(this._tempUpperCone);
+      this._tempLowerConeInScene = false;
+    }
     this._snapToObject = null;
   }
 
