@@ -8,7 +8,6 @@ import {
   zUpperIdealStripClipPlus
 } from "@/plottables-hyperbolic/MeshFactory";
 import { Vector3, Vector4 } from "three";
-import { updatePrefix } from "typescript";
 
 export type partialIntersectionType = {
   distance: number;

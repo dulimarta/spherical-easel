@@ -158,6 +158,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     idealStripIsClosestIntersection,
     ultraStripIsClosestIntersection,
     linesMap,
+    pointsMap,
     addTempObject,
     addPoint,
     addLine,

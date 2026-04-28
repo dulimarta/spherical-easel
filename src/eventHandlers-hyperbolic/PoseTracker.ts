@@ -63,6 +63,11 @@ export class PoseTracker implements HyperbolicToolStrategy {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  mousePressed(event: MouseEvent): void {
+    //Not implemented
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mouseMoved(event: MouseEvent): void {
     // Set the display to normal for all previously nearby non-selected objects
     this.hitHENodules.forEach((n: HENodule) => {
@@ -164,11 +169,6 @@ export class PoseTracker implements HyperbolicToolStrategy {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  mousePressed(event: MouseEvent): void {
-    //Not implemented
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mouseReleased(event: MouseEvent): void {
     //Not implemented
   }
@@ -201,22 +201,6 @@ export class PoseTracker implements HyperbolicToolStrategy {
   ): HEAntipodalPoint {
     // Create the antipode of the new parent point
     const antipodalVtx = new HEAntipodalPoint(parentPoint, false);
-
-    // Create a plottable label
-    // Create an HELabel and link it to the plottable object
-
-    // const location = new Vector3();
-    // antipodalVtx.location = location
-    //   .copy(parentPoint.location)
-    //   .multiplyScalar(-1);
-    // Set the initial label location
-    // const newHEAntipodalLabel = antipodalVtx.attachLabelWithOffset(
-    //   new Vector3(
-    //     2 * SETTINGS.point.initialLabelOffset,
-    //     SETTINGS.point.initialLabelOffset,
-    //     0
-    //   )
-    // );
     const newHEAntipodalLabel = new HELabel(
       "point",
       antipodalVtx,
@@ -238,5 +222,8 @@ export class PoseTracker implements HyperbolicToolStrategy {
 
   static vec3ToVec4(vec3: Vector3, w: number): Vector4 {
     return new Vector4(vec3.x, vec3.y, vec3.z, w);
+  }
+  static vec4ToVec3(vec4: Vector4): Vector3 {
+    return new Vector3(vec4.x, vec4.y, vec4.z);
   }
 }

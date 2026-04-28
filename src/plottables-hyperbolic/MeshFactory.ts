@@ -568,7 +568,7 @@ export function createPoint(
       ) {
         // console.log("point hit", this.name);
         intersects.push({
-          distance: intersection.distance,
+          distance: intersection.distance - radiusUniform.value,
           point: intersection.point.clone(),
           normal: intersection.normal,
           object: this
@@ -670,7 +670,7 @@ export function createIdealPoint(
       ) {
         // console.log("hit ideal point", this.name);
         intersects.push({
-          distance: intersection.distance,
+          distance: intersection.distance - radiusUniform.value,
           point: intersection.point.clone(),
           normal: intersection.normal,
           object: this
@@ -908,10 +908,10 @@ export function createUltraPoint(
     tempIntersections.forEach(intersection => {
       if (
         intersection.point.distanceTo(new Vector3(x, y, z)) <
-        radiusUniform.value * unitLength.value * 2.5
+        radiusUniform.value * unitLength.value * 5
       ) {
         intersects.push({
-          distance: intersection.distance,
+          distance: intersection.distance - radiusUniform.value,
           point: intersection.point.clone(),
           normal: intersection.normal,
           object: this
@@ -927,8 +927,8 @@ export function createIdealStrip(upper: boolean): Mesh {
   const idealStripMaterial = new THREE.MeshPhysicalNodeMaterial({
     color: 0x8c92ac,
     side: DoubleSide,
-    transparent: true,
-    depthWrite: false
+    transparent: false
+    //depthWrite: false
   });
 
   const upperZValue = upper

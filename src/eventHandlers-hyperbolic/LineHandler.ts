@@ -50,8 +50,6 @@ export class LineHandler extends PoseTracker {
 
   /** Has the ??? temporary object been added to the scene or group?*/
   private _tempLineInScene = false;
-  // private _tempStartPointInGroup = false;
-  // private _tempEndPointInGroup = false;
   private _tempTubeInScene = false;
   private _tempUpperConeInScene = false; //
   private _tempLowerConeInScene = false;
@@ -206,14 +204,12 @@ export class LineHandler extends PoseTracker {
       } else {
         // The mouse press is not near an existing point or one dimensional object.
         //  Eventually, we will create a new HEPoint
-        let wCoordinate = this.getWCoordinate();
         this._tempStartPoint.position = PoseTracker.vec3ToVec4(
           PoseTracker.hyperStore.surfaceIntersections[0].point,
-          wCoordinate
+          this.getWCoordinate()
         );
         this._startVector.copy(this._tempStartPoint.position);
         this._startHEPoint = null;
-        console.log("mouse pressed in line handler");
       }
     }
   }
