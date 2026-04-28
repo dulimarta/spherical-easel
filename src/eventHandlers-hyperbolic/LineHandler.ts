@@ -213,6 +213,7 @@ export class LineHandler extends PoseTracker {
         );
         this._startVector.copy(this._tempStartPoint.position);
         this._startHEPoint = null;
+        console.log("mouse pressed in line handler");
       }
     }
   }
@@ -321,9 +322,7 @@ export class LineHandler extends PoseTracker {
     }
     // Make sure that the event is on a surface
     if (this.aSurfaceIsIntersected) {
-      const possibleLocation = this.updateTempObjects(
-        !this._startLocationSelected
-      ); // update the start or end objects
+      const possibleLocation = this.updateTempObjects(); // compute the location and adds the cone/tube to the scene as warranted
       if (!this._startLocationSelected) {
         // Remove the temporary startPoint if there is a nearby point which can glow
         if (this._snapStartPointToExistingPoint !== null) {
@@ -350,8 +349,16 @@ export class LineHandler extends PoseTracker {
           //   this.snapStartPointToExistingOneDimensional.closestVector(
           //     PoseTracker.hyperStore.surfaceIntersections[0].point
           //   );
+        } else {
+          this._tempStartPoint.position = possibleLocation;
+          this._tempStartPoint.updateOrAddToGroup(); // this must be called after setting the position of the point because the position is used to determine which of the three meshes (hyperboloid, ideal strip, or ultra strip) should be added to the group and displayed as the temporary point.
         }
       } else {
+        this._tempStartPoint.updateOrAddToGroup(); // display the start objects as needed because the user may have selected a start location and then mouse off all surfaces (causing all temp objects to disappear) and then mouse back onto a surface
+
+        this._tempEndPoint.position = possibleLocation;
+        this._tempEndPoint.updateOrAddToGroup(); // set the location and display of the end objects
+
         // To make a line the start and end vector must have same upper and lower values
         if (possibleLocation.z * this._startVector.z > 0) {
           // Remove the temporary endPoint if there is a nearby point (which is glowing)
@@ -391,7 +398,6 @@ export class LineHandler extends PoseTracker {
           PoseTracker.hyperStore.surfaceIntersections[0].point,
           this.hyperboloidIsFirstSurfaceHit ? 1 : 0
         );
-
         const bothIdeal = possibleLocation.w == 0 && this._startVector.w == 0;
         const idealAngularMinimumMet = bothIdeal
           ? Math.abs(
@@ -400,27 +406,22 @@ export class LineHandler extends PoseTracker {
             ) > 0.1
           : false;
 
-        const bothNotIdeal =
-          possibleLocation.w == 1 && this._startVector.w == 1;
-        const distanceMinimumMet = bothNotIdeal
-          ? new Vector3(
-              possibleLocation.x,
-              possibleLocation.y,
-              possibleLocation.z
-            ).angleTo(
-              new Vector3(
-                this._startVector.x,
-                this._startVector.y,
-                this._startVector.z
-              )
-            ) > 0.1
-          : false;
+        const distanceMinimumMet =
+          new Vector3(
+            possibleLocation.x,
+            possibleLocation.y,
+            possibleLocation.z
+          ).angleTo(
+            new Vector3(
+              this._startVector.x,
+              this._startVector.y,
+              this._startVector.z
+            )
+          ) > 0.1;
 
         if (
           possibleLocation.z * this._startVector.z > 0 && // To make a line the start and end vector must be on the same sheet
-          ((bothIdeal && idealAngularMinimumMet) ||
-            (bothNotIdeal && distanceMinimumMet) ||
-            (!bothIdeal && !bothNotIdeal)) // One is ideal and the other is not.
+          ((bothIdeal && idealAngularMinimumMet) || distanceMinimumMet) // One is ideal and the other is not.
         ) {
           if (!this.makeLine()) {
             EventBus.fire("show-alert", {
@@ -524,7 +525,7 @@ export class LineHandler extends PoseTracker {
     }
   }
 
-  private updateTempObjects(start: boolean): Vector4 {
+  private updateTempObjects(): Vector4 {
     let wCoordinate: number;
     let returnVector: Vector4;
     switch (true) {
@@ -550,13 +551,13 @@ export class LineHandler extends PoseTracker {
       PoseTracker.hyperStore.surfaceIntersections[0].point,
       wCoordinate
     );
-    if (start) {
-      this._tempStartPoint.position = returnVector;
-      this._tempStartPoint.updateOrAddToGroup(); // this must be called after setting the position of the point because the position is used to determine which of the three meshes (hyperboloid, ideal strip, or ultra strip) should be added to the group and displayed as the temporary point.
-    } else {
-      this._tempEndPoint.position = returnVector;
-      this._tempEndPoint.updateOrAddToGroup();
-    }
+    // if (start) {
+    //   this._tempStartPoint.position = returnVector;
+    //   this._tempStartPoint.updateOrAddToGroup(); // this must be called after setting the position of the point because the position is used to determine which of the three meshes (hyperboloid, ideal strip, or ultra strip) should be added to the group and displayed as the temporary point.
+    // } else {
+    //   this._tempEndPoint.position = returnVector;
+    //   this._tempEndPoint.updateOrAddToGroup();
+    // }
     return returnVector;
   }
 

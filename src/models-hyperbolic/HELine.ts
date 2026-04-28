@@ -308,6 +308,7 @@ export class HELine extends HENodule implements HyperbolicLabelable {
   updateTransformationMatrix(): void {
     this._material.upper = this._upper ? 1 : 0;
 
+    // The magic happens here. See the Mathematica document "Hyperbolic Line Transformation" for details.
     const Nx = this._unitNormalVector.x;
     const Ny = this._unitNormalVector.y;
     const Nz = this._unitNormalVector.z;
@@ -317,7 +318,7 @@ export class HELine extends HENodule implements HyperbolicLabelable {
     this._transformationMatrix = new Matrix4(
       -A * Nx,
       B * Ny,
-      -A * B * Nz * Nz,
+      -A * B * Nx * Nz,
       0, // row 0
       -A * Ny,
       -B * Nx,
@@ -337,7 +338,7 @@ export class HELine extends HENodule implements HyperbolicLabelable {
       inverseMatrix: Matrix4,
       maxY: number
     ): number => {
-      if (point.w !== 0) {
+      if (point.w > 0) {
         // Non-ideal point: apply inverse transformation directly
         return new Vector4().copy(point).applyMatrix4(inverseMatrix).y;
       } else {
