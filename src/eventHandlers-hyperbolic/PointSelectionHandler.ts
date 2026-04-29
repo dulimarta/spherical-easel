@@ -24,7 +24,7 @@ type selectedPointInformation = {
   HEPoint: HEPoint | null;
   locationVector: Vector4;
 };
-type selectedTempPointInformation = {
+type tempPointInformation = {
   tempHEPoint: HEPoint;
   snapPoint: HEPoint | null;
   snapOneOrTwoDim: HEOneOrTwoDimensional | null;
@@ -32,7 +32,7 @@ type selectedTempPointInformation = {
 
 export class PointSelectionHandler extends PoseTracker {
   /** The temporary objects for this tool */
-  protected _tempPointArray: selectedTempPointInformation[] = [];
+  protected _tempPointArray: tempPointInformation[] = [];
   private _tempTube: Mesh;
   private _tempTubeMaterial: CustomPointMaterial;
   private _tempUpperCone: Mesh;
@@ -49,6 +49,8 @@ export class PointSelectionHandler extends PoseTracker {
   protected _N: number; // the number of points to be selected,must be at least one
   protected _indexOfPointCurrentlyBeingSelected = 0;
   protected _allPointsSelected = false;
+
+  private tempVector = new Vector3();
 
   constructor(scene: Scene, N: number) {
     super(scene);
@@ -93,108 +95,106 @@ export class PointSelectionHandler extends PoseTracker {
   mouseMoved(event: MouseEvent): void {
     // Find all the nearby objects and update location vectors
     super.mouseMoved(event);
-    // Filter the hitHEPoints
-    this.updateFilteredPointsList();
-    const activeTempPointInfo =
-      this._tempPointArray[this._indexOfPointCurrentlyBeingSelected];
-    // Clear, then set the snap objects, if any
-    activeTempPointInfo.snapOneOrTwoDim = null;
-    activeTempPointInfo.snapPoint = null;
-
-    // Set the snap objects
-    if (this.filteredIntersectionPointsList.length > 0) {
-      // Only one object can be interacted with at a given time, so set the first point nearby to glowing
-      // The user can create points  on , ellipses, segments, and lines, etc so
-      // highlight those as well (but only one) if they are nearby also
-      const nearByPoint = this.filteredIntersectionPointsList[0];
-      nearByPoint.glowing = true;
-      activeTempPointInfo.snapPoint = nearByPoint;
-
-      // } else if (this.hitSESegments.length > 0) {
-      //   this.hitSESegments[0].glowing = true;
-      //   if (!this.startLocationSelected) {
-      //     this.snapStartMarkerToTemporaryOneDimensional = this.hitSESegments[0];
-      //     this.snapEndMarkerToTemporaryOneDimensional = null;
-      //     this.snapStartMarkerToTemporaryPoint = null;
-      //     this.snapEndMarkerToTemporaryPoint = null;
-      //   } else {
-      //     this.snapStartMarkerToTemporaryOneDimensional = null;
-      //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSESegments[0];
-      //     this.snapStartMarkerToTemporaryPoint = null;
-      //     this.snapEndMarkerToTemporaryPoint = null;
-      //   }
-      // } else if (this.hitSELines.length > 0) {
-      //   this.hitSELines[0].glowing = true;
-      //   if (!this.startLocationSelected) {
-      //     this.snapStartMarkerToTemporaryOneDimensional = this.hitSELines[0];
-      //     this.snapEndMarkerToTemporaryOneDimensional = null;
-      //     this.snapStartMarkerToTemporaryPoint = null;
-      //     this.snapEndMarkerToTemporaryPoint = null;
-      //   } else {
-      //     this.snapStartMarkerToTemporaryOneDimensional = null;
-      //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSELines[0];
-      //     this.snapStartMarkerToTemporaryPoint = null;
-      //     this.snapEndMarkerToTemporaryPoint = null;
-      //   }
-      // } else if (this.hitSECircles.length > 0) {
-      //   this.hitSECircles[0].glowing = true;
-      //   if (!this.startLocationSelected) {
-      //     this.snapStartMarkerToTemporaryOneDimensional = this.hitSECircles[0];
-      //     this.snapEndMarkerToTemporaryOneDimensional = null;
-      //     this.snapStartMarkerToTemporaryPoint = null;
-      //     this.snapEndMarkerToTemporaryPoint = null;
-      //   } else {
-      //     this.snapStartMarkerToTemporaryOneDimensional = null;
-      //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSECircles[0];
-      //     this.snapStartMarkerToTemporaryPoint = null;
-      //     this.snapEndMarkerToTemporaryPoint = null;
-      //   }
-      // } else if (this.hitSEEllipses.length > 0) {
-      //   this.hitSEEllipses[0].glowing = true;
-      //   if (!this.startLocationSelected) {
-      //     this.snapStartMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
-      //     this.snapEndMarkerToTemporaryOneDimensional = null;
-      //     this.snapStartMarkerToTemporaryPoint = null;
-      //     this.snapEndMarkerToTemporaryPoint = null;
-      //   } else {
-      //     this.snapStartMarkerToTemporaryOneDimensional = null;
-      //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
-      //     this.snapStartMarkerToTemporaryPoint = null;
-      //     this.snapEndMarkerToTemporaryPoint = null;
-      //   }
-      // } else if (this.hitSEParametrics.length > 0) {
-      //   this.hitSEParametrics[0].glowing = true;
-      //   if (!this.startLocationSelected) {
-      //     this.snapStartMarkerToTemporaryOneDimensional =
-      //       this.hitSEParametrics[0];
-      //     this.snapEndMarkerToTemporaryOneDimensional = null;
-      //     this.snapStartMarkerToTemporaryPoint = null;
-      //     this.snapEndMarkerToTemporaryPoint = null;
-      //   } else {
-      //     this.snapStartMarkerToTemporaryOneDimensional = null;
-      //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
-      //     this.snapStartMarkerToTemporaryPoint = null;
-      //     this.snapEndMarkerToTemporaryPoint = null;
-      //   }
-      // } else if (this.hitSEPolygons.length > 0) {
-      //   this.hitSEPolygons[0].glowing = true;
-      //   if (!this.startLocationSelected) {
-      //     this.snapStartMarkerToTemporaryOneDimensional = this.hitSEPolygons[0];
-      //     this.snapEndMarkerToTemporaryOneDimensional = null;
-      //     this.snapStartMarkerToTemporaryPoint = null;
-      //     this.snapEndMarkerToTemporaryPoint = null;
-      //   } else {
-      //     this.snapStartMarkerToTemporaryOneDimensional = null;
-      //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSEPolygons[0];
-      //     this.snapStartMarkerToTemporaryPoint = null;
-      //     this.snapEndMarkerToTemporaryPoint = null;
-      //   }
-    }
-    // Make sure that the event is on a surface
     if (this.aSurfaceIsIntersected) {
+      // Filter the hitHEPoints
+      this.updateFilteredPointsList();
+      const activeTempPointInfo =
+        this._tempPointArray[this._indexOfPointCurrentlyBeingSelected];
+      // Clear, then set the snap objects, if any
+      activeTempPointInfo.snapOneOrTwoDim = null;
+      activeTempPointInfo.snapPoint = null;
+
+      // Set the snap objects
+      if (this.filteredIntersectionPointsList.length > 0) {
+        // Only one object can be interacted with at a given time, so set the first point nearby to glowing
+        // The user can create points  on , ellipses, segments, and lines, etc so
+        // highlight those as well (but only one) if they are nearby also
+        const nearByPoint = this.filteredIntersectionPointsList[0];
+        nearByPoint.glowing = true;
+        activeTempPointInfo.snapPoint = nearByPoint;
+
+        // } else if (this.hitSESegments.length > 0) {
+        //   this.hitSESegments[0].glowing = true;
+        //   if (!this.startLocationSelected) {
+        //     this.snapStartMarkerToTemporaryOneDimensional = this.hitSESegments[0];
+        //     this.snapEndMarkerToTemporaryOneDimensional = null;
+        //     this.snapStartMarkerToTemporaryPoint = null;
+        //     this.snapEndMarkerToTemporaryPoint = null;
+        //   } else {
+        //     this.snapStartMarkerToTemporaryOneDimensional = null;
+        //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSESegments[0];
+        //     this.snapStartMarkerToTemporaryPoint = null;
+        //     this.snapEndMarkerToTemporaryPoint = null;
+        //   }
+        // } else if (this.hitSELines.length > 0) {
+        //   this.hitSELines[0].glowing = true;
+        //   if (!this.startLocationSelected) {
+        //     this.snapStartMarkerToTemporaryOneDimensional = this.hitSELines[0];
+        //     this.snapEndMarkerToTemporaryOneDimensional = null;
+        //     this.snapStartMarkerToTemporaryPoint = null;
+        //     this.snapEndMarkerToTemporaryPoint = null;
+        //   } else {
+        //     this.snapStartMarkerToTemporaryOneDimensional = null;
+        //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSELines[0];
+        //     this.snapStartMarkerToTemporaryPoint = null;
+        //     this.snapEndMarkerToTemporaryPoint = null;
+        //   }
+        // } else if (this.hitSECircles.length > 0) {
+        //   this.hitSECircles[0].glowing = true;
+        //   if (!this.startLocationSelected) {
+        //     this.snapStartMarkerToTemporaryOneDimensional = this.hitSECircles[0];
+        //     this.snapEndMarkerToTemporaryOneDimensional = null;
+        //     this.snapStartMarkerToTemporaryPoint = null;
+        //     this.snapEndMarkerToTemporaryPoint = null;
+        //   } else {
+        //     this.snapStartMarkerToTemporaryOneDimensional = null;
+        //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSECircles[0];
+        //     this.snapStartMarkerToTemporaryPoint = null;
+        //     this.snapEndMarkerToTemporaryPoint = null;
+        //   }
+        // } else if (this.hitSEEllipses.length > 0) {
+        //   this.hitSEEllipses[0].glowing = true;
+        //   if (!this.startLocationSelected) {
+        //     this.snapStartMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
+        //     this.snapEndMarkerToTemporaryOneDimensional = null;
+        //     this.snapStartMarkerToTemporaryPoint = null;
+        //     this.snapEndMarkerToTemporaryPoint = null;
+        //   } else {
+        //     this.snapStartMarkerToTemporaryOneDimensional = null;
+        //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
+        //     this.snapStartMarkerToTemporaryPoint = null;
+        //     this.snapEndMarkerToTemporaryPoint = null;
+        //   }
+        // } else if (this.hitSEParametrics.length > 0) {
+        //   this.hitSEParametrics[0].glowing = true;
+        //   if (!this.startLocationSelected) {
+        //     this.snapStartMarkerToTemporaryOneDimensional =
+        //       this.hitSEParametrics[0];
+        //     this.snapEndMarkerToTemporaryOneDimensional = null;
+        //     this.snapStartMarkerToTemporaryPoint = null;
+        //     this.snapEndMarkerToTemporaryPoint = null;
+        //   } else {
+        //     this.snapStartMarkerToTemporaryOneDimensional = null;
+        //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
+        //     this.snapStartMarkerToTemporaryPoint = null;
+        //     this.snapEndMarkerToTemporaryPoint = null;
+        //   }
+        // } else if (this.hitSEPolygons.length > 0) {
+        //   this.hitSEPolygons[0].glowing = true;
+        //   if (!this.startLocationSelected) {
+        //     this.snapStartMarkerToTemporaryOneDimensional = this.hitSEPolygons[0];
+        //     this.snapEndMarkerToTemporaryOneDimensional = null;
+        //     this.snapStartMarkerToTemporaryPoint = null;
+        //     this.snapEndMarkerToTemporaryPoint = null;
+        //   } else {
+        //     this.snapStartMarkerToTemporaryOneDimensional = null;
+        //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSEPolygons[0];
+        //     this.snapStartMarkerToTemporaryPoint = null;
+        //     this.snapEndMarkerToTemporaryPoint = null;
+        //   }
+      }
+
       const possibleLocation = this.getLocationAndSetTempObjects(); // computes the location and adds the cone/tube to the scene as warranted
-      // if (this._indexOfPointCurrentlyBeingSelected < this._N) {
-      //Not all points have been selected yet
 
       // Remove the temporary point if there is a nearby point which can glow
       if (activeTempPointInfo.snapPoint) {
@@ -225,24 +225,18 @@ export class PointSelectionHandler extends PoseTracker {
         activeTempPointInfo.tempHEPoint.position = possibleLocation;
         activeTempPointInfo.tempHEPoint.updateOrAddToGroup(); // this must be called after setting the position of the point because the position is used to determine which of the three meshes (hyperboloid, ideal strip, or ultra strip) should be added to the group and displayed as the temporary point.
       }
-      // } else {
-      // N-1 points are selected, and there is one more to select
-      for (let i = 0; i < this._indexOfPointCurrentlyBeingSelected; i++) {
-        this._tempPointArray[i].tempHEPoint.updateOrAddToGroup(); // display the start objects as needed because the user may have selected a start location and then mouse off all surfaces (causing all temp objects to disappear) and then mouse back onto a surface without triggering a mouse leave event
-      }
 
-      // activeTempPointInfo.tempHEPoint.position = possibleLocation;
-      // activeTempPointInfo.tempHEPoint.updateOrAddToGroup(); // set the location and display of the end objects
-      // }
+      for (let i = 0; i < this._indexOfPointCurrentlyBeingSelected; i++) {
+        this._tempPointArray[i].tempHEPoint.updateOrAddToGroup(); // display the start objects as needed because the user may have selected a previous location and then mouse off all surfaces (causing all temp objects to disappear) and then mouse back onto a surface without triggering a mouse leave event
+      }
     } else {
       this.removeAllTempPointObjects();
     }
   }
 
   mouseReleased(event: MouseEvent): void {
-    // the final point is created when the mouse is released
+    // the final point is created when the mouse is released over a surface
     if (this.aSurfaceIsIntersected) {
-      // set the display of the final point and re
       if (this._indexOfPointCurrentlyBeingSelected === this._N - 1) {
         this.addSelectedPoint(this._N - 1);
         this._allPointsSelected = true;
@@ -257,6 +251,26 @@ export class PointSelectionHandler extends PoseTracker {
     this.prepareForNextPointSelections();
   }
 
+  isLocationIsAlreadySelected(
+    location: Vector4,
+    currentIndex: number
+  ): boolean {
+    for (let i = 0; i < currentIndex; i++) {
+      if (
+        this.tempVector
+          .crossVectors(
+            PoseTracker.vec4ToVec3(this._selectedPoints[i].locationVector),
+            PoseTracker.vec4ToVec3(location)
+          )
+          .isZero() &&
+        this._selectedPoints[i].locationVector.w == location.w
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   addSelectedPoint(index: number): void {
     this.updateFilteredPointsList();
     const activeTempPointInfo = this._tempPointArray[index];
@@ -265,6 +279,11 @@ export class PointSelectionHandler extends PoseTracker {
     if (this.filteredIntersectionPointsList.length > 0) {
       // Use an existing HEPoint for this pick
       const selected = this.filteredIntersectionPointsList[0];
+      //make sure this point is not selected already
+      if (this.isLocationIsAlreadySelected(selected.position, index)) {
+        return;
+      }
+
       activeSelectedPointInfo.HEPoint = selected;
       activeSelectedPointInfo.locationVector.copy(selected.position);
       activeTempPointInfo.tempHEPoint.position = selected.position;
@@ -345,6 +364,9 @@ export class PointSelectionHandler extends PoseTracker {
         PoseTracker.hyperStore.surfaceIntersections[0].point,
         this.getWCoordinate()
       );
+      if (this.isLocationIsAlreadySelected(location, index)) {
+        return;
+      }
       activeTempPointInfo.tempHEPoint.position = location;
       activeSelectedPointInfo.locationVector.copy(location);
     }
@@ -397,7 +419,7 @@ export class PointSelectionHandler extends PoseTracker {
     }
   }
 
-  private getLocationAndSetTempObjects(): Vector4 {
+  protected getLocationAndSetTempObjects(): Vector4 {
     switch (true) {
       case this.hyperboloidIsFirstSurfaceHit:
         //remove the tube and cone if they are in the scene
