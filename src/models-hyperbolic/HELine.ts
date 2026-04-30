@@ -27,7 +27,10 @@ import {
 } from "@/plottables-hyperbolic/MaterialFactory";
 import { createLine } from "@/plottables-hyperbolic/MeshFactory";
 import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
-import { h2Distance } from "@/utils/helpingHEFunctions";
+import { h2Distance, vec4ToVec3 } from "@/utils/helpingHEFunctions";
+import { threshold } from "three/tsl";
+import { error } from "happy-dom/lib/PropertySymbol.js";
+import { Vector } from "two.js/src/vector";
 
 // const styleSet = new Set([
 //   ...Object.getOwnPropertyNames(DEFAULT_LINE_FRONT_STYLE),
@@ -52,7 +55,7 @@ export class HELine extends HENodule implements HyperbolicLabelable {
   protected _material!: CustomLineMaterial;
   protected _mode: number; // Mode is a number between 0 and 7, inclusive. The binary expansion of this number is three bits, the most significant tells whether the portion of the line before the start point is drawn, the second most significant bit tells whether the portion of the line between the start and end points is drawn, and the least significant bit tells whether the portion of the line after the end point is drawn. So 7 = 111 in binary means draw all portions of the line and 6 = 110 in binary means draw only the portion of the line before the start point and between the start and end points, but not after the end point, etc.
 
-  tempVector = new Vector3();
+  private tempVector = new Vector3();
 
   constructor(
     startPoint: HEPoint,
@@ -124,37 +127,210 @@ export class HELine extends HENodule implements HyperbolicLabelable {
   // // public get noduleItemText(): string {
   // //   return this.label?.ref.shortUserName ?? "No Label Short Name In SELine";
   // // }
-  // //
-  // // public isHitAt(
-  // //   unitIdealVector: Vector3,
-  // //   currentMagnificationFactor: number
-  // // ): boolean {
-  // //   // Is the sphereVector is perpendicular to the line normal?
-  // //   return (
-  // //     Math.abs(unitIdealVector.dot(this._normalVector)) <
-  // //     SETTINGS.line.hitIdealDistance / currentMagnificationFactor
-  // //   );
-  // // }
-  // //
-  // /**
-  //  * Return the vector on the SELine that is closest to the idealUnitSphereVector
-  //  * @param idealUnitSphereVector A vector on the unit sphere
-  //  */
-  // // public closestVector(idealUnitSphereVector: Vector3): Vector3 {
-  // //   // The normal to the plane of the normal vector and the idealUnitVector
-  // //   this.tmpVector.crossVectors(this._normalVector, idealUnitSphereVector);
 
-  // //   // Check to see if the tmpVector is zero (i.e the normal and  idealUnit vectors are parallel -- ether
-  // //   // nearly antipodal or in the same direction)
-  // //   if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
-  // //     return this._endSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
-  // //   } else {
-  // //     // Make the tmpVector unit
-  // //     this.tmpVector.normalize();
-  // //     return this.tmpVector.cross(this._normalVector).normalize();
-  // //   }
-  // // }
-  // //
+  /**
+   * Return the vector on the HELine that is closest to the location
+   * @param vector4location A non-ideal vector on the hyperboloid
+   */
+  public closestVector(vector4Location: Vector4): Vector4 {
+    if (vector4Location.w !== 1) {
+      throw new Error("Location must always be non-ideal");
+    }
+
+    // Use the transformation that moves the line back to the standard position (on the upper or lower sheet) on the vector4location and then find the closest point (hyperbolically) on the standard position,
+    const standardLocation = vector4Location.applyMatrix4(
+      this._inverseTransformationMatrix
+    );
+
+    // The hyperbolic distance from a location (a,b,c,1) to (0,sinh(r),sign(c)*cosh(r),1) is acosh(cosh(r)*c*sign(c) - sinh(r)*b - 0* a),  so to minimize this, we find the minimum of cosh(r)*c*sign(c)-sinh(r)*b for -inf < r < inf. The derivative is sinh(r)*c*sign(c) -cosh(r)*b, which equals zero when r = atanh(b/c*sign(c)), |c| is always bigger than 1 on the hyperboloid and as a^2+b^2=c^2-1 so (b/c)^2 = 1-1/c^2 - (a/c)^2 so |b/c*sign(c)| is always less than one, so this is always well defined. As
+    //
+    // (0,sinh(atanh(b/c)),sign(c)*cosh(atanh(b/c*sign(c))),1) =
+    //
+    // (0,b*Sign[c]/(Sqrt[c^2 - b^2] ),c/Sqrt[c^2 - b^2])
+
+    const sqrtTerm =
+      Math.sqrt[
+        standardLocation.z * standardLocation.z -
+          standardLocation.y * standardLocation.y
+      ];
+
+    const closestToStandardLocation = new Vector4(
+      0,
+      standardLocation.y / sqrtTerm, // this might need to be multiplied by the sign of standardLocation.z
+      standardLocation.z / sqrtTerm
+    );
+
+    // now determine if the closestToStandardLocation is on the line/segment/ray ( depending on the mode)
+    const beforeStart = closestToStandardLocation.y < this._material.startY; // part =1
+    const betweenStartAndEnd =
+      this._material.startY <= closestToStandardLocation.y &&
+      closestToStandardLocation.y <= this._material.endY; // part =2
+    // const afterEnd = this._material.endY < closestToStandardLocation.y; // part =3
+
+    const startZ =
+      Math.sqrt(this._material.startY * this._material.startY + 1) *
+      Math.sign(closestToStandardLocation.z);
+    const endZ =
+      Math.sqrt(this._material.endY * this._material.endY + 1) *
+      Math.sign(closestToStandardLocation.z);
+    const distanceToStart = h2Distance(
+      vector4Location,
+      this._startPoint.position
+    );
+    const distanceToEnd = h2Distance(vector4Location, this._endPoint.position);
+    const startIsCloser = distanceToStart < distanceToEnd;
+
+    // We know exactly one of these is true. Convert to a number to make the case statement easier
+    const part = beforeStart ? 1 : betweenStartAndEnd ? 2 : 3;
+
+    // I KNOW THIS IS SUPER AWKWARD and can be simplified, but I don't want to prematurely optimize!
+
+    // Remember: Draw after end is the least significant bit of mode
+    switch (this._mode) {
+      // 7 = 1*2^2 + 1*2^1 + 1*2^0 -- Whole line is drawn
+      case 7: {
+        // no change to closestToStandardLocation
+        break;
+      }
+      // 2 = 0*2^2 + 1*2^1 + 0*2^0 -- Segment is drawn
+      case 2: {
+        switch (part) {
+          // point is before start
+          case 1: {
+            closestToStandardLocation.set(0, this._material.startY, startZ, 1);
+            break;
+          }
+          // point is between start and end
+          case 2: {
+            // No change to closestToStandardLocation
+            break;
+          }
+          // point is after end
+          case 3: {
+            closestToStandardLocation.set(0, this._material.endY, endZ, 1);
+            break;
+          }
+        }
+        break;
+      }
+      // 3 = 0*2^2 + 1*2^1 + 1*2^0 -- Ray from start to end is drawn
+      case 3: {
+        switch (part) {
+          // point is before start
+          case 1: {
+            closestToStandardLocation.set(0, this._material.startY, startZ, 1);
+            break;
+          }
+          // point is between start and end
+          case 2: {
+            // No change to closestToStandardLocation
+            break;
+          }
+          // point is after end
+          case 3: {
+            // No change to closestToStandardLocation
+            break;
+          }
+        }
+        break;
+      }
+      // 5 = 1*2^2 + 1*2^1 + 0*2^0 -- Ray from end to start is drawn
+      case 5: {
+        switch (part) {
+          // point is before start
+          case 1: {
+            // No change to closestToStandardLocation
+            break;
+          }
+          // point is between start and end
+          case 2: {
+            // No change to closestToStandardLocation
+            break;
+          }
+          // point is after end
+          case 3: {
+            closestToStandardLocation.set(0, this._material.endY, endZ, 1);
+            break;
+          }
+        }
+        break;
+      }
+      // 1 = 0*2^2 + 0*2^1 + 1*2^0 -- Ray after end is drawn
+      case 1: {
+        switch (part) {
+          // point is before start
+          case 1: {
+            closestToStandardLocation.set(0, this._material.endY, endZ, 1);
+            break;
+          }
+          // point is between start and end
+          case 2: {
+            closestToStandardLocation.set(0, this._material.endY, endZ, 1);
+            break;
+          }
+          // point is after end
+          case 3: {
+            // No change to closestToStandardLocation
+            break;
+          }
+        }
+        break;
+      }
+      // 4 = 1*2^2 + 0*2^1 + 0*2^0 -- Ray before start is drawn
+      case 4: {
+        switch (part) {
+          // point is before start
+          case 1: {
+            // No change to closestToStandardLocation
+            break;
+          }
+          // point is between start and end
+          case 2: {
+            closestToStandardLocation.set(0, this._material.startY, startZ, 1);
+            break;
+          }
+          // point is after end
+          case 3: {
+            closestToStandardLocation.set(0, this._material.startY, startZ, 1);
+            break;
+          }
+        }
+        break;
+      }
+      // 6 = 1*2^2 + 0*2^1 + 1*2^0 -- Weird double ray is drawn
+      case 6: {
+        switch (part) {
+          // point is before start
+          case 1: {
+            // No change to closestToStandardLocation
+            break;
+          }
+          // point is between start and end
+          case 2: {
+            closestToStandardLocation.set(
+              0,
+              startIsCloser ? this._material.startY : this._material.endY,
+              startIsCloser ? startZ : endZ,
+              1
+            );
+            break;
+          }
+          // point is after end
+          case 3: {
+            // No change to closestToStandardLocation
+            break;
+          }
+        }
+        break;
+      }
+      // Case 0 should never happen so default to no change
+      default: {
+      }
+    }
+
+    return closestToStandardLocation;
+  }
+
   // /**
   //  * Return the vector near the SELine (within SETTINGS.line.maxLabelDistance) that is closest to the idealUnitSphereVector
   //  * @param idealUnitSphereVector A vector on the unit sphere
@@ -315,6 +491,7 @@ export class HELine extends HENodule implements HyperbolicLabelable {
     const A = 1 / Math.sqrt(Nx * Nx + Ny * Ny - Nz * Nz);
     const B = 1 / Math.sqrt(Nx * Nx + Ny * Ny);
 
+    // This matrix takes the normal vector to the standard line (0,sinh(r),+/-cosh(r),1) plane and maps it to the unit Normal vector of the line.
     this._transformationMatrix = new Matrix4(
       -A * Nx,
       B * Ny,
@@ -333,22 +510,24 @@ export class HELine extends HENodule implements HyperbolicLabelable {
       0,
       1 // row 3
     );
+
+    this._inverseTransformationMatrix.copy(this._transformationMatrix).invert();
+
     const computeStandardY = (
       point: Vector4,
       inverseMatrix: Matrix4,
       maxY: number
     ): number => {
-      if (point.w > 0) {
+      if (point.w === 1) {
         // Non-ideal point: apply inverse transformation directly
         return new Vector4().copy(point).applyMatrix4(inverseMatrix).y;
       } else {
-        // Ideal point: apply inverse to the direction (w=0) and
+        // Ideal points: apply inverse to the direction (w=0) and
         // use the sign of y to determine which end of the cylinder
         const dir = new Vector4().copy(point).applyMatrix4(inverseMatrix);
         return dir.y >= 0 ? maxY : -maxY;
       }
     };
-    this._inverseTransformationMatrix.copy(this._transformationMatrix).invert();
 
     // now set the startY|endY values
     const maxY = Math.sinh(Math.acosh(SETTINGS.maxZClip) + 1.001);
@@ -368,17 +547,6 @@ export class HELine extends HENodule implements HyperbolicLabelable {
       this._inverseTransformationMatrix;
     this._material.transformationMatrix = this._transformationMatrix;
     this._material.radius = this._radius;
-
-    // console.log(
-    //   "startY",
-    //   this._material.startY,
-    //   "endY",
-    //   this._material.endY,
-    //   "idealDir.y",
-    //   new Vector4()
-    //     .copy(this._startPoint.position)
-    //     .applyMatrix4(this._inverseTransformationMatrix).y
-    // );
   }
 
   /**
@@ -514,27 +682,13 @@ export class HELine extends HENodule implements HyperbolicLabelable {
   }
 
   set mode(newMode: number) {
-    // console.log("set mode in HELine");
     // check to see if this line in the newMode exists, if so send a message to the use and don't change anything
-    let lineIsNew = true;
-    if (!this._temporary) {
-      HENodule.hyperStore.linesMap.forEach(line => {
-        if (
-          line.name != this.name &&
-          this.tempVector
-            .crossVectors(line.unitNormalVector, this._unitNormalVector)
-            .isZero() &&
-          line.upper == this._upper &&
-          line.mode == newMode
-        ) {
-          lineIsNew = false;
-        }
-      });
-    }
-    if (lineIsNew) {
+    if (HENodule.hyperStore.lineIsNew(this) && !this._temporary) {
       this._mode = newMode;
       this._material.mode = newMode;
       this.shallowUpdate();
+    } else {
+      // send a message to the user
     }
   }
 

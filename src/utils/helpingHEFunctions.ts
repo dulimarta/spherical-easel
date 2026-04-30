@@ -124,3 +124,9 @@ export function h2Distance(
     -point1.x * point2.x - point1.y * point2.y + point1.z * point2.z
   );
 }
+export function vec3ToVec4(vec3: Vector3, w: number): Vector4 {
+  return new Vector4(vec3.x, vec3.y, vec3.z, w);
+}
+export function vec4ToVec3(vec4: Vector4): Vector3 {
+  return new Vector3(vec4.x, vec4.y, vec4.z);
+}

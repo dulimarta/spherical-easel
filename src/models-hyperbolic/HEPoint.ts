@@ -293,7 +293,7 @@ export class HEPoint extends HENodule implements HyperbolicLabelable {
   get pointRadius(): number {
     return this._pointMaterial.radius;
   }
-  set radius(num: number) {
+  set pointRadius(num: number) {
     this._pointMaterial.radius = num;
   }
 

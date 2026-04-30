@@ -219,11 +219,4 @@ export class PoseTracker implements HyperbolicToolStrategy {
 
     return antipodalVtx;
   }
-
-  static vec3ToVec4(vec3: Vector3, w: number): Vector4 {
-    return new Vector4(vec3.x, vec3.y, vec3.z, w);
-  }
-  static vec4ToVec3(vec4: Vector4): Vector3 {
-    return new Vector3(vec4.x, vec4.y, vec4.z);
-  }
 }

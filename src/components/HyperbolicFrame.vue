@@ -266,6 +266,7 @@ scene.background = new THREE.Color(0xf5f5f5);
 let currentTools: Array<HyperbolicToolStrategy> = [];
 let pointTool: PointHandler | null = null;
 let lineTool: LineHandler | null = null;
+let segmentTool: LineHandler | null = null;
 let circleTool: CircleHandler | null = null;
 let textTool: TextHandler | null = null;
 
@@ -497,20 +498,14 @@ watch(
       case "line":
         if (lineTool === null) {
           lineTool = new LineHandler(scene, 1 * 4 + 1 * 2 + 1 * 1); // line is mode 7
-        } // line mode is 7
-        else {
-          lineTool.mode = 1 * 4 + 1 * 2 + 1 * 1;
         }
         currentTools.push(lineTool);
         break;
       case "segment":
-        if (lineTool === null) {
-          lineTool = new LineHandler(scene, 0 * 4 + 1 * 2 + 0 * 1); // segment mode is 2
-        } // line mode is 7
-        else {
-          lineTool.mode = 0 * 4 + 1 * 2 + 0 * 1;
+        if (segmentTool === null) {
+          segmentTool = new LineHandler(scene, 0 * 4 + 1 * 2 + 0 * 1); // segment mode is 2
         }
-        currentTools.push(lineTool);
+        currentTools.push(segmentTool);
         break;
       case "text":
         //if (textTool === null) textTool = new TextHandler(scene);

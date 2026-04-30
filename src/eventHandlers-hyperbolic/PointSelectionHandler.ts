@@ -18,6 +18,7 @@ import { AddPointCommand } from "@/commands-hyperbolic/AddPointCommand";
 import { SetPointUserCreatedValueCommand } from "@/commands-hyperbolic/SetPointUserCreatedValueCommand";
 import { positionPrevious } from "three/tsl";
 import { AddLineCommand } from "@/commands-hyperbolic/AddLineCommand";
+import { vec3ToVec4, vec4ToVec3 } from "@/utils/helpingHEFunctions";
 
 type selectedPointInformation = {
   oneOrTwoDimParent: HEOneOrTwoDimensional | null;
@@ -88,8 +89,11 @@ export class PointSelectionHandler extends PoseTracker {
       this.aSurfaceIsIntersected &&
       this._indexOfPointCurrentlyBeingSelected < this._N - 1
     ) {
-      this.addSelectedPoint(this._indexOfPointCurrentlyBeingSelected);
-      this._indexOfPointCurrentlyBeingSelected += 1;
+      this._indexOfPointCurrentlyBeingSelected += this.addSelectedPoint(
+        this._indexOfPointCurrentlyBeingSelected
+      )
+        ? 1
+        : 0;
     }
   }
   mouseMoved(event: MouseEvent): void {
@@ -238,8 +242,7 @@ export class PointSelectionHandler extends PoseTracker {
     // the final point is created when the mouse is released over a surface
     if (this.aSurfaceIsIntersected) {
       if (this._indexOfPointCurrentlyBeingSelected === this._N - 1) {
-        this.addSelectedPoint(this._N - 1);
-        this._allPointsSelected = true;
+        this._allPointsSelected = this.addSelectedPoint(this._N - 1);
       }
     } else {
       this.removeAllTempPointObjects();
@@ -251,16 +254,13 @@ export class PointSelectionHandler extends PoseTracker {
     this.prepareForNextPointSelections();
   }
 
-  isLocationIsAlreadySelected(
-    location: Vector4,
-    currentIndex: number
-  ): boolean {
+  isLocationAlreadySelected(location: Vector4, currentIndex: number): boolean {
     for (let i = 0; i < currentIndex; i++) {
       if (
         this.tempVector
           .crossVectors(
-            PoseTracker.vec4ToVec3(this._selectedPoints[i].locationVector),
-            PoseTracker.vec4ToVec3(location)
+            vec4ToVec3(this._selectedPoints[i].locationVector),
+            vec4ToVec3(location)
           )
           .isZero() &&
         this._selectedPoints[i].locationVector.w == location.w
@@ -270,8 +270,12 @@ export class PointSelectionHandler extends PoseTracker {
     }
     return false;
   }
-
-  addSelectedPoint(index: number): void {
+  /**
+   *
+   * @param index
+   * @returns true if the point is successfully added at the given index
+   */
+  addSelectedPoint(index: number): boolean {
     this.updateFilteredPointsList();
     const activeTempPointInfo = this._tempPointArray[index];
     const activeSelectedPointInfo = this._selectedPoints[index];
@@ -280,8 +284,8 @@ export class PointSelectionHandler extends PoseTracker {
       // Use an existing HEPoint for this pick
       const selected = this.filteredIntersectionPointsList[0];
       //make sure this point is not selected already
-      if (this.isLocationIsAlreadySelected(selected.position, index)) {
-        return;
+      if (this.isLocationAlreadySelected(selected.position, index)) {
+        return false;
       }
 
       activeSelectedPointInfo.HEPoint = selected;
@@ -360,16 +364,17 @@ export class PointSelectionHandler extends PoseTracker {
     } else {
       // The mouse press/release is not near an existing point or one dimensional object.
       //  Eventually, we will create a new HEPoint at the selected location
-      const location = PoseTracker.vec3ToVec4(
+      const location = vec3ToVec4(
         PoseTracker.hyperStore.surfaceIntersections[0].point,
         this.getWCoordinate()
       );
-      if (this.isLocationIsAlreadySelected(location, index)) {
-        return;
+      if (this.isLocationAlreadySelected(location, index)) {
+        return false;
       }
       activeTempPointInfo.tempHEPoint.position = location;
       activeSelectedPointInfo.locationVector.copy(location);
     }
+    return true;
   }
 
   getWCoordinate(): number {
@@ -436,7 +441,7 @@ export class PointSelectionHandler extends PoseTracker {
       default:
         this.removeTubeAndConeFromScene(); // default to remove if something goes wrong
     }
-    return PoseTracker.vec3ToVec4(
+    return vec3ToVec4(
       PoseTracker.hyperStore.surfaceIntersections[0].point,
       this.getWCoordinate()
     );

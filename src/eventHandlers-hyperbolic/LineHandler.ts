@@ -13,6 +13,7 @@ import { SetPointUserCreatedValueCommand } from "@/commands-hyperbolic/SetPointU
 import { AddLineCommand } from "@/commands-hyperbolic/AddLineCommand";
 import { PointSelectionHandler } from "./PointSelectionHandler";
 import { start } from "happy-dom/lib/PropertySymbol.js";
+import { vec4ToVec3 } from "@/utils/helpingHEFunctions";
 
 export class LineHandler extends PointSelectionHandler {
   /**
@@ -20,13 +21,12 @@ export class LineHandler extends PointSelectionHandler {
    */
   private _mode;
 
-  /** The temporary objects for this tool */
   private _tempLine: HELine;
   private _tempLineInScene = false;
-  private tmpVector1 = new Vector3();
-  private tmpVector2 = new Vector3();
-  private tmpVector3 = new Vector3();
-  private tmpVector4 = new Vector3();
+  private tmp3Vector1 = new Vector3();
+  private tmp3Vector2 = new Vector3();
+  private tmp3Vector3 = new Vector3();
+  private tmp3Vector4 = new Vector3();
   private tmp4Vector = new Vector4();
 
   constructor(scene: Scene, mode: number) {
@@ -238,59 +238,8 @@ export class LineHandler extends PointSelectionHandler {
         )
         .normalize();
 
-      // check to make sure that this line doesn't already exist by checking that no existing line has normal or -1*normal equal to the new proposed normal
-      let lineIsNew = true;
-
-      LineHandler.hyperStore.linesMap.forEach(line => {
-        if (
-          this.tmpVector3
-            .crossVectors(
-              line.unitNormalVector,
-              this._tempLine.unitNormalVector
-            )
-            .isZero() &&
-          line.upper == this._tempLine.upper &&
-          line.mode == this._tempLine.mode
-        ) {
-          if (line.mode !== 0 * 1 + 1 * 2 + 0 * 4) {
-            // line segments are a special case we can have multiple line segments on the same line, but they must have different end points
-            if (
-              (this.tmpVector1
-                .crossVectors(
-                  PoseTracker.vec4ToVec3(line.startPoint.position),
-                  PoseTracker.vec4ToVec3(this._tempLine.startPoint.position)
-                )
-                .isZero() &&
-                this.tmpVector2
-                  .crossVectors(
-                    PoseTracker.vec4ToVec3(line.endPoint.position),
-                    PoseTracker.vec4ToVec3(this._tempLine.endPoint.position)
-                  )
-                  .isZero()) ||
-              (this.tmpVector3
-                .crossVectors(
-                  PoseTracker.vec4ToVec3(line.startPoint.position),
-                  PoseTracker.vec4ToVec3(this._tempLine.endPoint.position)
-                )
-                .isZero() &&
-                this.tmpVector4
-                  .crossVectors(
-                    PoseTracker.vec4ToVec3(line.endPoint.position),
-                    PoseTracker.vec4ToVec3(this._tempLine.startPoint.position)
-                  )
-                  .isZero())
-            ) {
-              lineIsNew = false;
-            } else {
-              lineIsNew = true;
-            }
-          } else {
-            lineIsNew = false;
-          }
-        }
-      });
-
-      if (!lineIsNew) {
+      // check to make sure that this line doesn't already exist
+      if (!PoseTracker.hyperStore.lineIsNew(this._tempLine)) {
         return false;
       }
 

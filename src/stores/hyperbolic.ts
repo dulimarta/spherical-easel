@@ -18,7 +18,12 @@ import SETTINGS, { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import { ActionMode } from "@/types";
 import { HELabel } from "@/models-hyperbolic/HELabel";
 import EventBus from "@/eventHandlers-spherical/EventBus";
-import { zLowerClip, zUpperClip } from "@/plottables-hyperbolic/MeshFactory";
+import {
+  unitLength,
+  zLowerClip,
+  zUpperClip
+} from "@/plottables-hyperbolic/MeshFactory";
+import { vec4ToVec3 } from "@/utils/helpingHEFunctions";
 
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const objectIntersections: Ref<Intersection[]> = ref([]);
@@ -59,6 +64,11 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   let threeJSScene: Scene;
   let threeJSCamera: Camera;
   let rayCaster: Raycaster;
+
+  const tmp3Vector1 = new Vector3();
+  const tmp3Vector2 = new Vector3();
+  const tmp3Vector3 = new Vector3();
+  const tmp3Vector4 = new Vector3();
 
   function setScene(s: Scene, c: Camera) {
     threeJSScene = s;
@@ -116,20 +126,34 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   }
   function updateDisplayForCameraUpdate() {
     pointsMap.forEach(point => {
-      point.shallowUpdate();
+      if (point.position.w === 1 || point.position.w === -1) {
+        if (
+          point.position.z >
+            zUpperClip.value - point.pointRadius * unitLength.value ||
+          point.position.z <
+            zLowerClip.value + point.pointRadius * unitLength.value
+        ) {
+          point.removeGroupFromScene(threeJSScene);
+        } else {
+          point.addGroupToScene(threeJSScene);
+          point.shallowUpdate();
+        }
+      } else {
+        point.shallowUpdate();
+      }
     });
     tempObjectsMap.forEach(obj => {
       obj.shallowUpdate();
     }); // the temporary objects need to updated when the display changes
   }
-  function adjustTextPose() {
+  function adjustLabelPose() {
     labelsMap.forEach(label => {
       //add or remove labels that are attached to non-ideal points and are outside of the clipping planes of the hyperboloid (plus a little buffer) from the scene
       // This is necessary so that labels that are outside of the clipping planes don't show as the user dollies and zooms.
-      if (label.anchorPoint.w > 0) {
+      if (label.anchorPoint.w === 1 || label.anchorPoint.w === -1) {
         if (
-          label.anchorPoint.z > zUpperClip.value ||
-          label.anchorPoint.z < zLowerClip.value
+          label.anchorPoint.z > zUpperClip.value - unitLength.value ||
+          label.anchorPoint.z < zLowerClip.value + unitLength.value
         ) {
           label.removeGroupFromScene(threeJSScene);
         } else {
@@ -141,6 +165,56 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
         label.faceCamera();
       }
     });
+  }
+
+  function lineIsNew(possibleNewLine): boolean {
+    let lineIsNew = true;
+    linesMap.forEach(line => {
+      if (
+        tmp3Vector3
+          .crossVectors(line.unitNormalVector, possibleNewLine.unitNormalVector)
+          .isZero() &&
+        line.upper == possibleNewLine.upper &&
+        line.mode == possibleNewLine.mode
+      ) {
+        if (line.mode !== 0 * 1 + 1 * 2 + 0 * 4) {
+          // line segments are a special case we can have multiple line segments on the same line, but they must have different end points
+          if (
+            (tmp3Vector1
+              .crossVectors(
+                vec4ToVec3(line.startPoint.position),
+                vec4ToVec3(possibleNewLine.startPoint.position)
+              )
+              .isZero() &&
+              tmp3Vector2
+                .crossVectors(
+                  vec4ToVec3(line.endPoint.position),
+                  vec4ToVec3(possibleNewLine.endPoint.position)
+                )
+                .isZero()) ||
+            (tmp3Vector3
+              .crossVectors(
+                vec4ToVec3(line.startPoint.position),
+                vec4ToVec3(possibleNewLine.endPoint.position)
+              )
+              .isZero() &&
+              tmp3Vector4
+                .crossVectors(
+                  vec4ToVec3(line.endPoint.position),
+                  vec4ToVec3(possibleNewLine.startPoint.position)
+                )
+                .isZero())
+          ) {
+            lineIsNew = false;
+          } else {
+            lineIsNew = true;
+          }
+        } else {
+          lineIsNew = false;
+        }
+      }
+    });
+    return lineIsNew;
   }
 
   return {
@@ -164,11 +238,12 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     addLine,
     addLabel,
     getObjectById,
+    lineIsNew,
     removePoint,
     removeLabel,
     removeLine,
     setScene,
-    adjustTextPose,
+    adjustTextPose: adjustLabelPose,
     updateDisplayForCameraUpdate
   };
 });
