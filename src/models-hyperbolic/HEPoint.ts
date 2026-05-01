@@ -106,6 +106,7 @@ export class HEPoint extends HENodule implements HyperbolicLabelable {
   }
 
   updateOrAddToGroup(): void {
+    // console.log("update or add to group", this.name);
     switch (true) {
       case this._position.w > 0:
         this.group.add(this._pointMesh);
@@ -222,36 +223,6 @@ export class HEPoint extends HENodule implements HyperbolicLabelable {
         this._idealMaterial.position = this._position;
         break;
       }
-      // case this._position.w < 0: {
-      //   const [x, y, z] = this._position.toArray();
-
-      //   // The relevant direction for the ultra-ideal point is (x, y, -z)
-      //   // which is the outward normal to the hyperboloid / polar plane normal
-      //   const len = Math.sqrt(x * x + y * y + z * z);
-      //   const angle = Math.acos(Math.max(-1, Math.min(1, y / len))); // the angle between normal vector to cylinder <0,1,0> and the inward normal vector at the point (x,y,z) which is <-x,-y,z>
-      //   const axis = new Vector3(-z, 0, -x).normalize();
-
-      //   // Handle degenerate case where cylinder is already aligned (angle ≈ 0 or π)
-      //   if (axis.lengthSq() < 1e-10) {
-      //     // Already aligned or anti-aligned — use identity or 180° rotation
-      //     if (y > 0) {
-      //       this._transformationMatrix.makeTranslation(x, y, z);
-      //     } else {
-      //       this._transformationMatrix
-      //         .makeTranslation(x, y, z)
-      //         .multiply(new THREE.Matrix4().makeRotationX(Math.PI));
-      //     }
-      //   } else {
-      //     const rotMatrix = new THREE.Matrix4().makeRotationAxis(axis, angle);
-      //     this._transformationMatrix
-      //       .makeTranslation(x, y, z)
-      //       .multiply(rotMatrix);
-      //   }
-
-      //   this._ultraMaterial.transformationMatrix = this._transformationMatrix;
-      //   this._ultraMaterial.position = this._position;
-      //   break;
-      // }
       case this._position.w < 0: {
         const [x, y, z] = this._position.toArray();
 

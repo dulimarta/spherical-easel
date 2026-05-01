@@ -174,6 +174,8 @@ import {
 import { VisibleHELayersType } from "@/types";
 import { label, uniform } from "three/tsl";
 import EventBus from "@/eventHandlers-spherical/EventBus";
+import { onBeforeUnmount } from "vue";
+import { Handler } from "mitt";
 
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
@@ -529,7 +531,15 @@ watch(
 );
 
 onBeforeMount(() => {
+  EventBus.listen(
+    "raycast-mouse-move",
+    threeMouseTrackerThenMouseMove as Handler<unknown>
+  );
   initialize();
+});
+
+onBeforeUnmount(() => {
+  EventBus.unlisten("raycast-mouse-move");
 });
 
 onMounted(async () => {

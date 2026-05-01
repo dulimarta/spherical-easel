@@ -22,7 +22,6 @@ export class LineHandler extends PointSelectionHandler {
   private _mode;
 
   private _tempLine: HELine;
-  private _tempLineInScene = false;
   private tmp3Vector1 = new Vector3();
   private tmp3Vector2 = new Vector3();
   private tmp3Vector3 = new Vector3();
@@ -31,7 +30,6 @@ export class LineHandler extends PointSelectionHandler {
 
   constructor(scene: Scene, mode: number) {
     super(scene, 2);
-
     this._tempLine = new HELine(
       this._tempPointArray[0].tempHEPoint,
       this._tempPointArray[1].tempHEPoint,
@@ -43,13 +41,9 @@ export class LineHandler extends PointSelectionHandler {
     this._mode = mode;
   }
 
-  mousePressed(event: MouseEvent): void {
-    super.mousePressed(event);
-  }
   mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
     // Make sure that the event is on a surface and at least one point is selected
-
     if (
       this.aSurfaceIsIntersected &&
       this._indexOfPointCurrentlyBeingSelected === 1
@@ -61,29 +55,17 @@ export class LineHandler extends PointSelectionHandler {
         activeTempPoint.position.z * this._selectedPoints[0].locationVector.z >
         0
       ) {
-        const snapPoint =
-          this._tempPointArray[this._indexOfPointCurrentlyBeingSelected]
-            .snapPoint;
-        // if there is a snap point for the last temp point, display the line through it
-        if (snapPoint) {
-          this._tempLine.setNewStartAndEndVectors(
-            this._selectedPoints[0].locationVector,
-            snapPoint.position
-          );
-        } else {
-          this._tempLine.setNewStartAndEndVectors(
-            this._selectedPoints[0].locationVector,
-            activeTempPoint.position
-          );
-        }
-        if (!this._tempLineInScene) {
-          this._tempLineInScene = true;
-          this.scene.add(this._tempLine.mesh);
-        }
+        this._tempLine.setNewStartAndEndVectors(
+          this._selectedPoints[0].locationVector,
+          activeTempPoint.position
+        );
+        this.scene.add(this._tempLine.mesh);
       } else {
         // the user is not over the same upper or lower sheet as the start and the endpoint markers should be removed.
-        this.removeTempLineFromScene();
+        this.scene.remove(this._tempLine.mesh);
       }
+    } else {
+      this.scene.remove(this._tempLine.mesh);
     }
   }
 
@@ -92,11 +74,6 @@ export class LineHandler extends PointSelectionHandler {
     if (this.aSurfaceIsIntersected && this._allPointsSelected) {
       const startVector = this._selectedPoints[0].locationVector;
       const endVector = this._selectedPoints[1].locationVector;
-      // console.log(
-      //   "start and end",
-      //   this._selectedPoints[0].HEPoint?.name,
-      //   this._selectedPoints[1].HEPoint?.name
-      // );
       const bothIdeal = startVector.w == 0 && endVector.w == 0;
       const idealAngularMinimumMet = bothIdeal
         ? Math.abs(
@@ -109,7 +86,13 @@ export class LineHandler extends PointSelectionHandler {
         new Vector3(endVector.x, endVector.y, endVector.z).angleTo(
           new Vector3(startVector.x, startVector.y, startVector.z)
         ) > 0.1;
-
+      console.log(
+        "make line",
+        startVector.toFixed(2),
+        endVector.toFixed(2),
+        bothIdeal,
+        distanceMinimumMet
+      );
       if (
         endVector.z * startVector.z > 0 && // To make a line the start and end vector must be on the same sheet
         ((bothIdeal && idealAngularMinimumMet) || distanceMinimumMet)
@@ -121,8 +104,6 @@ export class LineHandler extends PointSelectionHandler {
             type: "error"
           });
         }
-        // Get ready for the next line
-        this.mouseLeave(event);
       } else if (endVector.z * startVector.z <= 0) {
         EventBus.fire("show-alert", {
           key: `handlers.lineCreationBetweenDifferentSheets`,
@@ -130,18 +111,17 @@ export class LineHandler extends PointSelectionHandler {
           type: "error"
         });
       }
+      // Get ready for the next line
+      this.prepareForNextLine(event);
     }
   }
 
   mouseLeave(event: MouseEvent): void {
-    super.mouseLeave(event);
-    this.removeTempLineFromScene();
-    // this._allPointsSelected = false;
+    this.prepareForNextLine(event);
   }
-
-  removeTempLineFromScene(): void {
+  prepareForNextLine(event: MouseEvent): void {
+    this.prepareForNextPointSelections(event);
     this.scene.remove(this._tempLine.mesh);
-    this._tempLineInScene = false;
   }
 
   // Create a new line from the mouse event information
@@ -149,71 +129,7 @@ export class LineHandler extends PointSelectionHandler {
     const lineCommandGroup = new CommandGroup();
     const newlyCreatedHEPoints: HEPoint[] = [];
 
-    // update the start and end points to make HEPoints for them as necessary
-    for (let i = 0; i <= 1; i++) {
-      if (this._selectedPoints[i].HEPoint === null) {
-        // We have to create a new HEPointOnOneDimensional or HEPoint
-        let newPoint: HEPoint | null = null; // | HEPointOnOneOrTwoDimensional | null = null; // Not implemented yet
-        let newLabel: HELabel | null = null;
-        if (this._selectedPoints[i].oneOrTwoDimParent) {
-          // // selected location landed near a oneDimensional
-          // // Create the model object for the new point and link them
-          // newPoint = new SEPointOnOneOrTwoDimensional(
-          //   this._startHEPointOneDimensionalParent
-          // );
-          // newLabel = new HELabel(
-          //   "point",
-          //   vtx,
-          //   vtx.position,
-          //   vtx.name,
-          //   vtx.upper
-          // );
-          // newPoint.setLabel(newLabel)
-          // // Create and execute the command to create a new point for undo/redo
-          // lineGroup.addCommand(
-          //   new AddPointOnOneDimensionalCommand(
-          //     vtx as HEPointOnOneOrTwoDimensional,
-          //     this._startHEPointOneDimensionalParent,
-          //     newHELabel
-          //   )
-          // );
-        } else {
-          // Starting mouse press landed on an open space
-          newPoint = new HEPoint(this._selectedPoints[i].locationVector);
-          newLabel = new HELabel(
-            "point",
-            newPoint,
-            this._selectedPoints[i].locationVector,
-            newPoint.name
-          );
-          newPoint.setLabel(newLabel);
-          lineCommandGroup.addCommand(new AddPointCommand(newPoint, newLabel));
-          this._selectedPoints[i].HEPoint = newPoint;
-        }
-        if (newPoint) {
-          // Create the antipode of the new point, vtx
-          const antipode = LineHandler.addCreateAntipodeCommand(
-            newPoint,
-            lineCommandGroup
-          );
-          newlyCreatedHEPoints.push(newPoint, antipode);
-
-          this._selectedPoints[i].HEPoint = newPoint;
-        }
-      } else {
-        const selectedHEPoint = this._selectedPoints[i].HEPoint;
-        if (
-          (selectedHEPoint instanceof HEIntersectionPoint ||
-            selectedHEPoint instanceof HEAntipodalPoint) &&
-          !selectedHEPoint.isUserCreated
-        ) {
-          // Mark the intersection/antipodal point as created, the display style is changed and the glowing style is set up
-          lineCommandGroup.addCommand(
-            new SetPointUserCreatedValueCommand(selectedHEPoint, true)
-          );
-        }
-      }
-    }
+    this.createNewPointsAsNeeded(lineCommandGroup, newlyCreatedHEPoints);
 
     const startHEPoint = this._selectedPoints[0].HEPoint;
     const endHEPoint = this._selectedPoints[1].HEPoint;
@@ -373,13 +289,5 @@ export class LineHandler extends PointSelectionHandler {
   }
   deactivate(): void {
     super.deactivate();
-  }
-
-  set mode(newMode: number) {
-    console.log("set mode in Line Handler");
-    if (newMode != this._mode) {
-      this._mode = newMode;
-      this._tempLine.mode = newMode;
-    }
   }
 }

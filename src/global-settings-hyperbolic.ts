@@ -18,7 +18,7 @@ export const SETTINGS = {
 
   maxZClip: 150, //set the maximum value of zUpperClip so that the entire hyperboloid and grid lines are shown at max dolly distance and maxFieldOfView
 
-  percentReductionAtMaxDolly: 0.5, // the percent non-ideal points and labels are reduced by at max dolly
+  percentReductionAtMaxDolly: 0.9, // the percent non-ideal points and labels are reduced to at max dolly
 
   tolerance: 0.0000001 //numbers less than this are considered zero
 };

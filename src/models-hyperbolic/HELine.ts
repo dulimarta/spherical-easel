@@ -148,12 +148,10 @@ export class HELine extends HENodule implements HyperbolicLabelable {
     //
     // (0,b*Sign[c]/(Sqrt[c^2 - b^2] ),c/Sqrt[c^2 - b^2])
 
-    const sqrtTerm =
-      Math.sqrt[
-        standardLocation.z * standardLocation.z -
-          standardLocation.y * standardLocation.y
-      ];
-
+    const sqrtTerm = Math.sqrt(
+      standardLocation.z * standardLocation.z -
+        standardLocation.y * standardLocation.y
+    );
     const closestToStandardLocation = new Vector4(
       0,
       standardLocation.y / sqrtTerm, // this might need to be multiplied by the sign of standardLocation.z
@@ -328,7 +326,7 @@ export class HELine extends HENodule implements HyperbolicLabelable {
       }
     }
 
-    return closestToStandardLocation;
+    return closestToStandardLocation.applyMatrix4(this._transformationMatrix);
   }
 
   // /**

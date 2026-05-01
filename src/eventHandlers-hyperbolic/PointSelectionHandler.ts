@@ -4,21 +4,19 @@ import * as THREE from "three/webgpu";
 import { HEPoint } from "@/models-hyperbolic/HEPoint";
 import { HEOneOrTwoDimensional } from "@/types";
 import { CustomPointMaterial } from "@/plottables-hyperbolic/MaterialFactory";
-import { HELine } from "@/models-hyperbolic/HELine";
 import {
   createBoundaryCone,
   createIdealPointTube
 } from "@/plottables-hyperbolic/MeshFactory";
 import { HEIntersectionPoint } from "@/models-hyperbolic/HEIntersectionPoint";
 import { HEAntipodalPoint } from "@/models-hyperbolic/HEAntipodalPoint";
-import { CommandGroup } from "@/commands-spherical/CommandGroup";
-import { HELabel } from "@/models-hyperbolic/HELabel";
-import EventBus from "@/eventHandlers-spherical/EventBus";
-import { AddPointCommand } from "@/commands-hyperbolic/AddPointCommand";
-import { SetPointUserCreatedValueCommand } from "@/commands-hyperbolic/SetPointUserCreatedValueCommand";
-import { positionPrevious } from "three/tsl";
-import { AddLineCommand } from "@/commands-hyperbolic/AddLineCommand";
 import { vec3ToVec4, vec4ToVec3 } from "@/utils/helpingHEFunctions";
+import EventBus from "@/eventHandlers-spherical/EventBus";
+import { CommandGroup } from "@/commands-spherical/CommandGroup";
+import { SetPointUserCreatedValueCommand } from "@/commands-hyperbolic/SetPointUserCreatedValueCommand";
+import { HEPointOnOneOrTwoDimensional } from "@/models-hyperbolic/HEPointOnOneOrTwoDimensional";
+import { HELabel } from "@/models-hyperbolic/HELabel";
+import { AddPointCommand } from "@/commands-hyperbolic/AddPointCommand";
 
 type selectedPointInformation = {
   oneOrTwoDimParent: HEOneOrTwoDimensional | null;
@@ -38,10 +36,6 @@ export class PointSelectionHandler extends PoseTracker {
   private _tempTubeMaterial: CustomPointMaterial;
   private _tempUpperCone: Mesh;
   private _tempLowerCone: Mesh;
-
-  private _tempTubeInScene = false;
-  private _tempUpperConeInScene = false; //
-  private _tempLowerConeInScene = false;
 
   // Filter the hitSEPoints appropriately for this handler
   private filteredIntersectionPointsList: HEPoint[] = [];
@@ -80,11 +74,6 @@ export class PointSelectionHandler extends PoseTracker {
   }
 
   mousePressed(event: MouseEvent): void {
-    // console.debug(`LineHandler::mousePressed (${event.clientX},${event.clientY})`)
-    // Do the mouse moved event of the Highlighter so that a new hitHEPoints array will be generated
-    // otherwise if the user has finished making an new point, then *without* triggering a mouse move
-    // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
-    super.mouseMoved(event);
     if (
       this.aSurfaceIsIntersected &&
       this._indexOfPointCurrentlyBeingSelected < this._N - 1
@@ -116,86 +105,21 @@ export class PointSelectionHandler extends PoseTracker {
         const nearByPoint = this.filteredIntersectionPointsList[0];
         nearByPoint.glowing = true;
         activeTempPointInfo.snapPoint = nearByPoint;
-
-        // } else if (this.hitSESegments.length > 0) {
-        //   this.hitSESegments[0].glowing = true;
-        //   if (!this.startLocationSelected) {
-        //     this.snapStartMarkerToTemporaryOneDimensional = this.hitSESegments[0];
-        //     this.snapEndMarkerToTemporaryOneDimensional = null;
-        //     this.snapStartMarkerToTemporaryPoint = null;
-        //     this.snapEndMarkerToTemporaryPoint = null;
-        //   } else {
-        //     this.snapStartMarkerToTemporaryOneDimensional = null;
-        //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSESegments[0];
-        //     this.snapStartMarkerToTemporaryPoint = null;
-        //     this.snapEndMarkerToTemporaryPoint = null;
-        //   }
-        // } else if (this.hitSELines.length > 0) {
-        //   this.hitSELines[0].glowing = true;
-        //   if (!this.startLocationSelected) {
-        //     this.snapStartMarkerToTemporaryOneDimensional = this.hitSELines[0];
-        //     this.snapEndMarkerToTemporaryOneDimensional = null;
-        //     this.snapStartMarkerToTemporaryPoint = null;
-        //     this.snapEndMarkerToTemporaryPoint = null;
-        //   } else {
-        //     this.snapStartMarkerToTemporaryOneDimensional = null;
-        //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSELines[0];
-        //     this.snapStartMarkerToTemporaryPoint = null;
-        //     this.snapEndMarkerToTemporaryPoint = null;
-        //   }
+      } else if (this.hitHELines.length > 0) {
+        this.hitHELines[0].glowing = true;
+        activeTempPointInfo.snapOneOrTwoDim = this.hitHELines[0];
         // } else if (this.hitSECircles.length > 0) {
         //   this.hitSECircles[0].glowing = true;
-        //   if (!this.startLocationSelected) {
-        //     this.snapStartMarkerToTemporaryOneDimensional = this.hitSECircles[0];
-        //     this.snapEndMarkerToTemporaryOneDimensional = null;
-        //     this.snapStartMarkerToTemporaryPoint = null;
-        //     this.snapEndMarkerToTemporaryPoint = null;
-        //   } else {
-        //     this.snapStartMarkerToTemporaryOneDimensional = null;
-        //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSECircles[0];
-        //     this.snapStartMarkerToTemporaryPoint = null;
-        //     this.snapEndMarkerToTemporaryPoint = null;
-        //   }
+        //   activeTempPointInfo.snapOneOrTwoDim = this.hitSECircles[0];
         // } else if (this.hitSEEllipses.length > 0) {
         //   this.hitSEEllipses[0].glowing = true;
-        //   if (!this.startLocationSelected) {
-        //     this.snapStartMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
-        //     this.snapEndMarkerToTemporaryOneDimensional = null;
-        //     this.snapStartMarkerToTemporaryPoint = null;
-        //     this.snapEndMarkerToTemporaryPoint = null;
-        //   } else {
-        //     this.snapStartMarkerToTemporaryOneDimensional = null;
-        //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
-        //     this.snapStartMarkerToTemporaryPoint = null;
-        //     this.snapEndMarkerToTemporaryPoint = null;
-        //   }
+        //   activeTempPointInfo.snapOneOrTwoDim = this.hitSEEllipses[0];
         // } else if (this.hitSEParametrics.length > 0) {
         //   this.hitSEParametrics[0].glowing = true;
-        //   if (!this.startLocationSelected) {
-        //     this.snapStartMarkerToTemporaryOneDimensional =
-        //       this.hitSEParametrics[0];
-        //     this.snapEndMarkerToTemporaryOneDimensional = null;
-        //     this.snapStartMarkerToTemporaryPoint = null;
-        //     this.snapEndMarkerToTemporaryPoint = null;
-        //   } else {
-        //     this.snapStartMarkerToTemporaryOneDimensional = null;
-        //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
-        //     this.snapStartMarkerToTemporaryPoint = null;
-        //     this.snapEndMarkerToTemporaryPoint = null;
-        //   }
+        //   activeTempPointInfo.snapOneOrTwoDim = this.hitSEParametrics[0];
         // } else if (this.hitSEPolygons.length > 0) {
         //   this.hitSEPolygons[0].glowing = true;
-        //   if (!this.startLocationSelected) {
-        //     this.snapStartMarkerToTemporaryOneDimensional = this.hitSEPolygons[0];
-        //     this.snapEndMarkerToTemporaryOneDimensional = null;
-        //     this.snapStartMarkerToTemporaryPoint = null;
-        //     this.snapEndMarkerToTemporaryPoint = null;
-        //   } else {
-        //     this.snapStartMarkerToTemporaryOneDimensional = null;
-        //     this.snapEndMarkerToTemporaryOneDimensional = this.hitSEPolygons[0];
-        //     this.snapStartMarkerToTemporaryPoint = null;
-        //     this.snapEndMarkerToTemporaryPoint = null;
-        //   }
+        //   activeTempPointInfo.snapOneOrTwoDim = this.hitSEPolygons[0];
       }
 
       const possibleLocation = this.getLocationAndSetTempObjects(); // computes the location and adds the cone/tube to the scene as warranted
@@ -217,22 +141,18 @@ export class PointSelectionHandler extends PoseTracker {
           this.removeTempPointFromGroup(
             this._indexOfPointCurrentlyBeingSelected
           );
+          this.removeTubeAndConeFromScene();
         }
       } else if (activeTempPointInfo.snapOneOrTwoDim) {
-        // Set the location of the temporary startPoint by snapping to appropriate object (if any)
-        // NOT IMPLEMENTED YET
-        // this._tempStartPoint.position =
-        //   this.snapStartPointToExistingOneDimensional.closestVector(
-        //     PoseTracker.hyperStore.surfaceIntersections[0].point
-        //   );
+        // Set the location of the temporary point by snapping to appropriate object (if any)
+        activeTempPointInfo.tempHEPoint.position =
+          activeTempPointInfo.snapOneOrTwoDim.closestVector(possibleLocation);
+        activeTempPointInfo.tempHEPoint.updateOrAddToGroup(); // this must be called after setting the position of the point because the position is used to determine which of the three meshes (hyperboloid, ideal strip, or ultra strip) should be added to the group and displayed as the temporary point.
       } else {
         activeTempPointInfo.tempHEPoint.position = possibleLocation;
-        activeTempPointInfo.tempHEPoint.updateOrAddToGroup(); // this must be called after setting the position of the point because the position is used to determine which of the three meshes (hyperboloid, ideal strip, or ultra strip) should be added to the group and displayed as the temporary point.
+        activeTempPointInfo.tempHEPoint.updateOrAddToGroup();
       }
-
-      for (let i = 0; i < this._indexOfPointCurrentlyBeingSelected; i++) {
-        this._tempPointArray[i].tempHEPoint.updateOrAddToGroup(); // display the start objects as needed because the user may have selected a previous location and then mouse off all surfaces (causing all temp objects to disappear) and then mouse back onto a surface without triggering a mouse leave event
-      }
+      this.displayAllTempPointObjects();
     } else {
       this.removeAllTempPointObjects();
     }
@@ -247,11 +167,6 @@ export class PointSelectionHandler extends PoseTracker {
     } else {
       this.removeAllTempPointObjects();
     }
-  }
-
-  mouseLeave(event: MouseEvent): void {
-    super.mouseLeave(event);
-    this.prepareForNextPointSelections();
   }
 
   isLocationAlreadySelected(location: Vector4, currentIndex: number): boolean {
@@ -306,73 +221,79 @@ export class PointSelectionHandler extends PoseTracker {
       //   );
       //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
       //   this._startHEPoint = null;
-      // } else if (this.hitSELines.length > 0) {
-      //   // The start of the line will be a point on a line
-      //   //  Eventually, we will create a new SEPointOneDimensional and Point
-      //   this._startHEPointOneDimensionalParent = this.hitSELines[0];
-      //   this.startVector.copy(
-      //     this._startHEPointOneDimensionalParent.closestVector(
-      //       this.currentSphereVector
-      //     )
-      //   );
-      //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
-      //   this._startHEPoint = null;
-      // } else if (this.hitSECircles.length > 0) {
-      //   // The start of the line will be a point on a circle
-      //   //  Eventually, we will create a new SEPointOneDimensional and Point
-      //   this._startHEPointOneDimensionalParent = this.hitSECircles[0];
-      //   this.startVector.copy(
-      //     this._startHEPointOneDimensionalParent.closestVector(
-      //       this.currentSphereVector
-      //     )
-      //   );
-      //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
-      //   this._startHEPoint = null;
-      // } else if (this.hitSEEllipses.length > 0) {
-      //   // The start of the line will be a point on a ellipse
-      //   //  Eventually, we will create a new SEPointOneDimensional and Point
-      //   this._startHEPointOneDimensionalParent = this.hitSEEllipses[0];
-      //   this.startVector.copy(
-      //     this._startHEPointOneDimensionalParent.closestVector(
-      //       this.currentSphereVector
-      //     )
-      //   );
-      //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
-      //   this._startHEPoint = null;
-      // } else if (this.hitSEParametrics.length > 0) {
-      //   // The start of the line will be a point on a ellipse
-      //   //  Eventually, we will create a new SEPointOneDimensional and Point
-      //   this._startHEPointOneDimensionalParent = this.hitSEParametrics[0];
-      //   this.startVector.copy(
-      //     this._startHEPointOneDimensionalParent.closestVector(
-      //       this.currentSphereVector
-      //     )
-      //   );
-      //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
-      //   this._startHEPoint = null;
-      // } else if (this.hitSEPolygons.length > 0) {
-      //   // The start of the line will be a point on a ellipse
-      //   //  Eventually, we will create a new SEPointOneDimensional and Point
-      //   this._startHEPointOneDimensionalParent = this.hitSEPolygons[0];
-      //   this.startVector.copy(
-      //     this._startHEPointOneDimensionalParent.closestVector(
-      //       this.currentSphereVector
-      //     )
-      //   );
-      //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
-      //   this._startHEPoint = null;
     } else {
-      // The mouse press/release is not near an existing point or one dimensional object.
-      //  Eventually, we will create a new HEPoint at the selected location
       const location = vec3ToVec4(
         PoseTracker.hyperStore.surfaceIntersections[0].point,
         this.getWCoordinate()
       );
-      if (this.isLocationAlreadySelected(location, index)) {
-        return false;
+      if (this.hitHELines.length > 0) {
+        const possibleLocation = new Vector4().copy(
+          this.hitHELines[0].closestVector(location)
+        );
+        if (this.isLocationAlreadySelected(possibleLocation, index)) {
+          return false;
+        }
+        // The selected point will be  on a line
+        //  Eventually, we will create a new HEPointOnOneOrTwoDimensional
+        activeSelectedPointInfo.oneOrTwoDimParent = this.hitHELines[0];
+        activeSelectedPointInfo.locationVector.copy(possibleLocation);
+
+        activeTempPointInfo.tempHEPoint.position = possibleLocation;
+        // }
+        //else if (this.hitSECircles.length > 0) {
+        //   // The start of the line will be a point on a circle
+        //   //  Eventually, we will create a new SEPointOneDimensional and Point
+        //   this._startHEPointOneDimensionalParent = this.hitSECircles[0];
+        //   this.startVector.copy(
+        //     this._startHEPointOneDimensionalParent.closestVector(
+        //       this.currentSphereVector
+        //     )
+        //   );
+        //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
+        //   this._startHEPoint = null;
+        // } else if (this.hitSEEllipses.length > 0) {
+        //   // The start of the line will be a point on a ellipse
+        //   //  Eventually, we will create a new SEPointOneDimensional and Point
+        //   this._startHEPointOneDimensionalParent = this.hitSEEllipses[0];
+        //   this.startVector.copy(
+        //     this._startHEPointOneDimensionalParent.closestVector(
+        //       this.currentSphereVector
+        //     )
+        //   );
+        //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
+        //   this._startHEPoint = null;
+        // } else if (this.hitSEParametrics.length > 0) {
+        //   // The start of the line will be a point on a ellipse
+        //   //  Eventually, we will create a new SEPointOneDimensional and Point
+        //   this._startHEPointOneDimensionalParent = this.hitSEParametrics[0];
+        //   this.startVector.copy(
+        //     this._startHEPointOneDimensionalParent.closestVector(
+        //       this.currentSphereVector
+        //     )
+        //   );
+        //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
+        //   this._startHEPoint = null;
+        // } else if (this.hitSEPolygons.length > 0) {
+        //   // The start of the line will be a point on a ellipse
+        //   //  Eventually, we will create a new SEPointOneDimensional and Point
+        //   this._startHEPointOneDimensionalParent = this.hitSEPolygons[0];
+        //   this.startVector.copy(
+        //     this._startHEPointOneDimensionalParent.closestVector(
+        //       this.currentSphereVector
+        //     )
+        //   );
+        //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
+        //   this._startHEPoint = null;
+      } else {
+        // The mouse press/release is not near an existing point or one dimensional object.
+        //  Eventually, we will create a new HEPoint at the selected location
+
+        if (this.isLocationAlreadySelected(location, index)) {
+          return false;
+        }
+        activeTempPointInfo.tempHEPoint.position = location;
+        activeSelectedPointInfo.locationVector.copy(location);
       }
-      activeTempPointInfo.tempHEPoint.position = location;
-      activeSelectedPointInfo.locationVector.copy(location);
     }
     return true;
   }
@@ -395,11 +316,8 @@ export class PointSelectionHandler extends PoseTracker {
     return wCoordinate;
   }
 
-  private addTubeAndConeToScene() {
-    if (!this._tempTubeInScene) {
-      this._tempTubeInScene = true;
-      this.scene.add(this._tempTube);
-    }
+  addTubeAndConeToScene() {
+    this.scene.add(this._tempTube);
     const location = PoseTracker.hyperStore.surfaceIntersections[0].point;
     const upper = location.z > 0;
     this._tempTubeMaterial.position = new THREE.Vector4(
@@ -409,22 +327,18 @@ export class PointSelectionHandler extends PoseTracker {
       0
     ); // x,y,w are not used for the tube
     this._tempTubeMaterial.tubeAngle = Math.atan2(location.y, location.x);
-    if (!this._tempLowerConeInScene && !upper) {
+    if (!upper) {
       this.scene.add(this._tempLowerCone);
-      this._tempLowerConeInScene = true;
-      this._tempUpperConeInScene = false;
       this.scene.remove(this._tempUpperCone);
     }
 
-    if (!this._tempUpperConeInScene && upper) {
+    if (upper) {
       this.scene.add(this._tempUpperCone);
-      this._tempUpperConeInScene = true;
-      this._tempLowerConeInScene = false;
       this.scene.remove(this._tempLowerCone);
     }
   }
 
-  protected getLocationAndSetTempObjects(): Vector4 {
+  getLocationAndSetTempObjects(): Vector4 {
     switch (true) {
       case this.hyperboloidIsFirstSurfaceHit:
         //remove the tube and cone if they are in the scene
@@ -447,18 +361,15 @@ export class PointSelectionHandler extends PoseTracker {
     );
   }
 
-  private removeTubeAndConeFromScene() {
-    if (this._tempTubeInScene) {
-      this.scene.remove(this._tempTube);
-      this._tempTubeInScene = false;
-    }
-    if (this._tempLowerConeInScene) {
-      this.scene.remove(this._tempLowerCone);
-      this._tempLowerConeInScene = false;
-    }
-    if (this._tempUpperConeInScene) {
-      this.scene.remove(this._tempUpperCone);
-      this._tempUpperConeInScene = false;
+  removeTubeAndConeFromScene() {
+    this.scene.remove(this._tempTube);
+    this.scene.remove(this._tempLowerCone);
+    this.scene.remove(this._tempUpperCone);
+  }
+
+  displayAllTempPointObjects() {
+    for (let i = 0; i < this._indexOfPointCurrentlyBeingSelected; i++) {
+      this._tempPointArray[i].tempHEPoint.updateOrAddToGroup(); // display the previously selected objects as needed because the user may have selected a previous location and then mouse off all surfaces (causing all temp objects to disappear) and then mouse back onto a surface without triggering a mouse leave event
     }
   }
 
@@ -474,7 +385,7 @@ export class PointSelectionHandler extends PoseTracker {
     this.removeTubeAndConeFromScene();
   }
 
-  prepareForNextPointSelections(): void {
+  prepareForNextPointSelections(event: MouseEvent): void {
     for (let i = 0; i < this._N; i++) {
       // reset the temp point array
       this._tempPointArray[i].snapOneOrTwoDim = null;
@@ -494,6 +405,13 @@ export class PointSelectionHandler extends PoseTracker {
     this._indexOfPointCurrentlyBeingSelected = 0;
     this._allPointsSelected = false;
     this.removeTubeAndConeFromScene();
+    // Do the mouse moved event of the Hyperbolic frame so that a new hitHEPoints array will be generated
+    // otherwise if the user has finished making an new point, then *without* triggering a mouse move
+    // event, mouse press will *not* select the newly created point (it will create multiple points at the same location). This is not what we want so we call mouseMove in Hyperbolic Frame so that ray casting is redone and the newly created point is on the hitHEPoints array.
+    this.prepareForNextEvent();
+    EventBus.fire("raycast-mouse-move", {
+      event: event
+    });
   }
 
   updateFilteredPointsList(): void {
@@ -525,11 +443,59 @@ export class PointSelectionHandler extends PoseTracker {
       );
   }
 
+  createNewPointsAsNeeded(
+    commandGroup: CommandGroup,
+    newPoints: HEPoint[]
+  ): void {
+    for (let i = 0; i < this._N; i++) {
+      const selectedPoint = this._selectedPoints[i].HEPoint;
+      if (selectedPoint) {
+        if (
+          (selectedPoint instanceof HEAntipodalPoint ||
+            selectedPoint instanceof HEIntersectionPoint) &&
+          !selectedPoint.isUserCreated
+        ) {
+          commandGroup.addCommand(
+            new SetPointUserCreatedValueCommand(
+              selectedPoint as HEIntersectionPoint | HEAntipodalPoint,
+              true
+            )
+          );
+        }
+      } else {
+        let vtx: HEPointOnOneOrTwoDimensional | HEPoint | null = null;
+        let newHELabel: HELabel | null = null;
+        const location = this._selectedPoints[i].locationVector;
+        const possibleParent = this._selectedPoints[i].oneOrTwoDimParent;
+        if (possibleParent) {
+          // selected a location over a one or two dimensional object
+          const closestLocation = possibleParent.closestVector(location);
+          vtx = new HEPointOnOneOrTwoDimensional(
+            possibleParent,
+            closestLocation
+          );
+          newHELabel = new HELabel("point", vtx, closestLocation, vtx.name);
+          vtx.setLabel(newHELabel);
+        } else {
+          // Selected an empty location
+          vtx = new HEPoint(location);
+          newHELabel = new HELabel("point", vtx, location, vtx.name);
+          vtx.setLabel(newHELabel);
+        }
+
+        commandGroup.addCommand(new AddPointCommand(vtx, newHELabel));
+        // Create the antipode of the new point, vtx
+        PoseTracker.addCreateAntipodeCommand(vtx as HEPoint, commandGroup);
+        newPoints.push(vtx);
+        this._selectedPoints[i].HEPoint = vtx;
+      }
+    }
+  }
+
   activate(): void {
     super.activate();
   }
   deactivate(): void {
-    this.prepareForNextPointSelections();
     super.deactivate();
   }
 }

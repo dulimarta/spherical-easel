@@ -77,7 +77,7 @@ export abstract class HENodule {
     this._outOfDate = b;
   }
 
-  /* Marks all descendants (kids, grand kids, etc.) of the current SENodule out of date */
+  /* Marks all descendants (kids, grand kids, etc.) of the current HE|SENodule out of date */
   public markKidsOutOfDate(): void {
     this._kids.forEach(item => {
       item.setOutOfDate(true);

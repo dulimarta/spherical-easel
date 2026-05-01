@@ -89,7 +89,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     return objectMap.get(id) ?? null;
   }
   function addTempObject(obj: HENodule) {
-    tempObjectsMap.set(obj.name, obj);
+    tempObjectsMap.set(obj.name, markRaw(obj));
   }
   // function removeTempObject(obj: HENodule) {
   //   tempObjectsMap.delete(obj.name);
