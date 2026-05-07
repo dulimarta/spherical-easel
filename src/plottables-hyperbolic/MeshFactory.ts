@@ -292,7 +292,7 @@ export function createLine(
         Math.abs(normalVector.dot(intersection.point)) <
         radiusUniform.value * unitLength.value * 2.5
       ) {
-        // now we have to determine if the point is near the part of the line that is displayed, this depends on the mode.
+        // now we have to determine if the point is near the part of the line that is displayed, this depends on the mode and the start/end point being ideal or not.
 
         const intersectionY = new THREE.Vector4(
           intersection.point.x,

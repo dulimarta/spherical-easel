@@ -27,7 +27,12 @@ import {
 } from "@/plottables-hyperbolic/MaterialFactory";
 import { createLine } from "@/plottables-hyperbolic/MeshFactory";
 import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
-import { h2Distance, vec4ToVec3 } from "@/utils/helpingHEFunctions";
+import {
+  h2Distance,
+  q,
+  vec3ToVec4,
+  vec4ToVec3
+} from "@/utils/helpingHEFunctions";
 import { threshold } from "three/tsl";
 import { error } from "happy-dom/lib/PropertySymbol.js";
 import { Vector } from "two.js/src/vector";
@@ -132,15 +137,32 @@ export class HELine extends HENodule implements HyperbolicLabelable {
    * Return the vector on the HELine that is closest to the location
    * @param vector4location A non-ideal vector on the hyperboloid
    */
-  public closestVector(vector4Location: Vector4): Vector4 {
-    if (vector4Location.w !== 1) {
-      throw new Error("Location must always be non-ideal");
+  public closestVector(vector4Location: Vector4): Vector4 | null {
+    if (vector4Location.w < 0.5) {
+      console.warn("HELine Closest Vector: vector4 must always be non-ideal");
+      return null;
+    }
+    if (vector4Location.z * (this.upper ? 1 : -1) < 0) {
+      console.warn(
+        "HELine Closest Vector: vector4 must be on the same sheet as the line"
+      );
+      return null;
+    }
+    if (
+      this._unitNormalVector.x * this._unitNormalVector.x +
+        this._unitNormalVector.y * this._unitNormalVector.y <=
+      this._unitNormalVector.z * this._unitNormalVector.z
+    ) {
+      console.warn(
+        "HELine Closest Vector: The plane of the line doesn't intersect the hyperboloid so there is no closest vector"
+      );
+      return null;
     }
 
     // Use the transformation that moves the line back to the standard position (on the upper or lower sheet) on the vector4location and then find the closest point (hyperbolically) on the standard position,
-    const standardLocation = vector4Location.applyMatrix4(
-      this._inverseTransformationMatrix
-    );
+    const standardLocation = new Vector4()
+      .copy(vector4Location)
+      .applyMatrix4(this._inverseTransformationMatrix);
 
     // The hyperbolic distance from a location (a,b,c,1) to (0,sinh(r),sign(c)*cosh(r),1) is acosh(cosh(r)*c*sign(c) - sinh(r)*b - 0* a),  so to minimize this, we find the minimum of cosh(r)*c*sign(c)-sinh(r)*b for -inf < r < inf. The derivative is sinh(r)*c*sign(c) -cosh(r)*b, which equals zero when r = atanh(b/c*sign(c)), |c| is always bigger than 1 on the hyperboloid and as a^2+b^2=c^2-1 so (b/c)^2 = 1-1/c^2 - (a/c)^2 so |b/c*sign(c)| is always less than one, so this is always well defined. As
     //
@@ -152,34 +174,53 @@ export class HELine extends HENodule implements HyperbolicLabelable {
       standardLocation.z * standardLocation.z -
         standardLocation.y * standardLocation.y
     );
-    const closestToStandardLocation = new Vector4(
+    const pointCloseToLine = new Vector4(
       0,
-      standardLocation.y / sqrtTerm, // this might need to be multiplied by the sign of standardLocation.z
+      standardLocation.y / sqrtTerm,
       standardLocation.z / sqrtTerm
+    ).applyMatrix4(this._transformationMatrix);
+    // Using the transformation matrix to make pointCloseToLine, the rounding error builds up (I think!) and pointCloseToLine is *close* but not really on the line. So project pointCloseToLine onto the plane containing the line, then scale the projection to move it onto the line in the hyperboloid NOTE: If we project vector4Location to the plane of the line and then scale to move the projection onto the line in the hyperboloid, it is numerically unstable. At large dolly distances this method doesn't always yield a point on the line near the raycast location.  This is why we combine these two approaches.
+    const vectorDotUnitNormal = vec4ToVec3(pointCloseToLine).dot(
+      this._unitNormalVector
     );
-
-    // now determine if the closestToStandardLocation is on the line/segment/ray ( depending on the mode)
-    const beforeStart = closestToStandardLocation.y < this._material.startY; // part =1
-    const betweenStartAndEnd =
-      this._material.startY <= closestToStandardLocation.y &&
-      closestToStandardLocation.y <= this._material.endY; // part =2
-    // const afterEnd = this._material.endY < closestToStandardLocation.y; // part =3
-
-    const startZ =
-      Math.sqrt(this._material.startY * this._material.startY + 1) *
-      Math.sign(closestToStandardLocation.z);
-    const endZ =
-      Math.sqrt(this._material.endY * this._material.endY + 1) *
-      Math.sign(closestToStandardLocation.z);
-    const distanceToStart = h2Distance(
-      vector4Location,
-      this._startPoint.position
+    const closestPointOnPlane = vec4ToVec3(pointCloseToLine).addScaledVector(
+      this._unitNormalVector,
+      -vectorDotUnitNormal
     );
-    const distanceToEnd = h2Distance(vector4Location, this._endPoint.position);
-    const startIsCloser = distanceToStart < distanceToEnd;
+    // q(closestPointOnPlane) is positive because the plane of the line intersects the hyperboloid
+    const closestPointOnLine = vec3ToVec4(
+      closestPointOnPlane.multiplyScalar(1 / Math.sqrt(q(closestPointOnPlane))),
+      1
+    );
+    const closestPointOnStandardLocation = new Vector4()
+      .copy(closestPointOnLine)
+      .applyMatrix4(this._inverseTransformationMatrix);
+
+    // now determine if the closestPointOnStandardLocation is on the line/segment/ray ( depending on the mode)
+    const closestPointIsBeforeStart =
+      closestPointOnStandardLocation.y < this._material.startY; // part = 1
+    const closestPointIsBetweenStartAndEnd =
+      this._material.startY <= closestPointOnStandardLocation.y &&
+      closestPointOnStandardLocation.y <= this._material.endY; // part = 2
+    // const closestPointIsAfterEnd = this._material.endY < closestPointOnStandardLocation.y; // part = 3
 
     // We know exactly one of these is true. Convert to a number to make the case statement easier
-    const part = beforeStart ? 1 : betweenStartAndEnd ? 2 : 3;
+    const closestPointIsInPart = closestPointIsBeforeStart
+      ? 1
+      : closestPointIsBetweenStartAndEnd
+        ? 2
+        : 3;
+
+    const distanceToStart =
+      this._startPoint.position.w > 0
+        ? h2Distance(vector4Location, this._startPoint.position)
+        : Number.POSITIVE_INFINITY;
+    const distanceToEnd =
+      this._endPoint.position.w > 0
+        ? h2Distance(vector4Location, this._endPoint.position)
+        : Number.POSITIVE_INFINITY;
+
+    const startIsCloser = distanceToStart < distanceToEnd; // False if both are infinite
 
     // I KNOW THIS IS SUPER AWKWARD and can be simplified, but I don't want to prematurely optimize!
 
@@ -187,25 +228,25 @@ export class HELine extends HENodule implements HyperbolicLabelable {
     switch (this._mode) {
       // 7 = 1*2^2 + 1*2^1 + 1*2^0 -- Whole line is drawn
       case 7: {
-        // no change to closestToStandardLocation
+        // no change to closestPointOnLine
         break;
       }
       // 2 = 0*2^2 + 1*2^1 + 0*2^0 -- Segment is drawn
       case 2: {
-        switch (part) {
+        switch (closestPointIsInPart) {
           // point is before start
           case 1: {
-            closestToStandardLocation.set(0, this._material.startY, startZ, 1);
+            closestPointOnLine.copy(this._startPoint.position);
             break;
           }
           // point is between start and end
           case 2: {
-            // No change to closestToStandardLocation
+            // No change to closestPointOnLine
             break;
           }
           // point is after end
           case 3: {
-            closestToStandardLocation.set(0, this._material.endY, endZ, 1);
+            closestPointOnLine.copy(this._endPoint.position);
             break;
           }
         }
@@ -213,20 +254,20 @@ export class HELine extends HENodule implements HyperbolicLabelable {
       }
       // 3 = 0*2^2 + 1*2^1 + 1*2^0 -- Ray from start to end is drawn
       case 3: {
-        switch (part) {
+        switch (closestPointIsInPart) {
           // point is before start
           case 1: {
-            closestToStandardLocation.set(0, this._material.startY, startZ, 1);
+            closestPointOnLine.copy(this._startPoint.position);
             break;
           }
           // point is between start and end
           case 2: {
-            // No change to closestToStandardLocation
+            // No change to closestPointOnLine
             break;
           }
           // point is after end
           case 3: {
-            // No change to closestToStandardLocation
+            // No change to closestPointOnLine
             break;
           }
         }
@@ -234,20 +275,20 @@ export class HELine extends HENodule implements HyperbolicLabelable {
       }
       // 5 = 1*2^2 + 1*2^1 + 0*2^0 -- Ray from end to start is drawn
       case 5: {
-        switch (part) {
+        switch (closestPointIsInPart) {
           // point is before start
           case 1: {
-            // No change to closestToStandardLocation
+            // No change to closestPointOnLine
             break;
           }
           // point is between start and end
           case 2: {
-            // No change to closestToStandardLocation
+            // No change to closestPointOnLine
             break;
           }
           // point is after end
           case 3: {
-            closestToStandardLocation.set(0, this._material.endY, endZ, 1);
+            closestPointOnLine.copy(this._endPoint.position);
             break;
           }
         }
@@ -255,20 +296,20 @@ export class HELine extends HENodule implements HyperbolicLabelable {
       }
       // 1 = 0*2^2 + 0*2^1 + 1*2^0 -- Ray after end is drawn
       case 1: {
-        switch (part) {
+        switch (closestPointIsInPart) {
           // point is before start
           case 1: {
-            closestToStandardLocation.set(0, this._material.endY, endZ, 1);
+            closestPointOnLine.copy(this._endPoint.position);
             break;
           }
           // point is between start and end
           case 2: {
-            closestToStandardLocation.set(0, this._material.endY, endZ, 1);
+            closestPointOnLine.copy(this._endPoint.position);
             break;
           }
           // point is after end
           case 3: {
-            // No change to closestToStandardLocation
+            // No change to closestPointOnLine
             break;
           }
         }
@@ -276,20 +317,20 @@ export class HELine extends HENodule implements HyperbolicLabelable {
       }
       // 4 = 1*2^2 + 0*2^1 + 0*2^0 -- Ray before start is drawn
       case 4: {
-        switch (part) {
+        switch (closestPointIsInPart) {
           // point is before start
           case 1: {
-            // No change to closestToStandardLocation
+            // No change to closestPointOnLine
             break;
           }
           // point is between start and end
           case 2: {
-            closestToStandardLocation.set(0, this._material.startY, startZ, 1);
+            closestPointOnLine.copy(this._startPoint.position);
             break;
           }
           // point is after end
           case 3: {
-            closestToStandardLocation.set(0, this._material.startY, startZ, 1);
+            closestPointOnLine.copy(this._startPoint.position);
             break;
           }
         }
@@ -297,25 +338,24 @@ export class HELine extends HENodule implements HyperbolicLabelable {
       }
       // 6 = 1*2^2 + 0*2^1 + 1*2^0 -- Weird double ray is drawn
       case 6: {
-        switch (part) {
+        switch (closestPointIsInPart) {
           // point is before start
           case 1: {
-            // No change to closestToStandardLocation
+            // No change to closestPointOnLine
             break;
           }
           // point is between start and end
           case 2: {
-            closestToStandardLocation.set(
-              0,
-              startIsCloser ? this._material.startY : this._material.endY,
-              startIsCloser ? startZ : endZ,
-              1
+            closestPointOnLine.copy(
+              startIsCloser
+                ? this._startPoint.position
+                : this._endPoint.position
             );
             break;
           }
           // point is after end
           case 3: {
-            // No change to closestToStandardLocation
+            // No change to closestPointOnLine
             break;
           }
         }
@@ -326,7 +366,7 @@ export class HELine extends HENodule implements HyperbolicLabelable {
       }
     }
 
-    return closestToStandardLocation.applyMatrix4(this._transformationMatrix);
+    return closestPointOnLine;
   }
 
   // /**

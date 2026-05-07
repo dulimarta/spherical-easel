@@ -1,11 +1,13 @@
 import SETTINGS from "@/global-settings-spherical";
+import { HELine } from "@/models-hyperbolic/HELine";
+import { HENodule } from "@/models-hyperbolic/HENodule";
 import { SECircle } from "@/models-spherical/SECircle";
 import { SEEllipse } from "@/models-spherical/SEEllipse";
 import { SELine } from "@/models-spherical/SELine";
 import { SENodule } from "@/models-spherical/SENodule";
 import { SEParametric } from "@/models-spherical/SEParametric";
 import { SESegment } from "@/models-spherical/SESegment";
-import { SEOneDimensional } from "@/types";
+import { HEOneDimensional, SEOneDimensional } from "@/types";
 import { Vector3 } from "three";
 
 /**
@@ -18,12 +20,15 @@ import { Vector3 } from "three";
  * @param seOneDimensional
  * @returns
  */
-export function rank_of_type(seOneDimensional: SEOneDimensional): number {
-  if (seOneDimensional instanceof SELine) return 1;
-  if (seOneDimensional instanceof SESegment) return 2;
-  if (seOneDimensional instanceof SECircle) return 3;
-  if (seOneDimensional instanceof SEEllipse) return 4;
-  if (seOneDimensional instanceof SEParametric) return 5;
+export function rank_of_type(
+  seOneDimensional: SEOneDimensional | HEOneDimensional
+): number {
+  if (seOneDimensional instanceof SELine || seOneDimensional instanceof HELine)
+    return 1;
+  // if (seOneDimensional instanceof SESegment) return 2;
+  // if (seOneDimensional instanceof SECircle) return 3;
+  // if (seOneDimensional instanceof SEEllipse) return 4;
+  // if (seOneDimensional instanceof SEParametric) return 5;
   return Number.MAX_VALUE;
 }
 
@@ -58,6 +63,46 @@ export function getDescendants(startingNodules: SENodule[]): SENodule[] {
     kid.kids.forEach(kid => {
       if (
         !descendants.some(descendant => descendant.id === kid.id) // add only unique descendants to the array
+      ) {
+        descendants.push(kid); //add the unique kid to the end of the array
+        totalKidsToCheck += 1;
+      }
+    });
+  }
+  return descendants;
+}
+
+export function getHEAncestors(startingNodules: HENodule[]): HENodule[] {
+  const ancestors: HENodule[] = [...startingNodules];
+  let totalParentsToCheck = ancestors.length;
+  let parentsChecked = 0;
+  while (parentsChecked < totalParentsToCheck) {
+    const parent = ancestors[parentsChecked];
+    parentsChecked += 1;
+    // add all the unique parents of the nodule to the array
+    parent.parents.forEach(parent => {
+      if (
+        !ancestors.some(ancestor => ancestor.name === parent.name) // add only unique ancestors to the array
+      ) {
+        ancestors.push(parent); //add the unique parent to the end of the array
+        totalParentsToCheck += 1;
+      }
+    });
+  }
+  return ancestors;
+}
+
+export function getHEDescendants(startingNodules: HENodule[]): HENodule[] {
+  const descendants: HENodule[] = [...startingNodules];
+  let totalKidsToCheck = descendants.length;
+  let kidsChecked = 0;
+  while (kidsChecked < totalKidsToCheck) {
+    const kid = descendants[kidsChecked];
+    kidsChecked += 1;
+    // add all the unique Kids of the nodule to the array
+    kid.kids.forEach(kid => {
+      if (
+        !descendants.some(descendant => descendant.name === kid.name) // add only unique descendants to the array
       ) {
         descendants.push(kid); //add the unique kid to the end of the array
         totalKidsToCheck += 1;

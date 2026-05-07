@@ -1,26 +1,24 @@
 import { HEPoint } from "./HEPoint";
 import {
-  HEOneDimensional,
-  IntersectionReturnType,
+  HEIntersectionReturnType,
   ObjectState,
-  SEIntersectionReturnType,
-  SEOneDimensional
+  IntersectionReturnTypeH2,
+  HEOneDimensional
 } from "@/types";
-import { intersectTwoObjects } from "@/utils/intersections";
 import i18n from "@/i18n";
-import { Vector3 } from "three";
-import { getAncestors } from "@/utils/helpingfunctions";
-import SETTINGS from "@/global-settings-spherical";
-import { DisplayStyle } from "@/plottables-spherical/Nodule";
-import { ChangeIntersectionPointPrincipleParents } from "@/commands-spherical/ChangeIntersectionPointPrincipleParents";
+import { Vector3, Vector4 } from "three";
+import { getAncestors, getHEAncestors } from "@/utils/helpingfunctions";
 // import { SESegment } from "./SESegment";
 // import { SELine } from "./SELine";
 // import { SECircle } from "./SECircle";
 // import { SEEllipse } from "./SEEllipse";
 import { HENodule } from "@/models-hyperbolic/HENodule";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
-import { AddIntersectionPointOtherParentsInfo } from "@/commands-spherical/AddIntersectionPointOtherParentsInfo";
-import { RemoveIntersectionPointOtherParentsInfo } from "@/commands-spherical/RemoveIntersectionPointOtherParentsInfo";
+
+import { intersectTwoObjects } from "@/utils/helpingHEFunctions";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands-hyperbolic/AddIntersectionPointOtherParentsInfo";
+import { ChangeIntersectionPointPrincipleParents } from "@/commands-hyperbolic/ChangeIntersectionPointPrincipleParents";
+import { RemoveIntersectionPointOtherParentsInfo } from "@/commands-hyperbolic/RemoveIntersectionPointOtherParentsInfo";
 const { t } = i18n.global;
 export class HEIntersectionPoint extends HEPoint {
   /**
@@ -31,10 +29,10 @@ export class HEIntersectionPoint extends HEPoint {
 
   /**
    * When two lines/segments are intersected, the intersection points are antipodal. If the user creates the
-   * anitpode of one of them (in previous versions of the code, this would result in two points at the same location
-   * or you would be unable to create that intersection point's antipode -- both of which are not desireable outcomes).
+   * antipode of one of them, in previous versions of the code, this would result in two points at the same location
+   * or you would be unable to create that intersection point's antipode -- both of which are not desirable outcomes.
    * The solution is to create a variable, _isAntipodeMode, which means that the existence of the antipode is
-   * determined by the existence of the original point (the one the use wanted to create the antipode of) and not the
+   * determined by the existence of the original point (the one the user wanted to create the antipode of) and not the
    * intersection point parents. (the location of the antipode is the same regardless of the value of _isAntipode).
    * If P and Q are two (antipodal) intersection points, then the value of _isAntipodeMode is never true for both.
    * If this._isAntipodeMode is true, then _isUserCreated must also be true.
@@ -42,11 +40,11 @@ export class HEIntersectionPoint extends HEPoint {
   private _isAntipodeMode = false;
   /**
    * When two lines/segments are intersected, the intersection points come in antipodal pairs.
-   * _antipodalPointId is the id number of this points intersection (if any).
-   * If this is -1 then this is not a part of a pair of antipodal twins.
-   * if _isAntipodeMode is true, then _antipodalPointId is *not* -1
+   * _antipodalPointId is the name of this points intersection (if any).
+   * If this is empty then this is not a part of a pair of antipodal twins.
+   * if _isAntipodeMode is true, then _antipodalPointId is *not* empty
    */
-  private _antipodalPointId = -1;
+  private _antipodalPointName = "";
 
   /**
    * The One-Dimensional parents of this HEInstructionPoint
@@ -54,14 +52,14 @@ export class HEIntersectionPoint extends HEPoint {
   private hePrincipleParent1: HEOneDimensional;
   private hePrincipleParent2: HEOneDimensional;
   // Any info on this array has been checked so that both listed parents are not descendants of this intersection point
-  private _otherParentsInfoArray: SEIntersectionReturnType[] = [];
+  private _otherParentsInfoArray: HEIntersectionReturnType[] = [];
 
   /**
-   * The numbering of the intersection in the case of multiple intersection between seParent1 and seParent 2
+   * The numbering of the intersection in the case of multiple intersection between seParent1 and seParent2
    */
   private order: number;
 
-  private tempVector = new Vector3();
+  private tempVector = new Vector4();
   /**
    * Create an intersection point between two one-dimensional objects
    * @param pt the TwoJS point associated with this intersection
@@ -75,15 +73,15 @@ export class HEIntersectionPoint extends HEPoint {
    * intersects a circle at two locations
    */
   constructor(
-    // pt: Point,
+    initialLocation: Vector4,
     heParent1: HEOneDimensional,
     heParent2: HEOneDimensional,
     order: number,
     isUserCreated: boolean
   ) {
-    super(true); /* Non-Free Point */
-    // this.ref = pt;
-    this.ref.stylize(DisplayStyle.ApplyTemporaryVariables);
+    super(initialLocation, true); /* Non-Free Point */
+
+    // this.ref.stylize(DisplayStyle.ApplyTemporaryVariables);
     this.hePrincipleParent1 = heParent1;
     this.hePrincipleParent2 = heParent2;
     this.order = order;
@@ -96,83 +94,85 @@ export class HEIntersectionPoint extends HEPoint {
       // Hide automatically created intersections
       this.showing = false;
     }
-    // console.log(
-    //   `Creating SEIntersection point ${this.name} with parents ${this.principleParent1.name} and ${this.principleParent2.name} `
-    // );
+    console.log(
+      `Creating HEIntersection point ${this.name} with parents ${this.principleParent1.name} and ${this.principleParent2.name} at ${initialLocation.toFixed(2)} `
+    );
   }
 
-  public set antipodalPointId(seIntersectionPointID: number) {
-    if (seIntersectionPointID === -1) {
+  public set antipodalPointId(heIntersectionPointName: string) {
+    if (heIntersectionPointName === "") {
       // turn off the antipode mode
-      this._antipodalPointId = -1;
+      this._antipodalPointName = "";
       this._isAntipodeMode = false;
     } else {
-      const antipode = SENodule.store.findSENoduleById(seIntersectionPointID);
+      const antipode = HENodule.hyperStore.getObjectById(
+        heIntersectionPointName
+      );
       if (
-        antipode instanceof SEIntersectionPoint &&
+        antipode instanceof HEIntersectionPoint &&
         !antipode._isAntipodeMode
       ) {
-        this._antipodalPointId = seIntersectionPointID;
+        this._antipodalPointName = heIntersectionPointName;
         this._isAntipodeMode = true;
       } else {
         throw new Error(
-          `Attempting to set a seIntersectionPoint antipodal with a nonSEIntersection Point (${
-            antipode instanceof SEIntersectionPoint
-          }) or the seIntersectionPoint is already in antipode mode`
+          `Attempting to set a heIntersectionPoint antipodal with a nonHEIntersection Point (${
+            antipode instanceof HEIntersectionPoint
+          }) or the heIntersectionPoint is already in antipode mode`
         );
       }
     }
   }
-  public get antipodalPointId(): number {
-    return this._antipodalPointId;
+  public get antipodalPointId(): string {
+    return this._antipodalPointName;
   }
   public get isAntipodal(): boolean {
     return this._isAntipodeMode;
   }
 
-  public get noduleDescription(): string {
-    let typeParent1;
-    if (this.hePrincipleParent1 instanceof SESegment) {
-      typeParent1 = i18n.global.t("objects.segments", 3);
-    } else if (this.hePrincipleParent1 instanceof SELine) {
-      typeParent1 = i18n.global.t("objects.lines", 3);
-    } else if (this.hePrincipleParent1 instanceof SECircle) {
-      typeParent1 = i18n.global.t("objects.circles", 3);
-    } else if (this.hePrincipleParent1 instanceof SEEllipse) {
-      typeParent1 = i18n.global.t("objects.ellipses", 3);
-    }
-    let typeParent2;
-    if (this.hePrincipleParent2 instanceof SESegment) {
-      typeParent2 = i18n.global.t("objects.segments", 3);
-    } else if (this.hePrincipleParent2 instanceof SELine) {
-      typeParent2 = i18n.global.t("objects.lines", 3);
-    } else if (this.hePrincipleParent2 instanceof SECircle) {
-      typeParent2 = i18n.global.t("objects.circles", 3);
-    } else if (this.hePrincipleParent2 instanceof SEEllipse) {
-      typeParent2 = i18n.global.t("objects.ellipses", 3);
-    }
-    return String(
-      i18n.global.t(`objectTree.intersectionPoint`, {
-        parent1: this.hePrincipleParent1.label?.ref.shortUserName,
-        typeParent1: typeParent1,
-        parent2: this.hePrincipleParent2.label?.ref.shortUserName,
-        typeParent2: typeParent2,
-        index: this.order
-      })
-    );
-  }
+  // public get noduleDescription(): string {
+  //   let typeParent1;
+  //   if (this.hePrincipleParent1 instanceof SESegment) {
+  //     typeParent1 = i18n.global.t("objects.segments", 3);
+  //   } else if (this.hePrincipleParent1 instanceof SELine) {
+  //     typeParent1 = i18n.global.t("objects.lines", 3);
+  //   } else if (this.hePrincipleParent1 instanceof SECircle) {
+  //     typeParent1 = i18n.global.t("objects.circles", 3);
+  //   } else if (this.hePrincipleParent1 instanceof SEEllipse) {
+  //     typeParent1 = i18n.global.t("objects.ellipses", 3);
+  //   }
+  //   let typeParent2;
+  //   if (this.hePrincipleParent2 instanceof SESegment) {
+  //     typeParent2 = i18n.global.t("objects.segments", 3);
+  //   } else if (this.hePrincipleParent2 instanceof SELine) {
+  //     typeParent2 = i18n.global.t("objects.lines", 3);
+  //   } else if (this.hePrincipleParent2 instanceof SECircle) {
+  //     typeParent2 = i18n.global.t("objects.circles", 3);
+  //   } else if (this.hePrincipleParent2 instanceof SEEllipse) {
+  //     typeParent2 = i18n.global.t("objects.ellipses", 3);
+  //   }
+  //   return String(
+  //     i18n.global.t(`objectTree.intersectionPoint`, {
+  //       parent1: this.hePrincipleParent1.label?.ref.shortUserName,
+  //       typeParent1: typeParent1,
+  //       parent2: this.hePrincipleParent2.label?.ref.shortUserName,
+  //       typeParent2: typeParent2,
+  //       index: this.order
+  //     })
+  //   );
+  // }
 
-  public get noduleItemText(): string {
-    return (
-      this.label?.ref.shortUserName ??
-      "No Label Short Name In SEIntersectionPoint"
-    );
-  }
+  // public get noduleItemText(): string {
+  //   return (
+  //     this.label?.ref.shortUserName ??
+  //     "No Label Short Name In SEIntersectionPoint"
+  //   );
+  // }
 
-  get principleParent1(): SEOneDimensional {
+  get principleParent1(): HEOneDimensional {
     return this.hePrincipleParent1;
   }
-  get principleParent2(): SEOneDimensional {
+  get principleParent2(): HEOneDimensional {
     return this.hePrincipleParent2;
   }
   // order is always the order from the intersection of the two principle parents
@@ -193,12 +193,12 @@ export class HEIntersectionPoint extends HEPoint {
     return this._isUserCreated;
   }
 
-  get otherParentsInfoArray(): SEIntersectionReturnType[] {
+  get otherParentsInfoArray(): HEIntersectionReturnType[] {
     return this._otherParentsInfoArray;
   }
 
-  // Used is lots of the handler commands when a new object is created
-  public addIntersectionOtherParentInfo(n: SEIntersectionReturnType): void {
+  // Used in lots of the handler commands when a new object is created
+  public addIntersectionOtherParentInfo(n: HEIntersectionReturnType): void {
     this._otherParentsInfoArray.push(n);
 
     // console.log(
@@ -212,7 +212,7 @@ export class HEIntersectionPoint extends HEPoint {
   }
 
   public canAddIntersectionOtherParentInfo(
-    possibleNewInfo: SEIntersectionReturnType
+    possibleNewInfo: HEIntersectionReturnType
   ): boolean {
     // console.log(
     //   `Intersection point ${this.label?.ref.shortUserName}/${this.name}/${this.noduleDescription} ****ATTEMPT***** add other parents ${possibleNewInfo.parent1.label?.ref.shortUserName}/${possibleNewInfo.parent1.name}/${possibleNewInfo.parent1.noduleDescription} and ${possibleNewInfo.parent2.label?.ref.shortUserName}/${possibleNewInfo.parent2.name}/${possibleNewInfo.parent2.noduleDescription}`
@@ -228,7 +228,7 @@ export class HEIntersectionPoint extends HEPoint {
     ) {
       return false;
     }
-    // Check that this other parent is not currently the principle parents
+    // Check that this other parent is not currently one of the principle parents
     if (
       this.principleParent1.name == possibleNewInfo.parent1.name &&
       this.principleParent2.name == possibleNewInfo.parent2.name &&
@@ -247,10 +247,10 @@ export class HEIntersectionPoint extends HEPoint {
     // that BOTH new parents are deleted (i.e. principle parent 2 is NOT
     // an ancestor of both new potential parents)
 
-    const ancestors1 = getAncestors([possibleNewInfo.parent1]).map(
+    const ancestors1 = getHEAncestors([possibleNewInfo.parent1]).map(
       nod => nod.name
     );
-    const ancestors2 = getAncestors([possibleNewInfo.parent2]).map(
+    const ancestors2 = getHEAncestors([possibleNewInfo.parent2]).map(
       nod => nod.name
     );
     // console.log(
@@ -281,8 +281,8 @@ export class HEIntersectionPoint extends HEPoint {
       //  shallowupdate will make them the new principle parents.
       const intersectionInfo = intersectTwoObjects(
         possibleNewInfo.parent1,
-        possibleNewInfo.parent2,
-        SENodule.store.inverseTotalRotationMatrix
+        possibleNewInfo.parent2
+        // HENodule.hyperStore.inverseTotalRotationMatrix
       )[possibleNewInfo.order];
       if (intersectionInfo.exists && !this._exists) {
         // console.log("Fail the ancestor test but added anyway because the point exists with this pair");
@@ -295,7 +295,7 @@ export class HEIntersectionPoint extends HEPoint {
   }
 
   // Used to undo the handler commands that used addIntersectionOtherParent
-  public removeIntersectionOtherParentInfo(n: SEIntersectionReturnType): void {
+  public removeIntersectionOtherParentInfo(n: HEIntersectionReturnType): void {
     // Remove the other parent from the other parent array
     const index = this._otherParentsInfoArray.findIndex(
       info =>
@@ -310,7 +310,7 @@ export class HEIntersectionPoint extends HEPoint {
       // );
     } else {
       console.warn(
-        `SEIntersection Point ${this.name}: Attempted to remove info ${n.parent1.name} and ${n.parent2.name}that was not on the other parent info array.`
+        `HEIntersection Point ${this.name}: Attempted to remove info ${n.parent1.name} and ${n.parent2.name} that was not on the other parent info array.`
       );
     }
     // this.otherParentsInfoArray.forEach(n =>
@@ -320,7 +320,7 @@ export class HEIntersectionPoint extends HEPoint {
     // );
   }
 
-  public changePrincipleParents(newInfo: SEIntersectionReturnType): void {
+  public changePrincipleParents(newInfo: HEIntersectionReturnType): void {
     this.hePrincipleParent1 = newInfo.parent1;
     this.hePrincipleParent2 = newInfo.parent2;
     this.order = newInfo.order;
@@ -336,28 +336,25 @@ export class HEIntersectionPoint extends HEPoint {
 
   public shallowUpdate(): void {
     if (this._isAntipodeMode) {
-      const antipode = SENodule.store.findSENoduleById(this._antipodalPointId);
-      if (antipode instanceof SEPoint) {
+      const antipode = HENodule.hyperStore.getObjectById(
+        this._antipodalPointName
+      );
+      if (antipode instanceof HEPoint) {
         antipode.shallowUpdate(); // this won't create a circular reference because for a pair of antipodal intersection points only one can be in antipode mode
         this._exists = antipode.exists;
         if (this._exists) {
-          this.tempVector.copy(antipode.locationVector).multiplyScalar(-1);
-          this.locationVector = this.tempVector;
+          this.tempVector.copy(antipode.position).multiplyScalar(-1);
+          this.position = this.tempVector;
         }
       }
     } else {
-      // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
-      // console.log(
-      //   `shallow update for`,
-      //   this.name,
-      //   ` intersection between ${this.sePrincipleParent1.name} and ${this.sePrincipleParent2.name}`
-      // );
-      const updatedIntersectionInfo: IntersectionReturnType[] =
-        intersectTwoObjects(
-          this.hePrincipleParent1,
-          this.hePrincipleParent2,
-          SENodule.store.inverseTotalRotationMatrix
-        );
+      // The objects are in the correct order because the HEIntersectionPoint parents are assigned that way
+
+      const updatedIntersectionInfo = intersectTwoObjects(
+        this.hePrincipleParent1,
+        this.hePrincipleParent2
+        //SENodule.store.inverseTotalRotationMatrix
+      );
       // order *should* *be* the order from the intersection of the two principle parents. If the two parents do not intersect then
       // updatedIntersectionInfo[this.order].vector is the zero vector
       // and updatedIntersectionInfo[this.order].exists is false
@@ -367,7 +364,7 @@ export class HEIntersectionPoint extends HEPoint {
         // this is the best outcome
         this._exists =
           this.hePrincipleParent1.exists && this.hePrincipleParent2.exists;
-        this.locationVector = updatedIntersectionInfo[this.order].vector;
+        this._position.copy(updatedIntersectionInfo[this.order].vector);
       } else if (this._otherParentsInfoArray.length > 0) {
         // if this point is not an intersection between the two principle parents, check to see if the existence is true for other parent info.  If so, update the principle parents.
         for (const info of this._otherParentsInfoArray) {
@@ -376,8 +373,8 @@ export class HEIntersectionPoint extends HEPoint {
           if (info.parent1.exists && info.parent1.exists) {
             const intersectionInfo = intersectTwoObjects(
               info.parent1,
-              info.parent2,
-              SENodule.store.inverseTotalRotationMatrix
+              info.parent2
+              // SENodule.store.inverseTotalRotationMatrix
             )[info.order];
             if (intersectionInfo.exists) {
               // This means that info should be the new parents
@@ -396,7 +393,7 @@ export class HEIntersectionPoint extends HEPoint {
                 intersectionPointCmdGroup.addCommand(
                   new AddIntersectionPointOtherParentsInfo({
                     existingIntersectionPoint: true,
-                    SEIntersectionPoint: this,
+                    HEIntersectionPoint: this,
                     parent1: this.hePrincipleParent1,
                     parent2: this.hePrincipleParent2,
                     createAntipodalPoint: false,
@@ -421,7 +418,7 @@ export class HEIntersectionPoint extends HEPoint {
               CommandGroup.combineTopTwoCommands();
 
               this._exists = true;
-              this.locationVector = intersectionInfo.vector;
+              this._position.copy(intersectionInfo.vector);
               break; // exit the search after the first successful one
             }
           }
@@ -429,13 +426,24 @@ export class HEIntersectionPoint extends HEPoint {
       }
       // Update visibility
       if (this._exists && this._isUserCreated && this.showing) {
-        this.ref.setVisible(true);
+        this.updateVisibility(true);
       } else {
-        this.ref.setVisible(false);
+        this.updateVisibility(false);
       }
+      console.log(
+        `shallow update for`,
+        this.name,
+        ` intersection between ${this.hePrincipleParent1.name} and ${this.hePrincipleParent2.name}, exist ${this._exists}`
+      );
     }
   }
-
+  // //override the set position from HEPoint to avoid circular reference in shallow update
+  // set position(pos: Vector4) {
+  //   this._position.copy(pos);
+  // }
+  // get position(): Vector4 {
+  //   return this._position;
+  // }
   public update(
     objectState?: Map<number, ObjectState>,
     orderedSENoduleList?: number[]
@@ -447,22 +455,23 @@ export class HEIntersectionPoint extends HEPoint {
     this.shallowUpdate();
     // Intersection Points are completely determined by their parents and an update on the parents
     // will cause this point to be put into the correct location.So we don't store any additional information
-    if (objectState && orderedSENoduleList) {
-      if (objectState.has(this.id)) {
-        // `Intersection point with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
-        return;
-      }
-      orderedSENoduleList.push(this.id);
-      objectState.set(this.id, { kind: "intersectionPoint", object: this });
-    }
+    // if (objectState && orderedSENoduleList) {
+    //   if (objectState.has(this.id)) {
+    //     // `Intersection point with id ${this.id} has been visited twice proceed no further down this branch of the DAG. Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
+    //     return;
+    //   }
+    //   orderedSENoduleList.push(this.id);
+    //   objectState.set(this.id, { kind: "intersectionPoint", object: this });
+    // }
 
-    this.updateKids(objectState, orderedSENoduleList);
+    // this.updateKids(objectState, orderedSENoduleList);
+    this.updateKids();
   }
 
   // For !isUserCreated points glowing is the same as showing or not showing the point,
   set glowing(b: boolean) {
     if (!this._isUserCreated) {
-      this.ref.setVisible(b);
+      this.updateVisibility(b);
     } else {
       super.glowing = b;
     }

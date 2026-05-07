@@ -1,7 +1,7 @@
 import { Scene, Vector3, Vector4 } from "three";
 import { PoseTracker } from "./PoseTracker";
 import { HEPoint } from "@/models-hyperbolic/HEPoint";
-import { HEOneOrTwoDimensional } from "@/types";
+import { HEIntersectionReturnType, HEOneOrTwoDimensional } from "@/types";
 import { HELine } from "@/models-hyperbolic/HELine";
 import { HEIntersectionPoint } from "@/models-hyperbolic/HEIntersectionPoint";
 import { HEAntipodalPoint } from "@/models-hyperbolic/HEAntipodalPoint";
@@ -14,6 +14,8 @@ import { AddLineCommand } from "@/commands-hyperbolic/AddLineCommand";
 import { PointSelectionHandler } from "./PointSelectionHandler";
 import { start } from "happy-dom/lib/PropertySymbol.js";
 import { vec4ToVec3 } from "@/utils/helpingHEFunctions";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands-hyperbolic/AddIntersectionPointOtherParentsInfo";
+import { AddIntersectionPointCommand } from "@/commands-hyperbolic/AddIntersectionPointCommand";
 
 export class LineHandler extends PointSelectionHandler {
   /**
@@ -48,17 +50,40 @@ export class LineHandler extends PointSelectionHandler {
       this.aSurfaceIsIntersected &&
       this._indexOfPointCurrentlyBeingSelected === 1
     ) {
-      const activeTempPoint =
-        this._tempPointArray[this._indexOfPointCurrentlyBeingSelected]
-          .tempHEPoint; // To make a line the start and end vector must have same upper and lower values
+      const activeTempInfo =
+        this._tempPointArray[this._indexOfPointCurrentlyBeingSelected];
+      // To make a line the start and end vector must have same upper and lower values
       if (
-        activeTempPoint.position.z * this._selectedPoints[0].locationVector.z >
+        activeTempInfo.tempHEPoint.position.z *
+          this._selectedPoints[0].locationVector.z >
         0
       ) {
-        this._tempLine.setNewStartAndEndVectors(
-          this._selectedPoints[0].locationVector,
-          activeTempPoint.position
-        );
+        if (activeTempInfo.snapPoint) {
+          this._tempLine.setNewStartAndEndVectors(
+            this._selectedPoints[0].locationVector,
+            activeTempInfo.snapPoint.position
+          );
+        } else if (activeTempInfo.snapOneOrTwoDim) {
+          const closestPoint = activeTempInfo.snapOneOrTwoDim.closestVector(
+            activeTempInfo.tempHEPoint.position
+          );
+          if (closestPoint) {
+            this._tempLine.setNewStartAndEndVectors(
+              this._selectedPoints[0].locationVector,
+              closestPoint
+            );
+          } else {
+            this._tempLine.setNewStartAndEndVectors(
+              this._selectedPoints[0].locationVector,
+              activeTempInfo.tempHEPoint.position
+            );
+          }
+        } else {
+          this._tempLine.setNewStartAndEndVectors(
+            this._selectedPoints[0].locationVector,
+            activeTempInfo.tempHEPoint.position
+          );
+        }
         this.scene.add(this._tempLine.mesh);
       } else {
         // the user is not over the same upper or lower sheet as the start and the endpoint markers should be removed.
@@ -86,13 +111,6 @@ export class LineHandler extends PointSelectionHandler {
         new Vector3(endVector.x, endVector.y, endVector.z).angleTo(
           new Vector3(startVector.x, startVector.y, startVector.z)
         ) > 0.1;
-      console.log(
-        "make line",
-        startVector.toFixed(2),
-        endVector.toFixed(2),
-        bothIdeal,
-        distanceMinimumMet
-      );
       if (
         endVector.z * startVector.z > 0 && // To make a line the start and end vector must be on the same sheet
         ((bothIdeal && idealAngularMinimumMet) || distanceMinimumMet)
@@ -190,47 +208,51 @@ export class LineHandler extends PointSelectionHandler {
 
       const intersectionPointsToUpdate: HEIntersectionPoint[] = [];
 
-      // LineHandler.hyperStore
-      //   .createAllIntersectionsWith(newHELine, newlyCreatedHEPoints)
-      //   .forEach((item: HEIntersectionReturnType) => {
-      //     if (item.existingIntersectionPoint) {
-      //       intersectionPointsToUpdate.push(item.SEIntersectionPoint);
-      //       lineCommandGroup.addCondition(() =>
-      //         item.SEIntersectionPoint.canAddIntersectionOtherParentInfo(item)
-      //       );
-      //       lineCommandGroup.addCommand(
-      //         new AddIntersectionPointOtherParentsInfo(item)
-      //       );
-      //       lineCommandGroup.addEndCondition();
-      //     } else {
-      //       // Create the plottable label
-      //       const newSELabel = item.SEIntersectionPoint.attachLabelWithOffset(
-      //         new Vector3(
-      //           2 * SETTINGS.point.initialLabelOffset,
-      //           SETTINGS.point.initialLabelOffset,
-      //           0
-      //         )
-      //       );
+      LineHandler.hyperStore
+        .createAllIntersectionsWith(newLine, newlyCreatedHEPoints)
+        .forEach((item: HEIntersectionReturnType) => {
+          if (item.existingIntersectionPoint) {
+            intersectionPointsToUpdate.push(item.HEIntersectionPoint);
+            lineCommandGroup.addCommand(
+              new AddIntersectionPointOtherParentsInfo(item)
+            );
+          } else {
+            // Create the plottable label
+            const newHELabel = new HELabel(
+              "point",
+              item.HEIntersectionPoint,
+              item.HEIntersectionPoint.position,
+              item.HEIntersectionPoint.name
+            );
+            item.HEIntersectionPoint.setLabel(newHELabel);
 
-      //       lineCommandGroup.addCommand(
-      //         new AddIntersectionPointCommand(
-      //           item.SEIntersectionPoint,
-      //           item.parent1,
-      //           item.parent2,
-      //           newSELabel
-      //         )
-      //       );
-      //       item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-      //       newSELabel.showing = false;
+            //  item.HEIntersectionPoint.attachLabelWithOffset(
+            //   new Vector3(
+            //     2 * SETTINGS.point.initialLabelOffset,
+            //     SETTINGS.point.initialLabelOffset,
+            //     0
+            //   )
+            // );
 
-      //       if (item.createAntipodalPoint) {
-      //         LineHandler.addCreateAntipodeCommand(
-      //           item.SEIntersectionPoint,
-      //           lineCommandGroup
-      //         );
-      //       }
-      //     }
-      //   });
+            lineCommandGroup.addCommand(
+              new AddIntersectionPointCommand(
+                item.HEIntersectionPoint,
+                item.parent1,
+                item.parent2,
+                newHELabel
+              )
+            );
+            item.HEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+            newHELabel.showing = false;
+
+            if (item.createAntipodalPoint) {
+              LineHandler.addCreateAntipodeCommand(
+                item.HEIntersectionPoint,
+                lineCommandGroup
+              );
+            }
+          }
+        });
       lineCommandGroup.execute();
 
       // The newly added line passes through all the

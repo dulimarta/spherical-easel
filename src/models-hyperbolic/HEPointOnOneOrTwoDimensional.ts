@@ -28,7 +28,12 @@ export class HEPointOnOneOrTwoDimensional extends HEPoint {
     // If the parent is not out of date, use the closest vector, if not set the location directly
     // and the program will update the parent later so that the set location is on the parent (even though it is at the time of execution)
     if (!this._parent.isOutOfDate()) {
-      this._position.copy(this._parent.closestVector(pos));
+      const closestPoint = this._parent.closestVector(pos);
+      if (closestPoint) {
+        this._position.copy(closestPoint);
+      } else {
+        this._position.copy(pos);
+      }
     } else {
       this._position.copy(pos);
     }
@@ -89,9 +94,16 @@ export class HEPointOnOneOrTwoDimensional extends HEPoint {
 
     if (this._exists) {
       // Update the current location with the closest point on the parent to the old location
-      this._position.copy(this._parent.closestVector(this._position));
+      const closestPoint = this._parent.closestVector(this._position);
+      if (closestPoint) {
+        this._position.copy(closestPoint);
+      } else {
+        throw new Error(
+          `HEPointOnOneOrTwoDimensional: closest vector of ${this._parent.name} failed`
+        );
+      }
     }
-    this.shallowUpdate();
+    super.shallowUpdate();
   }
 
   public update(

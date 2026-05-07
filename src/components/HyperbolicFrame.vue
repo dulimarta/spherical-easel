@@ -895,7 +895,7 @@ function updateView() {
         Math.sqrt(-1 + tanFov2 * tanFov2 * (2 + 2 * d + d * d))) /
       (tanFov2 * tanFov2 - 1);
 
-    zLowerClip.value = -1;
+    zLowerClip.value = 0;
 
     //When the lower sheet is not shown, we want to look at a point
     // that is depends on the polar angle of the camera

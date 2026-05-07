@@ -485,8 +485,12 @@ export class PointSelectionHandler extends PoseTracker {
 
         commandGroup.addCommand(new AddPointCommand(vtx, newHELabel));
         // Create the antipode of the new point, vtx
-        PoseTracker.addCreateAntipodeCommand(vtx as HEPoint, commandGroup);
+        const antipodalVtx = PoseTracker.addCreateAntipodeCommand(
+          vtx as HEPoint,
+          commandGroup
+        );
         newPoints.push(vtx);
+        newPoints.push(antipodalVtx);
         this._selectedPoints[i].HEPoint = vtx;
       }
     }

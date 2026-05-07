@@ -22,6 +22,7 @@ import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { LAYER } from "@/global-settings-spherical";
 import { HELine } from "@/models-hyperbolic/HELine";
 import { HELabel } from "@/models-hyperbolic/HELabel";
+import { HEIntersectionPoint } from "@/models-hyperbolic/HEIntersectionPoint";
 // import "@types/google.maps"
 
 export interface Selectable {
@@ -354,6 +355,10 @@ export interface IntersectionReturnType {
   vector: Vector3;
   exists: boolean;
 }
+export interface IntersectionReturnTypeH2 {
+  vector: Vector4;
+  exists: boolean;
+}
 
 export type ParametricIntersectionType = {
   s: number;
@@ -368,6 +373,14 @@ export interface SEIntersectionReturnType {
   SEIntersectionPoint: SEIntersectionPoint;
   parent1: SEOneDimensional; // parents are always ordered correctly
   parent2: SEOneDimensional;
+  existingIntersectionPoint: boolean; // if this is true then SEIntersectionPoint exists, remember the possibility that this will be true if the SEIntersectionPoint existed before or *during* the execution of the commands adding a new SEOneDimensional object and its intersections.
+  createAntipodalPoint: boolean; // This is true if a *new* intersection point doesn't have an existing antipode, so this is only false if parent1 and parent2 are both non-straight one dimensional objects
+  order: number; // If existingIntersectionPoint is true, then this is the order of the intersection. i.e. Assuming parent1 and parent2 are in the correct order, intersectTwoObjects(parent1,parent2)[order] is this intersection point. If existingIntersectionPoint is false this number has no meaning.
+}
+export interface HEIntersectionReturnType {
+  HEIntersectionPoint: HEIntersectionPoint;
+  parent1: HEOneDimensional; // parents are always ordered correctly
+  parent2: HEOneDimensional;
   existingIntersectionPoint: boolean; // if this is true then SEIntersectionPoint exists, remember the possibility that this will be true if the SEIntersectionPoint existed before or *during* the execution of the commands adding a new SEOneDimensional object and its intersections.
   createAntipodalPoint: boolean; // This is true if a *new* intersection point doesn't have an existing antipode, so this is only false if parent1 and parent2 are both non-straight one dimensional objects
   order: number; // If existingIntersectionPoint is true, then this is the order of the intersection. i.e. Assuming parent1 and parent2 are in the correct order, intersectTwoObjects(parent1,parent2)[order] is this intersection point. If existingIntersectionPoint is false this number has no meaning.
@@ -593,9 +606,7 @@ export type SEOneDimensional =
   | SECircle
   | SEEllipse
   | SEParametric;
-export type HEOneDimensional = null;
-// | HELine
-// | HESegment
+export type HEOneDimensional = HELine;
 // | HECircle
 // | HEEllipse
 // | HEParametric;

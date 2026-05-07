@@ -44,6 +44,12 @@ declare module "three/src/math/Vector3" {
      * @param tolerance
      */
     isZero(tolerance?: number): boolean;
+
+    /**
+     * Find the distance to another vector, ignoring the w component
+     * @param vector
+     */
+    distanceTo(vector: Vector4 | Vector3): number;
   }
 }
 
@@ -55,7 +61,7 @@ declare module "three/src/math/Vector4" {
     toFixed(precision: number): string;
 
     /**
-     * Create a 3D vector from a string in the following format (___,____,___)
+     * Create a 4D vector from a string in the following format (___,____,___)
      *
      * @param arr
      */
@@ -65,7 +71,15 @@ declare module "three/src/math/Vector4" {
      * @param tolerance
      */
     isZero(tolerance?: number): boolean;
+
+    /**
+     * Find the distance to another vector, ignoring the w component
+     * @param vector
+     */
+    distanceTo(vector: Vector4 | Vector3): number;
   }
+
+  to3Vector():Vector3;
 }
 
 declare module "three/src/math/Matrix4" {

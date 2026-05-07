@@ -58,7 +58,13 @@ Vector3.prototype.isZero = function (tolerance?: number): boolean {
     Math.abs(this.z) <= useTolerance
   );
 };
-
+Vector3.prototype.distanceTo = function (vector: Vector3 | Vector4): number {
+  return Math.sqrt(
+    (this.x - vector.x) * (this.x - vector.x) +
+      (this.y - vector.y) * (this.y - vector.y) +
+      (this.z - vector.z) * (this.z - vector.z)
+  );
+};
 Vector4.prototype.toFixed = function (precision: number): string {
   return (
     "(" +
@@ -72,7 +78,6 @@ Vector4.prototype.toFixed = function (precision: number): string {
     ")"
   );
 };
-
 Vector4.prototype.from = function (str: string | undefined): void {
   if (str !== undefined) {
     const arr = str.replaceAll(/[()]/g, "").split(",").map(Number);
@@ -87,7 +92,6 @@ Vector4.prototype.from = function (str: string | undefined): void {
     this.setW(0);
   }
 };
-
 Vector4.prototype.isZero = function (tolerance?: number): boolean {
   const useTolerance = tolerance || SETTINGS.tolerance;
   return (
@@ -96,6 +100,13 @@ Vector4.prototype.isZero = function (tolerance?: number): boolean {
     Math.abs(this.y) <= useTolerance &&
     Math.abs(this.z) <= useTolerance &&
     Math.abs(this.w) <= useTolerance
+  );
+};
+Vector4.prototype.distanceTo = function (vector: Vector3 | Vector4): number {
+  return Math.sqrt(
+    (this.x - vector.x) * (this.x - vector.x) +
+      (this.y - vector.y) * (this.y - vector.y) +
+      (this.z - vector.z) * (this.z - vector.z)
   );
 };
 
