@@ -1,0 +1,207 @@
+import { Command } from "./Command";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SENodule } from "@/models-spherical/SENodule";
+import { Vector3 } from "three";
+import { StyleCategory } from "@/types/Styles";
+import { SavedNames } from "@/types";
+import { SEExpression } from "@/models-spherical/SEExpression";
+import { SEMeasuredCircle } from "@/models-spherical/SEMeasuredCircle";
+import { toSVGType } from "@/types";
+
+export class AddMeasuredCircleCommand extends Command {
+  private seCircle: SECircle;
+  private centerSEPoint: SEPoint;
+  private measurementSEExpression: SEExpression;
+  private seLabel: SELabel;
+
+  constructor(
+    seCircle: SECircle,
+    centerSEPoint: SEPoint,
+    measurementSEExpression: SEExpression,
+    seLabel: SELabel
+  ) {
+    super();
+    this.seCircle = seCircle;
+    this.centerSEPoint = centerSEPoint;
+    this.measurementSEExpression = measurementSEExpression;
+    this.seLabel = seLabel;
+  }
+
+  do(): void {
+    this.centerSEPoint.registerChild(this.seCircle);
+    this.measurementSEExpression.registerChild(this.seCircle);
+    this.seCircle.registerChild(this.seLabel);
+    Command.store.addCircle(this.seCircle);
+    Command.store.addLabel(this.seLabel);
+  }
+
+  saveState(): void {
+    this.lastState = this.seCircle.id;
+  }
+
+  restoreState(): void {
+    Command.store.removeLabel(this.seLabel.id);
+    Command.store.removeCircle(this.lastState);
+    this.seCircle.unregisterChild(this.seLabel);
+    this.centerSEPoint.unregisterChild(this.seCircle);
+    this.measurementSEExpression.unregisterChild(this.seCircle);
+  }
+
+  getSVGObjectLabelPairs(): [SENodule, SELabel][] {
+    return [[this.seCircle, this.seLabel]];
+  }
+
+  toOpcode(): null | string | Array<string> {
+    return [
+      "AddMeasuredCircle",
+      // Any attribute that could possibly have a "= or "&" or "/" should be run through Command.symbolToASCIIDec
+      // All plottable objects have these attributes
+      "objectName=" + Command.symbolToASCIIDec(this.seCircle.name),
+      "objectExists=" + this.seCircle.exists,
+      "objectShowing=" + this.seCircle.showing,
+      "objectFrontStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seCircle.ref.currentStyleState(StyleCategory.Front)
+          )
+        ),
+      "objectBackStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seCircle.ref.currentStyleState(StyleCategory.Back)
+          )
+        ),
+      // All labels have these attributes
+      "labelName=" + Command.symbolToASCIIDec(this.seLabel.name),
+      "labelStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seLabel.ref.currentStyleState(StyleCategory.Label)
+          )
+        ),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(9),
+      "labelShowing=" + this.seLabel.showing,
+      "labelExists=" + this.seLabel.exists,
+      // Object specific attributes
+      "circleCenterPointName=" + this.centerSEPoint.name,
+      "measuredCircleRadiusExpression=" + this.measurementSEExpression.name
+    ].join("&");
+  }
+
+  static parse(command: string, objMap: Map<string, SENodule>): Command {
+    // console.log(command);
+    const tokens = command.split("&");
+    const propMap = new Map<SavedNames, string>();
+    // load the tokens into the map
+    tokens.forEach((token, ind) => {
+      if (ind === 0) return; // don't put the command type in the propMap
+      const parts = token.split("=");
+      propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
+    });
+
+    // get the object specific attributes
+    const circleCenterPoint = objMap.get(
+      propMap.get("circleCenterPointName") ?? ""
+    ) as SEPoint | undefined;
+
+    const radiusExpression = objMap.get(
+      propMap.get("measuredCircleRadiusExpression") ?? ""
+    ) as SEExpression | undefined;
+
+    if (circleCenterPoint && radiusExpression) {
+      // make the hidden circle point
+      // create the circle point on the measured circlee
+      // this point is never visible and is not in the DAG
+      // it is only updated when the the new SEMeasuredCircle is updated.
+      const hiddenSEPoint = new SEPoint(true); /* non-free point */
+      hiddenSEPoint.showing = false; // this never changes
+      hiddenSEPoint.exists = true; // this never changes
+      // compute the location of the hiddenSEPoint using radiusExpression.value.modPi();
+      const newRadius = radiusExpression.value.modPi();
+      // compute a normal to the centerVector, named tmpVector
+      this.tmpVector.set(
+        -circleCenterPoint.locationVector.y,
+        circleCenterPoint.locationVector.x,
+        0
+      );
+      // check to see if this vector is zero, if so choose a different way of being perpendicular to the polar point parent
+      if (this.tmpVector.isZero()) {
+        this.tmpVector.set(
+          0,
+          -circleCenterPoint.locationVector.z,
+          circleCenterPoint.locationVector.y
+        );
+      }
+      this.tmpVector.normalize();
+      this.tmpVector1
+        .copy(circleCenterPoint.locationVector)
+        .multiplyScalar(Math.cos(newRadius));
+      this.tmpVector1.addScaledVector(this.tmpVector, Math.sin(newRadius));
+      hiddenSEPoint.locationVector = this.tmpVector1.normalize();
+
+      //make the circle
+      const seCircle = new SEMeasuredCircle(
+        circleCenterPoint,
+        hiddenSEPoint,
+        radiusExpression
+      );
+      //style the circle
+      const circleFrontStyleString = propMap.get("objectFrontStyle");
+      if (circleFrontStyleString !== undefined)
+        seCircle.updatePlottableStyle(
+          StyleCategory.Front,
+          JSON.parse(circleFrontStyleString)
+        );
+      const circleBackStyleString = propMap.get("objectBackStyle");
+      if (circleBackStyleString !== undefined)
+        seCircle.updatePlottableStyle(
+          StyleCategory.Back,
+          JSON.parse(circleBackStyleString)
+        );
+
+      //make the label and set its location
+      const seLabel = new SELabel("circle", seCircle);
+      const seLabelLocation = new Vector3();
+      seLabelLocation.from(propMap.get("labelVector")); // convert to Number
+      seLabel.locationVector = seLabelLocation; // Don't use copy on a prop
+      //style the label
+      const labelStyleString = propMap.get("labelStyle");
+      if (labelStyleString !== undefined)
+        seLabel.updatePlottableStyle(
+          StyleCategory.Label,
+          JSON.parse(labelStyleString)
+        );
+
+      //put the circle in the object map
+      if (propMap.get("objectName") !== undefined) {
+        seCircle.name = propMap.get("objectName") ?? "";
+        seCircle.showing = propMap.get("objectShowing") === "true";
+        seCircle.exists = propMap.get("objectExists") === "true";
+        objMap.set(seCircle.name, seCircle);
+      } else {
+        throw new Error("AddMeasureCircle: Circle Name doesn't exist");
+      }
+
+      //put the label in the object map
+      if (propMap.get("labelName") !== undefined) {
+        seLabel.name = propMap.get("labelName") ?? "";
+        seLabel.showing = propMap.get("labelShowing") === "true";
+        seLabel.exists = propMap.get("labelExists") === "true";
+        objMap.set(seLabel.name, seLabel);
+      } else {
+        throw new Error("AddCircle: Label Name doesn't exist");
+      }
+      return new AddMeasuredCircleCommand(
+        seCircle,
+        circleCenterPoint,
+        radiusExpression,
+        seLabel
+      );
+    }
+    throw new Error(
+      `AddCircle: ${circleCenterPoint} or ${radiusExpression} is undefined`
+    );
+  }
+}

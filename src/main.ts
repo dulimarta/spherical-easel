@@ -9,12 +9,21 @@ import "@/extensions/se-nodule-extensions";
 import { createPinia } from "pinia";
 import { initializeApp } from "firebase/app";
 import { firebaseConfig } from "./firebase-config";
-import { Command } from "@/commands/Command";
+import { Command } from "@/commands-spherical/Command";
 import { useSEStore } from "@/stores/se";
-import MouseHandler from "./eventHandlers/MouseHandler";
-import Nodule from "./plottables/Nodule";
+import MouseHandler from "./eventHandlers-spherical/MouseHandler";
+import Nodule from "./plottables-spherical/Nodule";
+import { useHyperbolicStore } from "./stores/hyperbolic";
 import { createGtag } from "vue-gtag";
-import { SENodule } from "@/models/SENodule";
+import { SENodule } from "@/models-spherical/SENodule";
+import { PoseTracker } from "./eventHandlers-hyperbolic/PoseTracker";
+import { HENodule } from "./models-hyperbolic/HENodule";
+import { Text } from "three-text/three";
+import { woff2Decode } from "woff-lib/woff2/decode";
+
+Text.setHarfBuzzPath("/hb/hb.wasm");
+Text.enableWoff2(woff2Decode);
+
 const firebaseApp = initializeApp(firebaseConfig);
 const pinia = createPinia();
 
@@ -28,18 +37,29 @@ if (fPos >= 0) {
 } else {
   app.provide("features", null);
 }
-const gaTag = createGtag({
-  tagId: "G-1XK98KQMYZ"
-});
 app.use(vuetify);
 app.use(router);
 app.use(i18n);
-app.use(gaTag);
+if (import.meta.env.MODE === "production") {
+  const gaTag = createGtag({
+    tagId: "G-1XK98KQMYZ"
+  });
+
+  app.use(gaTag);
+}
 app.use(pinia);
 app.mount("#app");
+router.afterEach((to, from) => {
+  document.title = to.path.endsWith("hyperbolic")
+    ? "Hyperbolic Easel"
+    : "Spherical Easel";
+});
 
 const seStore = useSEStore();
-Command.setGlobalStore(seStore);
+const heStore = useHyperbolicStore();
+Command.setGlobalStore(seStore, heStore);
 MouseHandler.setGlobalStore(seStore);
 SENodule.setGlobalStore(seStore);
+PoseTracker.hyperStore = heStore;
+HENodule.hyperStore = heStore;
 // Nodule.setGlobalStore(seStore);

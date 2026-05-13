@@ -162,8 +162,9 @@
 </template>
 
 <script setup lang="ts">
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { ref, Ref, computed, onMounted, onBeforeUnmount } from "vue";
+import SETTINGS from "@/global-settings-spherical";
 import { useI18n } from "vue-i18n";
 import { watch } from "vue";
 import { useUserPreferencesStore } from "@/stores/userPreferences";

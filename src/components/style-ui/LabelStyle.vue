@@ -248,7 +248,7 @@
 import { ref, onMounted, onBeforeMount, watch, Ref } from "vue";
 import { LabelStyleOptions } from "@/types/Styles";
 import { LabelDisplayMode } from "@/types";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import PropertySlider from "./StylePropertySlider.vue";
 import PropertyColorPicker from "./StylePropertyColorPicker.vue";
 import DisagreementOverride from "./DisagreementOverride.vue";
@@ -257,8 +257,8 @@ import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import PopOverTabs from "./PopOverTabs.vue";
 import { useStylingStore } from "@/stores/styling";
-import { CommandGroup } from "@/commands/CommandGroup";
-import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import { CommandGroup } from "@/commands-spherical/CommandGroup";
+import { SetNoduleDisplayCommand } from "@/commands-spherical/SetNoduleDisplayCommand";
 
 type LabelDisplayModeItem = {
   text: unknown; //typeof VueI18n.TranslateResult

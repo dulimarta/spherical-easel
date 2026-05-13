@@ -34,17 +34,17 @@
 
 <script lang="ts" setup>
 import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from "vue";
-import { SENodule } from "../models/SENodule";
-import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
+import { SENodule } from "../models-spherical/SENodule";
+import { SEIntersectionPoint } from "../models-spherical/SEIntersectionPoint";
 import SENoduleItem from "@/components/SENoduleItem.vue";
 import SESliderItem from "./SESliderItem.vue";
-import { SESlider } from "@/models/SESlider";
-import EventBus from "@/eventHandlers/EventBus";
+import { SESlider } from "@/models-spherical/SESlider";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { useSEStore } from "@/stores/se";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { storeToRefs } from "pinia";
-import { SEExpression } from "@/models/SEExpression";
-import { SETransformation } from "@/models/SETransformation";
+import { SEExpression } from "@/models-spherical/SEExpression";
+import { SETransformation } from "@/models-spherical/SETransformation";
 import { useI18n } from "vue-i18n";
 const props = defineProps<{
   children: SENodule[];

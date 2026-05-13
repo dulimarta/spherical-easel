@@ -22,7 +22,7 @@
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
 import { ExpressionParser } from "@/expression/ExpressionParser";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { useI18n } from "vue-i18n";

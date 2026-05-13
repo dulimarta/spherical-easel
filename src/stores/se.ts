@@ -1,21 +1,21 @@
-import EventBus from "@/eventHandlers/EventBus";
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { SECircle } from "@/models/SECircle";
-import { SEEllipse } from "@/models/SEEllipse";
-import { SEExpression } from "@/models/SEExpression";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SELabel } from "@/models/SELabel";
-import { SELine } from "@/models/SELine";
-import { SENodule } from "@/models/SENodule";
-import { SEParametric } from "@/models/SEParametric";
-import { SEPencil } from "@/models/SEPencil";
-import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
-import { SEPoint } from "@/models/SEPoint";
-import { SEPolygon } from "@/models/SEPolygon";
-import { SESegment } from "@/models/SESegment";
-import { SETransformation } from "@/models/SETransformation";
-import Nodule, { DisplayStyle } from "@/plottables/Nodule";
+import EventBus from "@/eventHandlers-spherical/EventBus";
+import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SEEllipse } from "@/models-spherical/SEEllipse";
+import { SEExpression } from "@/models-spherical/SEExpression";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SELine } from "@/models-spherical/SELine";
+import { SENodule } from "@/models-spherical/SENodule";
+import { SEParametric } from "@/models-spherical/SEParametric";
+import { SEPencil } from "@/models-spherical/SEPencil";
+import { SEPerpendicularLineThruPoint } from "@/models-spherical/SEPerpendicularLineThruPoint";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SEPolygon } from "@/models-spherical/SEPolygon";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SETransformation } from "@/models-spherical/SETransformation";
+import Nodule, { DisplayStyle } from "@/plottables-spherical/Nodule";
 import {
   ActionMode,
   FillStyle,
@@ -50,9 +50,9 @@ import { Ref, ref, computed, markRaw } from "vue";
 import { defineStore } from "pinia";
 import { Matrix4, Vector2, Vector3 } from "three";
 import { Group } from "two.js/src/group";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import Two from "two.js";
-import { SEText } from "@/models/SEText";
+import { SEText } from "@/models-spherical/SEText";
 import { rank_of_type } from "@/utils/helpingfunctions";
 
 const sePencils: Array<SEPencil> = [];
@@ -115,7 +115,7 @@ function findCycles(segs: Array<SESegment>): number[] {
   function findNewCycles(path: number[]): void {
     const start_node = path[0];
     let next_node: null | number = null;
-    let sub: number[] = [];
+    let sub: Array<number> = [];
     //visit each edge and each node of each edge
     for (const edge of graph) {
       const node1 = edge[0];
@@ -364,7 +364,8 @@ const seTextMap: Map<number, SEText> = new Map();
 export const useSEStore = defineStore("se", () => {
   const twoInstance: Ref<Two | null> = ref(null);
   const isEarthMode = ref(false);
-  const actionMode: Ref<ActionMode> = ref<ActionMode>("rotate");
+  const actionMode: Ref<ActionMode> = ref<ActionMode>("point");
+  const geometryMode: Ref<"spherical" | "hyperbolic"> = ref("spherical");
   const previousActionMode: Ref<ActionMode> = ref("rotate");
   // activeToolName: "RotateDisplayedName", // the corresponding I18N key of actionMode
   // buttonSelection: {},
@@ -377,6 +378,7 @@ export const useSEStore = defineStore("se", () => {
   const canvasHeight = ref(0);
   const seNodules: Ref<Array<SENodule>> = ref([]);
   const temporaryNodules: Ref<Array<Nodule>> = ref([]);
+  const excludeToolsFromSE: Ref<Array<ActionMode>> = ref(["ray"]);
 
   const sePointIds: Ref<Array<number>> = ref([]);
   const sePoints = computed((): SEPoint[] =>
@@ -521,7 +523,7 @@ export const useSEStore = defineStore("se", () => {
     inverseTotalRotationMatrix.value.copy(mat);
   }
   function setActionMode(mode: ActionMode): void {
-    console.debug("Changing action mode in SE store to", mode);
+    // console.debug("Changing action mode in SE store to", mode);
     // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
     if (
       !(actionMode.value === "zoomFit" || actionMode.value === "iconFactory")
@@ -939,17 +941,17 @@ export const useSEStore = defineStore("se", () => {
     // If there are any SE(Latitude/Longitudes) then we need to update the north and south poles so that the
     // those objects update correctly. The north|south pole SEPoint sin SENodule will have been created in the
     //  constructor of SE(Latitude|Longitude) so if there are these objects, the appropriate SEPoint poles will be defined
-    if (SENodule.unregisteredSEPointNorthPole !== undefined) {
+    if (SEPoint.unregisteredSEPointNorthPole !== undefined) {
       const tmpVector = new Vector3();
-      tmpVector.copy(SENodule.unregisteredSEPointNorthPole.locationVector); // Copy the old vector location of the static north pole
+      tmpVector.copy(SEPoint.unregisteredSEPointNorthPole.locationVector); // Copy the old vector location of the static north pole
       tmpVector.applyMatrix4(rotationMat); // Apply the matrix
-      SENodule.unregisteredSEPointNorthPole.locationVector = tmpVector; // update the location of the north pole
+      SEPoint.unregisteredSEPointNorthPole.locationVector = tmpVector; // update the location of the north pole
     }
-    if (SENodule.unregisteredSEPointSouthPole !== undefined) {
+    if (SEPoint.unregisteredSEPointSouthPole !== undefined) {
       const tmpVector = new Vector3();
-      tmpVector.copy(SENodule.unregisteredSEPointSouthPole.locationVector); // Copy the old vector location of the static south pole
+      tmpVector.copy(SEPoint.unregisteredSEPointSouthPole.locationVector); // Copy the old vector location of the static south pole
       tmpVector.applyMatrix4(rotationMat); // Apply the matrix
-      SENodule.unregisteredSEPointSouthPole.locationVector = tmpVector; // update the location of the north pole
+      SEPoint.unregisteredSEPointSouthPole.locationVector = tmpVector; // update the location of the north pole
     }
 
     function addCandidatesFrom(parent: SENodule) {
@@ -1683,11 +1685,13 @@ export const useSEStore = defineStore("se", () => {
   return {
     /* states */
     actionMode,
+    geometryMode,
     canvasHeight,
     canvasWidth,
     hasUnsavedNodules,
     inverseTotalRotationMatrix,
     isEarthMode,
+    excludeToolsFromSE,
     // layers,
     seExpressions,
     selectedSENodules,

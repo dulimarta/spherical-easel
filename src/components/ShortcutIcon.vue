@@ -15,12 +15,13 @@
 </template>
 
 <script lang="ts" setup>
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { useSEStore } from "@/stores/se";
 import { ToolButtonType } from "@/types";
 import { ref, onMounted, onBeforeUnmount, computed } from "vue";
 import { Command } from "@/commands/Command";
-import SETTINGS from "@/global-settings";
+import { Command } from "@/commands-spherical/Command";
+import SETTINGS from "@/global-settings-spherical";
 import { useI18n } from "vue-i18n";
 import { useUserPreferencesStore } from "@/stores/userPreferences";
 

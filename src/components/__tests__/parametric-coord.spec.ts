@@ -3,7 +3,7 @@ import { createWrapper } from "$/vue-helper";
 import { it, vi } from "vitest";
 import { VueWrapper, mount } from "@vue/test-utils";
 import { useSEStore } from "@/stores/se";
-import { SECalculation } from "@/models/SECalculation";
+import { SECalculation } from "@/models-spherical/SECalculation";
 // global.ResizeObserver = require("resize-observer-polyfill");
 
 describe("ParametricCoord.vue basics", () => {

@@ -5,7 +5,6 @@
     <v-tab>{{ t("tools") }}</v-tab>
     <v-tab>App Preferences</v-tab>
   </v-tabs>
-
   <v-window v-model="selectedTab">
     <!-- USER PROFILE TAB -->
     <v-window-item>
@@ -92,7 +91,7 @@
                         <!-- Color selector -->
                         <div class="d-flex align-center mb-3">
                             <v-menu v-model="colorPickerMenu"
-                                    close-on-content-click="false"
+                                    :close-on-content-click="false"
                                     transition="scale-transition"
                                     offset-y>
                                 <template #activator="{ props }">
@@ -168,8 +167,6 @@
         </v-sheet>
     </v-window-item>
   </v-window>
-
-
   <v-divider />
 
   <div class="mt-3" :style="{ display: 'flex', justifyContent: 'center' }">
@@ -188,8 +185,24 @@
 <script lang="ts" setup>
 import UserProfileUI from "./UserProfile.vue";
 import FavoriteToolsPicker from "@/components/FavoriteToolsPicker.vue";
-import EventBus from "@/eventHandlers/EventBus";
-import { ref } from "vue";
+import EventBus from "@/eventHandlers-spherical/EventBus";
+// import PhotoCapture from "@/views/PhotoCapture.vue";
+import SETTINGS from "@/global-settings-spherical";
+import {
+  getAuth,
+  User,
+  sendPasswordResetEmail,
+  Unsubscribe
+} from "firebase/auth";
+import {
+  DocumentSnapshot,
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc
+} from "firebase/firestore";
+import { UserProfile } from "@/types";
+import { computed, onMounted, Ref, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { useAccountStore } from "@/stores/account";
@@ -221,6 +234,10 @@ const fillStyleItems = [
   { text: t("shadeFill"), value: FillStyle.ShadeFill }
 ];
   
+const passwordResetSnackbar = ref(false);
+// eslint-disable-next-line no-unused-vars
+let authSubscription!: Unsubscribe;
+const profileEnabled = ref(false);
 // The displayed favorite tools (includes defaults)
 function onMomentumDecayChange() {
   prefsStore.momentumDecay = momentumDecay.value;
@@ -254,7 +271,6 @@ watch(() => prefsStore.measurementMode, (newVal) => {
     measurementMode: newVal
   });
 });
-
 
 </script>
 

@@ -54,7 +54,7 @@ import { Ref, ref, computed, onUpdated } from "vue";
 import { ToolButtonType } from "@/types";
 import { useI18n } from "vue-i18n";
 import { StyleValue } from "vue";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { onMounted, watch } from "vue";
 import { onBeforeMount } from "vue";
 import { useUserPreferencesStore } from "@/stores/userPreferences";

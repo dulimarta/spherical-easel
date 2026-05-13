@@ -1,0 +1,246 @@
+import Point from "../plottables-spherical/Point";
+import { Visitable } from "@/visitors/Visitable";
+import { Visitor } from "@/visitors/Visitor";
+import { SENodule } from "./SENodule";
+import { Vector3 } from "three";
+import SETTINGS from "@/global-settings-spherical";
+import {
+  DEFAULT_POINT_BACK_STYLE,
+  DEFAULT_POINT_FRONT_STYLE
+} from "@/types/Styles";
+import { Labelable, ObjectState } from "@/types";
+// The following import creates a circular dependencies when testing SENoduleItem
+// The dependency loop is:
+// SENoduleItem.vue => SEIntersectionPoint => SEPoint => store/index.ts => se-module.ts
+// => RotationVisitor => SEPointOnOneDimensional => SEPoint (again)
+// import { SEStore } from "@/store";
+import i18n from "@/i18n";
+import NonFreePoint from "@/plottables-spherical/NonFreePoint";
+import { DisplayStyle } from "@/plottables-spherical/Nodule";
+import { SELabel } from "./SELabel";
+const styleSet = new Set([
+  ...Object.getOwnPropertyNames(DEFAULT_POINT_FRONT_STYLE),
+  ...Object.getOwnPropertyNames(DEFAULT_POINT_BACK_STYLE)
+]);
+
+export class SEPoint extends SENodule implements Visitable, Labelable {
+  /* This should be the only reference to the plotted version of this SEPoint */
+  declare public ref: Point;
+
+  /**
+   * This determines if a point has been visible before so that the
+   * first time a point is visible, the label short name can be
+   * set to P# where # will make sense to the user. That is
+   * the user will have made or seen # many points before seeing the
+   * label P#. This should respect the undo/redo operations.
+   */
+  protected _pointVisibleBefore = false;
+  /**
+   * Pointer to the label of this point
+   */
+  public label?: SELabel;
+  /**
+   * The vector location of the SEPoint on the ideal unit sphere
+   */
+  protected _locationVector = new Vector3();
+  /** Temporary vectors to help with calculations */
+  private tmpVector = new Vector3(); //
+  private tmpVector1 = new Vector3();
+  private tmpVector2 = new Vector3();
+
+  // The unregistered SEPoint North/South is used in the SELatitude and SELongitude classes for either
+  // the center of the circle or the endpoints of the segment. It is updated by the rotation visitor for
+  // sphere rotations *only* (not moves because SELatitudes|Longitudes can't ever be moved).
+  // These objects will need to updated each time a rotation visitor is created in the store (se.ts) - if they exist of course
+  // We use these static objects so that every SELatitude and SELongitude doesn't have its own copy of these.
+  // These SEPoints are never displayed or put into the DAG/object tree
+  public static unregisteredSEPointNorthPole: SEPoint | undefined = undefined;
+  public static unregisteredSEPointSouthPole: SEPoint | undefined = undefined;
+
+  /**
+   * Create a model SEPoint using:
+   * @param point The plottable TwoJS Object associated to this object
+   */
+  constructor(createNonFreePoint: boolean = false) {
+    super();
+    /* Establish the link between this abstract object on the fixed unit sphere
+    and the object that helps create the corresponding renderable object  */
+    const p = createNonFreePoint
+      ? new NonFreePoint(this.name)
+      : new Point(this.name);
+    p.stylize(DisplayStyle.ApplyCurrentVariables);
+    p.adjustSize();
+    this.ref = p;
+    SENodule.POINT_COUNT++;
+    this.name = `P${SENodule.POINT_COUNT}`;
+  }
+
+  customStyles(): Set<string> {
+    return styleSet;
+  }
+
+  public shallowUpdate(): void {
+    //These points always exist - they have no parents to depend on
+    //Update the location of the associate plottable Point
+    this.ref.positionVector = this._locationVector;
+    if (this.showing) {
+      this.ref.setVisible(true);
+    } else {
+      this.ref.setVisible(false);
+    }
+  }
+
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+    this.shallowUpdate();
+
+    // These are free points and are have no parents so we store additional information
+    //#region saveState
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.debug(
+          `Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.` +
+            `Hopefully this is because we are moving two or more SENodules at the same time in the MoveHandler.`
+        );
+        return;
+      }
+      const location = new Vector3();
+      location.copy(this._locationVector);
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, {
+        kind: "point",
+        object: this,
+        locationVector: location
+      });
+    }
+    //#endregion saveState
+    this.updateKids(objectState, orderedSENoduleList);
+  }
+
+  set pointVisibleBefore(b: boolean) {
+    this._pointVisibleBefore = b;
+  }
+  get pointVisibleBefore(): boolean {
+    return this._pointVisibleBefore;
+  }
+  /**
+   * Set or get the location vector of the SEPoint on the unit ideal sphere
+   */
+  set locationVector(pos: Vector3) {
+    // Record the location on the unit ideal sphere of this SEPoint
+    this._locationVector.copy(pos).normalize();
+    // Set the position of the associated displayed plottable Point // THIS DOESN'T ALSO TURN on the display
+    this.ref.positionVector = this._locationVector;
+  }
+  get locationVector(): Vector3 {
+    return this._locationVector;
+  }
+
+  public get noduleDescription(): string {
+    return String(i18n.global.t(`objectTree.freePoint`));
+  }
+
+  public get noduleItemText(): string {
+    return this.label?.ref.shortUserName ?? "No Label Short Name In SEPoint";
+  }
+
+  accept(v: Visitor): boolean {
+    return v.actionOnPoint(this);
+  }
+  /**
+   * Return the vector near the SELine (within SETTINGS.point.maxLabelDistance) that is closest to the idealUnitSphereVector
+   * @param currentLabelLocationVector A vector on the unit sphere
+   */
+  public closestLabelLocationVector(
+    currentLabelLocationVector: Vector3,
+    zoomMagnificationFactor: number
+  ): Vector3 {
+    // The current magnification level
+
+    const mag = zoomMagnificationFactor;
+    // If the idealUnitSphereVector is within the tolerance of the point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the point that is at the tolerance distance away.
+    if (
+      this._locationVector.angleTo(currentLabelLocationVector) <
+      ((SETTINGS.point.maxLabelDistance / mag) * this.ref.pointRadiusPercent) /
+        100
+    ) {
+      return currentLabelLocationVector;
+    } else {
+      // tmpVector1 is the normal to the plane of the point vector and the idealUnitVector
+      this.tmpVector1.crossVectors(
+        currentLabelLocationVector,
+        this._locationVector
+      );
+
+      if (this.tmpVector1.isZero(SETTINGS.nearlyAntipodalIdeal)) {
+        // The idealUnitSphereVector and location of the point are parallel (well antipodal because the case of being on top of each other is covered)
+        // Use the north pole because any point will do as long at the cross product with the _locationVector is not zero.
+        this.tmpVector1.set(0, 0, 1);
+
+        if (
+          this.tmpVector2
+            .crossVectors(this._locationVector, this.tmpVector1)
+            .isZero(SETTINGS.nearlyAntipodalIdeal)
+        ) {
+          this.tmpVector1.set(0, 1, 0);
+        }
+      } else {
+        // normalize the tmpVector1
+        this.tmpVector1.normalize();
+      }
+      // compute the toVector (so that tmpVector2= toVector, this._locationVector, tmpVector1 form an orthonormal frame)
+      this.tmpVector2
+        .crossVectors(this._locationVector, this.tmpVector1)
+        .normalize();
+      // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
+      this.tmpVector2.multiplyScalar(
+        Math.sin(
+          ((SETTINGS.point.maxLabelDistance / mag) *
+            this.ref.pointRadiusPercent) /
+            100
+        )
+      );
+      this.tmpVector2
+        .addScaledVector(
+          this._locationVector,
+          Math.cos(
+            ((SETTINGS.point.maxLabelDistance / mag) *
+              this.ref.pointRadiusPercent) /
+              100
+          )
+        )
+        .normalize();
+      return this.tmpVector2;
+    }
+  }
+
+  public isHitAt(
+    unitIdealVector: Vector3,
+    currentMagnificationFactor: number
+  ): boolean {
+    return (
+      this._locationVector.distanceTo(unitIdealVector) <
+      ((SETTINGS.point.hitIdealDistance / currentMagnificationFactor) *
+        this.ref.pointRadiusPercent) /
+        100
+    );
+  }
+
+  public isFreePoint(): boolean {
+    return true;
+  }
+
+  public isPoint(): boolean {
+    return true;
+  }
+
+  public getLabel(): SELabel | null {
+    return (this as Labelable).label!;
+  }
+}

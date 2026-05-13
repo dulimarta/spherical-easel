@@ -18,7 +18,12 @@
           v-if="localIsEarthMode"
           :available-height="availHeight"
           :available-width="availWidth" />
+        <HyperbolicFrame
+          v-if="route.path.endsWith('/hyperbolic')"
+          :available-width="availWidth"
+          :available-height="availHeight"></HyperbolicFrame>
         <SphereFrame
+          v-else
           :available-width="availWidth"
           :available-height="availHeight"
           :is-earth-mode="localIsEarthMode" />
@@ -57,7 +62,7 @@
             }}
             <span v-if="constructionInfo.publicDocId">
               Public ID:
-              {{ constructionInfo.publicDocId?.substring(0, 6) }}
+              {{ constructionInfo.publicDocId?.substring(0, 6).toUpperCase() }}
             </span>
             )
           </div>
@@ -132,34 +137,36 @@ import EarthLayer from "@/components/EarthLayer.vue";
 import MessageHub from "@/components/MessageHub.vue";
 // import AddressInput from "@/components/AddressInput.vue";
 import ShortcutIcon from "@/components/ShortcutIcon.vue";
+import HyperbolicFrame from "@/components/HyperbolicFrame.vue";
 /* Import Command so we can use the command paradigm */
-import { Command } from "@/commands/Command";
-import EventBus from "../eventHandlers/EventBus";
+import { Command } from "@/commands-spherical/Command";
+import EventBus from "../eventHandlers-spherical/EventBus";
 
-import Circle from "@/plottables/Circle";
-import Point from "@/plottables/Point";
-import Line from "@/plottables/Line";
-import Label from "@/plottables/Label";
-import Segment from "@/plottables/Segment";
-import Ellipse from "@/plottables/Ellipse";
-import { SENodule } from "@/models/SENodule";
+import Circle from "@/plottables-spherical/Circle";
+import Point from "@/plottables-spherical/Point";
+import Line from "@/plottables-spherical/Line";
+import Label from "@/plottables-spherical/Label";
+import Segment from "@/plottables-spherical/Segment";
+import Ellipse from "@/plottables-spherical/Ellipse";
+import { SENodule } from "@/models-spherical/SENodule";
 import {
   SphericalConstruction,
   ConstructionScript
 } from "@/types/ConstructionTypes";
-import AngleMarker from "@/plottables/AngleMarker";
+import AngleMarker from "@/plottables-spherical/AngleMarker";
 
-import { runScript } from "@/commands/CommandInterpreter";
+import { runScript } from "@/commands-spherical/CommandInterpreter";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { useSEStore } from "@/stores/se";
 import { useConstructionStore } from "@/stores/construction";
 import { useAccountStore } from "@/stores/account";
-import Parametric from "@/plottables/Parametric";
+import Parametric from "@/plottables-spherical/Parametric";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 import {
   onBeforeRouteLeave,
   RouteLocationNormalized,
+  useRoute,
   useRouter
 } from "vue-router";
 // import { useLayout, useDisplay } from "vuetify";
@@ -167,7 +174,7 @@ import { useLayout } from "vuetify/lib/composables/layout";
 import { useDisplay } from "vuetify/lib/composables/display";
 import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
-import Text from "@/plottables/Text";
+import Text from "@/plottables-spherical/Text";
 import { Handler } from "mitt";
 import { useUserPreferencesStore } from "@/stores/userPreferences";
 import { PreferenceRef } from "@/utils/preferenceRef";
@@ -184,6 +191,7 @@ const seStore = useSEStore();
 const constructionStore = useConstructionStore();
 const acctStore = useAccountStore();
 const router = useRouter();
+const route = useRoute();
 const {
   seNodules,
   temporaryNodules,

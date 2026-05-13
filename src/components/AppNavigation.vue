@@ -110,18 +110,23 @@
 <script lang="ts" setup>
 import { onBeforeMount, onBeforeUnmount, ref, computed, inject } from "vue";
 import ToolGroups from "@/components/ToolGroups.vue";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import ObjectTree from "./ObjectTree.vue";
 import ConstructionLoader from "./ConstructionLoader.vue";
 import EarthToolVue from "@/components/EarthTool.vue";
 import LanguageSelector from "./LanguageSelector.vue";
 import AuthenticatedUserToolbox from "./AuthenticatedUserToolbox.vue";
 import { useDisplay } from "vuetify";
+import axios from "axios";
 import { Handler } from "mitt";
 // import { computed } from "vue";
 // import { set } from "@vueuse/core";
 const appFeature = inject("features");
 
+const seStore = useSEStore();
+const acctStore = useAccountStore();
+const { actionMode, geometryMode } = storeToRefs(seStore);
+// const props = defineProps<{ minified: boolean }>();
 const announce = defineEmits<{
   drawerWidthChanged: [width: number];
 }>();

@@ -9,6 +9,11 @@ let routes: Array<RouteRecordRaw> = [
     component: Easel
   },
   {
+    path: "/hyperbolic",
+    name: "Hyperbolic",
+    component: Easel
+  },
+  {
     path: "/account",
     name: "Account",
     component: Login
