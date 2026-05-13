@@ -1,7 +1,6 @@
 import { Matrix4, Vector3 } from "three";
 import { ObjectState, ValueDisplayMode } from "@/types";
 import i18n from "@/i18n";
-import EventBus from "@/eventHandlers-spherical/EventBus";
 import { SEExpression } from "./SEExpression";
 import { SEPoint } from "./SEPoint";
 import { SENodule } from "@/models-spherical/SENodule";

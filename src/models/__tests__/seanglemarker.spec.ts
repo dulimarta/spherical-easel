@@ -1,15 +1,15 @@
-import { SEAngleMarker } from "@/models/SEAngleMarker";
-import AngleMarker from "@/plottables/AngleMarker";
-import SETTINGS from "@/global-settings";
+import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
+import AngleMarker from "@/plottables-spherical/AngleMarker";
+import SETTINGS from "@/global-settings-spherical";
 import { Vector3 } from "three";
 import {
   DEFAULT_ANGLE_MARKER_BACK_STYLE,
   DEFAULT_ANGLE_MARKER_FRONT_STYLE
 } from "@/types/Styles";
-import { SEPoint } from "@/models/SEPoint";
-import { SELabel } from "@/models/SELabel";
-import { SELine } from "@/models/SELine";
-import { SESegment } from "@/models/SESegment";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SELine } from "@/models-spherical/SELine";
+import { SESegment } from "@/models-spherical/SESegment";
 import { AngleMode, ValueDisplayMode } from "@/types";
 import { LabelMoverVisitor } from "@/visitors/LabelMoverVisitor";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";

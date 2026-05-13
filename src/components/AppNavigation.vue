@@ -117,10 +117,10 @@ import EarthToolVue from "@/components/EarthTool.vue";
 import LanguageSelector from "./LanguageSelector.vue";
 import AuthenticatedUserToolbox from "./AuthenticatedUserToolbox.vue";
 import { useDisplay } from "vuetify";
-import axios from "axios";
 import { Handler } from "mitt";
-// import { computed } from "vue";
-// import { set } from "@vueuse/core";
+import { useSEStore } from "@/stores/se";
+import { useAccountStore } from "@/stores/account";
+import { storeToRefs } from "pinia";
 const appFeature = inject("features");
 
 const seStore = useSEStore();

@@ -1,6 +1,5 @@
 import { SENodule } from "./SENodule";
 import { Matrix4, Vector3 } from "three";
-// import { SESegment } from "./SESegment";
 import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SEPoint } from "./SEPoint";

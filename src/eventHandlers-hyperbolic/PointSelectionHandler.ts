@@ -145,9 +145,11 @@ export class PointSelectionHandler extends PoseTracker {
         }
       } else if (activeTempPointInfo.snapOneOrTwoDim) {
         // Set the location of the temporary point by snapping to appropriate object (if any)
-        activeTempPointInfo.tempHEPoint.position =
-          activeTempPointInfo.snapOneOrTwoDim.closestVector(possibleLocation);
-        activeTempPointInfo.tempHEPoint.updateOrAddToGroup(); // this must be called after setting the position of the point because the position is used to determine which of the three meshes (hyperboloid, ideal strip, or ultra strip) should be added to the group and displayed as the temporary point.
+        const nearBy = activeTempPointInfo.snapOneOrTwoDim.closestVector(possibleLocation);
+        if (nearBy) {
+          activeTempPointInfo.tempHEPoint.position = nearBy;
+          activeTempPointInfo.tempHEPoint.updateOrAddToGroup(); // this must be called after setting the position of the point because the position is used to determine which of the three meshes (hyperboloid, ideal strip, or ultra strip) should be added to the group and displayed as the temporary point.
+        }
       } else {
         activeTempPointInfo.tempHEPoint.position = possibleLocation;
         activeTempPointInfo.tempHEPoint.updateOrAddToGroup();
@@ -227,9 +229,9 @@ export class PointSelectionHandler extends PoseTracker {
         this.getWCoordinate()
       );
       if (this.hitHELines.length > 0) {
-        const possibleLocation = new Vector4().copy(
-          this.hitHELines[0].closestVector(location)
-        );
+        const nearBy = this.hitHELines[0].closestVector(location);
+        if (nearBy) {
+        const possibleLocation = new Vector4().copy(nearBy);
         if (this.isLocationAlreadySelected(possibleLocation, index)) {
           return false;
         }
@@ -239,6 +241,7 @@ export class PointSelectionHandler extends PoseTracker {
         activeSelectedPointInfo.locationVector.copy(possibleLocation);
 
         activeTempPointInfo.tempHEPoint.position = possibleLocation;
+      }
         // }
         //else if (this.hitSECircles.length > 0) {
         //   // The start of the line will be a point on a circle
@@ -470,12 +473,12 @@ export class PointSelectionHandler extends PoseTracker {
         if (possibleParent) {
           // selected a location over a one or two dimensional object
           const closestLocation = possibleParent.closestVector(location);
-          vtx = new HEPointOnOneOrTwoDimensional(
-            possibleParent,
-            closestLocation
-          );
-          newHELabel = new HELabel("point", vtx, closestLocation, vtx.name);
-          vtx.setLabel(newHELabel);
+            vtx = new HEPointOnOneOrTwoDimensional(
+              possibleParent,
+              closestLocation!
+            );
+            newHELabel = new HELabel("point", vtx, closestLocation!, vtx.name);
+            vtx.setLabel(newHELabel);
         } else {
           // Selected an empty location
           vtx = new HEPoint(location);

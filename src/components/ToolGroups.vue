@@ -132,7 +132,7 @@ import { useRoute } from "vue-router";
 import { onUpdated } from "vue";
 const { t } = useI18n();
 const acctStore = useAccountStore();
-const { userProfile, userRole, includedTools } = storeToRefs(acctStore);
+const { userProfile, includedTools } = storeToRefs(acctStore);
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
 const { seExpressions, seTransformations, actionMode, excludeToolsFromSE } =

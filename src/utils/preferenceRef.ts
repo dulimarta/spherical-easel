@@ -3,7 +3,7 @@
    are used at too low of a level for calling from the store without spamming Firebase or
    refactoring large amounts of code. */
 
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { UserPreferences } from "./userPreferences";
 
 export class PreferenceRef {

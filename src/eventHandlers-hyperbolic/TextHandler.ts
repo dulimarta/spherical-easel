@@ -31,23 +31,19 @@ export class TextHandler extends PoseTracker {
   }
   mouseMoved(
     event: MouseEvent,
-    scrPos: Vector2,
-    intersectionList: Intersection[]
+    // scrPos: Vector2,
+    // intersectionList: Intersection[]
   ): void {
     // Process the intersection list and set the flags
-    super.mousePressed(event, scrPos, intersectionList);
+    super.mousePressed(event) //, scrPos, intersectionList);
   }
 
   mousePressed(
-    event: MouseEvent,
-    scrPos: Vector2,
-    intersectionList: Intersection[]
+    event: MouseEvent
   ): void {}
 
   mouseReleased(
-    event: MouseEvent,
-    scrPos: Vector2,
-    intersectionList: Intersection[]
+    event: MouseEvent
   ): void {
     // throw new Error("Method not implemented.");
   }

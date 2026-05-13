@@ -99,7 +99,7 @@ function shouldShowToolTooltip(action: string) {
   if (mode === "none" || mode === "easel-only") return false;
 
   if (mode === "minimal") {
-    return MINIMAL_TOOLTIP_SET.includes(action);
+    return MINIMAL_TOOLTIP_SET.includes(action as any);
   }
 
   return true;

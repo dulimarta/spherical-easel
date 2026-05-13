@@ -56,7 +56,7 @@ export class SELatitude extends SECircle {
     super(SEPoint.unregisteredSEPointNorthPole, circleSEPoint, true);
     this._latitude = latitude;
     //turn off the fill of the ref circle
-    this.ref.updateStyle(
+    this.ref?.updateStyle(
       StyleCategory.Front,
        {
         strokeColor: "#000000ff",

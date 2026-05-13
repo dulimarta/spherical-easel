@@ -249,7 +249,7 @@ export class SEAngleMarker
       this.name +
       ": " +
       this.label?.ref.shortUserName +
-      ` ${this.prettyValue(this._valueDisplayMode)}`
+      ` ${this.prettyValue(this._valueDisplayMode ? true : false)}`
     );
   }
 
