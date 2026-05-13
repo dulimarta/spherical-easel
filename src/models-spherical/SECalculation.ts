@@ -3,7 +3,6 @@ import { ExpressionParser } from "@/expression/ExpressionParser";
 import { SENodule } from "./SENodule";
 import i18n from "@/i18n";
 import { SEExpression } from "./SEExpression";
-const { t } = i18n.global;
 
 const emptySet = new Set<string>();
 const parser = new ExpressionParser();

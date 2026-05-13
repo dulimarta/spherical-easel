@@ -5,7 +5,6 @@ import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 // import { SEParametric } from "./SEParametric";
 const MIN = true;
-const { t } = i18n.global;
 export class SEParametricTracePoint extends SEPoint {
   /**
    * The parent of this SEParametricEndPoint

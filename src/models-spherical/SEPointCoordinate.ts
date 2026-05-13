@@ -5,7 +5,6 @@ import { SEExpression } from "./SEExpression";
 import { SEPoint } from "./SEPoint";
 import { SENodule } from "@/models-spherical/SENodule";
 const emptySet = new Set<string>();
-const { t } = i18n.global;
 
 export enum CoordinateSelection {
   X_VALUE,

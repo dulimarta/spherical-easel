@@ -33,15 +33,11 @@ import {
   vec3ToVec4,
   vec4ToVec3
 } from "@/utils/helpingHEFunctions";
-import { threshold } from "three/tsl";
-import { error } from "happy-dom/lib/PropertySymbol.js";
-import { Vector } from "two.js/src/vector";
 
 // const styleSet = new Set([
 //   ...Object.getOwnPropertyNames(DEFAULT_LINE_FRONT_STYLE),
 //   ...Object.getOwnPropertyNames(DEFAULT_LINE_BACK_STYLE)
 // ]);
-// const { t } = i18n.global;
 
 export class HELine extends HENodule implements HyperbolicLabelable {
   //implements Visitable, OneDimensional, Labelable

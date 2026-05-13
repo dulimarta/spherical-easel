@@ -16,7 +16,6 @@ import { SESegment } from "./SESegment";
 import { SEAngleMarker } from "./SEAngleMarker";
 import { SELabel } from "./SELabel";
 import { PreferenceRef } from "@/utils/preferenceRef";
-const { t } = i18n.global;
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_POLYGON_FRONT_STYLE),

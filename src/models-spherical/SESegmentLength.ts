@@ -1,13 +1,11 @@
 import { ObjectState, ValueDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings-spherical";
 import i18n from "@/i18n";
-import EventBus from "@/eventHandlers-spherical/EventBus";
 import { SEExpression } from "./SEExpression";
 import { SESegment } from "./SESegment";
 import { SENodule } from "@/models-spherical/SENodule";
 import { PreferenceRef } from "@/utils/preferenceRef";
 const emptySet = new Set<string>();
-const { t } = i18n.global;
 
 export class SESegmentLength extends SEExpression {
   readonly seSegment: SESegment;

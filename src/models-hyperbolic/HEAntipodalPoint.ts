@@ -1,9 +1,6 @@
 import { ObjectState } from "@/types";
-import i18n from "@/i18n";
 import { HEPoint } from "./HEPoint";
 import { Mesh, Vector3, Vector4 } from "three";
-import { CustomPointMaterial } from "@/plottables-hyperbolic/MaterialFactory";
-const { t } = i18n.global;
 export class HEAntipodalPoint extends HEPoint {
   /**
    * The point parent of this HEAntipodalPoint

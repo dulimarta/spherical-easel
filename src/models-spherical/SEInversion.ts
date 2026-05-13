@@ -5,7 +5,6 @@ import i18n from "@/i18n";
 import { SECircle } from "./SECircle";
 import SETTINGS from "@/global-settings-spherical";
 import { SETransformation } from "./SETransformation";
-const { t } = i18n.global;
 export class SEInversion extends SETransformation {
   private _circleOfInversion: SECircle;
   private perpVector = new Vector3();

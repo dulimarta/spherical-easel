@@ -21,7 +21,6 @@ import NonFreeEllipse from "@/plottables-spherical/NonFreeEllipse";
 import { DisplayStyle } from "@/plottables-spherical/Nodule";
 import { SELabel } from "./SELabel";
 import { SEPoint } from "./SEPoint";
-const { t } = i18n.global;
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_ELLIPSE_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_ELLIPSE_BACK_STYLE)

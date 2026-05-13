@@ -4,7 +4,6 @@ import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SEPoint } from "./SEPoint";
 import { SETransformation } from "./SETransformation";
-const { t } = i18n.global;
 
 export class SEPointReflection extends SETransformation {
   private _pointOfReflection: SEPoint;

@@ -5,7 +5,6 @@ import { SECircle } from "./SECircle";
 import { SEExpression } from "./SEExpression";
 import { SEPoint } from "./SEPoint";
 import Circle from "@/plottables-spherical/Circle";
-const { t } = i18n.global;
 
 export class SEMeasuredCircle extends SECircle {
   /**

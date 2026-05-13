@@ -4,7 +4,6 @@ import { Vector3 } from "three";
 import { SELine } from "./SELine";
 import { SEAngleMarker } from "./SEAngleMarker";
 import { SEPoint } from "./SEPoint";
-const { t } = i18n.global;
 export class SENSectLine extends SELine {
   /**
    * The angle parent of this SENSectLine

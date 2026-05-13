@@ -7,7 +7,6 @@ import { SENodule } from "@/models-spherical/SENodule";
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
 import { SEParametric } from "./SEParametric";
-const { t } = i18n.global;
 
 export class SETangentLineThruPoint extends SELine {
   /**

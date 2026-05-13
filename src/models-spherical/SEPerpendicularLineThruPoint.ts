@@ -9,7 +9,6 @@ import { SESegment } from "./SESegment";
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
 import { SEParametric } from "./SEParametric";
-const { t } = i18n.global;
 export class SEPerpendicularLineThruPoint extends SELine {
   /**
    * The One-Dimensional parent of this SEPerpendicularLine

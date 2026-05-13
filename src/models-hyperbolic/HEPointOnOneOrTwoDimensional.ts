@@ -1,9 +1,6 @@
 import { HEOneOrTwoDimensional, ObjectState } from "@/types";
-import i18n from "@/i18n";
 import { HEPoint } from "./HEPoint";
-import { Mesh, Vector3, Vector4 } from "three";
-import { CustomPointMaterial } from "@/plottables-hyperbolic/MaterialFactory";
-const { t } = i18n.global;
+import { Vector3, Vector4 } from "three";
 export class HEPointOnOneOrTwoDimensional extends HEPoint {
   /**
    * The One- or Two- Dimensional parents of this HEPoint

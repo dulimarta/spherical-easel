@@ -20,7 +20,6 @@ import { SENodule } from "@/models-spherical/SENodule";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { AddIntersectionPointOtherParentsInfo } from "@/commands-spherical/AddIntersectionPointOtherParentsInfo";
 import { RemoveIntersectionPointOtherParentsInfo } from "@/commands-spherical/RemoveIntersectionPointOtherParentsInfo";
-const { t } = i18n.global;
 export class SEIntersectionPoint extends SEPoint {
   /**
    * This flag is true if the user created this point

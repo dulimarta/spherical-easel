@@ -6,7 +6,6 @@ import { Vector3 } from "three";
 import { SELine } from "./SELine";
 import { SEPoint } from "./SEPoint";
 import { PreferenceRef } from "../utils/preferenceRef";
-const { t } = i18n.global;
 
 export class SEPolarLine
   extends SELine

@@ -6,7 +6,6 @@ import { SERotation } from "./SERotation";
 import { SEReflection } from "./SEReflection";
 import { SEPointReflection } from "./SEPointReflection";
 import { SEPoint } from "./SEPoint";
-const { t } = i18n.global;
 
 export class SEIsometryEllipse extends SEEllipse {
   /**

@@ -21,7 +21,6 @@ import { DisplayStyle } from "@/plottables-spherical/Nodule";
 import { SELabel } from "./SELabel";
 import { SEPoint } from "./SEPoint";
 import { PreferenceRef } from "../utils/preferenceRef";
-const { t } = i18n.global;
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_SEGMENT_FRONT_STYLE),

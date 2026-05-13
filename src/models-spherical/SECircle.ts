@@ -27,7 +27,6 @@ import { SELine } from "./SELine";
 // import { SEThreePointCircleCenter } from "./SEThreePointCircleCenter";
 // import { SEInversionCircleCenter } from "./SEInversionCircleCenter";
 // import { SELine } from "./SELine";
-const { t } = i18n.global;
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_CIRCLE_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_CIRCLE_BACK_STYLE)

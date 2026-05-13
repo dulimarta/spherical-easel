@@ -5,8 +5,7 @@ import {
   IntersectionReturnTypeH2,
   HEOneDimensional
 } from "@/types";
-import i18n from "@/i18n";
-import { Vector3, Vector4 } from "three";
+import { Vector4 } from "three";
 import { getAncestors, getHEAncestors } from "@/utils/helpingfunctions";
 // import { SESegment } from "./SESegment";
 // import { SELine } from "./SELine";
@@ -19,7 +18,6 @@ import { intersectTwoObjects } from "@/utils/helpingHEFunctions";
 import { AddIntersectionPointOtherParentsInfo } from "@/commands-hyperbolic/AddIntersectionPointOtherParentsInfo";
 import { ChangeIntersectionPointPrincipleParents } from "@/commands-hyperbolic/ChangeIntersectionPointPrincipleParents";
 import { RemoveIntersectionPointOtherParentsInfo } from "@/commands-hyperbolic/RemoveIntersectionPointOtherParentsInfo";
-const { t } = i18n.global;
 export class HEIntersectionPoint extends HEPoint {
   /**
    * This flag is true if the user created this point
