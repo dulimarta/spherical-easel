@@ -50,7 +50,11 @@
     "Vinicius",
     "vuetify"
   ],
-  "eslint.validate": ["vue", "typescript", "javascript"],
+  "eslint.validate": [
+    "vue",
+    "typescript",
+    "javascript"
+  ],
   "workbench.colorCustomizations": {
     "activityBar.activeBackground": "#a1e26e",
     "activityBar.background": "#a1e26e",

@@ -42,6 +42,7 @@
     "three-mesh-bvh": "^0.9.0",
     "three-text": "^0.4.11",
     "troika-three-text": "^0.52.4",
+    "ts-geometric-algebra": "^0.5.1",
     "two.js": "0.8.18",
     "vue": "~3.5.13",
     "vue-advanced-cropper": "^2.8.9",

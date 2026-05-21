@@ -154,7 +154,7 @@ import { useMagicKeys } from "@vueuse/core";
 import { watchEffect } from "vue";
 import { Handler } from "mitt";
 import { useUserPreferencesStore } from "@/stores/userPreferences";
-
+import { useTools } from "@/stores/mouseHandler";
 
 type ComponentProps = {
   availableHeight: number;
@@ -174,6 +174,7 @@ const {
 } = storeToRefs(seStore);
 const acctStore = useAccountStore();
 const prefsStore = useUserPreferencesStore();
+const toolsStore = useTools();
 const { boundaryColor, boundaryWidth } = storeToRefs(prefsStore);
 const { t } = useI18n({ useScope: "local" });
 
@@ -241,7 +242,6 @@ let boundaryCircle!: Circle;
 /** Tools for handling user input */
 let currentTool: ToolStrategy | null = null;
 let selectTool: SelectionHandler | null = null;
-let pointTool: PointHandler | null = null;
 let lineTool: LineHandler | null = null;
 let segmentTool: SegmentHandler | null = null;
 let circleTool: CircleHandler | null = null;
@@ -285,11 +285,6 @@ let dummyTool: DummyHandler | null = null;
 
 let layers: Array<Group> = [];
 
-watchEffect(() => {
-  if (ctrl.value && alt.value && d.value) {
-    showMousePos.value = !showMousePos.value;
-  }
-});
 onBeforeMount(async (): Promise<void> => {
   // Initialize Two.js right away
   twoInstance = new Two({
@@ -383,23 +378,9 @@ onMounted((): void => {
   console.debug("SphereFrame::onMounted");
   // Put the main js instance into the canvas
   twoInstance.appendTo(canvas.value!);
+  toolsStore.configure(layers, canvas.value!);
+  toolsStore.setCurrentTool("point")
   // Set up the listeners
-  canvas.value?.addEventListener("mouseenter", ev => {
-    // console.debug(`SphereFrame.vue: Mouse entered the canvas (${ev.clientX},${ev.clientY})`)
-  });
-  canvas.value!.addEventListener("mousemove", ev => {
-    // console.debug(`SphereFrame.vue: Mouse moved in canvas (${ev.clientX},${ev.clientY})`)
-    handleMouseMoved(ev);
-  });
-  canvas.value?.addEventListener("mousedown", ev => {
-    // console.debug(`SphereFrame.vue: Mouse down in canvas (${ev.clientX},${ev.clientY})`)
-    handleMousePressed(ev);
-  });
-  canvas.value?.addEventListener("mouseup", ev => {
-    // console.debug(`SphereFrame.vue: Mouse up in canvas (${ev.clientX},${ev.clientY})`)
-    handleMouseReleased(ev);
-  });
-  canvas.value?.addEventListener("mouseleave", handleMouseLeave);
   // Add the passive option to avoid Chrome warning
   // Without this option, scroll events will potentially block touch/wheel events
   canvas.value?.addEventListener("wheel", handleMouseWheel, { passive: true });
@@ -425,6 +406,14 @@ onMounted((): void => {
   updateView();
   //Listen For text dialog box
 });
+
+watchEffect(() => {
+  // console.debug(`Watching for Ctrl+Alt+D to toggle mouse position display ${ctrl.value} ${alt.value} ${d.value}` );
+  if ((ctrl.value && alt.value && d.value)) {
+    showMousePos.value = !showMousePos.value;
+  }
+});
+
 watch(
   () => props.isEarthMode,
   earthMode => {
@@ -459,10 +448,6 @@ watch(
 );
 
 onBeforeUnmount((): void => {
-  canvas.value?.removeEventListener("mousemove", handleMouseMoved);
-  canvas.value?.removeEventListener("mousedown", handleMousePressed);
-  canvas.value?.removeEventListener("mouseup", handleMouseReleased);
-  canvas.value?.removeEventListener("mouseleave", handleMouseLeave);
   canvas.value?.removeEventListener("wheel", handleMouseWheel);
   // Does this remove the context menu listener? I'm not sure.
   canvas.value?.removeEventListener("contextmenu", event =>
@@ -485,7 +470,7 @@ onBeforeUnmount((): void => {
 watch(
   [() => props.availableWidth, () => props.availableHeight],
   ([width, height]): void => {
-    console.debug(`Available rectangle WxH ${width}x${height}`);
+    // console.debug(`Available rectangle WxH ${width}x${height}`);
     twoInstance.width = width;
     twoInstance.height = height;
     // groups.forEach(z => {
@@ -679,45 +664,6 @@ function handleMouseWheel(event: WheelEvent): void {
     zoomCommand.push();
   }
 }
-function handleMouseMoved(e: MouseEvent): void {
-  // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-  if (e.button === 0)
-    // When currentTool is NULL, currentTool? resolves to no action
-    currentTool?.mouseMoved(e);
-}
-
-function handleMousePressed(e: MouseEvent): void {
-  // console.debug("SphereFrame::handleMousePress", currentTool !== null)
-  // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-  // const bb = (e.currentTarget as HTMLElement).getBoundingClientRect();
-  // console.debug(
-  //   "Mode",
-  //   actionMode,
-  //   ` mouse pressed at (${e.clientX - bb.left},${e.clientY - bb.top})`
-  // );
-  if (e.button === 0) currentTool?.mousePressed(e);
-}
-
-function handleMouseReleased(e: MouseEvent): void {
-  // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-  // const bb = (e.currentTarget as HTMLElement).getBoundingClientRect();
-  // console.debug(
-  //   "Mode",
-  //   actionMode,
-  //   ` mouse released at (${e.clientX - bb.left},${e.clientY - bb.top})`
-  // );
-  if (e.button === 0) {
-    // When currentTool is NULL, the following line does nothing
-    currentTool?.mouseReleased(e);
-  }
-}
-
-function handleMouseLeave(e: MouseEvent): void {
-  // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-  if (e.button === 0)
-    // When currentTool is NULL, the following line does nothing
-    currentTool?.mouseLeave(e);
-}
 
 //#region handleSphereRotation
 function handleSphereRotation(e: unknown): void {
@@ -816,6 +762,7 @@ watch(
   () => actionMode.value,
   (mode: ActionMode): void => {
     console.debug("Switch tool /action mode to", mode);
+    toolsStore.setCurrentTool(mode);
     currentTool?.deactivate();
     currentTool = null;
     //set the default footer color -- override as necessary
@@ -887,13 +834,6 @@ watch(
           rotateTool = new RotateHandler(layers);
         }
         currentTool = rotateTool;
-        break;
-
-      case "point":
-        if (!pointTool) {
-          pointTool = new PointHandler(layers);
-        }
-        currentTool = pointTool;
         break;
       case "line":
         if (!lineTool) {

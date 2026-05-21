@@ -58,8 +58,8 @@ export default class PointHandler extends Highlighter {
 
         new SetPointUserCreatedValueCommand(
           this.filteredIntersectionPointsList[0] as
-            | SEIntersectionPoint
-            | SEAntipodalPoint,
+          | SEIntersectionPoint
+          | SEAntipodalPoint,
           true
         ).execute();
         return;

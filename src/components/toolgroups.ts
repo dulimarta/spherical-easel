@@ -13,68 +13,68 @@ const toolGroupInternal: Array<ToolGroup> = [
   // and a Command class
   {
     group: "BasicTools",
-    tools: ["point", "line", "segment", "circle", "text"]
+    tools: ["point" /*, "line", "segment", "circle", "text" */]
   },
   { group: "EditTools", tools: ["select", "delete" /*, "dummy" */] },
-  {
-    group: "DisplayTools",
-    tools: [
-      "hide",
-      "toggleLabelDisplay",
-      "move",
-      "rotate",
-      "zoomIn",
-      "zoomOut",
-      "zoomFit"
-    ]
-  },
-  {
-    group: "ConstructionTools",
-    tools: [
-      "antipodalPoint",
-      "polar",
-      "midpoint",
-      "angleBisector",
-      "tangent",
-      "perpendicular",
-      "intersect",
-      "pointOnObject"
-    ]
-  },
-  {
-    group: "MeasurementTools",
-    tools: [
-      "angle",
-      "pointDistance",
-      "segmentLength",
-      "coordinate",
-      "measureTriangle",
-      "measurePolygon"
-    ]
-  },
-  {
-    group: "ConicTools",
-    tools: ["ellipse"]
-  },
-  {
-    group: "AdvancedTools",
-    tools: ["threePointCircle", "nSectPoint", "nSectLine"]
-  },
-  {
-    group: "TransformationTools",
-    tools: [
-      "pointReflection",
-      "reflection",
-      "rotation",
-      "translation",
-      "inversion",
-      "applyTransformation"
-    ]
-  },
-  {
-    group: "MeasuredObjectTools",
-    tools: ["measuredCircle"]
-  },
+  // {
+  //   group: "DisplayTools",
+  //   tools: [
+  //     "hide",
+  //     "toggleLabelDisplay",
+  //     "move",
+  //     "rotate",
+  //     "zoomIn",
+  //     "zoomOut",
+  //     "zoomFit"
+  //   ]
+  // },
+  // {
+  //   group: "ConstructionTools",
+  //   tools: [
+  //     "antipodalPoint",
+  //     "polar",
+  //     "midpoint",
+  //     "angleBisector",
+  //     "tangent",
+  //     "perpendicular",
+  //     "intersect",
+  //     "pointOnObject"
+  //   ]
+  // },
+  // {
+  //   group: "MeasurementTools",
+  //   tools: [
+  //     "angle",
+  //     "pointDistance",
+  //     "segmentLength",
+  //     "coordinate",
+  //     "measureTriangle",
+  //     "measurePolygon"
+  //   ]
+  // },
+  // {
+  //   group: "ConicTools",
+  //   tools: ["ellipse"]
+  // },
+  // {
+  //   group: "AdvancedTools",
+  //   tools: ["threePointCircle", "nSectPoint", "nSectLine"]
+  // },
+  // {
+  //   group: "TransformationTools",
+  //   tools: [
+  //     "pointReflection",
+  //     "reflection",
+  //     "rotation",
+  //     "translation",
+  //     "inversion",
+  //     "applyTransformation"
+  //   ]
+  // },
+  // {
+  //   group: "MeasuredObjectTools",
+  //   tools: ["measuredCircle"]
+  // },
   {
     group: "DeveloperOnlyTools",
     tools: ["iconFactory"]
