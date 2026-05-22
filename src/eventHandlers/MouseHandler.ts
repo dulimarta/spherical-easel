@@ -1,0 +1,182 @@
+/** @format */
+
+import { Vector2, Vector3 } from "three";
+import { ToolStrategy } from "../eventHandlers-spherical/ToolStrategy";
+import SETTINGS, { LAYER } from "@/global-settings-spherical";
+// import { SEPoint } from "@/models-spherical/SEPoint";
+// import { SELine } from "@/models-spherical/SELine";
+// import { SECircle } from "@/models-spherical/SECircle";
+// import { SESegment } from "@/models-spherical/SESegment";
+// import { TextBox } from "@/plottables-spherical/TextBox";
+// import { SENodule } from "@/models-spherical/SENodule";
+// import { SELabel } from "@/models-spherical/SELabel";
+// import { SEAngleMarker } from "@/models-spherical/SEAngleMarker";
+// import { SEEllipse } from "@/models-spherical/SEEllipse";
+// import { SEParametric } from "@/models-spherical/SEParametric";
+// import { SEPolygon } from "@/models-spherical/SEPolygon";
+// import { SEText } from "@/models-spherical/SEText";
+import { Group } from "two.js/src/group";
+import EventBus from "../eventHandlers-spherical/EventBus";
+export default abstract class MouseHandler implements ToolStrategy {
+  protected readonly X_AXIS = new Vector3(1, 0, 0);
+  protected readonly Y_AXIS = new Vector3(0, 1, 0);
+  protected readonly Z_AXIS = new Vector3(0, 0, 1);
+  protected zoomTransVec = [0, 0];
+  protected zoomMagnification = 1;
+
+  /**
+   * This is canvas is the midGround layer in the twoInstance (the main Two object).
+   * Used to determine the Default Screen Coordinates of the mouse event
+   */
+  // protected readonly canvas: Group;
+  /**
+   * Pinia Global Store
+   */
+  // static store: SEStoreType;
+  /**
+   * The vector location of the current and previous mouse event on the ideal unit sphere
+   */
+  protected currentSphereVector: Vector3;
+  protected previousSphereVector: Vector3;
+  /**
+   * The vector location of the current and previous mouse event in the Default Sphere Plane
+   */
+  protected currentScreenVector: Vector2;
+  protected previousScreenVector: Vector2;
+  /**
+   * True if the mouse event is on the default sphere
+   */
+  protected isOnSphere: boolean;
+  /**
+   * Arrays of nodules near the mouse event location
+   */
+  // protected hitSENodules: SENodule[] = [];
+  // protected hitSEPoints: SEPoint[] = [];
+  // protected hitSELines: SELine[] = [];
+  // protected hitSESegments: SESegment[] = [];
+  // protected hitSECircles: SECircle[] = [];
+  // protected hitSEEllipses: SEEllipse[] = [];
+  // protected hitSELabels: SELabel[] = [];
+  // protected hitSEAngleMarkers: SEAngleMarker[] = [];
+  // protected hitSEParametrics: SEParametric[] = [];
+  // protected hitSEPolygons: SEPolygon[] = [];
+  // protected hitSETexts: SEText[] = [];
+
+  /**
+   * Holds the layers for each type of object, background, glowing background, etc..
+   * This allow the created objects to be put in the correct layers
+   */
+  protected layers: Group[];
+
+  /**
+   * Temporary objects that help process the mouse event location
+   */
+  private mouseVector = new Vector3();
+
+  /**
+   * An object to hold information about the nearby objects when then pause over a highlighted object
+   */
+  // protected infoText = new TextBox("Hello");
+
+  /**
+   * Abstract class, whose MouseMoved event sets the current/previous sphere/screen points
+   * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
+   */
+  constructor(layers: Group[]) {
+    this.layers = layers;
+    // this.canvas = layers[LAYER.midground];
+    this.currentSphereVector = new Vector3();
+    this.currentScreenVector = new Vector2(0, 0);
+    this.previousSphereVector = new Vector3();
+    this.previousScreenVector = new Vector2(0, 0);
+    this.isOnSphere = false;
+  }
+  // static setGlobalStore(store: SEStoreType): void {
+  //   MouseHandler.store = store;
+  // }
+
+  abstract mousePressed(event: MouseEvent): void;
+  abstract mouseReleased(event: MouseEvent): void;
+
+  setManificationFactor(magnification: number): void {
+    this.zoomMagnification = magnification;
+  }
+  /**
+   * Map mouse 2D viewport/screen position to 3D coordinate on the default sphere.
+   * @memberof MouseHandler
+   */
+  mouseMoved(event: MouseEvent): void {
+    this.trackMouseLocation(event);
+  }
+
+  // Provide this function to allow subclasses call directly without going through
+  // the inheritance hierarchy
+  trackMouseLocation(event: MouseEvent): void {
+    // Using currentTarget is necessary. Otherwise, all the calculations
+    // will be based on SVG elements whose bounding rectangle may spill
+    // outside of the responsive viewport and produces inaccurate
+    // position calculations
+    const target = (event.currentTarget || event.target) as HTMLElement;
+    const boundingRect = target.getBoundingClientRect();
+    // Don't rely on e.offsetX or e.offsetY, they may not be accurate
+    const offsetX = event.clientX - boundingRect.left;
+    const offsetY = event.clientY - boundingRect.top;
+    const mouseX = offsetX - boundingRect.width / 2;
+    const mouseY = boundingRect.height / 2 - offsetY;
+
+    // Get the current zoom factor and vector
+    // const mag = MouseHandler.store.zoomMagnificationFactor;
+    // const zoomTransVec = MouseHandler.store.zoomTranslation;
+
+    // Transform the (mouseX, mouseY) pixel location to default screen
+    // coordinates (i.e. to pre affine/css transformation)
+    this.mouseVector.set(
+      (mouseX - this.zoomTransVec[0]) / this.zoomMagnification,
+      (mouseY + this.zoomTransVec[1]) / this.zoomMagnification,
+      0
+    );
+
+    // Record the location in the screen plane (current and previous)
+    this.previousScreenVector.copy(this.currentScreenVector);
+    this.currentScreenVector.set(this.mouseVector.x, this.mouseVector.y);
+
+    // mouseVector is the location in the default screen plane and its length
+    // is the distance from the center. If this less than the default sphere radius, then
+    // compute the associated coordinates, otherwise set isOnSphere to false.
+    const len = this.mouseVector.length();
+    const R = SETTINGS.boundaryCircle.radius;
+    if (len < R) {
+      // The mouse event is in the orthographic projection of the default sphere
+      // determine the corresponding location on the default sphere. If the shift key is
+      // pressed it is on the back side of the sphere.
+      const mx = this.mouseVector.x;
+      const my = this.mouseVector.y;
+
+      const zCoordinate =
+        Math.sqrt(R * R - (mx * mx + my * my)) * (event.shiftKey ? -1 : +1);
+      this.previousSphereVector.copy(this.currentSphereVector);
+      this.currentSphereVector.set(mx, my, zCoordinate).normalize();
+      // We use this for debugging, but decided to keep it
+      EventBus.fire("cursor-position", {
+        raw: [mx, my, zCoordinate],
+        normalized: this.currentSphereVector.toArray()
+      });
+      this.isOnSphere = true;
+    } else {
+      // The mouse event was not on the orthographic projection of the default sphere
+      this.isOnSphere = false;
+    }
+  }
+
+  mouseLeave(event: MouseEvent): void {
+    this.isOnSphere = false;
+  }
+
+  activate(): void {
+    // No code required yet
+  }
+
+  deactivate(): void {
+    // No code yet
+  }
+}

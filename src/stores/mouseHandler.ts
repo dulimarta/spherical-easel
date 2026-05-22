@@ -1,17 +1,24 @@
-import { ToolStrategy } from "@/eventHandlers-spherical/ToolStrategy";
 import { ActionMode } from "@/types";
 import { defineStore } from "pinia";
-import PointHandler from "@/eventHandlers-spherical/PointHandler";
+import { PointHandler } from "@/eventHandlers/PointHandler";
 import { Group } from "two.js/src/group";
-import { onMounted, onUnmounted } from "vue";
-
+import { onMounted, onUnmounted, watch } from "vue";
+import { useSEStore } from "./se";
+import MouseHandler from "@/eventHandlers/MouseHandler";
 let pointTool: PointHandler | null = null;
 
 export const useTools = defineStore("tools", () => {
-  let currentTool: ToolStrategy | null = null
+  const seStore = useSEStore();
+  let currentTool: MouseHandler | null = null;
   let layers: Array<Group> = [];
   let target: HTMLDivElement | null = null;
 
+  watch(
+    () => seStore.zoomMagnificationFactor,
+    (newMode, oldMode) => {
+      currentTool?.setManificationFactor(newMode);
+    }
+  );
   onMounted(() => {
     console.debug("Tools store mounted", target);
   });
@@ -25,7 +32,7 @@ export const useTools = defineStore("tools", () => {
 
   function configure(twoLayers: Array<Group>, canvas: HTMLDivElement) {
     layers = twoLayers;
-    target = canvas
+    target = canvas;
     target.addEventListener("mousemove", doMouseMoved);
     target.addEventListener("mousedown", doMouseDown);
     target.addEventListener("mouseup", doMouseUp);
@@ -54,5 +61,5 @@ export const useTools = defineStore("tools", () => {
   function doMouseLeave(event: MouseEvent) {
     currentTool?.mouseLeave(event);
   }
-  return { currentTool, setCurrentTool, configure }
+  return { currentTool, setCurrentTool, configure };
 });

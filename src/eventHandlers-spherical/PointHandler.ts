@@ -8,9 +8,7 @@ import { AddPointOnOneDimensionalCommand } from "@/commands-spherical/AddPointOn
 import { SELabel } from "@/models-spherical/SELabel";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings-spherical";
-import EventBus from "./EventBus";
 import { SEOneOrTwoDimensional } from "@/types";
-//import Two from "two.js";
 import { Group } from "two.js/src/group";
 import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
