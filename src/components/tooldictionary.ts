@@ -1,5 +1,5 @@
 import { ActionMode, ToolButtonType } from "@/types";
-import { Command } from "@/commands-spherical/Command";
+import { Command } from "@/commands/Command";
 import EventBus from "@/eventHandlers-spherical/EventBus";
 import MouseHandler from "@/eventHandlers-spherical/MouseHandler";
 

@@ -155,6 +155,7 @@ import { watchEffect } from "vue";
 import { Handler } from "mitt";
 import { useUserPreferencesStore } from "@/stores/userPreferences";
 import { useTools } from "@/stores/mouseHandler";
+import { useGeometryStore } from "@/stores/geometry";
 
 type ComponentProps = {
   availableHeight: number;
@@ -175,6 +176,7 @@ const {
 const acctStore = useAccountStore();
 const prefsStore = useUserPreferencesStore();
 const toolsStore = useTools();
+const geoStore = useGeometryStore();
 const { boundaryColor, boundaryWidth } = storeToRefs(prefsStore);
 const { t } = useI18n({ useScope: "local" });
 
@@ -314,7 +316,7 @@ onBeforeMount(async (): Promise<void> => {
 
   seStore.init();
   seStore.setLayers(twoInstance, layers);
-
+  geoStore.setLayers(layers);
   // Create the boundary circle immediately using defaults
   boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
   boundaryCircle.noFill();
@@ -371,15 +373,12 @@ onBeforeMount(async (): Promise<void> => {
   }
 });
 
-
-
-
 onMounted((): void => {
   console.debug("SphereFrame::onMounted");
   // Put the main js instance into the canvas
   twoInstance.appendTo(canvas.value!);
   toolsStore.configure(layers, canvas.value!);
-  toolsStore.setCurrentTool("point")
+  toolsStore.setCurrentTool("point");
   // Set up the listeners
   // Add the passive option to avoid Chrome warning
   // Without this option, scroll events will potentially block touch/wheel events
@@ -409,7 +408,7 @@ onMounted((): void => {
 
 watchEffect(() => {
   // console.debug(`Watching for Ctrl+Alt+D to toggle mouse position display ${ctrl.value} ${alt.value} ${d.value}` );
-  if ((ctrl.value && alt.value && d.value)) {
+  if (ctrl.value && alt.value && d.value) {
     showMousePos.value = !showMousePos.value;
   }
 });
@@ -518,7 +517,6 @@ watch(
   },
   { immediate: true }
 );
-
 
 /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
 

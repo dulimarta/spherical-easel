@@ -1,20 +1,24 @@
-import { Command } from "@/commands-spherical/Command";
+import { Command } from "./Command";
 import { CKPoint } from "@/models/CKPoint";
 import { Vector3 } from "three";
 
 export class AddPointKommand extends Command {
-  private position: Vector3;
+  private ptObject: CKPoint;
   constructor(position: Vector3) {
     super();
-    this.position = position;
+    this.ptObject = new CKPoint(position);
+    console.log("Created point:", this.ptObject);
   }
 
-  restoreState(preventGraphicalUpdate?: boolean): void {}
+  restoreState(preventGraphicalUpdate?: boolean): void {
+    console.debug("Restoring state of AddPointKommand:", this.ptObject.name);
+    this.store.removePoint(this.ptObject.id);
+  }
+
   saveState(): void {}
 
   do(preventGraphicalUpdate?: boolean): void {
-    const point = new CKPoint(this.position);
-    console.log("Created point:", point);
+    this.store.addPoint(this.ptObject);
   }
 
   toOpcode(): null | string | Array<string> {
