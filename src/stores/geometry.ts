@@ -16,6 +16,7 @@ export const useGeometryStore = defineStore("geometry", () => {
     // complains with the error message: "cannot access private property".
     points.value.push(markRaw(g));
     g.ref?.addToLayers(layers);
+    g.labelRef?.addToLayers(layers);
   }
 
   function removePoint(objId: number) {
@@ -23,6 +24,7 @@ export const useGeometryStore = defineStore("geometry", () => {
     if (idx >= 0) {
       const obj = points.value[idx];
       obj.ref?.removeFromLayers();
+      obj.labelRef?.removeFromLayers();
       points.value.splice(idx, 1);
     }
   }

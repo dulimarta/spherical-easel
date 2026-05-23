@@ -349,11 +349,15 @@ export default class Label extends Nodule {
     // this.glowingBackText.addTo(layers[LAYER.backgroundTextGlowing]);
   }
 
-  removeFromLayers(layers: Group[]): void {
-    layers[LAYER.foregroundLabel].remove(this.frontText);
-    layers[LAYER.foregroundLabelGlowing].remove(this.glowingFrontText);
-    layers[LAYER.backgroundLabel].remove(this.backText);
-    layers[LAYER.backgroundLabelGlowing].remove(this.glowingBackText);
+  removeFromLayers(layers: Group[] = []): void {
+    this.frontText.remove();
+    this.glowingFrontText.remove();
+    this.backText.remove();
+    this.glowingBackText.remove();
+    // layers[LAYER.foregroundLabel].remove(this.frontText);
+    // layers[LAYER.foregroundLabelGlowing].remove(this.glowingFrontText);
+    // layers[LAYER.backgroundLabel].remove(this.backText);
+    // layers[LAYER.backgroundLabelGlowing].remove(this.glowingBackText);
   }
 
   updateDisplay(): void {
@@ -603,7 +607,12 @@ export default class Label extends Nodule {
               labelText =
                 "(" +
                 `${this._value
-                .map(num => num.toFixed(PreferenceRef.instance.easelDecimalPrecision ?? SETTINGS.decimalPrecision))
+                  .map(num =>
+                    num.toFixed(
+                      PreferenceRef.instance.easelDecimalPrecision ??
+                        SETTINGS.decimalPrecision
+                    )
+                  )
                   .join(",")}` +
                 ")";
             } else {
@@ -612,19 +621,26 @@ export default class Label extends Nodule {
           } else {
             switch (this._valueDisplayMode) {
               case ValueDisplayMode.Number:
-                labelText = this._value[0].toFixed(PreferenceRef.instance.easelDecimalPrecision ?? SETTINGS.decimalPrecision);
+                labelText = this._value[0].toFixed(
+                  PreferenceRef.instance.easelDecimalPrecision ??
+                    SETTINGS.decimalPrecision
+                );
                 break;
               case ValueDisplayMode.MultipleOfPi:
                 labelText =
                   (this._value[0] / Math.PI).toFixed(
-                    PreferenceRef.instance.easelDecimalPrecision ?? SETTINGS.decimalPrecision
+                    PreferenceRef.instance.easelDecimalPrecision ??
+                      SETTINGS.decimalPrecision
                   ) + "\u{1D7B9}";
                 break;
               case ValueDisplayMode.DegreeDecimals:
                 labelText =
                   this._value[0]
                     .toDegrees()
-                  .toFixed(PreferenceRef.instance.easelDecimalPrecision ?? SETTINGS.decimalPrecision) + "\u{00B0}";
+                    .toFixed(
+                      PreferenceRef.instance.easelDecimalPrecision ??
+                        SETTINGS.decimalPrecision
+                    ) + "\u{00B0}";
                 break;
               case ValueDisplayMode.EarthModeMiles:
                 if (this.seLabelParentType == "polygon") {
@@ -633,12 +649,16 @@ export default class Label extends Nodule {
                       this._value[0] *
                       SETTINGS.earthMode.radiusMiles *
                       SETTINGS.earthMode.radiusMiles
-                  ).toFixed(PreferenceRef.instance.easelDecimalPrecision ?? SETTINGS.decimalPrecision) + " mi\u{00B2}"; //TODO: How do I internationalize this?
+                    ).toFixed(
+                      PreferenceRef.instance.easelDecimalPrecision ??
+                        SETTINGS.decimalPrecision
+                    ) + " mi\u{00B2}"; //TODO: How do I internationalize this?
                   break;
                 } else {
                   labelText =
                     (this._value[0] * SETTINGS.earthMode.radiusMiles).toFixed(
-                      PreferenceRef.instance.easelDecimalPrecision ?? SETTINGS.decimalPrecision
+                      PreferenceRef.instance.easelDecimalPrecision ??
+                        SETTINGS.decimalPrecision
                     ) + " mi"; //TODO: How do I internationalize this?
                   break;
                 }
@@ -649,13 +669,19 @@ export default class Label extends Nodule {
                       this._value[0] *
                       SETTINGS.earthMode.radiusKilometers *
                       SETTINGS.earthMode.radiusKilometers
-                    ).toFixed(PreferenceRef.instance.easelDecimalPrecision ?? SETTINGS.decimalPrecision) + " km\u{00B2}"; //TODO: How do I internationalize this?
+                    ).toFixed(
+                      PreferenceRef.instance.easelDecimalPrecision ??
+                        SETTINGS.decimalPrecision
+                    ) + " km\u{00B2}"; //TODO: How do I internationalize this?
                   break;
                 } else {
                   labelText =
                     (
                       this._value[0] * SETTINGS.earthMode.radiusKilometers
-                  ).toFixed(PreferenceRef.instance.easelDecimalPrecision ?? SETTINGS.decimalPrecision) + " km"; //TODO: How do I internationalize this?
+                    ).toFixed(
+                      PreferenceRef.instance.easelDecimalPrecision ??
+                        SETTINGS.decimalPrecision
+                    ) + " km"; //TODO: How do I internationalize this?
                   break;
                 }
             }
@@ -798,24 +824,44 @@ export default class Label extends Nodule {
     let latitudeString: string;
     if (latitude < 0) {
       latitudeString =
-        Math.abs(latitude).toDegrees().toFixed(PreferenceRef.instance.easelDecimalPrecision ?? SETTINGS.decimalPrecision) +
+        Math.abs(latitude)
+          .toDegrees()
+          .toFixed(
+            PreferenceRef.instance.easelDecimalPrecision ??
+              SETTINGS.decimalPrecision
+          ) +
         "\u{00B0}" +
         "S";
     } else {
       latitudeString =
-        latitude.toDegrees().toFixed(PreferenceRef.instance.easelDecimalPrecision ?? SETTINGS.decimalPrecision) +
+        latitude
+          .toDegrees()
+          .toFixed(
+            PreferenceRef.instance.easelDecimalPrecision ??
+              SETTINGS.decimalPrecision
+          ) +
         "\u{00B0}" +
         "N";
     }
     let longitudeString: string;
     if (longitude < 0) {
       longitudeString =
-        Math.abs(longitude).toDegrees().toFixed(PreferenceRef.instance.easelDecimalPrecision ?? SETTINGS.decimalPrecision) +
+        Math.abs(longitude)
+          .toDegrees()
+          .toFixed(
+            PreferenceRef.instance.easelDecimalPrecision ??
+              SETTINGS.decimalPrecision
+          ) +
         "\u{00B0}" +
         "W";
     } else {
       longitudeString =
-        longitude.toDegrees().toFixed(PreferenceRef.instance.easelDecimalPrecision ?? SETTINGS.decimalPrecision) +
+        longitude
+          .toDegrees()
+          .toFixed(
+            PreferenceRef.instance.easelDecimalPrecision ??
+              SETTINGS.decimalPrecision
+          ) +
         "\u{00B0}" +
         "E";
     }

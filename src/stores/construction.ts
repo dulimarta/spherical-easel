@@ -554,7 +554,7 @@ export const useConstructionStore = defineStore("construction", () => {
             );
           } else {
             console.debug(
-              `Public construction ${qd.id} refers to a non-existing construction own other user`
+              `Public construction ${qd.id} refers to a non-existing construction own by other user (${constructionRef.author})`
             );
           }
           return null;

@@ -1,3 +1,4 @@
+import Label from "@/plottables-spherical/Label";
 import Nodule from "@/plottables-spherical/Nodule";
 
 export abstract class CKNodule {
@@ -7,6 +8,8 @@ export abstract class CKNodule {
   public id: number;
   public name = "";
   public ref?: Nodule;
+  public labelRef?: Label;
+
   constructor() {
     this.id = CKNodule.NODE_COUNT++;
   }
