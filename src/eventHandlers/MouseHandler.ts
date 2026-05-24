@@ -17,6 +17,10 @@ import SETTINGS, { LAYER } from "@/global-settings-spherical";
 // import { SEText } from "@/models-spherical/SEText";
 import { Group } from "two.js/src/group";
 import EventBus from "../eventHandlers-spherical/EventBus";
+import { GeometryStoreType, useGeometryStore } from "@/stores/geometry";
+
+let _store: GeometryStoreType;
+
 export default abstract class MouseHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
   protected readonly Y_AXIS = new Vector3(0, 1, 0);
@@ -32,7 +36,12 @@ export default abstract class MouseHandler implements ToolStrategy {
   /**
    * Pinia Global Store
    */
-  // static store: SEStoreType;
+  get store(): GeometryStoreType {
+    if (!_store) {
+      _store = useGeometryStore();
+    }
+    return _store;
+  }
   /**
    * The vector location of the current and previous mouse event on the ideal unit sphere
    */
@@ -107,6 +116,20 @@ export default abstract class MouseHandler implements ToolStrategy {
    */
   mouseMoved(event: MouseEvent): void {
     this.trackMouseLocation(event);
+    this.store.points.forEach(p => {
+      p.ref?.normalDisplay();
+      p.labelRef?.normalDisplay();
+    });
+    const hitList = this.store.findNearByNodules(this.currentSphereVector);
+    // .filter(n => {
+    //   console.log("nearby nodule", n.id, n.name);
+    // });
+    console.log("nearby count", hitList.length);
+    if (hitList.length > 0) {
+      const hitTarget = hitList[0];
+      hitTarget.ref?.glowingDisplay();
+      hitTarget.labelRef?.glowingDisplay();
+    }
   }
 
   // Provide this function to allow subclasses call directly without going through

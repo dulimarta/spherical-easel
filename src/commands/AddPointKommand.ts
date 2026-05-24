@@ -13,8 +13,15 @@ export class AddPointKommand extends Command {
     super();
     this.ptObject = new CKPoint(position);
     const labelObject = new Label(this.ptObject.name, "point");
-    // labelObject.defaultName = this.ptObject.name;
-    labelObject.positionVector = position;
+    labelObject.positionVector = position
+      .add(
+        new Vector3(
+          0.05 * Math.sign(position.x),
+          0.05 * Math.sign(position.y),
+          0.0
+        )
+      )
+      .normalize();
     labelObject.updateStyle(StyleCategory.Label, {
       labelDisplayText: this.ptObject.name
     });
@@ -24,7 +31,7 @@ export class AddPointKommand extends Command {
   }
 
   restoreState(preventGraphicalUpdate?: boolean): void {
-    console.debug("Restoring state of AddPointKommand:", this.ptObject.name);
+    // console.debug("Restoring state of AddPointKommand:", this.ptObject.name);
     this.store.removePoint(this.ptObject.id);
   }
 

@@ -176,6 +176,7 @@ export default class Point extends Nodule {
   }
 
   glowingDisplay(): void {
+    console.debug("Showing glowing display for point:", this.name);
     if (this._locationVector.z > 0) {
       this.frontGlowingDisplay();
     } else {

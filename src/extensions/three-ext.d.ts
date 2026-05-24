@@ -77,9 +77,9 @@ declare module "three/src/math/Vector4" {
      * @param vector
      */
     distanceTo(vector: Vector4 | Vector3): number;
-  }
 
-  to3Vector():Vector3;
+    to3Vector(): Vector3;
+  }
 }
 
 declare module "three/src/math/Matrix4" {

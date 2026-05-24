@@ -1,5 +1,6 @@
 import Label from "@/plottables-spherical/Label";
 import Nodule from "@/plottables-spherical/Nodule";
+import { Vector3 } from "three";
 
 export abstract class CKNodule {
   static NODE_COUNT = 0;
@@ -50,4 +51,6 @@ export abstract class CKNodule {
       this._kids[0].removeThisNode();
     }
   }
+
+  public abstract isHitAt(unitIdealVector: Vector3): boolean;
 }
