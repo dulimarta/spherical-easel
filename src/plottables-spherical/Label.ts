@@ -309,7 +309,6 @@ export default class Label extends Nodule {
   }
 
   glowingDisplay(): void {
-    console.debug("Showing glowing display for label:", this.name);
     if (this._locationVector.z > 0) {
       this.frontGlowingDisplay();
     } else {

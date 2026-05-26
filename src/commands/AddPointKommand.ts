@@ -1,33 +1,31 @@
 import { SELabel } from "@/models-spherical/SELabel";
 import { Command } from "./Command";
 import { CKPoint } from "@/models/CKPoint";
-import { Vector3 } from "three";
+import { Vector2, Vector3 } from "three";
 import Label from "@/plottables-spherical/Label";
 import { LabelParentTypes } from "@/types";
 import { DisplayStyle } from "@/plottables-spherical/Nodule";
 import { StyleCategory } from "@/types/Styles";
+const TEMP_LABEL_OFFSET = new Vector3();
 export class AddPointKommand extends Command {
   private ptObject: CKPoint;
   // private ptLabel: SELabel;
   constructor(position: Vector3) {
     super();
     this.ptObject = new CKPoint(position);
+    // Place the label radially away from the point
+    // This is not a perfect trick, but it works for now
+    TEMP_LABEL_OFFSET.set(position.x, position.y, 0)
+      .normalize()
+      .multiplyScalar(0.05);
     const labelObject = new Label(this.ptObject.name, "point");
-    labelObject.positionVector = position
-      .add(
-        new Vector3(
-          0.05 * Math.sign(position.x),
-          0.05 * Math.sign(position.y),
-          0.0
-        )
-      )
-      .normalize();
+    labelObject.positionVector = position.add(TEMP_LABEL_OFFSET).normalize();
     labelObject.updateStyle(StyleCategory.Label, {
       labelDisplayText: this.ptObject.name
     });
     labelObject.stylize(DisplayStyle.ApplyCurrentVariables);
     this.ptObject.labelRef = labelObject;
-    console.log("Created point:", this.ptObject);
+    // console.log("Created point:", this.ptObject);
   }
 
   restoreState(preventGraphicalUpdate?: boolean): void {

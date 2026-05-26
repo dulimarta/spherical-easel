@@ -9,9 +9,15 @@ import { AddAntipodalPointCommand } from "@/commands-hyperbolic/AddAntipodalPoin
 import { HEIntersectionPoint } from "@/models-hyperbolic/HEIntersectionPoint";
 import { HELabel } from "@/models-hyperbolic/HELabel";
 import { HELine } from "@/models-hyperbolic/HELine";
-
+import { useHyperbolicStore } from "@/stores/hyperbolic";
+let _store: HEStoreType | null = null;
 export class PoseTracker implements HyperbolicToolStrategy {
-  static hyperStore: HEStoreType;
+  get hyperStore(): HEStoreType {
+    if (!_store) {
+      _store = useHyperbolicStore();
+    }
+    return _store;
+  }
   protected scene: Scene;
 
   //flags
@@ -59,13 +65,13 @@ export class PoseTracker implements HyperbolicToolStrategy {
     this.prepareForNextEvent();
 
     // update the hit arrays as necessary
-    if (PoseTracker.hyperStore.objectIntersections.length === 0) {
+    if (this.hyperStore.objectIntersections.length === 0) {
       return;
     }
 
-    this.hitHENodules = PoseTracker.hyperStore.objectIntersections
+    this.hitHENodules = this.hyperStore.objectIntersections
       .map(intersect => {
-        return PoseTracker.hyperStore.getObjectById(intersect.object.name); // returns null for surfaces
+        return this.hyperStore.getObjectById(intersect.object.name); // returns null for surfaces
       })
       .filter((obj): obj is HENodule => obj !== null)
       .filter((n: HENodule) => {
@@ -127,32 +133,29 @@ export class PoseTracker implements HyperbolicToolStrategy {
 
     // update the flags
     this.somethingIsHit =
-      PoseTracker.hyperStore.objectIntersections.length > 0 ||
-      PoseTracker.hyperStore.surfaceIntersections.length > 0;
+      this.hyperStore.objectIntersections.length > 0 ||
+      this.hyperStore.surfaceIntersections.length > 0;
     this.aSurfaceIsIntersected =
-      PoseTracker.hyperStore.surfaceIntersections.length > 0;
+      this.hyperStore.surfaceIntersections.length > 0;
     this.hyperboloidIsFirstSurfaceHit = this.aSurfaceIsIntersected
-      ? PoseTracker.hyperStore.surfaceIntersections[0].object.name.match(
-          /(Sheet)/
-        ) !== null
+      ? this.hyperStore.surfaceIntersections[0].object.name.match(/(Sheet)/) !==
+        null
       : false; // THIS SHOULD ONLY BE USED WHERE WE KNOW this.aSurfaceIsIntersected IS TRUE
     this.idealStripIsFirstSurfaceHit = this.aSurfaceIsIntersected
-      ? PoseTracker.hyperStore.surfaceIntersections[0].object.name.match(
-          /(Ideal)/
-        ) !== null
+      ? this.hyperStore.surfaceIntersections[0].object.name.match(/(Ideal)/) !==
+        null
       : false; // THIS SHOULD ONLY BE USED WHERE WE KNOW this.aSurfaceIsIntersected IS TRUE
     this.ultraStripIsFirstSurfaceHit = this.aSurfaceIsIntersected
-      ? PoseTracker.hyperStore.surfaceIntersections[0].object.name.match(
-          /(Ultra)/
-        ) !== null
+      ? this.hyperStore.surfaceIntersections[0].object.name.match(/(Ultra)/) !==
+        null
       : false; // THIS SHOULD ONLY BE USED WHERE WE KNOW this.aSurfaceIsIntersected IS TRUE
 
     this.hyperboloidFirstHitOverall =
-      PoseTracker.hyperStore.hyperboloidIsClosestIntersection;
+      this.hyperStore.hyperboloidIsClosestIntersection;
     this.idealStripFirstHitOverall =
-      PoseTracker.hyperStore.idealStripIsClosestIntersection;
+      this.hyperStore.idealStripIsClosestIntersection;
     this.ultraStripFirstHitOverall =
-      PoseTracker.hyperStore.ultraStripIsClosestIntersection;
+      this.hyperStore.ultraStripIsClosestIntersection;
   }
   static addCreateAntipodeCommand(
     parentPoint: HEPoint,

@@ -76,15 +76,39 @@
                 mdi-circle-half
               </v-icon>
             </v-btn>
+            <v-tooltip
+              activator="[value='lowerSheet']"
+              location="top left"
+              class="opacity-70">
+              <span>{{ t("lowerSheet") }}</span>
+            </v-tooltip>
             <v-btn icon color="blue" value="idealStrip">
               <v-icon>mdi-circle-expand</v-icon>
             </v-btn>
+            <v-tooltip
+              activator="[value='idealStrip']"
+              location="top left"
+              class="opacity-70">
+              <span>{{ t("idealStrip") }}</span>
+            </v-tooltip>
             <v-btn icon color="green" value="polarGrid">
               <v-icon>mdi-grid</v-icon>
             </v-btn>
+            <v-tooltip
+              activator="[value='polarGrid']"
+              location="top left"
+              class="opacity-70">
+              <span>{{ t("polarGrid") }}</span>
+            </v-tooltip>
             <v-btn icon color="blue" value="ultraStrip">
               <v-icon>mdi-surround-sound</v-icon>
             </v-btn>
+            <v-tooltip
+              activator="[value='ultraStrip']"
+              location="top left"
+              class="opacity-70">
+              <span>{{ t("ultraStrip") }}</span>
+            </v-tooltip>
           </v-btn-toggle>
         </div>
       </template>
@@ -118,7 +142,6 @@ import {
   Vector3,
   Vector2
 } from "three";
-import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import * as THREE from "three/webgpu";
 import CameraControls from "camera-controls";
 import { DispatcherEvent } from "camera-controls/dist/EventDispatcher";
@@ -135,6 +158,7 @@ import {
   watch,
   reactive
 } from "vue";
+import { useI18n } from "vue-i18n";
 import {
   useIdle,
   useMouseInElement,
@@ -149,7 +173,7 @@ import { storeToRefs } from "pinia";
 
 // Tool Handlers
 import { HyperbolicToolStrategy } from "@/eventHandlers-hyperbolic/ToolStrategy";
-import { PointHandler } from "@/eventHandlers-hyperbolic/PointHandler";
+import { SimplePointHandler } from "@/eventHandlers-hyperbolic/SimplePointHandler";
 import { CircleHandler } from "@/eventHandlers-hyperbolic/CircleHandler";
 import { LineHandler } from "@/eventHandlers-hyperbolic/LineHandler";
 import { TextHandler } from "@/eventHandlers-hyperbolic/TextHandler";
@@ -176,6 +200,8 @@ import { label, uniform } from "three/tsl";
 import EventBus from "@/eventHandlers-spherical/EventBus";
 import { onBeforeUnmount } from "vue";
 import { Handler } from "mitt";
+import { V } from "vitest/dist/chunks/reporters.d.BFLkQcL6.js";
+const { t } = useI18n({ useScope: "local" });
 
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
@@ -266,7 +292,7 @@ scene.background = new THREE.Color(0xf5f5f5);
 //scene.environment = await new THREE.RGBELoader().loadAsync("env.hdr");
 
 let currentTools: Array<HyperbolicToolStrategy> = [];
-let pointTool: PointHandler | null = null;
+let pointTool: SimplePointHandler | null = null;
 let lineTool: LineHandler | null = null;
 let segmentTool: LineHandler | null = null;
 let circleTool: CircleHandler | null = null;
@@ -494,7 +520,7 @@ watch(
     enableCameraControl.value = false;
     switch (mode) {
       case "point":
-        if (pointTool === null) pointTool = new PointHandler(scene);
+        if (pointTool === null) pointTool = new SimplePointHandler(scene);
         currentTools.push(pointTool);
         break;
       case "line":
@@ -1124,3 +1150,19 @@ function constantAngleToLength(
   );
 }
 </script>
+<i18n lang="json" locale="en">
+{
+  "lowerSheet": "Lower Sheet",
+  "idealStrip": "Ideal Points Strip",
+  "ultraStrip": "Ultra Ideal Points Strip",
+  "polarGrid": "Polar Grid"
+}
+</i18n>
+<i18n lang="json" locale="id">
+{
+  "lowerSheet": "Lembaran Bawah",
+  "idealStrip": "Pita Titik Ideal",
+  "ultraStrip": "Pita Titik Ultra Ideal",
+  "polarGrid": "Grid Polar"
+}
+</i18n>

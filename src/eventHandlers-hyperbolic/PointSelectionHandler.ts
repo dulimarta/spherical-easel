@@ -56,7 +56,7 @@ export class PointSelectionHandler extends PoseTracker {
         snapPoint: null,
         snapOneOrTwoDim: null
       });
-      PoseTracker.hyperStore.addTempObject(tempPoint);
+      this.hyperStore.addTempObject(tempPoint);
       tempPoint.addGroupToScene(this.scene); // Adds the group that contains(or not, depending on the state of the handler) the three types of mesh to the scene
       tempPoint.removeAllMeshesFromGroup(); // don't display the temp point
 
@@ -145,7 +145,8 @@ export class PointSelectionHandler extends PoseTracker {
         }
       } else if (activeTempPointInfo.snapOneOrTwoDim) {
         // Set the location of the temporary point by snapping to appropriate object (if any)
-        const nearBy = activeTempPointInfo.snapOneOrTwoDim.closestVector(possibleLocation);
+        const nearBy =
+          activeTempPointInfo.snapOneOrTwoDim.closestVector(possibleLocation);
         if (nearBy) {
           activeTempPointInfo.tempHEPoint.position = nearBy;
           activeTempPointInfo.tempHEPoint.updateOrAddToGroup(); // this must be called after setting the position of the point because the position is used to determine which of the three meshes (hyperboloid, ideal strip, or ultra strip) should be added to the group and displayed as the temporary point.
@@ -225,23 +226,23 @@ export class PointSelectionHandler extends PoseTracker {
       //   this._startHEPoint = null;
     } else {
       const location = vec3ToVec4(
-        PoseTracker.hyperStore.surfaceIntersections[0].point,
+        this.hyperStore.surfaceIntersections[0].point,
         this.getWCoordinate()
       );
       if (this.hitHELines.length > 0) {
         const nearBy = this.hitHELines[0].closestVector(location);
         if (nearBy) {
-        const possibleLocation = new Vector4().copy(nearBy);
-        if (this.isLocationAlreadySelected(possibleLocation, index)) {
-          return false;
-        }
-        // The selected point will be  on a line
-        //  Eventually, we will create a new HEPointOnOneOrTwoDimensional
-        activeSelectedPointInfo.oneOrTwoDimParent = this.hitHELines[0];
-        activeSelectedPointInfo.locationVector.copy(possibleLocation);
+          const possibleLocation = new Vector4().copy(nearBy);
+          if (this.isLocationAlreadySelected(possibleLocation, index)) {
+            return false;
+          }
+          // The selected point will be  on a line
+          //  Eventually, we will create a new HEPointOnOneOrTwoDimensional
+          activeSelectedPointInfo.oneOrTwoDimParent = this.hitHELines[0];
+          activeSelectedPointInfo.locationVector.copy(possibleLocation);
 
-        activeTempPointInfo.tempHEPoint.position = possibleLocation;
-      }
+          activeTempPointInfo.tempHEPoint.position = possibleLocation;
+        }
         // }
         //else if (this.hitSECircles.length > 0) {
         //   // The start of the line will be a point on a circle
@@ -321,7 +322,7 @@ export class PointSelectionHandler extends PoseTracker {
 
   addTubeAndConeToScene() {
     this.scene.add(this._tempTube);
-    const location = PoseTracker.hyperStore.surfaceIntersections[0].point;
+    const location = this.hyperStore.surfaceIntersections[0].point;
     const upper = location.z > 0;
     this._tempTubeMaterial.position = new THREE.Vector4(
       0,
@@ -359,7 +360,7 @@ export class PointSelectionHandler extends PoseTracker {
         this.removeTubeAndConeFromScene(); // default to remove if something goes wrong
     }
     return vec3ToVec4(
-      PoseTracker.hyperStore.surfaceIntersections[0].point,
+      this.hyperStore.surfaceIntersections[0].point,
       this.getWCoordinate()
     );
   }
@@ -442,7 +443,7 @@ export class PointSelectionHandler extends PoseTracker {
       this.filteredIntersectionPointsList.filter(
         pt =>
           pt.position.w === this.getWCoordinate() && //make sure that only points in the first hit surface are returned
-          !PoseTracker.hyperStore.closestIntersectionIsSurface // if the closest intersection is a surface then there are no points to interact with
+          !this.hyperStore.closestIntersectionIsSurface // if the closest intersection is a surface then there are no points to interact with
       );
   }
 
@@ -473,12 +474,12 @@ export class PointSelectionHandler extends PoseTracker {
         if (possibleParent) {
           // selected a location over a one or two dimensional object
           const closestLocation = possibleParent.closestVector(location);
-            vtx = new HEPointOnOneOrTwoDimensional(
-              possibleParent,
-              closestLocation!
-            );
-            newHELabel = new HELabel("point", vtx, closestLocation!, vtx.name);
-            vtx.setLabel(newHELabel);
+          vtx = new HEPointOnOneOrTwoDimensional(
+            possibleParent,
+            closestLocation!
+          );
+          newHELabel = new HELabel("point", vtx, closestLocation!, vtx.name);
+          vtx.setLabel(newHELabel);
         } else {
           // Selected an empty location
           vtx = new HEPoint(location);
