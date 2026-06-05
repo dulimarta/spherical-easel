@@ -4,6 +4,7 @@ import { Group } from "two.js/src/group";
 import { createPoint } from "./MeshFactory";
 import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import { ModelPublisher } from "@/models/CKNodule";
+import { CKPoint } from "@/models/CKPoint";
 
 export class Point extends Nodule {
   _pointMesh: Mesh;
@@ -31,6 +32,8 @@ export class Point extends Nodule {
     throw new Error("Method not implemented.");
   }
   modelUpdated(): void {
-    throw new Error("Method not implemented.");
+    const model = this.modelRef as CKPoint;
+    const pos = model.ga_coord.vector(2);
+    this._pointMesh.position.set(pos[0], pos[1], pos[2]);
   }
 }
