@@ -1,11 +1,20 @@
 import Label from "@/plottables-spherical/Label";
-import Nodule from "@/plottables-spherical/Nodule";
+import { Nodule } from "@/plottables/Nodule";
 import { Vector3 } from "three";
 
-export abstract class CKNodule {
+export interface ModelSubscriber {
+  modelUpdated(): void;
+}
+export interface ModelPublisher {
+  subscribe(subscriber: ModelSubscriber): void;
+  // unsubscribe(subscriber: ModelSubscriber): void;
+  notifyModelUpdated(): void;
+}
+export abstract class CKNodule implements ModelPublisher {
   static NODE_COUNT = 0;
   protected _parent: Array<WeakRef<CKNodule>> = [];
   protected _kids: Array<CKNodule> = [];
+  protected _subscribers: Array<ModelSubscriber> = [];
   public id: number;
   public name = "";
   public ref?: Nodule;
@@ -52,5 +61,12 @@ export abstract class CKNodule {
     }
   }
 
+  subscribe(subscriber: ModelSubscriber): void {
+    this._subscribers.push(subscriber);
+  }
+
+  notifyModelUpdated(): void {
+    this._subscribers.forEach(subscriber => subscriber.modelUpdated());
+  }
   public abstract isHitAt(unitIdealVector: Vector3): boolean;
 }

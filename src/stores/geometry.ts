@@ -1,17 +1,19 @@
 import { CKNodule } from "@/models/CKNodule";
 import { CKPoint } from "@/models/CKPoint";
 import { defineStore } from "pinia";
-import { Vector3 } from "three";
+import { Scene, Vector3 } from "three";
 import { Group } from "two.js/src/group";
 import { ref, markRaw, Ref } from "vue";
 
 export const useGeometryStore = defineStore("geometry", () => {
   let layers: Array<Group> = [];
+  let threejsScene: Scene | null = null;
   const points: Ref<Array<CKNodule>> = ref([]);
   const nodules: Ref<Array<CKNodule>> = ref([]);
 
-  function setLayers(newLayers: Array<Group>) {
+  function setLayers(newLayers: Array<Group>, scene: Scene | null) {
     layers = newLayers;
+    threejsScene = scene;
   }
   function addPoint(g: CKPoint) {
     // Using "markRaw" to prevent Vue from making the CKPoint object reactive,
@@ -19,7 +21,7 @@ export const useGeometryStore = defineStore("geometry", () => {
     // complains with the error message: "cannot access private property".
     points.value.push(markRaw(g));
     nodules.value.push(markRaw(g));
-    g.ref?.addToLayers(layers);
+    g.ref?.addToLayers(layers, threejsScene);
     g.labelRef?.addToLayers(layers);
   }
 

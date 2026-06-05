@@ -60,6 +60,6 @@ const heStore = useHyperbolicStore();
 Command.setGlobalStore(seStore, heStore);
 MouseHandler.setGlobalStore(seStore);
 SENodule.setGlobalStore(seStore);
-PoseTracker.hyperStore = heStore;
+// PoseTracker.hyperStore = heStore;
 HENodule.hyperStore = heStore;
 // Nodule.setGlobalStore(seStore);

@@ -1,9 +1,11 @@
 import { useGA } from "@/composables/ga";
 import { Vector3 } from "three";
-import Algebra, { AlgebraElement } from "ts-geometric-algebra";
+import { AlgebraElement } from "ts-geometric-algebra";
 import { CKNodule } from "./CKNodule";
-import Point from "@/plottables-spherical/Point";
-import { DisplayStyle } from "@/plottables-spherical/Nodule";
+// import Point from "@/plottables-spherical/Point";
+// import { DisplayStyle } from "@/plottables-spherical/Nodule";
+import { NewPoint } from "@/plottables-spherical/NewPoint";
+import { Point } from "@/plottables-hyperbolic/Point";
 const ega = useGA(false); // false for elliptic, true for hyperbolic
 const hga = useGA(true);
 export class CKPoint extends CKNodule {
@@ -16,19 +18,24 @@ export class CKPoint extends CKNodule {
     console.debug("Hyperbolic check (should be -1):", checkHyperBolic);
     if (checkSpherical > 1.0) {
       // checkHyperBolic: -1 for proper point
-      // checkSpherical: 0 for direction/point at infinity
-      // checkSpherical: 1 for ultra point
+      // checkHyperBolic: 0 for direction/point at infinity
+      // checkHyperBolic: 1 for ultra point
       this.ga_coord = hga.makePoint(pos.x, pos.y, pos.z);
+      const p = new Point(this);
+      this.subscribe(p);
+      this.ref = p;
     } else {
       this.ga_coord = ega.makePoint(pos.x, pos.y, pos.z);
+      const p = new NewPoint(this);
+      this.ref = p;
+      this.subscribe(p);
     }
     this.name = `P${this.id}`;
-    const p = new Point(this.name);
-    p.positionVector = pos;
-    p.stylize(DisplayStyle.ApplyCurrentVariables);
-    p.setVisible(true);
-    p.adjustSize();
-    this.ref = p;
+    this.notifyModelUpdated();
+    // p.positionVector = pos;
+    // p.stylize(DisplayStyle.ApplyCurrentVariables);
+    // p.setVisible(true);
+    // p.adjustSize();
   }
 
   isHitAt(unitIdealVector: Vector3): boolean {

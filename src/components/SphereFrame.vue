@@ -314,7 +314,7 @@ onBeforeMount(async (): Promise<void> => {
     }
   }
 
-  geoStore.setLayers(layers);
+  geoStore.setLayers(layers, null);
   // Create the boundary circle immediately using defaults
   boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
   boundaryCircle.noFill();

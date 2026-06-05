@@ -10,7 +10,7 @@ import {
   svgStyleType,
   toSVGType
 } from "@/types";
-import { Vector3 } from "three";
+import { Scene, Vector3 } from "three";
 import { Group } from "two.js/src/group";
 import convert from "color-convert";
 import { Matrix } from "two.js/src/matrix";
@@ -55,7 +55,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
    * Add various TwoJS (SVG) elements of this nodule to appropriate layers
    * @param {Group[]} layers
    */
-  abstract addToLayers(layers: Group[]): void;
+  abstract addToLayers(layers: Group[], scene: Scene | null): void;
 
   /**
    * This operation reverses the action performed by addToLayers()

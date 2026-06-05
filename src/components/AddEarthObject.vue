@@ -492,8 +492,8 @@ function findLongitudeInObjectTree(long: number): SELongitude | undefined {
 
 onMounted(() => {
   // set the show(North|South)Pole.value if the (South|North)Pole has already been created and put into the object tree
-  seSouthPole = SENodule.unregisteredSEPointSouthPole; //findPoleInObjectTree(Poles.SOUTH);
-  seNorthPole = SENodule.unregisteredSEPointNorthPole;
+  seSouthPole = SEPoint.unregisteredSEPointSouthPole; //findPoleInObjectTree(Poles.SOUTH);
+  seNorthPole = SEPoint.unregisteredSEPointNorthPole;
   if (seNorthPole !== undefined) {
     showNorthPole.value = seNorthPole.showing;
   }
@@ -684,8 +684,8 @@ function setSEPoleVariable(pole: Poles): undefined | CommandGroup {
   //Find the north or south pole in the store of sePoints, if it exists
   let sePole =
     pole == Poles.NORTH
-      ? SENodule.unregisteredSEPointNorthPole
-      : SENodule.unregisteredSEPointSouthPole;
+      ? SEPoint.unregisteredSEPointNorthPole
+      : SEPoint.unregisteredSEPointSouthPole;
   // If the north or south pole already exists then this next code block will not execute (because findPoleInObjectTree will return the pole) so you cannot
   // create two points at either pole
   let cmdGroup: CommandGroup | undefined = undefined;

@@ -169,6 +169,7 @@ import {
 // Store imports
 import { useHyperbolicStore } from "@/stores/hyperbolic";
 import { useSEStore } from "@/stores/se";
+import { useGeometryStore } from "@/stores/geometry";
 import { storeToRefs } from "pinia";
 
 // Tool Handlers
@@ -205,6 +206,7 @@ const { t } = useI18n({ useScope: "local" });
 
 const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
+const geoStore = useGeometryStore();
 const { idle } = useIdle(250); // in milliseconds
 const {
   surfaceIntersections,
@@ -578,7 +580,7 @@ onMounted(async () => {
   camera.updateProjectionMatrix();
 
   hyperStore.setScene(scene, camera);
-
+  geoStore.setLayers([], scene);
   cameraQuaternion.value.copy(camera.quaternion);
 
   cameraFieldOfView.value = camera.fov;

@@ -14,7 +14,7 @@ export class HyperbolicCurve extends Curve<Vector3> {
   // Compute the points of a hyperbola on a plane
   // rotated on the X-axis
   dir1: Vector3 = new Vector3(0, 0, 1);
-  dir2: Vector3 = new Vector3(1, 0, 0); // Second vector is alway the X-axis
+  dir2: Vector3 = new Vector3(1, 0, 0); // Second vector is always the X-axis
   outVec = new Vector3();
   aCoeff: number = 1;
   bCoeff: number = 1;

@@ -16,18 +16,18 @@ const toolGroupInternal: Array<ToolGroup> = [
     tools: ["point" /*, "line", "segment", "circle", "text" */]
   },
   { group: "EditTools", tools: ["select", "delete" /*, "dummy" */] },
-  // {
-  //   group: "DisplayTools",
-  //   tools: [
-  //     "hide",
-  //     "toggleLabelDisplay",
-  //     "move",
-  //     "rotate",
-  //     "zoomIn",
-  //     "zoomOut",
-  //     "zoomFit"
-  //   ]
-  // },
+  {
+    group: "DisplayTools",
+    tools: [
+      //     "hide",
+      //     "toggleLabelDisplay",
+      //     "move",
+      "rotate"
+      //     "zoomIn",
+      //     "zoomOut",
+      //     "zoomFit"
+    ]
+  },
   // {
   //   group: "ConstructionTools",
   //   tools: [

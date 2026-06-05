@@ -15,16 +15,16 @@ export class AddPointKommand extends Command {
     this.ptObject = new CKPoint(position);
     // Place the label radially away from the point
     // This is not a perfect trick, but it works for now
-    TEMP_LABEL_OFFSET.set(position.x, position.y, 0)
-      .normalize()
-      .multiplyScalar(0.05);
-    const labelObject = new Label(this.ptObject.name, "point");
-    labelObject.positionVector = position.add(TEMP_LABEL_OFFSET).normalize();
-    labelObject.updateStyle(StyleCategory.Label, {
-      labelDisplayText: this.ptObject.name
-    });
-    labelObject.stylize(DisplayStyle.ApplyCurrentVariables);
-    this.ptObject.labelRef = labelObject;
+    // TEMP_LABEL_OFFSET.set(position.x, position.y, 0)
+    //   .normalize()
+    //   .multiplyScalar(0.05);
+    // const labelObject = new Label(this.ptObject.name, "point");
+    // labelObject.positionVector = position.add(TEMP_LABEL_OFFSET).normalize();
+    // labelObject.updateStyle(StyleCategory.Label, {
+    //   labelDisplayText: this.ptObject.name
+    // });
+    // labelObject.stylize(DisplayStyle.ApplyCurrentVariables);
+    // this.ptObject.labelRef = labelObject;
     // console.log("Created point:", this.ptObject);
   }
 
