@@ -15,6 +15,7 @@ export abstract class CKNodule implements ModelPublisher {
   protected _parent: Array<WeakRef<CKNodule>> = [];
   protected _kids: Array<CKNodule> = [];
   protected _subscribers: Array<ModelSubscriber> = [];
+  protected _highlighted = false;
   public id: number;
   public name = "";
   public ref?: Nodule;
@@ -59,6 +60,15 @@ export abstract class CKNodule implements ModelPublisher {
     while (this._kids.length > 0) {
       this._kids[0].removeThisNode();
     }
+  }
+
+  public setHighlight(highlight: boolean) {
+    this._highlighted = highlight;
+    this.notifyModelUpdated();
+  }
+
+  public isHighlighted(): boolean {
+    return this._highlighted;
   }
 
   subscribe(subscriber: ModelSubscriber): void {

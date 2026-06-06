@@ -21,7 +21,7 @@ export class CKPoint extends CKNodule {
       // checkHyperBolic: 0 for direction/point at infinity
       // checkHyperBolic: 1 for ultra point
       this.ga_coord = hga.makePoint(pos.x, pos.y, pos.z);
-      const p = new Point(this);
+      const p = new Point(`P${this.id}`, this);
       this.subscribe(p);
       this.ref = p;
     } else {
@@ -45,9 +45,12 @@ export class CKPoint extends CKNodule {
       unitIdealVector.z
     );
     const distance = this.ga_coord.vee(checkPoint).norm();
-    // console.debug(
-    //   `Distance between point ${this.ga_coord} and hit point ${checkPoint} is ${distance}`
-    // );
+    console.debug(
+      `Distance between point ${this.ga_coord} and hit point ${checkPoint} is ${distance}`
+    );
+    if (distance < 1e-2) {
+      this.setHighlight(true);
+    }
     return distance < 1e-2;
   }
 }

@@ -1,16 +1,22 @@
 import { Nodule } from "@/plottables/Nodule";
-import { Mesh, Scene } from "three";
+import { Color, Mesh, MeshBasicMaterial, Scene, SphereGeometry } from "three";
 import { Group } from "two.js/src/group";
 import { createPoint } from "./MeshFactory";
 import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import { ModelPublisher } from "@/models/CKNodule";
 import { CKPoint } from "@/models/CKPoint";
+import { CustomPointMaterial } from "./MaterialFactory";
 
 export class Point extends Nodule {
   _pointMesh: Mesh;
-  constructor(modelRef: ModelPublisher) {
-    super("HyperbolicPoint", modelRef);
-    this._pointMesh = createPoint("TestPoint", false);
+  private normalDisplayColor: Color = new Color(0xffff00);
+  constructor(name: string, modelRef: ModelPublisher) {
+    super(name, modelRef);
+    this._pointMesh = new Mesh(
+      new SphereGeometry(0.05, 32, 32),
+      new MeshBasicMaterial({ color: 0x00ff00 })
+    );
+    this._pointMesh.name = this.name;
   }
   show(): void {
     throw new Error("Method not implemented.");
@@ -20,20 +26,33 @@ export class Point extends Nodule {
   }
   addToLayers(layers: Group[], scene: Scene | null): void {
     scene?.add(this._pointMesh);
-    this._pointMesh.layers.set(HYPERBOLIC_LAYER.upperSheetPoints);
+    console.debug(
+      "After adding point to scene:",
+      scene?.children.map(child => child.name).filter(name => name.length > 0)
+    );
+    this._pointMesh.layers.enable(HYPERBOLIC_LAYER.upperSheetPoints);
   }
   removeFromLayers(): void {
     this._pointMesh.removeFromParent();
   }
   glowingDisplay(): void {
-    throw new Error("Method not implemented.");
+    const z = (this._pointMesh.material as CustomPointMaterial).color.getHex();
+    this.normalDisplayColor = new Color(z);
+    (this._pointMesh.material as CustomPointMaterial).color.set(0xff0000);
   }
   normalDisplay(): void {
-    throw new Error("Method not implemented.");
+    (this._pointMesh.material as CustomPointMaterial).color.set(
+      this.normalDisplayColor
+    );
   }
   modelUpdated(): void {
     const model = this.modelRef as CKPoint;
     const pos = model.ga_coord.vector(2);
     this._pointMesh.position.set(pos[0], pos[1], pos[2]);
+    if (model.isHighlighted()) {
+      this.glowingDisplay();
+    } else {
+      this.normalDisplay();
+    }
   }
 }

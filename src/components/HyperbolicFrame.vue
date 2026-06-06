@@ -201,7 +201,6 @@ import { label, uniform } from "three/tsl";
 import EventBus from "@/eventHandlers-spherical/EventBus";
 import { onBeforeUnmount } from "vue";
 import { Handler } from "mitt";
-import { V } from "vitest/dist/chunks/reporters.d.BFLkQcL6.js";
 const { t } = useI18n({ useScope: "local" });
 
 const hyperStore = useHyperbolicStore();
@@ -210,7 +209,6 @@ const geoStore = useGeometryStore();
 const { idle } = useIdle(250); // in milliseconds
 const {
   surfaceIntersections,
-  objectIntersections,
   closestIntersectionIsSurface,
   cameraQuaternion,
   cameraDollyDistance,
@@ -220,6 +218,7 @@ const {
   idealStripIsClosestIntersection,
   ultraStripIsClosestIntersection
 } = storeToRefs(hyperStore);
+const { objectIntersections } = storeToRefs(geoStore);
 const { actionMode } = storeToRefs(seStore);
 const enableCameraControl = ref(false);
 const hasUpdatedCameraControls = ref(false);
@@ -1036,15 +1035,21 @@ function doMouseLeave(ev: MouseEvent) {
 // mouse with the objects in the scene then
 // call the mouseMoved function of the current tool
 function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
+  // console.debug("Mouse move", ev);
   mouseCoordNormalized.value.x =
     2 * (elementX.value / renderer.domElement.clientWidth) - 1;
   mouseCoordNormalized.value.y =
     1 - 2 * (elementY.value / renderer.domElement.clientHeight);
   rayCaster.setFromCamera(mouseCoordNormalized.value, camera);
 
+  // console.debug(
+  //   "Scene children",
+  //   scene.children.map(c => c.name)
+  // );
   intersectionList.value = rayCaster
-    .intersectObjects(scene.children, true)
+    .intersectObjects(scene.children, false)
     .filter((iSect, idx) => {
+      // console.debug("Checking intersection with", iSect.object.name);
       if (iSect.object.name.length === 0) {
         return false; // if the intersection is not with a named object, ignore it
       } else {
@@ -1062,7 +1067,12 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
     intersectionList.value.partition(x => {
       return x.object.name.match(regex) !== null;
     });
-
+  objectIntersections.value.map(iSect => {
+    console.debug(
+      `Object intersection with ${iSect.object.name} Type:${iSect.object.type} at`,
+      iSect.point.toFixed(2)
+    );
+  });
   // Set the closest intersection flags
   let closestIntersection: THREE.Intersection | null =
     intersectionList.value[0];

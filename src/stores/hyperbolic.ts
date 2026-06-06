@@ -32,18 +32,19 @@ import {
 import { intersectLineWithLine, vec4ToVec3 } from "@/utils/helpingHEFunctions";
 import { rank_of_type } from "@/utils/helpingfunctions";
 import { HEIntersectionPoint } from "@/models-hyperbolic/HEIntersectionPoint";
+import { CKNodule } from "@/models/CKNodule";
+import { CKPoint } from "@/models/CKPoint";
 const tmpVector = new Vector4();
 
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
-  const objectIntersections: Ref<Intersection[]> = ref([]);
   const surfaceIntersections: Ref<Intersection[]> = ref([]);
   const closestIntersectionIsSurface: Ref<boolean> = ref(false);
   const hyperboloidIsClosestIntersection: Ref<boolean> = ref(false);
   const idealStripIsClosestIntersection: Ref<boolean> = ref(false);
   const ultraStripIsClosestIntersection: Ref<boolean> = ref(false);
 
-  const objectMap: Map<string, HENodule> = new Map();
-  const pointsMap: Map<string, HEPoint> = new Map();
+  const objectMap: Map<string, CKNodule> = new Map();
+  const pointsMap: Map<string, CKPoint> = new Map();
   const linesMap: Map<string, HELine> = new Map();
   const labelsMap: Map<string, HELabel> = new Map();
   //const circlesMap: Map<string, HECircle> = new Map();
@@ -94,7 +95,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     rayCaster = new Raycaster();
   }
   function getObjectById(id: string) {
-    // console.log(`Searching for ${id} in`, objectMap);
+    console.debug(`Searching for ${id} in`, objectMap);
     return objectMap.get(id) ?? null;
   }
   function addTempObject(obj: HENodule) {
@@ -103,19 +104,21 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   // function removeTempObject(obj: HENodule) {
   //   tempObjectsMap.delete(obj.name);
   // }
-  function addPoint(point: HEPoint) {
-    point.addGroupToScene(threeJSScene);
+  function addPoint(point: CKPoint) {
+    point.ref?.addToLayers([], threeJSScene);
     objectMap.set(point.name, markRaw(point));
+    console.debug(`After adding point ${point.name} to objectMap`, objectMap);
     pointsMap.set(point.name, markRaw(point));
   }
-  function removePoint(point: HEPoint) {
-    point.removeGroupFromScene(threeJSScene);
+  function removePoint(point: CKPoint) {
+    point.ref?.removeFromLayers();
+    // point.removeGroupFromScene(threeJSScene);
     objectMap.delete(point.name);
     pointsMap.delete(point.name);
   }
   function addLabel(label: HELabel) {
     label.addGroupToScene(threeJSScene);
-    objectMap.set(label.name, markRaw(label));
+    // objectMap.set(label.name, markRaw(label));
     labelsMap.set(label.name, markRaw(label));
   }
   function removeLabel(label: HELabel) {
@@ -125,7 +128,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   }
   function addLine(line: HELine) {
     line.addGroupToScene(threeJSScene);
-    objectMap.set(line.name, markRaw(line));
+    // objectMap.set(line.name, markRaw(line));
     linesMap.set(line.name, markRaw(line));
   }
   function removeLine(line: HELine) {
@@ -134,23 +137,23 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     linesMap.delete(line.name);
   }
   function updateDisplayForCameraUpdate() {
-    pointsMap.forEach(point => {
-      if (point.position.w === 1 || point.position.w === -1) {
-        if (
-          point.position.z >
-            zUpperClip.value - point.pointRadius * unitLength.value ||
-          point.position.z <
-            zLowerClip.value + point.pointRadius * unitLength.value
-        ) {
-          point.removeGroupFromScene(threeJSScene);
-        } else {
-          point.addGroupToScene(threeJSScene);
-          point.shallowUpdate();
-        }
-      } else {
-        point.shallowUpdate();
-      }
-    });
+    // pointsMap.forEach(point => {
+    //   if (point.position.w === 1 || point.position.w === -1) {
+    //     if (
+    //       point.position.z >
+    //         zUpperClip.value - point.pointRadius * unitLength.value ||
+    //       point.position.z <
+    //         zLowerClip.value + point.pointRadius * unitLength.value
+    //     ) {
+    //       point.removeGroupFromScene(threeJSScene);
+    //     } else {
+    //       point.addGroupToScene(threeJSScene);
+    //       point.shallowUpdate();
+    //     }
+    //   } else {
+    //     point.shallowUpdate();
+    //   }
+    // });
     tempObjectsMap.forEach(obj => {
       obj.shallowUpdate();
     }); // the temporary objects need to updated when the display changes
@@ -245,15 +248,15 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
       existingHEPoints.push(...existingNewHEPoints);
     }
     // Add all the currently existing non-zero hePoints
-    for (let pt of pointsMap.values()) {
-      if (
-        !pt.position.isZero()
-        // &&
-        // !existingHEPoints.some(aPt => aPt.name === pt.name) // add only new HEPoints to the existingSEPoints array
-      ) {
-        existingHEPoints.push(pt);
-      }
-    }
+    // for (let pt of pointsMap.values()) {
+    //   if (
+    //     !pt.position.isZero()
+    //     // &&
+    //     // !existingHEPoints.some(aPt => aPt.name === pt.name) // add only new HEPoints to the existingSEPoints array
+    //   ) {
+    //     existingHEPoints.push(pt);
+    //   }
+    // }
     console.log(
       `Number of points before intersection ${existingHEPoints.length}`
     );
@@ -517,7 +520,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   return {
     font,
     surfaceIntersections,
-    objectIntersections,
+    // objectIntersections,
     closestIntersectionIsSurface,
     cameraQuaternion,
     cameraDollyDistance,

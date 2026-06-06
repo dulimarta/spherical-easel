@@ -130,15 +130,17 @@ import { inject } from "vue";
 import { useHyperbolicStore } from "@/stores/hyperbolic";
 import { useRoute } from "vue-router";
 import { onUpdated } from "vue";
+import { useGeometryStore } from "@/stores/geometry.ts";
 const { t } = useI18n();
 const acctStore = useAccountStore();
 const { userProfile, includedTools } = storeToRefs(acctStore);
 const hyperStore = useHyperbolicStore();
+const geoStore = useGeometryStore();
 const seStore = useSEStore();
 const { seExpressions, seTransformations, actionMode, excludeToolsFromSE } =
   storeToRefs(seStore);
-const { surfaceIntersections, objectIntersections, implementedHETools } =
-  storeToRefs(hyperStore);
+const { surfaceIntersections, implementedHETools } = storeToRefs(hyperStore);
+const { objectIntersections } = storeToRefs(geoStore);
 const route = useRoute();
 
 const inProductionMode = ref(false);

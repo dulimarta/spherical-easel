@@ -545,37 +545,38 @@ export function createPoint(
 
   returnMesh.name = name;
 
-  returnMesh.raycast = function (raycaster, intersects) {
-    if (temporary) return; //temporary objects are never hit
-    const matrix = transformationMatrixUniform.value.elements;
-    const [x, y, z] = positionUniform.value.toArray();
-    const position = new Vector3(x, y, z); // the position is stored in the last column of the transformation matrix
-    // console.log("intersect point", this.name, position.toFixed(2));
-    const tempIntersections = intersectWithSurface(
-      raycaster.ray.origin,
-      raycaster.ray.direction,
-      raycaster.near,
-      raycaster.far,
-      position.z > 0,
-      SURFACE_TYPES.hyperboloid
-    );
-
-    tempIntersections.forEach(intersection => {
-      // If the raycaster origin is the camera position, then if we are within the apparent radius (plus 150%) of the point, it is hit by the raycaster
-      if (
-        position.distanceTo(intersection.point) <
-        radiusUniform.value * unitLength.value * 2.5
-      ) {
-        // console.log("point hit", this.name);
-        intersects.push({
-          distance: intersection.distance - radiusUniform.value,
-          point: intersection.point.clone(),
-          normal: intersection.normal,
-          object: this
-        });
-      }
-    });
-  };
+  // returnMesh.raycast = function (raycaster, intersects) {
+  //   console.debug("Raycasting a point", name, temporary);
+  //   if (temporary) return; //temporary objects are never hit
+  //   const matrix = transformationMatrixUniform.value.elements;
+  //   const [x, y, z] = positionUniform.value.toArray();
+  //   const position = new Vector3(x, y, z); // the position is stored in the last column of the transformation matrix
+  //   // console.log("intersect point", this.name, position.toFixed(2));
+  //   const tempIntersections = intersectWithSurface(
+  //     raycaster.ray.origin,
+  //     raycaster.ray.direction,
+  //     raycaster.near,
+  //     raycaster.far,
+  //     position.z > 0,
+  //     SURFACE_TYPES.hyperboloid
+  //   );
+  //   console.debug("Temp intersections for point", name, tempIntersections);
+  //   tempIntersections.forEach(intersection => {
+  //     // If the raycaster origin is the camera position, then if we are within the apparent radius (plus 150%) of the point, it is hit by the raycaster
+  //     if (
+  //       position.distanceTo(intersection.point) <
+  //       radiusUniform.value * unitLength.value * 2.5
+  //     ) {
+  //       // console.log("point hit", this.name);
+  //       intersects.push({
+  //         distance: intersection.distance - radiusUniform.value,
+  //         point: intersection.point.clone(),
+  //         normal: intersection.normal,
+  //         object: this
+  //       });
+  //     }
+  //   });
+  // };
 
   return returnMesh;
 }

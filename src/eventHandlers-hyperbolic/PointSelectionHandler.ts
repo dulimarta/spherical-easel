@@ -88,6 +88,7 @@ export class PointSelectionHandler extends PoseTracker {
   mouseMoved(event: MouseEvent): void {
     // Find all the nearby objects and update location vectors
     super.mouseMoved(event);
+
     if (this.aSurfaceIsIntersected) {
       // Filter the hitHEPoints
       this.updateFilteredPointsList();
@@ -98,6 +99,12 @@ export class PointSelectionHandler extends PoseTracker {
       activeTempPointInfo.snapPoint = null;
 
       // Set the snap objects
+      console.debug(
+        `PSH: mouseMoved: ${this.hitCKPoints.length} nearby points`
+      );
+      if (this.hitCKPoints.length > 0) {
+        this.hitCKPoints[0].setHighlight(true);
+      }
       if (this.filteredIntersectionPointsList.length > 0) {
         // Only one object can be interacted with at a given time, so set the first point nearby to glowing
         // The user can create points  on , ellipses, segments, and lines, etc so
@@ -419,32 +426,32 @@ export class PointSelectionHandler extends PoseTracker {
   }
 
   updateFilteredPointsList(): void {
-    this.filteredIntersectionPointsList = this.hitHEPoints.filter(pt => {
-      if (pt instanceof HEIntersectionPoint) {
-        if (pt.isUserCreated) {
-          return pt.showing;
-        } else {
-          if (pt.principleParent1.showing && pt.principleParent2.showing) {
-            return true;
-          } else {
-            return false;
-          }
-        }
-      } else if (pt instanceof HEAntipodalPoint) {
-        if (pt.isUserCreated) {
-          return pt.showing;
-        } else {
-          return true;
-        }
-      }
-      return pt.showing;
-    });
-    this.filteredIntersectionPointsList =
-      this.filteredIntersectionPointsList.filter(
-        pt =>
-          pt.position.w === this.getWCoordinate() && //make sure that only points in the first hit surface are returned
-          !this.hyperStore.closestIntersectionIsSurface // if the closest intersection is a surface then there are no points to interact with
-      );
+    // this.filteredIntersectionPointsList = this.hitHEPoints.filter(pt => {
+    //   if (pt instanceof HEIntersectionPoint) {
+    //     if (pt.isUserCreated) {
+    //       return pt.showing;
+    //     } else {
+    //       if (pt.principleParent1.showing && pt.principleParent2.showing) {
+    //         return true;
+    //       } else {
+    //         return false;
+    //       }
+    //     }
+    //   } else if (pt instanceof HEAntipodalPoint) {
+    //     if (pt.isUserCreated) {
+    //       return pt.showing;
+    //     } else {
+    //       return true;
+    //     }
+    //   }
+    //   return pt.showing;
+    // });
+    // this.filteredIntersectionPointsList =
+    //   this.filteredIntersectionPointsList.filter(
+    //     pt =>
+    //       pt.position.w === this.getWCoordinate() && //make sure that only points in the first hit surface are returned
+    //       !this.hyperStore.closestIntersectionIsSurface // if the closest intersection is a surface then there are no points to interact with
+    //   );
   }
 
   createNewPointsAsNeeded(

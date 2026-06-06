@@ -13,7 +13,15 @@ export class NewPoint extends Nodule {
       pos[0] * SETTINGS.boundaryCircle.radius,
       pos[1] * SETTINGS.boundaryCircle.radius
     );
-    this.glowingFrontPoint.translation.set(pos[0], pos[1]);
+    this.glowingFrontPoint.translation.set(
+      pos[0] * SETTINGS.boundaryCircle.radius,
+      pos[1] * SETTINGS.boundaryCircle.radius
+    );
+    if (model.highlighted) {
+      this.glowingDisplay();
+    } else {
+      this.normalDisplay();
+    }
   }
   protected frontPoint: Circle;
   protected glowingFrontPoint: Circle;
@@ -25,6 +33,7 @@ export class NewPoint extends Nodule {
     this.glowingFrontPoint.visible = false;
     this.frontPoint.linewidth = 2;
     this.glowingFrontPoint.linewidth = 2;
+    this.glowingFrontPoint.stroke = SETTINGS.point.glowing.strokeColor.front;
   }
   show(): void {
     this.frontPoint.visible = true;

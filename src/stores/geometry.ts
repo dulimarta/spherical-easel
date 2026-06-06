@@ -1,11 +1,12 @@
 import { CKNodule } from "@/models/CKNodule";
 import { CKPoint } from "@/models/CKPoint";
 import { defineStore } from "pinia";
-import { Scene, Vector3 } from "three";
+import { Intersection, Scene, Vector3 } from "three";
 import { Group } from "two.js/src/group";
 import { ref, markRaw, Ref } from "vue";
 
 export const useGeometryStore = defineStore("geometry", () => {
+  const objectIntersections: Ref<Intersection[]> = ref([]);
   let layers: Array<Group> = [];
   let threejsScene: Scene | null = null;
   const points: Ref<Array<CKNodule>> = ref([]);
@@ -15,6 +16,24 @@ export const useGeometryStore = defineStore("geometry", () => {
     layers = newLayers;
     threejsScene = scene;
   }
+
+  function getObjectById(id: string): CKNodule | null {
+    const pos = nodules.value.findIndex(obj => {
+      console.debug(`Checking object with id ${obj.name} against ${id}`);
+      return obj.name === id;
+    });
+    console.debug(
+      `Searching for ${id} in`,
+      nodules.value,
+      " Found at position:",
+      pos
+    );
+    if (pos >= 0) {
+      return nodules.value[pos];
+    }
+    return null;
+  }
+
   function addPoint(g: CKPoint) {
     // Using "markRaw" to prevent Vue from making the CKPoint object reactive,
     // This also solve the issue with calling removeFromLayers(), when VueJS
@@ -60,13 +79,15 @@ export const useGeometryStore = defineStore("geometry", () => {
   return {
     /* properties */
     points,
+    objectIntersections,
 
     /* methods */
     findNearByNodules,
     setLayers,
     addPoint,
     removePoint,
-    clearGeometries
+    clearGeometries,
+    getObjectById
   };
 });
 

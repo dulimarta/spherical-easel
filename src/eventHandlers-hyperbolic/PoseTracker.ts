@@ -10,13 +10,23 @@ import { HEIntersectionPoint } from "@/models-hyperbolic/HEIntersectionPoint";
 import { HELabel } from "@/models-hyperbolic/HELabel";
 import { HELine } from "@/models-hyperbolic/HELine";
 import { useHyperbolicStore } from "@/stores/hyperbolic";
+import { CKNodule } from "@/models/CKNodule";
+import { CKPoint } from "@/models/CKPoint";
+import { GeometryStoreType, useGeometryStore } from "@/stores/geometry";
 let _store: HEStoreType | null = null;
+let _geometryStore: GeometryStoreType | null = null;
 export class PoseTracker implements HyperbolicToolStrategy {
   get hyperStore(): HEStoreType {
     if (!_store) {
       _store = useHyperbolicStore();
     }
     return _store;
+  }
+  get geoStore(): GeometryStoreType {
+    if (!_geometryStore) {
+      _geometryStore = useGeometryStore();
+    }
+    return _geometryStore;
   }
   protected scene: Scene;
 
@@ -33,8 +43,8 @@ export class PoseTracker implements HyperbolicToolStrategy {
   /**
    * Arrays of nodules near the mouse event location
    */
-  protected hitHENodules: HENodule[] = [];
-  protected hitHEPoints: HEPoint[] = [];
+  protected hitHENodules: CKNodule[] = [];
+  protected hitCKPoints: CKPoint[] = [];
   protected hitHELabels: HELabel[] = [];
   protected hitHELines: HELine[] = [];
   // protected hitHESegments: HESegment[] = [];
@@ -65,40 +75,53 @@ export class PoseTracker implements HyperbolicToolStrategy {
     this.prepareForNextEvent();
 
     // update the hit arrays as necessary
-    if (this.hyperStore.objectIntersections.length === 0) {
+    if (this.geoStore.objectIntersections.length === 0) {
       return;
     }
 
-    this.hitHENodules = this.hyperStore.objectIntersections
+    this.hitHENodules = this.geoStore.objectIntersections
       .map(intersect => {
-        return this.hyperStore.getObjectById(intersect.object.name); // returns null for surfaces
+        // console.debug(
+        //   `Checking intersection with object ${intersect.object.name}`
+        // );
+        return this.geoStore.getObjectById(intersect.object.name); // returns null for surfaces
       })
-      .filter((obj): obj is HENodule => obj !== null)
-      .filter((n: HENodule) => {
-        if (n instanceof HEIntersectionPoint || n instanceof HEAntipodalPoint) {
-          if (!n.isUserCreated) {
-            return n.exists; //You always hit automatically created intersection points if it exists
-          } else {
-            return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
-          }
-        } else {
-          return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
-        }
-      });
+      .filter((obj): obj is CKNodule => obj !== null);
+    // .filter((n: CKNodule) => {
+    //   console.debug(`Checking if ${n.name} is hit`);
+    //   if (n instanceof HEIntersectionPoint || n instanceof HEAntipodalPoint) {
+    //     if (!n.isUserCreated) {
+    //       return n.exists; //You always hit automatically created intersection points if it exists
+    //     } else {
+    //       return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+    //     }
+    //   } else {
+    //     return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+    //   }
+    // });
 
-    this.hitHEPoints = this.hitHENodules
+    // console.debug(
+    //   "Hit HENodule:",
+    //   this.hitHENodules.map(p => p.name)
+    // );
+
+    this.hitCKPoints = this.hitHENodules
       .filter(obj => obj.name.startsWith("P"))
-      .map(obj => obj as HEPoint);
+      .map(obj => obj as CKPoint);
 
-    this.hitHELabels = this.hitHENodules
-      .filter(obj => obj.name.startsWith("La"))
-      .map(obj => obj as HELabel);
+    // console.debug(
+    //   "Hit points:",
+    //   this.hitCKPoints.map(p => p.name)
+    // );
+    // this.hitHELabels = this.hitHENodules
+    //   .filter(obj => obj.name.startsWith("La"))
+    //   .map(obj => obj as HELabel);
 
-    this.hitHELines = this.hitHENodules
-      .filter(
-        obj => obj.name.startsWith("Li") && this.hyperboloidIsFirstSurfaceHit
-      )
-      .map(obj => obj as HELine);
+    // this.hitHELines = this.hitHENodules
+    //   .filter(
+    //     obj => obj.name.startsWith("Li") && this.hyperboloidIsFirstSurfaceHit
+    //   )
+    //   .map(obj => obj as HELine);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -121,19 +144,20 @@ export class PoseTracker implements HyperbolicToolStrategy {
 
   prepareForNextEvent(): void {
     // Set the display to normal for all previously nearby non-selected objects
-    this.hitHENodules.forEach((n: HENodule) => {
-      if (!n.selected) n.glowing = false;
+    this.hitHENodules.forEach((n: CKNodule) => {
+      n.setHighlight(false);
+      // if (!n.selected) n.glowing = false;
     });
 
     // clear previous hit arrays
     this.hitHENodules.splice(0);
-    this.hitHEPoints.splice(0);
+    this.hitCKPoints.splice(0);
     this.hitHELabels.splice(0);
     this.hitHELines.splice(0);
 
     // update the flags
     this.somethingIsHit =
-      this.hyperStore.objectIntersections.length > 0 ||
+      this.geoStore.objectIntersections.length > 0 ||
       this.hyperStore.surfaceIntersections.length > 0;
     this.aSurfaceIsIntersected =
       this.hyperStore.surfaceIntersections.length > 0;
