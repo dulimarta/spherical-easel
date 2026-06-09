@@ -17,7 +17,7 @@ export class NewPoint extends Nodule {
       pos[0] * SETTINGS.boundaryCircle.radius,
       pos[1] * SETTINGS.boundaryCircle.radius
     );
-    if (model.highlighted) {
+    if (model.isHighlighted()) {
       this.glowingDisplay();
     } else {
       this.normalDisplay();

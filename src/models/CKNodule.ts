@@ -2,6 +2,9 @@ import Label from "@/plottables-spherical/Label";
 import { Nodule } from "@/plottables/Nodule";
 import { Vector3 } from "three";
 
+// Both the Module(Subscriber|Publisher) implement the Observer pattern,
+// The former is for the data model, and the latter is for the view.
+// The view will subscribe to the model, and update itself when the model changes.
 export interface ModelSubscriber {
   modelUpdated(): void;
 }
@@ -19,7 +22,7 @@ export abstract class CKNodule implements ModelPublisher {
   public id: number;
   public name = "";
   public ref?: Nodule;
-  public labelRef?: Label;
+  public labelRef?: Nodule;
 
   constructor() {
     this.id = CKNodule.NODE_COUNT++;
