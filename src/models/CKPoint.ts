@@ -2,9 +2,10 @@ import { useGA, toPoint3D } from "@/composables/ga";
 import { Vector3 } from "three";
 import { AlgebraElement } from "ts-geometric-algebra";
 import { CKNodule } from "./CKNodule";
-import { NewPoint } from "@/plottables-spherical/NewPoint";
-import { Point } from "@/plottables-hyperbolic/Point";
-import { NewLabel } from "@/plottables-spherical/NewLabel";
+import { SphPoint } from "@/plottables-spherical/SphPoint";
+import { HypPoint } from "@/plottables-hyperbolic/HypPoint";
+import { SphLabel } from "@/plottables-spherical/SphLabel";
+import { HypLabel } from "@/plottables-hyperbolic/HypLabel";
 import { Nodule } from "@/plottables/Nodule";
 const ega = useGA(false); // false for elliptic, true for hyperbolic
 const hga = useGA(true);
@@ -17,23 +18,25 @@ export class CKPoint extends CKNodule {
     const checkHyperbolic = pos.x ** 2 + pos.y ** 2 - pos.z ** 2;
     console.debug("Elliptic check (should be 1):", checkSpherical);
     console.debug("Hyperbolic check (should be -1):", checkHyperbolic);
+    this.name = `P${this.id}`;
     let plottablePoint: Nodule;
+    let plottableLabel: Nodule;
     if (checkSpherical > 1.0) {
       // checkHyperbolic: -1 for proper point
       // checkHyperbolic: 0 for direction/point at infinity
       // checkHyperbolic: 1 for ultra point
       this.ga_coord = hga.makePoint(pos.x, pos.y, pos.z);
-      plottablePoint = new Point(`P${this.id}`, this);
+      plottablePoint = new HypPoint(`P${this.id}`, this);
+      plottableLabel = new HypLabel(this, "point");
     } else {
       this.ga_coord = ega.makePoint(pos.x, pos.y, pos.z);
-      plottablePoint = new NewPoint(this);
-      const pointLabel = new NewLabel(this, "point");
-      this.labelRef = pointLabel;
-      this.subscribe(pointLabel);
+      plottablePoint = new SphPoint(this);
+      plottableLabel = new SphLabel(this, "point");
     }
     this.ref = plottablePoint;
     this.subscribe(plottablePoint);
-    this.name = `P${this.id}`;
+    this.labelRef = plottableLabel;
+    this.subscribe(plottableLabel);
     this.notifyModelUpdated();
     // p.positionVector = pos;
     // p.stylize(DisplayStyle.ApplyCurrentVariables);

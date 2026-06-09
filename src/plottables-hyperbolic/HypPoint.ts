@@ -7,7 +7,7 @@ import { ModelPublisher } from "@/models/CKNodule";
 import { CKPoint } from "@/models/CKPoint";
 import { CustomPointMaterial } from "./MaterialFactory";
 
-export class Point extends Nodule {
+export class HypPoint extends Nodule {
   _pointMesh: Mesh;
   private normalDisplayColor: Color = new Color(0xffff00);
   constructor(name: string, modelRef: ModelPublisher) {

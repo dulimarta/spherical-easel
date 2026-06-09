@@ -6,7 +6,7 @@ import { Text } from "two.js/src/text";
 import { LabelParentTypes } from "@/types";
 import SETTINGS, { LAYER } from "@/global-settings-spherical";
 import { CKPoint } from "@/models/CKPoint";
-export class NewLabel extends Nodule {
+export class SphLabel extends Nodule {
   frontText: Text;
   labelParentType: LabelParentTypes;
   constructor(modelRef: ModelPublisher, parentType: LabelParentTypes) {

@@ -41,7 +41,7 @@ export const useGeometryStore = defineStore("geometry", () => {
     points.value.push(markRaw(g));
     nodules.value.push(markRaw(g));
     g.ref?.addToLayers(layers, threejsScene);
-    g.labelRef?.addToLayers(layers);
+    g.labelRef?.addToLayers(layers, threejsScene);
   }
 
   function removeNodule(objId: number) {

@@ -5,24 +5,7 @@ import { Nodule } from "@/plottables/Nodule";
 import { Scene, Vector3 } from "three";
 import { Group } from "two.js/src/group";
 import { Circle } from "two.js/src/shapes/circle";
-export class NewPoint extends Nodule {
-  modelUpdated(): void {
-    const model = this.modelRef as CKPoint;
-    const pos = model.ga_coord.vector(2);
-    this.frontPoint.translation.set(
-      pos[0] * SETTINGS.boundaryCircle.radius,
-      pos[1] * SETTINGS.boundaryCircle.radius
-    );
-    this.glowingFrontPoint.translation.set(
-      pos[0] * SETTINGS.boundaryCircle.radius,
-      pos[1] * SETTINGS.boundaryCircle.radius
-    );
-    if (model.isHighlighted()) {
-      this.glowingDisplay();
-    } else {
-      this.normalDisplay();
-    }
-  }
+export class SphPoint extends Nodule {
   protected frontPoint: Circle;
   protected glowingFrontPoint: Circle;
   constructor(modelRef: ModelPublisher) {
@@ -59,5 +42,23 @@ export class NewPoint extends Nodule {
   normalDisplay(): void {
     this.frontPoint.visible = true;
     this.glowingFrontPoint.visible = false;
+  }
+
+  modelUpdated(): void {
+    const model = this.modelRef as CKPoint;
+    const pos = model.ga_coord.vector(2);
+    this.frontPoint.translation.set(
+      pos[0] * SETTINGS.boundaryCircle.radius,
+      pos[1] * SETTINGS.boundaryCircle.radius
+    );
+    this.glowingFrontPoint.translation.set(
+      pos[0] * SETTINGS.boundaryCircle.radius,
+      pos[1] * SETTINGS.boundaryCircle.radius
+    );
+    if (model.isHighlighted()) {
+      this.glowingDisplay();
+    } else {
+      this.normalDisplay();
+    }
   }
 }

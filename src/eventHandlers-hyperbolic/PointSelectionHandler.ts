@@ -420,9 +420,9 @@ export class PointSelectionHandler extends PoseTracker {
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
     // event, mouse press will *not* select the newly created point (it will create multiple points at the same location). This is not what we want so we call mouseMove in Hyperbolic Frame so that ray casting is redone and the newly created point is on the hitHEPoints array.
     this.prepareForNextEvent();
-    EventBus.fire("raycast-mouse-move", {
-      event: event
-    });
+    // EventBus.fire("raycast-mouse-move", {
+    //   event: event
+    // });
   }
 
   updateFilteredPointsList(): void {
