@@ -10,19 +10,15 @@ export interface ModelSubscriber {
 }
 export interface ModelPublisher {
   subscribe(subscriber: ModelSubscriber): void;
-  // unsubscribe(subscriber: ModelSubscriber): void;
+  unsubscribe(subscriber: ModelSubscriber): void;
   notifyModelUpdated(): void;
 }
-export abstract class CKNodule implements ModelPublisher {
+export abstract class CKNodule {
   static NODE_COUNT = 0;
   protected _parent: Array<WeakRef<CKNodule>> = [];
   protected _kids: Array<CKNodule> = [];
-  protected _subscribers: Array<ModelSubscriber> = [];
-  protected _highlighted = false;
   public id: number;
   public name = "";
-  public ref?: Nodule;
-  public labelRef?: Nodule;
 
   constructor() {
     this.id = CKNodule.NODE_COUNT++;
@@ -64,6 +60,31 @@ export abstract class CKNodule implements ModelPublisher {
       this._kids[0].removeThisNode();
     }
   }
+}
+
+export abstract class CKVisualNodule
+  extends CKNodule
+  implements ModelPublisher
+{
+  protected _subscribers: Array<ModelSubscriber> = [];
+  protected _highlighted = false;
+  public ref?: Nodule;
+  public labelRef?: Nodule;
+
+  subscribe(subscriber: ModelSubscriber): void {
+    this._subscribers.push(subscriber);
+  }
+
+  unsubscribe(subscriber: ModelSubscriber): void {
+    const idx = this._subscribers.indexOf(subscriber);
+    if (idx >= 0) {
+      this._subscribers.splice(idx, 1);
+    }
+  }
+
+  notifyModelUpdated(): void {
+    this._subscribers.forEach(subscriber => subscriber.modelUpdated());
+  }
 
   public setHighlight(highlight: boolean) {
     this._highlighted = highlight;
@@ -74,12 +95,5 @@ export abstract class CKNodule implements ModelPublisher {
     return this._highlighted;
   }
 
-  subscribe(subscriber: ModelSubscriber): void {
-    this._subscribers.push(subscriber);
-  }
-
-  notifyModelUpdated(): void {
-    this._subscribers.forEach(subscriber => subscriber.modelUpdated());
-  }
   public abstract isHitAt(unitIdealVector: Vector3): boolean;
 }

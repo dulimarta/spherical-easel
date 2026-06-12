@@ -5,10 +5,10 @@ import { Nodule } from "@/plottables/Nodule";
 import { Scene, Vector3 } from "three";
 import { Group } from "two.js/src/group";
 import { Circle } from "two.js/src/shapes/circle";
-export class SphPoint extends Nodule {
+export class SphPoint extends Nodule<CKPoint> {
   protected frontPoint: Circle;
   protected glowingFrontPoint: Circle;
-  constructor(modelRef: ModelPublisher) {
+  constructor(modelRef: CKPoint) {
     super("NewPoint", modelRef);
     this.frontPoint = new Circle(0, 0, 5);
     this.glowingFrontPoint = new Circle(0, 0, 5);
@@ -45,8 +45,7 @@ export class SphPoint extends Nodule {
   }
 
   modelUpdated(): void {
-    const model = this.modelRef as CKPoint;
-    const pos = model.ga_coord.vector(2);
+    const pos = this.modelRef.ga_coord.vector(2);
     this.frontPoint.translation.set(
       pos[0] * SETTINGS.boundaryCircle.radius,
       pos[1] * SETTINGS.boundaryCircle.radius
@@ -55,7 +54,7 @@ export class SphPoint extends Nodule {
       pos[0] * SETTINGS.boundaryCircle.radius,
       pos[1] * SETTINGS.boundaryCircle.radius
     );
-    if (model.isHighlighted()) {
+    if (this.modelRef.isHighlighted()) {
       this.glowingDisplay();
     } else {
       this.normalDisplay();

@@ -112,6 +112,9 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   }
   function removePoint(point: CKPoint) {
     point.ref?.removeFromLayers();
+    point.labelRef?.removeFromLayers();
+    if (point.ref) point.unsubscribe(point.ref);
+    if (point.labelRef) point.unsubscribe(point.labelRef);
     // point.removeGroupFromScene(threeJSScene);
     objectMap.delete(point.name);
     pointsMap.delete(point.name);

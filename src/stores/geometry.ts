@@ -1,7 +1,7 @@
-import { CKNodule } from "@/models/CKNodule";
+import { CKNodule, CKVisualNodule } from "@/models/CKNodule";
 import { CKPoint } from "@/models/CKPoint";
 import { defineStore } from "pinia";
-import { Intersection, Scene, Vector3 } from "three";
+import { Intersection, Quaternion, Scene, Vector3 } from "three";
 import { Group } from "two.js/src/group";
 import { ref, markRaw, Ref } from "vue";
 
@@ -55,8 +55,12 @@ export const useGeometryStore = defineStore("geometry", () => {
     const idx = points.value.findIndex(item => item.id === objId);
     if (idx >= 0) {
       const obj = points.value[idx];
-      obj.ref?.removeFromLayers();
-      obj.labelRef?.removeFromLayers();
+      if (obj instanceof CKVisualNodule) {
+        obj.ref?.removeFromLayers();
+        obj.labelRef?.removeFromLayers();
+        if (obj.ref) obj.unsubscribe(obj.ref);
+        if (obj.labelRef) obj.unsubscribe(obj.labelRef);
+      }
       points.value.splice(idx, 1);
       removeNodule(objId);
     }
@@ -64,7 +68,12 @@ export const useGeometryStore = defineStore("geometry", () => {
 
   function clearGeometries() {
     points.value.forEach(g => {
-      g.ref?.removeFromLayers();
+      if (g instanceof CKVisualNodule) {
+        g.ref?.removeFromLayers();
+        g.labelRef?.removeFromLayers();
+        if (g.ref) g.unsubscribe(g.ref);
+        if (g.labelRef) g.unsubscribe(g.labelRef);
+      }
     });
     points.value.splice(0, points.value.length);
   }
@@ -76,12 +85,23 @@ export const useGeometryStore = defineStore("geometry", () => {
     return z;
   }
 
+  function adjustLabelPose(qc: Quaternion) {
+    console.debug("Adjust orientation of labels");
+    nodules.value
+      .filter(obj => obj instanceof CKPoint)
+      .filter(pt => pt.labelRef)
+      .forEach(p => {
+        console.debug(`Point ${p.name} with `, p.labelRef?.name);
+        p.labelRef?.lookAtCamera(qc);
+      });
+  }
   return {
     /* properties */
     points,
     objectIntersections,
 
     /* methods */
+    adjustLabelPose,
     findNearByNodules,
     setLayers,
     addPoint,

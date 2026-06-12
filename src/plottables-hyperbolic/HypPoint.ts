@@ -1,5 +1,11 @@
 import { Nodule } from "@/plottables/Nodule";
-import { Color, Mesh, MeshBasicMaterial, Scene, SphereGeometry } from "three";
+import {
+  Color,
+  Mesh,
+  MeshBasicMaterial,
+  Scene,
+  SphereGeometry
+} from "three/webgpu";
 import { Group } from "two.js/src/group";
 import { createPoint } from "./MeshFactory";
 import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
@@ -7,10 +13,10 @@ import { ModelPublisher } from "@/models/CKNodule";
 import { CKPoint } from "@/models/CKPoint";
 import { CustomPointMaterial } from "./MaterialFactory";
 
-export class HypPoint extends Nodule {
+export class HypPoint extends Nodule<CKPoint> {
   _pointMesh: Mesh;
   private normalDisplayColor: Color = new Color(0xffff00);
-  constructor(name: string, modelRef: ModelPublisher) {
+  constructor(name: string, modelRef: CKPoint) {
     super(name, modelRef);
     this._pointMesh = new Mesh(
       new SphereGeometry(0.05, 32, 32),
@@ -46,10 +52,9 @@ export class HypPoint extends Nodule {
     );
   }
   modelUpdated(): void {
-    const model = this.modelRef as CKPoint;
-    const pos = model.ga_coord.vector(2);
+    const pos = this.modelRef.ga_coord.vector(2);
     this._pointMesh.position.set(pos[0], pos[1], pos[2]);
-    if (model.isHighlighted()) {
+    if (this.modelRef.isHighlighted()) {
       this.glowingDisplay();
     } else {
       this.normalDisplay();

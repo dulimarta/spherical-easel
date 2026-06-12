@@ -1,22 +1,28 @@
-import { CKNodule, ModelPublisher } from "@/models/CKNodule";
+import { CKVisualNodule } from "@/models/CKNodule";
 import { CKPoint } from "@/models/CKPoint";
 import { Nodule } from "@/plottables/Nodule";
 import { LabelParentTypes } from "@/types";
-import { DoubleSide, Mesh, MeshBasicMaterial, Scene } from "three";
-import { Text } from "three-text/three";
+import {
+  Color,
+  DoubleSide,
+  Mesh,
+  MeshBasicMaterial,
+  Quaternion,
+  Scene
+} from "three";
 import { FontLoader, TextGeometry } from "three/examples/jsm/Addons.js";
 import { Group } from "two.js/src/group";
 const fontLoader = new FontLoader();
 const robotoFont = await fontLoader.loadAsync(
   "fonts/droid_sans_regular.typeface.json"
 );
-export class HypLabel extends Nodule {
+export class HypLabel extends Nodule<CKVisualNodule> {
   _labelMesh: Mesh;
   _parentType: LabelParentTypes;
-  constructor(modelRef: ModelPublisher, parentType: LabelParentTypes) {
+  constructor(modelRef: CKPoint, parentType: LabelParentTypes) {
     super("New HLabel", modelRef);
     this._parentType = parentType;
-    const parentId = (modelRef as CKNodule).name;
+    const parentId = modelRef.name;
     const textGeometry = new TextGeometry(parentId, {
       font: robotoFont,
       size: 0.2,
@@ -28,10 +34,10 @@ export class HypLabel extends Nodule {
     );
   }
   glowingDisplay(): void {
-    // throw new Error("Method not implemented.");
+    (this._labelMesh.material as MeshBasicMaterial).color = new Color(0xff0000);
   }
   normalDisplay(): void {
-    // throw new Error("Method not implemented.");
+    (this._labelMesh.material as MeshBasicMaterial).color = new Color(0xffff00);
   }
   show(): void {
     // throw new Error("Method not implemented.");
@@ -52,9 +58,14 @@ export class HypLabel extends Nodule {
     // console.debug("Label model updated, but method not implemented yet.");
     switch (this._parentType) {
       case "point":
-        const model = this.modelRef as CKPoint;
-        const pos = model.ga_coord.vector(2);
+        const pos = this.modelRef.ga_coord.vector(2);
         this._labelMesh.position.set(pos[0], pos[1], pos[2]);
+        if (this.modelRef.isHighlighted()) this.glowingDisplay();
+        else this.normalDisplay();
     }
+  }
+
+  lookAtCamera(q: Quaternion): void {
+    this._labelMesh.quaternion.copy(q);
   }
 }
