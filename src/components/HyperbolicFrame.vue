@@ -200,7 +200,6 @@ import { VisibleHELayersType } from "@/types";
 import EventBus from "@/eventHandlers-spherical/EventBus";
 import { onBeforeUnmount } from "vue";
 import { Handler } from "mitt";
-import { g } from "vitest/dist/chunks/suite.d.FvehnV49.js";
 const { t } = useI18n({ useScope: "local" });
 
 const hyperStore = useHyperbolicStore();
@@ -689,7 +688,7 @@ onUpdated(() => {
   camera.aspect = props.availableWidth / props.availableHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(props.availableWidth, props.availableHeight);
-  renderer.renderAsync(scene, camera);
+  // renderer.render/(scene, camera);
 });
 
 function initialize() {

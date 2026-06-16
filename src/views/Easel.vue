@@ -131,7 +131,7 @@ import {
 } from "vue";
 import colors from "vuetify/lib/util/colors";
 import AppNavigation from "@/components/AppNavigation.vue";
-import SphereFrame from "@/components/SphereFrame.vue";
+import SphereFrame from "@/components/SphereFrameThreeJS.vue";
 import EarthLayer from "@/components/EarthLayer.vue";
 // import AddEarthObject from "@/components/AddEarthObject.vue";
 import MessageHub from "@/components/MessageHub.vue";
@@ -505,7 +505,9 @@ onBeforeRouteLeave(
   border-radius: 8px;
   border: solid white;
   background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 #toolbox-and-sphere {

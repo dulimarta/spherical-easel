@@ -38,6 +38,7 @@ export default defineConfig([
           allowModifiers: true
         }
       ]
-    }
-  }
+    },
+  },
+  parser: "vue-eslint-parser"
 ]);
