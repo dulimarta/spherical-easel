@@ -380,7 +380,6 @@ import SETTINGS from "@/global-settings-spherical";
 import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { VTreeview } from "vuetify/labs/VTreeview";
-import { shallowRef } from "vue";
 import { SEPoint } from "@/models-spherical/SEPoint";
 import { SESegment } from "@/models-spherical/SESegment";
 import { SECircle } from "@/models-spherical/SECircle";

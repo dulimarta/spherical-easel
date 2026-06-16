@@ -24,17 +24,17 @@ const props = withDefaults(defineProps<ComponentProps>(), {
   availableWidth: 240
 });
 // Factor out ThreeJS initialization details into a new composable
-useThree(webGPUCanvas);
+const { scene } = useThree(webGPUCanvas);
 
-onBeforeMount(() => {
-  console.debug("OnBeforeMount::SphericFrame.vue", props, webGPUCanvas.value);
-});
+// onBeforeMount(() => {
+//   console.debug("OnBeforeMount::SphericFrame.vue", props, webGPUCanvas.value);
+// });
 
-onMounted(async () => {
-  console.debug("OnMounted::SphericFrame.vue", props, webGPUCanvas.value);
-});
+// onMounted(async () => {
+//   console.debug("OnMounted::SphericFrame.vue", props, webGPUCanvas.value);
+// });
 
-onUpdated(() => {
-  console.debug("OnUpdated::SphericFrame.vue", props);
-});
+// onUpdated(() => {
+//   console.debug("OnUpdated::SphericFrame.vue", props);
+// });
 </script>

@@ -8,30 +8,33 @@ import {
   Scene,
   SphereGeometry,
   Vector3,
-  WebGPURenderer
+  WebGPURenderer,
+  Timer,
+  HemisphereLight
 } from "three/webgpu";
+import * as THREE from "three/webgpu";
+import CameraControls from "camera-controls";
 import {
   onBeforeMount,
   onMounted,
   onUpdated,
-  readonly,
-  ref,
   Ref,
   ShallowRef,
   toValue
 } from "vue";
+import { useEventListener } from "@vueuse/core";
+CameraControls.install({ THREE });
 
-export function useThree(canvas: Ref<HTMLCanvasElement | null>) /*: {
-  scene: ShallowRef<Scene>;
-  camera: ShallowRef<PerspectiveCamera>;
-} */ {
+export function useThree(canvas: Ref<HTMLCanvasElement | null>): {
+  scene: Scene;
+  // camera: ShallowRef<PerspectiveCamera>;
+} {
   // Implementation for Three.js setup
   const scene: Scene = new Scene();
   let camera: PerspectiveCamera;
   let renderer: WebGPURenderer;
-  // const camera: ShallowRef<PerspectiveCamera> = ref(
-  //   new PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000)
-  // );
+  let cameraController: CameraControls;
+  const clock = new Timer();
   onBeforeMount(() => {
     // console.debug("OnBeforeMount::useThree", toValue(canvas));
     // Initialize Three.js
@@ -72,6 +75,7 @@ export function useThree(canvas: Ref<HTMLCanvasElement | null>) /*: {
         arrowHeadDiameter
       )
     );
+    scene.add(new HemisphereLight(0x404040, 0xa0a0a0));
     const directionalLight = new DirectionalLight(0xffffff, 1);
     directionalLight.position.set(0, 1, 4);
     scene.add(directionalLight);
@@ -94,12 +98,25 @@ export function useThree(canvas: Ref<HTMLCanvasElement | null>) /*: {
     camera.position.set(1.5, 1.5, 2.1);
     camera.up.set(0, 0, 1);
     camera.lookAt(0, 0, 0);
-    camera.updateProjectionMatrix;
+    camera.updateProjectionMatrix();
+
     renderer = new WebGPURenderer({ canvas: cx! });
     renderer.setSize(cx!.width, cx!.height);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setClearColor(0x33ff00, 0.2);
+
+    cameraController = new CameraControls(camera, renderer.domElement);
+    useEventListener(cameraController, "control", () => {
+      // console.debug("Camera control");
+    });
+    useEventListener(cameraController, "update", () => {
+      // console.debug("Camera position changed");
+    });
+    let timestamp;
     renderer.setAnimationLoop(() => {
+      clock.update(timestamp);
+      const delta = clock.getDelta();
+      cameraController.update(delta);
       renderer.render(scene, camera);
     });
   });
@@ -111,5 +128,5 @@ export function useThree(canvas: Ref<HTMLCanvasElement | null>) /*: {
     camera.updateProjectionMatrix();
     renderer.setSize(cx!.width, cx!.height);
   });
-  // return { scene, camera };
+  return { scene };
 }

@@ -608,7 +608,7 @@ onMounted(async () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   // Enable local clipping (i.e. clipping on individual materials)
-  renderer.localClippingEnabled = true;
+  // renderer.localClippingEnabled = true;
 
   // Initial update of the view of sheets, grid and ideal points
   updateVisibleLayers(); // Use the visibleLayers to update the display
@@ -857,7 +857,6 @@ function doRender() {
       cameraDollyDistance.value = cameraController.distance;
       cameraFieldOfView.value = camera.fov;
       camera.getWorldPosition(cameraOrigin.value);
-      // renderer.renderAsync(scene, camera);
     }
   }
   renderer.renderAsync(scene, camera); // Put this here so that changes in the GPU/TSL materials will be reflected in the rendering immediately.
