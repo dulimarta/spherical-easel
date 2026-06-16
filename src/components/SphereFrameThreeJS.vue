@@ -16,11 +16,17 @@ import { onBeforeMount, onMounted, onUpdated, ref, useTemplateRef } from "vue";
 import {
   AmbientLight,
   ArrowHelper,
+  AxesHelper,
   Color,
+  DirectionalLight,
   GridHelper,
   HemisphereLight,
+  Mesh,
+  MeshBasicMaterial,
+  MeshPhongMaterial,
   PerspectiveCamera,
   Scene,
+  SphereGeometry,
   Vector3,
   WebGPURenderer
 } from "three/webgpu";
@@ -52,7 +58,10 @@ onMounted(async () => {
     0.1,
     1000
   );
-  camera.position.set(4, 2, 4);
+  camera.position.set(1.5, 1.5, 2.1);
+  // The default lookAt point is elsewhere
+  // Without the following lookAt() call, the ThreeJS scene will appear off-center.
+  camera.up.set(0, 0, 1);
   camera.lookAt(0, 0, 0);
   camera.updateProjectionMatrix();
   renderer = new WebGPURenderer({ canvas: webGPUCanvas.value! });
@@ -68,7 +77,7 @@ onMounted(async () => {
 });
 
 onUpdated(() => {
-  console.debug("OnUpdated::SphericFrame.vue", props);
+  // console.debug("OnUpdated::SphericFrame.vue", props);
   camera.aspect = props.availableWidth / props.availableHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(props.availableWidth, props.availableHeight);
@@ -78,16 +87,51 @@ onUpdated(() => {
 function initThreeJS() {
   scene = new Scene();
   // scene.background = new Color(0xf00000);
-  scene.add(new HemisphereLight(0x543288, 0xad762e, 0.5));
-  scene.add(new GridHelper(5, 5));
+  // scene.add(new HemisphereLight(0xff0000, 0xaa0000, 0.8));
+  const gridHelper = new GridHelper(5, 5);
+  gridHelper.rotateX(Math.PI / 2);
+  scene.add(gridHelper);
+  const arrowLength = 1.5;
+  const arrowHeadLength = 0.2;
+  const arrowHeadDiameter = 0.1;
   scene.add(
-    new ArrowHelper(new Vector3(1, 0, 0), new Vector3(0, 0, 0), 1.25, 0xff0000)
+    new ArrowHelper(
+      new Vector3(1, 0, 0),
+      new Vector3(0, 0, 0),
+      arrowLength,
+      0xff0000,
+      arrowHeadLength,
+      arrowHeadDiameter
+    )
   );
   scene.add(
-    new ArrowHelper(new Vector3(0, 1, 0), new Vector3(0, 0, 0), 1.25, 0x00ff00)
+    new ArrowHelper(
+      new Vector3(0, 1, 0),
+      new Vector3(0, 0, 0),
+      arrowLength,
+      0x00ff00,
+      arrowHeadLength,
+      arrowHeadDiameter
+    )
   );
   scene.add(
-    new ArrowHelper(new Vector3(0, 0, 1), new Vector3(0, 0, 0), 1.25, 0x0000ff)
+    new ArrowHelper(
+      new Vector3(0, 0, 1),
+      new Vector3(0, 0, 0),
+      arrowLength,
+      0x0000ff,
+      arrowHeadLength,
+      arrowHeadDiameter
+    )
+  );
+  const directionalLight = new DirectionalLight(0xffffff, 1);
+  directionalLight.position.set(0, 1, 4);
+  scene.add(directionalLight);
+  scene.add(
+    new Mesh(
+      new SphereGeometry(1, 60, 60),
+      new MeshPhongMaterial({ color: 0x66ff00, shininess: 100 })
+    )
   );
 }
 </script>
