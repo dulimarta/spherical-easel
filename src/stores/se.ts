@@ -666,7 +666,7 @@ export const useSEStore = defineStore("se", () => {
     seCircleIds.value.push(circle.id);
     seCircleMap.set(circle.id, markRaw(circle));
     seNodules.value.push(markRaw(circle));
-    circle.ref!.addToLayers(layers);
+    circle.ref!.addToLayers(layers, null);
     hasUnsavedNodules.value = true;
     updateDisabledTools("circle");
   }

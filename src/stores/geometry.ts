@@ -1,4 +1,4 @@
-import { CKNodule, CKVisualNodule } from "@/models/CKNodule";
+import { CKNodule } from "@/models/CKNodule";
 import { CKPoint } from "@/models/CKPoint";
 import { defineStore } from "pinia";
 import { Intersection, Quaternion, Scene, Vector3 } from "three";
@@ -55,7 +55,7 @@ export const useGeometryStore = defineStore("geometry", () => {
     const idx = points.value.findIndex(item => item.id === objId);
     if (idx >= 0) {
       const obj = points.value[idx];
-      if (obj instanceof CKVisualNodule) {
+      if (obj instanceof CKNodule) {
         obj.ref?.removeFromLayers();
         obj.labelRef?.removeFromLayers();
         if (obj.ref) obj.unsubscribe(obj.ref);
@@ -68,7 +68,7 @@ export const useGeometryStore = defineStore("geometry", () => {
 
   function clearGeometries() {
     points.value.forEach(g => {
-      if (g instanceof CKVisualNodule) {
+      if (g instanceof CKNodule) {
         g.ref?.removeFromLayers();
         g.labelRef?.removeFromLayers();
         if (g.ref) g.unsubscribe(g.ref);

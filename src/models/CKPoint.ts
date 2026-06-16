@@ -10,7 +10,7 @@ import { Nodule } from "@/plottables/Nodule";
 const ega = useGA(false); // false for elliptic, true for hyperbolic
 const hga = useGA(true);
 export class CKPoint extends CKNodule {
-  ga_coord: AlgebraElement;
+  public ga_coord!: AlgebraElement;
   constructor(pos: Vector3) {
     super();
     // If pos.z is zero, these two quantities are the same
@@ -54,9 +54,9 @@ export class CKPoint extends CKNodule {
     console.debug(
       `Distance between point ${toPoint3D(this.ga_coord)} and hit point ${toPoint3D(checkPoint)} is ${distance}`
     );
-    if (distance < 1e-2) {
-      this.setHighlight(true);
-    }
+    // if (distance < 1e-2) {
+    //   this.setHighlight(true);
+    // }
     return distance < 1e-2;
   }
 }

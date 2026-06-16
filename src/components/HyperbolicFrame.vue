@@ -197,10 +197,10 @@ import {
   arcLengthScale
 } from "@/plottables-hyperbolic/MeshFactory";
 import { VisibleHELayersType } from "@/types";
-import { label, uniform } from "three/tsl";
 import EventBus from "@/eventHandlers-spherical/EventBus";
 import { onBeforeUnmount } from "vue";
 import { Handler } from "mitt";
+import { g } from "vitest/dist/chunks/suite.d.FvehnV49.js";
 const { t } = useI18n({ useScope: "local" });
 
 const hyperStore = useHyperbolicStore();
@@ -494,9 +494,10 @@ function updateVisibleLayers(): void {
 watch(idle, idleValue => {
   // console.debug("Idle state", idleValue);
   // console.debug("Camera control", hasUpdatedCameraControls.value);
-  if (idleValue && hasUpdatedCameraControls.value) {
+  if (idleValue || hasUpdatedCameraControls.value) {
     hyperStore.adjustTextPose();
     hyperStore.updateDisplayForCameraUpdate();
+    geoStore.adjustLabelPose(cameraQuaternion.value);
     hasUpdatedCameraControls.value = false;
   }
 });

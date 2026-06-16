@@ -1,6 +1,7 @@
 import Label from "@/plottables-spherical/Label";
 import { Nodule } from "@/plottables/Nodule";
 import { Vector3 } from "three";
+import { AlgebraElement } from "ts-geometric-algebra";
 
 // Both the Module(Subscriber|Publisher) implement the Observer pattern,
 // The former is for the data model, and the latter is for the view.
@@ -13,12 +14,16 @@ export interface ModelPublisher {
   unsubscribe(subscriber: ModelSubscriber): void;
   notifyModelUpdated(): void;
 }
-export abstract class CKNodule {
+export abstract class CKNodule implements ModelPublisher {
   static NODE_COUNT = 0;
   protected _parent: Array<WeakRef<CKNodule>> = [];
   protected _kids: Array<CKNodule> = [];
   public id: number;
   public name = "";
+  protected _subscribers: Array<ModelSubscriber> = [];
+  protected _highlighted = false;
+  public ref?: Nodule;
+  public labelRef?: Nodule;
 
   constructor() {
     this.id = CKNodule.NODE_COUNT++;
@@ -60,17 +65,14 @@ export abstract class CKNodule {
       this._kids[0].removeThisNode();
     }
   }
-}
+  public setHighlight(highlight: boolean) {
+    this._highlighted = highlight;
+    this.notifyModelUpdated();
+  }
 
-export abstract class CKVisualNodule
-  extends CKNodule
-  implements ModelPublisher
-{
-  protected _subscribers: Array<ModelSubscriber> = [];
-  protected _highlighted = false;
-  public ref?: Nodule;
-  public labelRef?: Nodule;
-
+  public isHighlighted(): boolean {
+    return this._highlighted;
+  }
   subscribe(subscriber: ModelSubscriber): void {
     this._subscribers.push(subscriber);
   }
@@ -84,15 +86,6 @@ export abstract class CKVisualNodule
 
   notifyModelUpdated(): void {
     this._subscribers.forEach(subscriber => subscriber.modelUpdated());
-  }
-
-  public setHighlight(highlight: boolean) {
-    this._highlighted = highlight;
-    this.notifyModelUpdated();
-  }
-
-  public isHighlighted(): boolean {
-    return this._highlighted;
   }
 
   public abstract isHitAt(unitIdealVector: Vector3): boolean;

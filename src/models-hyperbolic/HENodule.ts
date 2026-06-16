@@ -1,7 +1,6 @@
 import { CustomMaterial } from "@/plottables-hyperbolic/MaterialFactory";
 import { HEStoreType } from "@/stores/hyperbolic";
-import { Group, Mesh, MeshBasicMaterial, Scene } from "three";
-import { uniform } from "three/tsl";
+import { Group, Mesh, Scene } from "three";
 import * as THREE from "three/webgpu";
 
 let NODE_COUNT = 0;

@@ -1,4 +1,4 @@
-import { CKVisualNodule } from "@/models/CKNodule";
+import { CKNodule } from "@/models/CKNodule";
 import { CKPoint } from "@/models/CKPoint";
 import { Nodule } from "@/plottables/Nodule";
 import { LabelParentTypes } from "@/types";
@@ -16,7 +16,7 @@ const fontLoader = new FontLoader();
 const robotoFont = await fontLoader.loadAsync(
   "fonts/droid_sans_regular.typeface.json"
 );
-export class HypLabel extends Nodule<CKVisualNodule> {
+export class HypLabel extends Nodule<CKNodule> {
   _labelMesh: Mesh;
   _parentType: LabelParentTypes;
   constructor(modelRef: CKPoint, parentType: LabelParentTypes) {
@@ -58,7 +58,7 @@ export class HypLabel extends Nodule<CKVisualNodule> {
     // console.debug("Label model updated, but method not implemented yet.");
     switch (this._parentType) {
       case "point":
-        const pos = this.modelRef.ga_coord.vector(2);
+        const pos = (this.modelRef as CKPoint).ga_coord.vector(2);
         this._labelMesh.position.set(pos[0], pos[1], pos[2]);
         if (this.modelRef.isHighlighted()) this.glowingDisplay();
         else this.normalDisplay();
