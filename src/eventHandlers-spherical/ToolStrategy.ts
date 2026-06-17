@@ -10,3 +10,10 @@ export interface ToolStrategy {
   deactivate(): void;
 }
 // #endregion toolStrategy
+
+import { Vector3 } from "three/webgpu";
+export interface SphericalTool {
+  mouseMoved(event: MouseEvent, position: Vector3 | null): void;
+  activate(): void;
+  deactivate(): void;
+}

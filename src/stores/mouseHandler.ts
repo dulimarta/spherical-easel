@@ -8,17 +8,11 @@ import MouseHandler from "@/eventHandlers/MouseHandler";
 let pointTool: PointHandler | null = null;
 
 export const useTools = defineStore("tools", () => {
-  const seStore = useSEStore();
+  // const seStore = useSEStore();
   let currentTool: MouseHandler | null = null;
   let layers: Array<Group> = [];
-  let target: HTMLDivElement | null = null;
+  let target: HTMLCanvasElement | null = null;
 
-  watch(
-    () => seStore.zoomMagnificationFactor,
-    (newMode, oldMode) => {
-      currentTool?.setManificationFactor(newMode);
-    }
-  );
   onMounted(() => {
     console.debug("Tools store mounted", target);
   });
@@ -30,7 +24,7 @@ export const useTools = defineStore("tools", () => {
     target?.removeEventListener("mouseleave", doMouseLeave);
   });
 
-  function configure(twoLayers: Array<Group>, canvas: HTMLDivElement) {
+  function configure(twoLayers: Array<Group>, canvas: HTMLCanvasElement) {
     layers = twoLayers;
     target = canvas;
     target.addEventListener("mousemove", doMouseMoved);
@@ -42,8 +36,8 @@ export const useTools = defineStore("tools", () => {
     currentTool?.deactivate();
     switch (mode) {
       case "point":
-        if (pointTool === null) pointTool = new PointHandler(layers);
-        currentTool = pointTool;
+        // if (pointTool === null) pointTool = new PointHandler(layers);
+        // currentTool = pointTool;
         break;
     }
     currentTool?.activate();

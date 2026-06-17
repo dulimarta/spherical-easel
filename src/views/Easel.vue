@@ -25,8 +25,7 @@
         <SphereFrame
           v-else
           :available-width="availWidth"
-          :available-height="availHeight"
-          :is-earth-mode="localIsEarthMode" />
+          :available-height="availHeight" />
         <StyleDrawer></StyleDrawer>
       </div>
       <div

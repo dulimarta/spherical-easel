@@ -375,7 +375,7 @@ onMounted((): void => {
   console.debug("SphereFrame::onMounted");
   // Put the main js instance into the canvas
   twoInstance.appendTo(canvas.value!);
-  toolsStore.configure(layers, canvas.value!);
+  // toolsStore.configure(layers, canvas.value!);
   toolsStore.setCurrentTool("point");
   // Set up the listeners
   // Add the passive option to avoid Chrome warning

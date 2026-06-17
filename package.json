@@ -22,6 +22,7 @@
     "@intlify/unplugin-vue-i18n": "^11.2.3",
     "@mdi/font": "^7.4.47",
     "@vueuse/core": "^14.3.0",
+    "@vueuse/components": "^14.3.0",
     "axios": "^1.18.0",
     "camera-controls": "^2.10.1",
     "color": "^4.2.3",

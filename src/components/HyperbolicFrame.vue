@@ -144,7 +144,7 @@ import {
 } from "three";
 import * as THREE from "three/webgpu";
 import CameraControls from "camera-controls";
-import { DispatcherEvent } from "camera-controls/dist/EventDispatcher";
+import { EventDispatcher } from "camera-controls";
 import { acceleratedRaycast } from "three-mesh-bvh";
 
 // Vue imports
@@ -862,18 +862,16 @@ function doRender() {
   renderer.renderAsync(scene, camera); // Put this here so that changes in the GPU/TSL materials will be reflected in the rendering immediately.
 }
 
-function updateCameraDetails(ev: DispatcherEvent) {
-  const cc = ev.target as CameraControls;
-
+function updateCameraDetails() {
   // console.log("CC::" + ev.type + " " + cc.distance.toFixed(2));
 
-  cameraDollyDistance.value = cc.distance;
-  cameraPolarAngle.value = cc.polarAngle;
+  cameraDollyDistance.value = cameraController.distance;
+  cameraPolarAngle.value = cameraController.polarAngle;
   if (
-    Math.abs(oldCameraDistance - cc.distance) >
+    Math.abs(oldCameraDistance - cameraController.distance) >
     SETTINGS.minDollyDistanceChangeForViewUpdate
   ) {
-    oldCameraDistance = cc.distance;
+    oldCameraDistance = cameraController.distance;
     updateView();
     // console.log({
     //   currentZoom: cameraController.camera.zoom,
