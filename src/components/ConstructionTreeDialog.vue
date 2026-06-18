@@ -159,7 +159,7 @@
 
 <script lang="ts" setup>
 import { ref, Ref, onMounted, watch } from "vue";
-import { VTreeview } from "vuetify/labs/VTreeview";
+// import { VTreeview } from "vuetify/labs/VTreeview";
 import { useConstructionStore } from "@/stores/construction"; // Adjust the import path as needed
 import { ConstructionPath, TreeviewNode } from "@/types/ConstructionTypes";
 import { watchDebounced } from "@vueuse/core";

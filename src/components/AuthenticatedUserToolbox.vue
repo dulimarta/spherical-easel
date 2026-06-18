@@ -136,7 +136,7 @@
         <!-- Existing Folders Treeview -->
         <p class="text-caption mt-2 mb-1">{{ t("folder.selectExisting") }}</p>
         <div class="folder-tree-container">
-          <v-treeview
+          <VTreeview
             :items="treeItems"
             select-strategy="single-independent"
             selectable
@@ -149,7 +149,7 @@
             <template v-slot:prepend="{}">
               <v-icon>{{ /*item.icon ||*/ "mdi-folder" }}</v-icon>
             </template>
-          </v-treeview>
+          </VTreeview>
         </div>
       </div>
     </div>
@@ -379,7 +379,7 @@ import { Vector3 } from "three";
 import SETTINGS from "@/global-settings-spherical";
 import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
-import { VTreeview } from "vuetify/labs/VTreeview";
+// import { VTreeview } from "vuetify/labs/VTreeview";
 import { SEPoint } from "@/models-spherical/SEPoint";
 import { SESegment } from "@/models-spherical/SESegment";
 import { SECircle } from "@/models-spherical/SECircle";
