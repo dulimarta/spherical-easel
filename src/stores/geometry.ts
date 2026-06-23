@@ -2,18 +2,16 @@ import { CKNodule } from "@/models/CKNodule";
 import { CKPoint } from "@/models/CKPoint";
 import { defineStore } from "pinia";
 import { Intersection, Quaternion, Scene, Vector3 } from "three";
-import { Group } from "two.js/src/group";
 import { ref, markRaw, Ref } from "vue";
 
 export const useGeometryStore = defineStore("geometry", () => {
   const objectIntersections: Ref<Intersection[]> = ref([]);
-  let layers: Array<Group> = [];
-  let threejsScene: Scene | null = null;
+  let threejsScene: Scene;
   const points: Ref<Array<CKNodule>> = ref([]);
   const nodules: Ref<Array<CKNodule>> = ref([]);
 
-  function setLayers(newLayers: Array<Group>, scene: Scene | null) {
-    layers = newLayers;
+  function setScene(scene: Scene) {
+    // layers = newLayers;
     threejsScene = scene;
   }
 
@@ -40,8 +38,8 @@ export const useGeometryStore = defineStore("geometry", () => {
     // complains with the error message: "cannot access private property".
     points.value.push(markRaw(g));
     nodules.value.push(markRaw(g));
-    g.ref?.addToLayers(layers, threejsScene);
-    g.labelRef?.addToLayers(layers, threejsScene);
+    g.ref?.addToScene(threejsScene);
+    g.labelRef?.addToScene(threejsScene);
   }
 
   function removeNodule(objId: number) {
@@ -56,8 +54,8 @@ export const useGeometryStore = defineStore("geometry", () => {
     if (idx >= 0) {
       const obj = points.value[idx];
       if (obj instanceof CKNodule) {
-        obj.ref?.removeFromLayers();
-        obj.labelRef?.removeFromLayers();
+        obj.ref?.removeFromScene();
+        obj.labelRef?.removeFromScene();
         if (obj.ref) obj.unsubscribe(obj.ref);
         if (obj.labelRef) obj.unsubscribe(obj.labelRef);
       }
@@ -69,8 +67,8 @@ export const useGeometryStore = defineStore("geometry", () => {
   function clearGeometries() {
     points.value.forEach(g => {
       if (g instanceof CKNodule) {
-        g.ref?.removeFromLayers();
-        g.labelRef?.removeFromLayers();
+        g.ref?.removeFromScene();
+        g.labelRef?.removeFromScene();
         if (g.ref) g.unsubscribe(g.ref);
         if (g.labelRef) g.unsubscribe(g.labelRef);
       }
@@ -86,7 +84,7 @@ export const useGeometryStore = defineStore("geometry", () => {
   }
 
   function adjustLabelPose(qc: Quaternion) {
-    console.debug("Adjust orientation of labels");
+    // console.debug("Adjust orientation of labels using quat", qc);
     nodules.value
       .filter(obj => obj instanceof CKPoint)
       .filter(pt => pt.labelRef)
@@ -103,7 +101,7 @@ export const useGeometryStore = defineStore("geometry", () => {
     /* methods */
     adjustLabelPose,
     findNearByNodules,
-    setLayers,
+    setScene,
     addPoint,
     removePoint,
     clearGeometries,

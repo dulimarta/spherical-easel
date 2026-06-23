@@ -105,14 +105,14 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
   //   tempObjectsMap.delete(obj.name);
   // }
   function addPoint(point: CKPoint) {
-    point.ref?.addToLayers([], threeJSScene);
+    point.ref?.addToScene(threeJSScene);
     objectMap.set(point.name, markRaw(point));
     console.debug(`After adding point ${point.name} to objectMap`, objectMap);
     pointsMap.set(point.name, markRaw(point));
   }
   function removePoint(point: CKPoint) {
-    point.ref?.removeFromLayers();
-    point.labelRef?.removeFromLayers();
+    point.ref?.removeFromScene();
+    point.labelRef?.removeFromScene();
     if (point.ref) point.unsubscribe(point.ref);
     if (point.labelRef) point.unsubscribe(point.labelRef);
     // point.removeGroupFromScene(threeJSScene);

@@ -579,7 +579,7 @@ onMounted(async () => {
   camera.updateProjectionMatrix();
 
   hyperStore.setScene(scene, camera);
-  geoStore.setLayers([], scene);
+  geoStore.setScene(scene);
   cameraQuaternion.value.copy(camera.quaternion);
 
   cameraFieldOfView.value = camera.fov;

@@ -347,7 +347,7 @@ export default class MoveHandler extends Highlighter {
         );
       } else if (this.moveTarget instanceof SECircle) {
         // Turn off the glow of the moving object - it should not glow while moving
-        this.moveTarget.ref.normalDisplay();
+        this.moveTarget.ref?.normalDisplay();
         // Move the selected SECircle, move also updates the display
         this.moveTarget.move(
           this.previousSphereVector,
