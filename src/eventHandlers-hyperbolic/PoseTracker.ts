@@ -1,33 +1,34 @@
-import { Scene } from "three";
+import { Scene, Vector3 } from "three/webgpu";
 import { HEStoreType } from "@/stores/hyperbolic";
-import { HENodule } from "@/models-hyperbolic/HENodule";
-import { HyperbolicToolStrategy } from "./ToolStrategy";
+// import { HENodule } from "@/models-hyperbolic/HENodule";
+import { HyperbolicTool } from "./ToolStrategy";
 import { HEPoint } from "@/models-hyperbolic/HEPoint";
 import { CommandGroup } from "@/commands-spherical/CommandGroup";
 import { HEAntipodalPoint } from "@/models-hyperbolic/HEAntipodalPoint";
 import { AddAntipodalPointCommand } from "@/commands-hyperbolic/AddAntipodalPointCommand";
-import { HEIntersectionPoint } from "@/models-hyperbolic/HEIntersectionPoint";
+// import { HEIntersectionPoint } from "@/models-hyperbolic/HEIntersectionPoint";
 import { HELabel } from "@/models-hyperbolic/HELabel";
 import { HELine } from "@/models-hyperbolic/HELine";
-import { useHyperbolicStore } from "@/stores/hyperbolic";
+// import { useHyperbolicStore } from "@/stores/hyperbolic";
 import { CKNodule } from "@/models/CKNodule";
 import { CKPoint } from "@/models/CKPoint";
 import { GeometryStoreType, useGeometryStore } from "@/stores/geometry";
-let _store: HEStoreType | null = null;
-let _geometryStore: GeometryStoreType | null = null;
-export class PoseTracker implements HyperbolicToolStrategy {
-  get hyperStore(): HEStoreType {
-    if (!_store) {
-      _store = useHyperbolicStore();
-    }
-    return _store;
-  }
-  get geoStore(): GeometryStoreType {
-    if (!_geometryStore) {
-      _geometryStore = useGeometryStore();
-    }
-    return _geometryStore;
-  }
+import { SURFACE_TYPES } from "@/global-settings-hyperbolic";
+// let _store: HEStoreType | null = null;
+// let _geometryStore: GeometryStoreType | null = null;
+export class PoseTracker implements HyperbolicTool {
+  // get hyperStore(): HEStoreType {
+  //   if (!_store) {
+  //     _store = useHyperbolicStore();
+  //   }
+  //   return _store;
+  // }
+  // get geoStore(): GeometryStoreType {
+  //   if (!_geometryStore) {
+  //     _geometryStore = useGeometryStore();
+  //   }
+  //   return _geometryStore;
+  // }
   protected scene: Scene;
 
   //flags
@@ -43,10 +44,10 @@ export class PoseTracker implements HyperbolicToolStrategy {
   /**
    * Arrays of nodules near the mouse event location
    */
-  protected hitHENodules: CKNodule[] = [];
-  protected hitCKPoints: CKPoint[] = [];
-  protected hitHELabels: HELabel[] = [];
-  protected hitHELines: HELine[] = [];
+  // protected hitHENodules: CKNodule[] = [];
+  // protected hitCKPoints: CKPoint[] = [];
+  // protected hitHELabels: HELabel[] = [];
+  // protected hitHELines: HELine[] = [];
   // protected hitHESegments: HESegment[] = [];
   // protected hitHECircles: HECircle[] = [];
   // protected hitHEEllipses: HEEllipse[] = [];
@@ -64,29 +65,70 @@ export class PoseTracker implements HyperbolicToolStrategy {
     // this.normalArrow.setColor(0xffffff);
     // this.normalArrow.setLength(1, 0.2, 0.2);
   }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  mousePressed(event: MouseEvent): void {
-    //Not implemented
+  mouseReleased(
+    event: MouseEvent,
+    position: Vector3,
+    hitObjects: Array<CKNodule | string>
+  ): void {
+    // throw new Error("Method not implemented.");
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  mouseMoved(event: MouseEvent): void {
-    this.prepareForNextEvent();
+  // mousePressed(
+  //   event: MouseEvent,
+  //   position: Vector3,
+  //   onSurface: SURFACE_TYPES,
+  //   hitObject: Array<CKNodule | string>
+  // ): void {
+  //   //Not implemented
+  // }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  mouseMoved(
+    event: MouseEvent,
+    position: Vector3,
+    hitObjects: Array<CKNodule | string>
+  ): void {
+    console.debug("PoseTracker::mouseMoved", position);
+    // this.prepareForNextEvent();
+    // Set the display to normal for all previously nearby non-selected objects
+    hitObjects
+      .filter(obj => obj instanceof CKNodule)
+      .forEach((n: CKNodule) => {
+        n.setHighlight(false);
+        // if (!n.selected) n.glowing = false;
+      });
+    const surfPos = hitObjects.findIndex(z => typeof z === "string");
+    if (surfPos >= 0) {
+      this.aSurfaceIsIntersected = true;
+      this.hyperboloidIsFirstSurfaceHit =
+        (hitObjects[surfPos] as string).match(/Sheet/) !== null;
+      this.idealStripIsFirstSurfaceHit =
+        (hitObjects[surfPos] as string).match(/Ideal/) !== null;
+      this.ultraStripIsFirstSurfaceHit =
+        (hitObjects[surfPos] as string).match(/Ultra/) !== null;
+      this.hyperboloidFirstHitOverall =
+        this.hyperboloidFirstHitOverall && surfPos === 0;
+      this.idealStripFirstHitOverall =
+        this.idealStripIsFirstSurfaceHit && surfPos === 0;
+      this.ultraStripFirstHitOverall =
+        this.ultraStripIsFirstSurfaceHit && surfPos === 0;
+    }
 
     // update the hit arrays as necessary
-    if (this.geoStore.objectIntersections.length === 0) {
+    if (hitObjects.length === 0) {
       return;
     }
 
-    this.hitHENodules = this.geoStore.objectIntersections
-      .map(intersect => {
-        // console.debug(
-        //   `Checking intersection with object ${intersect.object.name}`
-        // );
-        return this.geoStore.getObjectById(intersect.object.name); // returns null for surfaces
-      })
-      .filter((obj): obj is CKNodule => obj !== null);
+    this.somethingIsHit = true;
+    // this.hitHENodules = hitObjects
+    // .map(intersect => {
+    //   // console.debug(
+    //   //   `Checking intersection with object ${intersect.object.name}`
+    //   // );
+    //   return this.geoStore.getObjectById(intersect.object.name); // returns null for surfaces
+    // })
+    // .filter(obj => typeof obj !== "string");
     // .filter((n: CKNodule) => {
     //   console.debug(`Checking if ${n.name} is hit`);
     //   if (n instanceof HEIntersectionPoint || n instanceof HEAntipodalPoint) {
@@ -105,9 +147,9 @@ export class PoseTracker implements HyperbolicToolStrategy {
     //   this.hitHENodules.map(p => p.name)
     // );
 
-    this.hitCKPoints = this.hitHENodules
-      .filter(obj => obj.name.startsWith("P"))
-      .map(obj => obj as CKPoint);
+    // this.hitCKPoints = this.hitHENodules
+    //   .filter(obj => obj.name.startsWith("P"))
+    //   .map(obj => obj as CKPoint);
 
     // console.debug(
     //   "Hit points:",
@@ -125,14 +167,14 @@ export class PoseTracker implements HyperbolicToolStrategy {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  mouseReleased(event: MouseEvent): void {
-    //Not implemented
-  }
+  // mouseReleased(event: MouseEvent): void {
+  //Not implemented
+  // }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  mouseLeave(event: MouseEvent): void {
-    this.prepareForNextEvent();
-  }
+  // mouseLeave(event: MouseEvent): void {
+  // this.prepareForNextEvent();
+  // }
 
   activate(): void {
     // throw new Error("Method not implemented.");
@@ -143,43 +185,12 @@ export class PoseTracker implements HyperbolicToolStrategy {
   }
 
   prepareForNextEvent(): void {
-    // Set the display to normal for all previously nearby non-selected objects
-    this.hitHENodules.forEach((n: CKNodule) => {
-      n.setHighlight(false);
-      // if (!n.selected) n.glowing = false;
-    });
-
     // clear previous hit arrays
-    this.hitHENodules.splice(0);
-    this.hitCKPoints.splice(0);
-    this.hitHELabels.splice(0);
-    this.hitHELines.splice(0);
-
+    // this.hitHENodules.splice(0);
+    // this.hitCKPoints.splice(0);
+    // this.hitHELabels.splice(0);
+    // this.hitHELines.splice(0);
     // update the flags
-    this.somethingIsHit =
-      this.geoStore.objectIntersections.length > 0 ||
-      this.hyperStore.surfaceIntersections.length > 0;
-    this.aSurfaceIsIntersected =
-      this.hyperStore.surfaceIntersections.length > 0;
-    this.hyperboloidIsFirstSurfaceHit = this.aSurfaceIsIntersected
-      ? this.hyperStore.surfaceIntersections[0].object.name.match(/(Sheet)/) !==
-        null
-      : false; // THIS SHOULD ONLY BE USED WHERE WE KNOW this.aSurfaceIsIntersected IS TRUE
-    this.idealStripIsFirstSurfaceHit = this.aSurfaceIsIntersected
-      ? this.hyperStore.surfaceIntersections[0].object.name.match(/(Ideal)/) !==
-        null
-      : false; // THIS SHOULD ONLY BE USED WHERE WE KNOW this.aSurfaceIsIntersected IS TRUE
-    this.ultraStripIsFirstSurfaceHit = this.aSurfaceIsIntersected
-      ? this.hyperStore.surfaceIntersections[0].object.name.match(/(Ultra)/) !==
-        null
-      : false; // THIS SHOULD ONLY BE USED WHERE WE KNOW this.aSurfaceIsIntersected IS TRUE
-
-    this.hyperboloidFirstHitOverall =
-      this.hyperStore.hyperboloidIsClosestIntersection;
-    this.idealStripFirstHitOverall =
-      this.hyperStore.idealStripIsClosestIntersection;
-    this.ultraStripFirstHitOverall =
-      this.hyperStore.ultraStripIsClosestIntersection;
   }
   static addCreateAntipodeCommand(
     parentPoint: HEPoint,

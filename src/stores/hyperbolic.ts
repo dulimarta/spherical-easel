@@ -39,9 +39,9 @@ const tmpVector = new Vector4();
 export const useHyperbolicStore = defineStore("hyperbolic", () => {
   const surfaceIntersections: Ref<Intersection[]> = ref([]);
   const closestIntersectionIsSurface: Ref<boolean> = ref(false);
-  const hyperboloidIsClosestIntersection: Ref<boolean> = ref(false);
-  const idealStripIsClosestIntersection: Ref<boolean> = ref(false);
-  const ultraStripIsClosestIntersection: Ref<boolean> = ref(false);
+  // const hyperboloidIsClosestIntersection: Ref<boolean> = ref(false);
+  // const idealStripIsClosestIntersection: Ref<boolean> = ref(false);
+  // const ultraStripIsClosestIntersection: Ref<boolean> = ref(false);
 
   const objectMap: Map<string, CKNodule> = new Map();
   const pointsMap: Map<string, CKPoint> = new Map();
@@ -94,7 +94,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     // console.debug("Camera inverse details", cameraOrigin, q, s);
     rayCaster = new Raycaster();
   }
-  function getObjectById(id: string) {
+  function getObjectById(id: string): CKNodule | null {
     console.debug(`Searching for ${id} in`, objectMap);
     return objectMap.get(id) ?? null;
   }
@@ -531,9 +531,9 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     cameraOrigin,
     cameraInverseMatrix,
     implementedHETools,
-    hyperboloidIsClosestIntersection,
-    idealStripIsClosestIntersection,
-    ultraStripIsClosestIntersection,
+    // hyperboloidIsClosestIntersection,
+    // idealStripIsClosestIntersection,
+    // ultraStripIsClosestIntersection,
     linesMap,
     pointsMap,
     addTempObject,

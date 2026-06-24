@@ -16,10 +16,10 @@
       </v-icon>
     </span>
     <span class="mr-1">
-      <!--span class="mr-1">
+      <span class="mr-1">
         Canvas: ({{ elementX.toFixed(0) }}, {{ elementY.toFixed(0) }}) |
-      </!--span-->
-      <span v-if="onSurface">
+      </span>
+      <span v-if="onSurface || true">
         World:{{ rayIntersectionPosition.toFixed(2) }} In Camera
         {{ positionInCameraCF.toFixed(2) }}
       </span>
@@ -173,7 +173,10 @@ import { useGeometryStore } from "@/stores/geometry";
 import { storeToRefs } from "pinia";
 
 // Tool Handlers
-import { HyperbolicToolStrategy } from "@/eventHandlers-hyperbolic/ToolStrategy";
+import {
+  HyperbolicTool,
+  HyperbolicToolStrategy
+} from "@/eventHandlers-hyperbolic/ToolStrategy";
 import { SimplePointHandler } from "@/eventHandlers-hyperbolic/SimplePointHandler";
 import { CircleHandler } from "@/eventHandlers-hyperbolic/CircleHandler";
 import { LineHandler } from "@/eventHandlers-hyperbolic/LineHandler";
@@ -200,6 +203,7 @@ import { VisibleHELayersType } from "@/types";
 import EventBus from "@/eventHandlers-spherical/EventBus";
 import { onBeforeUnmount } from "vue";
 import { Handler } from "mitt";
+import { CKNodule } from "@/models/CKNodule";
 const { t } = useI18n({ useScope: "local" });
 
 const hyperStore = useHyperbolicStore();
@@ -212,10 +216,10 @@ const {
   cameraQuaternion,
   cameraDollyDistance,
   cameraFieldOfView,
-  cameraOrigin,
-  hyperboloidIsClosestIntersection,
-  idealStripIsClosestIntersection,
-  ultraStripIsClosestIntersection
+  cameraOrigin
+  // hyperboloidIsClosestIntersection,
+  // idealStripIsClosestIntersection,
+  // ultraStripIsClosestIntersection
 } = storeToRefs(hyperStore);
 const { objectIntersections } = storeToRefs(geoStore);
 const { actionMode } = storeToRefs(seStore);
@@ -226,6 +230,7 @@ const showLowerSheet = ref(false);
 const showIdealStrip = ref(false);
 const showUltraStrip = ref(false);
 const showPolarGrid = ref(true);
+let hitList: Array<CKNodule | string> = [];
 type ImportantSurface = "Upper" | "Lower" | null;
 const intersectionList: Ref<
   THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>>[]
@@ -291,12 +296,12 @@ scene.background = new THREE.Color(0xf5f5f5);
 //scene.background = new THREE.Color(0x6082b6);
 //scene.environment = await new THREE.RGBELoader().loadAsync("env.hdr");
 
-let currentTools: Array<HyperbolicToolStrategy> = [];
+let currentTools: Array<HyperbolicTool> = [];
 let pointTool: SimplePointHandler | null = null;
-let lineTool: LineHandler | null = null;
-let segmentTool: LineHandler | null = null;
-let circleTool: CircleHandler | null = null;
-let textTool: TextHandler | null = null;
+// let lineTool: LineHandler | null = null;
+// let segmentTool: LineHandler | null = null;
+// let circleTool: CircleHandler | null = null;
+// let textTool: TextHandler | null = null;
 
 const txtObject = new Text();
 txtObject.text = `Hello`;
@@ -524,26 +529,26 @@ watch(
         if (pointTool === null) pointTool = new SimplePointHandler(scene);
         currentTools.push(pointTool);
         break;
-      case "line":
-        if (lineTool === null) {
-          lineTool = new LineHandler(scene, 1 * 4 + 1 * 2 + 1 * 1); // line is mode 7
-        }
-        currentTools.push(lineTool);
-        break;
-      case "segment":
-        if (segmentTool === null) {
-          segmentTool = new LineHandler(scene, 0 * 4 + 1 * 2 + 0 * 1); // segment mode is 2
-        }
-        currentTools.push(segmentTool);
-        break;
-      case "text":
-        //if (textTool === null) textTool = new TextHandler(scene);
-        //currentTools.push(textTool);
-        break;
-      case "circle":
-        //if (circleTool === null) circleTool = new CircleHandler(scene);
-        //currentTools.push(circleTool);
-        break;
+      // case "line":
+      //   if (lineTool === null) {
+      //     lineTool = new LineHandler(scene, 1 * 4 + 1 * 2 + 1 * 1); // line is mode 7
+      //   }
+      //   currentTools.push(lineTool);
+      //   break;
+      // case "segment":
+      //   if (segmentTool === null) {
+      //     segmentTool = new LineHandler(scene, 0 * 4 + 1 * 2 + 0 * 1); // segment mode is 2
+      //   }
+      //   currentTools.push(segmentTool);
+      //   break;
+      // case "text":
+      //   //if (textTool === null) textTool = new TextHandler(scene);
+      //   //currentTools.push(textTool);
+      //   break;
+      // case "circle":
+      //   //if (circleTool === null) circleTool = new CircleHandler(scene);
+      //   //currentTools.push(circleTool);
+      //   break;
       case "rotate":
         enableCameraControl.value = true;
         break;
@@ -621,13 +626,13 @@ onMounted(async () => {
 
   // textRenderer.renderAsync(scene, camera);
   // visualContent.value!.appendChild(textRenderer.domElement);
-  useEventListener("mousemove", threeMouseTrackerThenMouseMove);
-  useEventListener(webGPUCanvas.value, "mousedown", doMouseDown);
-  useEventListener(webGPUCanvas.value, "mouseup", doMouseUp);
-  useEventListener(webGPUCanvas.value, "mouseleave", doMouseLeave);
+  useEventListener(webGPUCanvas, "mousemove", threeMouseTrackerThenMouseMove);
+  useEventListener(webGPUCanvas, "mousedown", doMouseDown);
+  useEventListener(webGPUCanvas, "mouseup", doMouseUp);
+  useEventListener(webGPUCanvas, "mouseleave", doMouseLeave);
 
-  useEventListener(cameraController, "control", updateCameraDetails);
-  useEventListener(cameraController, "update", updateCameraDetails);
+  // useEventListener(cameraController, "control", updateCameraDetails);
+  // useEventListener(cameraController, "update", updateCameraDetails);
   cameraController.mouseButtons.wheel = CameraControls.ACTION.NONE;
   useEventListener(
     webGPUCanvas.value,
@@ -848,6 +853,7 @@ function initialize() {
 }
 
 function doRender() {
+  //console.debug("Rendering.....");
   if (enableCameraControl.value) {
     const deltaTime = clock.getDelta();
     const hasUpdated = cameraController.update(deltaTime);
@@ -1012,19 +1018,19 @@ function updateView() {
 
 function doMouseDown(ev: MouseEvent) {
   currentTools.forEach(t => {
-    t.mousePressed(ev);
+    // t.mousePressed(ev);
   });
 }
 
 function doMouseUp(ev: MouseEvent) {
   currentTools.forEach(t => {
-    t.mouseReleased(ev);
+    t.mouseReleased(ev, rayIntersectionPosition, hitList);
   });
 }
 
 function doMouseLeave(ev: MouseEvent) {
   currentTools.forEach(t => {
-    t.mouseLeave(ev);
+    // t.mouseLeave(ev);
   });
 }
 
@@ -1032,7 +1038,7 @@ function doMouseLeave(ev: MouseEvent) {
 // mouse with the objects in the scene then
 // call the mouseMoved function of the current tool
 function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
-  // console.debug("Mouse move", ev);
+  console.debug("Mouse move", ev);
   mouseCoordNormalized.value.x =
     2 * (elementX.value / renderer.domElement.clientWidth) - 1;
   mouseCoordNormalized.value.y =
@@ -1043,72 +1049,40 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   //   "Scene children",
   //   scene.children.map(c => c.name)
   // );
-  intersectionList.value = rayCaster
-    .intersectObjects(scene.children, false)
-    .filter((iSect, idx) => {
-      // console.debug("Checking intersection with", iSect.object.name);
-      if (iSect.object.name.length === 0) {
-        return false; // if the intersection is not with a named object, ignore it
-      } else {
-        // console.log(
-        //   `Raycast intersect #${idx} ${iSect.object.name}`,
-        //   iSect.point.toFixed(2)
-        // );
-        // Here we have an intersection with an object or surface
-        // We must make sure it exists, is visible and is user created, but this is done by the handler that uses this intersection list
-        return true; // intersection with other named objects are always returned
-      }
-    });
-  const regex = /Sheet|Ideal|Ultra/; // Sorting for surfaces and object intersections
-  [surfaceIntersections.value, objectIntersections.value] =
-    intersectionList.value.partition(x => {
-      return x.object.name.match(regex) !== null;
-    });
-  objectIntersections.value.map(iSect => {
-    console.debug(
-      `Object intersection with ${iSect.object.name} Type:${iSect.object.type} at`,
-      iSect.point.toFixed(2)
-    );
-  });
+  const hitByRay = rayCaster.intersectObjects(scene.children, false);
+  intersectionList.value = hitByRay;
+  // .filter(iSect => iSect.object.name.length === 0);
+  // const regex = /Sheet|Ideal|Ultra/; // Sorting for surfaces and object intersections
   // Set the closest intersection flags
-  let closestIntersection: THREE.Intersection | null =
-    intersectionList.value[0];
-  if (closestIntersection) {
-    hyperboloidIsClosestIntersection.value =
-      closestIntersection.object.name.match(/Sheet/) !== null;
-    idealStripIsClosestIntersection.value =
-      closestIntersection.object.name.match(/Ideal/) !== null;
-    ultraStripIsClosestIntersection.value =
-      closestIntersection.object.name.match(/Ultra/) !== null;
-    closestIntersectionIsSurface.value =
-      hyperboloidIsClosestIntersection.value ||
-      idealStripIsClosestIntersection.value ||
-      ultraStripIsClosestIntersection.value;
-  }
-
-  // Compute the first intersection(s) information for display
-  let firstIntersection: THREE.Intersection | null = intersectionList.value[0];
-  // If the mouse is over a surface, update the text displayed at the top of the screen
-  if (firstIntersection) {
-    txtObject.text = firstIntersection.object.name;
-    if (firstIntersection.object.name.match(regex))
-      onSurface.value = firstIntersection.object.name
-        .substring(0, 6)
-        .toUpperCase() as ImportantSurface;
-    else {
-      onSurface.value = null;
-    }
-    rayIntersectionPosition.copy(firstIntersection.point);
+  // let closestIntersection: THREE.Intersection | null =
+  //   intersectionList.value[0];
+  hitByRay.forEach(ix => {
+    console.debug("Intersect", ix.object.name);
+  });
+  if (hitByRay.length > 0) {
+    // Compute the first intersection(s) information for display
+    // If the mouse is over a surface, update the text displayed at the top of the screen
+    // if (firstIntersection) {
+    //   txtObject.text = firstIntersection.object.name;
+    //   if (firstIntersection.object.name.match(regex))
+    //     onSurface.value = firstIntersection.object.name
+    //       .substring(0, 6)
+    //       .toUpperCase() as ImportantSurface;
+    //   else {
+    //     onSurface.value = null;
+    //   }
+    rayIntersectionPosition.copy(hitByRay[0].point);
     positionInCameraCF.value
       .copy(rayIntersectionPosition)
       .applyMatrix4(camera.matrixWorld);
-  } else {
-    onSurface.value = null;
-    firstIntersection = null;
+    const hitNames = hitByRay.map(x => x.object.name);
+    hitList = hitNames.map(objName => {
+      const obj = hyperStore.getObjectById(objName);
+      return obj ? obj : objName;
+    });
   }
-
   currentTools.forEach(t => {
-    t.mouseMoved(ev);
+    t.mouseMoved(ev, rayIntersectionPosition, hitList);
   });
 
   renderer.render(scene, camera);
