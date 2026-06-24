@@ -54,6 +54,7 @@ import { useGeometryStore } from "@/stores/geometry";
 import { SphericalTool } from "@/eventHandlers-spherical/ToolStrategy";
 import { PointHandler } from "@/eventHandlers-spherical/NewPointHandler";
 import { CKNodule } from "@/models/CKNodule";
+import { abs, asin, color, Fn, positionLocal, vec3, vec4 } from "three/tsl";
 const geoStore = useGeometryStore();
 const webGPUCanvas = useTemplateRef<HTMLCanvasElement>("webGPUCanvas");
 type ComponentProps = {
@@ -82,6 +83,7 @@ let lastViewportWidth, lastViewportHeight;
 let hasUpdatedCameraControls = false;
 let currentTool: SphericalTool | null = null;
 let pointTool: SphericalTool | null = null;
+let unitSphere: Mesh;
 const hitObjects: CKNodule[] = [];
 const { idle } = useIdle(500);
 const { elementX, elementY, isOutside } = useMouseInElement(webGPUCanvas, {});
@@ -132,16 +134,34 @@ onBeforeMount(() => {
   const directionalLight = new DirectionalLight(0xffffff, 1);
   directionalLight.position.set(0, 1, 2);
   scene.add(directionalLight);
-  const unitSphere = new Mesh(
-    new SphereGeometry(1, 60, 60),
-    new MeshStandardMaterial({
-      color: 0x66ff00,
-      roughness: 0.04,
-      metalness: 0.2,
-      transparent: true,
-      opacity: 0.8
-    })
+  const unitSphereMaterial = new THREE.MeshStandardNodeMaterial({
+    roughness: 0.04,
+    metalness: 0.2,
+    transparent: true,
+    opacity: 0.8
+  });
+  unitSphere = new Mesh(
+    new SphereGeometry(1, 120, 120),
+    unitSphereMaterial
+    // new THREE.NodeMaterial({
+    //   color: 0x66ff00,
+    //   roughness: 0.04,
+    //   metalness: 0.2,
+    //   transparent: true,
+    //   opacity: 0.8
+    // })
   );
+  const latitudeLine = Fn(() => {
+    const angle = abs(asin(positionLocal.z).mul(15).div(Math.PI))
+      .fract()
+      .step(0.98);
+    return vec3(angle.mul(0.4), angle, 0);
+  });
+  // unitSphereMaterial.fragmentNode = vec3(positionLocal.z)
+  //   .mul(10)
+  //   .fract()
+  //   .step(0.95);
+  unitSphereMaterial.colorNode = latitudeLine();
   unitSphere.name = "unitSphere";
   scene.add(unitSphere);
 });
@@ -167,6 +187,10 @@ onMounted(async () => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0x336600, 0.4);
   await renderer.init();
+
+  const db = await renderer.debug.getShaderAsync(scene, camera, unitSphere);
+  console.debug("VS for unitSphere", db.vertexShader);
+  console.debug("FS for unitSphere", db.fragmentShader);
 
   cameraController = new CameraControls(camera, renderer.domElement);
   // useEventListener(cameraController, "control", () => {

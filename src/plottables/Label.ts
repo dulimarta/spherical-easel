@@ -31,7 +31,7 @@ export class Label extends Nodule<CKNodule> {
     const parentId = modelRef.name;
     this._labelTextGeometry = new TextGeometry(parentId, {
       font: robotoFont,
-      size: 0.05,
+      size: 0.03,
       depth: 0
     });
     this._labelMaterial = new NodeMaterial();
@@ -72,15 +72,6 @@ export class Label extends Nodule<CKNodule> {
   }
 
   lookAtCamera(q: Quaternion): void {
-    // console.debug("Mesh quat before", this._labelMesh.quaternion);
-    // console.debug(
-    //   "Mesh matrix before applying quat",
-    //   this._labelMesh.matrix.elements
-    // );
-    // console.debug(
-    //   "Mesh matrixWorld before",
-    //   this._labelMesh.matrixWorld.elements
-    // );
     this._labelMesh.quaternion.copy(q);
     this._labelTextGeometry.computeBoundingBox();
     const box = this._labelTextGeometry.boundingBox;
