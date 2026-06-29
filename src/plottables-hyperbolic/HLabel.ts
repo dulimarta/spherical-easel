@@ -18,7 +18,7 @@ const fontLoader = new FontLoader();
 const robotoFont = await fontLoader.loadAsync(
   "fonts/droid_sans_regular.typeface.json"
 );
-export class Label extends Nodule<CKNodule> {
+export class HLabel extends Nodule<CKNodule> {
   _labelMesh: Mesh;
   private _labelMaterial: NodeMaterial;
   private _labelTextGeometry: TextGeometry;
@@ -31,7 +31,7 @@ export class Label extends Nodule<CKNodule> {
     const parentId = modelRef.name;
     this._labelTextGeometry = new TextGeometry(parentId, {
       font: robotoFont,
-      size: 0.03,
+      size: 0.1,
       depth: 0
     });
     this._labelMaterial = new NodeMaterial();

@@ -4,7 +4,7 @@ import { color } from "three/tsl";
 import { HYPERBOLIC_LAYER } from "@/global-settings-hyperbolic";
 import { CKPoint } from "@/models/CKPoint";
 
-export class Point extends Nodule<CKPoint> {
+export class SPoint extends Nodule<CKPoint> {
   private _pointMesh: Mesh;
   private _pointMaterial: NodeMaterial;
   constructor(name: string, modelRef: CKPoint) {

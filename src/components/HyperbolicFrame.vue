@@ -173,10 +173,7 @@ import { useGeometryStore } from "@/stores/geometry";
 import { storeToRefs } from "pinia";
 
 // Tool Handlers
-import {
-  HyperbolicTool,
-  HyperbolicToolStrategy
-} from "@/eventHandlers-hyperbolic/ToolStrategy";
+import { HyperbolicTool } from "@/eventHandlers-hyperbolic/ToolStrategy";
 import { SimplePointHandler } from "@/eventHandlers-hyperbolic/SimplePointHandler";
 import { CircleHandler } from "@/eventHandlers-hyperbolic/CircleHandler";
 import { LineHandler } from "@/eventHandlers-hyperbolic/LineHandler";
