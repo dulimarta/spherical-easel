@@ -25,25 +25,25 @@ export class SPoint extends Nodule<CKPoint> {
     // throw new Error("Method not implemented.");
   }
   addToScene(scene: Scene): void {
-    scene?.add(this._pointMesh);
-    console.debug(
-      "After adding point to scene:",
-      scene?.children.map(child => child.name).filter(name => name.length > 0)
-    );
+    scene.add(this._pointMesh);
+    // console.debug(
+    //   "After adding point to scene:",
+    //   scene?.children.map(child => child.name).filter(name => name.length > 0)
+    // );
     this._pointMesh.layers.enable(HYPERBOLIC_LAYER.upperSheetPoints);
   }
   removeFromScene(): void {
     this._pointMesh.removeFromParent();
   }
   glowingDisplay(): void {
-    console.debug("Setting fragmentNode color to glowing");
+    // console.debug("Setting fragmentNode color to glowing");
     this._pointMaterial.colorNode = color(0xff0000);
     this._pointMaterial.needsUpdate = true;
   }
   normalDisplay(): void {
     this._pointMaterial.colorNode = color(0xffff00);
     this._pointMaterial.needsUpdate = true;
-    console.debug("Setting fragmentNode color to normal");
+    // console.debug("Setting fragmentNode color to normal");
   }
   modelUpdated(): void {
     const pos = this.modelRef.ga_coord.vector(2);

@@ -1,3 +1,4 @@
+import { CKLine } from "@/models/CKLine";
 import { CKNodule } from "@/models/CKNodule";
 import { CKPoint } from "@/models/CKPoint";
 import { defineStore } from "pinia";
@@ -8,6 +9,7 @@ export const useGeometryStore = defineStore("geometry", () => {
   const objectIntersections: Ref<Intersection[]> = ref([]);
   let threejsScene: Scene;
   const points: Ref<Array<CKNodule>> = ref([]);
+  const lines: Ref<Array<CKNodule>> = ref([]);
   const nodules: Ref<Array<CKNodule>> = ref([]);
 
   function setScene(scene: Scene) {
@@ -17,15 +19,15 @@ export const useGeometryStore = defineStore("geometry", () => {
 
   function getObjectById(id: string): CKNodule | null {
     const pos = nodules.value.findIndex(obj => {
-      console.debug(`Checking object with id ${obj.name} against ${id}`);
+      // console.debug(`Checking object with id ${obj.name} against ${id}`);
       return obj.name === id;
     });
-    console.debug(
-      `Searching for ${id} in`,
-      nodules.value,
-      " Found at position:",
-      pos
-    );
+    // console.debug(
+    //   `Searching for ${id} in`,
+    //   nodules.value,
+    //   " Found at position:",
+    //   pos
+    // );
     if (pos >= 0) {
       return nodules.value[pos];
     }
@@ -40,13 +42,6 @@ export const useGeometryStore = defineStore("geometry", () => {
     nodules.value.push(markRaw(g));
     g.ref?.addToScene(threejsScene);
     g.labelRef?.addToScene(threejsScene);
-  }
-
-  function removeNodule(objId: number) {
-    const idx = nodules.value.findIndex(item => item.id === objId);
-    if (idx >= 0) {
-      nodules.value.splice(idx, 1);
-    }
   }
 
   function removePoint(objId: number) {
@@ -64,6 +59,34 @@ export const useGeometryStore = defineStore("geometry", () => {
     }
   }
 
+  function addLine(g: CKLine) {
+    lines.value.push(markRaw(g));
+    nodules.value.push(markRaw(g));
+    g.ref?.addToScene(threejsScene);
+    g.labelRef?.addToScene(threejsScene);
+  }
+
+  function removeLine(objId: number) {
+    const idx = lines.value.findIndex(item => item.id === objId);
+    if (idx >= 0) {
+      const obj = lines.value[idx];
+      if (obj instanceof CKNodule) {
+        obj.ref?.removeFromScene();
+        obj.labelRef?.removeFromScene();
+        if (obj.ref) obj.unsubscribe(obj.ref);
+        if (obj.labelRef) obj.unsubscribe(obj.labelRef);
+      }
+      lines.value.splice(idx, 1);
+      removeNodule(objId);
+    }
+  }
+  function removeNodule(objId: number) {
+    const idx = nodules.value.findIndex(item => item.id === objId);
+    if (idx >= 0) {
+      nodules.value.splice(idx, 1);
+    }
+  }
+
   function clearGeometries() {
     points.value.forEach(g => {
       if (g instanceof CKNodule) {
@@ -77,10 +100,10 @@ export const useGeometryStore = defineStore("geometry", () => {
   }
 
   function findNearByNodules(unitIdealVector: Vector3): Array<CKNodule> {
-    const z: CKNodule[] = nodules.value.filter((obj: CKNodule) =>
-      obj.isHitAt(unitIdealVector)
-    );
-    return z;
+    // const z: CKNodule[] = nodules.value.filter((obj: CKNodule) =>
+    //   obj.isHitAt(unitIdealVector)
+    // );
+    return [];
   }
 
   function adjustLabelPose(qc: Quaternion) {
@@ -89,7 +112,7 @@ export const useGeometryStore = defineStore("geometry", () => {
       .filter(obj => obj instanceof CKPoint)
       .filter(pt => pt.labelRef)
       .forEach(p => {
-        console.debug(`Point ${p.name} with `, p.labelRef?.name);
+        // console.debug(`Point ${p.name} with `, p.labelRef?.name);
         p.labelRef?.lookAtCamera(qc);
       });
   }
@@ -104,6 +127,8 @@ export const useGeometryStore = defineStore("geometry", () => {
     setScene,
     addPoint,
     removePoint,
+    addLine,
+    removeLine,
     clearGeometries,
     getObjectById
   };

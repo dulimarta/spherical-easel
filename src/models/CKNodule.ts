@@ -1,4 +1,4 @@
-import Label from "@/plottables-spherical/Label";
+import { useGA } from "@/composables/ga";
 import { Nodule } from "@/plottables/Nodule";
 import { Vector3 } from "three";
 import { AlgebraElement } from "ts-geometric-algebra";
@@ -16,6 +16,8 @@ export interface ModelPublisher {
 }
 export abstract class CKNodule implements ModelPublisher {
   static NODE_COUNT = 0;
+  static EGA = useGA(false); // false for elliptic, true for hyperbolic
+  static HGA = useGA(true);
   protected _parent: Array<WeakRef<CKNodule>> = [];
   protected _kids: Array<CKNodule> = [];
   public id: number;
@@ -88,5 +90,5 @@ export abstract class CKNodule implements ModelPublisher {
     this._subscribers.forEach(subscriber => subscriber.modelUpdated());
   }
 
-  public abstract isHitAt(unitIdealVector: Vector3): boolean;
+  // public abstract isHitAt(unitIdealVector: Vector3): boolean;
 }

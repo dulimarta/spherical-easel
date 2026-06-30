@@ -1,7 +1,7 @@
 import MouseHandler from "./MouseHandler";
 import { Group } from "two.js/src/group";
 import Point from "@/plottables-spherical/Point";
-import { AddPointKommand } from "@/commands/AddPointKommand";
+import { AddPointByCoordinatesKommand } from "@/commands/AddPointKommand";
 export class PointHandler extends MouseHandler {
   protected startMarker: Point;
   private isTemporaryPointAdded = false;
@@ -34,7 +34,9 @@ export class PointHandler extends MouseHandler {
   }
   mousePressed(event: MouseEvent): void {
     if (this.isOnSphere) {
-      const pointCommand = new AddPointKommand(this.currentSphereVector);
+      const pointCommand = new AddPointByCoordinatesKommand(
+        this.currentSphereVector
+      );
       pointCommand.execute();
     }
   }

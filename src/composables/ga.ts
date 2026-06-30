@@ -27,7 +27,7 @@ export function useGA(isHyperbolic: boolean) {
   function makeLine(x: number, y: number, z: number): AlgebraElement {
     const ln = Elliptic.fromVector([x, y, z], 1);
     console.log(
-      "created point:",
+      "created line:",
       ln[0],
       ln[1],
       ln[2],

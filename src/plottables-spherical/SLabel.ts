@@ -18,14 +18,14 @@ const fontLoader = new FontLoader();
 const robotoFont = await fontLoader.loadAsync(
   "fonts/droid_sans_regular.typeface.json"
 );
-export class SLabel extends Nodule<CKNodule> {
+export class SLabel<T extends CKNodule> extends Nodule<CKNodule> {
   _labelMesh: Mesh;
   private _labelMaterial: NodeMaterial;
   private _labelTextGeometry: TextGeometry;
   private labelMinBox = new Vector3();
   private labelMaxBox = new Vector3();
   _parentType: LabelParentTypes;
-  constructor(modelRef: CKPoint, parentType: LabelParentTypes) {
+  constructor(modelRef: T, parentType: LabelParentTypes) {
     super("New HLabel", modelRef);
     this._parentType = parentType;
     const parentId = modelRef.name;

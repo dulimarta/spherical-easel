@@ -1,6 +1,6 @@
 import { Scene, Vector3 } from "three";
 import { PointSelectionHandler } from "./PointSelectionHandler";
-import { AddPointKommand } from "@/commands/AddPointKommand";
+import { AddPointByCoordinatesKommand } from "@/commands/AddPointKommand";
 import { PoseTracker } from "./PoseTracker";
 import { CKNodule } from "@/models/CKNodule";
 
@@ -19,7 +19,7 @@ export class SimplePointHandler extends PoseTracker {
     console.debug("SPH::mouseReleased", position);
     if (this.aSurfaceIsIntersected) {
       // const location = this._selectedPoints[0].locationVector;
-      const pointCommand = new AddPointKommand(position);
+      const pointCommand = new AddPointByCoordinatesKommand(position);
       pointCommand.execute();
       // this.prepareForNextPointSelections(event);
     }

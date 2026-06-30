@@ -109,7 +109,7 @@ import DeleteHandler from "@/eventHandlers-spherical/DeleteHandler";
 import HideObjectHandler from "@/eventHandlers-spherical/HideObjectHandler";
 import SegmentLengthHandler from "@/eventHandlers-spherical/SegmentLengthHandler";
 import PointDistanceHandler from "@/eventHandlers-spherical/PointDistanceHandler";
-import AngleHandler from "@/eventHandlers-spherical/AngleHandler";
+// import AngleHandler from "@/eventHandlers-spherical/AngleHandler";
 import CoordinateHandler from "@/eventHandlers-spherical/PointCoordinateHandler";
 import ToggleLabelDisplayHandler from "@/eventHandlers-spherical/ToggleLabelDisplayHandler";
 import PerpendicularLineThruPointHandler from "@/eventHandlers-spherical/PerpendicularLineThruPointHandler";
@@ -259,7 +259,7 @@ let deleteTool: DeleteHandler | null = null;
 let hideTool: HideObjectHandler | null = null;
 let segmentLengthTool: SegmentLengthHandler | null = null;
 let pointDistanceTool: PointDistanceHandler | null = null;
-let angleTool: AngleHandler | null = null;
+// let angleTool: AngleHandler | null = null;
 let coordinateTool: CoordinateHandler | null = null;
 let toggleLabelDisplayTool: ToggleLabelDisplayHandler | null = null;
 let perpendicularLineThruPointTool: PerpendicularLineThruPointHandler | null =
@@ -899,12 +899,12 @@ watch(
         }
         currentTool = pointDistanceTool;
         break;
-      case "angle":
-        if (!angleTool) {
-          angleTool = new AngleHandler(layers);
-        }
-        currentTool = angleTool;
-        break;
+      // case "angle":
+      //   if (!angleTool) {
+      //     angleTool = new AngleHandler(layers);
+      //   }
+      //   currentTool = angleTool;
+      //   break;
       case "coordinate":
         if (!coordinateTool) {
           coordinateTool = new CoordinateHandler(layers);

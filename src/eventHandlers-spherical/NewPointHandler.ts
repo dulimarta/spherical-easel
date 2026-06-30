@@ -5,42 +5,10 @@ import {
   SphereGeometry,
   Vector3
 } from "three/webgpu";
-import { SphericalTool } from "./ToolStrategy";
-import { AddPointKommand } from "@/commands/AddPointKommand";
+import { AddPointByCoordinatesKommand } from "@/commands/AddPointKommand";
 import { CKNodule } from "@/models/CKNodule";
 import { CKPoint } from "@/models/CKPoint";
-
-class MouseHandler implements SphericalTool {
-  protected scene: Scene;
-  protected readonly hitObjectCache: CKNodule[] = [];
-  constructor(scene: Scene) {
-    this.scene = scene;
-  }
-  mouseMoved(
-    event: MouseEvent,
-    position: Vector3,
-    hitObjects: Array<CKNodule>
-  ): void {
-    this.hitObjectCache.forEach(hit => {
-      hit.setHighlight(false);
-    });
-    this.hitObjectCache.splice(0);
-    this.hitObjectCache.push(...hitObjects);
-  }
-
-  mousePressed(
-    event: MouseEvent,
-    position: Vector3,
-    hitObjects: Array<CKNodule>
-  ): void {}
-  activate(): void {
-    console.log("MouseHandler::activate");
-  }
-
-  deactivate(): void {
-    console.log("MouseHandler::deactivate");
-  }
-}
+import { MouseHandler } from "./NewMouseHandler";
 
 export class PointHandler extends MouseHandler {
   private tempPoint: Mesh;
@@ -59,6 +27,7 @@ export class PointHandler extends MouseHandler {
     hitObjects: Array<CKNodule>
   ): void {
     super.mouseMoved(event, position, hitObjects);
+    console.debug("Key pressed:", event.shiftKey);
     // console.debug(
     //   "NewPointHandler::mouseMoved",
     //   position,
@@ -97,7 +66,7 @@ export class PointHandler extends MouseHandler {
     // Ensure that the mouse is on the sphere and it is not currently
     // hitting another point
     if (!isNaN(position.x) && hitPoints.length === 0) {
-      const pointCommand = new AddPointKommand(position);
+      const pointCommand = new AddPointByCoordinatesKommand(position);
       pointCommand.execute();
     } else {
       console.error("Can't create a new point");
