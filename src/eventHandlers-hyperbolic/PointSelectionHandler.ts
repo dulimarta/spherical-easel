@@ -17,6 +17,7 @@ import { SetPointUserCreatedValueCommand } from "@/commands-hyperbolic/SetPointU
 import { HEPointOnOneOrTwoDimensional } from "@/models-hyperbolic/HEPointOnOneOrTwoDimensional";
 import { HELabel } from "@/models-hyperbolic/HELabel";
 import { AddPointCommand } from "@/commands-hyperbolic/AddPointCommand";
+import { CKNodule } from "@/models/CKNodule";
 
 type selectedPointInformation = {
   oneOrTwoDimParent: HEOneOrTwoDimensional | null;
@@ -56,7 +57,7 @@ export class PointSelectionHandler extends PoseTracker {
         snapPoint: null,
         snapOneOrTwoDim: null
       });
-      this.hyperStore.addTempObject(tempPoint);
+      // this.hyperStore.addTempObject(tempPoint);
       tempPoint.addGroupToScene(this.scene); // Adds the group that contains(or not, depending on the state of the handler) the three types of mesh to the scene
       tempPoint.removeAllMeshesFromGroup(); // don't display the temp point
 
@@ -73,7 +74,11 @@ export class PointSelectionHandler extends PoseTracker {
     this._N = N;
   }
 
-  mousePressed(event: MouseEvent): void {
+  mousePressed(
+    event: MouseEvent,
+    position: Vector3,
+    hitObjects: Array<CKNodule | string>
+  ): void {
     if (
       this.aSurfaceIsIntersected &&
       this._indexOfPointCurrentlyBeingSelected < this._N - 1
@@ -85,9 +90,13 @@ export class PointSelectionHandler extends PoseTracker {
         : 0;
     }
   }
-  mouseMoved(event: MouseEvent): void {
+  mouseMoved(
+    event: MouseEvent,
+    position: Vector3,
+    hitObjects: Array<CKNodule | string>
+  ): void {
     // Find all the nearby objects and update location vectors
-    super.mouseMoved(event);
+    super.mouseMoved(event, position, hitObjects);
 
     if (this.aSurfaceIsIntersected) {
       // Filter the hitHEPoints
@@ -112,9 +121,9 @@ export class PointSelectionHandler extends PoseTracker {
         const nearByPoint = this.filteredIntersectionPointsList[0];
         nearByPoint.glowing = true;
         activeTempPointInfo.snapPoint = nearByPoint;
-      } else if (this.hitHELines.length > 0) {
-        this.hitHELines[0].glowing = true;
-        activeTempPointInfo.snapOneOrTwoDim = this.hitHELines[0];
+      } else if (this.hitCKLines.length > 0) {
+        this.hitCKLines[0].setHighlight(true);
+        // activeTempPointInfo.snapOneOrTwoDim = this.hitHELines[0];
         // } else if (this.hitSECircles.length > 0) {
         //   this.hitSECircles[0].glowing = true;
         //   activeTempPointInfo.snapOneOrTwoDim = this.hitSECircles[0];
@@ -129,7 +138,7 @@ export class PointSelectionHandler extends PoseTracker {
         //   activeTempPointInfo.snapOneOrTwoDim = this.hitSEPolygons[0];
       }
 
-      const possibleLocation = this.getLocationAndSetTempObjects(); // computes the location and adds the cone/tube to the scene as warranted
+      // const possibleLocation = this.getLocationAndSetTempObjects(); // computes the location and adds the cone/tube to the scene as warranted
 
       // Remove the temporary point if there is a nearby point which can glow
       if (activeTempPointInfo.snapPoint) {
@@ -152,14 +161,14 @@ export class PointSelectionHandler extends PoseTracker {
         }
       } else if (activeTempPointInfo.snapOneOrTwoDim) {
         // Set the location of the temporary point by snapping to appropriate object (if any)
-        const nearBy =
-          activeTempPointInfo.snapOneOrTwoDim.closestVector(possibleLocation);
-        if (nearBy) {
-          activeTempPointInfo.tempHEPoint.position = nearBy;
-          activeTempPointInfo.tempHEPoint.updateOrAddToGroup(); // this must be called after setting the position of the point because the position is used to determine which of the three meshes (hyperboloid, ideal strip, or ultra strip) should be added to the group and displayed as the temporary point.
-        }
+        // const nearBy =
+        //   activeTempPointInfo.snapOneOrTwoDim.closestVector(possibleLocation);
+        // if (nearBy) {
+        //   activeTempPointInfo.tempHEPoint.position = nearBy;
+        //   activeTempPointInfo.tempHEPoint.updateOrAddToGroup(); // this must be called after setting the position of the point because the position is used to determine which of the three meshes (hyperboloid, ideal strip, or ultra strip) should be added to the group and displayed as the temporary point.
+        // }
       } else {
-        activeTempPointInfo.tempHEPoint.position = possibleLocation;
+        // activeTempPointInfo.tempHEPoint.position = possibleLocation;
         activeTempPointInfo.tempHEPoint.updateOrAddToGroup();
       }
       this.displayAllTempPointObjects();
@@ -232,24 +241,23 @@ export class PointSelectionHandler extends PoseTracker {
       //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
       //   this._startHEPoint = null;
     } else {
-      const location = vec3ToVec4(
-        this.hyperStore.surfaceIntersections[0].point,
-        this.getWCoordinate()
-      );
-      if (this.hitHELines.length > 0) {
-        const nearBy = this.hitHELines[0].closestVector(location);
-        if (nearBy) {
-          const possibleLocation = new Vector4().copy(nearBy);
-          if (this.isLocationAlreadySelected(possibleLocation, index)) {
-            return false;
-          }
-          // The selected point will be  on a line
-          //  Eventually, we will create a new HEPointOnOneOrTwoDimensional
-          activeSelectedPointInfo.oneOrTwoDimParent = this.hitHELines[0];
-          activeSelectedPointInfo.locationVector.copy(possibleLocation);
-
-          activeTempPointInfo.tempHEPoint.position = possibleLocation;
-        }
+      // const location = vec3ToVec4(
+      //   this.hyperStore.surfaceIntersections[0].point,
+      //   this.getWCoordinate()
+      // );
+      if (this.hitCKLines.length > 0) {
+        // const nearBy = this.hitCKLines[0].closestVector(location);
+        // if (nearBy) {
+        //   const possibleLocation = new Vector4().copy(nearBy);
+        //   if (this.isLocationAlreadySelected(possibleLocation, index)) {
+        //     return false;
+        //   }
+        //   // The selected point will be  on a line
+        //   //  Eventually, we will create a new HEPointOnOneOrTwoDimensional
+        //   activeSelectedPointInfo.oneOrTwoDimParent = this.hitHELines[0];
+        //   activeSelectedPointInfo.locationVector.copy(possibleLocation);
+        //   activeTempPointInfo.tempHEPoint.position = possibleLocation;
+        // }
         // }
         //else if (this.hitSECircles.length > 0) {
         //   // The start of the line will be a point on a circle
@@ -298,12 +306,11 @@ export class PointSelectionHandler extends PoseTracker {
       } else {
         // The mouse press/release is not near an existing point or one dimensional object.
         //  Eventually, we will create a new HEPoint at the selected location
-
-        if (this.isLocationAlreadySelected(location, index)) {
-          return false;
-        }
-        activeTempPointInfo.tempHEPoint.position = location;
-        activeSelectedPointInfo.locationVector.copy(location);
+        // if (this.isLocationAlreadySelected(location, index)) {
+        //   return false;
+        // }
+        // activeTempPointInfo.tempHEPoint.position = location;
+        // activeSelectedPointInfo.locationVector.copy(location);
       }
     }
     return true;
@@ -329,48 +336,48 @@ export class PointSelectionHandler extends PoseTracker {
 
   addTubeAndConeToScene() {
     this.scene.add(this._tempTube);
-    const location = this.hyperStore.surfaceIntersections[0].point;
-    const upper = location.z > 0;
-    this._tempTubeMaterial.position = new THREE.Vector4(
-      0,
-      0,
-      upper ? 1 : -1,
-      0
-    ); // x,y,w are not used for the tube
-    this._tempTubeMaterial.tubeAngle = Math.atan2(location.y, location.x);
-    if (!upper) {
-      this.scene.add(this._tempLowerCone);
-      this.scene.remove(this._tempUpperCone);
-    }
+    // const location = this.hyperStore.surfaceIntersections[0].point;
+    // const upper = location.z > 0;
+    // this._tempTubeMaterial.position = new THREE.Vector4(
+    //   0,
+    //   0,
+    //   upper ? 1 : -1,
+    //   0
+    // ); // x,y,w are not used for the tube
+    // this._tempTubeMaterial.tubeAngle = Math.atan2(location.y, location.x);
+    // if (!upper) {
+    //   this.scene.add(this._tempLowerCone);
+    //   this.scene.remove(this._tempUpperCone);
+    // }
 
-    if (upper) {
-      this.scene.add(this._tempUpperCone);
-      this.scene.remove(this._tempLowerCone);
-    }
+    // if (upper) {
+    //   this.scene.add(this._tempUpperCone);
+    //   this.scene.remove(this._tempLowerCone);
+    // }
   }
 
-  getLocationAndSetTempObjects(): Vector4 {
-    switch (true) {
-      case this.hyperboloidIsFirstSurfaceHit:
-        //remove the tube and cone if they are in the scene
-        this.removeTubeAndConeFromScene();
-        break;
-      case this.idealStripIsFirstSurfaceHit:
-        // add the tube and cone for the ideal points
-        this.addTubeAndConeToScene();
-        break;
-      case this.ultraStripIsFirstSurfaceHit:
-        //remove the tube and cone if they are in the scene
-        this.removeTubeAndConeFromScene();
-        break;
-      default:
-        this.removeTubeAndConeFromScene(); // default to remove if something goes wrong
-    }
-    return vec3ToVec4(
-      this.hyperStore.surfaceIntersections[0].point,
-      this.getWCoordinate()
-    );
-  }
+  // getLocationAndSetTempObjects(): Vector4 {
+  //   switch (true) {
+  //     case this.hyperboloidIsFirstSurfaceHit:
+  //       //remove the tube and cone if they are in the scene
+  //       this.removeTubeAndConeFromScene();
+  //       break;
+  //     case this.idealStripIsFirstSurfaceHit:
+  //       // add the tube and cone for the ideal points
+  //       this.addTubeAndConeToScene();
+  //       break;
+  //     case this.ultraStripIsFirstSurfaceHit:
+  //       //remove the tube and cone if they are in the scene
+  //       this.removeTubeAndConeFromScene();
+  //       break;
+  //     default:
+  //       this.removeTubeAndConeFromScene(); // default to remove if something goes wrong
+  //   }
+  //   // return vec3ToVec4(
+  //   //   this.hyperStore.surfaceIntersections[0].point,
+  //   //   this.getWCoordinate()
+  //   // );
+  // }
 
   removeTubeAndConeFromScene() {
     this.scene.remove(this._tempTube);

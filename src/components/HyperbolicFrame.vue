@@ -201,6 +201,7 @@ import EventBus from "@/eventHandlers-spherical/EventBus";
 import { onBeforeUnmount } from "vue";
 import { Handler } from "mitt";
 import { CKNodule } from "@/models/CKNodule";
+import { SimpleLineHandler } from "@/eventHandlers-hyperbolic/SimpleLineHandler";
 const { t } = useI18n({ useScope: "local" });
 
 const hyperStore = useHyperbolicStore();
@@ -294,8 +295,8 @@ scene.background = new THREE.Color(0xf5f5f5);
 //scene.environment = await new THREE.RGBELoader().loadAsync("env.hdr");
 
 let currentTools: Array<HyperbolicTool> = [];
-let pointTool: SimplePointHandler | null = null;
-// let lineTool: LineHandler | null = null;
+let pointTool: HyperbolicTool | null = null;
+let lineTool: HyperbolicTool | null = null;
 // let segmentTool: LineHandler | null = null;
 // let circleTool: CircleHandler | null = null;
 // let textTool: TextHandler | null = null;
@@ -505,7 +506,7 @@ watch(idle, idleValue => {
 
 // When the lower sheet is shown (or not) update the zClipping planes and the camera lookAt
 watch(showLowerSheet, () => {
-  updateView();
+  // updateView();
   // console.log("Show lower sheet", show);
   // actionMode.value = "rotate";
   renderer.renderAsync(scene, camera); // update the scene
@@ -526,12 +527,12 @@ watch(
         if (pointTool === null) pointTool = new SimplePointHandler(scene);
         currentTools.push(pointTool);
         break;
-      // case "line":
-      //   if (lineTool === null) {
-      //     lineTool = new LineHandler(scene, 1 * 4 + 1 * 2 + 1 * 1); // line is mode 7
-      //   }
-      //   currentTools.push(lineTool);
-      //   break;
+      case "line":
+        if (lineTool === null) {
+          lineTool = new SimpleLineHandler(scene);
+        }
+        currentTools.push(lineTool);
+        break;
       // case "segment":
       //   if (segmentTool === null) {
       //     segmentTool = new LineHandler(scene, 0 * 4 + 1 * 2 + 0 * 1); // segment mode is 2
@@ -613,7 +614,7 @@ onMounted(async () => {
   // renderer.localClippingEnabled = true;
 
   // Initial update of the view of sheets, grid and ideal points
-  updateVisibleLayers(); // Use the visibleLayers to update the display
+  // updateVisibleLayers(); // Use the visibleLayers to update the display
   updateView(); // update the look at, zClipping values for ideal points' strip and hyperboloids
 
   renderer.setSize(props.availableWidth, props.availableHeight);
@@ -653,13 +654,13 @@ onMounted(async () => {
           cameraFOV.value = newFov;
           cameraController.camera.updateProjectionMatrix();
           renderer.renderAsync(scene, camera);
-          updateView();
+          // updateView();
         }
       } else {
         cameraController.dolly(event.deltaY, true);
         cameraDollyDistance.value = cameraController.distance;
         oldCameraDistance = cameraController.distance;
-        updateView();
+        // updateView();
         const deltaTime = clock.getDelta();
         cameraController.update(deltaTime);
         hasUpdatedCameraControls.value = true;
@@ -1015,7 +1016,7 @@ function updateView() {
 
 function doMouseDown(ev: MouseEvent) {
   currentTools.forEach(t => {
-    // t.mousePressed(ev);
+    t.mousePressed(ev, rayIntersectionPosition, []);
   });
 }
 
@@ -1035,7 +1036,7 @@ function doMouseLeave(ev: MouseEvent) {
 // mouse with the objects in the scene then
 // call the mouseMoved function of the current tool
 function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
-  console.debug("Mouse move", ev);
+  // console.debug("Mouse move", ev);
   mouseCoordNormalized.value.x =
     2 * (elementX.value / renderer.domElement.clientWidth) - 1;
   mouseCoordNormalized.value.y =
@@ -1046,17 +1047,20 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   //   "Scene children",
   //   scene.children.map(c => c.name)
   // );
-  const hitByRay = rayCaster.intersectObjects(scene.children, false);
+  const hitByRay = rayCaster.intersectObjects(scene.children, true);
   intersectionList.value = hitByRay;
   // .filter(iSect => iSect.object.name.length === 0);
   // const regex = /Sheet|Ideal|Ultra/; // Sorting for surfaces and object intersections
   // Set the closest intersection flags
   // let closestIntersection: THREE.Intersection | null =
   //   intersectionList.value[0];
-  hitByRay.forEach(ix => {
-    console.debug("Intersect", ix.object.name);
+  const surfaceIntersections = hitByRay.filter(iSect =>
+    iSect.object.name.match(/Sheet|Ideal|Ultra/)
+  );
+  surfaceIntersections.forEach(ix => {
+    console.debug("Intersect surface", ix.object.name);
   });
-  if (hitByRay.length > 0) {
+  if (surfaceIntersections.length > 0) {
     // Compute the first intersection(s) information for display
     // If the mouse is over a surface, update the text displayed at the top of the screen
     // if (firstIntersection) {
@@ -1068,7 +1072,7 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
     //   else {
     //     onSurface.value = null;
     //   }
-    rayIntersectionPosition.copy(hitByRay[0].point);
+    rayIntersectionPosition.copy(surfaceIntersections[0].point);
     positionInCameraCF.value
       .copy(rayIntersectionPosition)
       .applyMatrix4(camera.matrixWorld);
@@ -1077,6 +1081,10 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
       const obj = hyperStore.getObjectById(objName);
       return obj ? obj : objName;
     });
+  } else {
+    rayIntersectionPosition.set(NaN, NaN, NaN);
+    positionInCameraCF.value.set(0, 0, 0);
+    hitList = [];
   }
   currentTools.forEach(t => {
     t.mouseMoved(ev, rayIntersectionPosition, hitList);

@@ -14,6 +14,7 @@ import { CKNodule } from "@/models/CKNodule";
 import { CKPoint } from "@/models/CKPoint";
 import { GeometryStoreType, useGeometryStore } from "@/stores/geometry";
 import { SURFACE_TYPES } from "@/global-settings-hyperbolic";
+import { CKLine } from "@/models/CKLine";
 // let _store: HEStoreType | null = null;
 // let _geometryStore: GeometryStoreType | null = null;
 export class PoseTracker implements HyperbolicTool {
@@ -44,10 +45,10 @@ export class PoseTracker implements HyperbolicTool {
   /**
    * Arrays of nodules near the mouse event location
    */
-  // protected hitHENodules: CKNodule[] = [];
-  // protected hitCKPoints: CKPoint[] = [];
+  protected hitHENodules: CKNodule[] = [];
+  protected hitCKPoints: CKPoint[] = [];
   // protected hitHELabels: HELabel[] = [];
-  // protected hitHELines: HELine[] = [];
+  protected hitCKLines: CKLine[] = [];
   // protected hitHESegments: HESegment[] = [];
   // protected hitHECircles: HECircle[] = [];
   // protected hitHEEllipses: HEEllipse[] = [];
@@ -65,13 +66,19 @@ export class PoseTracker implements HyperbolicTool {
     // this.normalArrow.setColor(0xffffff);
     // this.normalArrow.setLength(1, 0.2, 0.2);
   }
-  mouseReleased(
+
+  mousePressed(
     event: MouseEvent,
     position: Vector3,
     hitObjects: Array<CKNodule | string>
   ): void {
-    // throw new Error("Method not implemented.");
+    // console.debug("PoseTracker::mousePressed", position);
   }
+  mouseReleased(
+    event: MouseEvent,
+    position: Vector3,
+    hitObjects: Array<CKNodule | string>
+  ): void {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   // mousePressed(
@@ -89,7 +96,7 @@ export class PoseTracker implements HyperbolicTool {
     position: Vector3,
     hitObjects: Array<CKNodule | string>
   ): void {
-    console.debug("PoseTracker::mouseMoved", position);
+    // console.debug("PoseTracker::mouseMoved", position);
     // this.prepareForNextEvent();
     // Set the display to normal for all previously nearby non-selected objects
     hitObjects
@@ -121,14 +128,14 @@ export class PoseTracker implements HyperbolicTool {
     }
 
     this.somethingIsHit = true;
-    // this.hitHENodules = hitObjects
-    // .map(intersect => {
-    //   // console.debug(
-    //   //   `Checking intersection with object ${intersect.object.name}`
-    //   // );
-    //   return this.geoStore.getObjectById(intersect.object.name); // returns null for surfaces
-    // })
-    // .filter(obj => typeof obj !== "string");
+    this.hitHENodules = hitObjects
+      // .map(intersect => {
+      //   // console.debug(
+      //   //   `Checking intersection with object ${intersect.object.name}`
+      //   // );
+      //   return this.geoStore.getObjectById(intersect.object.name); // returns null for surfaces
+      // })
+      .filter(obj => typeof obj !== "string");
     // .filter((n: CKNodule) => {
     //   console.debug(`Checking if ${n.name} is hit`);
     //   if (n instanceof HEIntersectionPoint || n instanceof HEAntipodalPoint) {
@@ -147,9 +154,9 @@ export class PoseTracker implements HyperbolicTool {
     //   this.hitHENodules.map(p => p.name)
     // );
 
-    // this.hitCKPoints = this.hitHENodules
-    //   .filter(obj => obj.name.startsWith("P"))
-    //   .map(obj => obj as CKPoint);
+    this.hitCKPoints = this.hitHENodules
+      .filter(obj => obj.name.startsWith("P"))
+      .map(obj => obj as CKPoint);
 
     // console.debug(
     //   "Hit points:",

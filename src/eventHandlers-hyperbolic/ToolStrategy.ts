@@ -35,6 +35,11 @@ export interface HyperbolicTool {
     position: Vector3,
     hitObjects: Array<CKNodule | string>
   ): void;
+  mousePressed(
+    event: MouseEvent,
+    position: Vector3,
+    hitObjects: Array<CKNodule | string>
+  ): void;
   activate(): void;
   deactivate(): void;
 }
