@@ -41,11 +41,14 @@ export class HyperbolicCurve extends Curve<Vector3> {
     d2: Vector3,
     isInfinite: boolean
   ): void {
+    console.debug(
+      `HyperbolicCurve::setPoints p1:${p1.toFixed(3)} p2:${p2.toFixed(3)} d1:${d1.toFixed(3)} d2:${d2.toFixed(3)}`
+    );
     this.dir1.copy(d1);
     this.dir2.copy(d2);
     // The curve is on the uppoer sheet when the Z-coordinate is positive
     this.upperSheet = p1.z > 0;
-    // console.debug(`D1:${d1.z.toFixed(3)}  D2:${d2.z.toFixed(3)}`);
+    console.debug(`D1:${d1.z.toFixed(3)}  D2:${d2.z.toFixed(3)}`);
     const innerA = d1.x * d1.x + d1.y * d1.y - d1.z * d1.z;
     const innerB = d2.x * d2.x + d2.y * d2.y - d2.z * d2.z;
     this.aCoeff = Math.sqrt(1 / innerA);
@@ -89,6 +92,7 @@ export class HyperbolicCurve extends Curve<Vector3> {
 
   getPoint(tInput: number, optionalTarget: Vector3 = new Vector3()): Vector3 {
     const t = tInput * (this.tMax - this.tMin) + this.tMin;
+    // console.debug(`tInput:${tInput.toFixed(3)}  t:${t.toFixed(3)}`);
     const lambda = this.aCoeff * Math.sinh(t);
     const mu = this.bCoeff * Math.cosh(t);
     // const out = optionalTarget ?? this.outVec;

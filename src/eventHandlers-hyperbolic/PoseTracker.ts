@@ -30,7 +30,6 @@ export class PoseTracker implements HyperbolicTool {
   //   }
   //   return _geometryStore;
   // }
-  protected scene: Scene;
 
   //flags
   protected somethingIsHit = false;
@@ -60,7 +59,7 @@ export class PoseTracker implements HyperbolicTool {
 
   // private normalArrow = new ArrowHelper(); // ArrowHelper to show the normal vector of mouse intersection point
 
-  constructor(scene: Scene) {
+  constructor(protected scene: Scene) {
     this.scene = scene;
     // this.scene.add(this.normalArrow);
     // this.normalArrow.setColor(0xffffff);

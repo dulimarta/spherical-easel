@@ -2,9 +2,9 @@
 
 The technique describe below is based on the following paper:
 
->  Peter Paul Klein, "On the Intersection Equation of a > Hyperboloid and a Plane", _Applied Mathematics_, 2013, 4, 40-49
+>  Peter Paul Klein, "On the Intersection Equation of a Hyperboloid and a Plane", _Applied Mathematics_, 2013, 4, 40-49
 
-## Intersection With HHyperboloid
+## Intersection With Hyperboloid
 General equation of hyperboloid:
 
 $$
@@ -14,7 +14,7 @@ $$
 For a **unit** two-sheet hyperboloid all coefficients are unitary and the
 right-hand is negative.
 $$
-x^2 + x^2 - x^2 = -1
+x^2 + y^2 - z^2 = -1
 $$
 
 expressed as matrix multiplications:
@@ -98,7 +98,7 @@ For a point $\mathbf{p}$ on the plane $K$ that intersects a hyperboloid, they ha
 \end{align*}
 ```
 
-Both $\mathbf{a}$ and $\mathbf{b}$ can be chosen such that $ \langle D_+\mathbf{a},D_-\mathbf{b}\rangle = 0$ and the equation simplifies further to
+Both $\mathbf{a}$ and $\mathbf{b}$ can be chosen such that $\langle D_+\mathbf{a},D_-\mathbf{b}\rangle = 0$ and the equation simplifies further to
 
 $$\lambda^2 \langle D_+\mathbf{a},D_-\mathbf{a}\rangle + 
 \mu^2 \langle D_+\mathbf{b},D_-\mathbf{b}\rangle = -1$$
@@ -113,7 +113,7 @@ $$
   \frac{1}{b^2} = - \langle D_+\mathbf{b},D_-\mathbf{b}\rangle 
 $$
 
-## Choosing $\mathbf{a}$ and $\mathbf{b}$
+## Choosing the vectors $\mathbf{a}$ and $\mathbf{b}$
 
 In our case, $\mathbf a$ and $\mathbf b$ are chosen as follows:
 
@@ -150,7 +150,7 @@ an ordinary dot product:
 \end{align}
 ```
 
-By chosing $\mathbf{a}$ and $\mathbf{b}$ to be unit and orthogonal vectors
+By choOsing $\mathbf{a}$ and $\mathbf{b}$ to be unit and orthogonal vectors
 $$\lambda^2   + \mu^2   = 1$$
 
 and the circle can be parameterized as 
