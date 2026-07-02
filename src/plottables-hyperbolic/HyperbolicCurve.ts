@@ -9,19 +9,25 @@ import { Curve, Vector3 } from "three";
  * http://dx.doi.org/10.4236/am.2013.412A005
  */
 
-const MAX_Z_HYPERBOLOID = Math.cosh(2);
+const MAX_Z_HYPERBOLOID = 2.85;
+const Z_AXIS = new Vector3(0, 0, 1);
 export class HyperbolicCurve extends Curve<Vector3> {
   // Compute the points of a hyperbola on a plane
   // rotated on the X-axis
-  dir1: Vector3 = new Vector3(0, 0, 1);
-  dir2: Vector3 = new Vector3(1, 0, 0); // Second vector is always the X-axis
+  startPoint: Vector3 = new Vector3();
+  endPoint: Vector3 = new Vector3();
+  planeNormal: Vector3 = new Vector3();
+  curveTangent: Vector3 = new Vector3();
+  curveNormal: Vector3 = new Vector3();
+  chordCenter: Vector3 = new Vector3();
+  // Second vector is always the X-axis
   outVec = new Vector3();
   aCoeff: number = 1;
   bCoeff: number = 1;
   tMin: number = Number.MAX_VALUE;
   tMax: number = Number.MIN_VALUE;
   upperSheet = true;
-  constructor() {
+  constructor(public isInfinite: boolean) {
     super();
   }
 
@@ -36,20 +42,53 @@ export class HyperbolicCurve extends Curve<Vector3> {
   // the two endpoints of the hyperbola are on the same or different halves.
   setPointsAndDirections(
     p1: Vector3, // Position of the first point
-    p2: Vector3, // Position of the second point
-    d1: Vector3, // The two direction vectors that define the plane
-    d2: Vector3,
-    isInfinite: boolean
+    p2: Vector3 // Position of the second point
+    // isInfinite: boolean
   ): void {
     console.debug(
-      `HyperbolicCurve::setPoints p1:${p1.toFixed(3)} p2:${p2.toFixed(3)} d1:${d1.toFixed(3)} d2:${d2.toFixed(3)}`
+      `HyperbolicCurve::setPoints p1:${p1.toFixed(3)} p2:${p2.toFixed(3)}`
     );
-    this.dir1.copy(d1);
-    this.dir2.copy(d2);
-    // The curve is on the uppoer sheet when the Z-coordinate is positive
-    this.upperSheet = p1.z > 0;
-    console.debug(`D1:${d1.z.toFixed(3)}  D2:${d2.z.toFixed(3)}`);
-    const innerA = d1.x * d1.x + d1.y * d1.y - d1.z * d1.z;
+    this.startPoint.copy(p1);
+    this.endPoint.copy(p2);
+    this.planeNormal.crossVectors(this.startPoint, this.endPoint).normalize();
+    // console.debug("Plane normal:", this.planeNormal);
+    this.curveTangent.crossVectors(Z_AXIS, this.planeNormal).normalize();
+    this.curveNormal
+      .crossVectors(this.planeNormal, this.curveTangent)
+      .normalize();
+    if (this.isInfinite) {
+      /**
+       * To draw an "infinite" line, we replace the start and end points with
+       * the intersection points of the cutting plane the the top disk (i.e.
+       * the disk parallel to the xy-plane at the maximum height (H) of the hyperboloid).
+       * These two intersection points are on a chord whose center is along this.curveNormal.
+       * The center of the chord can be determine by scaling the curveNormal vector to the height of the top disk. The length of the chord can be determined by the angle of the cutting plane with respect to the xy-plane. The angle can be computed from the z-component of the cuttingPlaneNormal vector. The tangent of this angle is equal to the ratio of the distance from the center of the chord to the edge of the disk (i.e. half the chord length) and the height of the disk (H).
+       * The radius of the disk is R = sqrt(H^2 - 1). The chord length can be computed using the
+       * Pythagorean theorem from the topdisk radius and the offset of the chord from the center.
+       */
+      this.chordCenter
+        .copy(this.curveNormal)
+        .multiplyScalar(MAX_Z_HYPERBOLOID / this.curveNormal.z);
+      const planeAngle = Math.asin(this.planeNormal.z);
+      const halfChordLength = Math.sqrt(
+        MAX_Z_HYPERBOLOID *
+          MAX_Z_HYPERBOLOID *
+          (1 - Math.pow(Math.tan(planeAngle), 2)) -
+          1
+      );
+      this.startPoint
+        .copy(this.chordCenter)
+        .addScaledVector(this.curveTangent, halfChordLength);
+      this.endPoint
+        .copy(this.chordCenter)
+        .addScaledVector(this.curveTangent, -halfChordLength);
+    }
+    // The curve is on the upper sheet when the Z-coordinate is positive
+    this.upperSheet = this.startPoint.z > 0;
+    const dt = this.curveTangent;
+    const d2 = this.curveNormal;
+    console.debug(`D1:${dt.z.toFixed(3)}  D2:${d2.z.toFixed(3)}`);
+    const innerA = dt.x * dt.x + dt.y * dt.y - dt.z * dt.z;
     const innerB = d2.x * d2.x + d2.y * d2.y - d2.z * d2.z;
     this.aCoeff = Math.sqrt(1 / innerA);
     this.bCoeff = Math.sqrt(-1 / innerB);
@@ -64,28 +103,26 @@ export class HyperbolicCurve extends Curve<Vector3> {
        can be computed as follows.
     */
     const denom = this.bCoeff * d2.z;
-    if (isInfinite) {
-      this.tMin = -Math.acosh(MAX_Z_HYPERBOLOID / denom);
-      this.tMax = Math.acosh(MAX_Z_HYPERBOLOID / denom);
-    } else {
-      // d1 is the normal vector of the plane of symmetry of the hyperbola
-      // If P1 and P2 are on different sides of this plane,
-      // then the hyperbola is long(er) and the T values span from negative to positive
-      // If both P1 and P2 are "below" this plane, the T values span in the negative range
-      // Otherwise the T values span in the positive range
-      const side1 = p1.dot(d1);
-      const side2 = p2.dot(d1);
-      // T-value should not cause the curve to extend beyond the
-      // maximum height of the hyperboloid
-      this.tMin = -Math.acosh(Math.min(p2.z, MAX_Z_HYPERBOLOID) / denom);
-      this.tMax = Math.acosh(Math.min(p1.z, MAX_Z_HYPERBOLOID) / denom);
-      if (side1 < 0 && side2 < 0) {
-        // Both tMin and tMax are negative
-        this.tMax *= -1;
-      } else if (side1 > 0 && side2 > 0) {
-        // Both tMin and tMax are positive
-        this.tMin *= -1;
-      }
+    // curveTangent is also the normal vector of the plane of symmetry of the hyperbola.
+    // "Below" this plane of symmetry, the t-values are negative.
+    // "Above" this plane of symmetry, the t-values are positive.
+    // If P1 and P2 are on different sides of this plane,
+    // then the T values span from negative to positive
+    // If both P1 and P2 are "below" this plane, the T values span in the negative range
+    // Otherwise the T values span in the positive range
+    // Determine which "side" the two points reside.
+    const side1 = this.startPoint.dot(dt);
+    const side2 = this.endPoint.dot(dt);
+    // T-value should not cause the curve to extend beyond the
+    // maximum height of the hyperboloid
+    this.tMin = -Math.acosh(this.endPoint.z / denom);
+    this.tMax = Math.acosh(this.startPoint.z / denom);
+    if (side1 < 0 && side2 < 0) {
+      // Both tMin and tMax are negative
+      this.tMax *= -1;
+    } else if (side1 > 0 && side2 > 0) {
+      // Both tMin and tMax are positive
+      this.tMin *= -1;
     }
     this.updateArcLengths(); // Must call this after the curve shape is modified
   }
@@ -98,8 +135,8 @@ export class HyperbolicCurve extends Curve<Vector3> {
     // const out = optionalTarget ?? this.outVec;
     optionalTarget
       .set(0, 0, 0)
-      .addScaledVector(this.dir1, lambda)
-      .addScaledVector(this.dir2, mu)
+      .addScaledVector(this.curveTangent, lambda)
+      .addScaledVector(this.curveNormal, mu)
       .multiplyScalar(this.upperSheet ? +1 : -1);
     return optionalTarget;
   }
