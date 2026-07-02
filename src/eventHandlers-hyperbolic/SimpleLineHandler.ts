@@ -39,6 +39,18 @@ export class SimpleLineHandler extends PoseTracker {
       new MeshStandardMaterial({
         color: 0x00ffff
       })
+    ),
+    new Mesh(
+      new SphereGeometry(0.05, 32, 32),
+      new MeshStandardMaterial({
+        color: 0x00ffff
+      })
+    ),
+    new Mesh(
+      new SphereGeometry(0.05, 32, 32),
+      new MeshStandardMaterial({
+        color: 0x00ffff
+      })
     )
   ];
 
@@ -54,31 +66,43 @@ export class SimpleLineHandler extends PoseTracker {
       // side: DoubleSide
     })
   );
-  private previewChord = new Mesh(
-    new CylinderGeometry(0.02, 0.02, 1, 32),
+  private cuttingPlane = new Mesh(
+    new PlaneGeometry(10, 10),
     new MeshStandardMaterial({
-      color: 0xff00ff
-      // roughness: 0.5,
-      // metalness: 0.5,
-      // transparent: true,
-      // opacity: 0.5,
-      // side: DoubleSide
+      color: 0x0000ff,
+      side: DoubleSide,
+      transparent: true,
+      opacity: 0.5
     })
   );
+  // private previewChord = new Mesh(
+  //   new CylinderGeometry(0.02, 0.02, 1, 32),
+  //   new MeshStandardMaterial({
+  //     color: 0xff00ff
+  //     // roughness: 0.5,
+  //     // metalness: 0.5,
+  //     // transparent: true,
+  //     // opacity: 0.5,
+  //     // side: DoubleSide
+  //   })
+  // );
   private cuttingPlaneNormal = new Vector3(0, 0, 1);
   private curveTangent = new Vector3();
   private curveNormal = new Vector3();
   private curveTangentArrow = new ArrowHelper(new Vector3());
   private curveNormalArrow = new ArrowHelper(new Vector3());
   private currentPreviewPointIndex = 0;
-  constructor(scene: Scene) {
+  constructor(
+    scene: Scene,
+    private infiniteLine = true
+  ) {
     super(scene);
     this.curveNormalArrow.setLength(3);
     this.curveNormalArrow.setColor(0xff0000);
     this.curveTangentArrow.setLength(3);
     this.curveTangentArrow.setColor(0x00ff00);
-    this.previewChord.add(new AxesHelper(3));
-    this.previewChord.geometry.rotateX(Math.PI / 2);
+    // this.previewChord.add(new AxesHelper(3));
+    // this.previewChord.geometry.rotateX(Math.PI / 2);
   }
 
   activate(): void {
@@ -88,10 +112,12 @@ export class SimpleLineHandler extends PoseTracker {
       this.scene.add(point);
     });
     this.scene.add(this.previewLine);
-    this.scene.add(this.previewChord);
+    // this.scene.add(this.previewChord);
+    // this.scene.add(this.cuttingPlane);
     // this.scene.add(this.curveNormalArrow);
     // this.scene.add(this.curveTangentArrow);
     this.previewLine.visible = false;
+    // this.cuttingPlane.visible = false;
   }
 
   deactivate(): void {
@@ -103,7 +129,8 @@ export class SimpleLineHandler extends PoseTracker {
     this.curveNormalArrow.removeFromParent();
     this.curveTangentArrow.removeFromParent();
     this.previewLine.removeFromParent();
-    this.previewChord.removeFromParent();
+    // this.previewChord.removeFromParent();
+    // this.cuttingPlane.removeFromParent();
     this.previewLine.visible = false;
   }
 
@@ -122,10 +149,12 @@ export class SimpleLineHandler extends PoseTracker {
     switch (this.currentPreviewPointIndex) {
       case 0:
         this.previewPoints[1].position.copy(position);
-        this.previewPoints[1].visible = true;
-        this.previewPoints[2].visible = true;
+        for (let k = 1; k < this.previewPoints.length; k++) {
+          this.previewPoints[k].visible = true;
+        }
         this.previewLine.visible = true;
-        this.previewChord.visible = true;
+        // this.previewChord.visible = true;
+        // this.cuttingPlane.visible = true;
         this.curveTangentArrow.visible = true;
         this.curveNormalArrow.visible = true;
         this.currentPreviewPointIndex++;
@@ -145,12 +174,15 @@ export class SimpleLineHandler extends PoseTracker {
           new AddLineKommand(aLine, startPoint, endPoint)
         );
         lineCmdGroup.execute();
-        this.previewPoints[1].visible = false;
+        for (let k = 1; k < this.previewPoints.length; k++) {
+          this.previewPoints[k].visible = false;
+        }
         this.previewLine.visible = false;
-        this.previewChord.visible = false;
+        // this.previewChord.visible = false;
         this.curveTangentArrow.visible = false;
         this.curveNormalArrow.visible = false;
         this.currentPreviewPointIndex = 0;
+        // this.cuttingPlane.visible = false;
         break;
     }
 
@@ -180,11 +212,22 @@ export class SimpleLineHandler extends PoseTracker {
       "index",
       this.currentPreviewPointIndex
     );
+    /**
+     * To draw an "infinite" line, we replace the start and end points with
+     * the intersection points of the cutting plane the the top disk (i.e.
+     * the disk parallel to the xy-plane at the maximum height (H) of the hyperboloid).
+     * These two intersection points are on a chord whose center is along this.curveNormal.
+     * The center of the chord can be determine by scaling the curveNormal vector to the height of the top disk. The length of the chord can be determined by the angle of the cutting plane with respect to the xy-plane. The angle can be computed from the z-component of the cuttingPlaneNormal vector. The tangent of this angle is equal to the ratio of the distance from the center of the chord to the edge of the disk (i.e. half the chord length) and the height of the disk (H).
+     * The radius of the disk is R = sqrt(H^2 - 1). The chord length can be computed using the
+     * Pythagorean theorem from the topdisk radius and the offset of the chord from the center.
+     */
     this.previewPoints[this.currentPreviewPointIndex].position.copy(position);
+    const MAX_HYPERBOLOID_HEIGHT = 2.85;
     if (this.currentPreviewPointIndex === 1) {
       const start = this.previewPoints[0].position;
       const end = this.previewPoints[1].position;
       this.cuttingPlaneNormal.crossVectors(start, end).normalize();
+      this.cuttingPlane.lookAt(this.cuttingPlaneNormal);
       this.curveTangent
         .crossVectors(Z_AXIS, this.cuttingPlaneNormal)
         .normalize();
@@ -193,17 +236,37 @@ export class SimpleLineHandler extends PoseTracker {
         .crossVectors(this.cuttingPlaneNormal, this.curveTangent)
         .normalize();
       this.curveNormalArrow.setDirection(this.curveNormal);
-      // this.previewLine.lookAt(this.cuttingPlaneNormal);
+      // Find the midpoint of the chord
       this.previewPoints[2].position
         .copy(this.curveNormal)
-        .multiplyScalar(2 / this.curveNormal.z);
-      this.hyperbola.setPointsAndDirections(
-        start,
-        end,
-        this.curveTangent,
-        this.curveNormal,
-        false
-      );
+        .multiplyScalar(MAX_HYPERBOLOID_HEIGHT / this.curveNormal.z);
+      const planeAngle = Math.asin(this.cuttingPlaneNormal.z);
+      // halfChordLength = sqrt(H^2 * (1 - tan^2(planeAngle)) - 1)
+      const Hsq = Math.pow(MAX_HYPERBOLOID_HEIGHT, 2);
+      const Tsq = Math.pow(Math.tan(planeAngle), 2);
+      const halfChordLength = Math.sqrt(Hsq * (1 - Tsq) - 1);
+      this.previewPoints[3].position
+        .copy(this.previewPoints[2].position)
+        .addScaledVector(this.curveTangent, halfChordLength);
+      this.previewPoints[4].position
+        .copy(this.previewPoints[2].position)
+        .addScaledVector(this.curveTangent, -halfChordLength);
+      if (this.infiniteLine) {
+        this.hyperbola.setPointsAndDirections(
+          this.previewPoints[3].position,
+          this.previewPoints[4].position,
+          this.curveTangent,
+          this.curveNormal,
+          false
+        );
+      } else
+        this.hyperbola.setPointsAndDirections(
+          start,
+          end,
+          this.curveTangent,
+          this.curveNormal,
+          false
+        );
       this.previewLine.geometry.dispose();
       this.previewLine.geometry = new TubeGeometry(
         this.hyperbola,
@@ -211,8 +274,7 @@ export class SimpleLineHandler extends PoseTracker {
         0.025,
         12
       );
-      this.previewChord.lookAt(this.curveTangent);
-      this.previewChord.position.copy(this.previewPoints[2].position);
+      // this.previewChord.lookAt(this.curveTangent);
     }
   }
 }
