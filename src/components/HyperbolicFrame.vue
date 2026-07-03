@@ -16,9 +16,6 @@
       </v-icon>
     </span>
     <span class="mr-1">
-      <span class="mr-1">
-        Canvas: ({{ elementX.toFixed(0) }}, {{ elementY.toFixed(0) }}) |
-      </span>
       <span v-if="onSurface || true">
         World:{{ rayIntersectionPosition.toFixed(2) }} In Camera
         {{ positionInCameraCF.toFixed(2) }}
@@ -175,6 +172,7 @@ import { storeToRefs } from "pinia";
 // Tool Handlers
 import { HyperbolicTool } from "@/eventHandlers-hyperbolic/ToolStrategy";
 import { SimplePointHandler } from "@/eventHandlers-hyperbolic/SimplePointHandler";
+import { SimpleLineHandler } from "@/eventHandlers-hyperbolic/SimpleLineHandler";
 import { CircleHandler } from "@/eventHandlers-hyperbolic/CircleHandler";
 import { LineHandler } from "@/eventHandlers-hyperbolic/LineHandler";
 import { TextHandler } from "@/eventHandlers-hyperbolic/TextHandler";
@@ -201,7 +199,6 @@ import EventBus from "@/eventHandlers-spherical/EventBus";
 import { onBeforeUnmount } from "vue";
 import { Handler } from "mitt";
 import { CKNodule } from "@/models/CKNodule";
-import { SimpleLineHandler } from "@/eventHandlers-hyperbolic/SimpleLineHandler";
 const { t } = useI18n({ useScope: "local" });
 
 const hyperStore = useHyperbolicStore();
@@ -248,6 +245,7 @@ const props = withDefaults(defineProps<ComponentProps>(), {
   availableWidth: 240
 });
 
+CKNodule.setGAMode("hyperbolic");
 const webGPUCanvas = useTemplateRef<HTMLCanvasElement>("webGPUCanvas");
 const { elementX, elementY, isOutside } = useMouseInElement(webGPUCanvas, {});
 const { shift: shiftKey, control: controlKey } = useMagicKeys({
@@ -297,7 +295,7 @@ scene.background = new THREE.Color(0xf5f5f5);
 let currentTools: Array<HyperbolicTool> = [];
 let pointTool: HyperbolicTool | null = null;
 let lineTool: HyperbolicTool | null = null;
-// let segmentTool: LineHandler | null = null;
+let segmentTool: HyperbolicTool | null = null;
 // let circleTool: CircleHandler | null = null;
 // let textTool: TextHandler | null = null;
 
@@ -529,16 +527,18 @@ watch(
         break;
       case "line":
         if (lineTool === null) {
-          lineTool = new SimpleLineHandler(scene);
+          // Second arg: true for infinite line
+          lineTool = new SimpleLineHandler(scene, true);
         }
         currentTools.push(lineTool);
         break;
-      // case "segment":
-      //   if (segmentTool === null) {
-      //     segmentTool = new LineHandler(scene, 0 * 4 + 1 * 2 + 0 * 1); // segment mode is 2
-      //   }
-      //   currentTools.push(segmentTool);
-      //   break;
+      case "segment":
+        if (segmentTool === null) {
+          // Second arg: false for finite line
+          segmentTool = new SimpleLineHandler(scene, false); // segment mode is 2
+        }
+        currentTools.push(segmentTool);
+        break;
       // case "text":
       //   //if (textTool === null) textTool = new TextHandler(scene);
       //   //currentTools.push(textTool);

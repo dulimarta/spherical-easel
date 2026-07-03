@@ -16,8 +16,8 @@ export interface ModelPublisher {
 }
 export abstract class CKNodule implements ModelPublisher {
   static NODE_COUNT = 0;
-  static EGA = useGA(false); // false for elliptic, true for hyperbolic
-  static HGA = useGA(true);
+  static GA_Factory: any;
+  static GA_FactoryMode: "elliptic" | "hyperbolic" = "elliptic";
   protected _parent: Array<WeakRef<CKNodule>> = [];
   protected _kids: Array<CKNodule> = [];
   public id: number;
@@ -26,7 +26,13 @@ export abstract class CKNodule implements ModelPublisher {
   protected _highlighted = false;
   public ref?: Nodule;
   public labelRef?: Nodule;
-
+  static setGAMode(mode: "elliptic" | "hyperbolic") {
+    CKNodule.GA_Factory = useGA(mode === "hyperbolic");
+    CKNodule.GA_FactoryMode = mode;
+  }
+  static isHyperbolicMode(): boolean {
+    return CKNodule.GA_FactoryMode === "hyperbolic";
+  }
   constructor() {
     this.id = CKNodule.NODE_COUNT++;
   }

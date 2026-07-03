@@ -170,12 +170,13 @@ export class SimpleLineHandler extends PoseTracker {
     hitObjects: Array<CKNodule | string>
   ): void {
     super.mouseMoved(event, position, hitObjects);
-    console.debug(
-      "SimpleLineHandler::mouseMoved",
-      position,
-      "index",
-      this.currentPreviewPointIndex
-    );
+    // console.debug(
+    //   "SimpleLineHandler::mouseMoved",
+    //   position,
+    //   "index",
+    //   this.currentPreviewPointIndex
+    // );
+    if (isNaN(position.x)) return;
     this.previewPoints[this.currentPreviewPointIndex].position.copy(position);
     if (this.currentPreviewPointIndex === 1) {
       const start = this.previewPoints[0].position;

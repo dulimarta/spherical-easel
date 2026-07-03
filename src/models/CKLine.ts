@@ -1,4 +1,4 @@
-import type { RGB_PVRTC_2BPPV1_Format, Vector3 } from "three/webgpu";
+import type { Vector3 } from "three/webgpu";
 import { CKNodule } from "./CKNodule";
 import { AlgebraElement } from "ts-geometric-algebra";
 import { SLine } from "@/plottables-spherical/SLine";
@@ -7,18 +7,17 @@ import { SLabel } from "@/plottables-spherical/SLabel";
 export class CKLine extends CKNodule {
   private startPointCoord: AlgebraElement;
   private endPointCoord: AlgebraElement;
-  plottableLine;
   theLine: AlgebraElement;
 
   constructor(startPoint: Vector3, endPoint: Vector3) {
     super();
 
-    this.startPointCoord = CKNodule.EGA.makePoint(
+    this.startPointCoord = CKNodule.GA_Factory.makePoint(
       startPoint.x,
       startPoint.y,
       startPoint.z
     );
-    this.endPointCoord = CKNodule.EGA.makePoint(
+    this.endPointCoord = CKNodule.GA_Factory.makePoint(
       endPoint.x,
       endPoint.y,
       endPoint.z

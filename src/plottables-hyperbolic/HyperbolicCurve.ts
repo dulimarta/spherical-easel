@@ -43,11 +43,10 @@ export class HyperbolicCurve extends Curve<Vector3> {
   setPointsAndDirections(
     p1: Vector3, // Position of the first point
     p2: Vector3 // Position of the second point
-    // isInfinite: boolean
   ): void {
-    console.debug(
-      `HyperbolicCurve::setPoints p1:${p1.toFixed(3)} p2:${p2.toFixed(3)}`
-    );
+    // console.debug(
+    //   `HyperbolicCurve::setPoints p1:${p1.toFixed(3)} p2:${p2.toFixed(3)}`
+    // );
     this.startPoint.copy(p1);
     this.endPoint.copy(p2);
     this.planeNormal.crossVectors(this.startPoint, this.endPoint).normalize();
@@ -87,7 +86,7 @@ export class HyperbolicCurve extends Curve<Vector3> {
     this.upperSheet = this.startPoint.z > 0;
     const dt = this.curveTangent;
     const d2 = this.curveNormal;
-    console.debug(`D1:${dt.z.toFixed(3)}  D2:${d2.z.toFixed(3)}`);
+    // console.debug(`D1:${dt.z.toFixed(3)}  D2:${d2.z.toFixed(3)}`);
     const innerA = dt.x * dt.x + dt.y * dt.y - dt.z * dt.z;
     const innerB = d2.x * d2.x + d2.y * d2.y - d2.z * d2.z;
     this.aCoeff = Math.sqrt(1 / innerA);

@@ -14,22 +14,19 @@ export class CKPoint extends CKNodule {
   constructor(pos: Vector3) {
     super();
     // If pos.z is zero, these two quantities are the same
-    const checkSpherical = pos.x ** 2 + pos.y ** 2 + pos.z ** 2;
-    const checkHyperbolic = pos.x ** 2 + pos.y ** 2 - pos.z ** 2;
-    console.debug("Elliptic check (should be 1):", checkSpherical);
-    console.debug("Hyperbolic check (should be -1):", checkHyperbolic);
     this.name = `P${this.id}`;
     let plottablePoint: Nodule;
     let plottableLabel: Nodule;
-    if (checkSpherical > 1.0) {
+    this.ga_coord = CKNodule.GA_Factory.makePoint(pos.x, pos.y, pos.z);
+    if (CKNodule.isHyperbolicMode()) {
+      const checkHyperbolic = pos.x ** 2 + pos.y ** 2 - pos.z ** 2;
+      console.debug("Hyperbolic check (should be -1):", checkHyperbolic);
       // checkHyperbolic: -1 for proper point
       // checkHyperbolic: 0 for direction/point at infinity
       // checkHyperbolic: 1 for ultra point
-      this.ga_coord = CKNodule.HGA.makePoint(pos.x, pos.y, pos.z);
       plottablePoint = new HPoint(`P${this.id}`, this);
       plottableLabel = new HLabel(this, "point");
     } else {
-      this.ga_coord = CKNodule.EGA.makePoint(pos.x, pos.y, pos.z);
       plottablePoint = new SPoint(`P${this.id}`, this);
       plottableLabel = new SLabel<CKPoint>(this, "point");
     }

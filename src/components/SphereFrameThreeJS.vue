@@ -92,6 +92,7 @@ const { elementX, elementY, isOutside } = useMouseInElement(webGPUCanvas, {});
 const seStore = useSEStore();
 const { actionMode } = storeToRefs(seStore);
 CameraControls.install({ THREE });
+CKNodule.setGAMode("elliptic");
 
 onBeforeMount(() => {
   // console.debug("OnBeforeMount::SphericFrame.vue", props, webGPUCanvas.value);
