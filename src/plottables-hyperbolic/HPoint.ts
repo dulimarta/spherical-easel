@@ -25,10 +25,10 @@ export class HPoint extends Nodule<CKPoint> {
     // throw new Error("Method not implemented.");
   }
   addToScene(scene: Scene): void {
-    scene?.add(this._pointMesh);
+    scene.add(this._pointMesh);
     console.debug(
       "After adding point to scene:",
-      scene?.children.map(child => child.name).filter(name => name.length > 0)
+      scene.children.map(child => child.name).filter(name => name.length > 0)
     );
     this._pointMesh.layers.enable(HYPERBOLIC_LAYER.upperSheetPoints);
   }

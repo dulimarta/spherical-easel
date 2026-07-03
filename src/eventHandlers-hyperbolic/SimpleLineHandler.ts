@@ -1,17 +1,11 @@
 import { CKNodule } from "@/models/CKNodule";
 import {
-  AxesHelper,
-  DoubleSide,
   Mesh,
-  MeshStandardNodeMaterial,
-  PlaneGeometry,
   type Scene,
   SphereGeometry,
   Vector3,
   MeshStandardMaterial,
-  ArrowHelper,
-  TubeGeometry,
-  CylinderGeometry
+  TubeGeometry
 } from "three/webgpu";
 // import { ParametricGeometry } from "three/addons/geometries/ParametricGeometry.js";
 import { CKLine } from "@/models/CKLine";
@@ -21,39 +15,8 @@ import { AddPointByObjectKommand } from "@/commands/AddPointKommand";
 import { AddLineKommand } from "@/commands/AddLineKommand";
 import { PoseTracker } from "./PoseTracker";
 import { HyperbolicCurve } from "@/plottables-hyperbolic/HyperbolicCurve";
-const Z_AXIS = new Vector3(0, 0, 1);
 export class SimpleLineHandler extends PoseTracker {
-  private previewPoints = [
-    new Mesh(
-      new SphereGeometry(0.05, 32, 32),
-      new MeshStandardMaterial({ color: 0xff0000 })
-    ),
-    new Mesh(
-      new SphereGeometry(0.05, 32, 32),
-      new MeshStandardMaterial({
-        color: 0x00ff00
-      })
-    ),
-    new Mesh(
-      new SphereGeometry(0.05, 32, 32),
-      new MeshStandardMaterial({
-        color: 0x00ffff
-      })
-    ),
-    new Mesh(
-      new SphereGeometry(0.05, 32, 32),
-      new MeshStandardMaterial({
-        color: 0x00ffff
-      })
-    ),
-    new Mesh(
-      new SphereGeometry(0.05, 32, 32),
-      new MeshStandardMaterial({
-        color: 0x00ffff
-      })
-    )
-  ];
-
+  private previewPoints: Array<Mesh> = [];
   private hyperbola: HyperbolicCurve;
   private previewLine: Mesh;
   // private cuttingPlane = new Mesh(
@@ -72,6 +35,16 @@ export class SimpleLineHandler extends PoseTracker {
   ) {
     super(scene);
     this.hyperbola = new HyperbolicCurve(this.infiniteLine);
+    for (let k = 0; k < 2; k++) {
+      this.previewPoints.push(
+        new Mesh(
+          new SphereGeometry(0.05, 32, 32),
+          new MeshStandardMaterial({
+            color: 0x00ffff
+          })
+        )
+      );
+    }
     this.previewLine = new Mesh(
       new TubeGeometry(this.hyperbola),
       new MeshStandardMaterial({
@@ -143,7 +116,8 @@ export class SimpleLineHandler extends PoseTracker {
         // Create the line here
         const aLine = new CKLine(
           this.previewPoints[0].position,
-          this.previewPoints[1].position
+          this.previewPoints[1].position,
+          this.infiniteLine
         );
         const startPoint = new CKPoint(this.previewPoints[0].position);
         const endPoint = new CKPoint(this.previewPoints[1].position);
@@ -181,7 +155,7 @@ export class SimpleLineHandler extends PoseTracker {
     if (this.currentPreviewPointIndex === 1) {
       const start = this.previewPoints[0].position;
       const end = this.previewPoints[1].position;
-      this.hyperbola.setPointsAndDirections(start, end);
+      this.hyperbola.setPoints(start, end);
       this.previewLine.geometry.dispose();
       this.previewLine.geometry = new TubeGeometry(
         this.hyperbola,

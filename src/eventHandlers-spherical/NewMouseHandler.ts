@@ -3,9 +3,8 @@ import { SphericalTool } from "./ToolStrategy";
 import { CKNodule } from "@/models/CKNodule";
 
 export class MouseHandler implements SphericalTool {
-  protected scene: Scene;
   protected readonly hitObjectCache: CKNodule[] = [];
-  constructor(scene: Scene) {
+  constructor(protected scene: Scene) {
     this.scene = scene;
   }
   mouseMoved(

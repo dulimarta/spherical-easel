@@ -85,6 +85,7 @@ let hasUpdatedCameraControls = false;
 let currentTool: SphericalTool | null = null;
 let pointTool: SphericalTool | null = null;
 let lineTool: SphericalTool | null = null;
+let segmentTool: SphericalTool | null = null;
 let unitSphere: Mesh;
 const hitObjects: CKNodule[] = [];
 const { idle } = useIdle(500);
@@ -192,9 +193,9 @@ onMounted(async () => {
   renderer.setClearColor(0x336600, 0.4);
   await renderer.init();
 
-  const db = await renderer.debug.getShaderAsync(scene, camera, unitSphere);
-  console.debug("VS for unitSphere", db.vertexShader);
-  console.debug("FS for unitSphere", db.fragmentShader);
+  // const db = await renderer.debug.getShaderAsync(scene, camera, unitSphere);
+  // console.debug("VS for unitSphere", db.vertexShader);
+  // console.debug("FS for unitSphere", db.fragmentShader);
 
   cameraController = new CameraControls(camera, renderer.domElement);
   // useEventListener(cameraController, "control", () => {
@@ -250,8 +251,12 @@ watch(
         currentTool = pointTool;
         break;
       case "line":
-        if (lineTool === null) lineTool = new LineHandler(scene);
+        if (lineTool === null) lineTool = new LineHandler(scene, true);
         currentTool = lineTool;
+        break;
+      case "segment":
+        if (segmentTool === null) segmentTool = new LineHandler(scene, false);
+        currentTool = segmentTool;
         break;
     }
     currentTool?.activate();

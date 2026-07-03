@@ -3,13 +3,18 @@ import { CKNodule } from "./CKNodule";
 import { AlgebraElement } from "ts-geometric-algebra";
 import { SLine } from "@/plottables-spherical/SLine";
 import { SLabel } from "@/plottables-spherical/SLabel";
+import { HLine } from "@/plottables-hyperbolic/HLine";
 
 export class CKLine extends CKNodule {
-  private startPointCoord: AlgebraElement;
-  private endPointCoord: AlgebraElement;
+  startPointCoord: AlgebraElement;
+  endPointCoord: AlgebraElement;
   theLine: AlgebraElement;
 
-  constructor(startPoint: Vector3, endPoint: Vector3) {
+  constructor(
+    startPoint: Vector3,
+    endPoint: Vector3,
+    isInfinite: boolean = true
+  ) {
     super();
 
     this.startPointCoord = CKNodule.GA_Factory.makePoint(
@@ -32,7 +37,9 @@ export class CKLine extends CKNodule {
       z[1].toFixed(3),
       z[0].toFixed(3)
     );
-    const plottableLine = new SLine(`L${this.id}`, this);
+    const plottableLine = CKNodule.isHyperbolicMode()
+      ? new HLine(`L${this.id}`, this)
+      : new SLine(`L${this.id}`, this);
     this.ref = plottableLine;
     this.subscribe(plottableLine);
     // const plottableLabel = new SLabel<CKLine>(this, "line");

@@ -11,7 +11,7 @@ import {
 export class SLine extends Nodule<CKLine> {
   private _lineMesh: Mesh;
   private _lineMaterial: NodeMaterial;
-  constructor(name: string, modelRef: CKLine) {
+  constructor(name: string, modelRef: CKLine, infiniteLine: boolean = true) {
     super(name, modelRef);
 
     this._lineMaterial = new MeshStandardNodeMaterial({ color: 0xffff00 });

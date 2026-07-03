@@ -40,7 +40,7 @@ export class HyperbolicCurve extends Curve<Vector3> {
   // This choice of d1 also has another advantage; d1 is also the normal vector
   // of the plane of symmetry of the hyperbola, make it easier to determine whether
   // the two endpoints of the hyperbola are on the same or different halves.
-  setPointsAndDirections(
+  setPoints(
     p1: Vector3, // Position of the first point
     p2: Vector3 // Position of the second point
   ): void {
