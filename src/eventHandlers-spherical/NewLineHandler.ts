@@ -16,11 +16,8 @@ import { CKPoint } from "@/models/CKPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointByObjectKommand } from "@/commands/AddPointKommand";
 import { AddLineKommand } from "@/commands/AddLineKommand";
-import { a } from "node_modules/vitest/dist/chunks/suite.d.udJtyAgw";
 
 const X_AXIS = new Vector3(1, 0, 0);
-const Y_AXIS = new Vector3(0, 1, 0);
-const Z_AXIS = new Vector3(0, 1, 0);
 // Two ways to create a line: 1) two distinct mouse down events or 2) click-drag-release
 export class LineHandler extends MultiPointSelectionHandler {
   private kbEventHandler!: () => void;
@@ -66,7 +63,8 @@ export class LineHandler extends MultiPointSelectionHandler {
       this.scene.add(point);
     });
     this.previewLine.visible = false;
-    this.previewLine.matrixAutoUpdate = false;
+    // Disable matrix auto update when drawing line segments
+    this.previewLine.matrixAutoUpdate = this.infiniteLine;
     this.scene.add(this.previewLine);
     this.kbEventHandler = onKeyDown("Escape", () => {
       console.debug("LineHandler::Escape key pressed");
@@ -126,19 +124,6 @@ export class LineHandler extends MultiPointSelectionHandler {
         this.currentPreviewPointIndex = 0;
         break;
     }
-
-    // switch (this.currentSelectedPoints.length) {
-    //   case 0:
-    //     this.startPosition.copy(position);
-    //   case 1:
-    //     // Do nothing, wait for the second point
-    //     break;
-    // }
-    // if (this.currentSelectedPoints.length === 2) {
-    //   console.debug(
-    //     "LineHandler::mousePressed - two points selected, create line"
-    //   );
-    // }
   }
 
   mouseMoved(
@@ -148,12 +133,6 @@ export class LineHandler extends MultiPointSelectionHandler {
   ): void {
     super.mouseMoved(event, position, hitObjects);
     if (isNaN(position.x)) return;
-    // console.debug(
-    //   "LineHandler::mouseMoved",
-    //   position,
-    //   "index",
-    //   this.currentPreviewPointIndex
-    // );
     this.previewPoints[this.currentPreviewPointIndex].position.copy(position);
     if (this.currentPreviewPointIndex === 1) {
       const start = this.previewPoints[0].position;

@@ -67,11 +67,18 @@ const props = withDefaults(defineProps<ComponentProps>(), {
   availableWidth: 240
 });
 const scene: Scene = new Scene();
-let camera: PerspectiveCamera = new PerspectiveCamera(
-  50,
-  props.availableWidth / props.availableHeight,
-  0.1,
-  1000
+// let camera: PerspectiveCamera = new PerspectiveCamera(
+//   50,
+//   props.availableWidth / props.availableHeight,
+//   0.1,
+//   1000
+// );
+const aspect = props.availableWidth / props.availableHeight;
+let camera = new THREE.OrthographicCamera(
+  -1.25 * aspect,
+  1.25 * aspect,
+  1.25,
+  -1.25
 );
 let renderer: WebGPURenderer;
 let cameraController: CameraControls;
@@ -224,7 +231,10 @@ onUpdated(() => {
     lastViewportHeight !== props.availableHeight
   ) {
     console.debug("OnUpdated::SphericFrame.vue reset camera and renderer");
-    camera.aspect = props.availableWidth / props.availableHeight;
+    const aspect = props.availableWidth / props.availableHeight;
+    // camera.aspect = props.availableWidth / props.availableHeight;
+    camera.left = -1.25 * aspect;
+    camera.right = 1.25 * aspect;
     camera.updateProjectionMatrix();
     renderer.setSize(props.availableWidth, props.availableHeight);
     lastViewportWidth = props.availableWidth;
