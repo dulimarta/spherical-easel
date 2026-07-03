@@ -8,7 +8,7 @@
   <v-window v-model="selectedTab">
     <!-- USER PROFILE TAB -->
     <v-window-item>
-      <UserProfileUI @profile-changed="(arg) => (profileChanged = arg)" />
+      <UserProfileUI @profile-changed="arg => (profileChanged = arg)" />
       <!-- Tooltip Visibility REMOVED from here -->
     </v-window-item>
 
@@ -19,152 +19,159 @@
 
     <!-- APP PREFERENCES TAB -->
     <v-window-item>
-        <v-sheet elevation="2" class="pa-4">
-            <h3>{{ t("settings.title") }}</h3>
+      <v-sheet elevation="2" class="pa-4">
+        <h3>{{ t("settings.title") }}</h3>
 
-            <!-- Decimal precision -->
-            <h4>Decimal Precision</h4>
-            <v-container fluid>
-                <v-row>
-                    <v-col cols="6">
-                        <v-sheet rounded="lg" elevation="2">
-                            <v-slider v-model="prefsStore.easelDecimalPrecision"
-                                      min="0"
-                                      max="12"
-                                      step="1"
-                                      inline
-                                      thumb-label="always"
-                                      label="Easel Decimal Precision"
-                                      @update:modelValue="() => (profileChanged = true)" />
-                        </v-sheet>
-                    </v-col>
-                    <v-col cols="6">
-                        <v-sheet rounded="lg" elevation="2">
-                            <v-slider v-model="prefsStore.objectTreeDecimalPrecision"
-                                      min="0"
-                                      max="7"
-                                      step="1"
-                                      inline
-                                      thumb-label="always"
-                                      label="Object Tree Decimal Precision"
-                                      @update:modelValue="() => (profileChanged = true)">
-                            </v-slider>
-                        </v-sheet>
-                    </v-col>
-                </v-row>
-            </v-container>
+        <!-- Decimal precision -->
+        <h4>Decimal Precision</h4>
+        <v-container fluid>
+          <v-row>
+            <v-col cols="6">
+              <v-sheet rounded="lg" elevation="2">
+                <v-slider
+                  v-model="prefsStore.easelDecimalPrecision"
+                  min="0"
+                  max="12"
+                  step="1"
+                  inline
+                  thumb-label="always"
+                  label="Easel Decimal Precision"
+                  @update:modelValue="() => (profileChanged = true)" />
+              </v-sheet>
+            </v-col>
+            <v-col cols="6">
+              <v-sheet rounded="lg" elevation="2">
+                <v-slider
+                  v-model="prefsStore.objectTreeDecimalPrecision"
+                  min="0"
+                  max="7"
+                  step="1"
+                  inline
+                  thumb-label="always"
+                  label="Object Tree Decimal Precision"
+                  @update:modelValue="() => (profileChanged = true)"></v-slider>
+              </v-sheet>
+            </v-col>
+          </v-row>
+        </v-container>
 
-            <!-- Default fill style -->
-            <h4>Default Fill</h4>
-            <v-row>
-              <v-col cols="6">
-                <v-select v-model="prefsStore.defaultFill"
-                    :items="fillStyleItems"
-                    item-title="text"
-                    item-value="value"
-                    label="Default Fill Style"
-                    @update:modelValue="() => (profileChanged = true)" />
-              </v-col>
-            </v-row>
+        <!-- Default fill style -->
+        <h4>Default Fill</h4>
+        <v-row>
+          <v-col cols="6">
+            <v-select
+              v-model="prefsStore.defaultFill"
+              :items="fillStyleItems"
+              item-title="text"
+              item-value="value"
+              label="Default Fill Style"
+              @update:modelValue="() => (profileChanged = true)" />
+          </v-col>
+        </v-row>
 
-            <v-divider class="my-3" />
-            <h4>Rotation Momentum Decay</h4>
-            <v-row>
-                <v-col cols="6">
-                    <v-slider v-model="momentumDecay"
-                              :min="0"
-                              :max="60"
-                              :step="1"
-                              label="Decay Time (seconds)"
-                              thumb-label
-                              @update:modelValue="onMomentumDecayChange" />
-                </v-col>
-            </v-row>
+        <v-divider class="my-3" />
+        <h4>Rotation Momentum Decay</h4>
+        <v-row>
+          <v-col cols="6">
+            <v-slider
+              v-model="momentumDecay"
+              :min="0"
+              :max="60"
+              :step="1"
+              label="Decay Time (seconds)"
+              thumb-label
+              @update:modelValue="onMomentumDecayChange" />
+          </v-col>
+        </v-row>
 
-            <v-divider class="my-3" />
+        <v-divider class="my-3" />
 
-            <!-- Boundary circle preferences -->
-            <h4>Boundary Circle</h4>
-            <v-row>
-                <v-col cols="4">
-                    <v-sheet class="pa-2 d-flex flex-column align-start">
-                        <!-- Color selector -->
-                        <div class="d-flex align-center mb-3">
-                            <v-menu v-model="colorPickerMenu"
-                                    :close-on-content-click="false"
-                                    transition="scale-transition"
-                                    offset-y>
-                                <template #activator="{ props }">
-                                    <v-btn v-bind="props"
-                                           :style="{
+        <!-- Boundary circle preferences -->
+        <h4>Boundary Circle</h4>
+        <v-row>
+          <v-col cols="4">
+            <v-sheet class="pa-2 d-flex flex-column align-start">
+              <!-- Color selector -->
+              <div class="d-flex align-center mb-3">
+                <v-menu
+                  v-model="colorPickerMenu"
+                  :close-on-content-click="false"
+                  transition="scale-transition"
+                  offset-y>
+                  <template #activator="{ props }">
+                    <v-btn
+                      v-bind="props"
+                      :style="{
                         backgroundColor: prefsStore.boundaryColor,
                         minWidth: '40px',
                         height: '40px',
                         border: '1px solid #ccc'
                       }"
-                                           @click.stop></v-btn>
-                                </template>
-                                <v-color-picker v-model="prefsStore.boundaryColor"
-                                                hide-inputs
-                                                mode="hexa"
-                                                @update:modelValue="() => (profileChanged = true)" />
-                            </v-menu>
-                            <span class="ml-3">Color</span>
-                        </div>
+                      @click.stop></v-btn>
+                  </template>
+                  <v-color-picker
+                    v-model="prefsStore.boundaryColor"
+                    hide-inputs
+                    mode="hexa"
+                    @update:modelValue="() => (profileChanged = true)" />
+                </v-menu>
+                <span class="ml-3">Color</span>
+              </div>
 
-                        <!-- Line thickness selector -->
-                        <div class="d-flex align-center">
-                            <v-select v-model.number="prefsStore.boundaryWidth"
-                                      :items="lineWidthOptions"
-                                      density="compact"
-                                      hide-details
-                                      style="max-width: 120px;"
-                                      @update:modelValue="() => (profileChanged = true)" />
-                            <span class="ml-3">Line Thickness</span>
-                        </div>
-                    </v-sheet>
-                </v-col>
-            </v-row>
+              <!-- Line thickness selector -->
+              <div class="d-flex align-center">
+                <v-select
+                  v-model.number="prefsStore.boundaryWidth"
+                  :items="lineWidthOptions"
+                  density="compact"
+                  hide-details
+                  style="max-width: 120px"
+                  @update:modelValue="() => (profileChanged = true)" />
+                <span class="ml-3">Line Thickness</span>
+              </div>
+            </v-sheet>
+          </v-col>
+        </v-row>
 
-            <v-divider class="my-3" />
+        <v-divider class="my-3" />
 
-            <h4>Measurement Mode</h4>
-            <v-row>
-                <v-col cols="6">
-                    <v-select v-model="prefsStore.measurementMode"
-                              :items="[
-        { text: 'Degrees', value: 'degrees' },
-        { text: 'Radians', value: 'radians' },
-        { text: 'Pi Multiples', value: 'pi' }
-      ]"
-                              item-title="text"
-                              item-value="value"
-                              label="Measurement Mode"
-                              @update:modelValue="() => (profileChanged = true)" />
-                </v-col>
-            </v-row>
+        <h4>Measurement Mode</h4>
+        <v-row>
+          <v-col cols="6">
+            <v-select
+              v-model="prefsStore.measurementMode"
+              :items="[
+                { text: 'Degrees', value: 'degrees' },
+                { text: 'Radians', value: 'radians' },
+                { text: 'Pi Multiples', value: 'pi' }
+              ]"
+              item-title="text"
+              item-value="value"
+              label="Measurement Mode"
+              @update:modelValue="() => (profileChanged = true)" />
+          </v-col>
+        </v-row>
 
-            <h4>Tooltip Visibility</h4>
-            <v-row>
-                <v-col cols="6" sm="4" md="3">
-                    <v-select v-model="prefsStore.tooltipMode"
-                              :items="[
-        { title: 'Full', value: 'full' },
-        { title: 'Minimal', value: 'minimal' },
-        { title: 'None', value: 'none' },
-        { title: 'Tools Only', value: 'tools-only' },
-        { title: 'Easel Only', value: 'easel-only' }
-      ]"
-                              label="Tooltip Visibility"
-                              density="compact"
-                              hide-details
-                              style="max-width: 250px;"
-                              @update:modelValue="() => (profileChanged = true)" />
-                </v-col>
-            </v-row>
-
-
-        </v-sheet>
+        <h4>Tooltip Visibility</h4>
+        <v-row>
+          <v-col cols="6" sm="4" md="3">
+            <v-select
+              v-model="prefsStore.tooltipMode"
+              :items="[
+                { title: 'Full', value: 'full' },
+                { title: 'Minimal', value: 'minimal' },
+                { title: 'None', value: 'none' },
+                { title: 'Tools Only', value: 'tools-only' },
+                { title: 'Easel Only', value: 'easel-only' }
+              ]"
+              label="Tooltip Visibility"
+              density="compact"
+              hide-details
+              style="max-width: 250px"
+              @update:modelValue="() => (profileChanged = true)" />
+          </v-col>
+        </v-row>
+      </v-sheet>
     </v-window-item>
   </v-window>
   <v-divider />
@@ -174,8 +181,7 @@
       class="mx-2"
       @click="doSave"
       :disabled="!profileChanged"
-      color="primary"
-    >
+      color="primary">
       {{ t("saveAndReturn") }}
     </v-btn>
     <v-btn class="mx-2" @click="doReturn">{{ t("returnOnly") }}</v-btn>
@@ -211,7 +217,6 @@ import { FillStyle } from "@/types";
 import { PreferenceRef } from "@/utils/preferenceRef";
 import { watch } from "vue";
 
-
 const router = useRouter();
 const { t } = useI18n();
 const acctStore = useAccountStore();
@@ -227,13 +232,13 @@ const colorPickerMenu = ref(false);
 
 // Line width options
 const lineWidthOptions = Array.from({ length: 10 }, (_, i) => i + 1);
-  
+
 const fillStyleItems = [
   { text: t("noFill"), value: FillStyle.NoFill },
   { text: t("plainFill"), value: FillStyle.PlainFill },
   { text: t("shadeFill"), value: FillStyle.ShadeFill }
 ];
-  
+
 const passwordResetSnackbar = ref(false);
 // eslint-disable-next-line no-unused-vars
 let authSubscription!: Unsubscribe;
@@ -264,25 +269,27 @@ function doReturn() {
   router.back();
 }
 
-watch(() => prefsStore.measurementMode, (newVal) => {
-  PreferenceRef.update({
-    easelDecimalPrecision: prefsStore.easelDecimalPrecision,
-    objectTreeDecimalPrecision: prefsStore.objectTreeDecimalPrecision,
-    measurementMode: newVal
-  });
-});
-
+watch(
+  () => prefsStore.measurementMode,
+  newVal => {
+    PreferenceRef.update({
+      easelDecimalPrecision: prefsStore.easelDecimalPrecision,
+      objectTreeDecimalPrecision: prefsStore.objectTreeDecimalPrecision,
+      measurementMode: newVal
+    });
+  }
+);
 </script>
 
-<i18n locale="en">
-  {
-    "settings.title": "Application Settings",
-    "noFill": "No Fill",
-    "plainFill": "Solid",
-    "shadeFill": "Shading",
-    "userProfile": "User Profile",
-    "tools": "Tools",
-    "saveAndReturn": "Save & Return",
-    "returnOnly": "Return"
-  }
+<i18n locale="en" lang="json">
+{
+  "settings.title": "Application Settings",
+  "noFill": "No Fill",
+  "plainFill": "Solid",
+  "shadeFill": "Shading",
+  "userProfile": "User Profile",
+  "tools": "Tools",
+  "saveAndReturn": "Save & Return",
+  "returnOnly": "Return"
+}
 </i18n>

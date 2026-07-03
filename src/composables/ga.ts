@@ -1,6 +1,7 @@
-import Algebra, { AlgebraElement } from "ts-geometric-algebra";
-const Elliptic = Algebra(3, 0);
-const Hyperbolic = Algebra(2, 1);
+import { AlgebraElement } from "ts-geometric-algebra";
+import * as GA from "ts-geometric-algebra";
+const Elliptic = GA.Algebra(3, 0);
+const Hyperbolic = GA.Algebra(2, 1);
 
 export function toPoint3D(gaElement: AlgebraElement): string {
   return `(${gaElement[3].toFixed(3)}, ${gaElement[5].toFixed(3)}, ${gaElement[6].toFixed(3)})`;

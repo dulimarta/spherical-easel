@@ -111,7 +111,7 @@ function onToolRemoved(toolName: ActionMode) {
   allToolsList.value.sort(toolSortFunc);
 }
 </script>
-<i18n locale="en">
+<i18n locale="en" lang="json">
 {
   "allTools": "All Tools",
   "topLeft": "Top-Left Corner",

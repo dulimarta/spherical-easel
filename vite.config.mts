@@ -3,13 +3,13 @@ import { defineConfig } from "vite";
 import { resolve, dirname } from "path";
 import Vue from "@vitejs/plugin-vue";
 import { fileURLToPath, URL } from "node:url";
-import vueDevTools from "vite-plugin-vue-devtools";
-import glsl from "vite-plugin-glsl";
+// import vueDevTools from "vite-plugin-vue-devtools";
+// import glsl from "vite-plugin-glsl";
 // import {createVuePlugin as vue} from "vite-plugin-vue2"
 // import { VuetifyResolver } from "unplugin-vue-components/resolvers"
 // import Components from "unplugin-vue-components/vite"
 
-import VueI18nPlugin from "@intlify/unplugin-vue-i18n/vite";
+import VueI18nPlugin from "@intlify/vite-plugin-vue-i18n";
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 export default defineConfig({
   build: {
@@ -41,21 +41,21 @@ export default defineConfig({
       }
     }),
     vuetify({
-      autoImport: true,
+      autoImport: { labs: true },
       styles: {
         configFile: "src/scss/app.scss"
       }
-    }),
-    VueI18nPlugin({
-      include: resolve(
-        dirname(fileURLToPath(import.meta.url)),
-        "./src/assets/languages/**"
-      ),
-      strictMessage: true /* messages should not contain HTML tags */,
-      allowDynamic: true
-      // bridge: false /* specify custom blocks to  work under both v8 and v9 */
-    }),
-    glsl()
+    })
+    // VueI18nPlugin({
+    //   include: resolve(
+    //     dirname(fileURLToPath(import.meta.url)),
+    //     "./src/assets/languages/**"
+    //   ),
+    //   strictMessage: true /* messages should not contain HTML tags */,
+    //   allowDynamic: true
+    //   // bridge: false /* specify custom blocks to  work under both v8 and v9 */
+    // })
+    // glsl()
   ],
   server: {
     port: 8080

@@ -52,8 +52,9 @@
         :style="{ display: 'flex', justifyContent: 'space-between' }">
         <v-btn @click="prev" :disabled="photoStep === 1" icon>
           <v-icon>mdi-arrow-left-bold</v-icon>
-          </v-btn>
-        <v-btn icon
+        </v-btn>
+        <v-btn
+          icon
           @click="nextAction"
           :disabled="
             photoStep === 1 && temporaryProfilePictureURL.length === 0
@@ -65,14 +66,14 @@
     </template>
   </v-stepper>
 </template>
-<i18n locale="en">
-  {
-    "photoSourceInstruction": "Create photo from camera or upload from a file",
-    "fromCamera": "Live Camera",
-    "fromFile": "Upload Photo",
-    "selectImage": "Select an image (.PNG, .JPG, .GIF, etc.)",
-    "croppedSize": "Cropped at {size}x{size}"
-  }
+<i18n locale="en" lang="json">
+{
+  "photoSourceInstruction": "Create photo from camera or upload from a file",
+  "fromCamera": "Live Camera",
+  "fromFile": "Upload Photo",
+  "selectImage": "Select an image (.PNG, .JPG, .GIF, etc.)",
+  "croppedSize": "Cropped at {size}x{size}"
+}
 </i18n>
 <script setup lang="ts">
 import { watch, ref, Ref, useTemplateRef } from "vue";
@@ -136,7 +137,7 @@ function nextAction() {
   if (photoStep.value === 1 && temporaryProfilePictureURL.value.length > 0)
     photoStep.value = 2;
   else if (photoStep.value === 2 && cropDataURL.value?.length) {
-    temporaryProfilePictureURL.value = cropDataURL.value
+    temporaryProfilePictureURL.value = cropDataURL.value;
     emit("changed", cropDataURL.value!);
   }
 }

@@ -30,7 +30,8 @@
                     :disabled="!validEntries">
                     {{ t("Signin") }}
                   </v-btn>
-                  <v-btn id="signup"
+                  <v-btn
+                    id="signup"
                     @click="doSignup"
                     :disabled="isSigningUp && !validEntries">
                     {{ t("Signup") }}
@@ -96,19 +97,6 @@
     {{ loginMessage }}
   </v-snackbar>
 </template>
-<i18n locale="en">
-  {
-    "Password": "Password",
-    "Signin": "Signin",
-    "Signup": "Signup",
-    "resetPass": "Reset Password",
-    "confirm": "Create",
-    "cancel": "Cancel",
-    "Password2": "Confirm Password",
-    "name": "Your name",
-    "passwordTooShort": "Password must be at least 6 characters"
-  }
-</i18n>
 <script lang="ts" setup>
 import { useAccountStore } from "@/stores/account";
 import { computed, ref, Ref } from "vue";
@@ -233,7 +221,16 @@ function asGuest() {
   "emailNotVerified": "Your account is not yet verified. Please check your email",
   "emailVerification": "Verification email has been sent to {emailAddr}",
   "loginError": "Unable to login: {error}",
-  "passwordReset": "Check your email ({emailAddr}) to reset password"
+  "passwordReset": "Check your email ({emailAddr}) to reset password",
+  "Password": "Password",
+  "Signin": "Signin",
+  "Signup": "Signup",
+  "resetPass": "Reset Password",
+  "confirm": "Create",
+  "cancel": "Cancel",
+  "Password2": "Confirm Password",
+  "name": "Your name",
+  "passwordTooShort": "Password must be at least 6 characters"
 }
 </i18n>
 <i18n lang="json" locale="id">

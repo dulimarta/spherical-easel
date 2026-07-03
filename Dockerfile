@@ -1,37 +1,27 @@
 
-# Reference: https://vuejs.org/v2/cookbook/dockerize-vuejs-app.html
-# Use Alpine NodeJS as the base image for both dev and production
+# Reference: https://bun.com/docs/guides/ecosystem/docker
 
 # Run the following docker command to build the image (notice the DOT at the end)
 #     docker build -t dulimarta/easelgeo .
+# Run the following docker command to run the image
+#     docker run -p 8080:8080 dulimarta/easelgeo
 
-FROM node:20-alpine AS build-stage
+
+FROM oven/bun:1 AS base
 
 
-WORKDIR /app
+FROM base AS install-stage
+WORKDIR /usr/src/app
+# RUN mkdir -p /temp/dev
 # Copy from local into the image
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
-# RUN npm install
+COPY package.json bun.lock ./
+RUN bun install
+
+# FROM base AS prerelease-stage
+# COPY --from=install-stage /temp/dev/node_modules /usr/src/app/node_modules
 COPY . .
-RUN npx vite build
 
-# node-gyp must be installed globally
-# Reference: https://github.com/nodejs/node-gyp/blob/master/docs/Updating-npm-bundled-node-gyp.md
-
-# For NPM 7.x or 8.x
-
-# For older NPM
-# RUN npm explore npm/node_modules/npm-lifecycle -g -- npm install node-gyp@latest
-
-# Copy from the host current dir (first arg) into the container current dir (second arg)
-
-# Stage 2: Serve the app
-FROM nginx:stable-alpine AS production-stage
-COPY default.conf /etc/nginx/conf.d
-COPY --from=build-stage /app/dist /usr/share/nginx/html
-# Can't export any port on Heroku
-EXPOSE 80
-
-# CMD sed -i -e 's/$PORT/'"$PORT"'/g' /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'
-CMD ["nginx", "-g", "daemon off;"]
+# USER bun
+# This is the port number specified in vite.config.mts
+EXPOSE 8080
+ENTRYPOINT ["bun", "--bun", "run", "app:serve"]

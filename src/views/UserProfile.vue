@@ -124,10 +124,12 @@ onBeforeMount(() => {
 watch(
   () => userProfile.value,
   newProfile => {
-    const changed = JSON.stringify(oldUserProfile) !== JSON.stringify(newProfile)
+    const changed =
+      JSON.stringify(oldUserProfile) !== JSON.stringify(newProfile);
     // console.debug("User profile watcher", unchanged, newProfile)
     emits("profile-changed", changed);
-  }, {deep: true}
+  },
+  { deep: true }
 );
 function showPhotoDialog() {
   photoDialog.value?.show();
@@ -170,13 +172,13 @@ function closePhotoDialog(s: string) {
   right: 0px;
 }
 </style>
-<i18n locale="en">
-  {
-    "DeleteAcct": "Delete Account",
-    "createProfilePic": "Create Profile Picture",
-    "displayedName": "Displayed Name",
-    "location": "Location",
-    "role": "Role",
-    "language": "Language"
-  }
+<i18n locale="en" lang="json">
+{
+  "DeleteAcct": "Delete Account",
+  "createProfilePic": "Create Profile Picture",
+  "displayedName": "Displayed Name",
+  "location": "Location",
+  "role": "Role",
+  "language": "Language"
+}
 </i18n>
