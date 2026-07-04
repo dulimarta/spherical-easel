@@ -13,7 +13,7 @@ export class CKLine extends CKNodule {
   constructor(
     startPoint: Vector3,
     endPoint: Vector3,
-    isInfinite: boolean = true
+    public isInfinite: boolean = true
   ) {
     super();
 
@@ -38,8 +38,8 @@ export class CKLine extends CKNodule {
       z[0].toFixed(3)
     );
     const plottableLine = CKNodule.isHyperbolicMode()
-      ? new HLine(`L${this.id}`, this)
-      : new SLine(`L${this.id}`, this);
+      ? new HLine(`L${this.id}`, this, this.isInfinite)
+      : new SLine(`L${this.id}`, this, this.isInfinite);
     this.ref = plottableLine;
     this.subscribe(plottableLine);
     // const plottableLabel = new SLabel<CKLine>(this, "line");

@@ -52,30 +52,30 @@ export class LineHandler extends MultiPointSelectionHandler {
     new MeshStandardMaterial({ color: 0x0000ff })
   );
   private currentPreviewPointIndex = 0;
-  private arrow1 = new ArrowHelper(
-    new Vector3(1, 0, 0),
-    new Vector3(0, 0, 0),
-    1.2,
-    0x000000
-  );
-  private arrow2 = new ArrowHelper(
-    new Vector3(1, 0, 0),
-    new Vector3(0, 0, 0),
-    1.2,
-    0x777777
-  );
-  private arrow3 = new ArrowHelper(
-    new Vector3(1, 0, 0),
-    new Vector3(0, 0, 0),
-    1.2,
-    0xff0000
-  );
+  // private arrow1 = new ArrowHelper(
+  //   new Vector3(1, 0, 0),
+  //   new Vector3(0, 0, 0),
+  //   1.2,
+  //   0x000000
+  // );
+  // private arrow2 = new ArrowHelper(
+  //   new Vector3(1, 0, 0),
+  //   new Vector3(0, 0, 0),
+  //   1.2,
+  //   0x777777
+  // );
+  // private arrow3 = new ArrowHelper(
+  //   new Vector3(1, 0, 0),
+  //   new Vector3(0, 0, 0),
+  //   1.2,
+  //   0xff0000
+  // );
   constructor(
     scene: Scene,
     private infiniteLine = true
   ) {
     super(scene, 2);
-    this.previewLine.add(new AxesHelper(1.5));
+    // this.previewLine.add(new AxesHelper(1.5));
   }
 
   activate(): void {
@@ -93,14 +93,14 @@ export class LineHandler extends MultiPointSelectionHandler {
       this.currentPreviewPointIndex = 0;
       this.previewPoints[1].visible = false;
       this.previewLine.visible = false;
-      this.arrow2.visible = false;
+      // this.arrow2.visible = false;
       this.previousPlaneNormal = null;
     });
-    this.scene.add(this.arrow1);
-    this.scene.add(this.arrow2);
-    this.scene.add(this.arrow3);
-    this.arrow2.visible = false;
-    this.arrow3.visible = false;
+    // this.scene.add(this.arrow1);
+    // this.scene.add(this.arrow2);
+    // this.scene.add(this.arrow3);
+    // this.arrow2.visible = false;
+    // this.arrow3.visible = false;
   }
 
   deactivate(): void {
@@ -111,9 +111,9 @@ export class LineHandler extends MultiPointSelectionHandler {
     });
     this.scene.remove(this.previewLine);
     this.kbEventHandler();
-    this.arrow1.removeFromParent();
-    this.arrow2.removeFromParent();
-    this.arrow3.removeFromParent();
+    // this.arrow1.removeFromParent();
+    // this.arrow2.removeFromParent();
+    // this.arrow3.removeFromParent();
   }
 
   mousePressed(
@@ -134,7 +134,7 @@ export class LineHandler extends MultiPointSelectionHandler {
         this.previewPoints[1].visible = true;
         this.previewPoints[2].visible = true;
         this.previewLine.visible = true;
-        this.arrow2.visible = true;
+        // this.arrow2.visible = true;
         this.currentPreviewPointIndex++;
         this.longerThanPi = false;
         break;
@@ -157,7 +157,7 @@ export class LineHandler extends MultiPointSelectionHandler {
         this.previewLine.visible = false;
         this.currentPreviewPointIndex = 0;
         this.previousPlaneNormal = null;
-        this.arrow2.visible = false;
+        // this.arrow2.visible = false;
         break;
     }
   }
@@ -193,7 +193,7 @@ export class LineHandler extends MultiPointSelectionHandler {
       let arcLength = start.angleTo(end);
       if (!this.infiniteLine) {
         this.normalIsLocked = Math.abs(arcLength.toDegrees() - 180) < 10;
-        this.arrow3.visible = this.normalIsLocked;
+        // this.arrow3.visible = this.normalIsLocked;
         this.currentPlaneNormal.crossVectors(start, end).normalize();
         if (this.longerThanPi) {
           this.currentPlaneNormal.multiplyScalar(-1);
@@ -210,20 +210,17 @@ export class LineHandler extends MultiPointSelectionHandler {
         } else {
           this.tempPlaneNormal.crossVectors(start, end).normalize();
           this.currentPlaneNormal.copy(this.previousPlaneNormal);
-          this.arrow3.setDirection(this.tempPlaneNormal);
+          // this.arrow3.setDirection(this.tempPlaneNormal);
           const normalFlip = this.previousPlaneNormal.dot(this.tempPlaneNormal);
           this.longerThanPi = normalFlip < 0;
         }
         if (this.longerThanPi) arcLength = 2 * Math.PI - arcLength;
 
         // console.debug(
-        //   `Arc length: ${arcLength.toDegrees().toFixed(2)} degrees, Plane normal changed by ${deltaAngle.toDegrees().toFixed(2)} degrees`
+        //   `Arc length ${this.longerThanPi ? "Longer than PI" : ""} ${arcLength.toDegrees().toFixed(2)} degrees`
         // );
-        console.debug(
-          `Arc length ${this.longerThanPi ? "Longer than PI" : ""} ${arcLength.toDegrees().toFixed(2)} degrees`
-        );
-        this.arrow1.setDirection(this.currentPlaneNormal);
-        this.arrow2.setDirection(this.previousPlaneNormal);
+        // this.arrow1.setDirection(this.currentPlaneNormal);
+        // this.arrow2.setDirection(this.previousPlaneNormal);
         this.previewLine.geometry.dispose();
         this.previewLine.geometry = new TorusGeometry(
           1,

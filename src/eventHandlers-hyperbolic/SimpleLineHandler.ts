@@ -31,7 +31,7 @@ export class SimpleLineHandler extends PoseTracker {
   private currentPreviewPointIndex = 0;
   constructor(
     scene: Scene,
-    private infiniteLine = false
+    private infiniteLine
   ) {
     super(scene);
     this.hyperbola = new HyperbolicCurve(this.infiniteLine);

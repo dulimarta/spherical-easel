@@ -54,7 +54,7 @@ import { useGeometryStore } from "@/stores/geometry";
 import { SphericalTool } from "@/eventHandlers-spherical/ToolStrategy";
 import { PointHandler } from "@/eventHandlers-spherical/NewPointHandler";
 import { CKNodule } from "@/models/CKNodule";
-import { abs, asin, color, Fn, positionLocal, vec3, vec4 } from "three/tsl";
+import { abs, asin, color, Fn, positionLocal, vec3, atan } from "three/tsl";
 import { LineHandler } from "@/eventHandlers-spherical/NewLineHandler";
 const geoStore = useGeometryStore();
 const webGPUCanvas = useTemplateRef<HTMLCanvasElement>("webGPUCanvas");
@@ -164,10 +164,15 @@ onBeforeMount(() => {
     // })
   );
   const latitudeLine = Fn(() => {
-    const angle = abs(asin(positionLocal.z).mul(15).div(Math.PI))
+    const angle1 = abs(asin(positionLocal.z).mul(15).div(Math.PI))
       .fract()
-      .step(0.98);
-    return vec3(angle.mul(0.4), angle, 0);
+      .step(0.97);
+    const angle2 = atan(positionLocal.y, positionLocal.x)
+      .mul(3)
+      .fract()
+      .step(0.97);
+    const angle = angle1.add(angle2);
+    return vec3(angle, angle, 0);
   });
   // unitSphereMaterial.fragmentNode = vec3(positionLocal.z)
   //   .mul(10)

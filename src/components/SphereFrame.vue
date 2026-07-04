@@ -93,9 +93,6 @@ import { Command } from "@/commands-spherical/Command";
 import { ToolStrategy } from "@/eventHandlers-spherical/ToolStrategy";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
 import SelectionHandler from "@/eventHandlers-spherical/SelectionHandler";
-import PointHandler from "@/eventHandlers-spherical/PointHandler";
-import LineHandler from "@/eventHandlers-spherical/LineHandler";
-import SegmentHandler from "@/eventHandlers-spherical/SegmentHandler";
 import CircleHandler from "@/eventHandlers-spherical/CircleHandler";
 import RotateHandler from "@/eventHandlers-spherical/RotateHandler";
 import PointOnOneDimensionalHandler from "@/eventHandlers-spherical/PointOnOneOrTwoDimensionalHandler";
@@ -155,7 +152,6 @@ import { watchEffect } from "vue";
 import { Handler } from "mitt";
 import { useUserPreferencesStore } from "@/stores/userPreferences";
 import { useTools } from "@/stores/mouseHandler";
-import { useGeometryStore } from "@/stores/geometry";
 
 type ComponentProps = {
   availableHeight: number;
@@ -176,7 +172,6 @@ const {
 const acctStore = useAccountStore();
 const prefsStore = useUserPreferencesStore();
 const toolsStore = useTools();
-const geoStore = useGeometryStore();
 const { boundaryColor, boundaryWidth } = storeToRefs(prefsStore);
 const { t } = useI18n({ useScope: "local" });
 
@@ -244,8 +239,6 @@ let boundaryCircle!: Circle;
 /** Tools for handling user input */
 let currentTool: ToolStrategy | null = null;
 let selectTool: SelectionHandler | null = null;
-let lineTool: LineHandler | null = null;
-let segmentTool: SegmentHandler | null = null;
 let circleTool: CircleHandler | null = null;
 let ellipseTool: EllipseHandler | null = null;
 let rotateTool: RotateHandler | null = null;
@@ -830,18 +823,6 @@ watch(
           rotateTool = new RotateHandler(layers);
         }
         currentTool = rotateTool;
-        break;
-      case "line":
-        if (!lineTool) {
-          lineTool = new LineHandler(layers);
-        }
-        currentTool = lineTool;
-        break;
-      case "segment":
-        if (!segmentTool) {
-          segmentTool = new SegmentHandler(layers);
-        }
-        currentTool = segmentTool;
         break;
       case "circle":
         if (!circleTool) {

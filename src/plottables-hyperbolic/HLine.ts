@@ -14,10 +14,10 @@ export class HLine extends Nodule<CKLine> {
   private _curve: HyperbolicCurve;
   private _startPosition = new Vector3();
   private _endPosition = new Vector3();
-  constructor(name: string, modelRef: CKLine, infiniteLine: boolean = true) {
+  constructor(name: string, modelRef: CKLine, infiniteLine: boolean) {
     super(name, modelRef);
     this._lineMaterial = new MeshStandardNodeMaterial({ color: 0xffff00 });
-    this._curve = new HyperbolicCurve(true);
+    this._curve = new HyperbolicCurve(infiniteLine);
     this._lineMesh = new Mesh(
       new TubeGeometry(this._curve),
       this._lineMaterial
