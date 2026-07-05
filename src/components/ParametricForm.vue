@@ -10,11 +10,10 @@
             <li>Ctrl-Alt-T: Trochoid</li>
             <li>Ctrl-Alt-Y: Cycloid with cusp points</li>
             <li>Ctrl-Alt-E: Ellipse (M1 & M2)</li>
-            <li>Ctrl-Alt-L: Loxodrome (M1)</li>
+            <li>Ctrl-Alt-L: Loxodrome (M1: [-6,+6])</li>
             <li>Ctrl-Alt-R: Cardioid (M1)</li>
           </ul>
         </div>
-        Open panels {{ panels }}
         <v-expansion-panels multiple v-model="panels">
           <v-expansion-panel
             data-testid="xyz_formula_panel"
