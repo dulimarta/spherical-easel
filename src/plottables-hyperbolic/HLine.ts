@@ -9,13 +9,17 @@ import {
 } from "three/webgpu";
 import { HyperbolicCurve } from "./HyperbolicCurve";
 import type { CKSegment } from "@/models/CKSegment";
-export class HLine extends Nodule<CKLine> {
+export class HLine extends Nodule<CKLine | CKSegment> {
   private _lineMesh: Mesh;
   private _lineMaterial: MeshStandardNodeMaterial;
   private _curve: HyperbolicCurve;
   private _startPosition = new Vector3();
   private _endPosition = new Vector3();
-  constructor(name: string, modelRef: CKLine, infiniteLine: boolean) {
+  constructor(
+    name: string,
+    modelRef: CKLine | CKSegment,
+    infiniteLine: boolean
+  ) {
     super(name, modelRef);
     this._lineMaterial = new MeshStandardNodeMaterial({ color: 0xffff00 });
     this._curve = new HyperbolicCurve(infiniteLine);

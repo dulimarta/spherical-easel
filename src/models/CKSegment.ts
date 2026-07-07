@@ -3,8 +3,8 @@ import { CKNodule } from "./CKNodule";
 import { AlgebraElement } from "ts-geometric-algebra";
 import { SLine } from "@/plottables-spherical/SLine";
 import { SLabel } from "@/plottables-spherical/SLabel";
-import { HSegment } from "@/plottables-hyperbolic/HSegment";
 import { SSegment } from "@/plottables-spherical/SSegment";
+import { HLine } from "@/plottables-hyperbolic/HLine";
 
 export class CKSegment extends CKNodule {
   startPointCoord: AlgebraElement;
@@ -39,7 +39,7 @@ export class CKSegment extends CKNodule {
       z[0].toFixed(3)
     );
     const plottableLine = CKNodule.isHyperbolicMode()
-      ? new HSegment(`L${this.id}`, this)
+      ? new HLine(`L${this.id}`, this, false)
       : new SSegment(`L${this.id}`, this, this.longerThanPi);
     this.ref = plottableLine;
     this.subscribe(plottableLine);

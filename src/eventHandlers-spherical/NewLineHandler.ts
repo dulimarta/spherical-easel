@@ -77,6 +77,7 @@ export class LineHandler extends MultiPointSelectionHandler {
   ) {
     super(scene, 2);
     // this.previewLine.add(new AxesHelper(1.5));
+    this.previewLine.matrixAutoUpdate = this.infiniteLine;
   }
 
   activate(): void {
@@ -87,7 +88,6 @@ export class LineHandler extends MultiPointSelectionHandler {
     });
     this.previewLine.visible = false;
     // Disable matrix auto update when drawing line segments
-    this.previewLine.matrixAutoUpdate = this.infiniteLine;
     this.scene.add(this.previewLine);
     this.kbEventHandler = onKeyDown("Escape", () => {
       console.debug("LineHandler::Escape key pressed");
