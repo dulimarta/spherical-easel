@@ -1,6 +1,7 @@
 import { CKLine } from "@/models/CKLine";
 import { CKNodule } from "@/models/CKNodule";
 import { CKPoint } from "@/models/CKPoint";
+import { CKSegment } from "@/models/CKSegment";
 import { defineStore } from "pinia";
 import { Intersection, Quaternion, Scene, Vector3 } from "three";
 import { ref, markRaw, Ref } from "vue";
@@ -59,7 +60,7 @@ export const useGeometryStore = defineStore("geometry", () => {
     }
   }
 
-  function addLine(g: CKLine) {
+  function addLineOrSegment(g: CKLine | CKSegment) {
     lines.value.push(markRaw(g));
     nodules.value.push(markRaw(g));
     g.ref?.addToScene(threejsScene);
@@ -127,7 +128,7 @@ export const useGeometryStore = defineStore("geometry", () => {
     setScene,
     addPoint,
     removePoint,
-    addLine,
+    addLineOrSegment,
     removeLine,
     clearGeometries,
     getObjectById

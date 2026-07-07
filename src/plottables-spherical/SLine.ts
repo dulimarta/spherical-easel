@@ -19,19 +19,13 @@ export class SLine extends Nodule<CKLine> {
       new TorusGeometry(1, 0.006, 20, 120),
       this._lineMaterial
     );
+    this.viewGroup.add(this._lineMesh);
   }
   show(): void {
     // throw new Error("Method not implemented.");
   }
   hide(): void {
     // throw new Error("Method not implemented.");
-  }
-  addToScene(s: Scene): void {
-    s.add(this._lineMesh);
-  }
-  removeFromScene(): void {
-    // throw new Error("Method not implemented.");
-    this._lineMesh.removeFromParent();
   }
   glowingDisplay(): void {
     // throw new Error("Method not implemented.");

@@ -16,7 +16,8 @@ import { CKLine } from "@/models/CKLine";
 import { CKPoint } from "@/models/CKPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointByObjectKommand } from "@/commands/AddPointKommand";
-import { AddLineKommand } from "@/commands/AddLineKommand";
+import { AddLineOrSegmentKommand } from "@/commands/AddLineKommand";
+import { CKSegment } from "@/models/CKSegment";
 
 const X_AXIS = new Vector3(1, 0, 0);
 // Two ways to create a line: 1) two distinct mouse down events or 2) click-drag-release
@@ -140,19 +141,28 @@ export class LineHandler extends MultiPointSelectionHandler {
         break;
       case 1:
         // Create the line here
-        const aLine = new CKLine(
-          this.previewPoints[0].position,
-          this.previewPoints[1].position
-        );
         const startPoint = new CKPoint(this.previewPoints[0].position);
         const endPoint = new CKPoint(this.previewPoints[1].position);
-        const lineCmdGroup = new CommandGroup();
-        lineCmdGroup.addCommand(new AddPointByObjectKommand(startPoint));
-        lineCmdGroup.addCommand(new AddPointByObjectKommand(endPoint));
-        lineCmdGroup.addCommand(
-          new AddLineKommand(aLine, startPoint, endPoint)
+        const cmdGroup = new CommandGroup();
+        cmdGroup.addCommand(new AddPointByObjectKommand(startPoint));
+        cmdGroup.addCommand(new AddPointByObjectKommand(endPoint));
+        let aLineOrSegment: CKLine | CKSegment;
+        if (this.infiniteLine) {
+          aLineOrSegment = new CKLine(
+            this.previewPoints[0].position,
+            this.previewPoints[1].position
+          );
+        } else {
+          aLineOrSegment = new CKSegment(
+            this.previewPoints[0].position,
+            this.previewPoints[1].position,
+            this.longerThanPi
+          );
+        }
+        cmdGroup.addCommand(
+          new AddLineOrSegmentKommand(aLineOrSegment, startPoint, endPoint)
         );
-        lineCmdGroup.execute();
+        cmdGroup.execute();
         this.previewPoints[1].visible = false;
         this.previewLine.visible = false;
         this.currentPreviewPointIndex = 0;

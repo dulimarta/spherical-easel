@@ -12,9 +12,10 @@ import { CKLine } from "@/models/CKLine";
 import { CKPoint } from "@/models/CKPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointByObjectKommand } from "@/commands/AddPointKommand";
-import { AddLineKommand } from "@/commands/AddLineKommand";
+import { AddLineOrSegmentKommand } from "@/commands/AddLineKommand";
 import { PoseTracker } from "./PoseTracker";
 import { HyperbolicCurve } from "@/plottables-hyperbolic/HyperbolicCurve";
+import { CKSegment } from "@/models/CKSegment";
 export class SimpleLineHandler extends PoseTracker {
   private previewPoints: Array<Mesh> = [];
   private hyperbola: HyperbolicCurve;
@@ -114,20 +115,31 @@ export class SimpleLineHandler extends PoseTracker {
         break;
       case 1:
         // Create the line here
-        const aLine = new CKLine(
-          this.previewPoints[0].position,
-          this.previewPoints[1].position,
-          this.infiniteLine
-        );
         const startPoint = new CKPoint(this.previewPoints[0].position);
         const endPoint = new CKPoint(this.previewPoints[1].position);
-        const lineCmdGroup = new CommandGroup();
-        lineCmdGroup.addCommand(new AddPointByObjectKommand(startPoint));
-        lineCmdGroup.addCommand(new AddPointByObjectKommand(endPoint));
-        lineCmdGroup.addCommand(
-          new AddLineKommand(aLine, startPoint, endPoint)
-        );
-        lineCmdGroup.execute();
+        const cmdGroup = new CommandGroup();
+        cmdGroup.addCommand(new AddPointByObjectKommand(startPoint));
+        cmdGroup.addCommand(new AddPointByObjectKommand(endPoint));
+        if (this.infiniteLine) {
+          const aLine = new CKLine(
+            this.previewPoints[0].position,
+            this.previewPoints[1].position,
+            this.infiniteLine
+          );
+          cmdGroup.addCommand(
+            new AddLineOrSegmentKommand(aLine, startPoint, endPoint)
+          );
+        } else {
+          const aSegment = new CKSegment(
+            this.previewPoints[0].position,
+            this.previewPoints[1].position
+          );
+          cmdGroup.addCommand(
+            new AddLineOrSegmentKommand(aSegment, startPoint, endPoint)
+          );
+        }
+
+        cmdGroup.execute();
         for (let k = 1; k < this.previewPoints.length; k++) {
           this.previewPoints[k].visible = false;
         }

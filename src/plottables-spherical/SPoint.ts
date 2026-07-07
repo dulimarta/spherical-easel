@@ -17,23 +17,13 @@ export class SPoint extends Nodule<CKPoint> {
     );
     this._pointMesh.name = this.name;
     this._pointMaterial.colorNode = color(0xffff00);
+    this.viewGroup.add(this._pointMesh);
   }
   show(): void {
     // throw new Error("Method not implemented.");
   }
   hide(): void {
     // throw new Error("Method not implemented.");
-  }
-  addToScene(scene: Scene): void {
-    scene.add(this._pointMesh);
-    // console.debug(
-    //   "After adding point to scene:",
-    //   scene?.children.map(child => child.name).filter(name => name.length > 0)
-    // );
-    this._pointMesh.layers.enable(HYPERBOLIC_LAYER.upperSheetPoints);
-  }
-  removeFromScene(): void {
-    this._pointMesh.removeFromParent();
   }
   glowingDisplay(): void {
     // console.debug("Setting fragmentNode color to glowing");

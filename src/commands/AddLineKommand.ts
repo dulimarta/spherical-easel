@@ -1,10 +1,11 @@
 import { CKPoint } from "@/models/CKPoint";
 import { Command } from "./Command";
 import { CKLine } from "@/models/CKLine";
+import { CKSegment } from "@/models/CKSegment";
 
-export class AddLineKommand extends Command {
+export class AddLineOrSegmentKommand extends Command {
   constructor(
-    private line: CKLine,
+    private line: CKLine | CKSegment,
     private startPoint: CKPoint,
     private endPoint: CKPoint
   ) {
@@ -21,7 +22,7 @@ export class AddLineKommand extends Command {
   do(preventGraphicalUpdate?: boolean): void {
     this.startPoint.registerChild(this.line);
     this.endPoint.registerChild(this.line);
-    this.store.addLine(this.line);
+    this.store.addLineOrSegment(this.line);
     this.line.notifyModelUpdated();
   }
   toOpcode(): null | string | Array<string> {

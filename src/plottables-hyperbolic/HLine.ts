@@ -1,4 +1,4 @@
-import { CKLine } from "@/models/CKLine";
+import type { CKLine } from "@/models/CKLine";
 import { Nodule } from "@/plottables/Nodule";
 import {
   Mesh,
@@ -8,6 +8,7 @@ import {
   type Scene
 } from "three/webgpu";
 import { HyperbolicCurve } from "./HyperbolicCurve";
+import type { CKSegment } from "@/models/CKSegment";
 export class HLine extends Nodule<CKLine> {
   private _lineMesh: Mesh;
   private _lineMaterial: MeshStandardNodeMaterial;
@@ -22,20 +23,13 @@ export class HLine extends Nodule<CKLine> {
       new TubeGeometry(this._curve),
       this._lineMaterial
     );
+    this.viewGroup.add(this._lineMesh);
   }
   show(): void {
     // throw new Error("Method not implemented.");
   }
   hide(): void {
     // throw new Error("Method not implemented.");
-  }
-  addToScene(scene: Scene): void {
-    // throw new Error("Method not implemented.");
-    scene.add(this._lineMesh);
-  }
-  removeFromScene(): void {
-    // throw new Error("Method not implemented.");
-    this._lineMesh.removeFromParent();
   }
   glowingDisplay(): void {
     // throw new Error("Method not implemented.");
