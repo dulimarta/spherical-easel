@@ -627,7 +627,7 @@ const conflictItems: ConflictItems = {
    html elements managed by Vuetify
  */
 .v-text-field--outlined.conflict {
-  ::v-deep fieldset {
+  :deep(fieldset) {
     border-color: rgba(192, 0, 250, 0.986);
     border-width: 2px;
   }

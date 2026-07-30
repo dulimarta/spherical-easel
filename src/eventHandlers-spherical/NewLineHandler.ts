@@ -85,6 +85,7 @@ export class LineHandler extends MultiPointSelectionHandler {
     console.debug("LineHandler::activate");
     this.previewPoints.forEach(point => {
       this.scene.add(point);
+      point.visible = false;
     });
     this.previewLine.visible = false;
     // Disable matrix auto update when drawing line segments

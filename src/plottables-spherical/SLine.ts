@@ -4,10 +4,11 @@ import {
   NodeMaterial,
   TorusGeometry,
   Mesh,
-  type Scene,
-  MeshStandardNodeMaterial
+  MeshStandardNodeMaterial,
+  Line2NodeMaterial
 } from "three/webgpu";
-
+import { Line2 } from "three/addons/lines/webgpu/Line2.js";
+import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 export class SLine extends Nodule<CKLine> {
   private _lineMesh: Mesh;
   private _lineMaterial: NodeMaterial;
@@ -20,6 +21,16 @@ export class SLine extends Nodule<CKLine> {
       this._lineMaterial
     );
     this.viewGroup.add(this._lineMesh);
+
+    const l2geometry = new LineGeometry();
+    l2geometry.setPositions([0, 0, 0, 1, 1, 1]);
+    const l2material = new Line2NodeMaterial({
+      color: 0x00ff00,
+      linewidth: 3,
+      worldUnits: false
+    });
+    const ls = new Line2(l2geometry, l2material);
+    this.viewGroup.add(ls);
   }
   show(): void {
     // throw new Error("Method not implemented.");

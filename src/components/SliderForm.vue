@@ -90,7 +90,7 @@ function addSlider(): void {
   new AddSliderMeasurementCommand(sliderMeasure).execute();
 }
 
-function adjustSlidertep() {
+function adjustSliderStep() {
   const numTicks = (sliderMax.value - sliderMin.value) / sliderStep.value;
   // console.debug(
   //   `Min:${sliderMin.value}, Max=${sliderMax.value}, Step=${sliderStep.value}`
@@ -104,7 +104,7 @@ watch(
   () => sliderMin.value,
   (newVal: number): void => {
     if (newVal > sliderMax.value || sliderStep.value === 0) return;
-    adjustSlidertep();
+    adjustSliderStep();
   }
 );
 
@@ -112,7 +112,7 @@ watch(
   () => sliderMax.value,
   (newVal: number): void => {
     if (newVal < sliderMin.value || sliderStep.value === 0) return;
-    adjustSlidertep();
+    adjustSliderStep();
   }
 );
 </script>
