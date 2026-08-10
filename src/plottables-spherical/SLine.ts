@@ -3,17 +3,7 @@ import { Nodule } from "@/plottables/Nodule";
 import { Line2NodeMaterial, ArcCurve, FrontSide } from "three/webgpu";
 import { Line2 } from "three/addons/lines/webgpu/Line2.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
-import {
-  color,
-  Fn,
-  normalize,
-  cameraPosition,
-  positionWorld,
-  dot,
-  select,
-  positionLocal,
-  vec4
-} from "three/tsl";
+import { color } from "three/tsl";
 
 export class SLine extends Nodule<CKLine> {
   private _lineMesh: Line2;
@@ -34,13 +24,12 @@ export class SLine extends Nodule<CKLine> {
     );
     this._lineMaterial = new Line2NodeMaterial({
       color: 0xffff00,
-      linewidth: 6,
+      linewidth: 4,
       worldUnits: false
     });
-    // this._lineMaterial.side = FrontSide;
 
     this._lineMesh = new Line2(l2geometry, this._lineMaterial);
-    // this._lineMesh.computeLineDistances();
+    this._lineMesh.name = this.name;
     this.viewGroup.add(this._lineMesh);
   }
   show(): void {
@@ -50,10 +39,12 @@ export class SLine extends Nodule<CKLine> {
     // throw new Error("Method not implemented.");
   }
   glowingDisplay(): void {
-    // throw new Error("Method not implemented.");
+    this._lineMaterial.colorNode = color(0xff0000);
+    this._lineMaterial.needsUpdate = true;
   }
   normalDisplay(): void {
-    // throw new Error("Method not implemented.");
+    this._lineMaterial.colorNode = color(0xffff00);
+    this._lineMaterial.needsUpdate = true;
   }
   modelUpdated(): void {
     const line = this.modelRef.theLine.vector(1);
@@ -64,5 +55,10 @@ export class SLine extends Nodule<CKLine> {
       -line[0].toFixed(3)
     );
     this.viewGroup.lookAt(-line[2], line[1], -line[0]);
+    if (this.modelRef.isHighlighted()) {
+      this.glowingDisplay();
+    } else {
+      this.normalDisplay();
+    }
   }
 }

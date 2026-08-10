@@ -38,6 +38,8 @@ import {
   HemisphereLight,
   Line2NodeMaterial,
   Mesh,
+  MeshStandardNodeMaterial,
+  PerspectiveCamera,
   Raycaster,
   Scene,
   SphereGeometry,
@@ -45,7 +47,8 @@ import {
   Vector3,
   WebGPURenderer
 } from "three/webgpu";
-import * as THREE from "three/webgpu";
+// import { Timer } from "three/addons/Timer";
+import * as THREE from "three";
 import CameraControls from "camera-controls";
 import { useEventListener, useIdle, useMouseInElement } from "@vueuse/core";
 import { useSEStore } from "@/stores/se";
@@ -54,10 +57,8 @@ import { useGeometryStore } from "@/stores/geometry";
 import { SphericalTool } from "@/eventHandlers-spherical/ToolStrategy";
 import { PointHandler } from "@/eventHandlers-spherical/NewPointHandler";
 import { CKNodule } from "@/models/CKNodule";
-import { abs, asin, color, Fn, positionLocal, vec3, atan } from "three/tsl";
+import { abs, asin, Fn, positionLocal, vec3, atan } from "three/tsl";
 import { LineHandler } from "@/eventHandlers-spherical/NewLineHandler";
-import { Line2 } from "three/examples/jsm/lines/webgpu/Line2.js";
-import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 const geoStore = useGeometryStore();
 const webGPUCanvas = useTemplateRef<HTMLCanvasElement>("webGPUCanvas");
 type ComponentProps = {
@@ -69,21 +70,21 @@ const props = withDefaults(defineProps<ComponentProps>(), {
   availableWidth: 240
 });
 const scene: Scene = new Scene();
-// let camera: PerspectiveCamera = new PerspectiveCamera(
-//   50,
-//   props.availableWidth / props.availableHeight,
-//   0.1,
-//   1000
-// );
-const aspect = props.availableWidth / props.availableHeight;
-let camera = new THREE.OrthographicCamera(
-  -1.25 * aspect /* left */,
-  1.25 * aspect /* right */,
-  1.25 /* top */,
-  -1.25 /* bottom */,
-  1 /* near */,
-  100 /* far */
+let camera: PerspectiveCamera = new PerspectiveCamera(
+  50,
+  props.availableWidth / props.availableHeight,
+  1,
+  100
 );
+const aspect = props.availableWidth / props.availableHeight;
+// let camera = new THREE.OrthographicCamera(
+//   -1.25 * aspect /* left */,
+//   1.25 * aspect /* right */,
+//   1.25 /* top */,
+//   -1.25 /* bottom */,
+//   1 /* near */,
+//   100 /* far */
+// );
 let renderer: WebGPURenderer;
 let cameraController: CameraControls;
 const clock = new Clock();
@@ -151,9 +152,10 @@ onBeforeMount(() => {
   const directionalLight = new DirectionalLight(0xffffff, 1);
   directionalLight.position.set(0, 1, 2);
   scene.add(directionalLight);
-  const unitSphereMaterial = new THREE.MeshStandardNodeMaterial({
+  const unitSphereMaterial = new MeshStandardNodeMaterial({
     roughness: 0.04,
     metalness: 0.2,
+    color: 0x66ff33,
     transparent: true,
     opacity: 0.8,
     side: THREE.DoubleSide // to enable selecting points on the back side of the sphere
@@ -245,10 +247,10 @@ onUpdated(() => {
     lastViewportHeight !== props.availableHeight
   ) {
     console.debug("OnUpdated::SphericFrame.vue reset camera and renderer");
-    const aspect = props.availableWidth / props.availableHeight;
-    // camera.aspect = props.availableWidth / props.availableHeight;
-    camera.left = -1.25 * aspect;
-    camera.right = 1.25 * aspect;
+    // const aspect = props.availableWidth / props.availableHeight;
+    camera.aspect = props.availableWidth / props.availableHeight;
+    // camera.left = -1.25 * aspect;
+    // camera.right = 1.25 * aspect;
     camera.updateProjectionMatrix();
     renderer.setSize(props.availableWidth, props.availableHeight);
     lastViewportWidth = props.availableWidth;
@@ -316,8 +318,16 @@ function computeMouse3DCoordinates(ev: MouseEvent) {
   mouse3DPosition.value.set(NaN, NaN, NaN);
   hitObjects.splice(0);
   const hitByRay = rayCaster
-    .intersectObjects(scene.children, false)
-    .filter(intersection => intersection.object.name.length > 0);
+    .intersectObjects(scene.children, true)
+    .filter(intersection => {
+      // console.debug(
+      //   "Intersection with",
+      //   intersection.object.name,
+      //   intersection.distance.toFixed(2),
+      //   intersection.point.toFixed(3)
+      // );
+      return intersection.object.name.length > 0;
+    });
   // .forEach(intersection => {
   //   // console.debug(
   //   //   "Intersection with",
@@ -327,7 +337,10 @@ function computeMouse3DCoordinates(ev: MouseEvent) {
   //   // );
   // });
   if (hitByRay.length > 0) {
-    // console.debug("Ray hit", hitByRay);
+    console.debug(
+      "Ray hit",
+      hitByRay.map(x => x.object.name)
+    );
     // If shift key is pressed, use the last hit point (farthest), otherwise use the first hit point (nearest)
     if (ev.shiftKey) {
       mouse3DPosition.value.copy(hitByRay[hitByRay.length - 1].point);
@@ -337,7 +350,7 @@ function computeMouse3DCoordinates(ev: MouseEvent) {
       cursorShape.value = "crosshair";
     }
     const namesOfHitObjects = hitByRay.map(x => x.object.name);
-    // console.debug("Hit objects: ", namesOfHitObjects.join());
+    console.debug("Hit objects: ", namesOfHitObjects.join());
     hitObjects.push(
       ...namesOfHitObjects
         .map(name => geoStore.getObjectById(name))

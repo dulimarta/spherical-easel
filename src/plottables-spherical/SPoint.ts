@@ -38,6 +38,12 @@ export class SPoint extends Nodule<CKPoint> {
   modelUpdated(): void {
     const pos = this.modelRef.ga_coord.vector(2);
     this._pointMesh.position.set(pos[0], pos[1], pos[2]);
+    console.debug(
+      "SPoint model updated, position:",
+      pos,
+      "Highlighted:",
+      this.modelRef.isHighlighted()
+    );
     if (this.modelRef.isHighlighted()) {
       this.glowingDisplay();
     } else {

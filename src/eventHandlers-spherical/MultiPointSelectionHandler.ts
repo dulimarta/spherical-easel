@@ -4,9 +4,13 @@ import { CKNodule } from "@/models/CKNodule";
 import { onKeyDown } from "@vueuse/core";
 import { CKPoint } from "@/models/CKPoint";
 
+// type PointInstance = {
+//   point: CKPoint;
+//   newInstance: boolean;
+// };
 export class MultiPointSelectionHandler extends MouseHandler {
   keyboardEventHandler!: () => void;
-  protected currentSelectedPoints: CKPoint[] = [];
+  protected currentSelectedPoints: Array<CKPoint | Vector3> = [];
   private selectedNameSet: Set<string> = new Set<string>();
   private maxPoints: number;
   constructor(scene: Scene, maxPoints: number) {
@@ -16,13 +20,15 @@ export class MultiPointSelectionHandler extends MouseHandler {
 
   activate(): void {
     super.activate();
-    // console.debug("MultiPointSelectionHandler::activate");
+    console.debug("MultiPointSelectionHandler::activate");
     this.keyboardEventHandler = onKeyDown("Escape", () => {
       // console.debug("MultiPointSelectionHandler::Escape key pressed");
       // Undo all the selections made so far when the Escape key is pressed.
-      this.currentSelectedPoints.forEach(hit => {
-        hit.setHighlight(false);
-      });
+      this.currentSelectedPoints
+        .filter(p => p instanceof CKPoint)
+        .forEach(hit => {
+          hit.setHighlight(false);
+        });
       this.currentSelectedPoints.splice(0);
       this.selectedNameSet.clear();
     });
@@ -33,19 +39,21 @@ export class MultiPointSelectionHandler extends MouseHandler {
     this.keyboardEventHandler(); // stop listening for Escape key events
     // console.debug("MultiPointSelectionHandler::deactivate");
   }
+
   mousePressed(
     event: MouseEvent,
     position: Vector3,
     hitObjects: Array<CKNodule>
   ): void {
     super.mousePressed(event, position, hitObjects);
-    // console.debug("MultiPointSelectionHandler::mousePressed", position);
+    console.debug("MultiPointSelectionHandler::mousePressed", position);
     if (isNaN(position.x)) {
       console.debug("Mouse pressed outside of sphere");
       return;
     }
     if (hitObjects.length === 0) {
       // console.debug("Mouse pressed on sphere but no hit objects");
+      this.currentSelectedPoints.push(position);
       return;
     }
     const hitPoints = hitObjects.filter(z => z instanceof CKPoint);

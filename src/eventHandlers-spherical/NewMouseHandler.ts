@@ -12,11 +12,18 @@ export class MouseHandler implements SphericalTool {
     position: Vector3,
     hitObjects: Array<CKNodule>
   ): void {
+    console.debug(
+      "MouseHandler::mouseMoved hit objects count",
+      hitObjects.length
+    );
     this.hitObjectCache.forEach(hit => {
       hit.setHighlight(false);
     });
     this.hitObjectCache.splice(0);
     this.hitObjectCache.push(...hitObjects);
+    hitObjects.forEach(hit => {
+      hit.setHighlight(true);
+    });
   }
 
   mousePressed(

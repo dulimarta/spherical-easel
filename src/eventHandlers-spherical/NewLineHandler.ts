@@ -52,7 +52,7 @@ export class LineHandler extends MultiPointSelectionHandler {
     new TorusGeometry(1, 0.006, 16, 120),
     new MeshStandardMaterial({ color: 0x0000ff })
   );
-  private currentPreviewPointIndex = 0;
+  // private currentPreviewPointIndex = 0;
   // private arrow1 = new ArrowHelper(
   //   new Vector3(1, 0, 0),
   //   new Vector3(0, 0, 0),
@@ -92,8 +92,8 @@ export class LineHandler extends MultiPointSelectionHandler {
     this.scene.add(this.previewLine);
     this.kbEventHandler = onKeyDown("Escape", () => {
       console.debug("LineHandler::Escape key pressed");
-      this.currentPreviewPointIndex = 0;
-      this.previewPoints[1].visible = false;
+      // this.currentPreviewPointIndex = 0;
+      this.previewPoints.forEach(point => (point.visible = false));
       this.previewLine.visible = false;
       // this.arrow2.visible = false;
       this.previousPlaneNormal = null;
@@ -124,24 +124,32 @@ export class LineHandler extends MultiPointSelectionHandler {
     hitObjects: Array<CKNodule>
   ): void {
     super.mousePressed(event, position, hitObjects);
+    if (isNaN(position.x)) {
+      console.debug("LineHandler::mousePressed outside of sphere");
+      return;
+    }
+    console.debug(
+      "LineHandler::mousePressed selected point count",
+      this.currentSelectedPoints.length
+    );
     // console.debug(
     //   "LineHandler::mousePressed",
     //   position,
     //   "index",
     //   this.currentPreviewPointIndex
     // );
-    switch (this.currentPreviewPointIndex) {
+    switch (this.currentSelectedPoints.length) {
       case 0:
-        this.previewPoints[1].position.copy(position);
-        this.previewPoints[1].visible = true;
-        this.previewPoints[2].visible = true;
-        this.previewLine.visible = true;
-        // this.arrow2.visible = true;
-        this.currentPreviewPointIndex++;
-        this.longerThanPi = false;
+        // this.previewPoints[0].position.copy(position);
+        // this.previewPoints[0].visible = true;
+        // this.longerThanPi = false;
         break;
       case 1:
+        this.previewPoints[0].position.copy(position);
+        this.previewPoints[0].visible = true;
         // Create the line here
+        break;
+      case 2:
         const startPoint = new CKPoint(this.previewPoints[0].position);
         const endPoint = new CKPoint(this.previewPoints[1].position);
         const cmdGroup = new CommandGroup();
@@ -160,13 +168,15 @@ export class LineHandler extends MultiPointSelectionHandler {
             this.longerThanPi
           );
         }
-        this.previewPoints[1].visible = false;
+        this.currentSelectedPoints.splice(0);
+        // this.currentPreviewPointIndex = -1;
+        this.previewPoints.forEach(p => (p.visible = false));
         this.previewLine.visible = false;
         cmdGroup.addCommand(
           new AddLineOrSegmentKommand(aLineOrSegment, startPoint, endPoint)
         );
         cmdGroup.execute();
-        this.currentPreviewPointIndex = 0;
+        // this.currentPreviewPointIndex = 0;
         this.previousPlaneNormal = null;
         // this.arrow2.visible = false;
         break;
@@ -178,10 +188,19 @@ export class LineHandler extends MultiPointSelectionHandler {
     position: Vector3,
     hitObjects: Array<CKNodule>
   ): void {
+    console.debug(
+      "Spherical LineHandler::mouseMoved Hit objects",
+      hitObjects.length
+    );
     super.mouseMoved(event, position, hitObjects);
     if (isNaN(position.x)) return;
-    this.previewPoints[this.currentPreviewPointIndex].position.copy(position);
-    if (this.currentPreviewPointIndex === 1) {
+    console.debug(
+      "LineHandler::mousePressed selected point count",
+      this.currentSelectedPoints.length
+    );
+    if (this.currentSelectedPoints.length > 0) {
+      if (this.previewLine.visible === false) this.previewLine.visible = true;
+      this.previewPoints[1].position.copy(position);
       /**
        * To handle arcs longer than PI, we have to keep track of the previous plane normal and the current plane normal.
        * To avoid jitter, we take the exponential moving average of the previous plane normal and the current plane normal.

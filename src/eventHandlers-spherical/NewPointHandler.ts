@@ -34,9 +34,9 @@ export class PointHandler extends MouseHandler {
     //   `Hit count: ${hitObjects.length}`
     // );
     if (!isNaN(position.x)) {
-      hitObjects.forEach(hit => {
-        hit.setHighlight(true);
-      });
+      // hitObjects.forEach(hit => {
+      //   hit.setHighlight(true);
+      // });
       this.tempPoint.position.copy(position);
       if (!this.tempPointAdded) {
         this.scene.add(this.tempPoint);

@@ -16,7 +16,7 @@ export class CKLine extends CKNodule {
     public isInfinite: boolean = true
   ) {
     super();
-
+    this.name = `L${this.id}`;
     this.startPointCoord = CKNodule.GA_Factory.makePoint(
       startPoint.x,
       startPoint.y,
@@ -38,8 +38,8 @@ export class CKLine extends CKNodule {
       z[0].toFixed(3)
     );
     const plottableLine = CKNodule.isHyperbolicMode()
-      ? new HLine(`L${this.id}`, this, this.isInfinite)
-      : new SLine(`L${this.id}`, this, this.isInfinite);
+      ? new HLine(this.name, this, this.isInfinite)
+      : new SLine(this.name, this, this.isInfinite);
     this.ref = plottableLine;
     this.subscribe(plottableLine);
     // const plottableLabel = new SLabel<CKLine>(this, "line");

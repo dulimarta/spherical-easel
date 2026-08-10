@@ -24,10 +24,10 @@ export class CKPoint extends CKNodule {
       // checkHyperbolic: -1 for proper point
       // checkHyperbolic: 0 for direction/point at infinity
       // checkHyperbolic: 1 for ultra point
-      plottablePoint = new HPoint(`P${this.id}`, this);
+      plottablePoint = new HPoint(this.name, this);
       plottableLabel = new HLabel(this, "point");
     } else {
-      plottablePoint = new SPoint(`P${this.id}`, this);
+      plottablePoint = new SPoint(this.name, this);
       plottableLabel = new SLabel<CKPoint>(this, "point");
     }
     this.ref = plottablePoint;
