@@ -160,12 +160,12 @@ export class LineHandler extends MultiPointSelectionHandler {
             this.longerThanPi
           );
         }
+        this.previewPoints[1].visible = false;
+        this.previewLine.visible = false;
         cmdGroup.addCommand(
           new AddLineOrSegmentKommand(aLineOrSegment, startPoint, endPoint)
         );
         cmdGroup.execute();
-        this.previewPoints[1].visible = false;
-        this.previewLine.visible = false;
         this.currentPreviewPointIndex = 0;
         this.previousPlaneNormal = null;
         // this.arrow2.visible = false;

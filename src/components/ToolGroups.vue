@@ -121,7 +121,6 @@ import CurrentToolSelection from "./CurrentToolSelection.vue";
 import { ActionMode, ToolButtonType, ToolButtonGroup } from "@/types";
 import { useAccountStore } from "@/stores/account";
 import { toolGroups } from "./toolgroups";
-import cloneDeep from "lodash.clonedeep";
 import { useSEStore } from "@/stores/se";
 import EventBus from "@/eventHandlers-spherical/EventBus";
 import { storeToRefs } from "pinia";
@@ -315,7 +314,7 @@ function toggleEditMode(): void {
     buttonGroup.value.push(...permissibleButtonGroup);
   } else {
     // show only included buttons
-    const selected = cloneDeep(permissibleButtonGroup);
+    const selected = structuredClone(permissibleButtonGroup);
     selected.forEach((g: ToolButtonGroup) => {
       g.children = g.children.filter((tool: ToolButtonType) =>
         includedTools.value.includes(tool.action)

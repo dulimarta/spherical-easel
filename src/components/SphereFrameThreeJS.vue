@@ -31,13 +31,13 @@ import {
   watch
 } from "vue";
 import {
+  ArcCurve,
   Clock,
   DirectionalLight,
   GridHelper,
   HemisphereLight,
+  Line2NodeMaterial,
   Mesh,
-  MeshStandardMaterial,
-  PerspectiveCamera,
   Raycaster,
   Scene,
   SphereGeometry,
@@ -56,6 +56,8 @@ import { PointHandler } from "@/eventHandlers-spherical/NewPointHandler";
 import { CKNodule } from "@/models/CKNodule";
 import { abs, asin, color, Fn, positionLocal, vec3, atan } from "three/tsl";
 import { LineHandler } from "@/eventHandlers-spherical/NewLineHandler";
+import { Line2 } from "three/examples/jsm/lines/webgpu/Line2.js";
+import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 const geoStore = useGeometryStore();
 const webGPUCanvas = useTemplateRef<HTMLCanvasElement>("webGPUCanvas");
 type ComponentProps = {
@@ -75,10 +77,12 @@ const scene: Scene = new Scene();
 // );
 const aspect = props.availableWidth / props.availableHeight;
 let camera = new THREE.OrthographicCamera(
-  -1.25 * aspect,
-  1.25 * aspect,
-  1.25,
-  -1.25
+  -1.25 * aspect /* left */,
+  1.25 * aspect /* right */,
+  1.25 /* top */,
+  -1.25 /* bottom */,
+  1 /* near */,
+  100 /* far */
 );
 let renderer: WebGPURenderer;
 let cameraController: CameraControls;
@@ -141,7 +145,9 @@ onBeforeMount(() => {
   //     arrowHeadDiameter
   //   )
   // );
-  scene.add(new HemisphereLight(0x404040, 0xa0a0a0));
+  const hemiLight = new HemisphereLight(0x404040, 0xa0a0a0);
+  hemiLight.position.set(0, 1.5, 0);
+  scene.add(hemiLight);
   const directionalLight = new DirectionalLight(0xffffff, 1);
   directionalLight.position.set(0, 1, 2);
   scene.add(directionalLight);
@@ -178,7 +184,7 @@ onBeforeMount(() => {
   //   .mul(10)
   //   .fract()
   //   .step(0.95);
-  unitSphereMaterial.colorNode = latitudeLine();
+  // unitSphereMaterial.colorNode = latitudeLine();
   unitSphere.name = "unitSphere";
   scene.add(unitSphere);
 });
@@ -199,15 +205,18 @@ onMounted(async () => {
   camera.lookAt(0, 0, 0);
   camera.updateProjectionMatrix();
 
-  renderer = new WebGPURenderer({ canvas: webGPUCanvas.value! });
+  renderer = new WebGPURenderer({
+    canvas: webGPUCanvas.value!,
+    antialias: true
+  });
   renderer.setSize(props.availableWidth, props.availableHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0x336600, 0.4);
   await renderer.init();
 
-  // const db = await renderer.debug.getShaderAsync(scene, camera, unitSphere);
-  // console.debug("VS for unitSphere", db.vertexShader);
-  // console.debug("FS for unitSphere", db.fragmentShader);
+  // const db = await renderer.debug.getShaderAsync(scene, camera, l2);
+  // console.debug("VS for L2", db.vertexShader);
+  // console.debug("FS for L2", db.fragmentShader);
 
   cameraController = new CameraControls(camera, renderer.domElement);
   // useEventListener(cameraController, "control", () => {

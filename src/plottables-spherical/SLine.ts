@@ -1,51 +1,47 @@
 import { CKLine } from "@/models/CKLine";
 import { Nodule } from "@/plottables/Nodule";
-import {
-  NodeMaterial,
-  TorusGeometry,
-  Mesh,
-  MeshStandardNodeMaterial,
-  Line2NodeMaterial,
-  ArcCurve,
-  Vector3
-} from "three/webgpu";
+import { Line2NodeMaterial, ArcCurve, FrontSide } from "three/webgpu";
 import { Line2 } from "three/addons/lines/webgpu/Line2.js";
-// import { LineSegments2 } from "three/examples/jsm/lines/webgpu/LineSegments2.js";
-// import { LineSegmentsGeometry } from "three/examples/jsm/Addons.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
-import { color, Fn } from "three/tsl";
+import {
+  color,
+  Fn,
+  normalize,
+  cameraPosition,
+  positionWorld,
+  dot,
+  select,
+  positionLocal,
+  vec4
+} from "three/tsl";
+
 export class SLine extends Nodule<CKLine> {
-  // private _lineMesh: Mesh;
-  // private _lineMaterial: NodeMaterial;
+  private _lineMesh: Line2;
+  private _lineMaterial: Line2NodeMaterial;
+
   constructor(name: string, modelRef: CKLine, infiniteLine: boolean) {
     super(name, modelRef);
 
-    // this._lineMaterial = new MeshStandardNodeMaterial({ color: 0xffff00 });
-    // this._lineMesh = new Mesh(
-    //   new TorusGeometry(1, 0.006, 20, 120),
-    //   this._lineMaterial
-    // );
-    // this.viewGroup.add(this._lineMesh);
-
     const circleCurve = new ArcCurve(0, 0, 1, 0, 2 * Math.PI, true);
     const l2geometry = new LineGeometry();
-    // l2geometry.setPositions(
-    //   circleCurve.getPoints(20).flatMap(p => [p.x, p.y, 0])
-    // );
-    l2geometry.setFromPoints(circleCurve.getPoints(60));
-    l2geometry.setColors(
-      Array.from({ length: 120 }, () => [0, 15, 200]).flatMap(z => z)
+    l2geometry.setPositions(
+      circleCurve
+        .getPoints(120)
+        // Make the circle slightly larger than unit radius to avoid z-fighting
+        // with the unit sphere
+        .map(p => p.multiplyScalar(1.01))
+        .flatMap(p => [p.x, p.y, 0])
     );
-    const l2material = new Line2NodeMaterial({
-      vertexColors: true,
-      linewidth: 5,
-      dashed: false,
+    this._lineMaterial = new Line2NodeMaterial({
+      color: 0xffff00,
+      linewidth: 6,
       worldUnits: false
     });
-    const ls = new Line2(l2geometry, l2material);
-    ls.computeLineDistances();
+    // this._lineMaterial.side = FrontSide;
 
-    this.viewGroup.add(ls);
+    this._lineMesh = new Line2(l2geometry, this._lineMaterial);
+    // this._lineMesh.computeLineDistances();
+    this.viewGroup.add(this._lineMesh);
   }
   show(): void {
     // throw new Error("Method not implemented.");
@@ -63,11 +59,10 @@ export class SLine extends Nodule<CKLine> {
     const line = this.modelRef.theLine.vector(1);
     console.debug(
       "SLine::modelUpdated line vector:",
-      -line[2],
-      line[1],
-      -line[0]
+      -line[2].toFixed(3),
+      line[1].toFixed(3),
+      -line[0].toFixed(3)
     );
-    // this._lineMesh.lookAt(-line[2], line[1], -line[0]);
     this.viewGroup.lookAt(-line[2], line[1], -line[0]);
   }
 }
