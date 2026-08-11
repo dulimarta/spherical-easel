@@ -128,7 +128,7 @@ import {
   AmbientLight,
   // ArrowHelper,
   Clock,
-  // GridHelper,
+  GridHelper,
   // Group,
   Matrix4,
   PerspectiveCamera,
@@ -138,7 +138,7 @@ import {
   // SphereGeometry,
   Vector3,
   Vector2
-} from "three";
+} from "three/webgpu";
 import * as THREE from "three/webgpu";
 import CameraControls from "camera-controls";
 import { EventDispatcher } from "camera-controls";
@@ -565,6 +565,10 @@ onBeforeMount(() => {
     "raycast-mouse-move",
     threeMouseTrackerThenMouseMove as Handler<unknown>
   );
+  const gridHelper = new GridHelper(5, 10, "black", "gray");
+  gridHelper.rotateX(Math.PI / 2);
+  scene.add(gridHelper);
+
   initialize();
 });
 
@@ -800,37 +804,36 @@ function initialize() {
     }
 
     // create the circular polar grid lines
-    for (let r = 0.5; Math.cosh(r) < SETTINGS.maxZClip; r += 0.5) {
-      const circularGridMeshPlus = createPolarGridCircle(
-        r,
-        upperLower === 0,
-        true
-      );
-      const circularGridMeshMinus = createPolarGridCircle(
-        r,
-        upperLower === 0,
-        false
-      );
-
-      circularGridMeshPlus.layers.set(
-        upperLower === 0
-          ? HYPERBOLIC_LAYER.upperSheetGrid
-          : HYPERBOLIC_LAYER.lowerSheetGrid
-      );
-      circularGridMeshMinus.layers.set(
-        upperLower === 0
-          ? HYPERBOLIC_LAYER.upperSheetGrid
-          : HYPERBOLIC_LAYER.lowerSheetGrid
-      );
-      if (upperLower === 0) {
-        upperPolarGridArray.push(circularGridMeshPlus);
-        upperPolarGridArray.push(circularGridMeshMinus);
-      } else {
-        lowerPolarGridArray.push(circularGridMeshPlus);
-        lowerPolarGridArray.push(circularGridMeshMinus);
-      }
-    }
+    // for (let r = 0.5; Math.cosh(r) < SETTINGS.maxZClip; r += 0.5) {
+    // const circularGridMeshPlus = createPolarGridCircle(
+    //   r,
+    //   upperLower === 0,
+    //   true
+    // );
+    // const circularGridMeshMinus = createPolarGridCircle(
+    //   r,
+    //   upperLower === 0,
+    //   false
+    // );
+    // circularGridMeshPlus.layers.set(
+    //   upperLower === 0
+    //     ? HYPERBOLIC_LAYER.upperSheetGrid
+    //     : HYPERBOLIC_LAYER.lowerSheetGrid
+    // );
+    // circularGridMeshMinus.layers.set(
+    //   upperLower === 0
+    //     ? HYPERBOLIC_LAYER.upperSheetGrid
+    //     : HYPERBOLIC_LAYER.lowerSheetGrid
+    // );
+    // if (upperLower === 0) {
+    //   upperPolarGridArray.push(circularGridMeshPlus);
+    //   upperPolarGridArray.push(circularGridMeshMinus);
+    // } else {
+    //   lowerPolarGridArray.push(circularGridMeshPlus);
+    //   lowerPolarGridArray.push(circularGridMeshMinus);
+    // }
   }
+  // }
 
   // push (polar grid)|(ideal points)|(lower sheet) to visible layers, because it is visible at initialization otherwise the vue button handles the visibleLayers array
   if (showPolarGrid.value) {

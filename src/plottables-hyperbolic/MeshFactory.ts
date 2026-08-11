@@ -1,41 +1,42 @@
 import SETTINGS, { SURFACE_TYPES } from "@/global-settings-hyperbolic";
 import * as THREE from "three/webgpu";
 import {
-  uniform,
-  float,
-  vec3,
-  vec4,
-  Fn,
-  positionLocal,
-  varying,
-  smoothstep,
-  attribute,
-  uv,
-  mix,
-  color,
-  modelWorldMatrix,
-  sin,
-  cos,
-  mat3,
-  select,
-  oscSine,
-  oscSawtooth,
-  If,
-  time,
-  min,
-  max,
-  mat4,
-  sqrt,
-  floor,
-  mod,
+  add,
   and,
-  Discard,
-  or,
+  atan,
+  attribute,
+  color,
+  cos,
   cross,
+  Discard,
   dot,
   exp,
+  float,
+  floor,
+  Fn,
+  If,
+  mat3,
+  mat4,
+  max,
+  min,
+  mix,
+  mod,
+  modelWorldMatrix,
+  or,
+  oscSawtooth,
+  oscSine,
+  positionLocal,
+  select,
+  sin,
+  smoothstep,
+  sqrt,
+  time,
+  uniform,
+  uv,
+  varying,
   vec2,
-  atan
+  vec3,
+  vec4
 } from "three/tsl";
 // import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { Line2 } from "three/addons/lines/Line2.js";
@@ -1153,19 +1154,30 @@ export function createHyperboloidSheet(upper: boolean): THREE.Mesh {
 
   const baseColor = color(hyperboloidMaterial.color);
 
-  const clippingLogic = Fn(() => {
+  const clippingAndGrid = Fn(() => {
     if (upper) {
       positionLocal.z.greaterThan(zUpperClip).discard();
     } else {
       positionLocal.z.lessThan(zLowerClip).discard();
     }
     // Alternate method for drawing radial lines
-    const angle = atan(positionLocal.y, positionLocal.x);
-    const lineFlag = angle.div(Math.PI).mul(6).fract().step(0.02);
-    return select(lineFlag, baseColor, color(0x999999));
+    const radialAngle = atan(positionLocal.y, positionLocal.x);
+    // Draw six radial lines on each half of the circle
+    const lineFlag = radialAngle.div(Math.PI).mul(6).fract().step(0.02);
+    // Draw one horizontal circle at 0.5 increment
+    const heightFlag = positionLocal.z.mul(2).add(0.025).fract().step(0.02);
+    // lineFlag.toVar().debug();
+    // heightFlag.debug();
+    const surfaceColor = select(
+      heightFlag.and(lineFlag),
+      baseColor,
+      color(0x999999)
+    );
+    // surfaceColor.toVar().debug();
+    return surfaceColor;
   });
 
-  hyperboloidMaterial.colorNode = clippingLogic();
+  hyperboloidMaterial.colorNode = clippingAndGrid();
 
   // Smooth the opacity of the edge of the hyperboloid
   const upperSmooth = smoothstep(
