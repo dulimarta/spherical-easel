@@ -42,10 +42,6 @@ export class LineHandler extends MultiPointSelectionHandler {
     new Mesh(
       new SphereGeometry(0.01, 32, 32),
       new MeshStandardMaterial({ color: 0x00ff00 })
-    ),
-    new Mesh(
-      new SphereGeometry(0.02, 32, 32),
-      new MeshStandardMaterial({ color: 0xffffff })
     )
   ];
   private previewLine = new Mesh(
@@ -139,15 +135,9 @@ export class LineHandler extends MultiPointSelectionHandler {
     //   this.currentPreviewPointIndex
     // );
     switch (this.currentSelectedPoints.length) {
-      case 0:
-        // this.previewPoints[0].position.copy(position);
-        // this.previewPoints[0].visible = true;
-        // this.longerThanPi = false;
-        break;
       case 1:
         this.previewPoints[0].position.copy(position);
         this.previewPoints[0].visible = true;
-        // Create the line here
         break;
       case 2:
         const startPoint = new CKPoint(this.previewPoints[0].position);
@@ -172,6 +162,7 @@ export class LineHandler extends MultiPointSelectionHandler {
         // this.currentPreviewPointIndex = -1;
         this.previewPoints.forEach(p => (p.visible = false));
         this.previewLine.visible = false;
+        this.longerThanPi = false;
         cmdGroup.addCommand(
           new AddLineOrSegmentKommand(aLineOrSegment, startPoint, endPoint)
         );
@@ -254,7 +245,7 @@ export class LineHandler extends MultiPointSelectionHandler {
         this.previewLine.geometry.dispose();
         this.previewLine.geometry = new TorusGeometry(
           1,
-          0.01,
+          0.006,
           12,
           120,
           arcLength

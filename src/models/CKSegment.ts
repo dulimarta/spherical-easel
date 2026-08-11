@@ -38,9 +38,10 @@ export class CKSegment extends CKNodule {
       z[1].toFixed(3),
       z[0].toFixed(3)
     );
+    this.name = `S${this.id}`;
     const plottableLine = CKNodule.isHyperbolicMode()
-      ? new HLine(`L${this.id}`, this, false)
-      : new SSegment(`L${this.id}`, this, this.longerThanPi);
+      ? new HLine(this.name, this, false)
+      : new SSegment(this.name, this, this.longerThanPi);
     this.ref = plottableLine;
     this.subscribe(plottableLine);
     // const plottableLabel = new SLabel<CKLine>(this, "line");
