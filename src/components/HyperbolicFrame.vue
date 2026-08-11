@@ -770,32 +770,32 @@ function initialize() {
       theta < 2 * Math.PI;
       theta += (2 * Math.PI) / numRadialLines
     ) {
-      const radialLineMeshPlus = createPolarGridRadialLine(
-        theta,
-        upperLower === 0,
-        true
-      );
-      const radialLineMeshMinus = createPolarGridRadialLine(
-        theta,
-        upperLower === 0,
-        false
-      );
-      radialLineMeshPlus.layers.set(
-        upperLower === 0
-          ? HYPERBOLIC_LAYER.upperSheetGrid
-          : HYPERBOLIC_LAYER.lowerSheetGrid
-      );
-      radialLineMeshMinus.layers.set(
-        upperLower === 0
-          ? HYPERBOLIC_LAYER.upperSheetGrid
-          : HYPERBOLIC_LAYER.lowerSheetGrid
-      );
+      // const radialLineMeshPlus = createPolarGridRadialLine(
+      //   theta,
+      //   upperLower === 0,
+      //   true
+      // );
+      // const radialLineMeshMinus = createPolarGridRadialLine(
+      //   theta,
+      //   upperLower === 0,
+      //   false
+      // );
+      // radialLineMeshPlus.layers.set(
+      //   upperLower === 0
+      //     ? HYPERBOLIC_LAYER.upperSheetGrid
+      //     : HYPERBOLIC_LAYER.lowerSheetGrid
+      // );
+      // radialLineMeshMinus.layers.set(
+      //   upperLower === 0
+      //     ? HYPERBOLIC_LAYER.upperSheetGrid
+      //     : HYPERBOLIC_LAYER.lowerSheetGrid
+      // );
       if (upperLower === 0) {
-        upperPolarGridArray.push(radialLineMeshPlus);
-        upperPolarGridArray.push(radialLineMeshMinus);
+        // upperPolarGridArray.push(radialLineMeshPlus);
+        // upperPolarGridArray.push(radialLineMeshMinus);
       } else {
-        lowerPolarGridArray.push(radialLineMeshPlus);
-        lowerPolarGridArray.push(radialLineMeshMinus);
+        // lowerPolarGridArray.push(radialLineMeshPlus);
+        // lowerPolarGridArray.push(radialLineMeshMinus);
       }
     }
 

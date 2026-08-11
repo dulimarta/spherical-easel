@@ -34,7 +34,8 @@ import {
   cross,
   dot,
   exp,
-  vec2
+  vec2,
+  atan
 } from "three/tsl";
 // import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { Line2 } from "three/addons/lines/Line2.js";
@@ -1158,7 +1159,10 @@ export function createHyperboloidSheet(upper: boolean): THREE.Mesh {
     } else {
       positionLocal.z.lessThan(zLowerClip).discard();
     }
-    return baseColor;
+    // Alternate method for drawing radial lines
+    const angle = atan(positionLocal.y, positionLocal.x);
+    const lineFlag = angle.div(Math.PI).mul(6).fract().step(0.02);
+    return select(lineFlag, baseColor, color(0x999999));
   });
 
   hyperboloidMaterial.colorNode = clippingLogic();
