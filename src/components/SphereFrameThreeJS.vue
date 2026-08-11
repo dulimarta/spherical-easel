@@ -59,6 +59,7 @@ import { PointHandler } from "@/eventHandlers-spherical/NewPointHandler";
 import { CKNodule } from "@/models/CKNodule";
 import { abs, asin, Fn, positionLocal, vec3, atan } from "three/tsl";
 import { LineHandler } from "@/eventHandlers-spherical/NewLineHandler";
+import Stats from "stats.js";
 const geoStore = useGeometryStore();
 const webGPUCanvas = useTemplateRef<HTMLCanvasElement>("webGPUCanvas");
 type ComponentProps = {
@@ -146,18 +147,18 @@ onBeforeMount(() => {
   //     arrowHeadDiameter
   //   )
   // );
-  const hemiLight = new HemisphereLight(0x404040, 0xa0a0a0);
-  hemiLight.position.set(0, 1.5, 0);
-  scene.add(hemiLight);
+  // const hemiLight = new HemisphereLight(0x404040, 0xa0a0a0);
+  // hemiLight.position.set(0, 1.5, 0);
+  // scene.add(hemiLight);
   const directionalLight = new DirectionalLight(0xffffff, 1);
   directionalLight.position.set(0, 1, 2);
   scene.add(directionalLight);
   const unitSphereMaterial = new MeshStandardNodeMaterial({
     roughness: 0.04,
     metalness: 0.2,
-    color: 0x66ff33,
+    color: 0xffffff,
     transparent: true,
-    opacity: 0.8,
+    opacity: 0.6,
     side: THREE.DoubleSide // to enable selecting points on the back side of the sphere
   });
   unitSphere = new Mesh(
@@ -337,10 +338,10 @@ function computeMouse3DCoordinates(ev: MouseEvent) {
   //   // );
   // });
   if (hitByRay.length > 0) {
-    console.debug(
-      "Ray hit",
-      hitByRay.map(x => x.object.name)
-    );
+    // console.debug(
+    //   "Ray hit",
+    //   hitByRay.map(x => x.object.name)
+    // );
     // If shift key is pressed, use the last hit point (farthest), otherwise use the first hit point (nearest)
     if (ev.shiftKey) {
       mouse3DPosition.value.copy(hitByRay[hitByRay.length - 1].point);
@@ -350,7 +351,7 @@ function computeMouse3DCoordinates(ev: MouseEvent) {
       cursorShape.value = "crosshair";
     }
     const namesOfHitObjects = hitByRay.map(x => x.object.name);
-    console.debug("Hit objects: ", namesOfHitObjects.join());
+    // console.debug("Hit objects: ", namesOfHitObjects.join());
     hitObjects.push(
       ...namesOfHitObjects
         .map(name => geoStore.getObjectById(name))

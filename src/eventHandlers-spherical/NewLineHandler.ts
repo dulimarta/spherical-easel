@@ -103,7 +103,7 @@ export class LineHandler extends MultiPointSelectionHandler {
 
   deactivate(): void {
     super.deactivate();
-    console.debug("LineHandler::deactivate");
+    // console.debug("LineHandler::deactivate");
     this.previewPoints.forEach(point => {
       this.scene.remove(point);
     });
@@ -179,16 +179,8 @@ export class LineHandler extends MultiPointSelectionHandler {
     position: Vector3,
     hitObjects: Array<CKNodule>
   ): void {
-    console.debug(
-      "Spherical LineHandler::mouseMoved Hit objects",
-      hitObjects.length
-    );
     super.mouseMoved(event, position, hitObjects);
     if (isNaN(position.x)) return;
-    console.debug(
-      "LineHandler::mousePressed selected point count",
-      this.currentSelectedPoints.length
-    );
     if (this.currentSelectedPoints.length > 0) {
       if (this.previewLine.visible === false) this.previewLine.visible = true;
       this.previewPoints[1].position.copy(position);

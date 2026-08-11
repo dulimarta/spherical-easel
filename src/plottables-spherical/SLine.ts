@@ -1,6 +1,6 @@
 import { CKLine } from "@/models/CKLine";
 import { Nodule } from "@/plottables/Nodule";
-import { Line2NodeMaterial, ArcCurve, FrontSide } from "three/webgpu";
+import { Line2NodeMaterial, ArcCurve } from "three/webgpu";
 import { Line2 } from "three/addons/lines/webgpu/Line2.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 import { color } from "three/tsl";

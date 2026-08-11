@@ -12,10 +12,10 @@ export class MouseHandler implements SphericalTool {
     position: Vector3,
     hitObjects: Array<CKNodule>
   ): void {
-    console.debug(
-      "MouseHandler::mouseMoved hit objects count",
-      hitObjects.length
-    );
+    // console.debug(
+    //   "MouseHandler::mouseMoved hit objects count",
+    //   hitObjects.length
+    // );
     this.hitObjectCache.forEach(hit => {
       hit.setHighlight(false);
     });
@@ -30,12 +30,14 @@ export class MouseHandler implements SphericalTool {
     event: MouseEvent,
     position: Vector3,
     hitObjects: Array<CKNodule>
-  ): void {}
+  ): void {
+    // Nothing to do for mouse pressed in the base handler
+  }
   activate(): void {
-    console.log("MouseHandler::activate");
+    // console.log("MouseHandler::activate");
   }
 
   deactivate(): void {
-    console.log("MouseHandler::deactivate");
+    // console.log("MouseHandler::deactivate");
   }
 }

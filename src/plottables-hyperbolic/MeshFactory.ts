@@ -1214,7 +1214,6 @@ export function createHyperboloidSheet(upper: boolean): THREE.Mesh {
       })
     );
   };
-
   return hyperboloidMesh;
 }
 const GRID_Z_OFFSET = 0.01; // World-space push off hyperboloid surface to prevent z fighting with grid lines.

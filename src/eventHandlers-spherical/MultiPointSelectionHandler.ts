@@ -20,7 +20,7 @@ export class MultiPointSelectionHandler extends MouseHandler {
 
   activate(): void {
     super.activate();
-    console.debug("MultiPointSelectionHandler::activate");
+    // console.debug("MultiPointSelectionHandler::activate");
     this.keyboardEventHandler = onKeyDown("Escape", () => {
       // console.debug("MultiPointSelectionHandler::Escape key pressed");
       // Undo all the selections made so far when the Escape key is pressed.
@@ -46,7 +46,7 @@ export class MultiPointSelectionHandler extends MouseHandler {
     hitObjects: Array<CKNodule>
   ): void {
     super.mousePressed(event, position, hitObjects);
-    console.debug("MultiPointSelectionHandler::mousePressed", position);
+    // console.debug("MultiPointSelectionHandler::mousePressed", position);
     if (isNaN(position.x)) {
       console.debug("Mouse pressed outside of sphere");
       return;
