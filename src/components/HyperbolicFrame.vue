@@ -580,9 +580,9 @@ onMounted(async () => {
   console.log(`Mounted size ${props.availableWidth}x${props.availableHeight}`);
   camera.aspect = props.availableWidth / props.availableHeight;
 
-  camera.position.set(6, 0, 8);
+  camera.position.set(6, 0, 4);
   camera.up.set(0, 0, 1);
-  camera.lookAt(0, 0, 1);
+  camera.lookAt(0, 0, 2);
   camera.updateProjectionMatrix();
 
   hyperStore.setScene(scene, camera);
