@@ -23,6 +23,17 @@
       icon
       size="x-small"
       class="bg-green-lighten-1"
+      @click="switchGeometryMode">
+      <v-icon color="black">mdi-calculator</v-icon>
+      <v-tooltip activator="parent">
+        Switch to
+        {{ geometryMode === "spherical" ? "Hyperbolic" : "Spherical" }}
+      </v-tooltip>
+    </v-btn>
+    <v-btn
+      icon
+      size="x-small"
+      class="bg-green-lighten-1"
       @click="doLoginOrLogout">
       <v-avatar
         size="small"
@@ -358,21 +369,22 @@ import {
   SphericalConstruction,
   TreeviewNode
 } from "@/types/ConstructionTypes";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { useConstructionStore } from "@/stores/construction";
 import FileSaver from "file-saver";
 import { computed, watch } from "vue";
 import { mergeIntoImageUrl } from "@/utils/helpingfunctions";
-import { Command } from "@/commands/Command";
+import { Command } from "@/commands-spherical/Command";
 import { Vector3 } from "three";
-import SETTINGS from "@/global-settings";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import SETTINGS from "@/global-settings-spherical";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { VTreeview } from "vuetify/labs/VTreeview";
-import { SEPoint } from "@/models/SEPoint";
-import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
-import { SELine } from "@/models/SELine";
+import { shallowRef } from "vue";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { SESegment } from "@/models-spherical/SESegment";
+import { SECircle } from "@/models-spherical/SECircle";
+import { SELine } from "@/models-spherical/SELine";
 
 type ComponentProps = {
   expandedView: boolean;
@@ -396,7 +408,8 @@ const {
   seLines,
   seCircles,
   seSegments,
-  selectedSENodules
+  selectedSENodules,
+  geometryMode
 } = storeToRefs(seStore);
 const { t } = useI18n({ useScope: "local" });
 
@@ -886,6 +899,15 @@ function doExport() {
         constructionName + "." + selectedExportFormat.value.toLowerCase()
       );
     });
+  }
+}
+function switchGeometryMode() {
+  if (geometryMode.value === "spherical") {
+    router.replace("/hyperbolic");
+    geometryMode.value = "hyperbolic";
+  } else {
+    router.replace("/");
+    geometryMode.value = "spherical";
   }
 }
 // function previewOrDefault(dataUrl: string | undefined): string {

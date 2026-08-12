@@ -1,4 +1,4 @@
-import { SETTINGS } from "@/global-settings";
+import { SETTINGS } from "@/global-settings-spherical";
 // We move the declaration of LabelDisplayMode from this file
 // to @/types/index.ts to solve the circular dependency issue
 import { LabelDisplayMode } from "@/types";
@@ -9,13 +9,13 @@ export enum StyleCategory {
   Advanced
 }
 
-export type StyleOptions = ShapeStyleOptions & LabelStyleOptions
+export type StyleOptions = ShapeStyleOptions & LabelStyleOptions;
 export type ShapeStyleOptions = {
   strokeWidthPercent?: number;
   strokeColor?: string; // TODO : replace the type to "Two.Color"
   fillColor?: string;
   useDashPattern?: boolean;
-  dashArray?: Array<number>; 
+  dashArray?: Array<number>;
   reverseDashArray?: boolean;
   dynamicBackStyle?: boolean;
   pointRadiusPercent?: number;
@@ -23,7 +23,7 @@ export type ShapeStyleOptions = {
   angleMarkerTickMark?: boolean;
   angleMarkerDoubleArc?: boolean;
   angleMarkerArrowHeads?: boolean;
-}
+};
 
 export type LabelStyleOptions = {
   labelTextStyle?: string;
@@ -37,9 +37,14 @@ export type LabelStyleOptions = {
   labelFrontFillColor?: string;
   labelBackFillColor?: string;
   labelDynamicBackStyle?: boolean;
-}
+};
 
-export type StylePropertyValue = number | string | boolean | LabelDisplayMode | Array<number>;
+export type StylePropertyValue =
+  | number
+  | string
+  | boolean
+  | LabelDisplayMode
+  | Array<number>;
 
 export const DEFAULT_POINT_FRONT_STYLE: ShapeStyleOptions = {
   fillColor: SETTINGS.point.drawn.fillColor.front,
@@ -266,7 +271,7 @@ export const DEFAULT_TEXT_TEXT_STYLE: LabelStyleOptions = {
   labelTextDecoration: SETTINGS.text.decoration,
   labelTextScalePercent: 100,
   labelTextRotation: 0,
-  labelFrontFillColor: SETTINGS.text.fillColor,
+  labelFrontFillColor: SETTINGS.text.fillColor
 };
 
 export const DEFAULT_PARAMETRIC_FRONT_STYLE: ShapeStyleOptions = {

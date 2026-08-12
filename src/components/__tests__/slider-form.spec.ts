@@ -2,8 +2,8 @@ import TestComponent from "../SliderForm.vue";
 import { createWrapper } from "$/vue-helper";
 import { VueWrapper } from "@vue/test-utils";
 import { useSEStore } from "@/stores/se";
-import {Command} from "@/commands/Command"
-import { SESlider } from "@/models/SESlider";
+import { Command } from "@/commands-spherical/Command";
+import { SESlider } from "@/models-spherical/SESlider";
 
 describe("SliderForm.vue", () => {
   let wrapper: VueWrapper;
@@ -38,15 +38,15 @@ describe("SliderForm with store access", () => {
     expect((inputMin.element as HTMLInputElement).value).toBeCloseTo(0.3, 2);
     expect((inputStep.element as HTMLInputElement).value).toBeCloseTo(0.02, 2);
     expect((inputMax.element as HTMLInputElement).value).toBeCloseTo(0.61, 2);
-    const s = useSEStore(testPinia)
-    Command.setGlobalStore(s)
+    const s = useSEStore(testPinia);
+    Command.setGlobalStore(s);
     const countBefore = s.seExpressions.length;
-      await addBtn.trigger("click");
-      const countAfter = s.seExpressions.length;
-      expect(countAfter).toEqual(countBefore + 1);
-      const slider: SESlider = s.seExpressions[countBefore] as SESlider;
-      expect(slider.min).toEqual(0.3);
-      expect(slider.step).toEqual(0.02);
-      expect(slider.max).toEqual(0.61);
+    await addBtn.trigger("click");
+    const countAfter = s.seExpressions.length;
+    expect(countAfter).toEqual(countBefore + 1);
+    const slider: SESlider = s.seExpressions[countBefore] as SESlider;
+    expect(slider.min).toEqual(0.3);
+    expect(slider.step).toEqual(0.02);
+    expect(slider.max).toEqual(0.61);
   });
 });

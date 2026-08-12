@@ -10,7 +10,7 @@
     </div>
     <v-slider
       data-testid="slider"
-      v-model="model.value"
+      v-model="sliderValue"
       :min="model.min"
       :max="model.max"
       :step="model.step"
@@ -50,20 +50,15 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
-import { SEExpression } from "@/models/SEExpression";
-import { SESlider } from "@/models/SESlider";
+import { ref, watch } from "vue";
+import { SEExpression } from "@/models-spherical/SEExpression";
+import { SESlider } from "@/models-spherical/SESlider";
 import { SliderPlaybackMode } from "@/types";
-import EventBus from "@/eventHandlers/EventBus";
-import { useSEStore } from "@/stores/se";
-import { storeToRefs } from "pinia";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { onMounted } from "vue";
-import { SENodule } from "@/models/SENodule";
-
-const store = useSEStore();
-// const { sePoints } = storeToRefs(store);
 const model = defineModel<SESlider>({ required: true });
 const emit = defineEmits(["object-select"]);
+const sliderValue = ref(0);
 const playbackMode = ref(SliderPlaybackMode.ONCE);
 const playbackSpeed = ref(750);
 let playbackForward = true;
@@ -72,7 +67,9 @@ let timer: number | null = null;
 onMounted(() => {
   console.debug("SeSliderItem::onMounted()");
 });
-
+watch(sliderValue, v => {
+  model.value.value = v;
+});
 const playbackSelections = [
   { title: "Once", value: SliderPlaybackMode.ONCE },
   { title: "Loop", value: SliderPlaybackMode.LOOP },
@@ -95,7 +92,7 @@ function selectMe(): void {
   }
 }
 function glowMe(flag: boolean): void {
-  // console.log("here", model.value instanceof SEExpression);
+  console.log("here", model.value instanceof SEExpression);
   EventBus.fire("measured-circle-set-temporary-radius", {
     display: flag,
     radius: model.value

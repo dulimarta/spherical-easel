@@ -7,7 +7,7 @@ import {
   ConstructionTree,
   ConstructionPath
 } from "@/types/ConstructionTypes";
-import { Command } from "@/commands/Command";
+import { Command } from "@/commands-spherical/Command";
 import { defineStore } from "pinia";
 import { Auth, getAuth } from "firebase/auth";
 import { ref, Ref } from "vue";
@@ -45,7 +45,7 @@ import { useSEStore } from "./se";
 import { watch } from "vue";
 import { mergeIntoImageUrl } from "@/utils/helpingfunctions";
 import { watchDebounced } from "@vueuse/core";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 
 let appStorage: FirebaseStorage;
 let appDB: Firestore;

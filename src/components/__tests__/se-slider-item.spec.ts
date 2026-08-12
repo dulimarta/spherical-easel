@@ -1,6 +1,6 @@
 import TestComponent from "@/components/SESliderItem.vue";
 import { createWrapper } from "$/vue-helper";
-import { SESlider } from "@/models/SESlider";
+import { SESlider } from "@/models-spherical/SESlider";
 
 describe("SESliderItem.vue", () => {
   it("is a component", () => {
@@ -8,10 +8,10 @@ describe("SESliderItem.vue", () => {
     aSlider.showing = true;
     const { wrapper } = createWrapper(TestComponent, {
       componentProps: {
-          node: aSlider
+        node: aSlider
       },
       stubOptions: {
-        VIcon:true
+        VIcon: true
       }
     });
     expect(wrapper.exists()).toBeTruthy();
@@ -22,16 +22,15 @@ describe("SESliderItem.vue", () => {
     aSlider.showing = true;
     const { wrapper } = createWrapper(TestComponent, {
       componentProps: {
-          node: aSlider
+        node: aSlider
       },
       stubOptions: {
-        VIcon:true
+        VIcon: true
       }
     });
-    const sliderWidget = wrapper.find("[data-testid=slider]")
+    const sliderWidget = wrapper.find("[data-testid=slider]");
     expect(sliderWidget.exists()).toBeTruthy();
     // console.debug("Slider", sliderWidget.html())
-    expect(sliderWidget.text()).toContain("0.32")
+    expect(sliderWidget.text()).toContain("0.32");
   });
-
 });

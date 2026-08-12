@@ -10,11 +10,10 @@
             <li>Ctrl-Alt-T: Trochoid</li>
             <li>Ctrl-Alt-Y: Cycloid with cusp points</li>
             <li>Ctrl-Alt-E: Ellipse (M1 & M2)</li>
-            <li>Ctrl-Alt-L: Loxodrome (M1)</li>
+            <li>Ctrl-Alt-L: Loxodrome (M1: [-6,+6])</li>
             <li>Ctrl-Alt-R: Cardioid (M1)</li>
           </ul>
         </div>
-        Open panels {{ panels }}
         <v-expansion-panels multiple v-model="panels">
           <v-expansion-panel
             data-testid="xyz_formula_panel"
@@ -104,30 +103,30 @@ import {
   MinMaxNumber,
   SEIntersectionReturnType
 } from "@/types";
-import { SEExpression } from "@/models/SEExpression";
+import { SEExpression } from "@/models-spherical/SEExpression";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import ParametricCoordinate from "@/components/ParametricCoordinate.vue";
 import ParametricTExpression from "@/components/ParametricTExpression.vue";
 import ParametricCuspParameterValues from "@/components/ParametricCuspParameterValues.vue";
-import EventBus from "@/eventHandlers/EventBus";
-import SETTINGS from "@/global-settings";
+import EventBus from "@/eventHandlers-spherical/EventBus";
+import SETTINGS from "@/global-settings-spherical";
 import { Vector3 } from "three";
-import { SELabel } from "@/models/SELabel";
-import { SEParametric } from "@/models/SEParametric";
-import { CommandGroup } from "@/commands/CommandGroup";
-import { AddParametricCommand } from "@/commands/AddParametricCommand";
-import { AddParametricEndPointsCommand } from "@/commands/AddParametricEndPointsCommand";
-import { AddParametricTracePointCommand } from "@/commands/AddParametricTracePointCommand";
-import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
-import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
-import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SELabel } from "@/models-spherical/SELabel";
+import { SEParametric } from "@/models-spherical/SEParametric";
+import { CommandGroup } from "@/commands-spherical/CommandGroup";
+import { AddParametricCommand } from "@/commands-spherical/AddParametricCommand";
+import { AddParametricEndPointsCommand } from "@/commands-spherical/AddParametricEndPointsCommand";
+import { AddParametricTracePointCommand } from "@/commands-spherical/AddParametricTracePointCommand";
+import { SEParametricEndPoint } from "@/models-spherical/SEParametricEndPoint";
+import { AddIntersectionPointCommand } from "@/commands-spherical/AddIntersectionPointCommand";
+import { SEParametricTracePoint } from "@/models-spherical/SEParametricTracePoint";
+import { SEIntersectionPoint } from "@/models-spherical/SEIntersectionPoint";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
-import { AddIntersectionPointOtherParentsInfo } from "@/commands/AddIntersectionPointOtherParentsInfo";
-import { SEPoint } from "@/models/SEPoint";
-import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
-import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { AddIntersectionPointOtherParentsInfo } from "@/commands-spherical/AddIntersectionPointOtherParentsInfo";
+import { SEPoint } from "@/models-spherical/SEPoint";
+import { AddAntipodalPointCommand } from "@/commands-spherical/AddAntipodalPointCommand";
+import { SEAntipodalPoint } from "@/models-spherical/SEAntipodalPoint";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n({ useScope: "local" });
 // interface ParametricDataType {

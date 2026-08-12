@@ -1,10 +1,10 @@
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { loadUserPreferences, saveUserPreferences } from "@/utils/userPreferences";
 import { getAuth } from "firebase/auth";
 import { FillStyle } from "@/types";
-import Nodule from "@/plottables/Nodule";
+import Nodule from "@/plottables-spherical/Nodule";
 
 const DEFAULT_NOTIFICATION_LEVELS = ["success", "info", "error", "warning"];
 const DEFAULT_TOOLTIP_MODE: TooltipMode = "full"

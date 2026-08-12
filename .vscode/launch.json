@@ -29,8 +29,15 @@
     {
       "type": "chrome",
       "request": "launch",
-      "name": "Launch Chrome against localhost",
+      "name": "Debug in Chrome (Spherical)",
       "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Debug in Chrome (Hyperbolic)",
+      "url": "http://localhost:8080/hyperbolic",
       "webRoot": "${workspaceFolder}"
     }
   ]

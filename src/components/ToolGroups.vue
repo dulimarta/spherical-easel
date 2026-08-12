@@ -87,6 +87,30 @@
       </v-expansion-panel> -->
     </v-expansion-panels>
   </v-item-group>
+
+  <template v-if="surfaceIntersections.length > 0">
+    Intersections with Surfaces
+    <ul class="text-caption">
+      <li
+        v-for="(x, pos) in surfaceIntersections.filter((_, pos) => pos < 4)"
+        :key="`${x.object.name}${pos}`">
+        {{ x.point.toFixed(1) }} Norm: {{ x.normal?.toFixed(1) }} distance
+        {{ x.distance.toFixed(2) }} with
+        {{ x.object.name }}
+      </li>
+    </ul>
+  </template>
+  <template v-if="objectIntersections.length > 0">
+    Intersections with objects
+    <ul class="text-caption">
+      <li
+        v-for="(x, pos) in objectIntersections"
+        :key="`${x.object.name}${pos}`">
+        {{ x.point.toFixed(1) }} distance {{ x.distance.toFixed(2) }} with
+        {{ x.object.name }}
+      </li>
+    </ul>
+  </template>
 </template>
 
 <script lang="ts" setup>
@@ -99,22 +123,30 @@ import { useAccountStore } from "@/stores/account";
 import { toolGroups } from "./toolgroups";
 import cloneDeep from "lodash.clonedeep";
 import { useSEStore } from "@/stores/se";
-import EventBus from "@/eventHandlers/EventBus";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { storeToRefs } from "pinia";
 import { useI18n } from "vue-i18n";
 import { inject } from "vue";
-const { t } = useI18n({ useScope: "local" });
+import { useHyperbolicStore } from "@/stores/hyperbolic";
+import { useRoute } from "vue-router";
+import { onUpdated } from "vue";
+const { t } = useI18n();
 const acctStore = useAccountStore();
 const { userProfile, includedTools } = storeToRefs(acctStore);
+const hyperStore = useHyperbolicStore();
 const seStore = useSEStore();
-const { seExpressions, seTransformations, actionMode } = storeToRefs(seStore);
+const { seExpressions, seTransformations, actionMode, excludeToolsFromSE } =
+  storeToRefs(seStore);
+const { surfaceIntersections, objectIntersections, implementedHETools } =
+  storeToRefs(hyperStore);
+const route = useRoute();
 
 const inProductionMode = ref(false);
 const inEditMode = ref(false);
 const expandedPanel: Ref<number | undefined> = ref(undefined);
 const buttonGroup: Ref<Array<ToolButtonGroup>> = ref([]);
 let permissibleButtonGroup: Array<ToolButtonGroup> = [];
-const currentToolset: Array<ActionMode> = [];
+// const currentToolset: Array<ActionMode> = [];
 const selectedTool: Ref<ActionMode | null> = ref("rotate");
 let lastSelectedTool: ActionMode | null = null;
 const appFeature = inject("features");
@@ -132,15 +164,32 @@ onBeforeMount((): void => {
   } else {
     permissibleButtonGroup = toolGroups.slice(0);
   }
-  buttonGroup.value.push(...permissibleButtonGroup);
-  //sort the button list by id so that we don't have to reorder the list each item we add a new button
 
-  // buttonGroup.value.forEach((gr: ToolButtonGroup) => {
-  //   gr.children.sort((a: ToolButtonType, b: ToolButtonType) => a.id - b.id);
-  // });
-  if (appFeature !== "beta") {
+  if (route.path.endsWith("hyperbolic")) {
+    // Include only the HE tools that have been implemented
+    permissibleButtonGroup.forEach((g: ToolButtonGroup) => {
+      g.children = g.children.filter((tool: ToolButtonType) => {
+        return implementedHETools.value.includes(tool.action);
+      });
+    });
+  } else {
+    // Exclude the HE tools that do not exist in spherical easel
+    permissibleButtonGroup.forEach((g: ToolButtonGroup) => {
+      g.children = g.children.filter((tool: ToolButtonType) => {
+        return !excludeToolsFromSE.value.includes(tool.action);
+      });
+    });
   }
-  currentToolset.push(...includedTools.value);
+  // Filter out any groups that have no children
+  for (let i = permissibleButtonGroup.length - 1; i >= 0; i--) {
+    if (permissibleButtonGroup[i].children.length == 0) {
+      permissibleButtonGroup.splice(i, 1);
+    }
+  }
+  buttonGroup.value.push(...permissibleButtonGroup);
+  //
+  // currentToolset.push(...includedTools.value);
+
   //Added to make the initial action mode show when app is loaded for the first time or the clear button is clicked
   selectedTool.value = actionMode.value;
   const activeGroup = permissibleButtonGroup.findIndex(group => {
@@ -160,7 +209,9 @@ watch(
     const activeGroup = permissibleButtonGroup.findIndex(group => {
       return group.children.some((ch: ToolButtonType) => ch.action === act);
     });
+    console.log("Active group is", activeGroup, expandedPanel.value);
     if (activeGroup !== expandedPanel.value) {
+      console.log("Change active panel");
       expandedPanel.value = activeGroup;
     }
     doTransformationEffect();
@@ -235,7 +286,6 @@ function toolSelectionChanged() {
       .find((toolBtn: ToolButtonType) => toolBtn.action == selectedTool.value);
     // console.log("Toolbutton handler, found the button", whichButton);
     if (whichButton) {
-      // seStore.setButton(whichButton);
       seStore.setActionMode(selectedTool.value!);
     }
   } else {

@@ -22,8 +22,8 @@
 <script lang="ts" setup>
 import { onMounted, ref } from "vue";
 import { ExpressionParser } from "@/expression/ExpressionParser";
-import EventBus from "@/eventHandlers/EventBus";
-import SETTINGS from "@/global-settings";
+import EventBus from "@/eventHandlers-spherical/EventBus";
+import SETTINGS from "@/global-settings-spherical";
 import { storeToRefs } from "pinia";
 import { useSEStore } from "@/stores/se";
 import { useI18n } from "vue-i18n";

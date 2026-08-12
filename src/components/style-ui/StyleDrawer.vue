@@ -306,7 +306,9 @@
      will see thru the style drawer */
   background: white;
   border: solid 1px lightgray;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
 
   border-radius: 0.5em;
   height: 50vh;
@@ -344,14 +346,14 @@ import { useSEStore } from "@/stores/se";
 import { storeToRefs } from "pinia";
 import { useStylingStore } from "@/stores/styling";
 import { watch } from "vue";
-import Nodule from "@/plottables/Nodule";
-import { SEText } from "@/models/SEText";
-import { CommandGroup } from "@/commands/CommandGroup";
-import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import Nodule from "@/plottables-spherical/Nodule";
+import { SEText } from "@/models-spherical/SEText";
+import { CommandGroup } from "@/commands-spherical/CommandGroup";
+import { SetNoduleDisplayCommand } from "@/commands-spherical/SetNoduleDisplayCommand";
 import { FillStyle } from "@/types";
 import { useTemplateRef } from "vue";
-import SETTINGS from "@/global-settings";
-import { SENodule } from "@/models/SENodule";
+import SETTINGS from "@/global-settings-spherical";
+import { SENodule } from "@/models-spherical/SENodule";
 const styleDrawerRef = useTemplateRef("drawerOverlay");
 const showDrawer = ref(false);
 const { t } = useI18n({ useScope: "local" });

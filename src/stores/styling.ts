@@ -6,17 +6,17 @@ import {
   StyleOptions,
   StylePropertyValue
 } from "@/types/Styles";
-import Nodule, { DisplayStyle } from "@/plottables/Nodule";
-import Label from "@/plottables/Label";
-import { CommandGroup } from "@/commands/CommandGroup";
-import { ChangeFillStyleCommand } from "@/commands/ChangeFillStyleCommand";
-import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
-import { SENodule } from "@/models/SENodule";
-import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackstyleContrastCommand";
-import { SEText } from "@/models/SEText";
-import EventBus from "@/eventHandlers/EventBus";
+import Nodule, { DisplayStyle } from "@/plottables-spherical/Nodule";
+import Label from "@/plottables-spherical/Label";
+import { CommandGroup } from "@/commands-spherical/CommandGroup";
+import { ChangeFillStyleCommand } from "@/commands-spherical/ChangeFillStyleCommand";
+import { StyleNoduleCommand } from "@/commands-spherical/StyleNoduleCommand";
+import { SENodule } from "@/models-spherical/SENodule";
+import { ChangeBackStyleContrastCommand } from "@/commands-spherical/ChangeBackstyleContrastCommand";
+import { SEText } from "@/models-spherical/SEText";
+import EventBus from "@/eventHandlers-spherical/EventBus";
 import { FillStyle } from "@/types";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isArrayEqual(a: Array<any>, b: Array<any>) {

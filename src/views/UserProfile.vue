@@ -101,7 +101,7 @@ import { useAccountStore } from "@/stores/account";
 import { storeToRefs } from "pinia";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import PhotoMaker from "@/components/ProfilePhotoMaker.vue";
-import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings-spherical";
 import { useI18n } from "vue-i18n";
 import { UserProfile } from "@/types";
 // type FileEvent = EventTarget & { files: FileList | undefined };
