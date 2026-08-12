@@ -20,8 +20,10 @@ export default defineConfig({
     extensions: [".mjs", ".js", ".ts", ".jsx", ".tsx", ".json", ".vue"]
   },
   optimizeDeps: {
-    esbuildOptions: {
-      target: "esnext"
+    rolldownOptions: {
+      transform: {
+        target: "esnext"
+      }
     },
     exclude: ["fsevents"]
   },
