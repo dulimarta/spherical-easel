@@ -1,5 +1,5 @@
 import { ModelSubscriber, ModelPublisher } from "@/models/CKNodule";
-import { StyleCategory, StyleOptions } from "@/types/Styles";
+// import { StyleCategory, StyleOptions } from "@/types/Styles";
 import { Group, Quaternion, Scene } from "three/webgpu";
 
 export abstract class Nodule<T extends ModelPublisher = ModelPublisher>

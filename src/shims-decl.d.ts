@@ -2,7 +2,7 @@
 declare module "vue-advanced-cropper";
 declare module "newton-raphson-method";
 declare module "node-gzip";
-declare module "lodash.clonedeep";
+// declare module "lodash.clonedeep";
 declare module "gif.js";
 declare module "vuetify/util/colors";
 //declare module "save-svg-as-png";

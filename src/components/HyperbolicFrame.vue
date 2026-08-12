@@ -16,7 +16,7 @@
       </v-icon>
     </span>
     <span class="mr-1">
-      <span v-if="onSurface || true">
+      <span v-if="!Number.isNaN(rayIntersectionPosition.x)">
         World:{{ rayIntersectionPosition.toFixed(2) }} In Camera
         {{ positionInCameraCF.toFixed(2) }}
       </span>
@@ -128,7 +128,7 @@ import {
   AmbientLight,
   // ArrowHelper,
   Clock,
-  // GridHelper,
+  GridHelper,
   // Group,
   Matrix4,
   PerspectiveCamera,
@@ -138,7 +138,7 @@ import {
   // SphereGeometry,
   Vector3,
   Vector2
-} from "three";
+} from "three/webgpu";
 import * as THREE from "three/webgpu";
 import CameraControls from "camera-controls";
 import { EventDispatcher } from "camera-controls";
@@ -565,6 +565,10 @@ onBeforeMount(() => {
     "raycast-mouse-move",
     threeMouseTrackerThenMouseMove as Handler<unknown>
   );
+  const gridHelper = new GridHelper(5, 10, "black", "gray");
+  gridHelper.rotateX(Math.PI / 2);
+  scene.add(gridHelper);
+
   initialize();
 });
 
@@ -614,7 +618,7 @@ onMounted(async () => {
   // renderer.localClippingEnabled = true;
 
   // Initial update of the view of sheets, grid and ideal points
-  // updateVisibleLayers(); // Use the visibleLayers to update the display
+  updateVisibleLayers(); // Use the visibleLayers to update the display
   updateView(); // update the look at, zClipping values for ideal points' strip and hyperboloids
 
   renderer.setSize(props.availableWidth, props.availableHeight);
@@ -770,67 +774,66 @@ function initialize() {
       theta < 2 * Math.PI;
       theta += (2 * Math.PI) / numRadialLines
     ) {
-      const radialLineMeshPlus = createPolarGridRadialLine(
-        theta,
-        upperLower === 0,
-        true
-      );
-      const radialLineMeshMinus = createPolarGridRadialLine(
-        theta,
-        upperLower === 0,
-        false
-      );
-      radialLineMeshPlus.layers.set(
-        upperLower === 0
-          ? HYPERBOLIC_LAYER.upperSheetGrid
-          : HYPERBOLIC_LAYER.lowerSheetGrid
-      );
-      radialLineMeshMinus.layers.set(
-        upperLower === 0
-          ? HYPERBOLIC_LAYER.upperSheetGrid
-          : HYPERBOLIC_LAYER.lowerSheetGrid
-      );
+      // const radialLineMeshPlus = createPolarGridRadialLine(
+      //   theta,
+      //   upperLower === 0,
+      //   true
+      // );
+      // const radialLineMeshMinus = createPolarGridRadialLine(
+      //   theta,
+      //   upperLower === 0,
+      //   false
+      // );
+      // radialLineMeshPlus.layers.set(
+      //   upperLower === 0
+      //     ? HYPERBOLIC_LAYER.upperSheetGrid
+      //     : HYPERBOLIC_LAYER.lowerSheetGrid
+      // );
+      // radialLineMeshMinus.layers.set(
+      //   upperLower === 0
+      //     ? HYPERBOLIC_LAYER.upperSheetGrid
+      //     : HYPERBOLIC_LAYER.lowerSheetGrid
+      // );
       if (upperLower === 0) {
-        upperPolarGridArray.push(radialLineMeshPlus);
-        upperPolarGridArray.push(radialLineMeshMinus);
+        // upperPolarGridArray.push(radialLineMeshPlus);
+        // upperPolarGridArray.push(radialLineMeshMinus);
       } else {
-        lowerPolarGridArray.push(radialLineMeshPlus);
-        lowerPolarGridArray.push(radialLineMeshMinus);
+        // lowerPolarGridArray.push(radialLineMeshPlus);
+        // lowerPolarGridArray.push(radialLineMeshMinus);
       }
     }
 
     // create the circular polar grid lines
-    for (let r = 0.5; Math.cosh(r) < SETTINGS.maxZClip; r += 0.5) {
-      const circularGridMeshPlus = createPolarGridCircle(
-        r,
-        upperLower === 0,
-        true
-      );
-      const circularGridMeshMinus = createPolarGridCircle(
-        r,
-        upperLower === 0,
-        false
-      );
-
-      circularGridMeshPlus.layers.set(
-        upperLower === 0
-          ? HYPERBOLIC_LAYER.upperSheetGrid
-          : HYPERBOLIC_LAYER.lowerSheetGrid
-      );
-      circularGridMeshMinus.layers.set(
-        upperLower === 0
-          ? HYPERBOLIC_LAYER.upperSheetGrid
-          : HYPERBOLIC_LAYER.lowerSheetGrid
-      );
-      if (upperLower === 0) {
-        upperPolarGridArray.push(circularGridMeshPlus);
-        upperPolarGridArray.push(circularGridMeshMinus);
-      } else {
-        lowerPolarGridArray.push(circularGridMeshPlus);
-        lowerPolarGridArray.push(circularGridMeshMinus);
-      }
-    }
+    // for (let r = 0.5; Math.cosh(r) < SETTINGS.maxZClip; r += 0.5) {
+    // const circularGridMeshPlus = createPolarGridCircle(
+    //   r,
+    //   upperLower === 0,
+    //   true
+    // );
+    // const circularGridMeshMinus = createPolarGridCircle(
+    //   r,
+    //   upperLower === 0,
+    //   false
+    // );
+    // circularGridMeshPlus.layers.set(
+    //   upperLower === 0
+    //     ? HYPERBOLIC_LAYER.upperSheetGrid
+    //     : HYPERBOLIC_LAYER.lowerSheetGrid
+    // );
+    // circularGridMeshMinus.layers.set(
+    //   upperLower === 0
+    //     ? HYPERBOLIC_LAYER.upperSheetGrid
+    //     : HYPERBOLIC_LAYER.lowerSheetGrid
+    // );
+    // if (upperLower === 0) {
+    //   upperPolarGridArray.push(circularGridMeshPlus);
+    //   upperPolarGridArray.push(circularGridMeshMinus);
+    // } else {
+    //   lowerPolarGridArray.push(circularGridMeshPlus);
+    //   lowerPolarGridArray.push(circularGridMeshMinus);
+    // }
   }
+  // }
 
   // push (polar grid)|(ideal points)|(lower sheet) to visible layers, because it is visible at initialization otherwise the vue button handles the visibleLayers array
   if (showPolarGrid.value) {
@@ -907,7 +910,6 @@ function updateView() {
       ) *
       cameraController.distance *
       Math.sqrt(1 / 2);
-    zLowerClip.value = -zUpperClip.value;
   } else {
     // When only the upper sheet is shown, we set the zClippingPlane so that
     // the when the largest visual amount of the upper sheet is shown, it is
@@ -923,7 +925,7 @@ function updateView() {
         Math.sqrt(-1 + tanFov2 * tanFov2 * (2 + 2 * d + d * d))) /
       (tanFov2 * tanFov2 - 1);
 
-    zLowerClip.value = 0;
+    // zLowerClip.value = 0;
 
     //When the lower sheet is not shown, we want to look at a point
     // that is depends on the polar angle of the camera
@@ -939,6 +941,7 @@ function updateView() {
         (zUpperClip.value - 1) +
       1;
   }
+  zLowerClip.value = -zUpperClip.value;
 
   const currentCameraPosition = new Vector3();
   cameraController.getPosition(currentCameraPosition);

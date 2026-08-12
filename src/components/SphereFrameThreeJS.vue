@@ -31,12 +31,14 @@ import {
   watch
 } from "vue";
 import {
+  ArcCurve,
   Clock,
   DirectionalLight,
   GridHelper,
   HemisphereLight,
+  Line2NodeMaterial,
   Mesh,
-  MeshStandardMaterial,
+  MeshStandardNodeMaterial,
   PerspectiveCamera,
   Raycaster,
   Scene,
@@ -45,7 +47,8 @@ import {
   Vector3,
   WebGPURenderer
 } from "three/webgpu";
-import * as THREE from "three/webgpu";
+// import { Timer } from "three/addons/Timer";
+import * as THREE from "three";
 import CameraControls from "camera-controls";
 import { useEventListener, useIdle, useMouseInElement } from "@vueuse/core";
 import { useSEStore } from "@/stores/se";
@@ -54,8 +57,9 @@ import { useGeometryStore } from "@/stores/geometry";
 import { SphericalTool } from "@/eventHandlers-spherical/ToolStrategy";
 import { PointHandler } from "@/eventHandlers-spherical/NewPointHandler";
 import { CKNodule } from "@/models/CKNodule";
-import { abs, asin, color, Fn, positionLocal, vec3, atan } from "three/tsl";
+import { abs, asin, Fn, positionLocal, vec3, atan } from "three/tsl";
 import { LineHandler } from "@/eventHandlers-spherical/NewLineHandler";
+import Stats from "stats.js";
 const geoStore = useGeometryStore();
 const webGPUCanvas = useTemplateRef<HTMLCanvasElement>("webGPUCanvas");
 type ComponentProps = {
@@ -67,19 +71,21 @@ const props = withDefaults(defineProps<ComponentProps>(), {
   availableWidth: 240
 });
 const scene: Scene = new Scene();
-// let camera: PerspectiveCamera = new PerspectiveCamera(
-//   50,
-//   props.availableWidth / props.availableHeight,
-//   0.1,
-//   1000
-// );
-const aspect = props.availableWidth / props.availableHeight;
-let camera = new THREE.OrthographicCamera(
-  -1.25 * aspect,
-  1.25 * aspect,
-  1.25,
-  -1.25
+let camera: PerspectiveCamera = new PerspectiveCamera(
+  50,
+  props.availableWidth / props.availableHeight,
+  1,
+  100
 );
+const aspect = props.availableWidth / props.availableHeight;
+// let camera = new THREE.OrthographicCamera(
+//   -1.25 * aspect /* left */,
+//   1.25 * aspect /* right */,
+//   1.25 /* top */,
+//   -1.25 /* bottom */,
+//   1 /* near */,
+//   100 /* far */
+// );
 let renderer: WebGPURenderer;
 let cameraController: CameraControls;
 const clock = new Clock();
@@ -141,15 +147,18 @@ onBeforeMount(() => {
   //     arrowHeadDiameter
   //   )
   // );
-  scene.add(new HemisphereLight(0x404040, 0xa0a0a0));
+  // const hemiLight = new HemisphereLight(0x404040, 0xa0a0a0);
+  // hemiLight.position.set(0, 1.5, 0);
+  // scene.add(hemiLight);
   const directionalLight = new DirectionalLight(0xffffff, 1);
   directionalLight.position.set(0, 1, 2);
   scene.add(directionalLight);
-  const unitSphereMaterial = new THREE.MeshStandardNodeMaterial({
+  const unitSphereMaterial = new MeshStandardNodeMaterial({
     roughness: 0.04,
     metalness: 0.2,
+    color: 0xffffff,
     transparent: true,
-    opacity: 0.8,
+    opacity: 0.6,
     side: THREE.DoubleSide // to enable selecting points on the back side of the sphere
   });
   unitSphere = new Mesh(
@@ -178,7 +187,7 @@ onBeforeMount(() => {
   //   .mul(10)
   //   .fract()
   //   .step(0.95);
-  unitSphereMaterial.colorNode = latitudeLine();
+  // unitSphereMaterial.colorNode = latitudeLine();
   unitSphere.name = "unitSphere";
   scene.add(unitSphere);
 });
@@ -199,15 +208,18 @@ onMounted(async () => {
   camera.lookAt(0, 0, 0);
   camera.updateProjectionMatrix();
 
-  renderer = new WebGPURenderer({ canvas: webGPUCanvas.value! });
+  renderer = new WebGPURenderer({
+    canvas: webGPUCanvas.value!,
+    antialias: true
+  });
   renderer.setSize(props.availableWidth, props.availableHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0x336600, 0.4);
   await renderer.init();
 
-  // const db = await renderer.debug.getShaderAsync(scene, camera, unitSphere);
-  // console.debug("VS for unitSphere", db.vertexShader);
-  // console.debug("FS for unitSphere", db.fragmentShader);
+  // const db = await renderer.debug.getShaderAsync(scene, camera, l2);
+  // console.debug("VS for L2", db.vertexShader);
+  // console.debug("FS for L2", db.fragmentShader);
 
   cameraController = new CameraControls(camera, renderer.domElement);
   // useEventListener(cameraController, "control", () => {
@@ -236,10 +248,10 @@ onUpdated(() => {
     lastViewportHeight !== props.availableHeight
   ) {
     console.debug("OnUpdated::SphericFrame.vue reset camera and renderer");
-    const aspect = props.availableWidth / props.availableHeight;
-    // camera.aspect = props.availableWidth / props.availableHeight;
-    camera.left = -1.25 * aspect;
-    camera.right = 1.25 * aspect;
+    // const aspect = props.availableWidth / props.availableHeight;
+    camera.aspect = props.availableWidth / props.availableHeight;
+    // camera.left = -1.25 * aspect;
+    // camera.right = 1.25 * aspect;
     camera.updateProjectionMatrix();
     renderer.setSize(props.availableWidth, props.availableHeight);
     lastViewportWidth = props.availableWidth;
@@ -307,8 +319,16 @@ function computeMouse3DCoordinates(ev: MouseEvent) {
   mouse3DPosition.value.set(NaN, NaN, NaN);
   hitObjects.splice(0);
   const hitByRay = rayCaster
-    .intersectObjects(scene.children, false)
-    .filter(intersection => intersection.object.name.length > 0);
+    .intersectObjects(scene.children, true)
+    .filter(intersection => {
+      // console.debug(
+      //   "Intersection with",
+      //   intersection.object.name,
+      //   intersection.distance.toFixed(2),
+      //   intersection.point.toFixed(3)
+      // );
+      return intersection.object.name.length > 0;
+    });
   // .forEach(intersection => {
   //   // console.debug(
   //   //   "Intersection with",
@@ -318,7 +338,10 @@ function computeMouse3DCoordinates(ev: MouseEvent) {
   //   // );
   // });
   if (hitByRay.length > 0) {
-    // console.debug("Ray hit", hitByRay);
+    // console.debug(
+    //   "Ray hit",
+    //   hitByRay.map(x => x.object.name)
+    // );
     // If shift key is pressed, use the last hit point (farthest), otherwise use the first hit point (nearest)
     if (ev.shiftKey) {
       mouse3DPosition.value.copy(hitByRay[hitByRay.length - 1].point);
