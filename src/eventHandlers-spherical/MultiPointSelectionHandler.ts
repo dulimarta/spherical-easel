@@ -53,7 +53,7 @@ export class MultiPointSelectionHandler extends MouseHandler {
     }
     if (hitObjects.length === 0) {
       // console.debug("Mouse pressed on sphere but no hit objects");
-      this.currentSelectedPoints.push(position);
+      this.currentSelectedPoints.push(position.clone());
       return;
     }
     const hitPoints = hitObjects.filter(z => z instanceof CKPoint);
@@ -61,6 +61,10 @@ export class MultiPointSelectionHandler extends MouseHandler {
       // console.debug("Mouse pressed on sphere but no hit points");
       return;
     }
+    console.debug(
+      "Hit points:",
+      hitPoints.map(p => p.name)
+    );
     if (this.currentSelectedPoints.length >= this.maxPoints) {
       // console.debug(
       // `Already selected ${this.maxPoints} points, cannot select more`
@@ -68,9 +72,9 @@ export class MultiPointSelectionHandler extends MouseHandler {
       return;
     }
     if (this.selectedNameSet.has(hitPoints[0].name)) {
-      // console.debug(
-      //   `Point ${hitPoints[0].name} already selected, cannot select again`
-      // );
+      console.debug(
+        `Point ${hitPoints[0].name} already selected, cannot select again`
+      );
       return;
     }
     this.selectedNameSet.add(hitPoints[0].name);

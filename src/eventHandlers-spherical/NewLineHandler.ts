@@ -140,11 +140,21 @@ export class LineHandler extends MultiPointSelectionHandler {
         this.previewPoints[0].visible = true;
         break;
       case 2:
-        const startPoint = new CKPoint(this.previewPoints[0].position);
-        const endPoint = new CKPoint(this.previewPoints[1].position);
+        let startPoint: CKPoint;
+        let endPoint: CKPoint;
         const cmdGroup = new CommandGroup();
-        cmdGroup.addCommand(new AddPointByObjectKommand(startPoint));
-        cmdGroup.addCommand(new AddPointByObjectKommand(endPoint));
+        if (this.currentSelectedPoints[0] instanceof Vector3) {
+          startPoint = new CKPoint(this.currentSelectedPoints[0]);
+          cmdGroup.addCommand(new AddPointByObjectKommand(startPoint));
+        } else {
+          startPoint = this.currentSelectedPoints[0];
+        }
+        if (this.currentSelectedPoints[1] instanceof Vector3) {
+          endPoint = new CKPoint(this.currentSelectedPoints[1]);
+          cmdGroup.addCommand(new AddPointByObjectKommand(endPoint));
+        } else {
+          endPoint = this.currentSelectedPoints[1];
+        }
         let aLineOrSegment: CKLine | CKSegment;
         if (this.infiniteLine) {
           aLineOrSegment = new CKLine(
