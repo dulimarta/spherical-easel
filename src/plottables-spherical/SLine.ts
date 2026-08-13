@@ -3,7 +3,7 @@ import { Nodule } from "@/plottables/Nodule";
 import { Line2NodeMaterial, ArcCurve } from "three/webgpu";
 import { Line2 } from "three/addons/lines/webgpu/Line2.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
-import { color } from "three/tsl";
+import { color, normalLocal, uniform } from "three/tsl";
 
 export class SLine extends Nodule<CKLine> {
   private _lineMesh: Line2;
@@ -23,11 +23,10 @@ export class SLine extends Nodule<CKLine> {
         .flatMap(p => [p.x, p.y, 0])
     );
     this._lineMaterial = new Line2NodeMaterial({
-      color: 0xffff00,
       linewidth: 4,
       worldUnits: false
     });
-
+    // this._lineMaterial.colorNode = normalLocal;
     this._lineMesh = new Line2(l2geometry, this._lineMaterial);
     this._lineMesh.name = this.name;
     this.viewGroup.add(this._lineMesh);
@@ -39,14 +38,21 @@ export class SLine extends Nodule<CKLine> {
     // throw new Error("Method not implemented.");
   }
   glowingDisplay(): void {
-    console.debug("SLine::glowingDisplay");
-    this._lineMaterial.colorNode = color(0xff0000);
-    this._lineMaterial.needsUpdate = true;
+    this._lineMesh.material.dispose();
+    this._lineMesh.material = new Line2NodeMaterial({
+      color: 0xff0000,
+      linewidth: 4,
+      worldUnits: false
+    });
   }
+
   normalDisplay(): void {
-    console.debug("SLine::normalDisplay");
-    this._lineMaterial.colorNode = color(0xffff00);
-    this._lineMaterial.needsUpdate = true;
+    this._lineMesh.material.dispose();
+    this._lineMesh.material = new Line2NodeMaterial({
+      color: 0xffff00,
+      linewidth: 4,
+      worldUnits: false
+    });
   }
   modelUpdated(): void {
     const line = this.modelRef.theLine.vector(1);

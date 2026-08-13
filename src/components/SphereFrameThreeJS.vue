@@ -54,7 +54,19 @@ import { useGeometryStore } from "@/stores/geometry";
 import { SphericalTool } from "@/eventHandlers-spherical/ToolStrategy";
 import { PointHandler } from "@/eventHandlers-spherical/NewPointHandler";
 import { CKNodule } from "@/models/CKNodule";
-// import { abs, asin, Fn, positionLocal, vec3, atan } from "three/tsl";
+import {
+  abs,
+  asin,
+  Fn,
+  positionLocal,
+  vec3,
+  atan,
+  mix,
+  normalView,
+  oneMinus,
+  pow,
+  select
+} from "three/tsl";
 import { LineHandler } from "@/eventHandlers-spherical/NewLineHandler";
 const geoStore = useGeometryStore();
 const webGPUCanvas = useTemplateRef<HTMLCanvasElement>("webGPUCanvas");
@@ -157,6 +169,13 @@ onBeforeMount(() => {
     opacity: 0.6,
     side: THREE.DoubleSide // to enable selecting points on the back side of the sphere
   });
+  const silhouette = Fn(() => {
+    const coreColor = vec3(1.0, 1.0, 1.0);
+    const rimColor = vec3(0.0, 1.0, 0.0);
+    const fresnel = pow(oneMinus(abs(normalView.z)), 2);
+    return mix(coreColor, rimColor, fresnel);
+  });
+  // unitSphereMaterial.colorNode = silhouette();
   unitSphere = new Mesh(
     // make the sphere radius smaller than unit to avoid z-fighting with other objects
     new SphereGeometry(0.995, 90, 90),
@@ -330,7 +349,7 @@ function computeMouse3DCoordinates(ev: MouseEvent) {
   if (hitByRay.length > 0) {
     console.debug(
       "Ray hit",
-      hitByRay.map(x => `${x.object.name} @, ${x.distance.toFixed(2)}`)
+      hitByRay.map(x => `${x.object.name}@${x.distance.toFixed(2)}`)
     );
     // If shift key is pressed, use the last hit point (farthest), otherwise use the first hit point (nearest)
     if (ev.shiftKey) {
