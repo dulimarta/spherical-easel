@@ -31,12 +31,9 @@ import {
   watch
 } from "vue";
 import {
-  ArcCurve,
   Clock,
   DirectionalLight,
   GridHelper,
-  HemisphereLight,
-  Line2NodeMaterial,
   Mesh,
   MeshStandardNodeMaterial,
   PerspectiveCamera,
@@ -57,9 +54,8 @@ import { useGeometryStore } from "@/stores/geometry";
 import { SphericalTool } from "@/eventHandlers-spherical/ToolStrategy";
 import { PointHandler } from "@/eventHandlers-spherical/NewPointHandler";
 import { CKNodule } from "@/models/CKNodule";
-import { abs, asin, Fn, positionLocal, vec3, atan } from "three/tsl";
+// import { abs, asin, Fn, positionLocal, vec3, atan } from "three/tsl";
 import { LineHandler } from "@/eventHandlers-spherical/NewLineHandler";
-import Stats from "stats.js";
 const geoStore = useGeometryStore();
 const webGPUCanvas = useTemplateRef<HTMLCanvasElement>("webGPUCanvas");
 type ComponentProps = {
@@ -74,10 +70,10 @@ const scene: Scene = new Scene();
 let camera: PerspectiveCamera = new PerspectiveCamera(
   50,
   props.availableWidth / props.availableHeight,
-  1,
+  0.2,
   100
 );
-const aspect = props.availableWidth / props.availableHeight;
+// const aspect = props.availableWidth / props.availableHeight;
 // let camera = new THREE.OrthographicCamera(
 //   -1.25 * aspect /* left */,
 //   1.25 * aspect /* right */,
@@ -162,27 +158,21 @@ onBeforeMount(() => {
     side: THREE.DoubleSide // to enable selecting points on the back side of the sphere
   });
   unitSphere = new Mesh(
-    new SphereGeometry(1, 120, 120),
+    // make the sphere radius smaller than unit to avoid z-fighting with other objects
+    new SphereGeometry(0.995, 90, 90),
     unitSphereMaterial
-    // new THREE.NodeMaterial({
-    //   color: 0x66ff00,
-    //   roughness: 0.04,
-    //   metalness: 0.2,
-    //   transparent: true,
-    //   opacity: 0.8
-    // })
   );
-  const latitudeLine = Fn(() => {
-    const angle1 = abs(asin(positionLocal.z).mul(15).div(Math.PI))
-      .fract()
-      .step(0.97);
-    const angle2 = atan(positionLocal.y, positionLocal.x)
-      .mul(3)
-      .fract()
-      .step(0.97);
-    const angle = angle1.add(angle2);
-    return vec3(angle, angle, 0);
-  });
+  // const latitudeLine = Fn(() => {
+  //   const angle1 = abs(asin(positionLocal.z).mul(15).div(Math.PI))
+  //     .fract()
+  //     .step(0.97);
+  //   const angle2 = atan(positionLocal.y, positionLocal.x)
+  //     .mul(3)
+  //     .fract()
+  //     .step(0.97);
+  //   const angle = angle1.add(angle2);
+  //   return vec3(angle, angle, 0);
+  // });
   // unitSphereMaterial.fragmentNode = vec3(positionLocal.z)
   //   .mul(10)
   //   .fract()
@@ -338,10 +328,10 @@ function computeMouse3DCoordinates(ev: MouseEvent) {
   //   // );
   // });
   if (hitByRay.length > 0) {
-    // console.debug(
-    //   "Ray hit",
-    //   hitByRay.map(x => x.object.name)
-    // );
+    console.debug(
+      "Ray hit",
+      hitByRay.map(x => `${x.object.name} @, ${x.distance.toFixed(2)}`)
+    );
     // If shift key is pressed, use the last hit point (farthest), otherwise use the first hit point (nearest)
     if (ev.shiftKey) {
       mouse3DPosition.value.copy(hitByRay[hitByRay.length - 1].point);

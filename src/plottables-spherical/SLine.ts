@@ -9,7 +9,7 @@ export class SLine extends Nodule<CKLine> {
   private _lineMesh: Line2;
   private _lineMaterial: Line2NodeMaterial;
 
-  constructor(name: string, modelRef: CKLine, infiniteLine: boolean) {
+  constructor(name: string, modelRef: CKLine) {
     super(name, modelRef);
 
     const circleCurve = new ArcCurve(0, 0, 1, 0, 2 * Math.PI, true);
@@ -17,9 +17,9 @@ export class SLine extends Nodule<CKLine> {
     l2geometry.setPositions(
       circleCurve
         .getPoints(120)
-        // Make the circle slightly larger than unit radius to avoid z-fighting
-        // with the unit sphere
-        .map(p => p.multiplyScalar(1.01))
+        // After making the unit sphere with radius slightly smaller than 1
+        // it is unnecessary to scale the circle geometry
+        // .map(p => p.multiplyScalar(1.01))
         .flatMap(p => [p.x, p.y, 0])
     );
     this._lineMaterial = new Line2NodeMaterial({
@@ -39,10 +39,12 @@ export class SLine extends Nodule<CKLine> {
     // throw new Error("Method not implemented.");
   }
   glowingDisplay(): void {
+    console.debug("SLine::glowingDisplay");
     this._lineMaterial.colorNode = color(0xff0000);
     this._lineMaterial.needsUpdate = true;
   }
   normalDisplay(): void {
+    console.debug("SLine::normalDisplay");
     this._lineMaterial.colorNode = color(0xffff00);
     this._lineMaterial.needsUpdate = true;
   }
