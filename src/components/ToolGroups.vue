@@ -24,6 +24,7 @@
     @update:model-value="toolSelectionChanged">
     <v-expansion-panels class="pr-2" v-model="expandedPanel">
       <v-expansion-panel
+        :id="grp.group"
         v-for="grp in buttonGroup"
         :key="grp.group"
         elevation="4"

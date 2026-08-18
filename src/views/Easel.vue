@@ -11,6 +11,7 @@
     <!-- Shortcut icons are placed using absolute positioning. CSS requires
             their parents to have its position set . Use either relative, absolute -->
     <div id="sphere-and-msghub">
+      <UITour v-if="showUITour" />
       <!-- DO NOT replace v-show below with v-if. Using v-if, SphereFrame instance
        will not be created and there is no TwoJS layer present to render contents -->
       <div id="earthAndCircle" v-show="svgDataImage.length === 0">
@@ -176,8 +177,9 @@ import StyleDrawer from "@/components/style-ui/StyleDrawer.vue";
 import { TOOL_DICTIONARY } from "@/components/tooldictionary";
 import Text from "@/plottables-spherical/Text";
 import { Handler } from "mitt";
-import { useUserPreferencesStore } from "@/stores/userPreferences";
-import { PreferenceRef } from "@/utils/preferenceRef";
+import UITour from "@/components/UITour.vue";
+// import { useUserPreferencesStore } from "@/stores/userPreferences";
+// import { PreferenceRef } from "@/utils/preferenceRef";
 
 const DELETE_DELAY = 5000; // in milliseconds
 /**
@@ -218,7 +220,7 @@ const previewClass = ref("");
 const constructionInfo = ref<SphericalConstruction | null>(null);
 const localIsEarthMode = ref(false);
 const loadingFromPath = ref(false);
-
+const showUITour = ref(false);
 let confirmedLeaving = false;
 let attemptedToRoute: RouteLocationNormalized | null = null;
 
@@ -309,6 +311,7 @@ onMounted((): void => {
   EventBus.listen("set-action-mode-to-select-tool", setActionModeToSelectTool);
   EventBus.listen("initiate-clear-construction", handleResetSphere);
   window.addEventListener("keydown", handleKeyDown);
+  showUITour.value = route.path === "/tutorial";
 });
 
 onBeforeUnmount((): void => {
@@ -505,7 +508,9 @@ onBeforeRouteLeave(
   border-radius: 8px;
   border: solid white;
   background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.24);
 }
 
 #toolbox-and-sphere {

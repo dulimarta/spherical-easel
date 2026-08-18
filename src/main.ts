@@ -12,7 +12,6 @@ import { firebaseConfig } from "./firebase-config";
 import { Command } from "@/commands-spherical/Command";
 import { useSEStore } from "@/stores/se";
 import MouseHandler from "./eventHandlers-spherical/MouseHandler";
-import Nodule from "./plottables-spherical/Nodule";
 import { useHyperbolicStore } from "./stores/hyperbolic";
 import { createGtag } from "vue-gtag";
 import { SENodule } from "@/models-spherical/SENodule";
@@ -20,7 +19,7 @@ import { PoseTracker } from "./eventHandlers-hyperbolic/PoseTracker";
 import { HENodule } from "./models-hyperbolic/HENodule";
 import { Text } from "three-text/three";
 import { woff2Decode } from "woff-lib/woff2/decode";
-
+import { h, render, getCurrentInstance } from "vue";
 Text.setHarfBuzzPath("/hb/hb.wasm");
 Text.enableWoff2(woff2Decode);
 
