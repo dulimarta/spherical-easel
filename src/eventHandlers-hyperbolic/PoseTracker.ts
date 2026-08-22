@@ -44,10 +44,10 @@ export class PoseTracker implements HyperbolicTool {
   /**
    * Arrays of nodules near the mouse event location
    */
-  protected hitHENodules: CKNodule[] = [];
+  protected hitNodulesCache: CKNodule[] = [];
   protected hitCKPoints: CKPoint[] = [];
   // protected hitHELabels: HELabel[] = [];
-  protected hitCKLines: CKLine[] = [];
+  // protected hitCKLines: CKLine[] = [];
   // protected hitHESegments: HESegment[] = [];
   // protected hitHECircles: HECircle[] = [];
   // protected hitHEEllipses: HEEllipse[] = [];
@@ -95,15 +95,14 @@ export class PoseTracker implements HyperbolicTool {
     position: Vector3,
     hitObjects: Array<CKNodule | string>
   ): void {
-    // console.debug("PoseTracker::mouseMoved", position);
+    // If any of the components is NaN, then the cursor on not be on the surface, so we don't need to do anything
+    if (isNaN(position.x) || isNaN(position.y) || isNaN(position.z)) return;
+    console.debug("PoseTracker::mouseMoved", position.toFixed(2), hitObjects);
     // this.prepareForNextEvent();
     // Set the display to normal for all previously nearby non-selected objects
-    hitObjects
-      .filter(obj => obj instanceof CKNodule)
-      .forEach((n: CKNodule) => {
-        n.setHighlight(false);
-        // if (!n.selected) n.glowing = false;
-      });
+    this.hitNodulesCache.forEach((n: CKNodule) => {
+      n.setHighlight(false);
+    });
     const surfPos = hitObjects.findIndex(z => typeof z === "string");
     if (surfPos >= 0) {
       this.aSurfaceIsIntersected = true;
@@ -127,14 +126,16 @@ export class PoseTracker implements HyperbolicTool {
     }
 
     this.somethingIsHit = true;
-    this.hitHENodules = hitObjects
-      // .map(intersect => {
-      //   // console.debug(
-      //   //   `Checking intersection with object ${intersect.object.name}`
-      //   // );
-      //   return this.geoStore.getObjectById(intersect.object.name); // returns null for surfaces
-      // })
-      .filter(obj => typeof obj !== "string");
+    this.hitNodulesCache.splice(0);
+    this.hitNodulesCache.push(
+      ...hitObjects.filter(obj => obj instanceof CKNodule)
+    );
+
+    this.hitNodulesCache.some((n: CKNodule) => {
+      // Use 'some' to highlight just the FIRST object that is hit, and then return true to stop the iteration
+      n.setHighlight(true);
+      return true;
+    });
     // .filter((n: CKNodule) => {
     //   console.debug(`Checking if ${n.name} is hit`);
     //   if (n instanceof HEIntersectionPoint || n instanceof HEAntipodalPoint) {
@@ -153,9 +154,7 @@ export class PoseTracker implements HyperbolicTool {
     //   this.hitHENodules.map(p => p.name)
     // );
 
-    this.hitCKPoints = this.hitHENodules
-      .filter(obj => obj.name.startsWith("P"))
-      .map(obj => obj as CKPoint);
+    this.hitCKPoints = hitObjects.filter(obj => obj instanceof CKPoint);
 
     // console.debug(
     //   "Hit points:",

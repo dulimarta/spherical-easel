@@ -9,7 +9,7 @@ import { Curve, Vector3 } from "three";
  * http://dx.doi.org/10.4236/am.2013.412A005
  */
 
-const MAX_Z_HYPERBOLOID = 2.85;
+const MAX_Z_HYPERBOLOID = 2.07;
 const Z_AXIS = new Vector3(0, 0, 1);
 export class HyperbolicCurve extends Curve<Vector3> {
   // Compute the points of a hyperbola on a plane

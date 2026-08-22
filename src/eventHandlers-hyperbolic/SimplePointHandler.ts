@@ -1,13 +1,13 @@
 import { Scene, Vector3 } from "three";
-import { PointSelectionHandler } from "./PointSelectionHandler";
+// import { PointSelectionHandler } from "./PointSelectionHandler";
 import { AddPointByCoordinatesKommand } from "@/commands/AddPointKommand";
-import { PoseTracker } from "./PoseTracker";
+// import { PoseTracker } from "./PoseTracker";
 import { CKNodule } from "@/models/CKNodule";
+import { MultiPointSelectionHandler } from "./MultiPointSelectionHandler";
 
-export class SimplePointHandler extends PoseTracker {
+export class SimplePointHandler extends MultiPointSelectionHandler {
   constructor(scene: Scene) {
-    super(scene);
-    this.scene = scene;
+    super(scene, 1);
   }
 
   mouseReleased(

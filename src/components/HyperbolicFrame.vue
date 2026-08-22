@@ -495,8 +495,8 @@ watch(idle, idleValue => {
   // console.debug("Idle state", idleValue);
   // console.debug("Camera control", hasUpdatedCameraControls.value);
   if (idleValue || hasUpdatedCameraControls.value) {
-    hyperStore.adjustTextPose();
-    hyperStore.updateDisplayForCameraUpdate();
+    // hyperStore.adjustTextPose();
+    // hyperStore.updateDisplayForCameraUpdate();
     geoStore.adjustLabelPose(cameraQuaternion.value);
     hasUpdatedCameraControls.value = false;
   }
@@ -566,6 +566,7 @@ onBeforeMount(() => {
     threeMouseTrackerThenMouseMove as Handler<unknown>
   );
   const gridHelper = new GridHelper(5, 10, "black", "gray");
+  gridHelper.name = "gridHelper";
   gridHelper.rotateX(Math.PI / 2);
   scene.add(gridHelper);
 
@@ -585,7 +586,7 @@ onMounted(async () => {
   camera.lookAt(0, 0, 2);
   camera.updateProjectionMatrix();
 
-  hyperStore.setScene(scene, camera);
+  // hyperStore.setScene(scene, camera);
   geoStore.setScene(scene);
   cameraQuaternion.value.copy(camera.quaternion);
 
@@ -1052,6 +1053,9 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   // );
   const hitByRay = rayCaster.intersectObjects(scene.children, true);
   intersectionList.value = hitByRay;
+  hitByRay.forEach(ix => {
+    console.debug("Intersect", ix.object.name);
+  });
   // .filter(iSect => iSect.object.name.length === 0);
   // const regex = /Sheet|Ideal|Ultra/; // Sorting for surfaces and object intersections
   // Set the closest intersection flags
@@ -1081,7 +1085,7 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
       .applyMatrix4(camera.matrixWorld);
     const hitNames = hitByRay.map(x => x.object.name);
     hitList = hitNames.map(objName => {
-      const obj = hyperStore.getObjectById(objName);
+      const obj = geoStore.getObjectById(objName);
       return obj ? obj : objName;
     });
   } else {
