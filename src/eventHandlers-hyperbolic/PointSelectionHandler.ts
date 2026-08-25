@@ -18,6 +18,7 @@ import { HEPointOnOneOrTwoDimensional } from "@/models-hyperbolic/HEPointOnOneOr
 import { HELabel } from "@/models-hyperbolic/HELabel";
 import { AddPointCommand } from "@/commands-hyperbolic/AddPointCommand";
 import { CKNodule } from "@/models/CKNodule";
+import { SurfaceIntersection } from "./ToolStrategy";
 
 type selectedPointInformation = {
   oneOrTwoDimParent: HEOneOrTwoDimensional | null;
@@ -77,7 +78,7 @@ export class PointSelectionHandler extends PoseTracker {
   mousePressed(
     event: MouseEvent,
     position: Vector3,
-    hitObjects: Array<CKNodule | string>
+    hitObjects: Array<CKNodule | SurfaceIntersection>
   ): void {
     if (
       this.aSurfaceIsIntersected &&
@@ -93,7 +94,7 @@ export class PointSelectionHandler extends PoseTracker {
   mouseMoved(
     event: MouseEvent,
     position: Vector3,
-    hitObjects: Array<CKNodule | string>
+    hitObjects: Array<CKNodule | SurfaceIntersection>
   ): void {
     // Find all the nearby objects and update location vectors
     super.mouseMoved(event, position, hitObjects);

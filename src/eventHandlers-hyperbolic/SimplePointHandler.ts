@@ -4,6 +4,7 @@ import { AddPointByCoordinatesKommand } from "@/commands/AddPointKommand";
 // import { PoseTracker } from "./PoseTracker";
 import { CKNodule } from "@/models/CKNodule";
 import { MultiPointSelectionHandler } from "./MultiPointSelectionHandler";
+import { SurfaceIntersection } from "./ToolStrategy";
 
 export class SimplePointHandler extends MultiPointSelectionHandler {
   constructor(scene: Scene) {
@@ -13,15 +14,13 @@ export class SimplePointHandler extends MultiPointSelectionHandler {
   mouseReleased(
     event: MouseEvent,
     position: Vector3,
-    hitObjects: Array<CKNodule | string>
+    hitObjects: Array<CKNodule | SurfaceIntersection>
   ): void {
     super.mouseReleased(event, position, hitObjects);
+    if (isNaN(position.x)) return;
     console.debug("SPH::mouseReleased", position);
-    if (this.aSurfaceIsIntersected) {
-      // const location = this._selectedPoints[0].locationVector;
-      const pointCommand = new AddPointByCoordinatesKommand(position);
-      pointCommand.execute();
-      // this.prepareForNextPointSelections(event);
-    }
+    // const location = this._selectedPoints[0].locationVector;
+    const pointCommand = new AddPointByCoordinatesKommand(position);
+    pointCommand.execute();
   }
 }

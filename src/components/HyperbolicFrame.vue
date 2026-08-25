@@ -126,16 +126,12 @@ ul > ul {
 // ThreeJS imports and Camera Controls
 import {
   AmbientLight,
-  // ArrowHelper,
   Clock,
   GridHelper,
-  // Group,
   Matrix4,
   PerspectiveCamera,
-  // PointLight,
   Raycaster,
   Scene,
-  // SphereGeometry,
   Vector3,
   Vector2
 } from "three/webgpu";
@@ -170,7 +166,10 @@ import { useGeometryStore } from "@/stores/geometry";
 import { storeToRefs } from "pinia";
 
 // Tool Handlers
-import { HyperbolicTool } from "@/eventHandlers-hyperbolic/ToolStrategy";
+import {
+  HyperbolicTool,
+  type SurfaceIntersection
+} from "@/eventHandlers-hyperbolic/ToolStrategy";
 import { SimplePointHandler } from "@/eventHandlers-hyperbolic/SimplePointHandler";
 import { SimpleLineHandler } from "@/eventHandlers-hyperbolic/SimpleLineHandler";
 import { CircleHandler } from "@/eventHandlers-hyperbolic/CircleHandler";
@@ -207,7 +206,7 @@ const geoStore = useGeometryStore();
 const { idle } = useIdle(250); // in milliseconds
 const {
   surfaceIntersections,
-  closestIntersectionIsSurface,
+  // closestIntersectionIsSurface,
   cameraQuaternion,
   cameraDollyDistance,
   cameraFieldOfView,
@@ -225,7 +224,7 @@ const showLowerSheet = ref(false);
 const showIdealStrip = ref(false);
 const showUltraStrip = ref(false);
 const showPolarGrid = ref(true);
-let hitList: Array<CKNodule | string> = [];
+let hitList: Array<CKNodule | SurfaceIntersection> = [];
 type ImportantSurface = "Upper" | "Lower" | null;
 const intersectionList: Ref<
   THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>>[]
@@ -566,10 +565,11 @@ onBeforeMount(() => {
     threeMouseTrackerThenMouseMove as Handler<unknown>
   );
   const gridHelper = new GridHelper(5, 10, "black", "gray");
-  gridHelper.name = "gridHelper";
-  gridHelper.rotateX(Math.PI / 2);
+  // gridHelper.name = "gridHelper";
+  gridHelper.rotation.x = Math.PI / 2;
   scene.add(gridHelper);
 
+  console.debug("OnBeforeMount adding GridHelper");
   initialize();
 });
 
@@ -768,72 +768,72 @@ function initialize() {
   lowerUltraStrip.layers.set(HYPERBOLIC_LAYER.lowerUltraPoints);
 
   // create the radial polar grid lines
-  for (let upperLower = 0; upperLower < 2; upperLower++) {
-    const numRadialLines = 12;
-    for (
-      let theta = 0;
-      theta < 2 * Math.PI;
-      theta += (2 * Math.PI) / numRadialLines
-    ) {
-      // const radialLineMeshPlus = createPolarGridRadialLine(
-      //   theta,
-      //   upperLower === 0,
-      //   true
-      // );
-      // const radialLineMeshMinus = createPolarGridRadialLine(
-      //   theta,
-      //   upperLower === 0,
-      //   false
-      // );
-      // radialLineMeshPlus.layers.set(
-      //   upperLower === 0
-      //     ? HYPERBOLIC_LAYER.upperSheetGrid
-      //     : HYPERBOLIC_LAYER.lowerSheetGrid
-      // );
-      // radialLineMeshMinus.layers.set(
-      //   upperLower === 0
-      //     ? HYPERBOLIC_LAYER.upperSheetGrid
-      //     : HYPERBOLIC_LAYER.lowerSheetGrid
-      // );
-      if (upperLower === 0) {
-        // upperPolarGridArray.push(radialLineMeshPlus);
-        // upperPolarGridArray.push(radialLineMeshMinus);
-      } else {
-        // lowerPolarGridArray.push(radialLineMeshPlus);
-        // lowerPolarGridArray.push(radialLineMeshMinus);
-      }
-    }
+  // for (let upperLower = 0; upperLower < 2; upperLower++) {
+  //   const numRadialLines = 12;
+  // for (
+  //   let theta = 0;
+  //   theta < 2 * Math.PI;
+  //   theta += (2 * Math.PI) / numRadialLines
+  // ) {
+  // const radialLineMeshPlus = createPolarGridRadialLine(
+  //   theta,
+  //   upperLower === 0,
+  //   true
+  // );
+  // const radialLineMeshMinus = createPolarGridRadialLine(
+  //   theta,
+  //   upperLower === 0,
+  //   false
+  // );
+  // radialLineMeshPlus.layers.set(
+  //   upperLower === 0
+  //     ? HYPERBOLIC_LAYER.upperSheetGrid
+  //     : HYPERBOLIC_LAYER.lowerSheetGrid
+  // );
+  // radialLineMeshMinus.layers.set(
+  //   upperLower === 0
+  //     ? HYPERBOLIC_LAYER.upperSheetGrid
+  //     : HYPERBOLIC_LAYER.lowerSheetGrid
+  // );
+  // if (upperLower === 0) {
+  // upperPolarGridArray.push(radialLineMeshPlus);
+  // upperPolarGridArray.push(radialLineMeshMinus);
+  // } else {
+  // lowerPolarGridArray.push(radialLineMeshPlus);
+  // lowerPolarGridArray.push(radialLineMeshMinus);
+  // }
+  // }
 
-    // create the circular polar grid lines
-    // for (let r = 0.5; Math.cosh(r) < SETTINGS.maxZClip; r += 0.5) {
-    // const circularGridMeshPlus = createPolarGridCircle(
-    //   r,
-    //   upperLower === 0,
-    //   true
-    // );
-    // const circularGridMeshMinus = createPolarGridCircle(
-    //   r,
-    //   upperLower === 0,
-    //   false
-    // );
-    // circularGridMeshPlus.layers.set(
-    //   upperLower === 0
-    //     ? HYPERBOLIC_LAYER.upperSheetGrid
-    //     : HYPERBOLIC_LAYER.lowerSheetGrid
-    // );
-    // circularGridMeshMinus.layers.set(
-    //   upperLower === 0
-    //     ? HYPERBOLIC_LAYER.upperSheetGrid
-    //     : HYPERBOLIC_LAYER.lowerSheetGrid
-    // );
-    // if (upperLower === 0) {
-    //   upperPolarGridArray.push(circularGridMeshPlus);
-    //   upperPolarGridArray.push(circularGridMeshMinus);
-    // } else {
-    //   lowerPolarGridArray.push(circularGridMeshPlus);
-    //   lowerPolarGridArray.push(circularGridMeshMinus);
-    // }
-  }
+  // create the circular polar grid lines
+  // for (let r = 0.5; Math.cosh(r) < SETTINGS.maxZClip; r += 0.5) {
+  // const circularGridMeshPlus = createPolarGridCircle(
+  //   r,
+  //   upperLower === 0,
+  //   true
+  // );
+  // const circularGridMeshMinus = createPolarGridCircle(
+  //   r,
+  //   upperLower === 0,
+  //   false
+  // );
+  // circularGridMeshPlus.layers.set(
+  //   upperLower === 0
+  //     ? HYPERBOLIC_LAYER.upperSheetGrid
+  //     : HYPERBOLIC_LAYER.lowerSheetGrid
+  // );
+  // circularGridMeshMinus.layers.set(
+  //   upperLower === 0
+  //     ? HYPERBOLIC_LAYER.upperSheetGrid
+  //     : HYPERBOLIC_LAYER.lowerSheetGrid
+  // );
+  // if (upperLower === 0) {
+  //   upperPolarGridArray.push(circularGridMeshPlus);
+  //   upperPolarGridArray.push(circularGridMeshMinus);
+  // } else {
+  //   lowerPolarGridArray.push(circularGridMeshPlus);
+  //   lowerPolarGridArray.push(circularGridMeshMinus);
+  // }
+  // }
   // }
 
   // push (polar grid)|(ideal points)|(lower sheet) to visible layers, because it is visible at initialization otherwise the vue button handles the visibleLayers array
@@ -1053,9 +1053,9 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   // );
   const hitByRay = rayCaster.intersectObjects(scene.children, true);
   intersectionList.value = hitByRay;
-  hitByRay.forEach(ix => {
-    console.debug("Intersect", ix.object.name);
-  });
+  // hitByRay.forEach(ix => {
+  //   console.debug("Intersect", ix.object.name);
+  // });
   // .filter(iSect => iSect.object.name.length === 0);
   // const regex = /Sheet|Ideal|Ultra/; // Sorting for surfaces and object intersections
   // Set the closest intersection flags
@@ -1064,9 +1064,6 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
   const surfaceIntersections = hitByRay.filter(iSect =>
     iSect.object.name.match(/Sheet|Ideal|Ultra/)
   );
-  surfaceIntersections.forEach(ix => {
-    console.debug("Intersect surface", ix.object.name);
-  });
   if (surfaceIntersections.length > 0) {
     // Compute the first intersection(s) information for display
     // If the mouse is over a surface, update the text displayed at the top of the screen
@@ -1083,11 +1080,13 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
     positionInCameraCF.value
       .copy(rayIntersectionPosition)
       .applyMatrix4(camera.matrixWorld);
-    const hitNames = hitByRay.map(x => x.object.name);
-    hitList = hitNames.map(objName => {
-      const obj = geoStore.getObjectById(objName);
-      return obj ? obj : objName;
-    });
+    // const hitNames = hitByRay.map(x => x.object.name).filter(n => n.length > 0);
+    hitList = hitByRay
+      .filter(h => h.object.name.length > 0)
+      .map(h => {
+        const obj = geoStore.getObjectById(h.object.name);
+        return obj ? obj : { surface: h.object.name, position: h.point };
+      });
   } else {
     rayIntersectionPosition.set(NaN, NaN, NaN);
     positionInCameraCF.value.set(0, 0, 0);
@@ -1097,7 +1096,7 @@ function threeMouseTrackerThenMouseMove(ev: MouseEvent) {
     t.mouseMoved(ev, rayIntersectionPosition, hitList);
   });
 
-  renderer.render(scene, camera);
+  // renderer.render(scene, camera);
 }
 
 //Compute the length in world coordinate of a line segment starting at start in the direction dir with a constant angular width angularWidthAtMaxFOV

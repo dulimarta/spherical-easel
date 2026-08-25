@@ -16,6 +16,7 @@ import { AddLineOrSegmentKommand } from "@/commands/AddLineKommand";
 import { PoseTracker } from "./PoseTracker";
 import { HyperbolicCurve } from "@/plottables-hyperbolic/HyperbolicCurve";
 import { CKSegment } from "@/models/CKSegment";
+import { SurfaceIntersection } from "./ToolStrategy";
 export class SimpleLineHandler extends PoseTracker {
   private previewPoints: Array<Mesh> = [];
   private hyperbola: HyperbolicCurve;
@@ -91,7 +92,7 @@ export class SimpleLineHandler extends PoseTracker {
   mousePressed(
     event: MouseEvent,
     position: Vector3,
-    hitObjects: Array<CKNodule | string>
+    hitObjects: Array<CKNodule | SurfaceIntersection>
   ): void {
     super.mousePressed(event, position, hitObjects);
     console.debug(
@@ -153,7 +154,7 @@ export class SimpleLineHandler extends PoseTracker {
   mouseMoved(
     event: MouseEvent,
     position: Vector3,
-    hitObjects: Array<CKNodule | string>
+    hitObjects: Array<CKNodule | SurfaceIntersection>
   ): void {
     super.mouseMoved(event, position, hitObjects);
     // console.debug(
