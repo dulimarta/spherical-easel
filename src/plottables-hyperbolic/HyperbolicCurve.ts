@@ -1,3 +1,4 @@
+import { toolGroups } from "@/components/toolgroups";
 import { Curve, Vector3 } from "three";
 
 /* This class generates a hyperbola on a plane through the origin by
@@ -14,8 +15,8 @@ const Z_AXIS = new Vector3(0, 0, 1);
 export class HyperbolicCurve extends Curve<Vector3> {
   // Compute the points of a hyperbola on a plane
   // rotated on the X-axis
-  startPoint: Vector3 = new Vector3();
-  endPoint: Vector3 = new Vector3();
+  startPoint: Vector3 = new Vector3(0, 0, 0);
+  endPoint: Vector3 = new Vector3(0, 1, 0);
   planeNormal: Vector3 = new Vector3();
   curveTangent: Vector3 = new Vector3();
   curveNormal: Vector3 = new Vector3();
@@ -29,6 +30,7 @@ export class HyperbolicCurve extends Curve<Vector3> {
   upperSheet = true;
   constructor(public isInfinite: boolean) {
     super();
+    this.reconstruct();
   }
 
   // The setPointsAndDirections() method sets the two points the curve passes thru.
@@ -49,6 +51,9 @@ export class HyperbolicCurve extends Curve<Vector3> {
     // );
     this.startPoint.copy(p1);
     this.endPoint.copy(p2);
+    this.reconstruct();
+  }
+  private reconstruct() {
     this.planeNormal.crossVectors(this.startPoint, this.endPoint).normalize();
     // console.debug("Plane normal:", this.planeNormal);
     this.curveTangent.crossVectors(Z_AXIS, this.planeNormal).normalize();

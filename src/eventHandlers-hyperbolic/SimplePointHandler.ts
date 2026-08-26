@@ -1,7 +1,6 @@
 import { Scene, Vector3 } from "three";
 // import { PointSelectionHandler } from "./PointSelectionHandler";
 import { AddPointByCoordinatesKommand } from "@/commands/AddPointKommand";
-// import { PoseTracker } from "./PoseTracker";
 import { CKNodule } from "@/models/CKNodule";
 import { MultiPointSelectionHandler } from "./MultiPointSelectionHandler";
 import { SurfaceIntersection } from "./ToolStrategy";
@@ -22,5 +21,6 @@ export class SimplePointHandler extends MultiPointSelectionHandler {
     // const location = this._selectedPoints[0].locationVector;
     const pointCommand = new AddPointByCoordinatesKommand(position);
     pointCommand.execute();
+    this.restart();
   }
 }
