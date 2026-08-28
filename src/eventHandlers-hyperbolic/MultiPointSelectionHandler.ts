@@ -14,7 +14,8 @@ import { onKeyDown } from "@vueuse/core";
 import { CKPoint } from "@/models/CKPoint";
 
 type SelectedPointInformation = {
-  pointOrPosition: CKPoint | Vector3;
+  onObject: CKNodule | null;
+  position: Vector3;
   surface: string;
 };
 export class MultiPointSelectionHandler extends PoseTracker {
@@ -76,7 +77,8 @@ export class MultiPointSelectionHandler extends PoseTracker {
       if (hitObjects.length === 0) {
         // Mouse pressed on an open surface
         this.currentSelectedPoints.push({
-          pointOrPosition: position.clone(),
+          onObject: null,
+          position: position.clone(),
           surface: this.onSurfaceName!
         });
         return;

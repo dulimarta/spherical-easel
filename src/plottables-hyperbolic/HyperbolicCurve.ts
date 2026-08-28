@@ -1,5 +1,13 @@
-import { toolGroups } from "@/components/toolgroups";
-import { Curve, Vector3 } from "three";
+import {
+  ArrowHelper,
+  Curve,
+  DoubleSide,
+  Mesh,
+  MeshStandardMaterial,
+  PlaneGeometry,
+  Scene,
+  Vector3
+} from "three/webgpu";
 
 /* This class generates a hyperbola on a plane through the origin by
  * computing the intersection between the plane and the hyperboloid.
@@ -11,6 +19,7 @@ import { Curve, Vector3 } from "three";
  */
 
 const MAX_Z_HYPERBOLOID = 2.07;
+const Y_AXIS = new Vector3(0, 1, 0);
 const Z_AXIS = new Vector3(0, 0, 1);
 export class HyperbolicCurve extends Curve<Vector3> {
   // Compute the points of a hyperbola on a plane
@@ -28,9 +37,43 @@ export class HyperbolicCurve extends Curve<Vector3> {
   tMin: number = Number.MAX_VALUE;
   tMax: number = Number.MIN_VALUE;
   upperSheet = true;
-  constructor(public isInfinite: boolean) {
+  oneSheet = false;
+  private d1Arrow = new ArrowHelper(
+    undefined,
+    undefined,
+    1,
+    0xff0000,
+    0.2,
+    0.1
+  );
+  private d2Arrow = new ArrowHelper(
+    undefined,
+    undefined,
+    1,
+    0x0000ff,
+    0.2,
+    0.1
+  );
+  private cuttingPlane = new Mesh(
+    new PlaneGeometry(5, 5),
+    new MeshStandardMaterial({
+      color: 0x0000ff,
+      side: DoubleSide,
+      transparent: true,
+      opacity: 0.5
+    })
+  );
+
+  constructor(
+    private isInfinite: boolean,
+    private mirror: boolean,
+    private scene: Scene
+  ) {
     super();
-    this.reconstruct();
+    this.reconstructAroundZ();
+    this.scene.add(this.d1Arrow);
+    this.scene.add(this.d2Arrow);
+    // this.scene.add(this.cuttingPlane);
   }
 
   // The setPointsAndDirections() method sets the two points the curve passes thru.
@@ -44,22 +87,28 @@ export class HyperbolicCurve extends Curve<Vector3> {
   // the two endpoints of the hyperbola are on the same or different halves.
   setPoints(
     p1: Vector3, // Position of the first point
-    p2: Vector3 // Position of the second point
+    p2: Vector3, // Position of the second point
+    oneSheet: boolean
   ): void {
     // console.debug(
     //   `HyperbolicCurve::setPoints p1:${p1.toFixed(3)} p2:${p2.toFixed(3)}`
     // );
     this.startPoint.copy(p1);
     this.endPoint.copy(p2);
-    this.reconstruct();
+    this.oneSheet = oneSheet;
+    if (oneSheet) this.reconstructAroundUltra();
+    else this.reconstructAroundZ();
   }
-  private reconstruct() {
+  private reconstructAroundZ() {
     this.planeNormal.crossVectors(this.startPoint, this.endPoint).normalize();
     // console.debug("Plane normal:", this.planeNormal);
-    this.curveTangent.crossVectors(Z_AXIS, this.planeNormal).normalize();
-    this.curveNormal
-      .crossVectors(this.planeNormal, this.curveTangent)
-      .normalize();
+    this.curveTangent.crossVectors(Z_AXIS, this.planeNormal);
+    this.curveNormal.crossVectors(this.planeNormal, this.curveTangent);
+    this.curveNormal.normalize();
+    this.curveTangent.normalize();
+    this.d1Arrow.setDirection(this.curveTangent);
+    this.d2Arrow.setDirection(this.curveNormal);
+    this.cuttingPlane.lookAt(this.planeNormal);
     if (this.isInfinite) {
       /**
        * To draw an "infinite" line, we replace the start and end points with
@@ -131,17 +180,65 @@ export class HyperbolicCurve extends Curve<Vector3> {
     this.updateArcLengths(); // Must call this after the curve shape is modified
   }
 
+  private reconstructAroundUltra() {
+    this.planeNormal.crossVectors(this.startPoint, this.endPoint).normalize();
+    this.cuttingPlane.lookAt(this.planeNormal);
+    // console.debug("Plane normal:", this.planeNormal);
+    if (!this.mirror) {
+      this.curveNormal.crossVectors(Z_AXIS, this.planeNormal);
+      this.curveTangent.crossVectors(this.planeNormal, this.curveNormal);
+    } else {
+      this.curveNormal.crossVectors(this.planeNormal, Z_AXIS);
+      this.curveTangent.crossVectors(this.curveNormal, this.planeNormal);
+    }
+    this.curveTangent.normalize();
+    this.curveNormal.normalize();
+    this.d1Arrow.setDirection(this.curveTangent);
+    this.d2Arrow.setDirection(this.curveNormal);
+    this.upperSheet = this.startPoint.z > 0;
+    const dt = this.curveTangent;
+    const d2 = this.curveNormal;
+    // console.debug(`D1:${dt.z.toFixed(3)}  D2:${d2.z.toFixed(3)}`);
+    const innerA = dt.x * dt.x + dt.y * dt.y - dt.z * dt.z;
+    const innerB = d2.x * d2.x + d2.y * d2.y - d2.z * d2.z;
+    this.aCoeff = Math.sqrt(-1 / innerA);
+    this.bCoeff = Math.sqrt(1 / innerB);
+    // console.debug(
+    //   "AroundY:",
+    //   innerA.toFixed(2),
+    //   this.aCoeff,
+    //   innerB.toFixed(2),
+    //   this.bCoeff
+    // );
+    this.updateArcLengths();
+  }
+
   getPoint(tInput: number, optionalTarget: Vector3 = new Vector3()): Vector3 {
-    const t = tInput * (this.tMax - this.tMin) + this.tMin;
-    // console.debug(`tInput:${tInput.toFixed(3)}  t:${t.toFixed(3)}`);
-    const lambda = this.aCoeff * Math.sinh(t);
-    const mu = this.bCoeff * Math.cosh(t);
-    // const out = optionalTarget ?? this.outVec;
-    optionalTarget
-      .set(0, 0, 0)
-      .addScaledVector(this.curveTangent, lambda)
-      .addScaledVector(this.curveNormal, mu)
-      .multiplyScalar(this.upperSheet ? +1 : -1);
+    optionalTarget.set(0, 0, 0);
+    if (!this.oneSheet) {
+      const t = tInput * (this.tMax - this.tMin) + this.tMin;
+      // console.debug(`tInput:${tInput.toFixed(3)}  t:${t.toFixed(3)}`);
+      const lambda = this.aCoeff * Math.sinh(t);
+      const mu = this.bCoeff * Math.cosh(t);
+      // const out = optionalTarget ?? this.outVec;
+      optionalTarget
+        .addScaledVector(this.curveTangent, lambda)
+        .addScaledVector(this.curveNormal, mu)
+        .multiplyScalar(this.upperSheet ? +1 : -1);
+    } else {
+      const t = (this.upperSheet ? 1.5 : -1.5) * tInput;
+      const lambda = this.aCoeff * Math.sinh(t);
+      const mu = this.bCoeff * Math.cosh(t);
+      optionalTarget
+        .addScaledVector(this.curveTangent, lambda)
+        .addScaledVector(this.curveNormal, mu);
+    }
     return optionalTarget;
+  }
+
+  dispose() {
+    this.d1Arrow.removeFromParent();
+    this.d2Arrow.removeFromParent();
+    this.cuttingPlane.removeFromParent();
   }
 }
