@@ -169,12 +169,12 @@ export class MultiPointSelectionHandler extends PoseTracker {
 }
 
 const ARROW_HEIGHT = 3;
-const Z_AXIS = new Vector3(0, 0, 1);
+const ARROW_COLOR = 0x44aaee;
 export class idealArrow extends Group {
   private rotationAxis = new Vector3();
   private arrowHead = new Mesh(
     new ConeGeometry(0.1, 0.2, 6, 6),
-    new MeshStandardMaterial({ color: 0xff0000 })
+    new MeshStandardMaterial({ color: ARROW_COLOR })
   );
   private arrowBody: Mesh;
   constructor() {
@@ -183,15 +183,15 @@ export class idealArrow extends Group {
     // so that setDirection is simply a lookAt() call
     const dashPattern = () => {
       const dashCount = uniform(5.0);
-      const dashLength = uniform(0.5);
-      const speed = uniform(0.03);
-      const animatedU = uv().y.add(time.mul(speed));
-      const repeatedU = fract(animatedU.mul(dashCount).mul(-1));
+      const dashLength = uniform(0.7); // 70% solid, 30% gap
+      const speed = uniform(0.1);
+      const animatedU = uv().y.sub(time.mul(speed));
+      const repeatedU = fract(animatedU.mul(dashCount));
       const visibility = step(repeatedU, dashLength);
       return visibility;
     };
     const arrowBodyMaterial = new MeshBasicNodeMaterial({
-      color: 0xff0000,
+      color: ARROW_COLOR,
       transparent: true,
       side: DoubleSide
     });
