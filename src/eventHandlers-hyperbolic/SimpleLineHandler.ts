@@ -31,8 +31,9 @@ export class SimpleLineHandler extends MultiPointSelectionHandler {
     private infiniteLine
   ) {
     super(scene, 2);
-    this.hyperbola1 = new HyperbolicCurve(this.infiniteLine, false);
-    this.hyperbola2 = new HyperbolicCurve(this.infiniteLine, true);
+    // Pass the 'scene' to hyperbolicCurve only for visual debugging
+    this.hyperbola1 = new HyperbolicCurve(this.infiniteLine, false /*, scene*/);
+    this.hyperbola2 = new HyperbolicCurve(this.infiniteLine, true /*, scene*/);
     // for (let k = 0; k < 2; k++) {
     //   this.previewPoints.push(
     //     new Mesh(
@@ -159,12 +160,14 @@ export class SimpleLineHandler extends MultiPointSelectionHandler {
       this.previewLine2.visible = false;
       return;
     }
-    const startSurface = this.currentSelectedPoints[0].surface;
+    const startAt = this.currentSelectedPoints[0];
+    const startSurface = startAt.surface;
     const regexIdeal = /ideal/i;
     this.previewLine1.visible =
-      startSurface == this.onSurfaceName ||
-      regexIdeal.test(startSurface) ||
-      regexIdeal.test(this.onSurfaceName!!);
+      Math.sign(position.z) === Math.sign(startAt.position.z) &&
+      (startSurface == this.onSurfaceName ||
+        regexIdeal.test(startSurface) ||
+        regexIdeal.test(this.onSurfaceName!!));
 
     const regexUltra = /ultra/i;
     const oneSheet =

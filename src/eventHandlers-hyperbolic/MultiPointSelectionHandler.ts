@@ -190,9 +190,10 @@ export class idealArrow extends Group {
       const visibility = step(repeatedU, dashLength);
       return visibility;
     };
-    const arrowBodyMaterial = new MeshBasicNodeMaterial({
+    const arrowBodyMaterial = new MeshStandardNodeMaterial({
       color: ARROW_COLOR,
       transparent: true,
+      opacity: 0.35,
       side: DoubleSide
     });
     arrowBodyMaterial.opacityNode = dashPattern();

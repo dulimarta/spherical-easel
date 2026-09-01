@@ -1144,13 +1144,12 @@ export function createHyperboloidSheet(upper: boolean): THREE.Mesh {
     side: DoubleSide,
     metalness: 0.1,
     roughness: 0.2,
-    transparent: true, //false, //true,
+    // This cannot be transparent, otherwise the ideal arrow
+    // transparency does not look correct
+    transparent: false, //true,
     clearcoat: 1.0,
     clearcoatRoughness: 0.1
   });
-  // hyperboloidMaterial.transparent = true;
-  //hyperboloidMaterial.depthWrite = false;
-  //hyperboloidMaterial.depthTest = false;
 
   const baseColor = color(hyperboloidMaterial.color);
 

@@ -67,13 +67,15 @@ export class HyperbolicCurve extends Curve<Vector3> {
   constructor(
     private isInfinite: boolean,
     private mirror: boolean
-    // private scene: Scene
+    // private scene: Scene | undefined = undefined
   ) {
     super();
     this.reconstructAroundZ();
-    // this.scene.add(this.d1Arrow);
-    // this.scene.add(this.d2Arrow);
+    // if (this.scene) {
+    //   this.scene.add(this.d1Arrow);
+    //   this.scene.add(this.d2Arrow);
     // this.scene.add(this.cuttingPlane);
+    // }
   }
 
   // The setPointsAndDirections() method sets the two points the curve passes thru.
@@ -95,14 +97,22 @@ export class HyperbolicCurve extends Curve<Vector3> {
     // );
     this.startPoint.copy(p1);
     this.endPoint.copy(p2);
+    // The curve is on the upper sheet when the Z-coordinate is positive
+    this.upperSheet = p1.z > 0 && p2.z > 0;
     this.oneSheet = oneSheet;
     if (oneSheet) this.reconstructAroundUltra();
     else this.reconstructAroundZ();
   }
+
   private reconstructAroundZ() {
     this.planeNormal.crossVectors(this.startPoint, this.endPoint).normalize();
+    console.debug(
+      `Start Z ${this.startPoint.z.toFixed(3)} End Z ${this.endPoint.z.toFixed(3)} Upper ${this.upperSheet}`
+    );
     // console.debug("Plane normal:", this.planeNormal);
+    // if (this.startPoint.z > 0 && this.endPoint.z > 0)
     this.curveTangent.crossVectors(Z_AXIS, this.planeNormal);
+    // else this.curveTangent.crossVectors(this.planeNormal, Z_AXIS);
     this.curveNormal.crossVectors(this.planeNormal, this.curveTangent);
     this.curveNormal.normalize();
     this.curveTangent.normalize();
@@ -136,13 +146,14 @@ export class HyperbolicCurve extends Curve<Vector3> {
         .copy(this.chordCenter)
         .addScaledVector(this.curveTangent, -halfChordLength);
     }
-    // The curve is on the upper sheet when the Z-coordinate is positive
-    this.upperSheet = this.startPoint.z > 0;
     const dt = this.curveTangent;
     const d2 = this.curveNormal;
     // console.debug(`D1:${dt.z.toFixed(3)}  D2:${d2.z.toFixed(3)}`);
     const innerA = dt.x * dt.x + dt.y * dt.y - dt.z * dt.z;
     const innerB = d2.x * d2.x + d2.y * d2.y - d2.z * d2.z;
+    console.debug(
+      `InnerA ${innerA.toFixed(2)} innerB: ${innerB.toFixed(2)} Upper sheet ${this.upperSheet}`
+    );
     this.aCoeff = Math.sqrt(1 / innerA);
     this.bCoeff = Math.sqrt(-1 / innerB);
     /* In the getPoint function the coordinates of each point on the curve is computed from   
