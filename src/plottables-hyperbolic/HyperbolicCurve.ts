@@ -66,13 +66,13 @@ export class HyperbolicCurve extends Curve<Vector3> {
 
   constructor(
     private isInfinite: boolean,
-    private mirror: boolean,
-    private scene: Scene
+    private mirror: boolean
+    // private scene: Scene
   ) {
     super();
     this.reconstructAroundZ();
-    this.scene.add(this.d1Arrow);
-    this.scene.add(this.d2Arrow);
+    // this.scene.add(this.d1Arrow);
+    // this.scene.add(this.d2Arrow);
     // this.scene.add(this.cuttingPlane);
   }
 

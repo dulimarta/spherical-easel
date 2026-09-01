@@ -31,8 +31,8 @@ export class SimpleLineHandler extends MultiPointSelectionHandler {
     private infiniteLine
   ) {
     super(scene, 2);
-    this.hyperbola1 = new HyperbolicCurve(this.infiniteLine, false, scene);
-    this.hyperbola2 = new HyperbolicCurve(this.infiniteLine, true, scene);
+    this.hyperbola1 = new HyperbolicCurve(this.infiniteLine, false);
+    this.hyperbola2 = new HyperbolicCurve(this.infiniteLine, true);
     // for (let k = 0; k < 2; k++) {
     //   this.previewPoints.push(
     //     new Mesh(

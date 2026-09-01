@@ -1,9 +1,15 @@
 import { CKNodule } from "@/models/CKNodule";
 import {
   ArrowHelper,
+  ConeGeometry,
+  CylinderGeometry,
+  DoubleSide,
+  Group,
   Material,
   Mesh,
+  MeshBasicNodeMaterial,
   MeshStandardMaterial,
+  MeshStandardNodeMaterial,
   Scene,
   SphereGeometry,
   Vector3
@@ -12,6 +18,7 @@ import { PoseTracker } from "./PoseTracker";
 import { SurfaceIntersection } from "./ToolStrategy";
 import { onKeyDown } from "@vueuse/core";
 import { CKPoint } from "@/models/CKPoint";
+import { fract, step, time, uniform, uv } from "three/tsl";
 
 type SelectedPointInformation = {
   onObject: CKNodule | null;
@@ -20,7 +27,7 @@ type SelectedPointInformation = {
 };
 export class MultiPointSelectionHandler extends PoseTracker {
   protected previewPoints: Array<Mesh> = [];
-  private previewDirection = new ArrowHelper();
+  private previewDirection = new idealArrow();
   private currentPreviewIndex = 0;
   protected currentSelectedPoints: Array<SelectedPointInformation> = [];
   protected onSurfaceName: string | null = null;
@@ -40,8 +47,8 @@ export class MultiPointSelectionHandler extends PoseTracker {
       this.previewPoints.push(previewPoint);
     }
     this.previewDirection.visible = false;
-    this.previewDirection.setColor(0xff0066);
-    this.previewDirection.setLength(3.0);
+    // this.previewDirection.setColor(0xff0066);
+    // this.previewDirection.setLength(3.0);
   }
 
   override activate(): void {
@@ -158,5 +165,50 @@ export class MultiPointSelectionHandler extends PoseTracker {
     for (let k = 1; k < this.maxPoints; k++)
       this.previewPoints[k].visible = false;
     this.currentPreviewIndex = 0;
+  }
+}
+
+const ARROW_HEIGHT = 3;
+const Z_AXIS = new Vector3(0, 0, 1);
+export class idealArrow extends Group {
+  private rotationAxis = new Vector3();
+  private arrowHead = new Mesh(
+    new ConeGeometry(0.1, 0.2, 6, 6),
+    new MeshStandardMaterial({ color: 0xff0000 })
+  );
+  private arrowBody: Mesh;
+  constructor() {
+    super();
+    // The rotations are required to align the arrow with the Z-axis
+    // so that setDirection is simply a lookAt() call
+    const dashPattern = () => {
+      const dashCount = uniform(5.0);
+      const dashLength = uniform(0.5);
+      const speed = uniform(0.03);
+      const animatedU = uv().y.add(time.mul(speed));
+      const repeatedU = fract(animatedU.mul(dashCount).mul(-1));
+      const visibility = step(repeatedU, dashLength);
+      return visibility;
+    };
+    const arrowBodyMaterial = new MeshBasicNodeMaterial({
+      color: 0xff0000,
+      transparent: true,
+      side: DoubleSide
+    });
+    arrowBodyMaterial.opacityNode = dashPattern();
+    this.arrowBody = new Mesh(
+      new CylinderGeometry(0.03, 0.03, ARROW_HEIGHT, 6, 20),
+      arrowBodyMaterial
+    );
+    this.arrowHead.rotateX(Math.PI / 2);
+    this.arrowHead.translateY(ARROW_HEIGHT);
+    this.arrowBody.rotateX(Math.PI / 2);
+    this.arrowBody.translateY(ARROW_HEIGHT / 2);
+    this.add(this.arrowBody);
+    this.add(this.arrowHead);
+  }
+
+  setDirection(d: Vector3) {
+    this.lookAt(d);
   }
 }

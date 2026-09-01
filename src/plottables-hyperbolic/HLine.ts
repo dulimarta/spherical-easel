@@ -30,7 +30,7 @@ export class HLine extends Nodule<CKLine | CKSegment> {
       linewidth: 5,
       worldUnits: false
     });
-    this._curve = new HyperbolicCurve(infiniteLine);
+    this._curve = new HyperbolicCurve(infiniteLine, false);
     this._lineGeometry = new LineGeometry();
     // this._lineGeometry.setPositions(
     //   this._curve.getPoints(120).flatMap(p => [p.x, p.y, 0])
@@ -64,7 +64,7 @@ export class HLine extends Nodule<CKLine | CKSegment> {
     const endPoint = this.modelRef.endPointCoord.vector(2);
     this._startPosition.set(startPoint[0], startPoint[1], startPoint[2]);
     this._endPosition.set(endPoint[0], endPoint[1], endPoint[2]);
-    this._curve.setPoints(this._startPosition, this._endPosition);
+    this._curve.setPoints(this._startPosition, this._endPosition, false);
     this._lineMesh.geometry.setPositions(
       this._curve.getPoints(120).flatMap(p => [p.x, p.y, p.z])
     );
