@@ -6,7 +6,8 @@ import {
   Vector3,
   MeshStandardMaterial,
   TubeGeometry,
-  ArrowHelper
+  ArrowHelper,
+  MeshStandardNodeMaterial
 } from "three/webgpu";
 // import { ParametricGeometry } from "three/addons/geometries/ParametricGeometry.js";
 import { CKLine } from "@/models/CKLine";
@@ -19,6 +20,17 @@ import { HyperbolicCurve } from "@/plottables-hyperbolic/HyperbolicCurve";
 import { CKSegment } from "@/models/CKSegment";
 import { SurfaceIntersection } from "./ToolStrategy";
 import { MultiPointSelectionHandler } from "./MultiPointSelectionHandler";
+import { M } from "vitest/dist/chunks/reporters.d.BFLkQcL6.js";
+import {
+  abs,
+  color,
+  float,
+  Fn,
+  positionLocal,
+  uniform,
+  uniformGroup,
+  varying
+} from "three/tsl";
 export class SimpleLineHandler extends MultiPointSelectionHandler {
   // private previewPoints: Array<Mesh> = [];
   private hyperbola1: HyperbolicCurve;
@@ -52,14 +64,18 @@ export class SimpleLineHandler extends MultiPointSelectionHandler {
       // opacity: 0.5,
       // side: DoubleSide
     };
-    this.previewLine1 = new Mesh(
-      new TubeGeometry(this.hyperbola1),
-      new MeshStandardMaterial(materialProps)
-    );
-    this.previewLine2 = new Mesh(
-      new TubeGeometry(this.hyperbola2),
-      new MeshStandardMaterial(materialProps)
-    );
+    // const vertexZPos = varying(float(), "vertexZPos");
+    // const zCutOff = uniform(2.8);
+    const material = new MeshStandardNodeMaterial(materialProps);
+    // material.vertexNode = Fn(() => {
+    //   vertexZPos.assign(positionLocal.z);
+    // })();
+    material.fragmentNode = Fn(() => {
+      abs(positionLocal.z).greaterThan(2.3).discard();
+      return color(materialProps.color);
+    })();
+    this.previewLine1 = new Mesh(new TubeGeometry(this.hyperbola1), material);
+    this.previewLine2 = new Mesh(new TubeGeometry(this.hyperbola2), material);
   }
 
   activate(): void {

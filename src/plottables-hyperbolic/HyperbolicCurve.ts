@@ -38,6 +38,7 @@ export class HyperbolicCurve extends Curve<Vector3> {
   tMax: number = Number.MIN_VALUE;
   upperSheet = true;
   oneSheet = false;
+  // Both d1Arrow and d2Arrow were used for debugging
   private d1Arrow = new ArrowHelper(
     undefined,
     undefined,
@@ -54,15 +55,15 @@ export class HyperbolicCurve extends Curve<Vector3> {
     0.2,
     0.1
   );
-  private cuttingPlane = new Mesh(
-    new PlaneGeometry(5, 5),
-    new MeshStandardMaterial({
-      color: 0x0000ff,
-      side: DoubleSide,
-      transparent: true,
-      opacity: 0.5
-    })
-  );
+  // private cuttingPlane = new Mesh(
+  //   new PlaneGeometry(5, 5),
+  //   new MeshStandardMaterial({
+  //     color: 0x0000ff,
+  //     side: DoubleSide,
+  //     transparent: true,
+  //     opacity: 0.5
+  //   })
+  // );
 
   constructor(
     private isInfinite: boolean,
@@ -70,7 +71,7 @@ export class HyperbolicCurve extends Curve<Vector3> {
     // private scene: Scene | undefined = undefined
   ) {
     super();
-    this.reconstructAroundZ();
+    this.reconstructTopBottom();
     // if (this.scene) {
     //   this.scene.add(this.d1Arrow);
     //   this.scene.add(this.d2Arrow);
@@ -100,11 +101,12 @@ export class HyperbolicCurve extends Curve<Vector3> {
     // The curve is on the upper sheet when the Z-coordinate is positive
     this.upperSheet = p1.z > 0 && p2.z > 0;
     this.oneSheet = oneSheet;
-    if (oneSheet) this.reconstructAroundUltra();
-    else this.reconstructAroundZ();
+    if (oneSheet) this.reconstructSideCurves();
+    else this.reconstructTopBottom();
+    this.updateArcLengths(); // Must call this after the curve shape is modified
   }
 
-  private reconstructAroundZ() {
+  private reconstructTopBottom() {
     this.planeNormal.crossVectors(this.startPoint, this.endPoint).normalize();
     console.debug(
       `Start Z ${this.startPoint.z.toFixed(3)} End Z ${this.endPoint.z.toFixed(3)} Upper ${this.upperSheet}`
@@ -118,14 +120,18 @@ export class HyperbolicCurve extends Curve<Vector3> {
     this.curveTangent.normalize();
     this.d1Arrow.setDirection(this.curveTangent);
     this.d2Arrow.setDirection(this.curveNormal);
-    this.cuttingPlane.lookAt(this.planeNormal);
+    // this.cuttingPlane.lookAt(this.planeNormal);
     if (this.isInfinite) {
       /**
        * To draw an "infinite" line, we replace the start and end points with
        * the intersection points of the cutting plane the the top disk (i.e.
        * the disk parallel to the xy-plane at the maximum height (H) of the hyperboloid).
        * These two intersection points are on a chord whose center is along this.curveNormal.
-       * The center of the chord can be determine by scaling the curveNormal vector to the height of the top disk. The length of the chord can be determined by the angle of the cutting plane with respect to the xy-plane. The angle can be computed from the z-component of the cuttingPlaneNormal vector. The tangent of this angle is equal to the ratio of the distance from the center of the chord to the edge of the disk (i.e. half the chord length) and the height of the disk (H).
+       * The center of the chord can be determine by scaling the curveNormal vector to the height of the top disk.
+       * The length of the chord can be determined by the angle of the cutting plane with respect to the xy-plane.
+       * The angle can be computed from the z-component of the cuttingPlaneNormal vector.
+       * The tangent of this angle is equal to the ratio of the distance from the center of the chord to the edge of the disk
+       * (i.e. half the chord length) and the height of the disk (H).
        * The radius of the disk is R = sqrt(H^2 - 1). The chord length can be computed using the
        * Pythagorean theorem from the topdisk radius and the offset of the chord from the center.
        */
@@ -188,12 +194,11 @@ export class HyperbolicCurve extends Curve<Vector3> {
       // Both tMin and tMax are positive
       this.tMin *= -1;
     }
-    this.updateArcLengths(); // Must call this after the curve shape is modified
   }
 
-  private reconstructAroundUltra() {
+  private reconstructSideCurves() {
     this.planeNormal.crossVectors(this.startPoint, this.endPoint).normalize();
-    this.cuttingPlane.lookAt(this.planeNormal);
+    // this.cuttingPlane.lookAt(this.planeNormal);
     // console.debug("Plane normal:", this.planeNormal);
     if (!this.mirror) {
       this.curveNormal.crossVectors(Z_AXIS, this.planeNormal);
@@ -221,7 +226,6 @@ export class HyperbolicCurve extends Curve<Vector3> {
     //   innerB.toFixed(2),
     //   this.bCoeff
     // );
-    this.updateArcLengths();
   }
 
   getPoint(tInput: number, optionalTarget: Vector3 = new Vector3()): Vector3 {
@@ -237,7 +241,7 @@ export class HyperbolicCurve extends Curve<Vector3> {
         .addScaledVector(this.curveNormal, mu)
         .multiplyScalar(this.upperSheet ? +1 : -1);
     } else {
-      const t = (this.upperSheet ? 1.5 : -1.5) * tInput;
+      const t = (this.upperSheet ? 3 : -3) * tInput;
       const lambda = this.aCoeff * Math.sinh(t);
       const mu = this.bCoeff * Math.cosh(t);
       optionalTarget
@@ -250,6 +254,6 @@ export class HyperbolicCurve extends Curve<Vector3> {
   dispose() {
     this.d1Arrow.removeFromParent();
     this.d2Arrow.removeFromParent();
-    this.cuttingPlane.removeFromParent();
+    // this.cuttingPlane.removeFromParent();
   }
 }
