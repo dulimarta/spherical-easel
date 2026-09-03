@@ -48,25 +48,6 @@ export class LineHandler extends MultiPointSelectionHandler {
     new TorusGeometry(1, 0.006, 16, 120),
     new MeshStandardMaterial({ color: 0x0000ff })
   );
-  // private currentPreviewPointIndex = 0;
-  // private arrow1 = new ArrowHelper(
-  //   new Vector3(1, 0, 0),
-  //   new Vector3(0, 0, 0),
-  //   1.2,
-  //   0x000000
-  // );
-  // private arrow2 = new ArrowHelper(
-  //   new Vector3(1, 0, 0),
-  //   new Vector3(0, 0, 0),
-  //   1.2,
-  //   0x777777
-  // );
-  // private arrow3 = new ArrowHelper(
-  //   new Vector3(1, 0, 0),
-  //   new Vector3(0, 0, 0),
-  //   1.2,
-  //   0xff0000
-  // );
   constructor(
     scene: Scene,
     private infiniteLine = true
@@ -91,14 +72,8 @@ export class LineHandler extends MultiPointSelectionHandler {
       // this.currentPreviewPointIndex = 0;
       this.previewPoints.forEach(point => (point.visible = false));
       this.previewLine.visible = false;
-      // this.arrow2.visible = false;
       this.previousPlaneNormal = null;
     });
-    // this.scene.add(this.arrow1);
-    // this.scene.add(this.arrow2);
-    // this.scene.add(this.arrow3);
-    // this.arrow2.visible = false;
-    // this.arrow3.visible = false;
   }
 
   deactivate(): void {
@@ -109,9 +84,6 @@ export class LineHandler extends MultiPointSelectionHandler {
     });
     this.scene.remove(this.previewLine);
     this.kbEventHandler();
-    // this.arrow1.removeFromParent();
-    // this.arrow2.removeFromParent();
-    // this.arrow3.removeFromParent();
   }
 
   mousePressed(
@@ -144,13 +116,13 @@ export class LineHandler extends MultiPointSelectionHandler {
         let endPoint: CKPoint;
         const cmdGroup = new CommandGroup();
         if (this.currentSelectedPoints[0] instanceof Vector3) {
-          startPoint = new CKPoint(this.currentSelectedPoints[0]);
+          startPoint = new CKPoint(this.currentSelectedPoints[0].normalize());
           cmdGroup.addCommand(new AddPointByObjectKommand(startPoint));
         } else {
           startPoint = this.currentSelectedPoints[0];
         }
         if (this.currentSelectedPoints[1] instanceof Vector3) {
-          endPoint = new CKPoint(this.currentSelectedPoints[1]);
+          endPoint = new CKPoint(this.currentSelectedPoints[1].normalize());
           cmdGroup.addCommand(new AddPointByObjectKommand(endPoint));
         } else {
           endPoint = this.currentSelectedPoints[1];
@@ -158,13 +130,13 @@ export class LineHandler extends MultiPointSelectionHandler {
         let aLineOrSegment: CKLine | CKSegment;
         if (this.infiniteLine) {
           aLineOrSegment = new CKLine(
-            this.previewPoints[0].position,
-            this.previewPoints[1].position
+            this.previewPoints[0].position.normalize(),
+            this.previewPoints[1].position.normalize()
           );
         } else {
           aLineOrSegment = new CKSegment(
-            this.previewPoints[0].position,
-            this.previewPoints[1].position,
+            this.previewPoints[0].position.normalize(),
+            this.previewPoints[1].position.normalize(),
             this.longerThanPi
           );
         }
@@ -179,7 +151,6 @@ export class LineHandler extends MultiPointSelectionHandler {
         cmdGroup.execute();
         // this.currentPreviewPointIndex = 0;
         this.previousPlaneNormal = null;
-        // this.arrow2.visible = false;
         break;
     }
   }

@@ -36,6 +36,7 @@ export class HLine extends Nodule<CKLine | CKSegment> {
     //   this._curve.getPoints(120).flatMap(p => [p.x, p.y, 0])
     // );
     this._lineMesh = new Line2(this._lineGeometry, this._lineMaterial);
+    this._lineMesh.name = this.name;
     this.viewGroup.add(this._lineMesh);
   }
   show(): void {
@@ -45,10 +46,18 @@ export class HLine extends Nodule<CKLine | CKSegment> {
     // throw new Error("Method not implemented.");
   }
   glowingDisplay(): void {
-    // throw new Error("Method not implemented.");
+    this._lineMesh.material.dispose();
+    this._lineMesh.material = new Line2NodeMaterial({
+      color: 0xffff00,
+      linewidth: 5
+    });
   }
   normalDisplay(): void {
-    // throw new Error("Method not implemented.");
+    this._lineMesh.material.dispose();
+    this._lineMesh.material = new Line2NodeMaterial({
+      color: 0xff8000,
+      linewidth: 5
+    });
   }
   modelUpdated(): void {
     const startPoint = this.modelRef.startPointCoord.vector(2);
@@ -59,7 +68,10 @@ export class HLine extends Nodule<CKLine | CKSegment> {
     this._lineMesh.geometry.setPositions(
       this._curve.getPoints(120).flatMap(p => [p.x, p.y, p.z])
     );
-    // this._lineMesh.geometry = this._lineGeometry;
-    // this._lineMaterial.needsUpdate = true;
+    if (this.modelRef.isHighlighted()) {
+      this.glowingDisplay();
+    } else {
+      this.normalDisplay();
+    }
   }
 }

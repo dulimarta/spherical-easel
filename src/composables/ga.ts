@@ -12,17 +12,17 @@ export function useGA(isHyperbolic: boolean) {
     const pt = isHyperbolic
       ? Hyperbolic.fromVector([x, y, z], 2)
       : Elliptic.fromVector([x, y, z], 2);
-    console.log(
-      "created point:",
-      // pt[0],
-      // pt[1],
-      // pt[2],
-      pt[3],
-      // pt[4],
-      pt[5],
-      pt[6]
-      // pt[7]
-    );
+    // console.log(
+    //   "created point:",
+    //   // pt[0],
+    //   // pt[1],
+    //   // pt[2],
+    //   pt[3],
+    //   // pt[4],
+    //   pt[5],
+    //   pt[6]
+    //   // pt[7]
+    // );
     return pt;
   }
   function makeLine(x: number, y: number, z: number): AlgebraElement {

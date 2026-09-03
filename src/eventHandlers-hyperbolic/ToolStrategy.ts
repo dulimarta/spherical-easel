@@ -24,21 +24,26 @@ export interface HyperbolicToolStrategy {
   deactivate(): void;
 }
 
+export type SurfaceIntersection = {
+  surface: string;
+  position: Vector3;
+};
+
 export interface HyperbolicTool {
   mouseMoved(
     event: MouseEvent,
     position: Vector3,
-    hitObjects: Array<CKNodule | string>
+    hitObjects: Array<CKNodule | SurfaceIntersection>
   ): void;
   mouseReleased(
     event: MouseEvent,
     position: Vector3,
-    hitObjects: Array<CKNodule | string>
+    hitObjects: Array<CKNodule | SurfaceIntersection>
   ): void;
   mousePressed(
     event: MouseEvent,
     position: Vector3,
-    hitObjects: Array<CKNodule | string>
+    hitObjects: Array<CKNodule | SurfaceIntersection>
   ): void;
   activate(): void;
   deactivate(): void;

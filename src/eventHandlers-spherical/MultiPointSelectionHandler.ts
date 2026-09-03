@@ -18,7 +18,7 @@ export class MultiPointSelectionHandler extends MouseHandler {
     this.maxPoints = maxPoints;
   }
 
-  activate(): void {
+  override activate(): void {
     super.activate();
     // console.debug("MultiPointSelectionHandler::activate");
     this.keyboardEventHandler = onKeyDown("Escape", () => {
@@ -34,13 +34,13 @@ export class MultiPointSelectionHandler extends MouseHandler {
     });
   }
 
-  deactivate(): void {
+  override deactivate(): void {
     super.deactivate();
     this.keyboardEventHandler(); // stop listening for Escape key events
     // console.debug("MultiPointSelectionHandler::deactivate");
   }
 
-  mousePressed(
+  override mousePressed(
     event: MouseEvent,
     position: Vector3,
     hitObjects: Array<CKNodule>
@@ -52,7 +52,7 @@ export class MultiPointSelectionHandler extends MouseHandler {
       return;
     }
     if (hitObjects.length === 0) {
-      // console.debug("Mouse pressed on sphere but no hit objects");
+      console.debug("Mouse pressed on sphere but no hit objects");
       this.currentSelectedPoints.push(position.clone());
       return;
     }
@@ -66,9 +66,9 @@ export class MultiPointSelectionHandler extends MouseHandler {
       hitPoints.map(p => p.name)
     );
     if (this.currentSelectedPoints.length >= this.maxPoints) {
-      // console.debug(
-      // `Already selected ${this.maxPoints} points, cannot select more`
-      // );
+      console.debug(
+        `Already selected ${this.maxPoints} points, cannot select more`
+      );
       return;
     }
     if (this.selectedNameSet.has(hitPoints[0].name)) {

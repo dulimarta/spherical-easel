@@ -95,7 +95,7 @@ export const useHyperbolicStore = defineStore("hyperbolic", () => {
     rayCaster = new Raycaster();
   }
   function getObjectById(id: string): CKNodule | null {
-    // console.debug(`Searching for ${id} in`, objectMap);
+    console.debug(`Searching for ${id} in`, objectMap);
     return objectMap.get(id) ?? null;
   }
   function addTempObject(obj: HENodule) {

@@ -1163,9 +1163,9 @@ export function createHyperboloidSheet(upper: boolean): THREE.Mesh {
     // Alternate method for drawing radial lines
     const radialAngle = atan(positionLocal.y, positionLocal.x);
     // Draw six radial lines on each half of the circle
-    const lineFlag = radialAngle.div(Math.PI).mul(6).fract().step(0.02);
+    const lineFlag = radialAngle.div(Math.PI).mul(6).fract().step(0.99);
     // Draw one horizontal circle at 0.5 increment
-    const heightFlag = positionLocal.z.mul(2).add(0.025).fract().step(0.02);
+    const heightFlag = positionLocal.z.mul(2).add(0.025).fract().step(0.99);
     // lineFlag.toVar().debug();
     // heightFlag.debug();
     const surfaceColor = select(
@@ -1173,7 +1173,6 @@ export function createHyperboloidSheet(upper: boolean): THREE.Mesh {
       baseColor,
       color(0x999999)
     );
-    // surfaceColor.toVar().debug();
     return surfaceColor;
   });
 

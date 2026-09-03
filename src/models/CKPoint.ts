@@ -20,7 +20,7 @@ export class CKPoint extends CKNodule {
     this.ga_coord = CKNodule.GA_Factory.makePoint(pos.x, pos.y, pos.z);
     if (CKNodule.isHyperbolicMode()) {
       const checkHyperbolic = pos.x ** 2 + pos.y ** 2 - pos.z ** 2;
-      console.debug("Hyperbolic check (should be -1):", checkHyperbolic);
+      console.debug("Hyperbolic check ", checkHyperbolic.toFixed(1));
       // checkHyperbolic: -1 for proper point
       // checkHyperbolic: 0 for direction/point at infinity
       // checkHyperbolic: 1 for ultra point

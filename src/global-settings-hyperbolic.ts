@@ -1,5 +1,5 @@
-import { max, min } from "three/tsl";
-import colors from "vuetify/util/colors";
+// import { max, min } from "three/tsl";
+// import colors from "vuetify/util/colors";
 export const SETTINGS = {
   angularBorder: 4, // in degrees of the angular radius of the border around the viewport
   dollyDistanceMax: 50,

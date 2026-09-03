@@ -18,6 +18,7 @@ import { HEPointOnOneOrTwoDimensional } from "@/models-hyperbolic/HEPointOnOneOr
 import { HELabel } from "@/models-hyperbolic/HELabel";
 import { AddPointCommand } from "@/commands-hyperbolic/AddPointCommand";
 import { CKNodule } from "@/models/CKNodule";
+import { SurfaceIntersection } from "./ToolStrategy";
 
 type selectedPointInformation = {
   oneOrTwoDimParent: HEOneOrTwoDimensional | null;
@@ -77,7 +78,7 @@ export class PointSelectionHandler extends PoseTracker {
   mousePressed(
     event: MouseEvent,
     position: Vector3,
-    hitObjects: Array<CKNodule | string>
+    hitObjects: Array<CKNodule | SurfaceIntersection>
   ): void {
     if (
       this.aSurfaceIsIntersected &&
@@ -93,7 +94,7 @@ export class PointSelectionHandler extends PoseTracker {
   mouseMoved(
     event: MouseEvent,
     position: Vector3,
-    hitObjects: Array<CKNodule | string>
+    hitObjects: Array<CKNodule | SurfaceIntersection>
   ): void {
     // Find all the nearby objects and update location vectors
     super.mouseMoved(event, position, hitObjects);
@@ -121,8 +122,8 @@ export class PointSelectionHandler extends PoseTracker {
         const nearByPoint = this.filteredIntersectionPointsList[0];
         nearByPoint.glowing = true;
         activeTempPointInfo.snapPoint = nearByPoint;
-      } else if (this.hitCKLines.length > 0) {
-        this.hitCKLines[0].setHighlight(true);
+        // } else if (this.hitCKLines.length > 0) {
+        // this.hitCKLines[0].setHighlight(true);
         // activeTempPointInfo.snapOneOrTwoDim = this.hitHELines[0];
         // } else if (this.hitSECircles.length > 0) {
         //   this.hitSECircles[0].glowing = true;
@@ -245,73 +246,73 @@ export class PointSelectionHandler extends PoseTracker {
       //   this.hyperStore.surfaceIntersections[0].point,
       //   this.getWCoordinate()
       // );
-      if (this.hitCKLines.length > 0) {
-        // const nearBy = this.hitCKLines[0].closestVector(location);
-        // if (nearBy) {
-        //   const possibleLocation = new Vector4().copy(nearBy);
-        //   if (this.isLocationAlreadySelected(possibleLocation, index)) {
-        //     return false;
-        //   }
-        //   // The selected point will be  on a line
-        //   //  Eventually, we will create a new HEPointOnOneOrTwoDimensional
-        //   activeSelectedPointInfo.oneOrTwoDimParent = this.hitHELines[0];
-        //   activeSelectedPointInfo.locationVector.copy(possibleLocation);
-        //   activeTempPointInfo.tempHEPoint.position = possibleLocation;
-        // }
-        // }
-        //else if (this.hitSECircles.length > 0) {
-        //   // The start of the line will be a point on a circle
-        //   //  Eventually, we will create a new SEPointOneDimensional and Point
-        //   this._startHEPointOneDimensionalParent = this.hitSECircles[0];
-        //   this.startVector.copy(
-        //     this._startHEPointOneDimensionalParent.closestVector(
-        //       this.currentSphereVector
-        //     )
-        //   );
-        //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
-        //   this._startHEPoint = null;
-        // } else if (this.hitSEEllipses.length > 0) {
-        //   // The start of the line will be a point on a ellipse
-        //   //  Eventually, we will create a new SEPointOneDimensional and Point
-        //   this._startHEPointOneDimensionalParent = this.hitSEEllipses[0];
-        //   this.startVector.copy(
-        //     this._startHEPointOneDimensionalParent.closestVector(
-        //       this.currentSphereVector
-        //     )
-        //   );
-        //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
-        //   this._startHEPoint = null;
-        // } else if (this.hitSEParametrics.length > 0) {
-        //   // The start of the line will be a point on a ellipse
-        //   //  Eventually, we will create a new SEPointOneDimensional and Point
-        //   this._startHEPointOneDimensionalParent = this.hitSEParametrics[0];
-        //   this.startVector.copy(
-        //     this._startHEPointOneDimensionalParent.closestVector(
-        //       this.currentSphereVector
-        //     )
-        //   );
-        //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
-        //   this._startHEPoint = null;
-        // } else if (this.hitSEPolygons.length > 0) {
-        //   // The start of the line will be a point on a ellipse
-        //   //  Eventually, we will create a new SEPointOneDimensional and Point
-        //   this._startHEPointOneDimensionalParent = this.hitSEPolygons[0];
-        //   this.startVector.copy(
-        //     this._startHEPointOneDimensionalParent.closestVector(
-        //       this.currentSphereVector
-        //     )
-        //   );
-        //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
-        //   this._startHEPoint = null;
-      } else {
-        // The mouse press/release is not near an existing point or one dimensional object.
-        //  Eventually, we will create a new HEPoint at the selected location
-        // if (this.isLocationAlreadySelected(location, index)) {
-        //   return false;
-        // }
-        // activeTempPointInfo.tempHEPoint.position = location;
-        // activeSelectedPointInfo.locationVector.copy(location);
-      }
+      // if (this.hitCKLines.length > 0) {
+      // const nearBy = this.hitCKLines[0].closestVector(location);
+      // if (nearBy) {
+      //   const possibleLocation = new Vector4().copy(nearBy);
+      //   if (this.isLocationAlreadySelected(possibleLocation, index)) {
+      //     return false;
+      //   }
+      //   // The selected point will be  on a line
+      //   //  Eventually, we will create a new HEPointOnOneOrTwoDimensional
+      //   activeSelectedPointInfo.oneOrTwoDimParent = this.hitHELines[0];
+      //   activeSelectedPointInfo.locationVector.copy(possibleLocation);
+      //   activeTempPointInfo.tempHEPoint.position = possibleLocation;
+      // }
+      // }
+      //else if (this.hitSECircles.length > 0) {
+      //   // The start of the line will be a point on a circle
+      //   //  Eventually, we will create a new SEPointOneDimensional and Point
+      //   this._startHEPointOneDimensionalParent = this.hitSECircles[0];
+      //   this.startVector.copy(
+      //     this._startHEPointOneDimensionalParent.closestVector(
+      //       this.currentSphereVector
+      //     )
+      //   );
+      //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
+      //   this._startHEPoint = null;
+      // } else if (this.hitSEEllipses.length > 0) {
+      //   // The start of the line will be a point on a ellipse
+      //   //  Eventually, we will create a new SEPointOneDimensional and Point
+      //   this._startHEPointOneDimensionalParent = this.hitSEEllipses[0];
+      //   this.startVector.copy(
+      //     this._startHEPointOneDimensionalParent.closestVector(
+      //       this.currentSphereVector
+      //     )
+      //   );
+      //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
+      //   this._startHEPoint = null;
+      // } else if (this.hitSEParametrics.length > 0) {
+      //   // The start of the line will be a point on a ellipse
+      //   //  Eventually, we will create a new SEPointOneDimensional and Point
+      //   this._startHEPointOneDimensionalParent = this.hitSEParametrics[0];
+      //   this.startVector.copy(
+      //     this._startHEPointOneDimensionalParent.closestVector(
+      //       this.currentSphereVector
+      //     )
+      //   );
+      //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
+      //   this._startHEPoint = null;
+      // } else if (this.hitSEPolygons.length > 0) {
+      //   // The start of the line will be a point on a ellipse
+      //   //  Eventually, we will create a new SEPointOneDimensional and Point
+      //   this._startHEPointOneDimensionalParent = this.hitSEPolygons[0];
+      //   this.startVector.copy(
+      //     this._startHEPointOneDimensionalParent.closestVector(
+      //       this.currentSphereVector
+      //     )
+      //   );
+      //   this._tempStartPoint.positionVectorAndDisplay = this.startVector;
+      //   this._startHEPoint = null;
+      // } else {
+      // The mouse press/release is not near an existing point or one dimensional object.
+      //  Eventually, we will create a new HEPoint at the selected location
+      // if (this.isLocationAlreadySelected(location, index)) {
+      //   return false;
+      // }
+      // activeTempPointInfo.tempHEPoint.position = location;
+      // activeSelectedPointInfo.locationVector.copy(location);
+      // }
     }
     return true;
   }

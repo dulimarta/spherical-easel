@@ -19,7 +19,7 @@ export class SSegment extends Nodule<CKSegment> {
   private currentPlaneNormal = new Vector3();
   private _segmentMaterial: Line2NodeMaterial;
   private _segmentGeometry: LineGeometry;
-  private _segmentMesh: Mesh;
+  private _segmentMesh: Line2;
   private _rotationAxis = new Vector3();
   private _tmpMatrix = new Matrix4();
   private xHolder = new Vector3();
@@ -46,12 +46,20 @@ export class SSegment extends Nodule<CKSegment> {
   show(): void {}
   hide(): void {}
   glowingDisplay(): void {
-    this._segmentMaterial.colorNode = color(0xff0000);
-    this._segmentMaterial.needsUpdate = true;
+    this._segmentMesh.material.dispose();
+    this._segmentMesh.material = new Line2NodeMaterial({
+      color: 0xff0000,
+      linewidth: 4,
+      worldUnits: false
+    });
   }
   normalDisplay(): void {
-    this._segmentMaterial.colorNode = color(0xffff00);
-    this._segmentMaterial.needsUpdate = true;
+    this._segmentMesh.material.dispose();
+    this._segmentMesh.material = new Line2NodeMaterial({
+      color: 0xffff00,
+      linewidth: 4,
+      worldUnits: false
+    });
   }
   modelUpdated(): void {
     const startPoint = this.modelRef.startPointCoord.vector(2);
